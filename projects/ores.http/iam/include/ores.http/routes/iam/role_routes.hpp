@@ -73,70 +73,70 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/roles — List roles.
+     * @brief GET /api/v1/access/roles — List roles.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/roles/{name} — Get one role.
+     * @brief GET /api/v1/access/roles/{name} — Get one role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/get-many — Get many roles.
+     * @brief POST /api/v1/access/roles/get-many — Get many roles.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles — Create one role.
+     * @brief POST /api/v1/access/roles — Create one role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_add(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief PUT /api/v1/iam/roles — Replace one role.
+     * @brief PUT /api/v1/access/roles — Replace one role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_set(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/put-many — Write many roles.
+     * @brief POST /api/v1/access/roles/put-many — Write many roles.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_put_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief DELETE /api/v1/iam/roles/{name} — Delete one role.
+     * @brief DELETE /api/v1/access/roles/{name} — Delete one role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/delete-many — Delete many roles.
+     * @brief POST /api/v1/access/roles/delete-many — Delete many roles.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete_many(const ores::http::domain::http_request& req,
                        ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/roles/{name}/versions — List the recorded versions of one role.
+     * @brief GET /api/v1/access/roles/{name}/versions — List the recorded versions of one role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_versions(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/roles/{name}/versions/{version} — Get one recorded version of one
+     * @brief GET /api/v1/access/roles/{name}/versions/{version} — Get one recorded version of one
      * role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>

@@ -61,6 +61,7 @@ const code_table day_counters = {
     {"A360 (Incl Last)", "ACT/360 (incl. last)"},
     {"Actual/360 (Incl Last)", "ACT/360 (incl. last)"},
     {"ACT/360 (Incl Last)", "ACT/360 (incl. last)"},
+    {"Act/360 (Incl Last)", "ACT/360 (incl. last)"},
     {"A365", "ACT/365.FIXED"},
     {"A365F", "ACT/365.FIXED"},
     {"Actual/365 (Fixed)", "ACT/365.FIXED"},
@@ -165,12 +166,9 @@ const code_table date_rules = {
     {"OldCDS", "OldCDS"},
     {"CDS", "CDS"},
     {"CDS2015", "CDS2015"},
-    {"ThirdThursday", "ThirdThursday"},
-    {"ThirdFriday", "ThirdFriday"},
-    {"MondayAfterThirdFriday", "MondayAfterThirdFriday"},
-    {"TuesdayAfterThirdFriday", "TuesdayAfterThirdFriday"},
+    {"NthBusinessDay", "NthBusinessDay"},
+    {"EighthBusinessDay", "EighthBusinessDay"},
     {"LastWednesday", "LastWednesday"},
-    {"EveryThursday", "EveryThursday"},
 };
 
 // A day counter's canonical code is not always a spelling the schema allows,

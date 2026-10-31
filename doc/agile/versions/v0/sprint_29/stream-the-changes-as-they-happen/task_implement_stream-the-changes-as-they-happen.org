@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 61DD6C03-CA84-4363-989E-B8D6883E266A
+:END:
+#+title: Task: Open the change stream
+#+description: Initial task for: Stream the changes as they happen
+#+type: task
+#+level: s1
+#+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/implement-stream-the-changes-as-they-happen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A client can follow the changes over one long response, and a quiet market does not look like
+a dead connection.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- [X] A change published to the hub reaches every open stream.
+- [X] A stream that is not read drops its oldest frames instead of growing without limit.
+- [X] A quiet stream writes a keep-alive comment and does not spin on the queue.
+- [X] A closed subscription ends the stream.
+
+* Plan
+
+The hub is the concurrent state, so it is the part that had to be written first. A
+subscription owns a bounded queue and a waker; a publisher takes the subscription list under
+one lock and pushes outside it, so a slow stream never blocks the publisher. The source reads
+its own queue on the connection's executor and waits on a timer that the waker cancels, so a
+frame arrives as soon as it is published and a quiet stream costs one timer per interval
+rather than a spin.
+
+The route is thin on purpose: it registers =GET /api/v1/changes=, refuses without a session,
+sets =text/event-stream= with the two headers a proxy needs, and hands the source to the
+response. Everything the stream does is in the source, where a case can reach it without a
+socket.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Change stream cases | 7 cases, 18 assertions, all passing | =./ores.http.core.tests "[change_stream]"= | this branch |
+| Routes in the inventory | 409, one more than before | =python3 build/scripts/route_inventory.py --check= | this branch |
+| Server builds with the route | 402 targets, exit 0 | =cmake --build … --target ores.http.server= | this branch |
+
+* Notes
+
+- The keep-alive test asserts the elapsed time as well as the bytes: a source that spun on the
+  queue would also write a comment eventually, and the case that only checked for the text
+  would pass on a busy loop.
+- A frame published while the source is between waits costs up to one keep-alive interval,
+  because the waker can only cancel a wait that has begun. That bound is stated rather than
+  hidden: with a 15 s keep-alive the worst case is 15 s, which is the interval the design
+  chose for a quiet market and not for a busy one.
+- Nothing fills the hub yet. The next task subscribes it to the change events and applies the
+  party filter; this one proves the path from a publish to a client.
+
+* Result
+
+The stream exists end to end: a publish reaches every open subscription, a slow reader loses
+its oldest frames rather than the server's memory, a quiet stream is kept alive without
+spinning, and a closed subscription ends the body. The route serves it as an event stream.

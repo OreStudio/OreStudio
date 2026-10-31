@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: ED403AF1-77EF-406A-AF45-1A67CA99A261
+:END:
+#+title: Task: Expose the population's size and mix in the provisioning UI
+#+description: The population's size and mix are seeded config rows: one row per asset class per party, each stating a trades_per_book that was chosen to make the codes appear, not to make the mix realistic. An operator who wants a different book edits SQL. The provisioning surface should state the total and a percentage per class, validate them, and hand them to the generation configs the run creates.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/expose-the-populations-size-and-mix-to-the-operator
+#+pr: 4265
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let an operator size the trade population and set its asset-class mix from the provisioning surface, instead of editing seeded config rows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The ACME provisioning surface states the population's total size and a percentage per asset class, with the seeded values as the defaults.
+- The percentages are validated: a mix that does not sum to one hundred is refused, and a class whose count falls under its routed-code floor is reported before the run starts rather than after it fails.
+- A provisioning run started from the surface writes a population whose measured mix matches the percentages the operator stated, within the tolerance the weights page sets.
+- The knobs reach the generation configs the run creates, so the surface states the mix and the generator still draws it.
+
+* Plan
+
+The knob is part of starting a run, so it starts where a run starts.
+
+The web surface already starts a tenant from a seed profile:
+=POST /api/provision-tenant= takes a profile code and the tenant and administrator
+fields, and the profile's =generate_trades= step carries the populations as
+argument rows. So the knob is an optional part of that request — a total and a
+percentage per class — that the server turns into the step's arguments, and the
+seeded rows stay the default when the request states none.
+
+Three seams, and the arithmetic lives in one of them:
+
+- The request. The provision-tenant body gains the total and the mix, optional,
+  with the seeded values as the defaults the screen shows.
+- The validation, in the same place: a mix that does not sum to a hundred is
+  refused with the sum it came to, and a class whose count falls under its
+  routed-code floor is refused with the smallest total that would fit it. Both
+  are refusals of the request and not of the run, so an operator learns before a
+  tenant is half built.
+- The step. The provisioning handler's =generate_trades= step states the configs
+  it records, so that is where a computed count per class becomes
+  =trades_per_book= per config. The arithmetic must not appear twice: the screen
+  shows what the server will do rather than computing its own answer.
+
+What the retune settled and this task inherits: a class cannot state fewer trades
+than it routes codes, and its share of the total cannot fall below that floor, so
+the total has the smallest value where every class fits. At a thousand every
+class is its weight exactly; the surface should say so when the numbers asked for
+cannot hold, and name the smallest total that can.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4265][#4265]] | [agile] Point the population knobs at the surface that starts a run |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The task is not delivered. Its plan was corrected before work started, so that the
+knob is placed where a run starts rather than where a run's data happens to live.

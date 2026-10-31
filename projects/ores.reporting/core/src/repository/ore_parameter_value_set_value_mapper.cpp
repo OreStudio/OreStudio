@@ -29,6 +29,7 @@
 #include "ores.reporting.api/domain/ore_parameter_value_set_value_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/ore_parameter_value_set_value_entity.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -50,6 +51,7 @@ ore_parameter_value_set_value_mapper::map(const ore_parameter_value_set_value_en
     r.description = v.description;
     r.display_order = v.display_order;
     r.is_active = v.is_active;
+    r.canonical_value = v.canonical_value.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -74,6 +76,7 @@ ore_parameter_value_set_value_mapper::map(const domain::ore_parameter_value_set_
     r.description = v.description;
     r.display_order = v.display_order;
     r.is_active = v.is_active;
+    r.canonical_value = v.canonical_value.empty() ? std::nullopt : std::optional(v.canonical_value);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

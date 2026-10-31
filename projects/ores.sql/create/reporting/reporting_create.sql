@@ -75,6 +75,7 @@
 \ir ./reporting_ore_parameter_value_set_values_notify_trigger_create.sql
 \ir ./reporting_ore_parameter_setting_value_sets_create.sql
 \ir ./reporting_ore_parameter_setting_value_sets_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_canonical_value_fn_create.sql
 \ir ./reporting_engine_settings_groups_create.sql
 \ir ./reporting_engine_settings_groups_notify_trigger_create.sql
 \ir ./reporting_engine_settings_group_settings_create.sql

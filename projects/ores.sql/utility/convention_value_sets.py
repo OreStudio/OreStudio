@@ -47,21 +47,12 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import ore_aliases as aliases  # noqa: E402
 import ore_schema_types as schema_types  # noqa: E402
 
 TERMS = os.path.join(HERE, "convention_terms.json")
 
 CATALOGUES = {
-    "refdata.business_day_convention": {
-        "name": "Business day conventions",
-        "relation": "ores_refdata_business_day_convention_catalogue_v",
-        "description": "The business day conventions reference data holds.",
-    },
-    "refdata.day_counter": {
-        "name": "Day counters",
-        "relation": "ores_refdata_day_counter_catalogue_v",
-        "description": "The day counters reference data holds.",
-    },
     "refdata.currency": {
         "name": "Currencies",
         "relation": "ores_refdata_currency_catalogue_v",
@@ -70,9 +61,16 @@ CATALOGUES = {
 }
 
 CATALOGUE_OF = {
-    "business_day_convention": "refdata.business_day_convention",
-    "day_counter": "refdata.day_counter",
     "currency": "refdata.currency",
+}
+
+# The kinds ORE's reader converts before the store sees a value, and the compiled
+# table that states which renderings mean one fact. The set states the renderings
+# as data, so a document may write any of them and a configuration holds the one
+# form the set names.
+RENDERED_OF = {
+    "business_day_convention": "business_day_conventions",
+    "day_counter": "day_counters",
 }
 
 # The kinds whose parser states no list, and the set each takes instead.
@@ -140,6 +138,7 @@ def parser_set(parser, entry):
                            f"meaning {meaning}.",
             "order": len(values),
         })
+    stated(values, parser)
     label = words(parser[len("parse"):])
     return {
         "name": label,
@@ -149,6 +148,29 @@ def parser_set(parser, entry):
         "is_ordered": False,
         "values": values,
     }
+
+
+def stated(values, parser):
+    """State the canonical form of a list's values, and prove it agrees with the code.
+
+    A parser whose reader converts several renderings of one fact names a compiled
+    table, and the set states what that table states: one form a configuration
+    holds, and a canonical value on every other rendering. The check runs while
+    both statements exist, so neither can drift from the other unobserved.
+    """
+    table = aliases.PARSER_TABLE.get(parser)
+    if not table:
+        return
+    for value in values:
+        canonical = aliases.canonical_of(table, value["value"])
+        if canonical is None:
+            raise ValueError(f"{parser} accepts {value['value']!r}, and the {table} "
+                             "table states no canonical form for it")
+        if canonical != value["value"]:
+            value["canonical_value"] = canonical
+    problems = aliases.compare(values, table)
+    if problems:
+        raise ValueError(f"{parser}: " + "; ".join(problems))
 
 
 # The kinds the tree states for a term the extractor typed another way, and the
@@ -221,6 +243,8 @@ def set_of(term, parsers, element=None):
     """The set code of one term, and the parser whose list it is, if any."""
     override, _ = override_of(element, term)
     kind = override or term["type"]
+    if kind in RENDERED_OF:
+        return "convention." + kind, aliases.rendered_set(RENDERED_OF[kind], parsers)
     if kind in CATALOGUE_OF:
         return "convention." + kind, None
     if kind in TYPE_SETS:
@@ -307,8 +331,10 @@ def data():
             code, generated = set_of(term, parsers, element)
             if generated:
                 built.add(code)
-                if code not in sets:
-                    sets[code] = generated
+                if code in sets and sets[code] != generated:
+                    raise ValueError(f"{code}: two sources state a different set "
+                                     "under one code")
+                sets.setdefault(code, generated)
             key = f"{element}|{term['name']}"
             if links.get(key, code) != code:
                 raise ValueError(f"{key} would take two sets, {links[key]} and {code}")

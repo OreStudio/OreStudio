@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <code> <value_set_code> <value> <label> <description> <display_order> <is_active>
-     * <reason> <commentary>
+     * <canonical_value> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <code> <value_set_code> <value> <label> <description> <display_order> <is_active>
-     * <reason> <commentary> [--version <n>]
+     * <canonical_value> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <value_set_code> <value> <label> <description>
-     * <display_order> <is_active> <reason> <commentary>
+     * <display_order> <is_active> <canonical_value> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -33,11 +33,12 @@ std::string convert_to_table(const std::vector<ore_parameter_value_set_value>& v
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Set" << "Value" << "Label" << "Order" << "Active" << fort::endr;
+    table << fort::header << "Set" << "Value" << "Label" << "Order" << "Active" << "Canonical form"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& pvv : v) {
         table << pvv.value_set_code << pvv.value << pvv.label << pvv.display_order
-              << (pvv.is_active ? "true" : "false") << fort::endr;
+              << (pvv.is_active ? "true" : "false") << pvv.canonical_value << fort::endr;
     }
     return table.to_string();
 }

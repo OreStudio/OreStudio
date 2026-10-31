@@ -13,7 +13,7 @@
 
 The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them.
 
-6 prototypes answer to this group. Each one is a static page under
+7 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -32,6 +32,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Watch the message bus               | The streams and their samples, listed so a stream nobody publishes to is visible rather than silently absent. | [[file:message-bus/][prototype]] | none |
 | Read the telemetry logs             | The telemetry store read by source, with the client lines the compute wrapper publishes and the search a person actually reaches for. | [[file:telemetry-logs/][prototype]] | none |
 | Check the versions and the database | The versions of every service and the database under them, stating the migration the schema is at. | [[file:versions-and-database/][prototype]] | none |
+| Work the authorisation queue        | A deal waits in one queue divided two ways — by class and by the authorisation state — and the deal opens beside it, with the comment a decision requires. | [[file:operational-authorisation-queue/][prototype]] | none |
 
 * Adding a prototype
 

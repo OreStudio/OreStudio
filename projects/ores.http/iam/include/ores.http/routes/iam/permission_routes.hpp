@@ -73,56 +73,56 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/permissions — List permissions.
+     * @brief GET /api/v1/access/permissions — List permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/permissions/{code} — Get one permission.
+     * @brief GET /api/v1/access/permissions/{code} — Get one permission.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/permissions/get-many — Get many permissions.
+     * @brief POST /api/v1/access/permissions/get-many — Get many permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/permissions — Create one permission.
+     * @brief POST /api/v1/access/permissions — Create one permission.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_add(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief PUT /api/v1/iam/permissions — Replace one permission.
+     * @brief PUT /api/v1/access/permissions — Replace one permission.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_set(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/permissions/put-many — Write many permissions.
+     * @brief POST /api/v1/access/permissions/put-many — Write many permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_put_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief DELETE /api/v1/iam/permissions/{code} — Delete one permission.
+     * @brief DELETE /api/v1/access/permissions/{code} — Delete one permission.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/permissions/delete-many — Delete many permissions.
+     * @brief POST /api/v1/access/permissions/delete-many — Delete many permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete_many(const ores::http::domain::http_request& req,

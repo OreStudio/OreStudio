@@ -47,6 +47,7 @@ struct ore_parameter_value_set_value_write {
     std::string description;
     int display_order;
     bool is_active;
+    std::string canonical_value;
 };
 
 struct ore_parameter_value_set_value_change {

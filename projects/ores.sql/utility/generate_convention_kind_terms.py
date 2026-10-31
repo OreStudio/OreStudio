@@ -278,7 +278,8 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 TRIGGER_FUNCTION = """
 /**
- * Refuses a convention value outside the value set of the term it holds.
+ * Refuses a convention value outside the value set of the term it holds, and
+ * stores the form the set names for one it accepts.
  *
  * One enforcement point, in the database, as for a pricing parameter: the shell,
  * the screens and a data quality publish all write through it. The trigger names
@@ -286,6 +287,11 @@ TRIGGER_FUNCTION = """
  * map row for that term's address names its value set. Every non-empty value is
  * checked by ores_reporting_value_in_set_fn, the rule a pricing parameter's value
  * meets too. A term the map does not name is not checked.
+ *
+ * The canonical form of a value the set states is written back over the term, so a
+ * document that says MODFOLLOWING and one that says ModifiedFollowing leave one
+ * row. The row is rewritten through its JSON form because a trigger cannot name a
+ * column it read from a table.
  */
 create or replace function ores_refdata_validate_convention_terms_fn()
 returns trigger
@@ -296,6 +302,8 @@ declare
     v_row jsonb := to_jsonb(NEW);
     v_term record;
     v_value text;
+    v_canonical text;
+    v_stored jsonb := '{}'::jsonb;
 begin
     for v_term in
         select k.column_name, m.value_set_code
@@ -316,7 +324,14 @@ begin
             raise exception 'Invalid value % for %.%: the value is not in set %.',
                 v_value, TG_ARGV[0], v_term.column_name, v_term.value_set_code;
         end if;
+        v_canonical := ores_reporting_canonical_value_fn(v_term.value_set_code, v_value);
+        if v_canonical is distinct from v_value then
+            v_stored := v_stored || jsonb_build_object(v_term.column_name, v_canonical);
+        end if;
     end loop;
+    if v_stored <> '{}'::jsonb then
+        NEW := jsonb_populate_record(NEW, v_stored);
+    end if;
     return NEW;
 end;
 $$ language plpgsql;

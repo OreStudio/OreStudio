@@ -51,7 +51,8 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_equity', 0, 'Equity', 'Equity asset class.', '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 53),
     (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_commodity', 0, 'Commodity AC', 'Commodity asset class.', '#f97316', '#ffffff', 'warning', 'badge bg-warning', 54),
     (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_inflation', 0, 'Inflation', 'Inflation asset class.', '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 55),
-    (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_bond', 0, 'Bond', 'Bond asset class.', '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56)
+    (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_bond', 0, 'Bond', 'Bond asset class.', '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56),
+    (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', 'asset_class_scripted', 0, 'Scripted', 'Scripted asset class.', '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57)
 ;
 
 select id as v_ac_dom_ds from ores_dq_datasets_tbl
@@ -64,7 +65,7 @@ insert into ores_dq_code_domains_artefact_tbl (
     tenant_id, dataset_id, code, version, name, description, display_order
 )
 values
-    (ores_utility_system_tenant_id_fn(), :'v_ac_dom_ds', 'asset_class', 0, 'Asset Class', 'Top-level product classification codes (fx, interest_rates, credit, equity, commodity, inflation, bond), shown on instrument_code and asset_class_code.', 30)
+    (ores_utility_system_tenant_id_fn(), :'v_ac_dom_ds', 'asset_class', 0, 'Asset Class', 'Top-level product classification codes (fx, interest_rates, credit, equity, commodity, inflation, bond, scripted), shown on instrument_code and asset_class_code.', 30)
 ;
 
 select id as v_ac_map_ds from ores_dq_datasets_tbl
@@ -83,5 +84,6 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'equity', 'asset_class_equity', 0),
     (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'commodity', 'asset_class_commodity', 0),
     (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'inflation', 'asset_class_inflation', 0),
-    (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'bond', 'asset_class_bond', 0)
+    (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'bond', 'asset_class_bond', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', 'asset_class', 'scripted', 'asset_class_scripted', 0)
 ;

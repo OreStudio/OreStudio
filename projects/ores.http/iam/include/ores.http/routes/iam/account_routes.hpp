@@ -73,28 +73,28 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/accounts — List accounts.
+     * @brief GET /api/v1/access/accounts — List accounts.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/accounts/{username} — Get one account.
+     * @brief GET /api/v1/access/accounts/{username} — Get one account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/get-many — Get many accounts.
+     * @brief POST /api/v1/access/accounts/get-many — Get many accounts.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/accounts/{username}/versions — List the recorded versions of one
+     * @brief GET /api/v1/access/accounts/{username}/versions — List the recorded versions of one
      * account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
@@ -102,8 +102,8 @@ public:
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/accounts/{username}/versions/{version} — Get one recorded version of
-     * one account.
+     * @brief GET /api/v1/access/accounts/{username}/versions/{version} — Get one recorded version
+     * of one account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_version(const ores::http::domain::http_request& req,

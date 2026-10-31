@@ -29,7 +29,7 @@
 
 begin;
 
-select plan(8);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -127,6 +127,17 @@ $$;
 select lives_ok(
     $$select pg_temp.yield_curve('GBP', 'ACT/365', '2030-01-01')$$,
     'a curve whose values are in their sets is written');
+
+select lives_ok(
+    $$select pg_temp.yield_curve('GBP', 'A365F', '2031-01-01')$$,
+    'a curve whose day counter is another rendering of one is written');
+
+select is(
+    (select day_counter
+       from ores_refdata_yield_curve_configs_tbl
+      where report_pillar_dates = '2031-01-01'),
+    'ACT/365.FIXED',
+    'the rendering A365F is stored as the form the set names');
 
 select throws_like(
     $$select pg_temp.yield_curve('XYZ', 'ACT/365', null)$$,

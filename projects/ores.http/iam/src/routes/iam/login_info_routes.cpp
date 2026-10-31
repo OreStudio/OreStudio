@@ -195,7 +195,7 @@ void login_info_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering login_info routes";
 
     auto list_route =
-        router->get("/api/v1/iam/login_info")
+        router->get("/api/v1/auth/login_info")
             .summary("List login info")
             .description("Forwards to the iam.v1.login_info.list operation.")
             .tags({"iam"})
@@ -211,7 +211,7 @@ void login_info_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/login_info/{account_id}")
+        router->get("/api/v1/auth/login_info/{account_id}")
             .summary("Get one login info")
             .description("Forwards to the iam.v1.login_info.get operation.")
             .tags({"iam"})
@@ -223,7 +223,7 @@ void login_info_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/login_info/get-many")
+        router->post("/api/v1/auth/login_info/get-many")
             .summary("Get many login info")
             .description("Forwards to the iam.v1.login_info.get_many operation.")
             .tags({"iam"})

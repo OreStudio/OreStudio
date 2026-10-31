@@ -224,7 +224,7 @@ void account_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering accounts routes";
 
     auto list_route =
-        router->get("/api/v1/iam/accounts")
+        router->get("/api/v1/access/accounts")
             .summary("List accounts")
             .description("Forwards to the iam.v1.accounts.list operation.")
             .tags({"iam"})
@@ -240,7 +240,7 @@ void account_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/accounts/{username}")
+        router->get("/api/v1/access/accounts/{username}")
             .summary("Get one account")
             .description("Forwards to the iam.v1.accounts.get operation.")
             .tags({"iam"})
@@ -252,7 +252,7 @@ void account_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/accounts/get-many")
+        router->post("/api/v1/access/accounts/get-many")
             .summary("Get many accounts")
             .description("Forwards to the iam.v1.accounts.get_many operation.")
             .tags({"iam"})
@@ -265,7 +265,7 @@ void account_routes::register_routes(
     registry->register_route(get_many_built);
 
     auto versions_route =
-        router->get("/api/v1/iam/accounts/{username}/versions")
+        router->get("/api/v1/access/accounts/{username}/versions")
             .summary("List the recorded versions of one account")
             .description("Forwards to the iam.v1.accounts_versions.list operation.")
             .tags({"iam"})
@@ -281,7 +281,7 @@ void account_routes::register_routes(
     registry->register_route(versions_built);
 
     auto version_route =
-        router->get("/api/v1/iam/accounts/{username}/versions/{version}")
+        router->get("/api/v1/access/accounts/{username}/versions/{version}")
             .summary("Get one recorded version of one account")
             .description("Forwards to the iam.v1.accounts_versions.get operation.")
             .tags({"iam"})

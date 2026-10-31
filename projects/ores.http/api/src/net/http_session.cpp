@@ -637,14 +637,18 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
                                                    unsigned version,
                                                    bool keep_alive,
                                                    bool send_body) {
+    const auto streamed = resp.body_stream != nullptr || resp.body_awaitable != nullptr;
     if (counters_ != nullptr) {
         counters_->record_response(static_cast<unsigned>(resp.status));
-        const auto bytes =
-            resp.body_stream != nullptr ? resp.body_stream->size().value_or(0) : resp.body.size();
+        const auto bytes = resp.body_stream != nullptr
+                               ? resp.body_stream->size().value_or(0)
+                               : resp.body_awaitable != nullptr
+                                     ? resp.body_awaitable->size().value_or(0)
+                                     : resp.body.size();
         counters_->response_bytes.fetch_add(bytes, std::memory_order_relaxed);
     }
 
-    if (resp.body_stream == nullptr) {
+    if (!streamed) {
         auto beast_resp = convert_response(resp, version, keep_alive);
         co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
         co_return;
@@ -664,7 +668,8 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
     for (const auto& [name, value] : resp.headers)
         head.set(name, value);
 
-    const auto declared = resp.body_stream->size();
+    const auto declared = resp.body_stream != nullptr ? resp.body_stream->size()
+                                                      : resp.body_awaitable->size();
     if (declared.has_value())
         head.content_length(*declared);
     else
@@ -677,8 +682,22 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
         co_return;
 
     auto buffer = std::vector<char>(options_.response_chunk_size);
+
+    /*
+     * One loop serves both sources. A synchronous source always has its next piece,
+     * so the coroutine that wraps it never suspends; one that waits suspends the
+     * response and leaves the thread to other work, which is the whole point of the
+     * awaitable form.
+     */
+    auto next = [&]() -> asio::awaitable<std::size_t> {
+        const auto into = std::span(buffer.data(), buffer.size());
+        if (resp.body_stream != nullptr)
+            co_return resp.body_stream->read(into);
+        co_return co_await resp.body_awaitable->read(into);
+    };
+
     for (;;) {
-        const auto taken = resp.body_stream->read(std::span(buffer.data(), buffer.size()));
+        const auto taken = co_await next();
         // The serializer reads the message it was given, so the body is set there.
         auto& body = head.body();
         body.data = buffer.data();

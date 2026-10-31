@@ -439,7 +439,7 @@ export function OfficialRatesPage(): ReactNode {
                                     {t('marketdata.official.columns.terms')}
                                 </th>
                                 <th className="py-1 font-normal">
-                                    {t('marketdata.official.columns.source')}
+                                    {t('marketdata.official.columns.feed')}
                                 </th>
                                 <th className="py-1 text-right font-normal">
                                     {t('marketdata.official.columns.series')}
@@ -488,7 +488,7 @@ export function OfficialRatesPage(): ReactNode {
                                         />
                                     </td>
                                     <td className="py-2 align-top font-mono text-xs">
-                                        {p.sources.map((s) => s.name).join(', ') || '—'}
+                                        {p.feeds.map((feed) => feed.name).join(', ') || '—'}
                                     </td>
                                     <td className="py-2 text-right align-top tabular-nums">
                                         {p.series.length}

@@ -1,0 +1,22 @@
+renderings one copy of the knowledge states
+  business_day_conventions: 26 renderings over 7 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  day_counters: 72 renderings over 23 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  frequencies: 18 renderings over 9 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  compoundings: 4 renderings over 4 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  date_rules: 12 renderings over 12 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  day_counter_spellings: 11 renderings over 11 forms (projects/ores.ore/core/src/domain/conventions_fields.cpp)
+  business_day_conventions: 27 renderings (projects/ores.refdata/core/include/ores.refdata.core/repository/business_day_convention_code.hpp)
+  day_counters: 34 renderings (tools/ore_conventions/generate_dq_seed.py)
+  business_day_conventions: 16 renderings (tools/ore_conventions/generate_dq_seed.py)
+  frequencies: 18 renderings (tools/ore_conventions/generate_dq_seed.py)
+
+where the copies disagree
+  business_day_conventions: 26 in the reader, 27 in refdata
+    only refdata: Nearest
+  day_counters: 72 in the reader, 34 in the seeder
+    only the reader: 30/360 (Bond Basis), 30/360 (US), 30/360 AIBD (Euro), 30/360 German, 30/360 Italian, 30/360 NASD, 30/360 US, 30E/360 (Eurobond Basis), 30E/360 ICMA, 30E/360 ISDA, 30E/360.ICMA, 30E/360E, 30U/360, 30US/360, A360 (Incl Last), A364, ACT, ACT/360 (Incl Last), ACT/ACT.ICMA, ACT29, Act/360 (Incl Last), Act/364, Act/365, Act/365 (Canadian Bond), Act/365 (NL), Act/365L, Act/Act, ActActAFB, ActActICMA, ActActISDA, ActActISMA, Actual/360 (Incl Last), Actual/364, Actual/365 (Fixed), Actual/365 (JGB), Actual/365 (No Leap), Actual/365 (fixed), Actual/Actual (AFB), Actual/Actual (ICMA), Actual/Actual (ISMA), ActualActual (ICMA), ActualActual (ISDA), ActualActual (ISMA)
+    only the seeder: A360 (incl. last), ACT/365 (Canadian Bond), ACT/365 (JGB), ACT/ACT (ICMA), ACT/ACT (ISMA)
+  business_day_conventions: 26 in the reader, 16 in the seeder
+    only the reader: FOLLOWING, HALFMONTHMF, HalfMonthMF, INDIFF, MODFOLLOWING, MODIFIEDF, MODIFIEDP, NEAREST, NONE, NotApplicable, PRECEDING
+    only the seeder: Nearest
+  frequencies: 18 in the reader, 18 in the seeder

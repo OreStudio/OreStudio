@@ -76,22 +76,22 @@ TEST_CASE("account_credential_routes_registers_every_derived_route", "[routes]")
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
              account_credential_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
+                 http_method::get, std::string{"/api/v1/auth/account_credentials"}, true},
              account_credential_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/account_credentials/{id}"}, true},
+                 http_method::get, std::string{"/api/v1/auth/account_credentials/{id}"}, true},
              account_credential_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/account_credentials/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/auth/account_credentials/get-many"}, true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/by-account-id/{account_id}"},
+                 std::string{"/api/v1/auth/account_credentials/by-account-id/{account_id}"},
                  true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/{id}/versions"},
+                 std::string{"/api/v1/auth/account_credentials/{id}/versions"},
                  true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
+                 std::string{"/api/v1/auth/account_credentials/{id}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -115,22 +115,22 @@ TEST_CASE("account_credential_routes_requires_a_session_where_the_operation_does
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
              account_credential_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
+                 http_method::get, std::string{"/api/v1/auth/account_credentials"}, true},
              account_credential_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/account_credentials/{id}"}, true},
+                 http_method::get, std::string{"/api/v1/auth/account_credentials/{id}"}, true},
              account_credential_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/account_credentials/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/auth/account_credentials/get-many"}, true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/by-account-id/{account_id}"},
+                 std::string{"/api/v1/auth/account_credentials/by-account-id/{account_id}"},
                  true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/{id}/versions"},
+                 std::string{"/api/v1/auth/account_credentials/{id}/versions"},
                  true},
              account_credential_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
+                 std::string{"/api/v1/auth/account_credentials/{id}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {

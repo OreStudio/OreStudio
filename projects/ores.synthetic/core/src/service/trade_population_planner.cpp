@@ -216,7 +216,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 
 std::vector<std::string_view> planned_asset_classes() {
     static const std::vector<std::string_view> codes{
-        "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates"};
+        "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
     return codes;
 }
 
@@ -228,13 +228,15 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const credit_trade_planner credit;
     static const equity_trade_planner equity;
     static const inflation_trade_planner inflation;
+    static const scripted_trade_planner scripted;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
                                                                       {"commodity", &commodity},
                                                                       {"credit", &credit},
                                                                       {"equity", &equity},
                                                                       {"fx", &fx},
                                                                       {"inflation", &inflation},
-                                                                      {"interest_rates", &rates}};
+                                                                      {"interest_rates", &rates},
+                                                                      {"scripted", &scripted}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -1816,6 +1818,161 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          */
         entry.instruments.credit_instruments.push_back(
             construct_credit_row(terms, entry.trade_type_code));
+
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
+
+namespace {
+
+/*
+ * The scripted codes the population books, in the order the routing table
+ * states them. Autocallable_01 is routed like the others and is left out
+ * deliberately: the ORE projection has no writer for its data element, so a
+ * trade of it would book and then export as an empty product.
+ */
+constexpr std::string_view scripted_types[] = {"ScriptedTrade",
+                                               "DoubleDigitalOption",
+                                               "PerformanceOption_01"};
+constexpr std::size_t scripted_type_count = std::size(scripted_types);
+
+/*
+ * The script each code is written from. The document names the script the
+ * engine runs, and the projection reads the code's element back into the same
+ * name, so the two sides agree on what the trade is.
+ */
+std::string_view script_of(std::string_view trade_type) {
+    if (trade_type == "ScriptedTrade")
+        return "AsianBasketOption";
+    if (trade_type == "DoubleDigitalOption")
+        return "DoubleDigitalOption";
+    return "PerformanceOption_01";
+}
+
+/*
+ * The parameters the script needs. They are the document's own keys, because
+ * the projection writes each key into the element and reads it back from it, so
+ * a trade that states them exports whole rather than as a name with nothing
+ * behind it.
+ */
+std::string parameters_of(std::string_view trade_type,
+                          const std::string& currency,
+                          const std::chrono::year_month_day& end,
+                          double notional,
+                          double strike) {
+    const auto money = std::format("{:.2f}", notional);
+    const auto level = std::format("{:.4f}", strike);
+    const auto expiry = std::format("{:%Y-%m-%d}", end);
+    const auto settlement = std::format("{:%Y-%m-%d}", add_months(end, 2));
+    if (trade_type == "ScriptedTrade")
+        return std::format(R"({{"Notional":"{}","PutCall":"Call","Strike":"{}"}})", money, level);
+    if (trade_type == "DoubleDigitalOption")
+        /*
+         * The document's own members, which is what the projection writes from
+         * these keys and reads back into them. A key the document has no member
+         * for is written as an element the schema does not hold.
+         */
+        return std::format(
+            R"({{"Type1":"Equity","Type2":"Equity","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","BinaryPayout":"{}","BinaryLevel1":"{}","BinaryLevel2":"{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
+            expiry,
+            settlement,
+            currency,
+            money,
+            level,
+            std::format("{:.4f}", strike * 1.2));
+    return std::format(
+        R"({{"NotionalAmount":"{}","ParticipationRate":"1.0","Strike":"{}","ValuationDate":"{}","SettlementDate":"{}","Position":"Long","PayCcy":"{}","StrikePrices":"{},{},{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
+        money,
+        level,
+        expiry,
+        settlement,
+        currency,
+        level,
+        std::format("{:.4f}", strike * 1.1),
+        std::format("{:.4f}", strike * 1.2));
+}
+
+/*
+ * The scripted family states its row here, where it draws it: the table is flat
+ * and the script's own fields are text, so the row is what the plan carries.
+ */
+ores::trading::domain::instrument_batch
+construct_scripted_batch(const domain::trade_generation_scope& scope,
+                         std::string_view trade_type,
+                         std::uint32_t slot,
+                         const std::chrono::year_month_day& end,
+                         double notional,
+                         double strike) {
+    namespace tdom = ores::trading::domain;
+
+    /*
+     * The underlyings cycle the tenant's catalogue, so a population longer than
+     * the catalogue states every name it holds and none it does not.
+     */
+    const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
+    const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
+    const auto underlyings = trade_type == "PerformanceOption_01"
+                                 ? std::format(R"(["{}","{}"])", first.code, second.code)
+                                 : std::format(R"(["{}"])", first.code);
+
+    tdom::scripted_instrument row;
+    row.identity.trade_type_code = std::string(trade_type);
+    row.script_name = std::string(script_of(trade_type));
+    row.underlyings_json = underlyings;
+    row.parameters_json =
+        parameters_of(trade_type, scope.currency_code, end, notional, strike);
+    row.description = "Generated scripted trade.";
+
+    tdom::instrument_batch batch;
+    batch.scripted_instruments.push_back(std::move(row));
+    return batch;
+}
+
+}
+
+std::string_view scripted_trade_planner::asset_class_code() const {
+    return "scripted";
+}
+
+domain::trade_population_plan
+scripted_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.equity_underlyings.empty())
+        throw trade_population_error(
+            "The tenant holds no equity underlying, so no scripted trade can name one to observe. "
+            "Publish the equity catalogue first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+        const auto& type = scripted_types[slot % scripted_type_count];
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+
+        const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        const auto end =
+            add_years(start, static_cast<int>(std::clamp(drawn, min_years, max_years)));
+        const auto notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        const auto strike = std::round((0.8 + 0.4 * draw(name, 2)) * 10000.0) / 10000.0;
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(type);
+        entry.notional = notional;
+        entry.instruments =
+            construct_scripted_batch(scope, type, slot, end, notional, strike);
 
         plan.slots.push_back(std::move(entry));
     }

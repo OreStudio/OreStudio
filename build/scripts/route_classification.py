@@ -102,6 +102,11 @@ RULES = (
          BFF, TRANSPORT, "changes",
          "The change stream a client subscribes to, and the watch set that says which"
          " subjects it wants; delivery of events, not a domain object."),
+    Rule("the change stream route",
+         ("exact", "GET /api/v1/changes"),
+         CPP, TRANSPORT, "changes",
+         "The change stream itself: a response whose body is written from the hub as"
+         " changes happen, with a comment line keeping a quiet stream alive."),
     Rule("the liveness endpoint",
          ("exact", "GET /api/health"),
          BFF, TRANSPORT, NO_AREA,
@@ -280,13 +285,13 @@ RULES = (
     Rule("the market data catalogue",
          ("exact", "GET /api/marketdata/catalogue"),
          BFF, COMPOSED, "market-data",
-         "The providers and the sources that serve them in one answer, two collection reads,"
-         " so a subscription or a route can name a source by id."),
+         "The providers and the feeds that serve them in one answer, two collection reads,"
+         " so a subscription or a route can name a feed by id."),
     Rule("the official providers",
          ("exact", "GET /api/marketdata/official"),
          BFF, COMPOSED, "market-data",
-         "Every official provider with its terms, its sources and the fixing series it fills,"
-         " the providers read first and the sources and market series read together after."),
+         "Every official provider with its terms, its feeds and the fixing series it fills,"
+         " the providers read first and the feeds and market series read together after."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
          BFF, COMPOSED, "reporting",
@@ -379,7 +384,7 @@ RULES = (
     Rule("the market data subscriptions",
          ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"),
          BFF, RESOURCE, "market-data",
-         "A subscription or a route the session party holds, with the source that serves it,"
+         "A subscription or a route the session party holds, with the feed that serves it,"
          " read as a page and written or removed one at a time."),
     Rule("the market data adapters",
          ("exact", "GET /api/marketdata/adapters"),
@@ -650,27 +655,27 @@ RULES = (
          "Sets or clears the party quick sign-in uses on the signed-in account."),
 
     Rule("the generated account collection",
-         ("prefix", "GET /api/v1/iam/accounts"),
+         ("prefix", "GET /api/v1/access/accounts"),
          CPP, RESOURCE, "access",
          "The IAM account collection, generated with list, read by username, a version read"
          " and a bulk get."),
     Rule("the account collection writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/iam/accounts"),
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/access/accounts"),
          CPP, RESOURCE, "access",
          "A generated write of the IAM account collection: the delete, the bulk get, or a"
          " whole-record put."),
     Rule("the generated permission collection",
-         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/iam/permissions"),
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/access/permissions"),
          CPP, RESOURCE, "access",
          "The permission collection, generated with list, create, replace, remove, bulk get"
          " and put."),
     Rule("the generated role collection",
-         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/iam/roles/"),
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/access/roles/"),
          CPP, RESOURCE, "access",
          "The role collection, generated with list, create, replace, remove, bulk get and"
          " put, and a version read."),
     Rule("the role collection root",
-         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/iam/roles$"),
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/access/roles$"),
          CPP, RESOURCE, "access",
          "The role collection itself, read as a list and written one role at a time."),
     Rule("a role's permission set",
@@ -699,31 +704,31 @@ RULES = (
          "A session is a thing: signing in creates one and sets the cookie it rides in,"
          " signing out ends the caller's, and /me reads the identity it states."),
     Rule("the generated session collection",
-         ("prefix", "GET /api/v1/iam/sessions"),
+         ("prefix", "GET /api/v1/access/sessions"),
          CPP, RESOURCE, "auth",
          "The session collection, generated with list, create, replace, remove, bulk get and"
          " put."),
     Rule("the session collection writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/iam/sessions"),
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/access/sessions"),
          CPP, RESOURCE, "auth",
          "A generated write of the session collection: create, replace, remove, or one of"
          " the bulk get, put and delete calls."),
     Rule("the account credentials",
-         ("prefix", "GET /api/v1/iam/account_credentials"),
+         ("prefix", "GET /api/v1/auth/account_credentials"),
          CPP, RESOURCE, "auth",
          "The account credential collection and its by-account read, the rows that hold a"
          " password's hash and salt."),
     Rule("the account credential writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/iam/account_credentials"),
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/auth/account_credentials"),
          CPP, RESOURCE, "auth",
          "A generated write of the account credential collection, or its bulk get."),
     Rule("the login records",
-         ("prefix", "GET /api/v1/iam/login_info"),
+         ("prefix", "GET /api/v1/auth/login_info"),
          CPP, RESOURCE, "auth",
          "The login record collection, generated with list, read and bulk get; a record is"
          " written by signing in and carries no credential column."),
     Rule("the login record writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/iam/login_info"),
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/auth/login_info"),
          CPP, RESOURCE, "auth",
          "A generated write of the login record collection, or its bulk get."),
     Rule("the auth events",
@@ -820,6 +825,11 @@ RULES = (
          BFF, RESOURCE, "tenancy",
          "The tenant administrator's own setup run, the session naming the tenant so the"
          " request carries nothing."),
+    Rule("the account operations",
+         ("regex", r"^POST /api/v1/iam/accounts/(put|delete)$"),
+         CPP, RESOURCE, "access",
+         "An account write answered by a domain operation rather than by the generated"
+         " collection, still addressed under the component until the operation routes move."),
     Rule("the tenant lookups",
          ("regex", r"^GET /api/tenant-(statuses|types)$"),
          BFF, RESOURCE, "tenancy",
@@ -1071,11 +1081,11 @@ VIEWS = {
         "ETag on the whole view, stale after 5 min"),
     "the market data catalogue": (
         "ores.marketdata",
-        "the providers and the sources that serve them, two collection reads",
+        "the providers and the feeds that serve them, two collection reads",
         "ETag on the whole view, stale after 5 min"),
     "the official providers": (
         "ores.marketdata",
-        "the providers first, then the sources and the market series joined onto them",
+        "the providers first, then the feeds and the market series joined onto them",
         "ETag on the whole view, stale after 5 min"),
     "a report configuration": (
         "ores.reporting",

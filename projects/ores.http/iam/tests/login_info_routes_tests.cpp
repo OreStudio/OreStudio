@@ -76,11 +76,11 @@ TEST_CASE("login_info_routes_registers_every_derived_route", "[routes]") {
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
              login_info_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/login_info"}, true},
+                 http_method::get, std::string{"/api/v1/auth/login_info"}, true},
              login_info_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/login_info/{account_id}"}, true},
+                 http_method::get, std::string{"/api/v1/auth/login_info/{account_id}"}, true},
              login_info_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/login_info/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/auth/login_info/get-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -103,11 +103,11 @@ TEST_CASE("login_info_routes_requires_a_session_where_the_operation_does", "[rou
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
              login_info_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/login_info"}, true},
+                 http_method::get, std::string{"/api/v1/auth/login_info"}, true},
              login_info_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/login_info/{account_id}"}, true},
+                 http_method::get, std::string{"/api/v1/auth/login_info/{account_id}"}, true},
              login_info_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/login_info/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/auth/login_info/get-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

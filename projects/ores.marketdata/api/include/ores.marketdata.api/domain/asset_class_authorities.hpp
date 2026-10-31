@@ -45,6 +45,7 @@ inline constexpr std::string_view asset_class_codes[] = {
     "commodity",
     "inflation",
     "bond",
+    "scripted",
 };
 
 /**

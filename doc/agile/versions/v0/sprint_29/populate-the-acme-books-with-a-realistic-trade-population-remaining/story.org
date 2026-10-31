@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment: jolly_knuth
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -69,7 +69,7 @@ The investigation this story commissioned is
 | [[id:46D280C9-965B-437E-9818-5A18CDD91836][Populate the FX family]] | DONE | 2026-10-25 | 2026-10-26 | Book the sixteen FX trade types the catalogue routes, in the 25% share the weights page sets. |
 | [[id:8D7AF6BC-28B8-4887-BD6A-58F329A0B038][Populate the equity family]] | DONE | 2026-10-26 | 2026-10-28 | Book the nineteen equity trade types the catalogue routes, in the 12% share the weights page sets. |
 | [[id:A5DA1085-F781-4467-92AE-6D4A8769FE79][Populate the inflation family]] | DONE | 2026-10-31 | 2026-10-31 | Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument. |
-| [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | BACKLOG | | | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
+| [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | DONE | 2026-10-31 | 2026-10-31 | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | ABANDONED | | | Replaced by one task per asset class, because a family cannot land as a single verifiable unit. |
 | [[id:8EBC26FE-5004-4EC5-90F7-745C9E2B1AB4][Factor out the shared planner loop]] | DONE | | 2026-10-25 | The bond, commodity and interest rate planners each carry a verbatim copy of the slot loop: the book, counterparty and trader lookups, the identifiers, the trade date and the netting set scan. A fourth family would copy it again. Extract the envelope every family shares, so a planner states only what its family adds. |
 | [[id:CC245AAE-A01F-46A5-A5C3-92AE29BD159B][Publish the commodity catalogue]] | DONE | 2026-10-28 | 2026-10-28 | The commodity catalogue is seeded and never published: it has no artefact type, no publish operation and no bundle membership, so a tenant that draws a commodity holds none. The equity catalogue had the same three gaps and is now fixed; this is the same shape for the commodity vocabulary. |
@@ -85,6 +85,8 @@ The investigation this story commissioned is
 | [[id:A187CB8D-D3F3-4891-9B9A-BAF01D4E6F5E][A security is named by its product]] | DONE | 2026-10-31 | 2026-10-31 | Ten bond codes route to the bond instrument table and they share a security name, because the name states the currency, the anchor and the term and leaves the product out. A callable bond states the dates its issuer may call it and a plain bond of the same term states none, so the second product of a term is written against the first one's issue and the store refuses it: =Bond issue … is stored with other terms=. The population therefore books one product of every term and the run stops in the bond family. |
 | [[id:1A24BEED-0F86-4571-8B25-4C143B3BF6B9][Name a bond security by its issuer]] | DONE | 2026-10-31 | 2026-10-31 | Two bond configs of one tenant name the same security id and mean two issues, because the security's name states the currency, the anchor, the term and the product but not the issuer whose bond it is. The second config's issuer differs, so the store refuses its issue as stored with other terms and the population stops. |
 | [[id:101334AF-64CA-4A52-AE68-F21E26CE0FE2][Let the ACME inflation curve state the type the schema holds]] | ABANDONED | | | The ACME curve configuration seeds state ZeroInflation for inflation_type, which is the ORE market data model name, while the curveconfig schema enumerates ZC and YY. The refdata trigger refuses the bundle, so provisioning stops before the population and no tenant is created. |
+| [[id:8E34C710-6367-46C9-9F65-015FD9B824AE][Trade Population Weights states a trade-count mix: interest …]] | DONE | 2026-10-31 | 2026-10-31 | Trade Population Weights states a trade-count mix: interest rates 42%, fx 25%, equity 12%, credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each. The seeded configs were never sized to it. On a fresh tenant the mix is rates 27 of 162 (17%), fx 64 (40%), equity 17 (10%), credit 5 (3%), commodity 25 (15%), bonds 24 (15%); inflation and scripted book nothing at all. Each class books one trade per routed code, which is what coverage needs, and a weighted population needs a different rule: the weights set the counts, and the codes are drawn within those counts. Doing that changes the seeded configs for every class at once and needs the weights page's tolerance stated, so it is its own task. |
+| [[id:ED403AF1-77EF-406A-AF45-1A67CA99A261][Expose the population's size and mix in the provisioning UI]] | BACKLOG | | | Task for: Populate the ACME books with a realistic trade population — the remaining work |
 
 * Decisions
 
@@ -165,6 +167,25 @@ The investigation this story commissioned is
 - The product's index is not the leg's index. The leg column references the
   benchmark catalogue, so an inflation index there is refused; the product's own
   fact row states it, and the export reads it from the fact.
+- A payoff the taxonomy has no class for gets one, in the catalogue, and not a
+  class that stands for something else. The taxonomy is the list a config may
+  name and the store's validator is generated from it, so a family that files
+  itself under another class both lies about the trade and puts two planners on
+  one class.
+- A family books the codes its export can carry, and names the rest out of
+  scope. The scripted family books three of its four routed codes because the
+  projection writes no element for the autocallable's data; booking it would
+  produce a trade that reports as its type and exports as nothing.
+- A generated row's parameters are the document's own members. The projection
+  writes an unrecognised key as an element the schema does not hold, so the
+  population states the document's names and a round-trip case holds it to
+  them.
+- The population's total is not a free choice: it is the smallest number where
+  every class can be its weight *and* keep one trade per routed code. A class's
+  count cannot fall below its code count, and its share cannot fall below that
+  floor, so the class with the worst floor-to-weight ratio sets the total. At a
+  thousand trades every class states its weight exactly; at a hundred and ninety
+  commodity was twice its weight and rates a third of it.
 
 * Out of scope
 

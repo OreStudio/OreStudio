@@ -106,6 +106,7 @@ domain::ore_parameter_value_set_value ore_parameter_value_set_value_to_domain(
     v.description = write.description;
     v.display_order = write.display_order;
     v.is_active = write.is_active;
+    v.canonical_value = write.canonical_value;
     return v;
 }
 

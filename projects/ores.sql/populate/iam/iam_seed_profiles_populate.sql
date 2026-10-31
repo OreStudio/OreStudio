@@ -199,23 +199,33 @@ cross join (values
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit
     -- relative to the present, so it is anchored on the day the run makes it.
-    -- Eleven populations. The three operating entities book bonds, interest rate
-    -- trades and foreign exchange, each into the book that entity keeps for that
-    -- business; the group holds only an intercompany book and a hedge book, so it
-    -- books bonds and foreign exchange and no rates. The set is chosen so no
-    -- class dominates. Each config states one trade per code its planner
-    -- cycles, because the planner draws the codes by the slot's position: a
-    -- config shorter than the list states a prefix of it and never reaches the
-    -- codes past that point. So bonds book ten, rates nine and foreign
-    -- exchange sixteen per config. The inflation family routes one code, so its
-    -- six slots are six swaps and the class states its share without a code
-    -- being left out. The book count and the population size are
-    -- the config's, so a tenant that wants a thinner book changes a row and not
-    -- the generator, and gives up the codes past its slot count by doing so.
-    -- The counterparties are the entity's own tradeable links, which is why the
-    -- step resolves them rather than the row naming them. No anchor is stated:
-    -- the population is meant to sit relative to the present, so it is anchored
-    -- on the day the run makes it.
+    -- The populations. Each class is sized to its weight of the population
+    -- Trade Population Weights states -- interest rates 42%, FX 25%, equity 12%,
+    -- credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each -- and
+    -- every config still states at least one trade per code its planner cycles,
+    -- because a planner draws its codes by the slot's position and a config
+    -- shorter than the list never reaches the codes past that point.
+    --
+    -- The two rules fix the total. A thousand trades is the smallest round
+    -- number where every class can hold both: commodity routes twenty-five
+    -- codes and weighs five per cent, so it needs a thousand to hold them at
+    -- its weight, and bond trades are ten per book across four entities, so
+    -- bonds weigh four per cent of a thousand exactly.
+    --
+    -- Counts per config, and what each class comes to:
+    --   bonds           10 x 4 entities               40    4%
+    --   interest rates  140 x 3 entities             420   42%
+    --   FX              63 + 63 + 62 + 62            250   25%
+    --   equity          120                            120   12%
+    --   credit          60                              60    6%
+    --   commodity       50                              50    5%
+    --   inflation       30                              30    3%
+    --   scripted        30                              30    3%
+    --                                                1000  100%
+    --
+    -- The book count and the population size are the config's, so a tenant that
+    -- wants a thinner book changes a row and not the generator, and gives up the
+    -- codes past its slot count by doing so.
     ('acme_demo', 'generate_trades', 70, '{"configs": [
         {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bonds",
          "description": "The bonds the group books, in its intercompany book.",
@@ -226,7 +236,7 @@ cross join (values
          "description": "The foreign exchange trades the group books, in its hedge book.",
          "asset_class_code": "fx", "book": "Group FX Hedges",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 16, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 63, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bonds",
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
@@ -236,32 +246,37 @@ cross join (values
          "description": "The interest rate trades the UK entity books, in its sterling swaps book.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 46, "trades_per_book": 9, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 46, "trades_per_book": 140, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK inflation",
          "description": "The inflation swaps the UK entity books, in its sterling inflation book.",
          "asset_class_code": "inflation", "book": "GBP Inflation Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 62, "trades_per_book": 6, "structures_per_book": 1},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 62, "trades_per_book": 30, "structures_per_book": 1},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK scripted",
+         "description": "The scripted trades the UK entity books, in its cross asset solutions book.",
+         "asset_class_code": "scripted", "book": "Cross Asset Solutions",
+         "min_tenor_code": "1Y", "max_tenor_code": "5Y",
+         "min_notional": "1000000", "max_notional": "25000000", "seed": 63, "trades_per_book": 30, "structures_per_book": 1},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK equity",
          "description": "The equity trades the UK entity books, in its equity derivatives book.",
          "asset_class_code": "equity", "book": "GBP Equity Derivatives",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 53, "trades_per_book": 17, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 53, "trades_per_book": 120, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK commodity",
          "description": "The commodity trades the UK entity books, in its energy derivatives book.",
          "asset_class_code": "commodity", "book": "USD Commodity Derivatives",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 59, "trades_per_book": 25, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 59, "trades_per_book": 50, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK credit",
          "description": "The credit trades the UK entity books, in its investment grade CDS book.",
          "asset_class_code": "credit", "book": "IG CDS EMEA",
          "min_tenor_code": "1Y", "max_tenor_code": "5Y",
-         "min_notional": "1000000", "max_notional": "25000000", "seed": 61, "trades_per_book": 5, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "25000000", "seed": 61, "trades_per_book": 60, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK FX",
          "description": "The foreign exchange trades the UK entity books, in its cable forward book.",
          "asset_class_code": "fx", "book": "Cable Spot Forward",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 47, "trades_per_book": 16, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 47, "trades_per_book": 63, "structures_per_book": 2},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS bonds",
          "description": "The bonds the US entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
@@ -271,12 +286,12 @@ cross join (values
          "description": "The interest rate trades the US entity books, in its dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "USD Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 49, "trades_per_book": 9, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 49, "trades_per_book": 140, "structures_per_book": 2},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS FX",
          "description": "The foreign exchange trades the US entity books, in its Americas forward book.",
          "asset_class_code": "fx", "book": "G10 Americas Spot Forward",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 50, "trades_per_book": 16, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 50, "trades_per_book": 62, "structures_per_book": 2},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK bonds",
          "description": "The bonds the Hong Kong entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
@@ -286,12 +301,12 @@ cross join (values
          "description": "The interest rate trades the Hong Kong entity books, in its Hong Kong dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "HKD Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 52, "trades_per_book": 9, "structures_per_book": 2},
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 52, "trades_per_book": 140, "structures_per_book": 2},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK FX",
          "description": "The foreign exchange trades the Hong Kong entity books, in its Asia forward book.",
          "asset_class_code": "fx", "book": "Asia EM Spot Forward",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 53, "trades_per_book": 16, "structures_per_book": 2}
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 53, "trades_per_book": 62, "structures_per_book": 2}
     ]}'::jsonb),
     -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
     -- one legal entity, one party, nine staff and seven books -- and its party

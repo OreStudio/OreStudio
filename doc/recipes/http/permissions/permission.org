@@ -12,7 +12,7 @@ This file documents the permissions resource over HTTP, one section per endpoint
 
 * Endpoints
 
-** =GET /api/v1/iam/permissions=
+** =GET /api/v1/access/permissions=
 :PROPERTIES:
 :ID: 2AD28123-0122-5654-BA3E-A5B0C1E280EB
 :END:
@@ -24,18 +24,18 @@ It forwards to =iam.v1.permissions.list=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/permissions
+GET /api/v1/access/permissions
 #+end_example
 
 #+name: permissions-list
 #+begin_src hurl :tangle permissions-list.hurl :exports none
-GET {{base_url}}/api/v1/iam/permissions
+GET {{base_url}}/api/v1/access/permissions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =GET /api/v1/iam/permissions/__none__=
+** =GET /api/v1/access/permissions/__none__=
 :PROPERTIES:
 :ID: 7C2F12F6-0638-5A67-BD85-5809CBDBACA3
 :END:
@@ -47,18 +47,18 @@ It forwards to =iam.v1.permissions.get=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/permissions/__none__
+GET /api/v1/access/permissions/__none__
 #+end_example
 
 #+name: permissions-get
 #+begin_src hurl :tangle permissions-get.hurl :exports none
-GET {{base_url}}/api/v1/iam/permissions/__none__
+GET {{base_url}}/api/v1/access/permissions/__none__
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/permissions/get-many=
+** =POST /api/v1/access/permissions/get-many=
 :PROPERTIES:
 :ID: 30006662-051F-53D7-9AB9-DF9EE67578D5
 :END:
@@ -70,18 +70,18 @@ It forwards to =iam.v1.permissions.get_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/permissions/get-many
+POST /api/v1/access/permissions/get-many
 #+end_example
 
 #+name: permissions-get-many
 #+begin_src hurl :tangle permissions-get-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/permissions/get-many
+POST {{base_url}}/api/v1/access/permissions/get-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/permissions=
+** =POST /api/v1/access/permissions=
 :PROPERTIES:
 :ID: FCFD5BBC-6239-5494-AA6F-5A998798A1FE
 :END:
@@ -93,18 +93,18 @@ It forwards to =iam.v1.permissions.put=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/permissions
+POST /api/v1/access/permissions
 #+end_example
 
 #+name: permissions-add
 #+begin_src hurl :tangle permissions-add.hurl :exports none
-POST {{base_url}}/api/v1/iam/permissions
+POST {{base_url}}/api/v1/access/permissions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =PUT /api/v1/iam/permissions=
+** =PUT /api/v1/access/permissions=
 :PROPERTIES:
 :ID: 5DDFF919-35D0-586F-A8B7-E7D10EF84EED
 :END:
@@ -116,18 +116,18 @@ It forwards to =iam.v1.permissions.put=.
 The request is:
 
 #+begin_example
-PUT /api/v1/iam/permissions
+PUT /api/v1/access/permissions
 #+end_example
 
 #+name: permissions-set
 #+begin_src hurl :tangle permissions-set.hurl :exports none
-PUT {{base_url}}/api/v1/iam/permissions
+PUT {{base_url}}/api/v1/access/permissions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/permissions/put-many=
+** =POST /api/v1/access/permissions/put-many=
 :PROPERTIES:
 :ID: 7C4342CD-D1D2-5E17-97C4-3EFB86F19A86
 :END:
@@ -139,18 +139,18 @@ It forwards to =iam.v1.permissions.put_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/permissions/put-many
+POST /api/v1/access/permissions/put-many
 #+end_example
 
 #+name: permissions-put-many
 #+begin_src hurl :tangle permissions-put-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/permissions/put-many
+POST {{base_url}}/api/v1/access/permissions/put-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =DELETE /api/v1/iam/permissions/__none__=
+** =DELETE /api/v1/access/permissions/__none__=
 :PROPERTIES:
 :ID: B29BAEAE-EC6E-504C-9B4F-1E65D1703C16
 :END:
@@ -162,18 +162,18 @@ It forwards to =iam.v1.permissions.delete=.
 The request is:
 
 #+begin_example
-DELETE /api/v1/iam/permissions/__none__
+DELETE /api/v1/access/permissions/__none__
 #+end_example
 
 #+name: permissions-delete
 #+begin_src hurl :tangle permissions-delete.hurl :exports none
-DELETE {{base_url}}/api/v1/iam/permissions/__none__
+DELETE {{base_url}}/api/v1/access/permissions/__none__
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/permissions/delete-many=
+** =POST /api/v1/access/permissions/delete-many=
 :PROPERTIES:
 :ID: 68E3AECD-D9EC-5919-8263-A170F0E2FA47
 :END:
@@ -185,12 +185,12 @@ It forwards to =iam.v1.permissions.delete_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/permissions/delete-many
+POST /api/v1/access/permissions/delete-many
 #+end_example
 
 #+name: permissions-delete-many
 #+begin_src hurl :tangle permissions-delete-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/permissions/delete-many
+POST {{base_url}}/api/v1/access/permissions/delete-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

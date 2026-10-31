@@ -126,7 +126,7 @@ function replies(): Readonly<Record<string, unknown>> {
             trades: [
                 // The swap has moved on since its request: version 3 against 2.
                 { id: SWAP, trade_type: 'Swap', version: 3 },
-                { id: PACKAGE, trade_type: 'Package', version: 1 },
+                { id: PACKAGE, trade_type: 'VanillaSwap', version: 1 },
             ],
             total: 2,
         },
@@ -162,6 +162,7 @@ function replies(): Readonly<Record<string, unknown>> {
             result: ok,
             types: [
                 { code: 'Swap', description: 'Interest rate swap' },
+                { code: 'VanillaSwap', description: 'A code the catalogue does not hold' },
                 { code: 'Package', description: 'Package of deals' },
             ],
             total: 2,
@@ -284,7 +285,11 @@ describe('the Operations queue', () => {
                 items: (Row & { tradeTypeName: string })[];
             }
         ).items;
-        expect(rows.map((row) => row.tradeTypeName)).toEqual(['Interest rate swap', 'Package of deals']);
+        // Both names come from the catalogue's own rows, never from the code.
+        expect(rows.map((row) => row.tradeTypeName)).toEqual([
+            'Interest rate swap',
+            'A code the catalogue does not hold',
+        ]);
     });
 
     it('divides the queue by how much work the deal is, not by its asset class', async () => {
@@ -292,10 +297,11 @@ describe('the Operations queue', () => {
         const rows = (
             (await get(server, sessionId, '/api/queue/authorisations')).json() as { items: Row[] }
         ).items;
-        // A plain swap is flow; a package is not, whichever class its legs are.
+        // A plain swap is flow; a code the catalogue does not hold is non-flow,
+        // which is the safe direction: it is drawn where it gets the closer look.
         expect(rows.map((row) => [row.tradeType, row.classCode])).toEqual([
             ['Swap', 'flow'],
-            ['Package', 'non-flow'],
+            ['VanillaSwap', 'non-flow'],
         ]);
     });
 

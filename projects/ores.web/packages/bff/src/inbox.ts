@@ -316,22 +316,19 @@ const AUTHORISATION_KIND = 'trading.operational_authorisation';
  * forward, cash and vanilla trades and a plain interest rate swap are flow, and
  * everything else is not. The division is stated here rather than read from a
  * catalogue because it is a judgement about how much work a deal is, and no
- * catalogue holds that. A type this list does not name is non-flow, which is the
- * safe direction: a deal is drawn where it gets the closer look.
+ * catalogue holds that. Every code here is one the trade type catalogue states;
+ * a code the catalogue does not hold is non-flow, which is the safe direction: a
+ * deal is drawn where it gets the closer look.
  */
 const FLOW_TRADE_TYPES: ReadonlySet<string> = new Set([
-    'Deposit',
-    'FRA',
-    'Future',
+    'CashPosition',
+    'CapFloor',
+    'FxAverageForward',
+    'FxDigitalOption',
     'FxForward',
-    'FxSpot',
+    'FxOption',
     'FxSwap',
     'Swap',
-    'VanillaSwap',
-    'FxOption',
-    'FxVanillaOption',
-    'Swaption',
-    'CapFloor',
 ]);
 
 const classOf = (tradeType: string): 'flow' | 'non-flow' =>

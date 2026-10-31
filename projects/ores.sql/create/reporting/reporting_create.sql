@@ -57,6 +57,10 @@
 \ir ./reporting_cuts_notify_trigger_create.sql
 \ir ./reporting_cut_gaps_create.sql
 \ir ./reporting_cut_gaps_notify_trigger_create.sql
+-- The subject of a cut's approval request: the cut the request authorises, with
+-- the counts of the body's parts.
+\ir ./reporting_cut_approval_details_create.sql
+\ir ./reporting_cut_approval_details_notify_trigger_create.sql
 
 \ir ./reporting_ore_parameter_value_domains_create.sql
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql

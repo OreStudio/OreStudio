@@ -777,6 +777,10 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             REQUIRE(batch.fx_variance_swap_instruments.size() == 1u);
             const auto& row = batch.fx_variance_swap_instruments.front();
             CHECK_FALSE(row.underlying_code.empty());
+            // The store requires an end after the start, and a short tenor band
+            // can draw a window of no length.
+            INFO("start " << row.start_date << " end " << row.end_date);
+            CHECK(row.end_date > row.start_date);
             CHECK_FALSE(row.moment_type.empty());
         } else {
             REQUIRE(batch.fx_accumulator_instruments.size() == 1u);
@@ -818,6 +822,32 @@ TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
     CHECK(codes_of(plan) == routed);
     CHECK(codes_of(plan).contains("FxVarianceSwap"));
     CHECK(codes_of(plan).contains("FxAccumulator"));
+}
+
+TEST_CASE("an_fx_variance_swap_states_a_window_with_a_length", "[trade_population]") {
+    /*
+     * The seeded fx configs state a tenor band from one month, so a draw can
+     * land under a year and the window would have no length. The store refuses
+     * an end that is not after the start, so the planner must state one.
+     */
+    auto scope = fx_scope();
+    scope.book_ids = {bond_book};
+    scope.trades_per_book = 16;
+    scope.min_tenor_code = "1M";
+    scope.max_tenor_code = "2Y";
+
+    bool found = false;
+    for (const auto& slot : plan_of(scope).slots) {
+        if (slot.instruments.fx_variance_swap_instruments.empty())
+            continue;
+        found = true;
+        const auto& row = slot.instruments.fx_variance_swap_instruments.front();
+        INFO("start " << row.start_date << " end " << row.end_date);
+        CHECK(row.end_date > row.start_date);
+        CHECK(row.start_date.year() != std::chrono::year{0});
+        CHECK(row.end_date.year() != std::chrono::year{0});
+    }
+    REQUIRE(found);
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {

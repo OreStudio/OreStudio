@@ -87,6 +87,22 @@ instrument, so it is the parent key rather than a separate instrument key.
     friend bool operator==(const swap_leg_identity&, const swap_leg_identity&) = default;
 };
 
+/**
+ * @brief The members of swap_leg_identity, named as the wire names them and in the order
+ * the type declares them, so the carriers find its shape by lookup.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_identity&) {
+    return std::tuple{
+        utility::codec::field{"version", &swap_leg_identity::version},
+        utility::codec::field{"tenant_id", &swap_leg_identity::tenant_id},
+        utility::codec::field{"party_id", &swap_leg_identity::party_id},
+        utility::codec::field{"trade_id", &swap_leg_identity::trade_id},
+        utility::codec::field{"trade_activity_id", &swap_leg_identity::trade_activity_id},
+        utility::codec::field{"leg_number", &swap_leg_identity::leg_number},
+    };
+}
+
+
 }
 
 #endif

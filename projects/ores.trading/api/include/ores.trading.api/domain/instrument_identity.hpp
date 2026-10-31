@@ -25,12 +25,14 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_IDENTITY_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_IDENTITY_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 
 namespace ores::trading::domain {
@@ -86,6 +88,22 @@ identity rather than two and the two cannot disagree.
      */
     friend bool operator==(const instrument_identity&, const instrument_identity&) = default;
 };
+
+/**
+ * @brief The members of instrument_identity, named as the wire names them and in the order
+ * the type declares them, so the carriers find its shape by lookup.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_identity&) {
+    return std::tuple{
+        utility::codec::field{"version", &instrument_identity::version},
+        utility::codec::field{"tenant_id", &instrument_identity::tenant_id},
+        utility::codec::field{"trade_type_code", &instrument_identity::trade_type_code},
+        utility::codec::field{"party_id", &instrument_identity::party_id},
+        utility::codec::field{"trade_id", &instrument_identity::trade_id},
+        utility::codec::field{"trade_activity_id", &instrument_identity::trade_activity_id},
+    };
+}
+
 
 /**
  * @brief Names the members of instrument_identity that are economic.

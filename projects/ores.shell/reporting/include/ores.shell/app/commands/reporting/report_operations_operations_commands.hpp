@@ -196,6 +196,21 @@ public:
     static void process_resolve_cut(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief list-cut-rows [--kind_code <v>] [--month <v>] [--search <v>] [--state <v>] [--offset
+     * <v>] [--limit <v>]
+     */
+    static void process_list_cut_rows(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<std::string>& args);
+
+    /**
+     * @brief get-cut-record <cut_id>
+     */
+    static void process_get_cut_record(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
 };
 
 }

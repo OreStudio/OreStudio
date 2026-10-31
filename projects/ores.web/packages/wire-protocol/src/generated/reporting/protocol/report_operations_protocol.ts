@@ -22,6 +22,9 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { Cut } from '../domain/cut.js';
+import type { CutGap } from '../domain/cut_gap.js';
+import type { CutKind } from '../domain/cut_kind.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface TriggerReportInstanceRequest {
@@ -401,6 +404,58 @@ export interface ResolveCutResponse {
     refusal: string;
 }
 
+export interface ListCutRowsRequest {
+    kind_code: string;
+    month: string;
+    search: string;
+    state: string;
+    offset: number;
+    limit: number;
+}
+
+export interface CutRow {
+    cut_id: string;
+    label: string;
+    state: string;
+    kind_code: string;
+    kind_name: string;
+    timepoint: string;
+    timepoint_timezone: string;
+    scope_code: string;
+    business_centre_code: string;
+    taken_by: string;
+    taken_at: string;
+    approved_by: string;
+    approved_at: string;
+    refused_at: string;
+    requires_authorisation: boolean;
+    output_is_indicative: boolean;
+    take_ordinal: number;
+    run_count: number;
+    superseded_by_id: string;
+}
+
+export interface ListCutRowsResponse {
+    result: Result;
+    rows: CutRow[];
+    total: number;
+}
+
+export interface GetCutRecordRequest {
+    cut_id: string;
+}
+
+export interface GetCutRecordResponse {
+    result: Result;
+    cut: Cut;
+    kind: CutKind;
+    label: string;
+    state: string;
+    superseded_by_id: string;
+    gaps: CutGap[];
+    run_count: number;
+}
+
 export const subjects = {
     trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
     get_run_health_request: 'reporting.v1.ops.get_run_health',
@@ -428,6 +483,8 @@ export const subjects = {
     ignore_compute_results_request: 'reporting.v1.ops.ignore_compute_results',
     get_next_fire_request: 'reporting.v1.ops.get_next_fire',
     resolve_cut_request: 'reporting.v1.ops.resolve_cut',
+    list_cut_rows_request: 'reporting.v1.ops.list_cut_rows',
+    get_cut_record_request: 'reporting.v1.ops.get_cut_record',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -458,4 +515,6 @@ export const requiresSession = {
     ignore_compute_results_request: true,
     get_next_fire_request: true,
     resolve_cut_request: true,
+    list_cut_rows_request: true,
+    get_cut_record_request: true,
 } as const;

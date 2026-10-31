@@ -8,8 +8,9 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch: feature/guard-the-unsafe-methods
-#+pr:
-#+blocked_on:
+#+pr: 4185
+#+blocked_on: review
+#+blocked_since: 2026-10-31 03:40
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -55,8 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| CSRF cases | 2 cases, 10 assertions, all passing | =./ores.http.api.tests "[csrf]"= | branch head |
-| =ores.http.api= test cases | 122 cases, 420 assertions, all passing | =./ores.http.api.tests= | branch head |
+| CSRF cases | 2 cases, 10 assertions, all passing | =./ores.http.api.tests "[csrf]"= | =#4185= |
+| =ores.http.api= test cases | 122 cases, 420 assertions, all passing | =./ores.http.api.tests= | =#4185= |
 
 * Notes
 
@@ -85,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4185](https://github.com/OreStudio/OreStudio/pull/4185) | [http] Guard the unsafe methods a cookie can carry |
 
 * Review
 

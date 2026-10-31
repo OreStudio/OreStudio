@@ -90,4 +90,7 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'day_count_convention', 0, 'Day Count Convention', 'The day count a curve bootstrap applies per pillar (actual/360, actual/365, actual/365 fixed, 30/360).', 71),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_convention', 0, 'Tenor Convention', 'The convention a curve''s pillars resolve their dates under (spot forward, spot FOMC).', 72),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'bootstrap_curve_role', 0, 'Bootstrap Curve Role', 'The instrument role one curve pillar bootstraps as (deposit, FRA, swap).', 73),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 0, 'Curve Publish State', 'The state of a curve set published from a blueprint (published, withdrawn, superseded).', 74);
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 0, 'Curve Publish State', 'The state of a curve set published from a blueprint (published, withdrawn, superseded).', 74),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 0, 'Cut Family', 'The family a cut kind belongs to (end of day, start of day, verification, intraday, consumer).', 75),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_values', 0, 'Cut Values', 'Whether the values a cut fixes are official or indicative.', 76),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_authorisation', 0, 'Cut Authorisation', 'Whether a cut kind raises an authorisation, and the words read where it raises none (unsigned).', 77);

@@ -644,6 +644,39 @@ BEGIN
         'curve_publish_state_superseded', 'Superseded', 'A later set replaced this one.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 131);
 
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family_end_of_day', 'End of day',
+        'The close of the day the report covers: the cut a firm reports from.',
+        '#2563eb', '#ffffff', 'info', 'badge bg-info', 132);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family_start_of_day', 'Start of day',
+        'The open of the day the report covers, taken before its business runs.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 133);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family_verification', 'Verification',
+        'A cut built on the close of a day, priced again to check that day''s numbers.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 134);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family_intraday', 'Intraday',
+        'A cut taken during the day, at an instant a process names.',
+        '#f59e0b', '#ffffff', 'warning', 'badge bg-warning', 135);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family_consumer', 'Consumer',
+        'A cut minted by the run that consumes it, at the instant the run starts.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 136);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_values_official', 'Official',
+        'The values a cut fixes are the ones the firm reports from.',
+        '#475569', '#ffffff', 'secondary', 'badge bg-secondary', 137);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_values_indicative', 'Indicative',
+        'The values a cut fixes are indicative, and may move before an official cut fixes them.',
+        '#eab308', '#ffffff', 'warning', 'badge bg-warning', 138);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_authorisation_unsigned', 'No signature',
+        'Nobody signs a cut of this kind, so a run may price from it as soon as it is taken.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 139);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -752,6 +785,18 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'curve_publish_state', 'Curve Publish State',
         'The state of a curve set published from a blueprint (published, withdrawn, superseded).', 74);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'Cut Family',
+        'The family a cut kind belongs to (end of day, start of day, verification, intraday, consumer).', 75);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_values', 'Cut Values',
+        'Whether the values a cut fixes are official or indicative.', 76);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_authorisation', 'Cut Authorisation',
+        'Whether a cut kind raises an authorisation, and the words read where it raises none (unsigned).', 77);
 
     -- =============================================================================
     -- Badge Mappings
@@ -1212,6 +1257,28 @@ BEGIN
         'curve_publish_state', 'withdrawn', 'curve_publish_state_withdrawn');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'curve_publish_state', 'superseded', 'curve_publish_state_superseded');
+
+    -- cut_family, cut_values and cut_authorisation: the words the cut type
+    -- screens print. The codes are the reporting lookups' own, so a kind's
+    -- family code and the value words a screen reads paint from one place.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'end_of_day', 'cut_family_end_of_day');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'start_of_day', 'cut_family_start_of_day');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'verification', 'cut_family_verification');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'intraday', 'cut_family_intraday');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_family', 'consumer', 'cut_family_consumer');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_values', 'official', 'cut_values_official');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_values', 'indicative', 'cut_values_indicative');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'cut_authorisation', 'unsigned', 'cut_authorisation_unsigned');
 
     -- =============================================================================
     -- Summary

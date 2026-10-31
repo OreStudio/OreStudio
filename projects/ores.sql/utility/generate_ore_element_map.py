@@ -219,9 +219,21 @@ def describe(code, entry, term, address, overridden=None):
                   f"them.")
         source, source_ref = "ore_xsd", f"external/ore/xsd/{file}:{line}"
     elif spelling == "text" and schema:
-        reason = (f"The ORE parser reads {element} as a string and the ORE schema "
-                  f"declares it {schema[1]}, so the value is {SCHEMA_WORDS[schema[0]]}.")
-        source, source_ref = "ore_xsd", f"external/ore/xsd/{address[0]}"
+        stated = schema_types.restriction(schema[1]) or {}
+        if stated.get("pattern") is not None:
+            reason = (f"The ORE parser reads {element} as a string and the ORE schema "
+                      f"states the pattern a {schema[1]} must match.")
+        elif stated.get("minimum") is not None or stated.get("maximum") is not None:
+            reason = (f"The ORE parser reads {element} as a string and the ORE schema "
+                      f"allows a {schema[1]} from {stated.get('minimum', 'minus infinity')} "
+                      f"to {stated.get('maximum', 'infinity')}.")
+        else:
+            reason = (f"The ORE parser reads {element} as a string and the ORE schema "
+                      f"declares it {schema[1]}, so the value is "
+                      f"{SCHEMA_WORDS[schema[0]]}.")
+        source, source_ref = "ore_xsd", (
+            f"external/ore/xsd/{stated['file']}:{stated['line']}" if stated
+            else f"external/ore/xsd/{address[0]}")
     elif cardinality == "many":
         item = ITEM_WORDS.get(kind)
         reason = (f"ORE reads {element} into one vector, so the leaf holds a comma "

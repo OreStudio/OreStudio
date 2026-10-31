@@ -30,7 +30,7 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | Every leaf the map carries states a rule or the reason it has none, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The setting link that cannot hold two leaves of one name, and the date kind the list items need. |
+| Next         | The setting link that cannot hold two leaves of one name. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -579,6 +579,47 @@ elsewhere, =DefaultCurve/Type=, whose projection path the schema types but no re
 matches, and =IndexInterpolated=. Their rows say the schema is the only authority
 that speaks, so the difference between "the parser read it" and "the schema typed
 it" is read rather than assumed.
+
+* The schema states a pattern and a range too
+
+A schema simple type states more than an enumeration. It restricts its base to a
+pattern, or to a range of values, and both are rules the model can hold:
+
+- =date= states the pattern ORE's date parser accepts, and its own comment says
+  it "is not super strict, e.g. 2016-17-39 would pass, but it catches most
+  errors";
+- =calendar= states a pattern naming every calendar ORE resolves, including the
+  joint form =US,MWK= that ORE writes by repeating the group;
+- =dayOfMonth= restricts =xs:integer= to 1 through 31.
+
+So =ore_schema_types.py= now reads the restriction facets: base, pattern,
+=minInclusive= and =maxInclusive=. A built-in type keeps the family's static set,
+because a flag is a flag and the static set accepts the =Y= and =N= that ORE also
+writes; a named type the family has no static set for, or one that narrows a kind
+with bounds, generates a set of its own.
+
+Sixteen leaves gained a rule: the thirteen calendars the projection carries, the
+base correlation's =StartDate=, and the two commodity future day-of-month leaves.
+=PillarDates= gained an item rule too, =curve.date_list=, so a list of dates is
+stated rather than left as a list of anything.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 309 | 325 |
+| text, and the authority says why | 171 | 155 |
+| leaves that take a list of dates | 0 | 1 |
+| sets | 245 | 249 |
+
+** A pattern is anchored
+
+The guard matches a pattern anywhere in the value, so a seeded pattern is wrapped
+in =^(...)$=. Without the anchor =date= would admit =x2024-01-31y=, and a pattern
+that means "the whole value" would be read as "somewhere in the value". The test
+states both directions: a date the pattern allows is in, one it refuses is out.
+
+The schema's date pattern admits month 13, and that is the schema's own statement
+about its strictness rather than a gap in the model. The test says so, so a reader
+does not mistake the rule for calendar validation.
 
 * Plan
 

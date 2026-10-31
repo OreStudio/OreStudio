@@ -76,6 +76,13 @@ combination, and a screen would have to read a name to know how to draw a
 control. A screen reads the kind for the control and the cardinality for whether
 the control repeats.
 
+A set a source states may state a shape rather than a list. The ORE schema
+restricts a simple type to a pattern, as =date= and =calendar= are restricted, or
+to a range, as =dayOfMonth= is restricted to 1 through 31, and the set carries
+that pattern or those bounds. A pattern is anchored when it is seeded, because a
+set states what the whole value must be and Postgres matches a pattern anywhere
+in a string otherwise.
+
 A set that states its values may have been written from a source rather than by a
 person. The ORE parser's map is one such source: =parseVolatilityType= accepts
 three spellings and the set lists them. The ORE schema is the other: a simple type

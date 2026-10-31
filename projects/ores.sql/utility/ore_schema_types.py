@@ -37,6 +37,7 @@ and a leaf below an inline block is as typed as any other. The schemas are read
 from =external/ore/xsd=, the ORE release the tree vendors.
 """
 import os
+import re
 import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -57,7 +58,7 @@ KIND_OF = {
 }
 
 _CACHE = {}
-_ENUMS = {}
+_RULES = {}
 
 
 def _elements(node):
@@ -117,22 +118,23 @@ def declared(name, xpath):
 def rule(name, xpath):
     """The kind one leaf's value has, and the schema type that states it, if any.
 
-    An enumerated type states a kind of its own: the schema lists the values, so
-    the rule is a set of them rather than a shape one value must have.
+    A type the schema enumerates states a set of values; a type it restricts to a
+    pattern or a range states a shape one value must have; a built-in type states
+    its kind. Any other named type states nothing narrower than a string, and the
+    caller keeps its own answer.
     """
     found = declared(name, xpath)
     kind = KIND_OF.get(found)
     if kind:
         return (kind, found)
-    if found in _load_enums():
-        return ("enumerated", found)
-    return None
+    stated = restriction(found)
+    return (stated["kind"], found) if stated else None
 
 
-def _load_enums():
-    """The simple types the schemas enumerate, with the values and where they sit."""
-    if _ENUMS:
-        return _ENUMS
+def _load_rules():
+    """What each schema simple type restricts, and where it is declared."""
+    if _RULES:
+        return _RULES
     for name in sorted(os.listdir(XSD)):
         if not name.endswith(".xsd"):
             continue
@@ -141,18 +143,92 @@ def _load_enums():
         with open(path, encoding="utf-8") as handle:
             text = handle.read()
         for node in root.findall(XS + "simpleType"):
+            declared_at = text.find(f'name="{node.get("name")}"')
+            entry = {"file": name,
+                     "line": text[:declared_at].count("\n") + 1 if declared_at >= 0 else 0}
             values = [item.get("value") for item in node.iter(XS + "enumeration")
                       if item.get("value") is not None]
             if values:
-                _ENUMS[node.get("name")] = {
-                    "values": values,
-                    "file": name,
-                    "line": text[:text.find(f'name="{node.get("name")}"')].count("\n") + 1,
-                }
-    return _ENUMS
+                entry["values"] = values
+            node_restriction = node.find(XS + "restriction")
+            if node_restriction is not None:
+                entry["base"] = node_restriction.get("base")
+                pattern = node_restriction.find(XS + "pattern")
+                if pattern is not None:
+                    entry["pattern"] = pattern.get("value")
+                low = node_restriction.find(XS + "minInclusive")
+                high = node_restriction.find(XS + "maxInclusive")
+                if low is not None:
+                    entry["minimum"] = low.get("value")
+                if high is not None:
+                    entry["maximum"] = high.get("value")
+            _RULES.setdefault(node.get("name"), entry)
+    return _RULES
+
+
+def restriction(type_name):
+    """What one schema simple type states, when it states more than a string."""
+    found = _load_rules().get(type_name)
+    if not found:
+        return None
+    if found.get("values"):
+        return dict(found, kind="enumerated")
+    base = KIND_OF.get(found.get("base"))
+    if found.get("pattern") is not None:
+        return dict(found, kind=base or "regex")
+    if found.get("minimum") is not None or found.get("maximum") is not None:
+        return dict(found, kind=base or "range")
+    return dict(found, kind=base) if base else None
+
+
+def words(name):
+    """A schema type's name as a person reads it, for example Dimension type."""
+    parts = re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", name) or [name]
+    text = " ".join(part if (len(part) > 1 and part.isupper()) else part.lower()
+                    for part in parts)
+    return text[0].upper() + text[1:]
+
+
+def stated_set(kind, type_name, prefix):
+    """The set row the schema states for one simple type, and its code.
+
+    The row states what the schema states and nothing more: the values it
+    enumerates, the pattern a value must match, or the bounds it allows. The
+    pattern is anchored, because a set states what the whole value must be and
+    Postgres matches a pattern anywhere in a string otherwise.
+    """
+    found = restriction(type_name)
+    code = prefix + re.sub(r"(?<!^)(?=[A-Z])", "_", type_name).lower()
+    where = f"external/ore/xsd/{found['file']}:{found['line']}"
+    entry = {"name": words(type_name), "source_kind": kind, "is_ordered": False}
+    if kind == "enumerated":
+        values = [value for value in found["values"] if value != ""]
+        entry["description"] = (f"The values the ORE schema states for {type_name}, "
+                                f"from {where}.")
+        entry["values"] = [{"value": value, "label": value,
+                            "description": f"{value} is one of the values the ORE "
+                                           f"schema states for {type_name}.",
+                            "order": order}
+                           for order, value in enumerate(values)]
+        return code, entry
+    if found.get("pattern") is not None:
+        entry["description"] = (f"The pattern a {type_name} must match, as the ORE "
+                                f"schema states it at {where}.")
+        entry["pattern"] = "^(" + found["pattern"] + ")$"
+    else:
+        entry["description"] = (f"The values the ORE schema allows for {type_name}: "
+                                f"from {found.get('minimum', 'minus infinity')} to "
+                                f"{found.get('maximum', 'infinity')}, at {where}.")
+        if found.get("minimum") is not None:
+            entry["minimum"] = float(found["minimum"])
+        if found.get("maximum") is not None:
+            entry["maximum"] = float(found["maximum"])
+    return code, entry
 
 
 def enumeration(type_name):
     """The values the schema enumerates for one simple type, and where it states them."""
-    found = _load_enums().get(type_name)
-    return (found["values"], found["file"], found["line"]) if found else None
+    found = _load_rules().get(type_name)
+    if not found or not found.get("values"):
+        return None
+    return (found["values"], found["file"], found["line"])

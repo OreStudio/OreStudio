@@ -72,6 +72,11 @@ interface TestValueSet {
     readonly minimum?: number;
     readonly maximum?: number;
     readonly values?: readonly string[];
+    /**
+     * The rows that are another rendering of a value the set holds, as ORE reads
+     * them. A control offers the value once, so none of these is a choice.
+     */
+    readonly renderings?: readonly string[];
 }
 
 /** The replies of the four tables for these sets and the ORE names that name them. */
@@ -96,16 +101,26 @@ function valueSetsOf(
         },
         'reporting.v1.ore_parameter_value_set_values.list': {
             result: ok,
-            values: sets.flatMap((set) =>
-                (set.values ?? []).map((value, display_order) => ({
+            values: sets.flatMap((set) => [
+                ...(set.values ?? []).map((value, display_order) => ({
                     value_set_code: set.code,
                     value,
                     label: value,
                     description: '',
                     display_order,
                     is_active: true,
+                    canonical_value: null,
                 })),
-            ),
+                ...(set.renderings ?? []).map((value, position) => ({
+                    value_set_code: set.code,
+                    value,
+                    label: value,
+                    description: '',
+                    display_order: (set.values ?? []).length + position,
+                    is_active: true,
+                    canonical_value: set.values?.[0] ?? '',
+                })),
+            ]),
         },
         'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
         'reporting.v1.ore_parameter_setting_value_sets.list': {
@@ -660,6 +675,51 @@ describe('engine settings routes', () => {
                 },
             ],
         });
+    });
+
+    it('offers a value once, though the set also states other renderings of it', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...valueSetsOf(
+                [
+                    {
+                        code: 'setup.observation_model',
+                        source_kind: 'enumerated',
+                        values: ['None', 'Simple'],
+                        renderings: ['NONE', 'NoneObs'],
+                    },
+                ],
+                { observationModel: 'setup.observation_model' },
+            ),
+            'reporting.v1.engine_settings_groups.list': {
+                result: ok,
+                groups: [{ code: 'building', name: 'Building', description: '', position: 0 }],
+            },
+            'reporting.v1.engine_settings_group_settings.list': {
+                result: ok,
+                settings: settingsOf('building', [
+                    {
+                        column_name: 'observation_model',
+                        ore_name: 'observationModel',
+                        changes_numbers: false,
+                    },
+                ]),
+            },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/engine-settings/documentation',
+        );
+        expect(response.statusCode).toBe(200);
+        const documented = response.json().groups as {
+            settings: { choices: { value: string; label: string }[] }[];
+        }[];
+        expect(documented[0]?.settings[0]?.choices).toEqual([
+            { value: 'None', label: 'None' },
+            { value: 'Simple', label: 'Simple' },
+        ]);
     });
 
     it('accepts a value the tables state and refuses one outside their bounds', async () => {

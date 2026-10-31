@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: AFAF296D-2962-48CE-A6E1-BFD5229E16C5
 :END:
 #+title: ores.refdata.diary_entry_type

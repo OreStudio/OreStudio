@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D639B3AB-7421-4A7C-A17A-02000709E22F
 :END:
 #+title: ores.refdata.day_count_fraction_type

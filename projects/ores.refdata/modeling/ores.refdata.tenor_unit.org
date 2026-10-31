@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 01E76440-B9A5-4D0A-A32C-B0C4A7484B26
 :END:
 #+title: ores.refdata.tenor_unit

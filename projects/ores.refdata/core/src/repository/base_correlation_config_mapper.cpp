@@ -28,7 +28,6 @@
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/base_correlation_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/base_correlation_config_entity.hpp"
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -90,7 +89,7 @@ base_correlation_config_mapper::map(const domain::base_correlation_config& v) {
     r.detachment_points = v.detachment_points;
     r.settlement_days = v.settlement_days;
     r.calendar = v.calendar;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention = v.business_day_convention;
     r.day_counter = v.day_counter;
     r.extrapolate = v.extrapolate;
     r.quote_name = v.quote_name;

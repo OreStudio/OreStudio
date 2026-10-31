@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_CSA_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/csa.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -316,7 +322,770 @@ inline constexpr std::string_view created = "refdata.v1.csas_events.created";
 inline constexpr std::string_view updated = "refdata.v1.csas_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.csas_events.deleted";
 }
+/**
+ * @brief The members of csa_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &csa_key::id},
+    };
+}
+
+/**
+ * @brief The members of csa_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &csa_write::id},
+        utility::codec::field{"netting_set_id", &csa_write::netting_set_id},
+        utility::codec::field{"is_active", &csa_write::is_active},
+        utility::codec::field{"bilateral", &csa_write::bilateral},
+        utility::codec::field{"csa_currency", &csa_write::csa_currency},
+        utility::codec::field{"index_name", &csa_write::index_name},
+        utility::codec::field{"threshold_pay", &csa_write::threshold_pay},
+        utility::codec::field{"threshold_receive", &csa_write::threshold_receive},
+        utility::codec::field{"minimum_transfer_amount_pay",
+                              &csa_write::minimum_transfer_amount_pay},
+        utility::codec::field{"minimum_transfer_amount_receive",
+                              &csa_write::minimum_transfer_amount_receive},
+        utility::codec::field{"independent_amount_held", &csa_write::independent_amount_held},
+        utility::codec::field{"independent_amount_type", &csa_write::independent_amount_type},
+        utility::codec::field{"call_frequency", &csa_write::call_frequency},
+        utility::codec::field{"post_frequency", &csa_write::post_frequency},
+        utility::codec::field{"margin_period_of_risk", &csa_write::margin_period_of_risk},
+        utility::codec::field{"collateral_compounding_spread_receive",
+                              &csa_write::collateral_compounding_spread_receive},
+        utility::codec::field{"collateral_compounding_spread_pay",
+                              &csa_write::collateral_compounding_spread_pay},
+        utility::codec::field{"apply_initial_margin", &csa_write::apply_initial_margin},
+        utility::codec::field{"initial_margin_type", &csa_write::initial_margin_type},
+        utility::codec::field{"calculate_im_amount", &csa_write::calculate_im_amount},
+        utility::codec::field{"calculate_vm_amount", &csa_write::calculate_vm_amount},
+        utility::codec::field{"non_exempt_im_regulations", &csa_write::non_exempt_im_regulations},
+    };
+}
+
+/**
+ * @brief The members of csa_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &csa_change::write},
+        utility::codec::field{"precondition", &csa_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of csa_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &csa_removal::key},
+        utility::codec::field{"precondition", &csa_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of csa_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &csa_lookup::key},
+        utility::codec::field{"csa", &csa_lookup::csa},
+    };
+}
+
+/**
+ * @brief The members of csas_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csas_filter&) {
+    return std::tuple{
+        utility::codec::field{"netting_set_id", &csas_filter::netting_set_id},
+        utility::codec::field{"id_one_of", &csas_filter::id_one_of},
+        utility::codec::field{"netting_set_id_one_of", &csas_filter::netting_set_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of csa_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &csa_event::event_id},
+        utility::codec::field{"key", &csa_event::key},
+        utility::codec::field{"action", &csa_event::action},
+        utility::codec::field{"version", &csa_event::version},
+        utility::codec::field{"occurred_at", &csa_event::occurred_at},
+        utility::codec::field{"correlation_id", &csa_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of csa_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_version_key&) {
+    return std::tuple{
+        utility::codec::field{"csa", &csa_version_key::csa},
+        utility::codec::field{"version", &csa_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of csa_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const csa_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &csa_versions_filter::version},
+        utility::codec::field{"from_version", &csa_versions_filter::from_version},
+        utility::codec::field{"to_version", &csa_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_csas_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_csas_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_csas_request::offset},
+        utility::codec::field{"limit", &list_csas_request::limit},
+        utility::codec::field{"order", &list_csas_request::order},
+        utility::codec::field{"filter", &list_csas_request::filter},
+        utility::codec::field{"as_of", &list_csas_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_csas_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_csas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_csas_response::result},
+        utility::codec::field{"csas", &list_csas_response::csas},
+        utility::codec::field{"total", &list_csas_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_csa_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_csa_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_csa_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_csa_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_csa_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_csa_response::result},
+        utility::codec::field{"csa", &get_csa_response::csa},
+    };
+}
+
+/**
+ * @brief The members of get_many_csas_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_csas_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_csas_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_csas_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_csas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_csas_response::result},
+        utility::codec::field{"entries", &get_many_csas_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_csa_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_csa_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_csa_request::change},
+        utility::codec::field{"intent", &put_csa_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_csa_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_csa_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_csa_response::result},
+        utility::codec::field{"csa", &put_csa_response::csa},
+    };
+}
+
+/**
+ * @brief The members of put_many_csas_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_csas_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_csas_request::changes},
+        utility::codec::field{"intent", &put_many_csas_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_csas_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_csas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_csas_response::result},
+        utility::codec::field{"csas", &put_many_csas_response::csas},
+    };
+}
+
+/**
+ * @brief The members of delete_csa_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_csa_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_csa_request::removal},
+        utility::codec::field{"intent", &delete_csa_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_csa_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_csa_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_csa_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_csas_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_csas_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_csas_request::removals},
+        utility::codec::field{"intent", &delete_many_csas_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_csas_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_csas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_csas_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_netting_set_id_csas_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_netting_set_id_csas_request&) {
+    return std::tuple{
+        utility::codec::field{"netting_set_id",
+                              &list_by_netting_set_id_csas_request::netting_set_id},
+        utility::codec::field{"scope", &list_by_netting_set_id_csas_request::scope},
+        utility::codec::field{"offset", &list_by_netting_set_id_csas_request::offset},
+        utility::codec::field{"limit", &list_by_netting_set_id_csas_request::limit},
+        utility::codec::field{"order", &list_by_netting_set_id_csas_request::order},
+        utility::codec::field{"filter", &list_by_netting_set_id_csas_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_netting_set_id_csas_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_netting_set_id_csas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_netting_set_id_csas_response::result},
+        utility::codec::field{"csas", &list_by_netting_set_id_csas_response::csas},
+        utility::codec::field{"total", &list_by_netting_set_id_csas_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_csa_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_csa_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_csa_versions_request::key},
+        utility::codec::field{"offset", &list_csa_versions_request::offset},
+        utility::codec::field{"limit", &list_csa_versions_request::limit},
+        utility::codec::field{"order", &list_csa_versions_request::order},
+        utility::codec::field{"filter", &list_csa_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_csa_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_csa_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_csa_versions_response::result},
+        utility::codec::field{"versions", &list_csa_versions_response::versions},
+        utility::codec::field{"total", &list_csa_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_csa_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_csa_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_csa_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_csa_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_csa_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_csa_version_response::result},
+        utility::codec::field{"version", &get_csa_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_key& v);
+    static ores::refdata::messaging::csa_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_key& v);
+    static ores::refdata::messaging::csa_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_write& v);
+    static ores::refdata::messaging::csa_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_write& v);
+    static ores::refdata::messaging::csa_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_change& v);
+    static ores::refdata::messaging::csa_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_change& v);
+    static ores::refdata::messaging::csa_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_removal& v);
+    static ores::refdata::messaging::csa_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_removal& v);
+    static ores::refdata::messaging::csa_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_lookup& v);
+    static ores::refdata::messaging::csa_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_lookup& v);
+    static ores::refdata::messaging::csa_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csas_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csas_filter& v);
+    static ores::refdata::messaging::csas_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csas_filter& v);
+    static ores::refdata::messaging::csas_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_event& v);
+    static ores::refdata::messaging::csa_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_event& v);
+    static ores::refdata::messaging::csa_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_version_key& v);
+    static ores::refdata::messaging::csa_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_version_key& v);
+    static ores::refdata::messaging::csa_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::csa_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::csa_versions_filter& v);
+    static ores::refdata::messaging::csa_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::csa_versions_filter& v);
+    static ores::refdata::messaging::csa_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_csas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_csas_request& v);
+    static ores::refdata::messaging::list_csas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_csas_request& v);
+    static ores::refdata::messaging::list_csas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_csas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_csas_response& v);
+    static ores::refdata::messaging::list_csas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_csas_response& v);
+    static ores::refdata::messaging::list_csas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_csa_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_csa_request& v);
+    static ores::refdata::messaging::get_csa_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_csa_request& v);
+    static ores::refdata::messaging::get_csa_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_csa_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_csa_response& v);
+    static ores::refdata::messaging::get_csa_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_csa_response& v);
+    static ores::refdata::messaging::get_csa_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_many_csas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_many_csas_request& v);
+    static ores::refdata::messaging::get_many_csas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_many_csas_request& v);
+    static ores::refdata::messaging::get_many_csas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_many_csas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_many_csas_response& v);
+    static ores::refdata::messaging::get_many_csas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_many_csas_response& v);
+    static ores::refdata::messaging::get_many_csas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_csa_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_csa_request& v);
+    static ores::refdata::messaging::put_csa_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_csa_request& v);
+    static ores::refdata::messaging::put_csa_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_csa_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_csa_response& v);
+    static ores::refdata::messaging::put_csa_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_csa_response& v);
+    static ores::refdata::messaging::put_csa_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_many_csas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_many_csas_request& v);
+    static ores::refdata::messaging::put_many_csas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_many_csas_request& v);
+    static ores::refdata::messaging::put_many_csas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_many_csas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_many_csas_response& v);
+    static ores::refdata::messaging::put_many_csas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_many_csas_response& v);
+    static ores::refdata::messaging::put_many_csas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_csa_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_csa_request& v);
+    static ores::refdata::messaging::delete_csa_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::delete_csa_request& v);
+    static ores::refdata::messaging::delete_csa_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_csa_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_csa_response& v);
+    static ores::refdata::messaging::delete_csa_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::delete_csa_response& v);
+    static ores::refdata::messaging::delete_csa_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_many_csas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_many_csas_request& v);
+    static ores::refdata::messaging::delete_many_csas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::delete_many_csas_request& v);
+    static ores::refdata::messaging::delete_many_csas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_many_csas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_many_csas_response& v);
+    static ores::refdata::messaging::delete_many_csas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::delete_many_csas_response& v);
+    static ores::refdata::messaging::delete_many_csas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_netting_set_id_csas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_netting_set_id_csas_request& v);
+    static ores::refdata::messaging::list_by_netting_set_id_csas_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_netting_set_id_csas_request& v);
+    static ores::refdata::messaging::list_by_netting_set_id_csas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_netting_set_id_csas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_netting_set_id_csas_response& v);
+    static ores::refdata::messaging::list_by_netting_set_id_csas_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_netting_set_id_csas_response& v);
+    static ores::refdata::messaging::list_by_netting_set_id_csas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_csa_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_csa_versions_request& v);
+    static ores::refdata::messaging::list_csa_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_csa_versions_request& v);
+    static ores::refdata::messaging::list_csa_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_csa_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_csa_versions_response& v);
+    static ores::refdata::messaging::list_csa_versions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_csa_versions_response& v);
+    static ores::refdata::messaging::list_csa_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_csa_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_csa_version_request& v);
+    static ores::refdata::messaging::get_csa_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_csa_version_request& v);
+    static ores::refdata::messaging::get_csa_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_csa_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_csa_version_response& v);
+    static ores::refdata::messaging::get_csa_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_csa_version_response& v);
+    static ores::refdata::messaging::get_csa_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

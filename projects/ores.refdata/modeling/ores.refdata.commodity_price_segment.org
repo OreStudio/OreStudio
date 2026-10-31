@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: A130326D-E72B-4956-8E3B-A3A19CBE0F35
 :END:
 #+title: ores.refdata.commodity_price_segment

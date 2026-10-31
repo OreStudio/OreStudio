@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -325,7 +331,948 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "refdata.v1.counterparty_contact_informations_events.deleted";
 }
+/**
+ * @brief The members of counterparty_contact_information_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_key&) {
+    return std::tuple{
+        utility::codec::field{"contact_type", &counterparty_contact_information_key::contact_type},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_write, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &counterparty_contact_information_write::id},
+        utility::codec::field{"counterparty_id",
+                              &counterparty_contact_information_write::counterparty_id},
+        utility::codec::field{"contact_type",
+                              &counterparty_contact_information_write::contact_type},
+        utility::codec::field{"street_line_1",
+                              &counterparty_contact_information_write::street_line_1},
+        utility::codec::field{"street_line_2",
+                              &counterparty_contact_information_write::street_line_2},
+        utility::codec::field{"city", &counterparty_contact_information_write::city},
+        utility::codec::field{"state", &counterparty_contact_information_write::state},
+        utility::codec::field{"country_code",
+                              &counterparty_contact_information_write::country_code},
+        utility::codec::field{"postal_code", &counterparty_contact_information_write::postal_code},
+        utility::codec::field{"phone", &counterparty_contact_information_write::phone},
+        utility::codec::field{"email", &counterparty_contact_information_write::email},
+        utility::codec::field{"web_page", &counterparty_contact_information_write::web_page},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_change, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &counterparty_contact_information_change::write},
+        utility::codec::field{"precondition",
+                              &counterparty_contact_information_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_removal, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &counterparty_contact_information_removal::key},
+        utility::codec::field{"precondition",
+                              &counterparty_contact_information_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_lookup, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &counterparty_contact_information_lookup::key},
+        utility::codec::field{
+            "counterparty_contact_information",
+            &counterparty_contact_information_lookup::counterparty_contact_information},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_informations_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_informations_filter&) {
+    return std::tuple{
+        utility::codec::field{"counterparty_id",
+                              &counterparty_contact_informations_filter::counterparty_id},
+        utility::codec::field{"id_one_of", &counterparty_contact_informations_filter::id_one_of},
+        utility::codec::field{"counterparty_id_one_of",
+                              &counterparty_contact_informations_filter::counterparty_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_event, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &counterparty_contact_information_event::event_id},
+        utility::codec::field{"key", &counterparty_contact_information_event::key},
+        utility::codec::field{"action", &counterparty_contact_information_event::action},
+        utility::codec::field{"version", &counterparty_contact_information_event::version},
+        utility::codec::field{"occurred_at", &counterparty_contact_information_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &counterparty_contact_information_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_version_key, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "counterparty_contact_information",
+            &counterparty_contact_information_version_key::counterparty_contact_information},
+        utility::codec::field{"version", &counterparty_contact_information_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of counterparty_contact_information_versions_filter, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const counterparty_contact_information_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version",
+                              &counterparty_contact_information_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &counterparty_contact_information_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &counterparty_contact_information_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_counterparty_contact_informations_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_counterparty_contact_informations_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_counterparty_contact_informations_request::offset},
+        utility::codec::field{"limit", &list_counterparty_contact_informations_request::limit},
+        utility::codec::field{"order", &list_counterparty_contact_informations_request::order},
+        utility::codec::field{"filter", &list_counterparty_contact_informations_request::filter},
+        utility::codec::field{"as_of", &list_counterparty_contact_informations_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_counterparty_contact_informations_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_counterparty_contact_informations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_counterparty_contact_informations_response::result},
+        utility::codec::field{
+            "counterparty_contact_informations",
+            &list_counterparty_contact_informations_response::counterparty_contact_informations},
+        utility::codec::field{"total", &list_counterparty_contact_informations_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_contact_information_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_counterparty_contact_information_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_counterparty_contact_information_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_contact_information_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_counterparty_contact_information_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_counterparty_contact_information_response::result},
+        utility::codec::field{
+            "counterparty_contact_information",
+            &get_counterparty_contact_information_response::counterparty_contact_information},
+    };
+}
+
+/**
+ * @brief The members of get_many_counterparty_contact_informations_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_counterparty_contact_informations_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_counterparty_contact_informations_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_counterparty_contact_informations_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_counterparty_contact_informations_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_many_counterparty_contact_informations_response::result},
+        utility::codec::field{"entries",
+                              &get_many_counterparty_contact_informations_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_counterparty_contact_information_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_counterparty_contact_information_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_counterparty_contact_information_request::change},
+        utility::codec::field{"intent", &put_counterparty_contact_information_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_counterparty_contact_information_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_counterparty_contact_information_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_counterparty_contact_information_response::result},
+        utility::codec::field{
+            "counterparty_contact_information",
+            &put_counterparty_contact_information_response::counterparty_contact_information},
+    };
+}
+
+/**
+ * @brief The members of put_many_counterparty_contact_informations_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_counterparty_contact_informations_request&) {
+    return std::tuple{
+        utility::codec::field{"changes",
+                              &put_many_counterparty_contact_informations_request::changes},
+        utility::codec::field{"intent",
+                              &put_many_counterparty_contact_informations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_counterparty_contact_informations_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_counterparty_contact_informations_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &put_many_counterparty_contact_informations_response::result},
+        utility::codec::field{"counterparty_contact_informations",
+                              &put_many_counterparty_contact_informations_response::
+                                  counterparty_contact_informations},
+    };
+}
+
+/**
+ * @brief The members of delete_counterparty_contact_information_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_counterparty_contact_information_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_counterparty_contact_information_request::removal},
+        utility::codec::field{"intent", &delete_counterparty_contact_information_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_counterparty_contact_information_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_counterparty_contact_information_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_counterparty_contact_information_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_counterparty_contact_informations_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_counterparty_contact_informations_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_counterparty_contact_informations_request::removals},
+        utility::codec::field{"intent",
+                              &delete_many_counterparty_contact_informations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_counterparty_contact_informations_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_counterparty_contact_informations_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_counterparty_contact_informations_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_counterparty_id_counterparty_contact_informations_request, named as
+ * the wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_counterparty_id_counterparty_contact_informations_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "counterparty_id",
+            &list_by_counterparty_id_counterparty_contact_informations_request::counterparty_id},
+        utility::codec::field{
+            "scope", &list_by_counterparty_id_counterparty_contact_informations_request::scope},
+        utility::codec::field{
+            "offset", &list_by_counterparty_id_counterparty_contact_informations_request::offset},
+        utility::codec::field{
+            "limit", &list_by_counterparty_id_counterparty_contact_informations_request::limit},
+        utility::codec::field{
+            "order", &list_by_counterparty_id_counterparty_contact_informations_request::order},
+        utility::codec::field{
+            "filter", &list_by_counterparty_id_counterparty_contact_informations_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_counterparty_id_counterparty_contact_informations_response, named
+ * as the wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_counterparty_id_counterparty_contact_informations_response&) {
+    return std::tuple{
+        utility::codec::field{
+            "result", &list_by_counterparty_id_counterparty_contact_informations_response::result},
+        utility::codec::field{"counterparty_contact_informations",
+                              &list_by_counterparty_id_counterparty_contact_informations_response::
+                                  counterparty_contact_informations},
+        utility::codec::field{
+            "total", &list_by_counterparty_id_counterparty_contact_informations_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_counterparty_contact_information_versions_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_counterparty_contact_information_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_counterparty_contact_information_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_counterparty_contact_information_versions_request::offset},
+        utility::codec::field{"limit",
+                              &list_counterparty_contact_information_versions_request::limit},
+        utility::codec::field{"order",
+                              &list_counterparty_contact_information_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_counterparty_contact_information_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_counterparty_contact_information_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_counterparty_contact_information_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_counterparty_contact_information_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_counterparty_contact_information_versions_response::versions},
+        utility::codec::field{"total",
+                              &list_counterparty_contact_information_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_contact_information_version_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_counterparty_contact_information_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_counterparty_contact_information_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_contact_information_version_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_counterparty_contact_information_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_counterparty_contact_information_version_response::result},
+        utility::codec::field{"version",
+                              &get_counterparty_contact_information_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_key& v);
+    static ores::refdata::messaging::counterparty_contact_information_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_key& v);
+    static ores::refdata::messaging::counterparty_contact_information_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_write& v);
+    static ores::refdata::messaging::counterparty_contact_information_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_write& v);
+    static ores::refdata::messaging::counterparty_contact_information_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_change& v);
+    static ores::refdata::messaging::counterparty_contact_information_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_change& v);
+    static ores::refdata::messaging::counterparty_contact_information_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_removal& v);
+    static ores::refdata::messaging::counterparty_contact_information_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_removal& v);
+    static ores::refdata::messaging::counterparty_contact_information_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_lookup& v);
+    static ores::refdata::messaging::counterparty_contact_information_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_lookup& v);
+    static ores::refdata::messaging::counterparty_contact_information_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_informations_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_informations_filter& v);
+    static ores::refdata::messaging::counterparty_contact_informations_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_informations_filter& v);
+    static ores::refdata::messaging::counterparty_contact_informations_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_event& v);
+    static ores::refdata::messaging::counterparty_contact_information_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_event& v);
+    static ores::refdata::messaging::counterparty_contact_information_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_version_key& v);
+    static ores::refdata::messaging::counterparty_contact_information_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::counterparty_contact_information_version_key& v);
+    static ores::refdata::messaging::counterparty_contact_information_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::counterparty_contact_information_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::counterparty_contact_information_versions_filter& v);
+    static ores::refdata::messaging::counterparty_contact_information_versions_filter
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::counterparty_contact_information_versions_filter& v);
+    static ores::refdata::messaging::counterparty_contact_information_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_counterparty_contact_informations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::list_counterparty_contact_informations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::list_counterparty_contact_informations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_counterparty_contact_informations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::list_counterparty_contact_informations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::list_counterparty_contact_informations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_contact_information_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_contact_information_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_counterparty_contact_informations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::get_many_counterparty_contact_informations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::get_many_counterparty_contact_informations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_counterparty_contact_informations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::get_many_counterparty_contact_informations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::get_many_counterparty_contact_informations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_counterparty_contact_information_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::put_counterparty_contact_information_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::put_counterparty_contact_information_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_counterparty_contact_information_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::put_counterparty_contact_information_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::put_counterparty_contact_information_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_counterparty_contact_informations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::put_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::put_many_counterparty_contact_informations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::put_many_counterparty_contact_informations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_counterparty_contact_informations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::put_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::put_many_counterparty_contact_informations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::put_many_counterparty_contact_informations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_counterparty_contact_information_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::delete_counterparty_contact_information_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_counterparty_contact_information_request& v);
+    static ores::refdata::messaging::delete_counterparty_contact_information_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_counterparty_contact_information_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::delete_counterparty_contact_information_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_counterparty_contact_information_response& v);
+    static ores::refdata::messaging::delete_counterparty_contact_information_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_counterparty_contact_informations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::delete_many_counterparty_contact_informations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::delete_many_counterparty_contact_informations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_counterparty_contact_informations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::delete_many_counterparty_contact_informations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::delete_many_counterparty_contact_informations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<
+    ores::refdata::messaging::list_by_counterparty_id_counterparty_contact_informations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::
+                   list_by_counterparty_id_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::
+        list_by_counterparty_id_counterparty_contact_informations_request
+        read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::
+                      list_by_counterparty_id_counterparty_contact_informations_request& v);
+    static ores::refdata::messaging::
+        list_by_counterparty_id_counterparty_contact_informations_request
+        read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<
+    ores::refdata::messaging::list_by_counterparty_id_counterparty_contact_informations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::
+                   list_by_counterparty_id_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::
+        list_by_counterparty_id_counterparty_contact_informations_response
+        read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::
+                      list_by_counterparty_id_counterparty_contact_informations_response& v);
+    static ores::refdata::messaging::
+        list_by_counterparty_id_counterparty_contact_informations_response
+        read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_counterparty_contact_information_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_counterparty_contact_information_versions_request& v);
+    static ores::refdata::messaging::list_counterparty_contact_information_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_counterparty_contact_information_versions_request& v);
+    static ores::refdata::messaging::list_counterparty_contact_information_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_counterparty_contact_information_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_counterparty_contact_information_versions_response& v);
+    static ores::refdata::messaging::list_counterparty_contact_information_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_counterparty_contact_information_versions_response& v);
+    static ores::refdata::messaging::list_counterparty_contact_information_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_contact_information_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_counterparty_contact_information_version_request& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_counterparty_contact_information_version_request& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_contact_information_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_counterparty_contact_information_version_response& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_counterparty_contact_information_version_response& v);
+    static ores::refdata::messaging::get_counterparty_contact_information_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

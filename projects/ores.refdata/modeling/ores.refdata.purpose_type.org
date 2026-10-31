@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 770F93B6-4363-413A-B923-3BC399125957
 :END:
 #+title: ores.refdata.purpose_type

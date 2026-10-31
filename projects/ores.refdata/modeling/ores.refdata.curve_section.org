@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3c99ae31-4e6d-4331-910b-6734431f5e5c
 :END:
 #+title: ores.refdata.curve_section

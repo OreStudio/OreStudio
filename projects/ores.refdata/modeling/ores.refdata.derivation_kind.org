@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 6FA21D8B-F95A-47BE-BD16-26048798A164
 :END:
 #+title: ores.refdata.derivation_kind

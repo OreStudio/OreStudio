@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_TENOR_BASIS_SWAP_PAY_RECEIVE_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -316,7 +322,922 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "refdata.v1.tenor_basis_swap_pay_receives_events.deleted";
 }
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &tenor_basis_swap_pay_receive_key::id},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &tenor_basis_swap_pay_receive_write::id},
+        utility::codec::field{"convention_id", &tenor_basis_swap_pay_receive_write::convention_id},
+        utility::codec::field{"pay_index", &tenor_basis_swap_pay_receive_write::pay_index},
+        utility::codec::field{"pay_frequency", &tenor_basis_swap_pay_receive_write::pay_frequency},
+        utility::codec::field{"receive_index", &tenor_basis_swap_pay_receive_write::receive_index},
+        utility::codec::field{"receive_frequency",
+                              &tenor_basis_swap_pay_receive_write::receive_frequency},
+        utility::codec::field{"spread_on_rec", &tenor_basis_swap_pay_receive_write::spread_on_rec},
+        utility::codec::field{"include_spread",
+                              &tenor_basis_swap_pay_receive_write::include_spread},
+        utility::codec::field{"sub_periods_coupon_type",
+                              &tenor_basis_swap_pay_receive_write::sub_periods_coupon_type},
+        utility::codec::field{"pay_is_averaged",
+                              &tenor_basis_swap_pay_receive_write::pay_is_averaged},
+        utility::codec::field{"rec_is_averaged",
+                              &tenor_basis_swap_pay_receive_write::rec_is_averaged},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_change, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &tenor_basis_swap_pay_receive_change::write},
+        utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_removal, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &tenor_basis_swap_pay_receive_removal::key},
+        utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_lookup, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &tenor_basis_swap_pay_receive_lookup::key},
+        utility::codec::field{"tenor_basis_swap_pay_receive",
+                              &tenor_basis_swap_pay_receive_lookup::tenor_basis_swap_pay_receive},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receives_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receives_filter&) {
+    return std::tuple{
+        utility::codec::field{"convention_id",
+                              &tenor_basis_swap_pay_receives_filter::convention_id},
+        utility::codec::field{"id_one_of", &tenor_basis_swap_pay_receives_filter::id_one_of},
+        utility::codec::field{"convention_id_one_of",
+                              &tenor_basis_swap_pay_receives_filter::convention_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &tenor_basis_swap_pay_receive_event::event_id},
+        utility::codec::field{"key", &tenor_basis_swap_pay_receive_event::key},
+        utility::codec::field{"action", &tenor_basis_swap_pay_receive_event::action},
+        utility::codec::field{"version", &tenor_basis_swap_pay_receive_event::version},
+        utility::codec::field{"occurred_at", &tenor_basis_swap_pay_receive_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &tenor_basis_swap_pay_receive_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_version_key, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "tenor_basis_swap_pay_receive",
+            &tenor_basis_swap_pay_receive_version_key::tenor_basis_swap_pay_receive},
+        utility::codec::field{"version", &tenor_basis_swap_pay_receive_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_versions_filter, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &tenor_basis_swap_pay_receive_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &tenor_basis_swap_pay_receive_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &tenor_basis_swap_pay_receive_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_tenor_basis_swap_pay_receives_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tenor_basis_swap_pay_receives_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_tenor_basis_swap_pay_receives_request::offset},
+        utility::codec::field{"limit", &list_tenor_basis_swap_pay_receives_request::limit},
+        utility::codec::field{"order", &list_tenor_basis_swap_pay_receives_request::order},
+        utility::codec::field{"filter", &list_tenor_basis_swap_pay_receives_request::filter},
+        utility::codec::field{"as_of", &list_tenor_basis_swap_pay_receives_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_tenor_basis_swap_pay_receives_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_tenor_basis_swap_pay_receives_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_tenor_basis_swap_pay_receives_response::result},
+        utility::codec::field{
+            "tenor_basis_swap_pay_receives",
+            &list_tenor_basis_swap_pay_receives_response::tenor_basis_swap_pay_receives},
+        utility::codec::field{"total", &list_tenor_basis_swap_pay_receives_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_tenor_basis_swap_pay_receive_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_tenor_basis_swap_pay_receive_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_response::result},
+        utility::codec::field{
+            "tenor_basis_swap_pay_receive",
+            &get_tenor_basis_swap_pay_receive_response::tenor_basis_swap_pay_receive},
+    };
+}
+
+/**
+ * @brief The members of get_many_tenor_basis_swap_pay_receives_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_basis_swap_pay_receives_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_tenor_basis_swap_pay_receives_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_tenor_basis_swap_pay_receives_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_basis_swap_pay_receives_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_tenor_basis_swap_pay_receives_response::result},
+        utility::codec::field{"entries", &get_many_tenor_basis_swap_pay_receives_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_tenor_basis_swap_pay_receive_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_tenor_basis_swap_pay_receive_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_tenor_basis_swap_pay_receive_request::change},
+        utility::codec::field{"intent", &put_tenor_basis_swap_pay_receive_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_tenor_basis_swap_pay_receive_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_tenor_basis_swap_pay_receive_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_tenor_basis_swap_pay_receive_response::result},
+        utility::codec::field{
+            "tenor_basis_swap_pay_receive",
+            &put_tenor_basis_swap_pay_receive_response::tenor_basis_swap_pay_receive},
+    };
+}
+
+/**
+ * @brief The members of put_many_tenor_basis_swap_pay_receives_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_basis_swap_pay_receives_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_tenor_basis_swap_pay_receives_request::changes},
+        utility::codec::field{"intent", &put_many_tenor_basis_swap_pay_receives_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_tenor_basis_swap_pay_receives_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_basis_swap_pay_receives_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_tenor_basis_swap_pay_receives_response::result},
+        utility::codec::field{
+            "tenor_basis_swap_pay_receives",
+            &put_many_tenor_basis_swap_pay_receives_response::tenor_basis_swap_pay_receives},
+    };
+}
+
+/**
+ * @brief The members of delete_tenor_basis_swap_pay_receive_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_tenor_basis_swap_pay_receive_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_tenor_basis_swap_pay_receive_request::removal},
+        utility::codec::field{"intent", &delete_tenor_basis_swap_pay_receive_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_tenor_basis_swap_pay_receive_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_tenor_basis_swap_pay_receive_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_tenor_basis_swap_pay_receive_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_tenor_basis_swap_pay_receives_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_basis_swap_pay_receives_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_tenor_basis_swap_pay_receives_request::removals},
+        utility::codec::field{"intent", &delete_many_tenor_basis_swap_pay_receives_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_tenor_basis_swap_pay_receives_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_tenor_basis_swap_pay_receives_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_tenor_basis_swap_pay_receives_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_convention_id_tenor_basis_swap_pay_receives_request, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "convention_id",
+            &list_by_convention_id_tenor_basis_swap_pay_receives_request::convention_id},
+        utility::codec::field{"scope",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_request::limit},
+        utility::codec::field{"order",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_request::order},
+        utility::codec::field{"filter",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_convention_id_tenor_basis_swap_pay_receives_response, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_response&) {
+    return std::tuple{
+        utility::codec::field{
+            "result", &list_by_convention_id_tenor_basis_swap_pay_receives_response::result},
+        utility::codec::field{"tenor_basis_swap_pay_receives",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_response::
+                                  tenor_basis_swap_pay_receives},
+        utility::codec::field{"total",
+                              &list_by_convention_id_tenor_basis_swap_pay_receives_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_tenor_basis_swap_pay_receive_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_tenor_basis_swap_pay_receive_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_tenor_basis_swap_pay_receive_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_tenor_basis_swap_pay_receive_versions_request::offset},
+        utility::codec::field{"limit", &list_tenor_basis_swap_pay_receive_versions_request::limit},
+        utility::codec::field{"order", &list_tenor_basis_swap_pay_receive_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_tenor_basis_swap_pay_receive_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_tenor_basis_swap_pay_receive_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_tenor_basis_swap_pay_receive_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_tenor_basis_swap_pay_receive_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_tenor_basis_swap_pay_receive_versions_response::versions},
+        utility::codec::field{"total", &list_tenor_basis_swap_pay_receive_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_tenor_basis_swap_pay_receive_version_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_tenor_basis_swap_pay_receive_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_version_response::result},
+        utility::codec::field{"version",
+                              &get_tenor_basis_swap_pay_receive_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_key& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_key& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_write& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_write& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_change& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_change& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_removal& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_removal& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_lookup& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_lookup& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receives_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receives_filter& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receives_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receives_filter& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receives_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_event& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_event& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_version_key& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_version_key& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::tenor_basis_swap_pay_receive_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::tenor_basis_swap_pay_receive_versions_filter& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::tenor_basis_swap_pay_receive_versions_filter& v);
+    static ores::refdata::messaging::tenor_basis_swap_pay_receive_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request& v);
+    static ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response& v);
+    static ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request& v);
+    static ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<
+    ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request&
+            v);
+    static ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request&
+            v);
+    static ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<
+    ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::
+                   list_by_convention_id_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::
+                      list_by_convention_id_tenor_basis_swap_pay_receives_response& v);
+    static ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response& v);
+    static ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response& v);
+    static ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

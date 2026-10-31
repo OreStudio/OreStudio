@@ -25,8 +25,6 @@
 #include "ores.refdata.api/domain/currency_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::refdata::domain {}
-
 namespace ores::utility::codec {
 
 std::string

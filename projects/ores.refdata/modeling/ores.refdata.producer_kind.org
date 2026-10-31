@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 09c8e6b0-cf6e-4acc-ac7b-46bd94cf6949
 :END:
 #+title: ores.refdata.producer_kind

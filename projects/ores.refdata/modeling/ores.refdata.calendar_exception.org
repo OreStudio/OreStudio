@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8B6E1C53-871E-4B6D-BD20-CB3F551B5C46
 :END:
 #+title: ores.refdata.calendar_exception

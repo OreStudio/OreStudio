@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9
 :END:
 #+title: ores.refdata.floating_index_type

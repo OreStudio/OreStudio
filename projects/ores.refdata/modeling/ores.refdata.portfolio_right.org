@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: F783F38A-C123-489A-881D-5BCB5DE6D05D
 :END:
 #+title: ores.refdata.portfolio_right

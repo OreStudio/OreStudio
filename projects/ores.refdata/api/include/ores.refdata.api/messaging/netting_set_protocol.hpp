@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_NETTING_SET_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/netting_set.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -332,7 +338,876 @@ inline constexpr std::string_view created = "refdata.v1.netting_sets_events.crea
 inline constexpr std::string_view updated = "refdata.v1.netting_sets_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.netting_sets_events.deleted";
 }
+/**
+ * @brief The members of netting_set_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &netting_set_key::code},
+    };
+}
+
+/**
+ * @brief The members of netting_set_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &netting_set_write::id},
+        utility::codec::field{"code", &netting_set_write::code},
+        utility::codec::field{"party_id", &netting_set_write::party_id},
+        utility::codec::field{"netting_agreement_id", &netting_set_write::netting_agreement_id},
+        utility::codec::field{"credit_limit_id", &netting_set_write::credit_limit_id},
+        utility::codec::field{"counterparty_id", &netting_set_write::counterparty_id},
+        utility::codec::field{"call_type", &netting_set_write::call_type},
+        utility::codec::field{"initial_margin_type", &netting_set_write::initial_margin_type},
+        utility::codec::field{"risk_weight", &netting_set_write::risk_weight},
+        utility::codec::field{"description", &netting_set_write::description},
+    };
+}
+
+/**
+ * @brief The members of netting_set_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &netting_set_change::write},
+        utility::codec::field{"precondition", &netting_set_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of netting_set_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &netting_set_removal::key},
+        utility::codec::field{"precondition", &netting_set_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of netting_set_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &netting_set_lookup::key},
+        utility::codec::field{"netting_set", &netting_set_lookup::netting_set},
+    };
+}
+
+/**
+ * @brief The members of netting_sets_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_sets_filter&) {
+    return std::tuple{
+        utility::codec::field{"netting_agreement_id", &netting_sets_filter::netting_agreement_id},
+        utility::codec::field{"credit_limit_id", &netting_sets_filter::credit_limit_id},
+        utility::codec::field{"id_one_of", &netting_sets_filter::id_one_of},
+        utility::codec::field{"netting_agreement_id_one_of",
+                              &netting_sets_filter::netting_agreement_id_one_of},
+        utility::codec::field{"credit_limit_id_one_of",
+                              &netting_sets_filter::credit_limit_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of netting_set_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &netting_set_event::event_id},
+        utility::codec::field{"key", &netting_set_event::key},
+        utility::codec::field{"action", &netting_set_event::action},
+        utility::codec::field{"version", &netting_set_event::version},
+        utility::codec::field{"occurred_at", &netting_set_event::occurred_at},
+        utility::codec::field{"correlation_id", &netting_set_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of netting_set_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_version_key&) {
+    return std::tuple{
+        utility::codec::field{"netting_set", &netting_set_version_key::netting_set},
+        utility::codec::field{"version", &netting_set_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of netting_set_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const netting_set_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &netting_set_versions_filter::version},
+        utility::codec::field{"from_version", &netting_set_versions_filter::from_version},
+        utility::codec::field{"to_version", &netting_set_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_netting_sets_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_netting_sets_request::offset},
+        utility::codec::field{"limit", &list_netting_sets_request::limit},
+        utility::codec::field{"order", &list_netting_sets_request::order},
+        utility::codec::field{"filter", &list_netting_sets_request::filter},
+        utility::codec::field{"as_of", &list_netting_sets_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_netting_sets_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_netting_sets_response::result},
+        utility::codec::field{"netting_sets", &list_netting_sets_response::netting_sets},
+        utility::codec::field{"total", &list_netting_sets_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_netting_set_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_netting_set_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_netting_set_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_netting_set_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_netting_set_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_netting_set_response::result},
+        utility::codec::field{"netting_set", &get_netting_set_response::netting_set},
+    };
+}
+
+/**
+ * @brief The members of get_many_netting_sets_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_netting_sets_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_netting_sets_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_netting_sets_response::result},
+        utility::codec::field{"entries", &get_many_netting_sets_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_netting_set_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_netting_set_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_netting_set_request::change},
+        utility::codec::field{"intent", &put_netting_set_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_netting_set_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_netting_set_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_netting_set_response::result},
+        utility::codec::field{"netting_set", &put_netting_set_response::netting_set},
+    };
+}
+
+/**
+ * @brief The members of put_many_netting_sets_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_netting_sets_request::changes},
+        utility::codec::field{"intent", &put_many_netting_sets_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_netting_sets_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_netting_sets_response::result},
+        utility::codec::field{"netting_sets", &put_many_netting_sets_response::netting_sets},
+    };
+}
+
+/**
+ * @brief The members of delete_netting_set_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_netting_set_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_netting_set_request::removal},
+        utility::codec::field{"intent", &delete_netting_set_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_netting_set_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_netting_set_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_netting_set_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_netting_sets_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_netting_sets_request::removals},
+        utility::codec::field{"intent", &delete_many_netting_sets_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_netting_sets_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_netting_sets_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_netting_agreement_id_netting_sets_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_netting_agreement_id_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "netting_agreement_id",
+            &list_by_netting_agreement_id_netting_sets_request::netting_agreement_id},
+        utility::codec::field{"scope", &list_by_netting_agreement_id_netting_sets_request::scope},
+        utility::codec::field{"offset", &list_by_netting_agreement_id_netting_sets_request::offset},
+        utility::codec::field{"limit", &list_by_netting_agreement_id_netting_sets_request::limit},
+        utility::codec::field{"order", &list_by_netting_agreement_id_netting_sets_request::order},
+        utility::codec::field{"filter", &list_by_netting_agreement_id_netting_sets_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_netting_agreement_id_netting_sets_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_netting_agreement_id_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_netting_agreement_id_netting_sets_response::result},
+        utility::codec::field{"netting_sets",
+                              &list_by_netting_agreement_id_netting_sets_response::netting_sets},
+        utility::codec::field{"total", &list_by_netting_agreement_id_netting_sets_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_by_credit_limit_id_netting_sets_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_credit_limit_id_netting_sets_request&) {
+    return std::tuple{
+        utility::codec::field{"credit_limit_id",
+                              &list_by_credit_limit_id_netting_sets_request::credit_limit_id},
+        utility::codec::field{"scope", &list_by_credit_limit_id_netting_sets_request::scope},
+        utility::codec::field{"offset", &list_by_credit_limit_id_netting_sets_request::offset},
+        utility::codec::field{"limit", &list_by_credit_limit_id_netting_sets_request::limit},
+        utility::codec::field{"order", &list_by_credit_limit_id_netting_sets_request::order},
+        utility::codec::field{"filter", &list_by_credit_limit_id_netting_sets_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_credit_limit_id_netting_sets_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_credit_limit_id_netting_sets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_credit_limit_id_netting_sets_response::result},
+        utility::codec::field{"netting_sets",
+                              &list_by_credit_limit_id_netting_sets_response::netting_sets},
+        utility::codec::field{"total", &list_by_credit_limit_id_netting_sets_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_netting_set_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_netting_set_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_netting_set_versions_request::key},
+        utility::codec::field{"offset", &list_netting_set_versions_request::offset},
+        utility::codec::field{"limit", &list_netting_set_versions_request::limit},
+        utility::codec::field{"order", &list_netting_set_versions_request::order},
+        utility::codec::field{"filter", &list_netting_set_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_netting_set_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_netting_set_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_netting_set_versions_response::result},
+        utility::codec::field{"versions", &list_netting_set_versions_response::versions},
+        utility::codec::field{"total", &list_netting_set_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_netting_set_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_netting_set_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_netting_set_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_netting_set_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_netting_set_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_netting_set_version_response::result},
+        utility::codec::field{"version", &get_netting_set_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_key& v);
+    static ores::refdata::messaging::netting_set_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_key& v);
+    static ores::refdata::messaging::netting_set_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_write& v);
+    static ores::refdata::messaging::netting_set_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_write& v);
+    static ores::refdata::messaging::netting_set_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_change& v);
+    static ores::refdata::messaging::netting_set_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_change& v);
+    static ores::refdata::messaging::netting_set_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_removal& v);
+    static ores::refdata::messaging::netting_set_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_removal& v);
+    static ores::refdata::messaging::netting_set_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_lookup& v);
+    static ores::refdata::messaging::netting_set_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_lookup& v);
+    static ores::refdata::messaging::netting_set_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_sets_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_sets_filter& v);
+    static ores::refdata::messaging::netting_sets_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_sets_filter& v);
+    static ores::refdata::messaging::netting_sets_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_event& v);
+    static ores::refdata::messaging::netting_set_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_event& v);
+    static ores::refdata::messaging::netting_set_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_version_key& v);
+    static ores::refdata::messaging::netting_set_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::netting_set_version_key& v);
+    static ores::refdata::messaging::netting_set_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::netting_set_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::netting_set_versions_filter& v);
+    static ores::refdata::messaging::netting_set_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::netting_set_versions_filter& v);
+    static ores::refdata::messaging::netting_set_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_netting_sets_request& v);
+    static ores::refdata::messaging::list_netting_sets_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_netting_sets_request& v);
+    static ores::refdata::messaging::list_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_netting_sets_response& v);
+    static ores::refdata::messaging::list_netting_sets_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::list_netting_sets_response& v);
+    static ores::refdata::messaging::list_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_netting_set_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_netting_set_request& v);
+    static ores::refdata::messaging::get_netting_set_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_netting_set_request& v);
+    static ores::refdata::messaging::get_netting_set_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_netting_set_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_netting_set_response& v);
+    static ores::refdata::messaging::get_netting_set_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_netting_set_response& v);
+    static ores::refdata::messaging::get_netting_set_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_many_netting_sets_request& v);
+    static ores::refdata::messaging::get_many_netting_sets_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_netting_sets_request& v);
+    static ores::refdata::messaging::get_many_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_netting_sets_response& v);
+    static ores::refdata::messaging::get_many_netting_sets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_netting_sets_response& v);
+    static ores::refdata::messaging::get_many_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_netting_set_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_netting_set_request& v);
+    static ores::refdata::messaging::put_netting_set_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_netting_set_request& v);
+    static ores::refdata::messaging::put_netting_set_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_netting_set_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_netting_set_response& v);
+    static ores::refdata::messaging::put_netting_set_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_netting_set_response& v);
+    static ores::refdata::messaging::put_netting_set_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_many_netting_sets_request& v);
+    static ores::refdata::messaging::put_many_netting_sets_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_netting_sets_request& v);
+    static ores::refdata::messaging::put_many_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_netting_sets_response& v);
+    static ores::refdata::messaging::put_many_netting_sets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_netting_sets_response& v);
+    static ores::refdata::messaging::put_many_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_netting_set_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_netting_set_request& v);
+    static ores::refdata::messaging::delete_netting_set_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::delete_netting_set_request& v);
+    static ores::refdata::messaging::delete_netting_set_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_netting_set_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_netting_set_response& v);
+    static ores::refdata::messaging::delete_netting_set_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_netting_set_response& v);
+    static ores::refdata::messaging::delete_netting_set_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_netting_sets_request& v);
+    static ores::refdata::messaging::delete_many_netting_sets_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_netting_sets_request& v);
+    static ores::refdata::messaging::delete_many_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_netting_sets_response& v);
+    static ores::refdata::messaging::delete_many_netting_sets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_netting_sets_response& v);
+    static ores::refdata::messaging::delete_many_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request& v);
+    static ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request& v);
+    static ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response& v);
+    static ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response& v);
+    static ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request& v);
+    static ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request& v);
+    static ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response& v);
+    static ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response& v);
+    static ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_netting_set_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_netting_set_versions_request& v);
+    static ores::refdata::messaging::list_netting_set_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_netting_set_versions_request& v);
+    static ores::refdata::messaging::list_netting_set_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_netting_set_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_netting_set_versions_response& v);
+    static ores::refdata::messaging::list_netting_set_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_netting_set_versions_response& v);
+    static ores::refdata::messaging::list_netting_set_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_netting_set_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_netting_set_version_request& v);
+    static ores::refdata::messaging::get_netting_set_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_netting_set_version_request& v);
+    static ores::refdata::messaging::get_netting_set_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_netting_set_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_netting_set_version_response& v);
+    static ores::refdata::messaging::get_netting_set_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_netting_set_version_response& v);
+    static ores::refdata::messaging::get_netting_set_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

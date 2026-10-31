@@ -21,10 +21,8 @@ Precedence:
    only the surface it names.
 3. Otherwise the route is unclassified, and the gate fails.
 
-The order carries meaning. A rule the inventory's own sorting suggests is not
-enough: the dispatch order is this list's order, so a narrow judgement stands
-before the family rule it would otherwise be swallowed by. The pick lists of a
-form stand before the collections they are drawn from.
+The order carries meaning: a narrow judgement stands before the family rule it
+would otherwise be swallowed by.
 
 AREAS is the published namespace of design section 11.2 and the areas this
 table adds beside it. A route that is not an API publishes no area, and states
@@ -67,8 +65,6 @@ CPP = "ores.http"
 
 @dataclass(frozen=True)
 class Rule:
-    """One judgement, and the routes its match covers."""
-
     name: str
     match: tuple
     server: str | None
@@ -88,7 +84,6 @@ class Exemption:
 
 
 RULES = (
-    # The connection, not the domain.
     Rule("the cookie credential",
          ("regex", r"^(GET|POST|DELETE) /api/session(/party|/switch-party)?$"),
          BFF, TRANSPORT, "auth",
@@ -145,7 +140,6 @@ RULES = (
          "The name, version and running state the API states about itself, the readiness"
          " answer beside the metrics."),
 
-    # A rendering concern, or a router that hides the schema.
     Rule("the refdata resource catalogue",
          ("exact", "GET /api/refdata"),
          BFF, NOT_API, NO_AREA,
@@ -223,7 +217,6 @@ RULES = (
          "Fifteen lookup collections read at once and keyed by the names the editor's"
          " controls use, so a client that wants one of them reads that collection instead."),
 
-    # Read models: one answer, several entities.
     Rule("the request story",
          ("regex", r"^GET /api/requests/:id/(story|changes)$"),
          BFF, COMPOSED, "workflow",
@@ -297,7 +290,6 @@ RULES = (
          "The folders and the feeds under each at any depth, two collections woven, with the"
          " count of each kind so no screen reads the feeds."),
 
-    # Reference data.
     Rule("the currency collection",
          ("prefix", "GET /api/v1/refdata/currencies"),
          CPP, RESOURCE, "reference-data",
@@ -349,7 +341,6 @@ RULES = (
          "The reasons a write may carry, a deployment-specific code list the server holds"
          " rather than the client."),
 
-    # Market data.
     Rule("a curve's values",
          ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution|snapshot|manual-point)"),
          BFF, RESOURCE, "market-data",
@@ -390,7 +381,6 @@ RULES = (
          "Records that a party accepted one official provider's terms at the version read,"
          " one row written against a provider that may have moved on."),
 
-    # Trading.
     Rule("the blotter",
          ("exact", "GET /api/blotter"),
          BFF, COMPOSED, "trading",
@@ -444,7 +434,6 @@ RULES = (
          BFF, RESOURCE, "trading",
          "The kinds a structure may be, a lookup the server holds."),
 
-    # Reporting.
     Rule("the report definitions",
          ("regex", r"^GET /api/reporting/reports"),
          BFF, RESOURCE, "reporting",
@@ -478,7 +467,6 @@ RULES = (
          "The pricing engine configuration: the collection and its party names, one"
          " configuration with its bound reports, its history, and its ORE document as a file."),
 
-    # The grid.
     Rule("a grid artefact",
          ("regex", r"^GET /api/operations/grid/jobs/(workunits/:id/input|results/:id/output)"),
          BFF, RESOURCE, "grid",
@@ -500,7 +488,6 @@ RULES = (
          "One app version with its packages and the versions beside it, and the write that"
          " replaces its release note against the version read."),
 
-    # Operations.
     Rule("the services roster",
          ("exact", "GET /api/operations/services"),
          BFF, RESOURCE, "operations",
@@ -516,7 +503,6 @@ RULES = (
          CPP, RESOURCE, "operations",
          "The deployment's system settings, the variability component's own collection."),
 
-    # Workflow.
     Rule("one request",
          ("exact", "GET /api/requests/:id"),
          BFF, RESOURCE, "workflow",
@@ -542,7 +528,6 @@ RULES = (
          "The codes a decider may park a request with, a tenant-wide lookup that carries no"
          " personal data."),
 
-    # Access: the tenant's identity and permission records.
     Rule("the account collection",
          ("exact", "GET /api/accounts"),
          BFF, RESOURCE, "access",
@@ -667,7 +652,6 @@ RULES = (
          "The deployment's first-run state and the first administrator it creates, the pair"
          " that closes bootstrap mode."),
 
-    # Auth: the credential, the sign-in, the session.
     Rule("the auth session",
          ("regex", r"^(GET|POST|DELETE) /api/v1/auth/sessions"),
          CPP, RESOURCE, "auth",
@@ -770,7 +754,6 @@ RULES = (
          "Resolves one address to a country against the tenant's published ranges, the read"
          " the sign-in audit uses to say where a session came from."),
 
-    # Tenancy.
     Rule("inside one tenant",
          ("regex", r"^GET /api/tenants/:code/(parties|people|accounts/:username/sign-ins|images/:id)$"),
          BFF, RESOURCE, "tenancy",
@@ -836,7 +819,6 @@ RULES = (
          "The parties the signed-in person works in, each named by the server because the"
          " association read carries an identifier alone."),
 
-    # Simulation.
     Rule("the market regime in force",
          ("exact", "GET /api/synthetic/market-regime"),
          BFF, RESOURCE, "simulation",
@@ -886,7 +868,6 @@ RULES = (
          " parameter set converted between views, spot or short-rate paths sampled, or the"
          " rate at each ladder row, with nothing stored."),
 
-    # Assets.
     Rule("the asset collections",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/assets/"),
          CPP, RESOURCE, "assets",
@@ -910,14 +891,12 @@ RULES = (
          " business centre falling back to their country's flag and a placeholder for a code"
          " that has none."),
 
-    # Analytics.
     Rule("the sensitivity templates",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/analytics/sensitivity-templates"),
          BFF, RESOURCE, "analytics",
          "A sensitivity template key: a page of the tenant's keys, one key, its history, and"
          " the create, correct and remove writes."),
 
-    # Agile, and the project's own documents.
     Rule("the sprint list",
          ("exact", "GET /api/agile/sprints"),
          BFF, RESOURCE, "agile",
@@ -948,7 +927,6 @@ RULES = (
          "One sprint, story, task, capture or scenario document, by the identifier its file"
          " states."),
 
-    # Quality.
     Rule("the scenarios",
          ("regex", r"^GET /api/qa/scenarios"),
          BFF, RESOURCE, "qa",

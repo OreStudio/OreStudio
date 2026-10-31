@@ -21,6 +21,8 @@ from collections import Counter
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
+# The classification module sits beside this script, so it is imported after the
+# path is fixed rather than at the top of the file.
 from route_classification import (  # noqa: E402
     AREAS,
     COMPOSED,
@@ -181,8 +183,6 @@ def table_cells(line):
     cells = [cell.strip() for cell in stripped.strip("|").split("|")]
     if len(cells) != 7 or cells[0] == "Kind":
         return None
-    # The rule under the header is cells of dashes and plus signs; a data row has
-    # a method in it.
     if all(cell and set(cell) <= set("-+: ") for cell in cells):
         return None
     return cells
@@ -238,7 +238,7 @@ def cells_of(route, decision):
 
 
 def area_map(found):
-    """The areas the decisions publish, with their owners, sizes and kinds."""
+    """The area map section, one row per published area."""
     areas = {}
     for route in found:
         decision = decide(route)
@@ -271,7 +271,7 @@ def area_map(found):
 
 
 def composed_views(found):
-    """The four obligations each composed view owes, one row per view."""
+    """The composed views section, one row per view, or nothing when there are none."""
     views = {}
     for route in found:
         decision = decide(route)

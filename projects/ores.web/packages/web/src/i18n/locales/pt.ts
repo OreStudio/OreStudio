@@ -3954,7 +3954,7 @@ const pt: SourceCatalogue = {
             legCount: '{count} pernas',
             treeMeta: '{inner} estruturas internas · raiz {root}',
             priceNotRead:
-                'O preço ainda não é lido. Um relatório de P&L inicial é o trabalho que vem primeiro.',
+                'Esta operação não foi valorizada. O produto ainda não tem valorização, por isso não há valor a mostrar.',
             pickerTruncated: 'A mostrar {shown} de {total} transações.',
         },
         booking: {

@@ -7030,7 +7030,7 @@ const fr: SourceCatalogue = {
         title: 'Coupures',
         lead: 'Les corps sur lesquels un run price : la population de transactions, les données de marché, les données de référence et le moteur, figés à un instant.',
         readerNote:
-            'Une coupure se lit ici. Prendre une coupure à la main n’est pas encore offert sur cet écran : le parcours de prise, l’autorisation qu’il lève et la coupure LIVE sont un travail ultérieur.',
+            'Une coupure se lit ici, et se prend depuis ici. Deux choses qu’elle nomme ne sont pas encore offertes : la sélection de cette coupure par un rapport, et la coupure LIVE dont l’instant vient du run.',
         partialPage:
             'Ceci est la page la plus récente des coupures que les filtres retiennent. Affinez par mois ou par type pour lire le reste.',
         labelKindGone:
@@ -7212,8 +7212,101 @@ const fr: SourceCatalogue = {
                 'Le refus dit : {reason}. Un refus est définitif pour ce corps, le remède est donc une nouvelle prise.',
             fourEyes:
                 'Les quatre yeux sont la règle de la boîte de réception : une décision de la personne qui a demandé est refusée, et une personne ne compte qu’une fois.',
-            inboxGap:
-                'Lever et décider une autorisation depuis cet écran n’est pas encore offert. La demande vit dans la boîte de réception, et sa propre page est là où un décideur y répond.',
+            subject: 'Le corps que la demande nomme',
+            subjectLead:
+                'Les comptages que la prise a figés en gelant le corps, écrits avec la demande. Un décideur les lit avant de répondre, et ils ne bougent pas quand le magasin bouge.',
+            deals: 'Transactions à l’instant',
+            sets: 'Ensembles publiés en vigueur',
+            gaps: 'Écarts ouverts',
+            applied: 'Appliqué à la coupure',
+            notApplied:
+                'Le service reporting marque la coupure quand la demande atteint l’état approuvé. Rien n’est encore marqué.',
+        },
+        take: {
+            title: 'Prendre une coupure',
+            lead: 'Un corps figé à un instant, revu contre la coupure qu’il remplace, puis pris : la prise lève son autorisation là où le type en exige une.',
+            rail: 'Les étapes de la prise',
+            steps: {
+                kind: 'Type et instant',
+                body: 'Le corps',
+                review: 'Revue',
+                take: 'Prendre la coupure',
+            },
+            kindTitle: 'Le type, l’instant et la portée',
+            kindLead:
+                'Un type fixe si une signature est nécessaire et combien de temps le corps est conservé. L’instant se lit juste après la clôture, et la portée est un fait des livres et non un choix : les livres qui se revalorisent ensemble sont ceux d’un même centre.',
+            family: 'Famille',
+            basis: 'Fondement',
+            retentionShort: 'Conservation',
+            indicativeShort: 'Valeurs',
+            consumerNote:
+                'LIVE n’est pas offert ici : son instant vient du run qui le consomme, il n’y a donc aucune prise à presser.',
+            timepoint: 'Instant',
+            timepointHint:
+                'Un instant déjà survenu. Un corps ne peut pas être figé à un moment à venir.',
+            date: 'Date',
+            time: 'Heure',
+            timezone: 'Fuseau horaire',
+            timezoneHint: 'L’horloge du centre, pour que l’instant dise de quelle clôture il s’agit.',
+            scope: 'Portée',
+            scopeHint: 'Le code qu’une personne cite dans le libellé, tel que ACME-LONDON.',
+            centre: 'Centre de taux',
+            centreHint:
+                'Le centre contre les données de marché duquel les livres de la portée se revalorisent.',
+            chooseCentre: 'Choisir un centre',
+            reason: 'Pourquoi',
+            reasonHint: 'La raison qu’un décideur lit. Une prise d’un type signé en exige une.',
+            label: 'Libellé',
+            labelPending: 'Déduit du type, de la portée et de la date',
+            labelLead:
+                'Le libellé est déduit du type, de la portée et de la date, et jamais saisi.',
+            assemble: 'Assembler le corps',
+            bodyTitle: 'Le corps',
+            bodyLead:
+                'Chaque partie que le magasin peut répondre à l’instant, et chaque partie qu’il ne peut pas. Une partie que le magasin répond sans en tenir de référence le dit à côté.',
+            part: 'Partie',
+            resolved: 'Résolu',
+            partState: 'État',
+            reference: 'Référence',
+            closed: 'Fermée',
+            gapped: 'Écart',
+            noReference: 'aucune référence',
+            gapLead:
+                'Un écart arrête la presse. Un décideur serait invité à signer un corps qui ne satisfait pas la définition : la tentative est donc gardée comme brouillon et la prise reprend une fois les écarts fermés.',
+            remedy: 'Ce qui le ferme',
+            noGaps:
+                'Chaque partie du corps est fermée : {deals} transactions à l’instant, {sets} ensembles publiés en vigueur. La prise lève l’autorisation que son type nomme, là où il en nomme une.',
+            toReview: 'Revoir le corps',
+            reviewTitle: 'La revue',
+            reviewLead:
+                'Ce que le corps contient, contre la coupure qu’il remplace. Le mouvement entre deux coupures est ce que les rapports du jour énoncent.',
+            deals: 'Transactions à l’instant',
+            sets: 'Ensembles publiés en vigueur',
+            referenceData: 'Données de référence en vigueur',
+            engine: 'Moteur et enveloppe',
+            codeVersion: 'Révision du code',
+            codeVersionGap:
+                'Rien dans le magasin n’enregistre la révision des services qui ont assemblé le corps : la coupure nomme donc le moteur et l’enveloppe, et aucune révision de code.',
+            reviewSentences:
+                'Une coupure fige le corps qu’une valorisation lit, et elle enregistre le moteur et le code, afin qu’un run ultérieur de la même coupure avec le même moteur reproduise son résultat. Elle ne décide ni les prix du jour, ni les conventions, ni la façon de pricer un produit : elle enregistre ce qui était en vigueur.',
+            take: 'Prendre la coupure',
+            saveDraft: 'Enregistrer comme brouillon',
+            pressTitle: 'La presse',
+            takenWaiting:
+                'Le corps {label} est figé, et la demande est chez les décideurs : {kind}, décidée par un porteur de {permission}. La coupure attend dans Prise, et aucun run ne peut encore pricer dessus.',
+            takenInUse:
+                'Le corps {label} est figé. Son type n’exige aucune autorisation : un run peut pricer dessus maintenant.',
+            noAuthorisation:
+                'Aucune autorisation n’est exigée par son type. Le fondement est un fait du type, et non une absence à expliquer.',
+            fourEyes:
+                'La prise ne peut pas autoriser le corps que le preneur a figé : la boîte de réception refuse une décision de la personne qui a levé la demande.',
+            indicative: 'Chaque résultat pricé sur ce corps porte la marque indicative.',
+            retention:
+                'Conservée {months} mois dans le palier {destination}, copié de son type à la prise.',
+            savedDraft:
+                'Le corps n’a pas pu être assemblé : il a donc été enregistré comme brouillon avec {count} écart(s). Aucune demande d’approbation n’a été levée, et aucun run ne peut pricer dessus tant que les écarts ne sont pas fermés.',
+            toList: 'Retour aux coupures',
+            openRecord: 'Ouvrir la coupure',
         },
         runs: {
             title: 'Les runs qui ont pricé sur cette coupure',
@@ -7597,6 +7690,7 @@ const fr: SourceCatalogue = {
         sensitivityTemplatesWrite: 'modifier les modèles de sensibilité',
         sensitivityTemplatesDelete: 'supprimer les modèles de sensibilité',
         cutsRead: 'voir les coupures de vos parties, et la coupure qu’un run a prise pour base',
+        cutsTake: 'prendre une coupure à la main',
         cutKindsRead: 'voir les types de coupure qu’un rapport peut choisir',
         cutKindsWrite: 'modifier les types de coupure',
         cutKindsDelete: 'supprimer les types de coupure',

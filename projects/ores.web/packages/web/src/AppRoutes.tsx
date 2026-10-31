@@ -147,6 +147,7 @@ import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
 import { CutsPage } from './reporting/cuts/CutsPage.js';
 import { CutPage } from './reporting/cuts/CutPage.js';
+import { TakeCutPage } from './reporting/cuts/TakeCutPage.js';
 import { CutTypesPage } from './reporting/cuts/CutTypesPage.js';
 import { CutTypePage } from './reporting/cuts/CutTypePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -1157,6 +1158,23 @@ export function AppRoutes({
                     shell,
                     () => (
                         <CutsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            {/*
+             * The take is the one route under the cuts that is not a record, so
+             * it is declared before the record's own address: a person opening
+             * the flow is not opening a cut called "take".
+             */}
+            <Route
+                path={PATHS.cutsTake}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <TakeCutPage />
                     ),
                     'workspace',
                 )}

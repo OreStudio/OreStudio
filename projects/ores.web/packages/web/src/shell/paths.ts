@@ -74,6 +74,7 @@ export const PATHS = {
     curveConfigurations: '/reporting/curve-configurations',
     sensitivityTemplates: '/reporting/sensitivity-templates',
     cuts: '/reporting/cuts',
+    cutsTake: '/reporting/cuts/take',
     cutTypes: '/refdata/cut-types',
 } as const;
 
@@ -233,6 +234,9 @@ export function engineSettingsPath(id: string): string {
 }
 
 /** The address of one cut's record page. */
+/** The address of the take flow: the kind and the instant, the body, the press. */
+export const takeCutPath = PATHS.cutsTake;
+
 export function cutPath(id: string): string {
     return `${PATHS.cuts}/${encodeURIComponent(id)}`;
 }

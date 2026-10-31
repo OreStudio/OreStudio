@@ -6975,7 +6975,7 @@ const pt: SourceCatalogue = {
         title: 'Cortes',
         lead: 'Os corpos sobre os quais um run calcula: a população de negócios, os dados de mercado, os dados de referência e o motor, fixados num instante.',
         readerNote:
-            'Um corte lê-se aqui. Tomar um corte à mão ainda não é oferecido neste ecrã: o percurso de tomada, a autorização que levanta e o corte LIVE são trabalho posterior.',
+            'Um corte lê-se aqui, e toma-se daqui. Duas coisas que ele nomeia ainda não são oferecidas: a seleção deste corte por um relatório, e o corte LIVE cujo instante vem da execução.',
         partialPage:
             'Esta é a página mais recente dos cortes que os filtros retêm. Restrinja por mês ou por tipo para ler o resto.',
         labelKindGone:
@@ -7156,8 +7156,100 @@ const pt: SourceCatalogue = {
                 'A recusa diz: {reason}. Uma recusa é terminal para este corpo, pelo que o remédio é uma nova tomada.',
             fourEyes:
                 'Os quatro olhos são a regra da caixa de entrada: uma decisão de quem pediu é recusada, e uma pessoa conta uma só vez.',
-            inboxGap:
-                'Levantar e decidir uma autorização a partir deste ecrã ainda não é oferecido. O pedido vive na caixa de entrada, e é na sua própria página que um decisor lhe responde.',
+            subject: 'O corpo que o pedido nomeia',
+            subjectLead:
+                'As contagens que a tomada fixou ao congelar o corpo, escritas com o pedido. Um decisor lê-as antes de responder, e não mudam quando o armazém muda.',
+            deals: 'Negócios no instante',
+            sets: 'Conjuntos publicados em uso',
+            gaps: 'Lacunas em aberto',
+            applied: 'Aplicado ao corte',
+            notApplied:
+                'O serviço de reporting marca o corte quando o pedido chega a aprovado. Ainda nada está marcado.',
+        },
+        take: {
+            title: 'Tomar um corte',
+            lead: 'Um corpo fixado num instante, revisto contra o corte que substitui, e tomado: a tomada levanta a sua autorização onde o tipo exige uma.',
+            rail: 'As etapas da tomada',
+            steps: {
+                kind: 'Tipo e instante',
+                body: 'O corpo',
+                review: 'Revisão',
+                take: 'Tomar o corte',
+            },
+            kindTitle: 'O tipo, o instante e o âmbito',
+            kindLead:
+                'Um tipo fixa se é precisa uma assinatura e durante quanto tempo o corpo é guardado. O instante lê-se logo após o fecho, e o âmbito é um facto dos livros e não uma escolha: os livros que se reavaliam em conjunto são os de um mesmo centro.',
+            family: 'Família',
+            basis: 'Fundamento',
+            retentionShort: 'Retenção',
+            indicativeShort: 'Valores',
+            consumerNote:
+                'LIVE não é oferecido aqui: o seu instante vem da execução que o consome, por isso não há tomada a premir.',
+            timepoint: 'Instante',
+            timepointHint:
+                'Um instante que já ocorreu. Um corpo não pode ser fixado num momento futuro.',
+            date: 'Data',
+            time: 'Hora',
+            timezone: 'Fuso horário',
+            timezoneHint: 'O relógio do centro, para que o instante diga de que fecho se trata.',
+            scope: 'Âmbito',
+            scopeHint: 'O código que uma pessoa cita no rótulo, tal como ACME-LONDON.',
+            centre: 'Centro de taxas',
+            centreHint:
+                'O centro contra cujos dados de mercado os livros do âmbito se reavaliam.',
+            chooseCentre: 'Escolher um centro',
+            reason: 'Porquê',
+            reasonHint: 'A razão que um decisor lê. Uma tomada de um tipo assinado exige uma.',
+            label: 'Rótulo',
+            labelPending: 'Derivado do tipo, do âmbito e da data',
+            labelLead: 'O rótulo deriva do tipo, do âmbito e da data, e nunca é escrito.',
+            assemble: 'Montar o corpo',
+            bodyTitle: 'O corpo',
+            bodyLead:
+                'Cada parte que o armazém consegue responder no instante, e cada parte que não consegue. Uma parte que o armazém responde sem deter referência di-lo ao lado.',
+            part: 'Parte',
+            resolved: 'Resolvido',
+            partState: 'Estado',
+            reference: 'Referência',
+            closed: 'Fechada',
+            gapped: 'Lacuna',
+            noReference: 'sem referência',
+            gapLead:
+                'Uma lacuna trava a prensa. Um decisor seria convidado a assinar um corpo que não cumpre a definição, pelo que a tentativa fica como rascunho e a tomada retoma quando as lacunas fecharem.',
+            remedy: 'O que a fecha',
+            noGaps:
+                'Todas as partes do corpo fecharam: {deals} negócios no instante, {sets} conjuntos publicados em uso. A tomada levanta a autorização que o seu tipo nomeia, onde nomeia uma.',
+            toReview: 'Rever o corpo',
+            reviewTitle: 'A revisão',
+            reviewLead:
+                'O que o corpo contém, contra o corte que substitui. O movimento entre dois cortes é o que os relatórios do dia declaram.',
+            deals: 'Negócios no instante',
+            sets: 'Conjuntos publicados em uso',
+            referenceData: 'Dados de referência em vigor',
+            engine: 'Motor e invólucro',
+            codeVersion: 'Revisão do código',
+            codeVersionGap:
+                'Nada no armazém registra a revisão dos serviços que montaram o corpo, pelo que o corte nomeia o motor e o invólucro, e nenhuma revisão de código.',
+            reviewSentences:
+                'Um corte fixa o corpo que uma avaliação lê, e registra o motor e o código, para que uma execução posterior do mesmo corte com o mesmo motor reproduza o seu resultado. Não decide os preços do dia, as convenções nem como um produto é avaliado: registra o que estava em vigor.',
+            take: 'Tomar o corte',
+            saveDraft: 'Guardar como rascunho',
+            pressTitle: 'A prensa',
+            takenWaiting:
+                'O corpo {label} está fixado, e o pedido está com os decisores: {kind}, decidido por quem detém {permission}. O corte espera em Tomado, e nenhuma execução pode calcular sobre ele ainda.',
+            takenInUse:
+                'O corpo {label} está fixado. O seu tipo não exige autorização, por isso uma execução pode calcular sobre ele agora.',
+            noAuthorisation:
+                'Nenhuma autorização é exigida pelo seu tipo. O fundamento é um facto do tipo, e não uma ausência a explicar.',
+            fourEyes:
+                'A tomada não pode autorizar o corpo que quem tomou fixou: a caixa de entrada recusa uma decisão de quem levantou o pedido.',
+            indicative: 'Cada resultado calculado sobre este corpo leva a marca indicativa.',
+            retention:
+                'Guardado {months} meses no nível {destination}, copiado do seu tipo na tomada.',
+            savedDraft:
+                'O corpo não pôde ser montado, por isso foi guardado como rascunho com {count} lacuna(s). Nenhum pedido de aprovação foi levantado, e nenhuma execução pode calcular sobre ele até as lacunas fecharem.',
+            toList: 'Voltar aos cortes',
+            openRecord: 'Abrir o corte',
         },
         runs: {
             title: 'As execuções que avaliaram com este corte',
@@ -7539,6 +7631,7 @@ const pt: SourceCatalogue = {
         sensitivityTemplatesWrite: 'alterar os modelos de sensibilidade',
         sensitivityTemplatesDelete: 'remover os modelos de sensibilidade',
         cutsRead: 'ver os cortes das suas partes, e o corte sobre o qual um run calculou',
+        cutsTake: 'tomar um corte à mão',
         cutKindsRead: 'ver os tipos de corte que um relatório pode escolher',
         cutKindsWrite: 'alterar os tipos de corte',
         cutKindsDelete: 'remover tipos de corte',

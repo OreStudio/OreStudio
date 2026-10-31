@@ -362,8 +362,49 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                 </Notice>
             )}
 
+            {record.detail !== null && (
+                <section className="rounded-md border border-line bg-surface-raised p-4">
+                    <h2 className="text-sm font-semibold">{t('cuts.auth.subject')}</h2>
+                    <p className="mt-1 text-xs text-ink-muted">{t('cuts.auth.subjectLead')}</p>
+                    <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="min-w-0">
+                            <dt className="text-xs text-ink-faint">{t('cuts.auth.deals')}</dt>
+                            <dd className="mt-0.5 font-mono text-sm tabular-nums">
+                                {record.detail.dealCount}
+                            </dd>
+                        </div>
+                        <div className="min-w-0">
+                            <dt className="text-xs text-ink-faint">{t('cuts.auth.sets')}</dt>
+                            <dd className="mt-0.5 font-mono text-sm tabular-nums">
+                                {record.detail.marketDataSetCount}
+                            </dd>
+                        </div>
+                        <div className="min-w-0">
+                            <dt className="text-xs text-ink-faint">{t('cuts.auth.gaps')}</dt>
+                            <dd className="mt-0.5 font-mono text-sm tabular-nums">
+                                {record.detail.gapCount}
+                            </dd>
+                        </div>
+                        <div className="min-w-0">
+                            <dt className="text-xs text-ink-faint">{t('cuts.auth.applied')}</dt>
+                            <dd className="mt-0.5 text-sm">
+                                {record.detail.appliedAt === null ? (
+                                    <span className="text-ink-muted">{t('cuts.auth.notApplied')}</span>
+                                ) : (
+                                    <span className="flex flex-col">
+                                        <span>{record.detail.appliedBy}</span>
+                                        <span className="text-xs text-ink-faint">
+                                            <RelativeTime at={record.detail.appliedAt} />
+                                        </span>
+                                    </span>
+                                )}
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            )}
+
             <Notice tone="info">{t('cuts.auth.fourEyes')}</Notice>
-            <Notice tone="info">{t('cuts.auth.inboxGap')}</Notice>
         </div>
     );
 }

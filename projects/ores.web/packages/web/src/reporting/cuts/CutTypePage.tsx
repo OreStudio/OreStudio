@@ -35,7 +35,7 @@
  */
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { CutKindChoices, CutKindRecord, CutKindRow, CutRow } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../../api/client.js';
@@ -45,9 +45,9 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { RecordTimeline } from '../../refdata/RecordTimeline.js';
 import { Crumbs } from '../../refdata/shared.js';
 import {
-    DeleteDialog,
     RecordDialog,
     RecordHeader,
+    RemoveRecordDialog,
     useRecordTabs,
     type FieldSpec,
 } from '../../refdata/records.js';
@@ -159,17 +159,16 @@ function CutTypeBody({
                 />
             )}
             {removing && (
-                <DeleteDialog
+                <RemoveRecordDialog
+                    resource={CUT_KIND_RESOURCE}
                     title={t('cuts.types.removeTitle', { code: kind.kind.code })}
                     warning={t('cuts.types.removeWarning')}
+                    recordKey={{ code: kind.kind.code }}
+                    version={kind.kind.version}
                     onClose={() => setRemoving(false)}
-                    onRemoved={() => void navigate(PATHS.cutTypes)}
-                    remove={async (intent) => {
-                        await api.removeCutKind(kind.kind.code, {
-                            version: kind.kind.version,
-                            ...intent,
-                        });
-                        await queries.invalidateQueries({ queryKey: ['cuts', 'types'] });
+                    onRemoved={() => {
+                        void queries.invalidateQueries({ queryKey: ['cuts', 'types'] });
+                        void navigate(PATHS.cutTypes);
                     }}
                 />
             )}

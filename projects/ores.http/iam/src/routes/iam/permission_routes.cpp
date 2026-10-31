@@ -287,7 +287,7 @@ void permission_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering permissions routes";
 
     auto list_route =
-        router->get("/api/v1/iam/permissions")
+        router->get("/api/v1/access/permissions")
             .summary("List permissions")
             .description("Forwards to the iam.v1.permissions.list operation.")
             .tags({"iam"})
@@ -303,7 +303,7 @@ void permission_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/permissions/{code}")
+        router->get("/api/v1/access/permissions/{code}")
             .summary("Get one permission")
             .description("Forwards to the iam.v1.permissions.get operation.")
             .tags({"iam"})
@@ -315,7 +315,7 @@ void permission_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/permissions/get-many")
+        router->post("/api/v1/access/permissions/get-many")
             .summary("Get many permissions")
             .description("Forwards to the iam.v1.permissions.get_many operation.")
             .tags({"iam"})
@@ -328,7 +328,7 @@ void permission_routes::register_routes(
     registry->register_route(get_many_built);
 
     auto add_route =
-        router->post("/api/v1/iam/permissions")
+        router->post("/api/v1/access/permissions")
             .summary("Create one permission")
             .description("Forwards to the iam.v1.permissions.put operation.")
             .tags({"iam"})
@@ -341,7 +341,7 @@ void permission_routes::register_routes(
     registry->register_route(add_built);
 
     auto set_route =
-        router->put("/api/v1/iam/permissions")
+        router->put("/api/v1/access/permissions")
             .summary("Replace one permission")
             .description("Forwards to the iam.v1.permissions.put operation.")
             .tags({"iam"})
@@ -355,7 +355,7 @@ void permission_routes::register_routes(
     registry->register_route(set_built);
 
     auto put_many_route =
-        router->post("/api/v1/iam/permissions/put-many")
+        router->post("/api/v1/access/permissions/put-many")
             .summary("Write many permissions")
             .description("Forwards to the iam.v1.permissions.put_many operation.")
             .tags({"iam"})
@@ -368,7 +368,7 @@ void permission_routes::register_routes(
     registry->register_route(put_many_built);
 
     auto delete_route =
-        router->delete_("/api/v1/iam/permissions/{code}")
+        router->delete_("/api/v1/access/permissions/{code}")
             .summary("Delete one permission")
             .description("Forwards to the iam.v1.permissions.delete operation.")
             .tags({"iam"})
@@ -383,7 +383,7 @@ void permission_routes::register_routes(
     registry->register_route(delete_built);
 
     auto delete_many_route =
-        router->post("/api/v1/iam/permissions/delete-many")
+        router->post("/api/v1/access/permissions/delete-many")
             .summary("Delete many permissions")
             .description("Forwards to the iam.v1.permissions.delete_many operation.")
             .tags({"iam"})

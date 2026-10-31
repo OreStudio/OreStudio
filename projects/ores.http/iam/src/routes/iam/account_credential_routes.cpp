@@ -242,7 +242,7 @@ void account_credential_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering account_credentials routes";
 
     auto list_route =
-        router->get("/api/v1/iam/account_credentials")
+        router->get("/api/v1/auth/account_credentials")
             .summary("List account credentials")
             .description("Forwards to the iam.v1.account_credentials.list operation.")
             .tags({"iam"})
@@ -258,7 +258,7 @@ void account_credential_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/account_credentials/{id}")
+        router->get("/api/v1/auth/account_credentials/{id}")
             .summary("Get one account credential")
             .description("Forwards to the iam.v1.account_credentials.get operation.")
             .tags({"iam"})
@@ -270,7 +270,7 @@ void account_credential_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/account_credentials/get-many")
+        router->post("/api/v1/auth/account_credentials/get-many")
             .summary("Get many account credentials")
             .description("Forwards to the iam.v1.account_credentials.get_many operation.")
             .tags({"iam"})
@@ -283,7 +283,7 @@ void account_credential_routes::register_routes(
     registry->register_route(get_many_built);
 
     auto by_account_id_route =
-        router->get("/api/v1/iam/account_credentials/by-account-id/{account_id}")
+        router->get("/api/v1/auth/account_credentials/by-account-id/{account_id}")
             .summary("List the account credentials that reference one account id")
             .description("Forwards to the iam.v1.account_credentials.list_by_account_id operation.")
             .tags({"iam"})
@@ -301,7 +301,7 @@ void account_credential_routes::register_routes(
     registry->register_route(by_account_id_built);
 
     auto versions_route =
-        router->get("/api/v1/iam/account_credentials/{id}/versions")
+        router->get("/api/v1/auth/account_credentials/{id}/versions")
             .summary("List the recorded versions of one account credential")
             .description("Forwards to the iam.v1.account_credentials_versions.list operation.")
             .tags({"iam"})
@@ -317,7 +317,7 @@ void account_credential_routes::register_routes(
     registry->register_route(versions_built);
 
     auto version_route =
-        router->get("/api/v1/iam/account_credentials/{id}/versions/{version}")
+        router->get("/api/v1/auth/account_credentials/{id}/versions/{version}")
             .summary("Get one recorded version of one account credential")
             .description("Forwards to the iam.v1.account_credentials_versions.get operation.")
             .tags({"iam"})

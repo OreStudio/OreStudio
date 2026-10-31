@@ -73,21 +73,21 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/login_info — List login info.
+     * @brief GET /api/v1/auth/login_info — List login info.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/login_info/{account_id} — Get one login info.
+     * @brief GET /api/v1/auth/login_info/{account_id} — Get one login info.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/login_info/get-many — Get many login info.
+     * @brief POST /api/v1/auth/login_info/get-many — Get many login info.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,

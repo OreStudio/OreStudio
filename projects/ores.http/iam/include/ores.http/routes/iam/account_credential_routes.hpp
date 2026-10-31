@@ -73,28 +73,28 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/account_credentials — List account credentials.
+     * @brief GET /api/v1/auth/account_credentials — List account credentials.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/account_credentials/{id} — Get one account credential.
+     * @brief GET /api/v1/auth/account_credentials/{id} — Get one account credential.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/account_credentials/get-many — Get many account credentials.
+     * @brief POST /api/v1/auth/account_credentials/get-many — Get many account credentials.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/account_credentials/by-account-id/{account_id} — List the account
+     * @brief GET /api/v1/auth/account_credentials/by-account-id/{account_id} — List the account
      * credentials that reference one account id.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
@@ -102,7 +102,7 @@ public:
                          ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/account_credentials/{id}/versions — List the recorded versions of one
+     * @brief GET /api/v1/auth/account_credentials/{id}/versions — List the recorded versions of one
      * account credential.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
@@ -110,8 +110,8 @@ public:
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/account_credentials/{id}/versions/{version} — Get one recorded version
-     * of one account credential.
+     * @brief GET /api/v1/auth/account_credentials/{id}/versions/{version} — Get one recorded
+     * version of one account credential.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_version(const ores::http::domain::http_request& req,

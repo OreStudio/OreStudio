@@ -285,7 +285,7 @@ void session_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering sessions routes";
 
     auto list_route =
-        router->get("/api/v1/iam/sessions")
+        router->get("/api/v1/access/sessions")
             .summary("List sessions")
             .description("Forwards to the iam.v1.sessions.list operation.")
             .tags({"iam"})
@@ -301,7 +301,7 @@ void session_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/sessions/{id}")
+        router->get("/api/v1/access/sessions/{id}")
             .summary("Get one session")
             .description("Forwards to the iam.v1.sessions.get operation.")
             .tags({"iam"})
@@ -313,7 +313,7 @@ void session_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/sessions/get-many")
+        router->post("/api/v1/access/sessions/get-many")
             .summary("Get many sessions")
             .description("Forwards to the iam.v1.sessions.get_many operation.")
             .tags({"iam"})
@@ -326,7 +326,7 @@ void session_routes::register_routes(
     registry->register_route(get_many_built);
 
     auto add_route =
-        router->post("/api/v1/iam/sessions")
+        router->post("/api/v1/access/sessions")
             .summary("Create one session")
             .description("Forwards to the iam.v1.sessions.put operation.")
             .tags({"iam"})
@@ -339,7 +339,7 @@ void session_routes::register_routes(
     registry->register_route(add_built);
 
     auto set_route =
-        router->put("/api/v1/iam/sessions")
+        router->put("/api/v1/access/sessions")
             .summary("Replace one session")
             .description("Forwards to the iam.v1.sessions.put operation.")
             .tags({"iam"})
@@ -353,7 +353,7 @@ void session_routes::register_routes(
     registry->register_route(set_built);
 
     auto put_many_route =
-        router->post("/api/v1/iam/sessions/put-many")
+        router->post("/api/v1/access/sessions/put-many")
             .summary("Write many sessions")
             .description("Forwards to the iam.v1.sessions.put_many operation.")
             .tags({"iam"})
@@ -366,7 +366,7 @@ void session_routes::register_routes(
     registry->register_route(put_many_built);
 
     auto delete_route =
-        router->delete_("/api/v1/iam/sessions/{id}")
+        router->delete_("/api/v1/access/sessions/{id}")
             .summary("Delete one session")
             .description("Forwards to the iam.v1.sessions.delete operation.")
             .tags({"iam"})
@@ -381,7 +381,7 @@ void session_routes::register_routes(
     registry->register_route(delete_built);
 
     auto delete_many_route =
-        router->post("/api/v1/iam/sessions/delete-many")
+        router->post("/api/v1/access/sessions/delete-many")
             .summary("Delete many sessions")
             .description("Forwards to the iam.v1.sessions.delete_many operation.")
             .tags({"iam"})

@@ -75,16 +75,17 @@ TEST_CASE("account_routes_registers_every_derived_route", "[routes]") {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             account_expected_route{http_method::get, std::string{"/api/v1/iam/accounts"}, true},
+             account_expected_route{http_method::get, std::string{"/api/v1/access/accounts"}, true},
              account_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/accounts/{username}"}, true},
+                 http_method::get, std::string{"/api/v1/access/accounts/{username}"}, true},
              account_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/get-many"}, true},
-             account_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/accounts/{username}/versions"}, true},
+                 http_method::post, std::string{"/api/v1/access/accounts/get-many"}, true},
+             account_expected_route{http_method::get,
+                                    std::string{"/api/v1/access/accounts/{username}/versions"},
+                                    true},
              account_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/accounts/{username}/versions/{version}"},
+                 std::string{"/api/v1/access/accounts/{username}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -107,16 +108,17 @@ TEST_CASE("account_routes_requires_a_session_where_the_operation_does", "[routes
     // a session cannot be registered without one, and one that does not is
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
-             account_expected_route{http_method::get, std::string{"/api/v1/iam/accounts"}, true},
+             account_expected_route{http_method::get, std::string{"/api/v1/access/accounts"}, true},
              account_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/accounts/{username}"}, true},
+                 http_method::get, std::string{"/api/v1/access/accounts/{username}"}, true},
              account_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/accounts/get-many"}, true},
-             account_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/accounts/{username}/versions"}, true},
+                 http_method::post, std::string{"/api/v1/access/accounts/get-many"}, true},
+             account_expected_route{http_method::get,
+                                    std::string{"/api/v1/access/accounts/{username}/versions"},
+                                    true},
              account_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/iam/accounts/{username}/versions/{version}"},
+                 std::string{"/api/v1/access/accounts/{username}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {

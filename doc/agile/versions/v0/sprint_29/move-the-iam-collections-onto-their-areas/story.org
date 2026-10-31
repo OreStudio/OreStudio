@@ -39,8 +39,8 @@ The IAM entity collections answer under the area they belong to, and no two rout
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:91F12BF9-BCF9-4367-9CFF-AB68EF3D7BEB][Scaffold story: Move the IAM collections onto their areas]] | STARTED | 2026-10-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:D821E280-4837-4787-A71A-7064A7C883F8][Move the IAM collections to access and auth]] | BACKLOG | | | Initial task for: Move the IAM collections onto their areas |
+| [[id:91F12BF9-BCF9-4367-9CFF-AB68EF3D7BEB][Scaffold story: Move the IAM collections onto their areas]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D821E280-4837-4787-A71A-7064A7C883F8][Move the IAM collections to access and auth]] | STARTED | 2026-10-31 | | Initial task for: Move the IAM collections onto their areas |
 
 * Decisions
 

@@ -75,19 +75,20 @@ TEST_CASE("session_routes_registers_every_derived_route", "[routes]") {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             session_expected_route{http_method::get, std::string{"/api/v1/iam/sessions"}, true},
+             session_expected_route{http_method::get, std::string{"/api/v1/access/sessions"}, true},
              session_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/sessions/{id}"}, true},
+                 http_method::get, std::string{"/api/v1/access/sessions/{id}"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/get-many"}, true},
-             session_expected_route{http_method::post, std::string{"/api/v1/iam/sessions"}, true},
-             session_expected_route{http_method::put, std::string{"/api/v1/iam/sessions"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions/get-many"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions"}, true},
+             session_expected_route{http_method::put, std::string{"/api/v1/access/sessions"}, true},
              session_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/sessions/{id}"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions/put-many"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/delete-many"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/sessions/{id}"}, true},
+             session_expected_route{
+                 http_method::post, std::string{"/api/v1/access/sessions/delete-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -109,19 +110,20 @@ TEST_CASE("session_routes_requires_a_session_where_the_operation_does", "[routes
     // a session cannot be registered without one, and one that does not is
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
-             session_expected_route{http_method::get, std::string{"/api/v1/iam/sessions"}, true},
+             session_expected_route{http_method::get, std::string{"/api/v1/access/sessions"}, true},
              session_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/sessions/{id}"}, true},
+                 http_method::get, std::string{"/api/v1/access/sessions/{id}"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/get-many"}, true},
-             session_expected_route{http_method::post, std::string{"/api/v1/iam/sessions"}, true},
-             session_expected_route{http_method::put, std::string{"/api/v1/iam/sessions"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions/get-many"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions"}, true},
+             session_expected_route{http_method::put, std::string{"/api/v1/access/sessions"}, true},
              session_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/sessions/{id}"}, true},
+                 http_method::post, std::string{"/api/v1/access/sessions/put-many"}, true},
              session_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/sessions/delete-many"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/sessions/{id}"}, true},
+             session_expected_route{
+                 http_method::post, std::string{"/api/v1/access/sessions/delete-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

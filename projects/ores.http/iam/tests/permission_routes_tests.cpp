@@ -76,21 +76,21 @@ TEST_CASE("permission_routes_registers_every_derived_route", "[routes]") {
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
              permission_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::get, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/permissions/{code}"}, true},
+                 http_method::get, std::string{"/api/v1/access/permissions/{code}"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/get-many"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::put, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::put, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/put-many"}, true},
              permission_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/permissions/{code}"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/permissions/{code}"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/delete-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/delete-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -113,21 +113,21 @@ TEST_CASE("permission_routes_requires_a_session_where_the_operation_does", "[rou
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
              permission_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::get, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/permissions/{code}"}, true},
+                 http_method::get, std::string{"/api/v1/access/permissions/{code}"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/get-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/get-many"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::put, std::string{"/api/v1/iam/permissions"}, true},
+                 http_method::put, std::string{"/api/v1/access/permissions"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/put-many"}, true},
              permission_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/permissions/{code}"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/permissions/{code}"}, true},
              permission_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/permissions/delete-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/permissions/delete-many"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

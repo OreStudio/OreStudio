@@ -8,7 +8,7 @@
 #+filetags: :let-the-model-state-how-the-store-keeps-a-column:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-a-store-transform-to-the-mapper
-#+pr:
+#+pr: 4193
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4193][#4193]] | [codegen,refdata] Let the model state how the store keeps a column |
 
 * Review
 

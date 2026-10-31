@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 20CC752D-14DC-4D4B-B6A1-8BDD67F7B6A2
+:END:
+#+title: Task: Let the wizard state the population as shares
+#+description: Task for: Populate the ACME books with a realistic trade population — the remaining work
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-the-wizard-state-the-population-as-shares
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the population knobs a decision the wizard supports: shares normalised to a hundred, grouped into one section, and previewed before the run starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The run normalises the shares it is given, so a mix that does not sum to a hundred is a mix it scales rather than one it refuses.
+- The wizard renders the population parameters as one section rather than eight loose fields, and it says what the shares come to.
+- A class that cannot hold its codes is refused with the smallest total that would, and the wizard shows that before the run starts.
+
+* Plan
+
+Three layers, landed one at a time so each is verifiable.
+
+1. The arithmetic: the shares are shares. A run scales the mix it is given to
+   the total it states, by the largest-remainder rule, so a mix of ninety-seven
+   is the same book as a mix of a hundred and the operator is not asked to do
+   arithmetic the server can do. This layer changes the refusal the previous
+   task shipped and is the one this branch lands.
+2. The form: the population parameters are one section rather than eight loose
+   fields, and the section states what the shares come to as they are typed.
+   The grouping is derived by the wire protocol from the parameter's name, so
+   one place decides it and the screen does not sniff strings itself. Moving the
+   group into the profile's parameter rows is the follow-up: it is a column on a
+   generated entity, and regenerating that entity sweeps the convention-family
+   drift this repository already carries.
+3. The preview: a read that runs the same arithmetic and returns the trades per
+   class, the floor each class must clear and the per-book counts, so a refusal
+   arrives while the operator is typing rather than when the run starts. It
+   belongs beside the run, in the provisioning handler, because that is where
+   the config rows and their books already are.
+
+Presets belong with layer 2: named pairs of a total and a mix that are known to
+hold, starting with the weights page's own thousand, because the floors mean a
+free total and an untouched mix is the one combination that fails.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -568,14 +568,59 @@ TEST_CASE("a mix states each class's share of the total, remainder first", "[pop
     CHECK(fx[3] == 62);
 }
 
-TEST_CASE("a mix that does not sum to a hundred is refused", "[population_knobs]") {
+TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[population_knobs]") {
+    /*
+     * The shares are shares: a mix of ninety-nine is scaled to the total the
+     * run states rather than refused, so the operator is not asked to do the
+     * arithmetic the server can do. The classes still state the whole total.
+     */
+    const auto class_total = [](const auto& assignments, const std::string& asset_class) {
+        std::uint32_t total = 0;
+        for (const auto& entry : assignments)
+            if (entry.asset_class_code == asset_class)
+                total += *entry.trades_per_book;
+        return total;
+    };
+    const auto everyone = [](const auto& assignments) {
+        std::uint32_t total = 0;
+        for (const auto& entry : assignments)
+            total += *entry.trades_per_book;
+        return total;
+    };
+
+    auto exact = all_configs();
+    apply_population_knobs(exact,
+                           read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
+                           codes_of);
+
+    auto scaled = all_configs();
+    apply_population_knobs(scaled,
+                           read_population_knobs(page_mix(1000, "population_fx_percent", 24)),
+                           codes_of);
+
+    CHECK(everyone(exact) == 1000);
+    CHECK(everyone(scaled) == 1000);
+    for (const auto* asset_class :
+         {"bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"}) {
+        const auto exact_total = class_total(exact, asset_class);
+        const auto scaled_total = class_total(scaled, asset_class);
+        CHECK(scaled_total + 1 >= exact_total);
+        CHECK(scaled_total <= exact_total + 1);
+    }
+}
+
+TEST_CASE("a mix whose shares state nothing at all is refused", "[population_knobs]") {
     auto assignments = all_configs();
+    std::vector<provision_tenant_parameter> parameters{{"population_size", "1000"}};
+    for (const auto* name : {"population_bond_percent",
+                             "population_fx_percent",
+                             "population_equity_percent"})
+        parameters.push_back({name, "0"});
 
     CHECK_THROWS_WITH(apply_population_knobs(assignments,
-                                             read_population_knobs(
-                                                 page_mix(1000, "population_fx_percent", 24)),
+                                             read_population_knobs(parameters),
                                              codes_of),
-                      Catch::Matchers::ContainsSubstring("sums to 99 per cent"));
+                      Catch::Matchers::ContainsSubstring("no share at all"));
 }
 
 TEST_CASE("a class whose share cannot hold its codes is refused with the total that would",

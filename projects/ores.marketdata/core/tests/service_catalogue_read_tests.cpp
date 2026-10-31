@@ -59,6 +59,14 @@ struct catalogue_read_fixture {
     catalogue_read_fixture()
         : gen(ores::testing::make_generation_context(db_helper))
         , ctx(db::tenant_context::with_system_tenant(db_helper.context())) {}
+
+    // The catalogue is shared reference data, and every tenant reads it, so a
+    // case that needs a row of its own writes one of its own rather than into
+    // the system tenant: a supplier the system tenant holds switches on the
+    // session write guard for every later case in the run.
+    ores::database::context& own_tenant() {
+        return db_helper.context();
+    }
 };
 
 std::string unique_code(const std::string& prefix) {
@@ -86,12 +94,13 @@ TEST_CASE("a_provider_is_listed_and_read", "[service][catalogue]") {
 
 TEST_CASE("a_supplier_is_listed_and_read", "[service][catalogue]") {
     catalogue_read_fixture f;
+    auto& tenant_ctx = f.own_tenant();
     auto supplier = generators::generate_synthetic_supplier(f.gen);
     supplier.code = unique_code("read-supplier");
-    supplier.tenant_id = f.ctx.tenant_id();
-    repository::supplier_repository{}.write(f.ctx, supplier);
+    supplier.tenant_id = tenant_ctx.tenant_id();
+    repository::supplier_repository{}.write(tenant_ctx, supplier);
 
-    service::supplier_service service(f.ctx);
+    service::supplier_service service(tenant_ctx);
     messaging::list_suppliers_request list;
     list.limit = 1000;
     const auto listed = service.list_suppliers(list);
@@ -107,16 +116,47 @@ TEST_CASE("a_supplier_is_listed_and_read", "[service][catalogue]") {
     CHECK(read.supplier->code == supplier.code);
 }
 
+// A tenant reads the supplier the system tenant holds, and the case takes its row
+// away again: the supplier catalogue arrives by publish and the suite is the only
+// thing writing to it here, so a row left behind switches the session guard on for
+// every later case in the run.
+TEST_CASE("a_tenant_reads_a_supplier_the_system_tenant_holds", "[service][catalogue]") {
+    catalogue_read_fixture f;
+    auto& tenant_ctx = f.own_tenant();
+    auto supplier = generators::generate_synthetic_supplier(f.gen);
+    supplier.code = unique_code("shared-supplier");
+    supplier.tenant_id = f.ctx.tenant_id();
+    repository::supplier_repository{}.write(f.ctx, supplier);
+
+    service::supplier_service service(tenant_ctx);
+    messaging::list_suppliers_request list;
+    list.limit = 1000;
+    const auto listed = service.list_suppliers(list);
+    REQUIRE(listed.result.outcome == ores::utility::domain::outcome::ok);
+    const auto found = std::ranges::find(listed.suppliers, supplier.code, &domain::supplier::code);
+    CHECK(found != listed.suppliers.end());
+
+    messaging::get_supplier_request get;
+    get.key.code = supplier.code;
+    const auto read = service.get_supplier(get);
+    CHECK(read.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(read.supplier.has_value());
+    CHECK(read.supplier->tenant_id.to_string() == f.ctx.tenant_id().to_string());
+
+    repository::supplier_repository{}.remove(f.ctx, supplier.code);
+}
+
 TEST_CASE("an_adapter_is_listed_and_read", "[service][catalogue]") {
     catalogue_read_fixture f;
+    auto& tenant_ctx = f.own_tenant();
     auto adapter = generators::generate_synthetic_adapter(f.gen);
     adapter.code = unique_code("read-adapter");
     // The store's unique index is on the name, so the code alone is not enough.
     adapter.name = unique_code("read-adapter-name");
-    adapter.tenant_id = f.ctx.tenant_id();
-    repository::adapter_repository{}.write(f.ctx, adapter);
+    adapter.tenant_id = tenant_ctx.tenant_id();
+    repository::adapter_repository{}.write(tenant_ctx, adapter);
 
-    service::adapter_service service(f.ctx);
+    service::adapter_service service(tenant_ctx);
     messaging::list_adapters_request list;
     list.limit = 1000;
     const auto listed = service.list_adapters(list);

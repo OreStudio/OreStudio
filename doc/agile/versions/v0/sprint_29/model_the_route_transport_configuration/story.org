@@ -8,7 +8,7 @@
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:configuration:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment: prime_origin
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -58,6 +58,7 @@ session and a production session of one supplier differ without a redeploy.
 | [[id:E00182BC-6A71-4F3F-88FA-876A275087FA][Serve the catalogue reads]] | DONE | 2026-10-30 | 2026-10-30 | Read APIs and permissions for publishers, suppliers, adapters, sessions and feeds. |
 | [[id:49D05351-4A76-4223-9CB2-CBF4BEB26BA0][Restore the legal entity publish route]] | DONE | 2026-10-30 | 2026-10-30 | The refdata regeneration in this story removed the registrar entry for refdata.v1.ops.publish_legal_entities_from_dq, because the model that branch carried did not declare the operation. The operation was declared on main before this story merged, so the struct and the SQL function are present and nothing answers the subject. A tenant provision now stalls on that workflow step for twenty minutes and then fails, so no environment can be provisioned from main. |
 | [[id:62C653AA-74EE-4BF1-BB18-53837727A8D2][Register the legal entity unit once]] | DONE | 2026-10-30 | 2026-10-30 | The legal entity wiring registered its shell unit twice: once where it belongs in the alphabetical list and once beside the counterparty commands. Two units claim one name, so the shell refuses to start, and no environment can be provisioned or driven from the shell at all. |
+| [[id:9D8709D1-5509-4F4C-9290-9829B17C2C0F][Make the catalogue read tests leave no shared rows]] | DONE | 2026-10-30 | 2026-10-31 | The marketdata catalogue read tests write their fixture rows into the system tenant, which is shared reference data that outlives the test. The session write guard turns on once any active supplier exists, so a later test in the same run fails on the row an earlier one left behind. |
 
 * Decisions
 

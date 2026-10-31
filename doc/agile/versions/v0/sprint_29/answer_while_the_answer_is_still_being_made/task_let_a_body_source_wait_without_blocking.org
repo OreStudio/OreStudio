@@ -27,11 +27,11 @@ connection's thread, so the change stream of increment B3 has a form to arrive i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | A response names an awaitable source, and one write loop serves both kinds. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | B3's change stream, which is what the form exists for. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

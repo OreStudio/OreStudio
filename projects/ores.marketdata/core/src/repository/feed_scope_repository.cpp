@@ -319,6 +319,7 @@ feed_scope_repository::read_at_version(context ctx, const std::string& id, std::
     return entities.front();
 }
 
+
 feed_scope_repository::remove_status feed_scope_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing feed scope. " << "id: " << id;

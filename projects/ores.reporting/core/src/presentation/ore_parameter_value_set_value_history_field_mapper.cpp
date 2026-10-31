@@ -44,6 +44,7 @@ render_ore_parameter_value_set_value_fields(const domain::ore_parameter_value_se
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     fields.push_back({.name = "Is Active", .value = v.is_active ? "true" : "false"});
+    fields.push_back({.name = "Canonical Value", .value = v.canonical_value});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

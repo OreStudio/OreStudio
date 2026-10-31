@@ -58,6 +58,7 @@ struct ore_parameter_value_set_value_entity {
     std::string description;
     int display_order = 0;
     bool is_active = false;
+    std::optional<std::string> canonical_value;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -79,6 +80,7 @@ struct ore_parameter_value_set_value_entity {
                query_builder::bind("description", &e::description) |
                query_builder::bind("display_order", &e::display_order) |
                query_builder::bind("is_active", &e::is_active) |
+               query_builder::bind("canonical_value", &e::canonical_value) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

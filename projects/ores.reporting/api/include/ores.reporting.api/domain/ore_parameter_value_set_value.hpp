@@ -88,6 +88,15 @@ struct ore_parameter_value_set_value final {
     bool is_active = false;
 
     /**
+     * @brief The canonical value this row is another rendering of, or null when this row *is* the
+     * canonical form. ORE reads Z and Once as the same frequency, and a document may write either,
+     * so the set states the one form a configuration holds and names it here on every other
+     * rendering it accepts. A control offers the rows whose column is null; a write converts a
+     * rendering to its canonical form.
+     */
+    std::string canonical_value;
+
+    /**
      * @brief Username of the person who last modified this ore parameter value set value.
      */
     std::string modified_by;

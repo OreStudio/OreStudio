@@ -47,6 +47,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import ore_aliases as aliases  # noqa: E402
 import ore_schema_types as schema_types  # noqa: E402
 
 TERMS = os.path.join(HERE, "curve_terms.json")
@@ -56,16 +57,6 @@ CURATION_KEYS = ("link", "reason", "source", "source_ref", "curator", "date")
 SOURCES = ("ore_guide", "ore_code", "ore_xsd", "authored", "seed")
 
 CATALOGUES = {
-    "refdata.business_day_convention": {
-        "name": "Business day conventions",
-        "relation": "ores_refdata_business_day_convention_catalogue_v",
-        "description": "The business day conventions reference data holds.",
-    },
-    "refdata.day_counter": {
-        "name": "Day counters",
-        "relation": "ores_refdata_day_counter_catalogue_v",
-        "description": "The day counters reference data holds.",
-    },
     "refdata.currency": {
         "name": "Currencies",
         "relation": "ores_refdata_currency_catalogue_v",
@@ -101,6 +92,25 @@ def vocabularies(schema=SCHEMA):
             f"for a schema no generator applies; add the rule that applies it or "
             f"drop the row")
     return {entry["element"]: entry["value_set"] for entry in declared.values()}
+
+
+def renderings_of(value_set):
+    """The conversion table a declared value set states, or None for another kind.
+
+    A vocabulary whose values ORE's reader converts states the table that says
+    which renderings mean one fact, and the set is drawn from it. A vocabulary
+    drawn from a catalogue states the catalogue instead, and one drawn from
+    nothing is text.
+    """
+    for entry in declared_vocabularies().values():
+        if entry["value_set"] != value_set:
+            continue
+        table = entry.get("renderings")
+        if table is not None and table not in aliases.SETS:
+            raise ValueError(f"{value_set}: the declaration names {table}, which is "
+                             "not a family ORE's reader converts")
+        return table
+    raise ValueError(f"{value_set}: the declaration names a set no row backs")
 
 
 def catalogue_of(value_set):
@@ -453,6 +463,9 @@ def set_of(term, curated, parsers, section):
         return parser_set_code(link), parser_set(link, parsers[link])
     if name in VALUE_SET_OF:
         value_set = VALUE_SET_OF[name]
+        table = renderings_of(value_set)
+        if table is not None:
+            return value_set, aliases.rendered_set(table, parsers)
         return ("text" if catalogue_of(value_set) is None else value_set), None
     if term["type"] in TYPE_SETS:
         if term["type"] == "list":
@@ -535,6 +548,10 @@ def data():
     curated = curation()
     sets = dict(OWN_SETS)
     for value_set in set(VALUE_SET_OF.values()):
+        table = renderings_of(value_set)
+        if table is not None:
+            sets[value_set] = aliases.rendered_set(table, parsers)
+            continue
         catalogue = catalogue_of(value_set)
         if catalogue is None:
             continue
@@ -554,8 +571,10 @@ def data():
         code, generated = set_of(term, curated, parsers, section)
         if generated:
             built.add(code)
-            if code not in sets:
-                sets[code] = generated
+            if code in sets and sets[code] != generated:
+                raise ValueError(f"{code}: two sources state a different set under "
+                                 "one code")
+            sets.setdefault(code, generated)
         key = f"{section}|{term['name']}"
         address = "/CurveConfiguration/" + "/".join(term["path"])
         found = codes.setdefault(key, {})

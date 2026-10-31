@@ -27,11 +27,11 @@ a dead connection.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | The hub fans a frame out to every open stream, and =GET /api/v1/changes= serves it as an event stream. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then fill the hub from the change events. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

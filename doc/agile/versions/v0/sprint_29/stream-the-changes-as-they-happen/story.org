@@ -39,10 +39,16 @@ A client can follow the changes over one long response, and a quiet market does 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:292BB7CD-24D4-42DA-9525-A1F4C5F88885][Scaffold story: Stream the changes as they happen]] | STARTED | 2026-10-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:61DD6C03-CA84-4363-989E-B8D6883E266A][Open the change stream]] | STARTED | 2026-10-31 | | Initial task for: Stream the changes as they happen |
+| [[id:292BB7CD-24D4-42DA-9525-A1F4C5F88885][Scaffold story: Stream the changes as they happen]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:61DD6C03-CA84-4363-989E-B8D6883E266A][Open the change stream]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Stream the changes as they happen |
 
 * Decisions
+
+* Result
+
+One slice, and the path it proves: a publish reaches every open stream, a slow reader loses its
+oldest frames rather than the server's memory, a quiet stream is kept alive without spinning,
+and a closed subscription ends the body. The hub is empty until the next task fills it.
 
 * Out of scope
 

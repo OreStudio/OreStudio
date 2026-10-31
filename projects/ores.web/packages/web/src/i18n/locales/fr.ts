@@ -5112,7 +5112,7 @@ const fr: SourceCatalogue = {
                 provider: 'Fournisseur',
                 pivot: 'Base',
                 terms: 'Conditions',
-                source: 'Source',
+                feed: 'Flux',
                 series: 'Séries',
                 date: 'Date',
                 value: 'Valeur',
@@ -5148,7 +5148,7 @@ const fr: SourceCatalogue = {
         subscriptions: {
             title: 'Souscriptions',
             description:
-                'Les fournisseurs que la partie prend et les droits qu’elle détient, et l’unique source qui sert chaque fournisseur.',
+                'Les fournisseurs que la partie prend et les droits qu’elle détient, et l’unique flux qui sert chaque fournisseur.',
             add: 'Ajouter',
             addTitle: 'Ajouter une souscription',
             addRoute: 'Ajouter une route',
@@ -5158,12 +5158,12 @@ const fr: SourceCatalogue = {
             removeSubscriptionWhat:
                 'La livraison de ce fournisseur s’arrête pour la partie. Les séries et l’historique restent.',
             removeRouteWhat:
-                'La partie garde la souscription et perd la source qui la sert. L’historique reste.',
+                'La partie garde la souscription et perd le flux qui la sert. L’historique reste.',
             cancel: 'Annuler',
             newRecord:
                 'La nouvelle ligne est écrite avec le motif system.new_record. Aucun autre motif ne s’applique à un nouvel enregistrement.',
-            sourceHint:
-                'Une partie a une route par fournisseur. La route nomme la source qui la sert.',
+            feedHint:
+                'Une partie a une route par fournisseur. La route nomme le flux qui la sert.',
             right: {
                 display: 'affichage',
                 displayMeans: 'Une personne de la partie peut montrer ces données sur un écran.',
@@ -5178,19 +5178,19 @@ const fr: SourceCatalogue = {
                 party: 'Partie',
                 provider: 'Fournisseur',
                 rights: 'Droits',
-                source: 'Source',
+                feed: 'Flux',
             },
             subscriptions: {
                 title: 'Souscriptions',
-                lead: 'Une souscription nomme un fournisseur et ses droits, jamais une source.',
+                lead: 'Une souscription nomme un fournisseur et ses droits, jamais un flux.',
                 empty: 'La partie ne détient aucune souscription pour le moment.',
                 note: 'Le service déduit la partie de la session, donc Supprimer ne s’affiche que sur les lignes de la partie dans laquelle vous agissez.',
             },
             routes: {
                 title: 'Routes',
-                lead: 'Une route choisit la source qui sert la partie pour un fournisseur.',
+                lead: 'Une route choisit le flux qui sert la partie pour un fournisseur.',
                 empty: 'La partie n’a aucune route pour le moment.',
-                note: 'Un changement de source est une route et rien d’autre. Les séries et les consommateurs restent tels quels.',
+                note: 'Un changement de flux est une route et rien d’autre. Les séries et les consommateurs restent tels quels.',
             },
             gap: {
                 suspend: {
@@ -5220,7 +5220,7 @@ const fr: SourceCatalogue = {
             screens: {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
-                    'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et la source qui sert chacun.',
+                    'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et le flux qui sert chacun.',
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',

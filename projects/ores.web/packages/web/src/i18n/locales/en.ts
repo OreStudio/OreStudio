@@ -5043,7 +5043,7 @@ export const en: SourceCatalogue = {
                 provider: 'Provider',
                 pivot: 'Base',
                 terms: 'Terms',
-                source: 'Source',
+                feed: 'Feed',
                 series: 'Series',
                 date: 'Date',
                 value: 'Value',
@@ -5079,7 +5079,7 @@ export const en: SourceCatalogue = {
         subscriptions: {
             title: 'Subscriptions',
             description:
-                'The providers the party takes and the rights it holds, and the one source that serves each provider.',
+                'The providers the party takes and the rights it holds, and the one feed that serves each provider.',
             add: 'Add',
             addTitle: 'Add a subscription',
             addRoute: 'Add a route',
@@ -5089,12 +5089,12 @@ export const en: SourceCatalogue = {
             removeSubscriptionWhat:
                 'Delivery from this provider stops for the party. The series and the history stay.',
             removeRouteWhat:
-                'The party keeps the subscription and loses the source that serves it. The history stays.',
+                'The party keeps the subscription and loses the feed that serves it. The history stays.',
             cancel: 'Cancel',
             newRecord:
                 'The new row is written with the reason system.new_record. No other reason applies to a new record.',
-            sourceHint:
-                'A party has one route for each provider. The route names the source that serves it.',
+            feedHint:
+                'A party has one route for each provider. The route names the feed that serves it.',
             right: {
                 display: 'display',
                 displayMeans: 'A person of the party may show this data on a screen.',
@@ -5109,19 +5109,19 @@ export const en: SourceCatalogue = {
                 party: 'Party',
                 provider: 'Provider',
                 rights: 'Rights',
-                source: 'Source',
+                feed: 'Feed',
             },
             subscriptions: {
                 title: 'Subscriptions',
-                lead: 'A subscription names a provider and its rights, and never a source.',
+                lead: 'A subscription names a provider and its rights, and never a feed.',
                 empty: 'The party holds no subscription yet.',
                 note: 'The service states the party from the session, so Delete stands only on the rows of the party you act in.',
             },
             routes: {
                 title: 'Routes',
-                lead: 'A route picks the source that serves the party for one provider.',
+                lead: 'A route picks the feed that serves the party for one provider.',
                 empty: 'The party has no route yet.',
-                note: 'A source switch is one route and nothing else. The series and the consumers stay as they are.',
+                note: 'A feed switch is one route and nothing else. The series and the consumers stay as they are.',
             },
             gap: {
                 suspend: {

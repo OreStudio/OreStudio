@@ -24,7 +24,7 @@
  * doc/knowledge/journeys/market_data/journey_manage-market-data-subscriptions.org.
  *
  * A subscription names a provider and its rights, and a route names the one
- * source that serves the party for that provider. The service states the party
+ * feed that serves the party for that publisher. The service states the party
  * of both from the session, so the screen decides which rows it may remove and
  * never asks a person for a party.
  */
@@ -49,10 +49,11 @@ import {
     providerName,
     providersToRoute,
     providersToTake,
+    feedsForPublisher,
+    feedName,
     rightsOf,
-    routeSource,
-    sourceName,
-    sourcesForProvider,
+    routeFeed,
+    rowProvider,
     useCatalogue,
     usePartyNames,
     useRoutes,
@@ -123,7 +124,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
     const holds = useHeld();
     const [open, setOpen] = useState<Open | undefined>(undefined);
     const [provider, setProvider] = useState('');
-    const [source, setSource] = useState('');
+    const [feed, setFeed] = useState('');
     const [rights, setRights] = useState<Record<Right, boolean>>({
         display: true,
         non_display: false,
@@ -177,7 +178,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
         onError: (error: Error) => setFailure(error.message),
     });
     const addRoute = useMutation({
-        mutationFn: () => api.addRoute({ provider_code: provider, source_id: source }),
+        mutationFn: () => api.addRoute({ publisher_code: provider, feed_id: feed }),
         onSuccess: afterWrite,
         onError: (error: Error) => setFailure(error.message),
     });
@@ -193,7 +194,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
     });
     const removeRoute = useMutation({
         mutationFn: (row: RouteRow) =>
-            api.removeRoute(row.provider_code, {
+            api.removeRoute(row.publisher_code, {
                 version: row.version,
                 reasonCode: reason.code,
                 commentary,
@@ -256,7 +257,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
             return;
         }
         setProvider(routable[0] ?? '');
-        setSource(sourcesForProvider(catalogue.data, routable[0] ?? '')[0]?.id ?? '');
+        setFeed(feedsForPublisher(catalogue.data, routable[0] ?? '')[0]?.id ?? '');
         setOpen({ kind: 'add-route' });
     };
 
@@ -391,31 +392,31 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
                                     {t('marketdata.subscriptions.columns.provider')}
                                 </th>
                                 <th className="py-1 font-normal">
-                                    {t('marketdata.subscriptions.columns.source')}
+                                    {t('marketdata.subscriptions.columns.feed')}
                                 </th>
                                 <th className="py-1" />
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line-subtle">
                             {routes.data.map((row) => {
-                                const source = routeSource(catalogue.data, row);
+                                const chosen = routeFeed(catalogue.data, row);
                                 return (
                                     <tr key={row.id}>
                                         <td className="py-2">{partyName(parties, row.party_id)}</td>
                                         <td className="py-2">
-                                            {providerName(catalogue.data, row.provider_code)}
+                                            {providerName(catalogue.data, row.publisher_code)}
                                             <span className="ml-2 font-mono text-xs text-ink-faint">
-                                                {row.provider_code}
+                                                {row.publisher_code}
                                             </span>
                                         </td>
                                         <td className="py-2">
                                             <span className="font-mono text-xs">
-                                                {sourceName(catalogue.data, row)}
+                                                {feedName(catalogue.data, row)}
                                             </span>
-                                            {source !== undefined && source.kind !== '' && (
+                                            {chosen !== undefined && chosen.service !== '' && (
                                                 <span className="ml-2">
                                                     <Tag tone="neutral" small>
-                                                        {source.kind}
+                                                        {chosen.service}
                                                     </Tag>
                                                 </span>
                                             )}
@@ -519,7 +520,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
                                 variant="primary"
                                 icon="add"
                                 pending={addRoute.isPending}
-                                disabled={provider === '' || source === ''}
+                                disabled={provider === '' || feed === ''}
                                 onClick={() => addRoute.mutate()}
                             >
                                 {t('marketdata.subscriptions.addRoute')}
@@ -535,9 +536,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
                                 onChange={(event) => {
                                     const code = event.target.value;
                                     setProvider(code);
-                                    setSource(
-                                        sourcesForProvider(catalogue.data, code)[0]?.id ?? '',
-                                    );
+                                    setFeed(feedsForPublisher(catalogue.data, code)[0]?.id ?? '');
                                 }}
                             >
                                 {routable.map((code) => (
@@ -548,14 +547,14 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
                             </Select>
                         </Field>
                         <Field
-                            label={t('marketdata.subscriptions.columns.source')}
-                            hint={t('marketdata.subscriptions.sourceHint')}
+                            label={t('marketdata.subscriptions.columns.feed')}
+                            hint={t('marketdata.subscriptions.feedHint')}
                         >
                             <Select
-                                value={source}
-                                onChange={(event) => setSource(event.target.value)}
+                                value={feed}
+                                onChange={(event) => setFeed(event.target.value)}
                             >
-                                {sourcesForProvider(catalogue.data, provider).map((choice) => (
+                                {feedsForPublisher(catalogue.data, provider).map((choice) => (
                                     <option key={choice.id} value={choice.id}>
                                         {choice.name}
                                     </option>
@@ -572,7 +571,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
             {(open?.kind === 'remove-subscription' || open?.kind === 'remove-route') && (
                 <Dialog
                     title={t('marketdata.subscriptions.removeTitle', {
-                        provider: providerName(catalogue.data, open.row.provider_code),
+                        provider: providerName(catalogue.data, rowProvider(open.row)),
                     })}
                     name="remove-subscription"
                     onClose={() => setOpen(undefined)}

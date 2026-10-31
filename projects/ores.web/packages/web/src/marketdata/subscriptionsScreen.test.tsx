@@ -35,23 +35,23 @@ import {
     providerName,
     providersToRoute,
     providersToTake,
+    feedsForPublisher,
+    feedName,
     rightsOf,
-    sourceName,
-    sourcesForProvider,
 } from './subscriptions.js';
 
 /**
  * The subscriptions screen, as a party administrator reads it.
  *
  * What is checked is what the screen promises: the rights a subscription holds
- * are the service's three, a route names a source the catalogue knows, and the
+ * are the service's three, a route names a feed the catalogue knows, and the
  * selectors offer only what the party may still take.
  */
 
 const PARTY = '3f1e2d4c-0000-4000-8000-000000000010';
 const OTHER = '3f1e2d4c-0000-4000-8000-000000000011';
-const BLOOMBERG_SOURCE = '0a42775e-3da7-4c61-a732-6b62cb9f948f';
-const LSEG_SOURCE = 'c0f53bf1-a03a-4557-9906-7213091fcd82';
+const BLOOMBERG_FEED = '0a42775e-3da7-4c61-a732-6b62cb9f948f';
+const LSEG_FEED = 'c0f53bf1-a03a-4557-9906-7213091fcd82';
 
 function subscription(overrides: Partial<SubscriptionRow> = {}): SubscriptionRow {
     return {
@@ -76,8 +76,8 @@ function route(overrides: Partial<RouteRow> = {}): RouteRow {
         version: 1,
         id: '66666666-6666-4666-8666-666666666666',
         party_id: PARTY,
-        provider_code: 'bloomberg',
-        source_id: BLOOMBERG_SOURCE,
+        publisher_code: 'bloomberg',
+        feed_id: BLOOMBERG_FEED,
         modified_by: 'tenant_admin',
         performed_by: 'tenant_admin',
         change_reason_code: 'system.new_record',
@@ -99,20 +99,24 @@ const CATALOGUE: MarketDataCatalogue = {
         { code: 'lseg', name: 'LSEG', kind: 'data_vendor', description: '', display_order: 2 },
         { code: 'ore', name: 'ORE', kind: 'reference', description: '', display_order: 3 },
     ],
-    sources: [
+    feeds: [
         {
-            id: BLOOMBERG_SOURCE,
+            id: BLOOMBERG_FEED,
             name: 'bloomberg-a',
-            provider_code: 'bloomberg',
-            kind: 'simulated',
+            publisher_code: 'bloomberg',
+            session_code: 'bloomberg-gb',
+            service: 'real_time',
+            provider_key: 'BBG',
             is_default: false,
             description: '',
         },
         {
-            id: LSEG_SOURCE,
+            id: LSEG_FEED,
             name: 'lseg-a',
-            provider_code: 'lseg',
-            kind: 'simulated',
+            publisher_code: 'lseg',
+            session_code: 'lseg-gb',
+            service: 'end_of_day',
+            provider_key: 'LSEG',
             is_default: true,
             description: '',
         },
@@ -153,13 +157,12 @@ describe('the selectors', () => {
         ]);
     });
 
-    it('offer the sources of one provider, its default first', () => {
-        expect(sourcesForProvider(CATALOGUE, 'lseg').map((source) => source.name)).toEqual([
-            'lseg-a',
-        ]);
-        expect(sourcesForProvider(CATALOGUE, 'bloomberg').map((source) => source.name)).toEqual([
+    it('offer the feeds of one publisher, its default first', () => {
+        expect(feedsForPublisher(CATALOGUE, 'lseg').map((feed) => feed.name)).toEqual(['lseg-a']);
+        expect(feedsForPublisher(CATALOGUE, 'bloomberg').map((feed) => feed.name)).toEqual([
             'bloomberg-a',
         ]);
+        expect(feedsForPublisher(CATALOGUE, 'ore')).toEqual([]);
     });
 
     it('route a provider the party holds and has not routed', () => {
@@ -169,11 +172,11 @@ describe('the selectors', () => {
         expect(providersToRoute(held, [route()], PARTY)).toEqual(['lseg']);
     });
 
-    it('name a provider and a source, and fall back to the code when the catalogue is silent', () => {
+    it('name a provider and a feed, and fall back to the code when the catalogue is silent', () => {
         expect(providerName(CATALOGUE, 'bloomberg')).toBe('Bloomberg');
         expect(providerName(CATALOGUE, 'demo')).toBe('demo');
-        expect(sourceName(CATALOGUE, route())).toBe('bloomberg-a');
-        expect(sourceName(undefined, route())).toBe(BLOOMBERG_SOURCE);
+        expect(feedName(CATALOGUE, route())).toBe('bloomberg-a');
+        expect(feedName(undefined, route())).toBe(BLOOMBERG_FEED);
         expect(partyName(new Map([[PARTY, 'Acme']]), PARTY)).toBe('Acme');
         expect(partyName(new Map(), OTHER)).toBe(OTHER);
     });
@@ -222,7 +225,7 @@ function render(permissions: readonly string[]): string {
 }
 
 describe('the subscriptions screen', () => {
-    it('lists the party subscriptions with their rights, and the routes with their source', () => {
+    it('lists the party subscriptions with their rights, and the routes with their feed', () => {
         const html = render([]);
 
         expect(html).toContain('Subscriptions');
@@ -230,7 +233,7 @@ describe('the subscriptions screen', () => {
         expect(html).toContain('display');
         expect(html).toContain('non-display');
         expect(html).toContain('bloomberg-a');
-        expect(html).toContain('simulated');
+        expect(html).toContain('real_time');
     });
 
     it('draws Add and Delete only for a person who may write and delete', () => {

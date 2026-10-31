@@ -5075,7 +5075,7 @@ const pt: SourceCatalogue = {
                 provider: 'Fornecedor',
                 pivot: 'Base',
                 terms: 'Termos',
-                source: 'Fonte',
+                feed: 'Fluxo',
                 series: 'Séries',
                 date: 'Data',
                 value: 'Valor',
@@ -5111,7 +5111,7 @@ const pt: SourceCatalogue = {
         subscriptions: {
             title: 'Subscrições',
             description:
-                'Os fornecedores que a parte recebe e os direitos que detém, e a única fonte que serve cada fornecedor.',
+                'Os fornecedores que a parte recebe e os direitos que detém, e o único fluxo que serve cada fornecedor.',
             add: 'Adicionar',
             addTitle: 'Adicionar uma subscrição',
             addRoute: 'Adicionar uma rota',
@@ -5121,11 +5121,11 @@ const pt: SourceCatalogue = {
             removeSubscriptionWhat:
                 'A entrega deste fornecedor termina para a parte. As séries e o histórico mantêm-se.',
             removeRouteWhat:
-                'A parte mantém a subscrição e perde a fonte que a serve. O histórico mantém-se.',
+                'A parte mantém a subscrição e perde o fluxo que a serve. O histórico mantém-se.',
             cancel: 'Cancelar',
             newRecord:
                 'A nova linha é escrita com o motivo system.new_record. Nenhum outro motivo se aplica a um novo registo.',
-            sourceHint: 'Uma parte tem uma rota por fornecedor. A rota nomeia a fonte que a serve.',
+            feedHint: 'Uma parte tem uma rota por fornecedor. A rota nomeia o fluxo que a serve.',
             right: {
                 display: 'exibição',
                 displayMeans: 'Uma pessoa da parte pode mostrar estes dados num ecrã.',
@@ -5140,19 +5140,19 @@ const pt: SourceCatalogue = {
                 party: 'Parte',
                 provider: 'Fornecedor',
                 rights: 'Direitos',
-                source: 'Fonte',
+                feed: 'Fluxo',
             },
             subscriptions: {
                 title: 'Subscrições',
-                lead: 'Uma subscrição nomeia um fornecedor e os seus direitos, nunca uma fonte.',
+                lead: 'Uma subscrição nomeia um fornecedor e os seus direitos, nunca um fluxo.',
                 empty: 'A parte ainda não tem subscrições.',
                 note: 'O serviço retira a parte da sessão, por isso Eliminar aparece apenas nas linhas da parte em que age.',
             },
             routes: {
                 title: 'Rotas',
-                lead: 'Uma rota escolhe a fonte que serve a parte para um fornecedor.',
+                lead: 'Uma rota escolhe o fluxo que serve a parte para um fornecedor.',
                 empty: 'A parte ainda não tem rotas.',
-                note: 'Uma mudança de fonte é uma rota e nada mais. As séries e os consumidores ficam como estão.',
+                note: 'Uma mudança de fluxo é uma rota e nada mais. As séries e os consumidores ficam como estão.',
             },
             gap: {
                 suspend: {
@@ -5182,7 +5182,7 @@ const pt: SourceCatalogue = {
             screens: {
                 subscriptions: 'Subscrições',
                 subscriptionsBody:
-                    'Os fornecedores que uma parte recebe, com os direitos que detém, e a fonte que serve cada um.',
+                    'Os fornecedores que uma parte recebe, com os direitos que detém, e o fluxo que serve cada um.',
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',

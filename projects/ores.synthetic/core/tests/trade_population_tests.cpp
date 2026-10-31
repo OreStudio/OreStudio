@@ -843,6 +843,48 @@ TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[tr
     }
 }
 
+TEST_CASE("an_fx_population_anchored_on_a_months_last_day_states_only_dates_that_exist",
+          "[trade_population]") {
+    /*
+     * The population is anchored on the day it runs, and a slot starts a few
+     * months before it. On the 31st of October two of those months hold no
+     * 31st, so a month that keeps the day it was given invents a date. The run
+     * that drew them stated both ends of the variance window as the absent
+     * date and the store refused the swap.
+     */
+    auto scope = fx_scope();
+    scope.as_of_date = std::chrono::year{2026} / 10 / 31;
+
+    const auto plan = plan_of(scope);
+    REQUIRE(plan.slots.size() == 16u);
+
+    bool saw_variance_swap = false;
+    for (const auto& slot : plan.slots) {
+        CHECK(slot.trade_date.ok());
+        const auto& batch = slot.instruments;
+        for (const auto& row : batch.fx_forward_instruments)
+            CHECK(row.value_date.ok());
+        for (const auto& row : batch.fx_vanilla_option_instruments)
+            CHECK(row.expiry_date.ok());
+        for (const auto& row : batch.fx_barrier_option_instruments)
+            CHECK(row.expiry_date.ok());
+        for (const auto& row : batch.fx_digital_option_instruments)
+            CHECK(row.expiry_date.ok());
+        for (const auto& row : batch.fx_asian_forward_instruments)
+            if (row.payment_date.has_value())
+                CHECK(row.payment_date->ok());
+        for (const auto& row : batch.fx_accumulator_instruments)
+            CHECK(row.start_date.ok());
+        for (const auto& row : batch.fx_variance_swap_instruments) {
+            saw_variance_swap = true;
+            CHECK(row.start_date.ok());
+            CHECK(row.end_date.ok());
+            CHECK(row.end_date > row.start_date);
+        }
+    }
+    CHECK(saw_variance_swap);
+}
+
 TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_population]") {
     auto scope = fx_scope();
     scope.currency_pairs.clear();

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Make the trade population draw only dates that exist, so that a date the planner
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,7 +37,7 @@ Make the trade population draw only dates that exist, so that a date the planner
 
 - The planner's month and year arithmetic states the last day of the target month when the anchor's day does not exist in it.
 - A date that is not a real date is refused where it is written rather than travelling as the absent date.
-- The fx family's variance swap books, and a full provisioning run writes the whole population.
+- The fx family's variance swap books a real window in a provisioned tenant, and no date column in that tenant holds the sentinel date.
 
 * Plan
 
@@ -100,7 +100,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The dates the old arithmetic drew from an anchor of 2026-10-31 | slot 1 = 2026-9-31 (ok false), slot 4 = 2026-6-31 (ok false); slot 0, 2, 3, 5 real | =/tmp/ymd_probe=, which repeats =year_month_day + months= and prints =ok()= and the day count | main at 9bf4b17991 |
+| The window the provisioned tenant states | =start_date 2026-09-30=, =end_date 2028-09-30=, one variance swap over GBP/USD | =select start_date, end_date, underlying_code from ores_trading_fx_variance_swap_instruments_tbl order by start_date= | branch head, fresh tenant |
+| Date columns holding the sentinel =0002-11-30 BC= | 0, over every date column in the public schema | a =do= block that counts each date column at the sentinel | branch head, fresh tenant |
+| Suites that state a date | all green: utility 828/182, trading.api 618/162, synthetic.core 2086/83, nats 170/56, trading.core 1423/223, iam.core 1079/308, iam.service 32/13, marketdata.core 21735/339, ore.core 478415/425, refdata.core 5723/488 | =set -a && . ./.env && set +a && publish/bin/<suite>= | branch head |
+| Where the provisioning run stops now | the bond family: =Bond issue 6fc76aae… is stored with other terms=, which the security-naming fix on =chore/seed-an-inflation-curve= answers and this branch does not carry | the provisioning script, run 3e68f6be | branch head |
 
 * Notes
 
@@ -128,3 +132,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The population now draws dates that exist, and a date that does not exist cannot
+travel: it is refused at the reflector instead of arriving as the absent date.
+
+What that bought, on a fresh tenant:
+
+- The fx family booked all sixteen trades, the variance swap among them, and the
+  swap states =2026-09-30= to =2028-09-30=. The slot that drew it is the one
+  whose anchor month holds no 31st, so the day it asked for was held to the
+  month's last.
+- No date column in the tenant holds the sentinel =0002-11-30 BC= any more. The
+  =FxSwap= row that carried it now states a real value date.
+- The run no longer stops in fx. It stops in the bond family on =Bond issue
+  … is stored with other terms=, which is the security-naming defect and not
+  this one: a callable bond and a plain bond were named by the same security id
+  because the id left the product out. The fix for that is written on
+  =chore/seed-an-inflation-curve= and lands as its own change, so a full
+  provisioning run writes the whole population there.
+
+Two decisions worth keeping:
+
+- The arithmetic clamps the day rather than shifting the date: the 31st of May
+  less a month is the 30th of April, not the 1st of May. A window that ends a
+  day later than the product means would be a silent change of terms.
+- The reflector keeps writing the empty string for the default date. Absent is
+  a value the domain states on purpose, and the wire needs one spelling for it;
+  the guard is only against a date that is neither absent nor real.

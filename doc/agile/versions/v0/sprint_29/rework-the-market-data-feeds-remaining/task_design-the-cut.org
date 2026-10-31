@@ -86,3 +86,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The cut is designed end to end, and signed off.
+
+- The concept lives in the Cuts cluster: the hub, the kinds, the market data and
+  trade components, the option-expiry cut code and the naming decision.
+- The design note: doc/knowledge/architecture/the_cut_is_the_body_a_run_prices_from.org.
+  A cut records the body (the four inputs), the occasion, the gaps and the acts;
+  the state is derived and stored nowhere; the kind is reference data carrying
+  the approval kind (a nullable FK to the inbox approval kinds), the indicative
+  declaration, the resolution rule and the retention.
+- The kind declares whether a cut is signed: end of day, month end and year end
+  point at the Finance approval kind, independent verification at Market Risk;
+  start of day, flash and LIVE point at none.
+- The report side: a report definition carries a cut selection (a kind or one
+  cut); the run resolves it (EOD, EOM, EOY, SOD, IPV, LIVE, or a pinned cut),
+  records the resolved cut and its timepoint, and prices from its body. LIVE
+  mints a cut at the run instant, needs no authorisation and is indicative.
+  The report shows a badge of its selection kind. The market bindings retire in
+  favour of the cut; the earlier decision is marked superseded in part.
+- Retention: the kind states the period and destination; a cut copies it when
+  taken; retention is a floor and a legal hold outranks it. EOM and EOY are
+  kinds in the end-of-day family with longer retention.
+- The journeys: give a report its cut, take a cut, and rerun and audit a cut.
+- The prototype: eleven surfaces and every state, rendered and read.
+- Checks: lint valid, org links 0 unresolved, structure notes green (25),
+  prototype inventory 99 in 23 groups, site pages published with no failures.
+
+The implementation is the next work: the cut entity, the kind lookup with its
+approval FK, the report's selection field, the resolution operation, the
+retention copy, and the removal of configuration_market_binding.

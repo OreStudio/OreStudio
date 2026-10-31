@@ -30,7 +30,7 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | The map is keyed by the leaf's address, seeded, and both guards read it. |
 | Waiting on   | Nothing.                               |
-| Next         | Curate the 105 addresses that need an answer: the 26 contradictions, the 12 proposals, then the 67 that need a decision. |
+| Next         | The 79 addresses no contract row describes, and a review of the 195 that state text where the schema is narrower. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -278,10 +278,21 @@ the catalogue does not hold is refused with a sentence that names the set, which
 is a better answer than a typo the engine ignores. The unconstrained count falls
 to 173.
 
-What is left of the 26 is now eight addresses of =Index=, =Conventions= and
-=Calendar= that state =text= where a sibling states =curve.text=. That is one
-rule under two codes, and it is a question about the sets rather than about the
-leaves.
+What was left of the 26 was eight addresses of =Index=, =Conventions= and
+=Calendar= that state =text= where a sibling states =curve.text=. Those two are
+one rule under two codes: both are the =text= kind, both are named Text, and
+neither constrains anything. They are now one set, =text=, and =curve.text= is
+gone.
+
+The collapse corrects a number this page carried. Counting only addresses that
+name =text= understated the gap, because =curve.text= was counted as a rule when
+it constrains nothing. The honest statement of the map is: **274 of the 480
+addresses are free text, and 206 state a real rule.** 195 of the 274 are a
+decision the contract makes; 79 have no statement at all.
+
+So the 26 contradictions are closed, and the remaining work is the 79 addresses
+no contract row describes, plus a review of the 195 that say text where the
+schema declares something narrower.
 
 * Plan
 

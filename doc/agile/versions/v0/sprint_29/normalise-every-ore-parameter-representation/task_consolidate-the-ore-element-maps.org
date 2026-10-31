@@ -30,7 +30,7 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | The map is keyed by the leaf's address, seeded, and both guards read it. |
 | Waiting on   | Nothing.                               |
-| Next         | The 181 addresses that take =text=: a rule where one exists, a stated decision where the document takes a list. |
+| Next         | Curate the 105 addresses that need an answer: the 26 contradictions, the 12 proposals, then the 67 that need a decision. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -226,6 +226,30 @@ The switch itself is written and was exercised. Under it the curve column suite
 passed unchanged and the convention suite failed only on its expected error text,
 which the map's key changes from =Swap.FixedFrequency= to
 =swap_convention.fixed_frequency=. Both are recorded here rather than lost.
+
+* The addresses the map leaves unconstrained
+
+181 of the 480 addresses take the shared text set, which admits every value.
+They are not one problem. =evidence/text_addresses.py= splits them, and its
+output is beside it:
+
+| Group | Addresses | What it needs |
+|-------+-----------+----------------|
+| the contract states =text=, and no other address of that element has a rule | 76 | nothing: a person decided the leaf is free text |
+| the contract states =text=, but the same element has a rule elsewhere | 26 | a review: the statement is probably wrong |
+| the contract holds no row, and a sibling address has a rule | 12 | a proposal to accept or reject |
+| the contract holds no row, and no sibling has a rule | 67 | a decision from the schema type and the ORE parser |
+
+The 26 and the 12 are the cheap end, because a rule already exists for the same
+element somewhere. The 67 are the real curation: mostly lists of tenors,
+strikes, dates and indices, where the honest answer is often a stated decision
+that the leaf is a list rather than a single value.
+
+Two examples of the 26, and why they matter: =SettlementDays=, =FixingDays= and
+=SpotDays= state =text= at some addresses while another address of the same name
+takes a rule, and =DayCounter= and =BusinessDayConvention= state =text= at two
+addresses while the map elsewhere states a catalogue. Each is either a wrong
+statement or a name that is two leaves, which is the =SpotDays= problem again.
 
 * Plan
 

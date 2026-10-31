@@ -42,5 +42,7 @@ export interface TradeSummary {
     authorisation_status: string;
     trade_date: string | null;
     trade_count: number;
+    structure_id: string | null;
+    is_leg: boolean;
     search_text: string;
 }

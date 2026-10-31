@@ -34,11 +34,11 @@ The investigation this story commissioned is
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Every routed product of six families books. Bonds cover all ten routed codes; inflation and scripted have no planner yet. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | The inflation and scripted families, then sizing every class to the weights. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-30                             |
 
 * Acceptance
@@ -191,6 +191,33 @@ The investigation this story commissioned is
   knob the profile declares costs no screen code and the arithmetic has one home
   on the server. A run that states no size keeps the seeded counts; one that
   states a size and no mix keeps the seeded mix.
+
+* Result
+
+ACME's books hold a realistic population, and an operator can size it.
+
+Every class the refdata taxonomy states has a planner, and a fresh tenant holds a
+thousand trades: interest rates 420, FX 250, equity 120, credit 60, commodity 50,
+bonds 40, inflation 30 and scripted 30 — the weights page's own mix, exactly, with
+every routed code appearing between two and sixteen times. The population exports
+as the ORE portfolio, and each family's round trip is proved in the ORE suite.
+
+Four things the arc settled, and one it exposed:
+
+- A class's count cannot fall below the codes its planner cycles, and its share
+  cannot fall below that floor, so the total is the smallest number where every
+  class fits both. At 190 commodity was twice its weight; at 1000 every class is
+  its weight exactly.
+- A payoff the taxonomy cannot classify gets a class in the taxonomy, not a class
+  that stands for something else.
+- A family books the codes its export can carry and names the rest out of scope.
+- The population's size and mix are profile parameters, so the provisioning form
+  states them and one place computes what they mean.
+
+What it exposed and did not fix here: the seeded inflation curve states no
+fixings, so an inflation swap books and exports and cannot price. That is the
+capture *The seeded inflation curve states its index, its conventions and no
+fixings*, and it belongs to the market-data surface rather than to this story.
 
 * Out of scope
 

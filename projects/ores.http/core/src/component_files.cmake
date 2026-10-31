@@ -23,6 +23,7 @@ set(files
     "routes/bundle_manifest.cpp"
     "routes/storage_file_source.cpp"
     "routes/change_routes.cpp"
+    "stream/change_coalescer.cpp"
     "routes/storage_routes.cpp"
     "routes/storage_upload_sink.cpp"
     "routes/variability_routes.cpp"
@@ -40,5 +41,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/storage_upload_sink.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/variability_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_hub.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_coalescer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/web_bundle_routes.hpp"
 )

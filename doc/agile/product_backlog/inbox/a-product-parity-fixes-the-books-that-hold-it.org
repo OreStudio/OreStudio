@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 6460F4B3-3223-45FB-9EF1-C61D09873EEF
+:END:
+#+title: The bond planner draws its product by the slot's position an…
+#+description: The bond planner draws its product by the slot's position and the book by the slot's position too, so with an even number of products against two books a product's parity fixes its book: every even-indexed product lands in one book, every odd-indexed one in the other, and no security is ever shared across books. Measured while writing the security naming test: eighty slots over two books produced no security held by both. Two cycles of even length align. Either the product cycle takes a stride coprime with the book count, or the book is drawn from something other than the slot's index.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

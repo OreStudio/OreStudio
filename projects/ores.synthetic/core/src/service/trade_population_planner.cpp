@@ -1603,6 +1603,14 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.expiry_date = end;
         terms.start_date = start;
         terms.end_date = end;
+        /*
+         * An fx config may state a tenor band whose short end is less than a
+         * year, and a variance swap is the one product that requires its end to
+         * be after its start. A zero-length observation window is not the
+         * product, so a short draw states the shortest window that is one.
+         */
+        if (type == "FxVarianceSwap" && !(terms.end_date > terms.start_date))
+            terms.end_date = add_months(terms.start_date, 1);
 
         /*
          * The three idioms. A bought-and-sold trade states the two currencies

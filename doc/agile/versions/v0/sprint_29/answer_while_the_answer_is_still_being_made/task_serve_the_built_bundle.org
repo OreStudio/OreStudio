@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-built-bundle
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ built, so it can serve no bundle at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Not yet started.                       |
+| Now          | The bundle is served from a manifest the server reads at start-up. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the health and metrics routes. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -63,9 +63,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bundle cases | 5 cases, 39 assertions, all passing | =./ores.http.core.tests "[web_bundle]"= | branch head |
+| =ores.http.core= test cases | 15 cases, 95 assertions, all passing | =./ores.http.core.tests= | branch head |
 
 * Notes
+
+- The manifest is read from the directory the build wrote rather than from a file
+  the build emits. The build does not write one, and a directory read at start-up
+  gives the same property: a request is resolved by lookup and no path is joined to
+  the root at request time.
+- A path under =api/= is never answered with the shell, including bare =api=, so a
+  misspelled endpoint is a 404 and not HTML for a caller expecting JSON.
+- Nothing generates the brotli copies yet. The server serves =.br= when it is there
+  and =Vary: Accept-Encoding= when the copy exists, so the build only has to start
+  writing them.
+- The bundle is served from the last route registered, so it answers what nothing
+  else claimed. The server logs and skips it when the configured directory is not
+  there, rather than serving an empty application.
 
 * Test Scenarios
 

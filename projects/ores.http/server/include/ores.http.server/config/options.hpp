@@ -64,6 +64,15 @@ struct options final {
     std::string storage_dir{"/var/ores/http-server/storage"};
 
     /**
+     * @brief The built browser bundle this server answers for, when there is one.
+     *
+     * The directory a build wrote: =index.html=, the =assets/= it names, and the
+     * prebuilt copies beside them. Empty means the server serves no bundle, and a
+     * directory that is not there is logged and skipped rather than served empty.
+     */
+    std::string web_dir{"/var/ores/http-server/web"};
+
+    /**
      * @brief Override for the HTTP base URL advertised via NATS service discovery.
      *
      * If empty, defaults to "http://localhost:{server.port}".

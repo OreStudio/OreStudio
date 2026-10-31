@@ -78,7 +78,7 @@ struct fx_option_convention final {
     std::string atm_type;
 
     /**
-     * @brief How the delta is measured, in ORE's own spelling (e.g. 'Spot', 'Forward', 'PaSpot').
+     * @brief How the delta is measured, in ORE's own spelling (e.g. 'Spot', 'Fwd', 'PaSpot').
      */
     std::string delta_type;
 

@@ -165,3 +165,15 @@ TEST_CASE("a number read into a type too small to hold it is refused", "[codec][
     CHECK_THROWS_AS(wire_json::read<int>("\"7\""), std::invalid_argument);
     CHECK_THROWS_AS(wire_json::read<std::uint32_t>("-1"), std::invalid_argument);
 }
+
+TEST_CASE("a floating-point number is the real reflect-cpp writes", "[codec][json]") {
+    const auto plain = 0.1;
+    const auto negative = -2.5;
+    const auto large = 1.0e300;
+
+    CHECK(wire_json::write(plain) == rfl::json::write(plain));
+    CHECK(wire_json::write(negative) == rfl::json::write(negative));
+    CHECK(wire_json::write(large) == rfl::json::write(large));
+    CHECK(wire_json::read<double>(wire_json::write(plain)) == plain);
+    CHECK(wire_json::read<double>(wire_json::write(negative)) == negative);
+}

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5D9A3C6E-1F4B-4A8D-B7C2-6E0D3A9F5B1C
 :END:
 #+title: ores.refdata.crm_enabled_derived_pair

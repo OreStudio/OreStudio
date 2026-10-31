@@ -25,10 +25,12 @@
 #ifndef ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 #define ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 
 namespace ores::dq::domain {
@@ -79,6 +81,23 @@ struct audit_record {
      */
     friend bool operator==(const audit_record&, const audit_record&) = default;
 };
+/**
+ * @brief The members of audit_record, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const audit_record&) {
+    return std::tuple{
+        utility::codec::field{"modified_by", &audit_record::modified_by},
+        utility::codec::field{"performed_by", &audit_record::performed_by},
+        utility::codec::field{"change_reason_code", &audit_record::change_reason_code},
+        utility::codec::field{"change_commentary", &audit_record::change_commentary},
+        utility::codec::field{"recorded_at", &audit_record::recorded_at},
+    };
+}
 
 /**
  * @brief Names the members of audit_record that are economic.

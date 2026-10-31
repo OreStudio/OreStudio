@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7D4A2C19-E8B1-4F3A-9C6D-1A5E8B2F7D03
 :END:
 #+title: ores.refdata.book_status

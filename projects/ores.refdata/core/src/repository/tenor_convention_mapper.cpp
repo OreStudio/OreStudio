@@ -27,7 +27,6 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/tenor_convention_entity.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <optional>
@@ -70,7 +69,7 @@ tenor_convention_entity tenor_convention_mapper::map(const domain::tenor_convent
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.measured_from = v.measured_from;
     r.resolution_algorithm = v.resolution_algorithm;
-    r.business_day_convention_type = stored_business_day_convention(v.business_day_convention_type);
+    r.business_day_convention_type = v.business_day_convention_type;
     r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

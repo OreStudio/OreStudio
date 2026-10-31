@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7DD42682-6914-4F4E-907C-D57DBBB89B8A
 :END:
 #+title: ores.refdata.monetary_nature

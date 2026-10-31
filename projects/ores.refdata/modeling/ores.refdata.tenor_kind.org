@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: E63689F3-92E1-48C7-8772-AA6FA6C45D40
 :END:
 #+title: ores.refdata.tenor_kind

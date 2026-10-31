@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: DBE59E31-57CE-4F56-8526-007E219FB95A
 :END:
 #+title: ores.refdata.credit_limit

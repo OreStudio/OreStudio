@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/badge_severity_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::badge_severity>::write_json(

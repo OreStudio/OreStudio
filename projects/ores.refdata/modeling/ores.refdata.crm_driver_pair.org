@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7A2E4B91-3C5D-4F6A-9B1E-2D8F0A6C4E7B
 :END:
 #+title: ores.refdata.crm_driver_pair

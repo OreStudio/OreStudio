@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_CURVE_PARAMETRIC_SMILE_PARAMETER_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -289,7 +295,850 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "refdata.v1.curve_parametric_smile_parameters_events.deleted";
 }
+/**
+ * @brief The members of curve_parametric_smile_parameter_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &curve_parametric_smile_parameter_key::id},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_write, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &curve_parametric_smile_parameter_write::id},
+        utility::codec::field{"curve_definition_id",
+                              &curve_parametric_smile_parameter_write::curve_definition_id},
+        utility::codec::field{"name", &curve_parametric_smile_parameter_write::name},
+        utility::codec::field{"initial_value",
+                              &curve_parametric_smile_parameter_write::initial_value},
+        utility::codec::field{"calibration", &curve_parametric_smile_parameter_write::calibration},
+        utility::codec::field{"position", &curve_parametric_smile_parameter_write::position},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_change, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &curve_parametric_smile_parameter_change::write},
+        utility::codec::field{"precondition",
+                              &curve_parametric_smile_parameter_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_removal, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &curve_parametric_smile_parameter_removal::key},
+        utility::codec::field{"precondition",
+                              &curve_parametric_smile_parameter_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_lookup, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &curve_parametric_smile_parameter_lookup::key},
+        utility::codec::field{
+            "curve_parametric_smile_parameter",
+            &curve_parametric_smile_parameter_lookup::curve_parametric_smile_parameter},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameters_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameters_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &curve_parametric_smile_parameters_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_event, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &curve_parametric_smile_parameter_event::event_id},
+        utility::codec::field{"key", &curve_parametric_smile_parameter_event::key},
+        utility::codec::field{"action", &curve_parametric_smile_parameter_event::action},
+        utility::codec::field{"version", &curve_parametric_smile_parameter_event::version},
+        utility::codec::field{"occurred_at", &curve_parametric_smile_parameter_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &curve_parametric_smile_parameter_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_version_key, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "curve_parametric_smile_parameter",
+            &curve_parametric_smile_parameter_version_key::curve_parametric_smile_parameter},
+        utility::codec::field{"version", &curve_parametric_smile_parameter_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of curve_parametric_smile_parameter_versions_filter, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_parametric_smile_parameter_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version",
+                              &curve_parametric_smile_parameter_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &curve_parametric_smile_parameter_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &curve_parametric_smile_parameter_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_curve_parametric_smile_parameters_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_parametric_smile_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_curve_parametric_smile_parameters_request::offset},
+        utility::codec::field{"limit", &list_curve_parametric_smile_parameters_request::limit},
+        utility::codec::field{"order", &list_curve_parametric_smile_parameters_request::order},
+        utility::codec::field{"filter", &list_curve_parametric_smile_parameters_request::filter},
+        utility::codec::field{"as_of", &list_curve_parametric_smile_parameters_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_curve_parametric_smile_parameters_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_parametric_smile_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_curve_parametric_smile_parameters_response::result},
+        utility::codec::field{"smile_parameters",
+                              &list_curve_parametric_smile_parameters_response::smile_parameters},
+        utility::codec::field{"total", &list_curve_parametric_smile_parameters_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_parametric_smile_parameter_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_parametric_smile_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_parametric_smile_parameter_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_parametric_smile_parameter_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_parametric_smile_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_curve_parametric_smile_parameter_response::result},
+        utility::codec::field{
+            "curve_parametric_smile_parameter",
+            &get_curve_parametric_smile_parameter_response::curve_parametric_smile_parameter},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_parametric_smile_parameters_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_curve_parametric_smile_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_curve_parametric_smile_parameters_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_parametric_smile_parameters_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_curve_parametric_smile_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_many_curve_parametric_smile_parameters_response::result},
+        utility::codec::field{"entries",
+                              &get_many_curve_parametric_smile_parameters_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_curve_parametric_smile_parameter_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_curve_parametric_smile_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_curve_parametric_smile_parameter_request::change},
+        utility::codec::field{"intent", &put_curve_parametric_smile_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_curve_parametric_smile_parameter_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_curve_parametric_smile_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_curve_parametric_smile_parameter_response::result},
+        utility::codec::field{
+            "curve_parametric_smile_parameter",
+            &put_curve_parametric_smile_parameter_response::curve_parametric_smile_parameter},
+    };
+}
+
+/**
+ * @brief The members of put_many_curve_parametric_smile_parameters_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_curve_parametric_smile_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"changes",
+                              &put_many_curve_parametric_smile_parameters_request::changes},
+        utility::codec::field{"intent",
+                              &put_many_curve_parametric_smile_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_curve_parametric_smile_parameters_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_curve_parametric_smile_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &put_many_curve_parametric_smile_parameters_response::result},
+        utility::codec::field{
+            "smile_parameters",
+            &put_many_curve_parametric_smile_parameters_response::smile_parameters},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_parametric_smile_parameter_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_curve_parametric_smile_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_curve_parametric_smile_parameter_request::removal},
+        utility::codec::field{"intent", &delete_curve_parametric_smile_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_parametric_smile_parameter_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_curve_parametric_smile_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_curve_parametric_smile_parameter_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_curve_parametric_smile_parameters_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_curve_parametric_smile_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_curve_parametric_smile_parameters_request::removals},
+        utility::codec::field{"intent",
+                              &delete_many_curve_parametric_smile_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_curve_parametric_smile_parameters_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_curve_parametric_smile_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_curve_parametric_smile_parameters_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_curve_parametric_smile_parameter_versions_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_curve_parametric_smile_parameter_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_curve_parametric_smile_parameter_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_curve_parametric_smile_parameter_versions_request::offset},
+        utility::codec::field{"limit",
+                              &list_curve_parametric_smile_parameter_versions_request::limit},
+        utility::codec::field{"order",
+                              &list_curve_parametric_smile_parameter_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_curve_parametric_smile_parameter_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_curve_parametric_smile_parameter_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_curve_parametric_smile_parameter_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_curve_parametric_smile_parameter_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_curve_parametric_smile_parameter_versions_response::versions},
+        utility::codec::field{"total",
+                              &list_curve_parametric_smile_parameter_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_parametric_smile_parameter_version_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_curve_parametric_smile_parameter_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_parametric_smile_parameter_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_parametric_smile_parameter_version_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_curve_parametric_smile_parameter_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_curve_parametric_smile_parameter_version_response::result},
+        utility::codec::field{"version",
+                              &get_curve_parametric_smile_parameter_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_key& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_key& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_write& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_write& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_change& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_change& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_removal& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_removal& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_lookup& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_lookup& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameters_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameters_filter& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameters_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameters_filter& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameters_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_event& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_event& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_version_key& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_parametric_smile_parameter_version_key& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_parametric_smile_parameter_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_parametric_smile_parameter_versions_filter& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_versions_filter
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::curve_parametric_smile_parameter_versions_filter& v);
+    static ores::refdata::messaging::curve_parametric_smile_parameter_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_parametric_smile_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_parametric_smile_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_parametric_smile_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_parametric_smile_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_curve_parametric_smile_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::get_many_curve_parametric_smile_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::get_many_curve_parametric_smile_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_curve_parametric_smile_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::get_many_curve_parametric_smile_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::get_many_curve_parametric_smile_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_curve_parametric_smile_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::put_curve_parametric_smile_parameter_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::put_curve_parametric_smile_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_curve_parametric_smile_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::put_curve_parametric_smile_parameter_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::put_curve_parametric_smile_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_curve_parametric_smile_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::put_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::put_many_curve_parametric_smile_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::put_many_curve_parametric_smile_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_curve_parametric_smile_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::put_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::put_many_curve_parametric_smile_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::put_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::put_many_curve_parametric_smile_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_parametric_smile_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::delete_curve_parametric_smile_parameter_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_curve_parametric_smile_parameter_request& v);
+    static ores::refdata::messaging::delete_curve_parametric_smile_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_parametric_smile_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::delete_curve_parametric_smile_parameter_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_curve_parametric_smile_parameter_response& v);
+    static ores::refdata::messaging::delete_curve_parametric_smile_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_request& v);
+    static ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_response& v);
+    static ores::refdata::messaging::delete_many_curve_parametric_smile_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_request& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_request& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_response& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_response& v);
+    static ores::refdata::messaging::list_curve_parametric_smile_parameter_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_parametric_smile_parameter_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_curve_parametric_smile_parameter_version_request& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_curve_parametric_smile_parameter_version_request& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_parametric_smile_parameter_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::get_curve_parametric_smile_parameter_version_response& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_curve_parametric_smile_parameter_version_response& v);
+    static ores::refdata::messaging::get_curve_parametric_smile_parameter_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

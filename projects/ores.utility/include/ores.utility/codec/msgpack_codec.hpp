@@ -204,6 +204,23 @@ struct msgpack_codec<T> {
 };
 
 /**
+ * @brief A floating-point number is the format's double frame.
+ */
+template <>
+struct msgpack_codec<double> {
+    static void write(msgpack_packer* pk, const double& v) {
+        if (msgpack_pack_double(pk, v) != 0)
+            throw std::runtime_error("Could not pack a number");
+    }
+
+    static double read(const msgpack_object& v) {
+        if (v.type != MSGPACK_OBJECT_FLOAT)
+            throw std::invalid_argument("Not a number: the MessagePack value is not one");
+        return v.via.f64;
+    }
+};
+
+/**
  * @brief A truth value is the format's own =true= and =false=.
  */
 template <>

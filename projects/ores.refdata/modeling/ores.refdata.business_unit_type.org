@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3F8A5C1E-9B7D-4A2F-8E6C-1D4B7A9F3E2C
 :END:
 #+title: ores.refdata.business_unit_type

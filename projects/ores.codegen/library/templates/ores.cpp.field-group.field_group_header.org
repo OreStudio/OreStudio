@@ -108,6 +108,10 @@ The full template source. Edit here and re-tangle with
 {{#field_group.cpp.includes}}
 #include {{{.}}}
 {{/field_group.cpp.includes}}
+{{#field_group.has_generated_wire_codec}}
+#include "ores.utility/codec/wire_fields.hpp"
+#include <tuple>
+{{/field_group.has_generated_wire_codec}}
 {{#field_group.has_economic_declaration}}
 #include <span>
 #include <string_view>
@@ -145,6 +149,24 @@ struct {{field_group.entity_singular}} {
     friend bool operator==(const {{field_group.entity_singular}}&,
                            const {{field_group.entity_singular}}&) = default;
 };
+{{#field_group.has_generated_wire_codec}}
+/**
+ * @brief The members of {{field_group.entity_singular}}, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{field_group.entity_singular}}&) {
+    return std::tuple{
+{{#field_group.fields}}
+{{^no_wire}}        utility::codec::field{"{{name}}",
+                                 &{{field_group.entity_singular}}::{{name}}},
+{{/no_wire}}
+{{/field_group.fields}}    };
+}
+{{/field_group.has_generated_wire_codec}}
 
 {{#field_group.has_economic_declaration}}
 {{#field_group.has_economic_fields}}

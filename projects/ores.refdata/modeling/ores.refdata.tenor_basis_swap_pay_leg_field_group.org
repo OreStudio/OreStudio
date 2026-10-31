@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: b0f6d2b0-d0cf-40f7-bd70-867b4dfc05ee
 :END:
 #+title: ores.refdata.tenor_basis_swap_pay_leg

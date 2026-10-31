@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_CALENDAR_RULE_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/calendar_rule.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -306,7 +312,815 @@ inline constexpr std::string_view created = "refdata.v1.calendar_rules_events.cr
 inline constexpr std::string_view updated = "refdata.v1.calendar_rules_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.calendar_rules_events.deleted";
 }
+/**
+ * @brief The members of calendar_rule_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &calendar_rule_key::id},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &calendar_rule_write::id},
+        utility::codec::field{"calendar_code", &calendar_rule_write::calendar_code},
+        utility::codec::field{"kind", &calendar_rule_write::kind},
+        utility::codec::field{"month", &calendar_rule_write::month},
+        utility::codec::field{"day", &calendar_rule_write::day},
+        utility::codec::field{"weekday", &calendar_rule_write::weekday},
+        utility::codec::field{"occurrence", &calendar_rule_write::occurrence},
+        utility::codec::field{"day_offset", &calendar_rule_write::day_offset},
+        utility::codec::field{"shift", &calendar_rule_write::shift},
+        utility::codec::field{"effective_from", &calendar_rule_write::effective_from},
+        utility::codec::field{"effective_to", &calendar_rule_write::effective_to},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &calendar_rule_change::write},
+        utility::codec::field{"precondition", &calendar_rule_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &calendar_rule_removal::key},
+        utility::codec::field{"precondition", &calendar_rule_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &calendar_rule_lookup::key},
+        utility::codec::field{"calendar_rule", &calendar_rule_lookup::calendar_rule},
+    };
+}
+
+/**
+ * @brief The members of calendar_rules_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rules_filter&) {
+    return std::tuple{
+        utility::codec::field{"calendar_code", &calendar_rules_filter::calendar_code},
+        utility::codec::field{"id_one_of", &calendar_rules_filter::id_one_of},
+        utility::codec::field{"calendar_code_one_of", &calendar_rules_filter::calendar_code_one_of},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &calendar_rule_event::event_id},
+        utility::codec::field{"key", &calendar_rule_event::key},
+        utility::codec::field{"action", &calendar_rule_event::action},
+        utility::codec::field{"version", &calendar_rule_event::version},
+        utility::codec::field{"occurred_at", &calendar_rule_event::occurred_at},
+        utility::codec::field{"correlation_id", &calendar_rule_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_version_key&) {
+    return std::tuple{
+        utility::codec::field{"calendar_rule", &calendar_rule_version_key::calendar_rule},
+        utility::codec::field{"version", &calendar_rule_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of calendar_rule_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calendar_rule_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &calendar_rule_versions_filter::version},
+        utility::codec::field{"from_version", &calendar_rule_versions_filter::from_version},
+        utility::codec::field{"to_version", &calendar_rule_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_calendar_rules_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calendar_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_calendar_rules_request::offset},
+        utility::codec::field{"limit", &list_calendar_rules_request::limit},
+        utility::codec::field{"order", &list_calendar_rules_request::order},
+        utility::codec::field{"filter", &list_calendar_rules_request::filter},
+        utility::codec::field{"as_of", &list_calendar_rules_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_calendar_rules_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calendar_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_calendar_rules_response::result},
+        utility::codec::field{"calendar_rules", &list_calendar_rules_response::calendar_rules},
+        utility::codec::field{"total", &list_calendar_rules_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_calendar_rule_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calendar_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_calendar_rule_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_calendar_rule_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calendar_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_calendar_rule_response::result},
+        utility::codec::field{"calendar_rule", &get_calendar_rule_response::calendar_rule},
+    };
+}
+
+/**
+ * @brief The members of get_many_calendar_rules_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_calendar_rules_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_calendar_rules_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_calendar_rules_response::result},
+        utility::codec::field{"entries", &get_many_calendar_rules_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_calendar_rule_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_calendar_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_calendar_rule_request::change},
+        utility::codec::field{"intent", &put_calendar_rule_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_calendar_rule_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_calendar_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_calendar_rule_response::result},
+        utility::codec::field{"calendar_rule", &put_calendar_rule_response::calendar_rule},
+    };
+}
+
+/**
+ * @brief The members of put_many_calendar_rules_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_calendar_rules_request::changes},
+        utility::codec::field{"intent", &put_many_calendar_rules_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_calendar_rules_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_calendar_rules_response::result},
+        utility::codec::field{"calendar_rules", &put_many_calendar_rules_response::calendar_rules},
+    };
+}
+
+/**
+ * @brief The members of delete_calendar_rule_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_calendar_rule_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_calendar_rule_request::removal},
+        utility::codec::field{"intent", &delete_calendar_rule_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_calendar_rule_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_calendar_rule_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_calendar_rule_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_calendar_rules_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_calendar_rules_request::removals},
+        utility::codec::field{"intent", &delete_many_calendar_rules_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_calendar_rules_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_calendar_rules_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_calendar_code_calendar_rules_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_calendar_rules_request&) {
+    return std::tuple{
+        utility::codec::field{"calendar_code",
+                              &list_by_calendar_code_calendar_rules_request::calendar_code},
+        utility::codec::field{"scope", &list_by_calendar_code_calendar_rules_request::scope},
+        utility::codec::field{"offset", &list_by_calendar_code_calendar_rules_request::offset},
+        utility::codec::field{"limit", &list_by_calendar_code_calendar_rules_request::limit},
+        utility::codec::field{"order", &list_by_calendar_code_calendar_rules_request::order},
+        utility::codec::field{"filter", &list_by_calendar_code_calendar_rules_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_calendar_code_calendar_rules_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_calendar_rules_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_calendar_code_calendar_rules_response::result},
+        utility::codec::field{"calendar_rules",
+                              &list_by_calendar_code_calendar_rules_response::calendar_rules},
+        utility::codec::field{"total", &list_by_calendar_code_calendar_rules_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_calendar_rule_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calendar_rule_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_calendar_rule_versions_request::key},
+        utility::codec::field{"offset", &list_calendar_rule_versions_request::offset},
+        utility::codec::field{"limit", &list_calendar_rule_versions_request::limit},
+        utility::codec::field{"order", &list_calendar_rule_versions_request::order},
+        utility::codec::field{"filter", &list_calendar_rule_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_calendar_rule_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calendar_rule_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_calendar_rule_versions_response::result},
+        utility::codec::field{"versions", &list_calendar_rule_versions_response::versions},
+        utility::codec::field{"total", &list_calendar_rule_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_calendar_rule_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calendar_rule_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_calendar_rule_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_calendar_rule_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calendar_rule_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_calendar_rule_version_response::result},
+        utility::codec::field{"version", &get_calendar_rule_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_key& v);
+    static ores::refdata::messaging::calendar_rule_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_key& v);
+    static ores::refdata::messaging::calendar_rule_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_write& v);
+    static ores::refdata::messaging::calendar_rule_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_write& v);
+    static ores::refdata::messaging::calendar_rule_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_change& v);
+    static ores::refdata::messaging::calendar_rule_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_change& v);
+    static ores::refdata::messaging::calendar_rule_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_removal& v);
+    static ores::refdata::messaging::calendar_rule_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_removal& v);
+    static ores::refdata::messaging::calendar_rule_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_lookup& v);
+    static ores::refdata::messaging::calendar_rule_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_lookup& v);
+    static ores::refdata::messaging::calendar_rule_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rules_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rules_filter& v);
+    static ores::refdata::messaging::calendar_rules_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rules_filter& v);
+    static ores::refdata::messaging::calendar_rules_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_event& v);
+    static ores::refdata::messaging::calendar_rule_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_event& v);
+    static ores::refdata::messaging::calendar_rule_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::calendar_rule_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_version_key& v);
+    static ores::refdata::messaging::calendar_rule_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::calendar_rule_version_key& v);
+    static ores::refdata::messaging::calendar_rule_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::calendar_rule_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::calendar_rule_versions_filter& v);
+    static ores::refdata::messaging::calendar_rule_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::calendar_rule_versions_filter& v);
+    static ores::refdata::messaging::calendar_rule_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_calendar_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_calendar_rules_request& v);
+    static ores::refdata::messaging::list_calendar_rules_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_calendar_rules_request& v);
+    static ores::refdata::messaging::list_calendar_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::list_calendar_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::list_calendar_rules_response& v);
+    static ores::refdata::messaging::list_calendar_rules_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_calendar_rules_response& v);
+    static ores::refdata::messaging::list_calendar_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_calendar_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_calendar_rule_request& v);
+    static ores::refdata::messaging::get_calendar_rule_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_calendar_rule_request& v);
+    static ores::refdata::messaging::get_calendar_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_calendar_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_calendar_rule_response& v);
+    static ores::refdata::messaging::get_calendar_rule_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_calendar_rule_response& v);
+    static ores::refdata::messaging::get_calendar_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_calendar_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_calendar_rules_request& v);
+    static ores::refdata::messaging::get_many_calendar_rules_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_calendar_rules_request& v);
+    static ores::refdata::messaging::get_many_calendar_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_calendar_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_calendar_rules_response& v);
+    static ores::refdata::messaging::get_many_calendar_rules_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_calendar_rules_response& v);
+    static ores::refdata::messaging::get_many_calendar_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_calendar_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_calendar_rule_request& v);
+    static ores::refdata::messaging::put_calendar_rule_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_calendar_rule_request& v);
+    static ores::refdata::messaging::put_calendar_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_calendar_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_calendar_rule_response& v);
+    static ores::refdata::messaging::put_calendar_rule_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::put_calendar_rule_response& v);
+    static ores::refdata::messaging::put_calendar_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_calendar_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_calendar_rules_request& v);
+    static ores::refdata::messaging::put_many_calendar_rules_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_calendar_rules_request& v);
+    static ores::refdata::messaging::put_many_calendar_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_calendar_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_calendar_rules_response& v);
+    static ores::refdata::messaging::put_many_calendar_rules_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_calendar_rules_response& v);
+    static ores::refdata::messaging::put_many_calendar_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::delete_calendar_rule_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_calendar_rule_request& v);
+    static ores::refdata::messaging::delete_calendar_rule_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_calendar_rule_request& v);
+    static ores::refdata::messaging::delete_calendar_rule_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_calendar_rule_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::delete_calendar_rule_response& v);
+    static ores::refdata::messaging::delete_calendar_rule_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_calendar_rule_response& v);
+    static ores::refdata::messaging::delete_calendar_rule_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_calendar_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_calendar_rules_request& v);
+    static ores::refdata::messaging::delete_many_calendar_rules_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_calendar_rules_request& v);
+    static ores::refdata::messaging::delete_many_calendar_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_calendar_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_calendar_rules_response& v);
+    static ores::refdata::messaging::delete_many_calendar_rules_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_calendar_rules_response& v);
+    static ores::refdata::messaging::delete_many_calendar_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_calendar_code_calendar_rules_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_calendar_code_calendar_rules_request& v);
+    static ores::refdata::messaging::list_by_calendar_code_calendar_rules_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_calendar_code_calendar_rules_request& v);
+    static ores::refdata::messaging::list_by_calendar_code_calendar_rules_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_by_calendar_code_calendar_rules_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_by_calendar_code_calendar_rules_response& v);
+    static ores::refdata::messaging::list_by_calendar_code_calendar_rules_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_by_calendar_code_calendar_rules_response& v);
+    static ores::refdata::messaging::list_by_calendar_code_calendar_rules_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_calendar_rule_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_calendar_rule_versions_request& v);
+    static ores::refdata::messaging::list_calendar_rule_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_calendar_rule_versions_request& v);
+    static ores::refdata::messaging::list_calendar_rule_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_calendar_rule_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_calendar_rule_versions_response& v);
+    static ores::refdata::messaging::list_calendar_rule_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_calendar_rule_versions_response& v);
+    static ores::refdata::messaging::list_calendar_rule_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_calendar_rule_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_calendar_rule_version_request& v);
+    static ores::refdata::messaging::get_calendar_rule_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_calendar_rule_version_request& v);
+    static ores::refdata::messaging::get_calendar_rule_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_calendar_rule_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_calendar_rule_version_response& v);
+    static ores::refdata::messaging::get_calendar_rule_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_calendar_rule_version_response& v);
+    static ores::refdata::messaging::get_calendar_rule_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

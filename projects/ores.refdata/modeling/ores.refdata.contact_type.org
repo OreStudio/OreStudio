@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: EB3BE18B-A99C-464E-992B-C98AC421A7B9
 :END:
 #+title: ores.refdata.contact_type

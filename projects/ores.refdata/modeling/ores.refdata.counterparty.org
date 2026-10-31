@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8FB6949F-05C1-4867-91F3-B9B6FA2329EC
 :END:
 #+title: ores.refdata.counterparty

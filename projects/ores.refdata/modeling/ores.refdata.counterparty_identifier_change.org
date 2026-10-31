@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: EAC1C2C9-66EB-5233-BF67-84A770A5B53F
 :END:
 #+title: ores.refdata.counterparty_identifier_change

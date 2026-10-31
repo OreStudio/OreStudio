@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/lei_relationship_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::lei_relationship>::write_json(

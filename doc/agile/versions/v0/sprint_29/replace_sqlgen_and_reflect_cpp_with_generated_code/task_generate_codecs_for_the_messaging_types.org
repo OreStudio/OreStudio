@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment: brave_hopper brave_hopper
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ field list once instead of twice.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | dq's messages carry generated codecs: the protocol header states each message's shape beside its struct and names the codec, and dq's traffic takes that path. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then the same move in the next component. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

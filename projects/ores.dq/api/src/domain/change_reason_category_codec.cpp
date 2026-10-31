@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/change_reason_category_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::change_reason_category>::write_json(

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: F6E5D0A5-3463-4E11-A5B6-C63F756BEACB
 :END:
 #+title: ores.refdata.counterparty_business_centre

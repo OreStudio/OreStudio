@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 77870EE2-3123-4881-AF13-F35D432FC237
 :ores.sql.schema.junction_artefact_create.enabled: true
 :END:

@@ -206,6 +206,26 @@ struct json_codec<T> {
 };
 
 /**
+ * @brief A floating-point number is the format's real.
+ *
+ * The text is the shortest that reads back to the same value, which is what
+ * both writers produce, so a decimal amount keeps its spelling on the wire
+ * rather than growing digits on the way through.
+ */
+template <>
+struct json_codec<double> {
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const double& v) {
+        return yyjson_mut_real(doc, v);
+    }
+
+    static double read(yyjson_val* v) {
+        if (!yyjson_is_num(v))
+            throw std::invalid_argument("Not a number: the JSON value is not one");
+        return yyjson_get_num(v);
+    }
+};
+
+/**
  * @brief A truth value is the third shape the wire states: the format's own
  * =true= and =false=, not the word.
  */

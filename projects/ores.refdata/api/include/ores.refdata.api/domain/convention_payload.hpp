@@ -25,8 +25,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_PAYLOAD_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_PAYLOAD_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::refdata::domain {
 
@@ -64,6 +66,20 @@ struct convention_payload {
      */
     friend bool operator==(const convention_payload&, const convention_payload&) = default;
 };
+/**
+ * @brief The members of convention_payload, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convention_payload&) {
+    return std::tuple{
+        utility::codec::field{"name", &convention_payload::name},
+        utility::codec::field{"oresmd_uri", &convention_payload::oresmd_uri},
+    };
+}
 
 }
 

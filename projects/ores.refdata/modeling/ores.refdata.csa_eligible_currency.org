@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 25090994-3093-470E-BB3F-7832EDCA26A4
 :END:
 #+title: ores.refdata.csa_eligible_currency

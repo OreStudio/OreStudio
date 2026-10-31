@@ -27,7 +27,6 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/commodity_future_convention_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -125,7 +124,7 @@ commodity_future_convention_mapper::map(const domain::commodity_future_conventio
     r.expiry_month_lag = v.expiry_month_lag;
     r.one_contract_month = v.one_contract_month;
     r.offset_days = v.offset_days;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention = v.business_day_convention;
     r.adjust_before_offset = v.adjust_before_offset;
     r.is_averaging = v.is_averaging;
     r.valid_contract_months = v.valid_contract_months;

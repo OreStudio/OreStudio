@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D9269C52-0741-47D0-BE72-8BEAC15D4EA0
 :END:
 #+title: ores.refdata.bundle_import_item

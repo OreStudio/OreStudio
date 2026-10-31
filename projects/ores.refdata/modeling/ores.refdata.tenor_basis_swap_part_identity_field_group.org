@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: dc61b37e-336e-4a4c-9f62-fef720b1ac74
 :END:
 #+title: ores.refdata.tenor_basis_swap_part_identity

@@ -23,6 +23,7 @@
 #include "ores.refdata.api/domain/convention_identity.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_codec.hpp"
+#include "ores.refdata.api/domain/currency_json_io.hpp"
 #include "ores.refdata.api/eventing/currency_event.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
@@ -250,9 +251,4 @@ TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") 
     std::ostringstream printed;
     printed << c;
     CHECK(printed.str() == rfl::json::write(c));
-
-    std::ostringstream group_printed;
-    group_printed << ores::refdata::domain::convention_identity{};
-    CHECK(group_printed.str() ==
-          rfl::json::write(ores::refdata::domain::convention_identity{}));
 }

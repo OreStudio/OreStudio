@@ -26,11 +26,11 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | All five entries are split end to end; the branch is green apart from gates that name other environments' stale renders. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Prove a smile entry through the database, which needs its conventions and calendars. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -403,7 +403,8 @@ second time rather than by a failing test:
   re-exported in the model's order. The corpus never does this, and nothing
   checks that it does not.
 
-Still to do:
+Still to do, on
+[[id:DB2C3AFB-777A-405F-A208-B97B25B9C93C][Model the volatility smile configuration and the moneyness surface]]:
 
 - a part for the moneyness surface, and one for =ParametricSmileConfiguration=;
 - a shell address for each of the ten parts;

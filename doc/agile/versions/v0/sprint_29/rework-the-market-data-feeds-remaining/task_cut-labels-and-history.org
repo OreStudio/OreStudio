@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: fix/cut-labels-and-history
-#+pr:
+#+pr: 4282
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4282][#4282]] | [reporting] Compose the history providers and label the cuts |
 
 * Review
 

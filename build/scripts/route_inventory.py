@@ -111,21 +111,25 @@ def relative(path):
     return path.relative_to(ROOT).as_posix()
 
 
+def line_of(text, offset):
+    """The 1-based line an offset into @p text falls on."""
+    return text.count("\n", 0, offset) + 1
+
+
 def bff_routes():
     """The routes the BFF registers, with the module that registers them."""
     for path in sorted((ROOT / "projects/ores.web/packages/bff/src").rglob("*.ts")):
         if path.name.endswith(".test.ts"):
             continue
         text = path.read_text(errors="replace")
-        for line_number, line in enumerate(text.splitlines(), start=1):
-            for method, _, route in BFF_ROUTE.findall(line):
-                yield {
-                    "method": method,
-                    "path": route,
-                    "server": "bff",
-                    "owner": path.stem,
-                    "where": f"{relative(path)}:{line_number}",
-                }
+        for match in BFF_ROUTE.finditer(text):
+            yield {
+                "method": match.group(1),
+                "path": match.group(3),
+                "server": "bff",
+                "owner": path.stem,
+                "where": f"{relative(path)}:{line_of(text, match.start())}",
+            }
 
 
 def declaring_line(text, name):
@@ -146,28 +150,81 @@ def cpp_routes():
             continue
         text = path.read_text(errors="replace")
         parts = path.relative_to(ROOT / "projects/ores.http").parts
-        for line_number, line in enumerate(text.splitlines(), start=1):
-            for method, route in CPP_ROUTE.findall(line):
-                yield {
-                    "method": CPP_METHODS.get(method, method),
-                    "path": route,
-                    "server": "ores.http",
-                    "owner": parts[0],
-                    "where": f"{relative(path)}:{line_number}",
-                    "note": "",
-                }
-            for method, name in CPP_ROUTE_VARIABLE.findall(line):
-                declared = declaring_line(text, name)
-                yield {
-                    "method": CPP_METHODS.get(method, method),
-                    "path": "{" + name + "}",
-                    "server": "ores.http",
-                    "owner": parts[0],
-                    "where": f"{relative(path)}:{line_number}",
-                    "note": f"path composed from {name}"
-                            + (f" (declared at {declared})" if declared else "")
-                            + ".",
-                }
+        for match in CPP_ROUTE.finditer(text):
+            method, route = match.group(1), match.group(2)
+            yield {
+                "method": CPP_METHODS.get(method, method),
+                "path": route,
+                "server": "ores.http",
+                "owner": parts[0],
+                "where": f"{relative(path)}:{line_of(text, match.start())}",
+                "note": "",
+            }
+        for match in CPP_ROUTE_VARIABLE.finditer(text):
+            method, name = match.group(1), match.group(2)
+            declared = declaring_line(text, name)
+            yield {
+                "method": CPP_METHODS.get(method, method),
+                "path": "{" + name + "}",
+                "server": "ores.http",
+                "owner": parts[0],
+                "where": f"{relative(path)}:{line_of(text, match.start())}",
+                "note": f"path composed from {name}"
+                        + (f" (declared at {declared})" if declared else "")
+                        + ".",
+            }
+
+
+BFF_REGISTRATION = re.compile(r"\b(server|app|fastify)\.(get|post|put|patch|delete)\s*\(")
+BFF_LITERAL = re.compile(r"\s*(['\"`])(/[^'\"`]*)\1")
+CPP_ANY_REGISTRATION = re.compile(
+    r"router->(get|post|put|patch|delete_|head|options)\(")
+
+
+def unreadable_registrations(found):
+    """A registration on either surface that the scanner cannot turn into a route.
+
+    The scanner is the only thing that keeps the inventory complete, so a shape it
+    cannot read is a route it silently drops. That is how six BFF routes stayed out of
+    the table until a verifier counted registrations against the inventory: their path
+    literal sat on the line after the call.
+    """
+    known = {(route["server"], route["method"], route["path"]) for route in found}
+    unreadable = []
+
+    for path in sorted((ROOT / "projects/ores.web/packages/bff/src").rglob("*.ts")):
+        if path.name.endswith(".test.ts"):
+            continue
+        text = path.read_text(errors="replace")
+        for match in BFF_REGISTRATION.finditer(text):
+            literal = BFF_LITERAL.match(text, match.end())
+            if literal is None:
+                unreadable.append((f"{relative(path)}:{line_of(text, match.start())}",
+                                   "the path is not a literal"))
+            elif ("bff", match.group(2), literal.group(2)) not in known:
+                unreadable.append((f"{relative(path)}:{line_of(text, match.start())}",
+                                   "the route is not in the table"))
+
+    for path in sorted(ROOT.glob("projects/ores.http/*/src/**/*.cpp")):
+        if "/tests/" in path.as_posix():
+            continue
+        text = path.read_text(errors="replace")
+        for match in CPP_ANY_REGISTRATION.finditer(text):
+            where = f"{relative(path)}:{line_of(text, match.start())}"
+            tail = text[match.end():match.end() + 120]
+            literal = re.match(r'\s*"(/[^"]*)"', tail)
+            variable = re.match(r"\s*([A-Za-z_][\w:]*)\s*[,)]", tail)
+            if literal is not None:
+                if ("ores.http", CPP_METHODS.get(match.group(1), match.group(1)),
+                        literal.group(1)) not in known:
+                    unreadable.append((where, "the route is not in the table"))
+            elif variable is not None:
+                if ("ores.http", CPP_METHODS.get(match.group(1), match.group(1)),
+                        "{" + variable.group(1) + "}") not in known:
+                    unreadable.append((where, "the route is not in the table"))
+            else:
+                unreadable.append((where, "the path is neither a literal nor a variable"))
+    return unreadable
 
 
 def routes():
@@ -378,8 +435,10 @@ def check():
     duplicates = [key for key, count in Counter(
         (r["server"], r["method"], r["path"]) for r in found).items() if count > 1]
     undecided = [route for route in found if decide(route) is None]
+    unreadable = unreadable_registrations(found)
     unpublished = bad_decisions()
-    if not (missing or stale or disagreeing or duplicates or undecided or unpublished):
+    if not (missing or stale or disagreeing or duplicates or undecided or unreadable
+            or unpublished):
         print(f"route inventory is current: {len(found)} route(s)")
         return 0
 
@@ -411,6 +470,13 @@ def check():
         print(f"{len(undecided)} route(s) are unclassified, so no rule says what they "
               f"are:")
         show([(r["server"], r["method"], r["path"]) for r in undecided])
+    if unreadable:
+        print(f"{len(unreadable)} registration(s) cannot be read into the table, so the "
+              f"inventory may be short:")
+        for where, reason in unreadable[:15]:
+            print(f"  {where}: {reason}")
+        if len(unreadable) > 15:
+            print(f"  and {len(unreadable) - 15} more")
     if unpublished:
         print(f"{len(unpublished)} decision(s) name no published kind or area, or carry "
               f"no note:")

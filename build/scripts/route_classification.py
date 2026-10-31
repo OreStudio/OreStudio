@@ -24,6 +24,13 @@ Precedence:
 The order carries meaning: a narrow judgement stands before the family rule it
 would otherwise be swallowed by.
 
+The line between a resource and a composed view is the number of collections the
+answer weaves. One collection with its keys resolved is a resource: a book with its
+portfolio's name, a right with its holder's account, a run with its definition's
+name, a page of defects with the party that made each. Two or more independent
+collections woven into one answer are a view: a blotter with its rail, a grid summary
+with its hosts and roster, a catalogue with the rules that make it meaningful.
+
 AREAS is the published namespace of design section 11.2 and the areas this
 table adds beside it. A route that is not an API publishes no area, and states
 NO_AREA instead.
@@ -255,10 +262,16 @@ RULES = (
          "The NATS server samples over a window and one row per stream, a second read for"
          " each named stream, because no operation lists the streams."),
     Rule("the run's progress",
-         ("regex", r"^(GET|POST) /api/workflow/:"),
+         ("regex", r"^GET /api/workflow/:"),
          BFF, COMPOSED, "workflow",
          "A run's progress as a rail renders it: the run's status, the step executing and one"
-         " summary per step, so a page follows the run rather than the engine's events."),
+         " summary per step, three reads, so a page follows the run rather than the engine's"
+         " events."),
+    Rule("the run's retry",
+         ("prefix", "POST /api/workflow/"),
+         BFF, RESOURCE, "workflow",
+         "A command on one run: retrying a run that stopped asks the engine to start it"
+         " again, and answers the run rather than a collection the client reads."),
     Rule("the tenor catalogue",
          ("exact", "GET /api/tenors/catalogue"),
          BFF, COMPOSED, "reference-data",
@@ -281,9 +294,10 @@ RULES = (
          " failed, so the answer says a run could not be checked rather than that it never ran."),
     Rule("the engine's documented groups",
          ("exact", "GET /api/reporting/engine-settings/documentation"),
-         BFF, COMPOSED, "reporting",
-         "The parameter groups read from the store and shaped as the documentation of what"
-         " each group means, for the screen that edits them."),
+         BFF, RESOURCE, "reporting",
+         "One collection, the parameter groups read from the store and returned with what"
+         " each group means; the documentation screen reads it and no collection is joined"
+         " onto it."),
     Rule("the synthetic folder tree",
          ("exact", "GET /api/synthetic/feed-folders"),
          BFF, COMPOSED, "simulation",
@@ -396,12 +410,14 @@ RULES = (
          ("exact", "GET /api/books/:id"),
          BFF, RESOURCE, "trading",
          "One book with the portfolio it sits in, the portfolio read by id so the page shows"
-         " a name rather than a key."),
+         " a name rather than a key; one collection with its key resolved is a resource and"
+         " not a view."),
     Rule("a portfolio's rights",
          ("exact", "GET /api/books/portfolios/:id/rights"),
          BFF, RESOURCE, "trading",
          "The rights granted on one portfolio, with the tenant's accounts read beside them so"
-         " each right names the account that holds it."),
+         " each right names the account that holds it; one collection with its key resolved"
+         " is a resource and not a view."),
     Rule("the book and portfolio writes",
          ("regex", r"^PUT /api/books/(books|portfolios)$"),
          BFF, RESOURCE, "trading",
@@ -454,8 +470,10 @@ RULES = (
          " output archive as the run stored it."),
     Rule("a report configuration",
          ("exact", "GET /api/reporting/configurations/:id"),
-         BFF, RESOURCE, "reporting",
-         "One report configuration by id."),
+         BFF, COMPOSED, "reporting",
+         "One configuration with what its five keys point at: the type names, the party"
+         " names, its analytics, their analytic names and its market data bindings, five"
+         " reads so the page shows names rather than ids."),
     Rule("the engine settings",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/reporting/engine-settings"),
          BFF, RESOURCE, "reporting",
@@ -476,7 +494,29 @@ RULES = (
          ("regex", r"^GET /api/operations/grid/jobs/(batches|workunits)"),
          BFF, RESOURCE, "grid",
          "One page of the grid's batches, workunits or runs the session may see, newest"
-         " first, with the name of the run and party that made each."),
+         " first, with the name of the run and party that made each; one collection with its"
+         " keys resolved is a resource and not a view."),
+    Rule("the report runs of one definition",
+         ("exact", "GET /api/reporting/reports/:id/runs"),
+         BFF, RESOURCE, "reporting",
+         "The runs one report definition produced, newest first, each with the state it"
+         " reached; one collection filtered by its parent."),
+    Rule("one report run",
+         ("exact", "GET /api/operations/grid/report-runs/:id"),
+         BFF, RESOURCE, "grid",
+         "One report run with its health, the batch that carried it and the name of its"
+         " definition resolved onto it; one collection with its keys resolved is a resource"
+         " and not a view."),
+    Rule("a report run's errors",
+         ("exact", "GET /api/operations/grid/report-runs/:id/errors"),
+         BFF, RESOURCE, "grid",
+         "The error events one report run raised, with their total; one collection filtered"
+         " by its parent."),
+    Rule("a QA step's images",
+         ("regex", r"^POST /api/qa/scenarios/:[^/]+/steps/:[^/]+/images$"),
+         BFF, RESOURCE, "qa",
+         "An image a tester attaches to one step of a scenario, written into the scenario's"
+         " own store and read back with it."),
     Rule("the grid results",
          ("regex", r"^GET /api/operations/grid/jobs/results"),
          BFF, RESOURCE, "grid",
@@ -782,8 +822,9 @@ RULES = (
     Rule("the tenant lookups",
          ("regex", r"^GET /api/tenant-(statuses|types)$"),
          BFF, RESOURCE, "tenancy",
-         "The tenant lifecycle statuses or tenant types, the deployment's own rows, each"
-         " carrying the badge code it is painted with."),
+         "The tenant lifecycle statuses or tenant types, the deployment's own rows. The"
+         " badge code each row carries is stored on the row and is not a rendering concern:"
+         " the route returns the row, and a client decides how to paint it."),
     Rule("the seed profiles",
          ("exact", "GET /api/seed-profiles"),
          BFF, RESOURCE, "tenancy",
@@ -1035,16 +1076,16 @@ VIEWS = {
         "ores.marketdata",
         "the providers first, then the sources and the market series joined onto them",
         "ETag on the whole view, stale after 5 min"),
+    "a report configuration": (
+        "ores.reporting",
+        "the configuration, the names of its type and parties, its analytics and their "
+        "names, and its market data bindings, five reads",
+        "ETag on the whole view, stale after 60 s"),
     "the report health": (
         "ores.reporting",
         "each report definition with the row the list would draw and the reads that "
         "failed, so a failed read is not read as never having run",
         "ETag on the whole view, stale after 60 s"),
-    "the engine's documented groups": (
-        "ores.reporting",
-        "the parameter groups read from the store and shaped as the documentation of "
-        "what each group means",
-        "ETag on the whole view, stale after 5 min"),
     "the synthetic folder tree": (
         "ores.synthetic",
         "the folders and the feeds under each, at any depth, with the count of each "

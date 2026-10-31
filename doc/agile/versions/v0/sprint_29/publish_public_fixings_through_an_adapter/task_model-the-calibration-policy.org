@@ -37,17 +37,22 @@ per-feed exceptions that stay visible.
 
 * Acceptance
 
-- A calibration policy exists per asset class, holding the window in days,
-  whether an inverse is read as =1/x=, the provider order and the fallback
-  when no candidate has a fixing.
+- Calibration works with no policy: the defaults are the provider catalogue
+  order, a 90-day window, an inverse allowed and the fixed level as the
+  fallback.
+- A policy may exist per asset class, holding the window in days, whether an
+  inverse is read as =1/x=, the provider order and the fallback when no
+  candidate has a fixing.
 - A feed derives its candidate list from its pair and the accepted providers
   in the policy's order, direct before inverted. It stores no list of its own.
-- A feed may pin one item or state its own window; the record says it
-  overrides the policy, and clearing the pin returns it to the policy.
+- A feed may pin one item, state its own window, or name its items
+  explicitly; the record says it overrides, and clearing it returns the feed
+  to the policy or the defaults. None of these is required.
 - A recalculation of a class resolves every feed and records the item, the
   policy and the fallback or refusal for each one.
-- The existing per-feed =fx_spot_fixing_item= rows are either derived from
-  this policy or retired, not left as a second source of truth.
+- The existing per-feed =fx_spot_fixing_item= rows are either left as an
+  explicit override or derived when absent; they are never required, and they
+  never contradict the policy silently.
 
 * Plan
 

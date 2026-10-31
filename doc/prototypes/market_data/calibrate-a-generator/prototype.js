@@ -60,6 +60,7 @@ const CATALOGUE = ITEMS.map((item) => ({ ...item, returns: returnsFor(item.ampli
 
 let state = {
   variant: 'a',
+  policyMode: 'automatic',
   clock: '2026-10-31',
   policy: { ...DEFAULT_POLICY, providerOrder: [...DEFAULT_POLICY.providerOrder] },
   feeds: FEEDS.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null })),
@@ -223,6 +224,20 @@ function metrics(results) {
 }
 
 function policyCard() {
+  const automatic = state.policyMode === 'automatic';
+  const fallback = state.policy.fallback === 'refuse' ? 'refuse without a fixing' : 'keep the fixed level';
+  const summary = `${state.policy.providerOrder.map((code) => PROVIDERS[code].name).join(' → ')} · ${state.policy.windowDays} days · ${state.policy.allowInverse ? 'inverse allowed' : 'inverse not allowed'} · ${fallback}`;
+  if (automatic) {
+    return card({
+      title: 'FX calibration',
+      sub: 'automatic, from the fixing catalogue',
+      aside: badge('off', 'automatic'),
+      body: `<p class="note">With no policy, every FX feed calibrates from the catalogue: providers in their catalogue order, a 90-day window, an inverse allowed, and the fixed level when no source covers the pair.</p>
+      <p class="policy-summary mono">${esc(summary)}</p>
+      <p style="margin-top:10px"><button class="act" data-act="customise">Customise this class</button></p>
+      <p class="note" style="margin-top:6px">Optional. Nothing waits on it, and a feed may still pin its own item.</p>`,
+    });
+  }
   const order = state.policy.providerOrder
     .map(
       (code, index) => `<div class="order-row">
@@ -242,8 +257,9 @@ function policyCard() {
     .map(([value, text]) => `<option value="${value}" ${state.policy.fallback === value ? 'selected' : ''}>${text}</option>`)
     .join('');
   return card({
-    title: 'The FX calibration policy',
-    sub: 'one policy for every feed of this class',
+    title: 'FX calibration',
+    sub: 'this class has a custom policy',
+    aside: badge('off', 'custom'),
     body: `<div class="policy-fields">
       <label>Volatility window, in days
         <input type="number" id="policyWindow" min="2" max="180" value="${state.policy.windowDays}">
@@ -255,7 +271,8 @@ function policyCard() {
     </div>
     <div class="subhead">Provider order</div>
     <div class="order">${order}</div>
-    <p class="note" style="margin-top:10px">The order decides which accepted provider wins when several carry the pair. It is the whole of the ranking; a feed names nothing of its own unless it overrides.</p>`,
+    <p class="note" style="margin-top:10px">The order decides which accepted provider wins when several carry the pair. A feed needs nothing of its own unless it overrides.</p>
+    <p style="margin-top:8px"><button class="act" data-act="reset-policy">Return to automatic</button></p>`,
   });
 }
 
@@ -298,7 +315,7 @@ function candidateTable(result) {
       const direction = candidate.direct ? 'direct' : candidate.inverse ? '1/x' : '—';
       return `<tr class="${chosen ? 'on' : 'quiet'}">
         <td class="num">${index + 1}</td>
-        <td><b>${esc(candidate.providerInfo.name)}</b><span class="uri wrap mono">${esc(uriOf(candidate))}</span><div class="why">${esc(chosen ? 'chosen by the policy' : skipReason(candidate))}</div></td>
+        <td><b>${esc(candidate.providerInfo.name)}</b><span class="uri wrap mono">${esc(uriOf(candidate))}</span><div class="why">${esc(chosen ? 'chosen first' : skipReason(candidate))}</div></td>
         <td>${direction}</td>
         <td class="num">${fmt(candidate.value, candidate.value.includes('.') ? 4 : 2)}</td>
         <td class="num">${esc(candidate.date)}</td>
@@ -314,16 +331,24 @@ function candidateTable(result) {
 
 function feedControls(result) {
   const feed = result.feed;
-  const options = [`<option value="">Use the policy order</option>`]
+  const automatic = state.policyMode === 'automatic';
+  const overridden = Boolean(feed.overrideItem || feed.overrideWindow);
+  const options = [`<option value="">Pin an item (optional)</option>`]
     .concat(candidatesFor(feed).map((candidate) => `<option value="${candidate.id}" ${feed.overrideItem === candidate.id ? 'selected' : ''}>${esc(candidate.provider)} · ${esc(candidate.pair)}</option>`))
     .join('');
   const windows = [['', 'Policy window'], ['30', '30 days'], ['60', '60 days'], ['90', '90 days']]
     .map(([value, text]) => `<option value="${value}" ${String(feed.overrideWindow ?? '') === value ? 'selected' : ''}>${text}</option>`)
     .join('');
-  const overridden = Boolean(feed.overrideItem || feed.overrideWindow);
+  const kind = overridden ? 'warn' : 'off';
+  const label = overridden ? 'override' : automatic ? 'automatic' : 'inherits';
+  const text = overridden
+    ? 'This feed overrides the class calibration.'
+    : automatic
+      ? 'Calibrated automatically from the catalogue. Nothing was configured for this feed.'
+      : `Inherits the class policy: ${state.policy.providerOrder.map((code) => PROVIDERS[code].name).join(' → ')}, window ${state.policy.windowDays} days.`;
   return `<div class="banner ${overridden ? 'warn' : ''}">
-    <span class="badge ${overridden ? 'warn' : 'off'}">${overridden ? 'override' : 'inherited'}</span>
-    <span>${overridden ? 'This feed overrides the market policy.' : `This feed inherits the FX policy: ${state.policy.providerOrder.join(' → ')}, window ${state.policy.windowDays} days.`}</span>
+    <span class="badge ${kind}">${label}</span>
+    <span>${text}</span>
     <span class="inline-actions">
       <select id="pinItem">${options}</select>
       <select id="pinWindow">${windows}</select>
@@ -335,14 +360,14 @@ function feedControls(result) {
 
 function renderA(results) {
   const sample = results.find((result) => result.feed.name === state.feedName) ?? results[0];
-  const body = card({ title: 'Feed coverage', sub: 'resolved from the policy at the market clock', body: `${metrics(results)}${feedTable(results)}` });
+  const body = card({ title: 'Feed coverage', sub: 'resolved from the policy, or the defaults, at the market clock', body: `${metrics(results)}${feedTable(results)}` });
   return `
-  <p class="thesis"><b>A · Policy first.</b> A person sets the market's calibration once; every feed resolves from it, and the exceptions are counted.</p>
+  <p class="thesis"><b>A · Policy first.</b> A person may set the market's calibration once; with nothing set, the defaults calibrate every feed.</p>
   <div class="grid-a">
     <div class="stack">${policyCard()}${body}</div>
     <div class="stack">
-      ${card({ title: 'How the policy resolves ' + sample.feed.pair, sub: sample.fromFixing ? 'one example, at the clock' : 'no candidate applies', body: trailList(sample) })}
-      ${card({ title: 'Fixed level', body: `<p class="start-value" style="font-size:1.25rem">${fmt(Number(sample.feed.fixedLevel), 4)}</p><p class="note">The fixed level is per feed and used only when the policy allows it and no candidate has a fixing. The policy says whether to keep it or refuse.</p><p style="margin-top:8px"><button class="act" data-act="open-feed" data-feed="${esc(sample.feed.name)}">Open ${esc(sample.feed.pair)}</button></p>` })}
+      ${card({ title: `How the ${state.policyMode === 'automatic' ? 'defaults' : 'policy'} resolve ${sample.feed.pair}`, sub: sample.fromFixing ? 'one example, at the clock' : 'no candidate applies', body: trailList(sample) })}
+      ${card({ title: 'Fixed level', body: `<p class="start-value" style="font-size:1.25rem">${fmt(Number(sample.feed.fixedLevel), 4)}</p><p class="note">The fixed level is per feed and used only when no candidate has a fixing. The policy, or the defaults, say whether to keep it or refuse.</p><p style="margin-top:8px"><button class="act" data-act="open-feed" data-feed="${esc(sample.feed.name)}">Open ${esc(sample.feed.pair)}</button></p>` })}
     </div>
   </div>`;
 }
@@ -353,7 +378,7 @@ function renderB(results) {
   const result = results.find((entry) => entry.feed.name === state.feedName) ?? results[0];
   const overridden = Boolean(result.feed.overrideItem || result.feed.overrideWindow);
   return `
-  <p class="thesis"><b>B · Feed inherits.</b> The feed page shows the candidates the policy derives, and asks for an override only when a person needs one.</p>
+  <p class="thesis"><b>B · Feed inherits.</b> The feed page shows what the defaults or the policy derived; an exception is optional.</p>
   <div class="grid-a">
     <div class="stack">
       ${feedControls(result)}
@@ -374,7 +399,7 @@ function renderB(results) {
           <span class="k">Process</span><span class="v">${esc(result.feed.process)}</span>
           <span class="k">Ticks</span><span class="v mono">${result.feed.ticks}/hour</span>
           <span class="k">Fixed level</span><span class="v mono">${fmt(Number(result.feed.fixedLevel), 4)}</span>
-          <span class="k">Policy</span><span class="v">${overridden ? 'overridden on this feed' : 'inherited'}</span>
+          <span class="k">Policy</span><span class="v">${overridden ? 'overridden on this feed' : state.policyMode === 'automatic' ? 'defaults' : 'inherited'}</span>
         </div>`,
       })}
     </div>
@@ -403,7 +428,7 @@ function renderC(results) {
         sub: 'one feed shown, every feed follows the same path',
         body: `<div class="diagram">
           <div class="col"><div class="col-title">FX policy</div>
-            <div class="node"><h3>Order</h3><div class="sub">${state.policy.providerOrder.join(' → ')}</div><div class="sub">window ${state.policy.windowDays} days</div><div class="sub">${state.policy.allowInverse ? 'inverse allowed' : 'inverse not allowed'} · ${state.policy.fallback === 'refuse' ? 'refuse without a fixing' : 'keep the fixed level'}</div></div>
+            <div class="node"><h3>${state.policyMode === 'automatic' ? 'Automatic' : 'Custom policy'}</h3><div class="sub">${state.policy.providerOrder.join(' → ')}</div><div class="sub">window ${state.policy.windowDays} days</div><div class="sub">${state.policy.allowInverse ? 'inverse allowed' : 'inverse not allowed'} · ${state.policy.fallback === 'refuse' ? 'refuse without a fixing' : 'keep the fixed level'}</div></div>
           </div>
           <div class="arrow"></div>
           <div class="col"><div class="col-title">Candidates for ${esc(result.feed.pair)}</div>${chips || '<p class="note">No candidate: the pair has no accepted fixing.</p>'}</div>
@@ -415,7 +440,7 @@ function renderC(results) {
       ${card({ title: 'Recalculations', sub: 'the policy applied to every feed', body: `<table class="list"><thead><tr><th>When</th><th>Scope</th><th>Resolved</th><th>Fallback</th><th>By</th></tr></thead><tbody>${history}</tbody></table>` })}
     </div>
     <div class="stack">
-      ${card({ title: 'This feed', body: `<div class="kv"><span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span><span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span><span class="k">Exception</span><span class="v">${result.feed.overrideItem || result.feed.overrideWindow ? 'overridden' : 'none, it inherits'}</span></div><p style="margin-top:10px"><button class="act" data-act="open-feed" data-feed="${esc(result.feed.name)}">Open ${esc(result.feed.pair)}</button></p>` })}
+      ${card({ title: 'This feed', body: `<div class="kv"><span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span><span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span><span class="k">Exception</span><span class="v">${result.feed.overrideItem || result.feed.overrideWindow ? 'overridden' : 'none'}</span></div><p style="margin-top:10px"><button class="act" data-act="open-feed" data-feed="${esc(result.feed.name)}">Open ${esc(result.feed.pair)}</button></p>` })}
     </div>
   </div>`;
 }
@@ -448,6 +473,16 @@ function act(kind, target) {
   if (kind === 'order-up') reorderProvider(target, -1);
   if (kind === 'order-down') reorderProvider(target, 1);
   if (kind === 'open-feed') setScope(target);
+  if (kind === 'customise') {
+    state.policyMode = 'custom';
+    render();
+  }
+  if (kind === 'reset-policy') {
+    state.policyMode = 'automatic';
+    state.policy = { ...DEFAULT_POLICY, providerOrder: [...DEFAULT_POLICY.providerOrder] };
+    state.feeds = state.feeds.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null }));
+    render();
+  }
 }
 
 /* ---------------------------------------------------------------- render */
@@ -476,6 +511,7 @@ function render() {
   document.getElementById('stateBody').textContent = JSON.stringify(
     {
       variant: state.variant,
+      policyMode: state.policyMode,
       clock: state.clock,
       policy: state.policy,
       feeds: state.feeds.map((feed) => {
@@ -518,7 +554,7 @@ function onClick(event) {
   if (!button) return;
   const kind = button.dataset.act;
   const target = button.dataset.provider ?? button.dataset.feed;
-  if (kind === 'order-up' || kind === 'order-down' || kind === 'open-feed') {
+  if (kind === 'order-up' || kind === 'order-down' || kind === 'open-feed' || kind === 'customise' || kind === 'reset-policy') {
     act(kind, target);
   }
 }

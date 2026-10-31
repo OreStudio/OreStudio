@@ -18,13 +18,14 @@
 * Summary
 
 A synthetic feed takes its first value from a public fixing, and the size of
-its moves from the spread of that fixing's returns. The prototype argues how a
-person sets that for a market: one policy per asset class, the candidates it
-derives for each feed, the resolved start, and the per-feed exceptions. It
-exists because the first draft gave every feed its own ranked list, and that
-does not scale: with a hundred feeds, a person would author a hundred lists
-and still not see the market's coverage. The page carries three variants of
-the same policy-first screen. Vintage is retired and the screen says so.
+its moves from the spread of that fixing's returns. The prototype argues how
+that works with no configuration: the defaults calibrate every feed, and a
+class policy, a pin on one feed or an explicit list are optional refinements.
+It exists because the first draft gave every feed its own ranked list, and
+that does not scale: with a hundred feeds, a person would author a hundred
+lists and still not see the market's coverage. The page opens in automatic
+mode and offers three variants of the same screen. Vintage is retired and the
+screen says so.
 
 * The question
 
@@ -40,18 +41,19 @@ person fix an exception and see what the policy does to every feed.
 
 ** A — Policy first
 
-The policy card sets the window, whether an inverse is allowed, the provider
-order and the fallback. Under it, the coverage table resolves every feed of
-the class and counts what came from a fixing, what kept a level and what is
-blocked. One worked resolution sits beside them. This variant argues that the
-market's calibration is a single decision, and the feed list is its evidence.
+The card opens in automatic mode with the defaults a person can accept without
+touching anything, and a *Customise this class* action reveals the window, the
+inverse rule, the provider order and the fallback. Under it, the coverage
+table resolves every feed and counts what came from a fixing, what kept a
+level and what is blocked. This variant argues that the market's calibration
+can be one decision when wanted, and needs no decision at all.
 
 ** B — Feed inherits
 
-The feed page opens on the inherited policy, the resolved start and the
+The feed page opens on automatic calibration, the resolved start and the
 derived candidate list, each candidate with its reason. Two selects pin an
-item or a window for this feed only, and the banner turns from inherited to
-override. This variant argues that authoring a feed is reading what the policy
+item or a window for this feed only, and the banner turns from automatic to
+override. This variant argues that adding a feed is reading what the defaults
 did, and the exception is the rare act.
 
 ** C — Flow
@@ -66,13 +68,16 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 
 * What it settles
 
-- **Calibration is a policy, not a list per feed.** One decision per asset
-  class, inherited by every feed of that class.
+- **Calibration is automatic.** With no policy, the provider catalogue order
+  and a default window calibrate every feed; a person configures nothing.
+- **A policy is optional.** A class may state its window, inverse rule, order
+  and fallback; returning to automatic is one action.
 - **Candidates are derived, not authored.** The pair and the provider order
   produce the list; direct quotes come before inverses, and a provider whose
   terms are not accepted never starts a feed.
-- **An exception is visible and reversible.** A feed pins one item or one
-  window; the banner says it overrides, and clearing the pin returns it.
+- **An exception is optional and reversible.** A feed pins one item or one
+  window; the banner says it overrides, and clearing the pin returns it to the
+  policy or the defaults.
 - **Coverage is the point of the policy screen.** How many feeds resolve, keep
   a level or are blocked is the number a person governs, and a recalculation
   records every start.

@@ -38,13 +38,17 @@ fixed level.
 
 * Acceptance
 
-- The screen is market-wide first: one FX policy states the window, whether
-  an inverse is allowed, the provider order and the fallback.
+- The screen opens in automatic mode: the defaults calibrate every feed, and
+  nothing is required of a person.
+- A person may customise the class policy: the window, whether an inverse is
+  allowed, the provider order and the fallback. The page returns to automatic.
 - Every feed derives its candidates from its pair and that policy. No feed
   carries a handwritten list; a feed pins an item or a window only as an
   exception.
 - The coverage is visible: how many feeds resolve from a fixing, keep a level
   or are blocked, and a recalculation records every feed's start.
+- A feed may pin an item or a window, and the page says it overrides; the
+  pin is optional and reversible.
 - Three variants sit on one static page under
   =doc/prototypes/market_data/calibrate-a-generator/=, switchable by =?variant=
   and a bottom bar, with no build and no session.

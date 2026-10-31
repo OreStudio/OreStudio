@@ -37,9 +37,11 @@ volatility it measured.
 
 * Acceptance
 
-- The class screen states the policy once: window, inverse allowed, provider
-  order and the fallback, and shows the coverage across every feed of the
-  class.
+- With no configuration the screens state automatic calibration and the
+  defaults, and every feed resolves.
+- The class screen optionally states the policy: window, inverse allowed,
+  provider order and the fallback, and shows the coverage across every feed of
+  the class.
 - The feed page shows the start derived from that policy, the candidate list
   with each candidate's reason, and the measured volatility and its factor.
 - A person pins an item or a window on one feed as an exception; the page says

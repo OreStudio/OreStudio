@@ -38,7 +38,8 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - A synthetic feed starts from the latest fixing of its best-ranked item, and the screen shows the provider and the time of the value.
 - No vintage remains: a generator takes its level and volatility only from its ranked public fixing items, a fixed level is a stated fallback, and the notes, the seeds and the default no longer describe a vintage.
 - The calibration screen states, for one generator, the ranked items, the item and provider chosen, the value and time taken, the measured volatility over the window, and why a run kept its fixed level.
-- Calibration is a market-wide policy: one policy per asset class sets the window, the inverse rule, the provider order and the fallback. A feed derives its candidates from the policy and its pair; it pins an item or a window only as a stated exception.
+- Calibration needs no configuration: with no policy the defaults (provider catalogue order, a 90-day window, inverse allowed, keep the fixed level) calibrate every feed. A class policy and a feed's pin are optional refinements.
+- A class policy sets the window, the inverse rule, the provider order and the fallback. A feed derives its candidates from the policy or the defaults and its pair; it pins an item or a window only as a stated exception. A feed may also name its items explicitly, but no feed needs to.
 - A recalculation of a class resolves every feed and records each start, with the coverage of resolved, fallback and blocked feeds.
 
 * Tasks
@@ -67,7 +68,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - One adapter serves every public source, with Frankfurter as its first fetcher (2026-10-28).
 - The durable fixings are kept for good, in a table of their own (2026-10-28).
 - The catalogue starts wide: every daily Frankfurter provider whose terms allow storage, so each main pair has several providers from the first day (2026-10-28).
-- Calibration belongs to the market, not to each feed (2026-10-31). One policy per asset class sets the window, the inverse rule, the provider order and the fallback; a feed derives its candidates from that policy and pins an item or a window only as an exception. A list authored on every feed does not scale and hides the market's actual coverage.
+- Calibration belongs to the market, not to each feed (2026-10-31). With nothing configured, the defaults calibrate every feed; a policy per asset class and a pin on one feed are optional refinements. A list authored on every feed does not scale and hides the market's actual coverage, so no feed needs one, though a feed may still state one as an exception.
 - Vintage is decommissioned, and public fixings are the only calibration (2026-10-31). The old path read an observation from a stored vintage; it is gone from the code. The notes, the seeds and the config default follow. A pair with no fixing keeps a fixed level, and the screen says so: that is a stated fallback, not a second source.
 - It supersedes the task [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]], whose five new tables are not built. The design and its history are in [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 

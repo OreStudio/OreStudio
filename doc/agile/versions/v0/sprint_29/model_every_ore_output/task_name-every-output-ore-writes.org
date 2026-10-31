@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/name-every-output-ore-writes
-#+pr:
+#+pr: 4189
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -122,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4189][#4189]] | [ore] Name every output ORE writes |
 
 * Review
 

@@ -8,8 +8,9 @@
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
 #+branch: feature/serve-the-built-bundle
-#+pr:
-#+blocked_on:
+#+pr: 4176
+#+blocked_on: review
+#+blocked_since: 2026-10-31 01:40
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -63,8 +64,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Bundle cases | 5 cases, 39 assertions, all passing | =./ores.http.core.tests "[web_bundle]"= | branch head |
-| =ores.http.core= test cases | 15 cases, 95 assertions, all passing | =./ores.http.core.tests= | branch head |
+| Bundle cases | 5 cases, 39 assertions, all passing | =./ores.http.core.tests "[web_bundle]"= | =#4176= |
+| =ores.http.core= test cases | 15 cases, 95 assertions, all passing | =./ores.http.core.tests= | =#4176= |
 
 * Notes
 
@@ -96,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4176](https://github.com/OreStudio/OreStudio/pull/4176) | [web] Serve the built bundle from a manifest |
 
 * Review
 

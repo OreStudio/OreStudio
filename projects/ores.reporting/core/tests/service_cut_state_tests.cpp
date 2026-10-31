@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
+#include "test_suite.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -29,6 +33,7 @@
 // scope and the instant. Neither is stored, so both are worked out here from a
 // row and nothing else: no clock, no database and no bus.
 
+using namespace ores::logging;
 using namespace ores::reporting;
 using namespace ores::reporting::service;
 
@@ -70,6 +75,8 @@ domain::cut taken_cut(const std::string& kind_code) {
 }
 
 TEST_CASE("a row no take completed and no gap marred is a draft", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     const auto cut = taken_cut("EOD");
     auto draft = cut;
     draft.taken_at.reset();
@@ -79,6 +86,8 @@ TEST_CASE("a row no take completed and no gap marred is a draft", "[service][cut
 }
 
 TEST_CASE("a row no take completed with a gap is incomplete", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto attempt = taken_cut("EOD");
     attempt.taken_at.reset();
 
@@ -87,6 +96,8 @@ TEST_CASE("a row no take completed with a gap is incomplete", "[service][cut]") 
 }
 
 TEST_CASE("a taken body of a kind that requires an authorisation waits", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.requires_authorisation = true;
 
@@ -95,6 +106,8 @@ TEST_CASE("a taken body of a kind that requires an authorisation waits", "[servi
 }
 
 TEST_CASE("an authorised body is usable and states its authorisation", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.requires_authorisation = true;
     cut.approved_by = "m.silva";
@@ -105,6 +118,8 @@ TEST_CASE("an authorised body is usable and states its authorisation", "[service
 }
 
 TEST_CASE("a body of a kind that requires none is in use the moment it is taken", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("SOD");
     cut.requires_authorisation = false;
 
@@ -113,6 +128,8 @@ TEST_CASE("a body of a kind that requires none is in use the moment it is taken"
 }
 
 TEST_CASE("a refusal is terminal for that body", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.requires_authorisation = true;
     cut.refused_at = instant("2026-10-06T18:00:00Z");
@@ -123,6 +140,8 @@ TEST_CASE("a refusal is terminal for that body", "[service][cut]") {
 }
 
 TEST_CASE("a later cut of the kind and scope supersedes a usable one", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.requires_authorisation = true;
     cut.approved_by = "m.silva";
@@ -133,6 +152,8 @@ TEST_CASE("a later cut of the kind and scope supersedes a usable one", "[service
 }
 
 TEST_CASE("supersession leaves a body that was never usable where it was", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.requires_authorisation = true;
 
@@ -140,12 +161,16 @@ TEST_CASE("supersession leaves a body that was never usable where it was", "[ser
 }
 
 TEST_CASE("the label names the kind, the scope and the date", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     const auto cut = taken_cut("EOD");
     CHECK(cut_label_of(cut, kind("EOD", "end_of_day", std::nullopt, 25)) ==
           "EOD.ACME-LONDON.2026-10-06");
 }
 
 TEST_CASE("a retake states its ordinal so two bodies are told apart", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("EOD");
     cut.take_ordinal = 2;
 
@@ -154,6 +179,8 @@ TEST_CASE("a retake states its ordinal so two bodies are told apart", "[service]
 }
 
 TEST_CASE("a body whose instant the consumer supplies carries the instant", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto cut = taken_cut("LIVE");
     cut.timepoint = instant("2026-10-07T07:40:00Z");
 
@@ -162,6 +189,8 @@ TEST_CASE("a body whose instant the consumer supplies carries the instant", "[se
 }
 
 TEST_CASE("a take copies the kind's retention and never the caller's", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     cut_take_plan plan;
     plan.kind_code = "EOY";
     plan.scope_code = "ACME-LONDON";
@@ -183,6 +212,8 @@ TEST_CASE("a take copies the kind's retention and never the caller's", "[service
 }
 
 TEST_CASE("a kind that names an approval kind is taken as one that waits", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     cut_take_plan plan;
     plan.kind_code = "IPV";
     plan.taken_by = "a.reyes";
@@ -197,6 +228,8 @@ TEST_CASE("a kind that names an approval kind is taken as one that waits", "[ser
 }
 
 TEST_CASE("a retake of one occasion is numbered after the takes held", "[service][cut]") {
+
+    auto lg(make_logger(test_suite));
     auto first = taken_cut("EOD");
     first.take_ordinal = 1;
     auto second = taken_cut("EOD");
@@ -205,4 +238,23 @@ TEST_CASE("a retake of one occasion is numbered after the takes held", "[service
     CHECK(next_take_ordinal({}) == 1);
     CHECK(next_take_ordinal({first}) == 2);
     CHECK(next_take_ordinal({first, second}) == 3);
+}
+
+TEST_CASE("a take copies the kind's indicative mark and never the caller's", "[service][cut]") {
+    auto lg(make_logger(test_suite));
+
+    cut_take_plan plan;
+    plan.kind_code = "LIVE";
+    plan.taken_by = "svc.reporting";
+    plan.taken_at = instant("2026-10-07T07:40:00Z");
+
+    auto indicative = kind("LIVE", "consumer", std::nullopt, 1);
+    indicative.output_is_indicative = true;
+    const auto official = kind("SOD", "start_of_day", std::nullopt, 25);
+
+    const auto live = plan_take(plan, indicative, boost::uuids::uuid{}, 1);
+    CHECK(live.output_is_indicative);
+    CHECK_FALSE(live.requires_authorisation);
+
+    CHECK_FALSE(plan_take(plan, official, boost::uuids::uuid{}, 1).output_is_indicative);
 }

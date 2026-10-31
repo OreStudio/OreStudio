@@ -31,6 +31,7 @@ import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerReportingRoutes } from './reporting.js';
+import { registerCutRoutes } from './cuts.js';
 import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
 import { registerBookingRoutes } from './booking.js';
@@ -2673,6 +2674,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerClassificationRoutes(server, requireSession);
     registerCounterpartyRoutes(server, requireSession);
     registerReportingRoutes(server, requireSession);
+    registerCutRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
     registerTradeRoutes(server, requireSession);
     registerStructureRoutes(server, requireSession);

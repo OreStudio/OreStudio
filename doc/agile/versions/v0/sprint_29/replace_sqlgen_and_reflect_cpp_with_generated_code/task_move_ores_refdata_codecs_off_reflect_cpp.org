@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch: feature/move-ores-refdata-codecs-off-reflect-cpp
+#+branch: feature/move-ores-refdata-hand-written-json-off-reflect-cpp
 #+pr: 4182
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-27
-#+environment: brave_hopper brave_hopper
+#+updated: 2026-10-31
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -232,3 +232,31 @@ via its "Verifies task" field.
 | 14 | The Measurements table breaks its own rule: no commits, no sweep row | task page | Fixed | Every row names a command and a commit, and the sweep, the file count, the suites and the byte comparison are rows |
 
 * Result
+
+PR #4182 delivers the generation half of this task, and not the whole of it.
+
+Delivered: every generated refdata model states its wire shape beside its struct,
+every generated entity has its codec pair, and the component's messaging path
+resolves the trait to generated code. 178 models opted in, 501 files generated,
+the component's file lists regenerated. The member-header derivation is one
+resolver with one classifier and a test. The bytes are proved equal to
+reflect-cpp's for a row, nine messages, a field group and the NATS path, in both
+formats.
+
+Not delivered, and why this task stays STARTED:
+
+- **The component's hand-written JSON.** Every =*_json_io.cpp= still calls
+  =rfl::json::write=, and the eventing headers still read with =rfl::json::read=.
+  That is the "hand-written JSON uses the generated codecs or yyjson" line, and
+  it is the next slice.
+- **Seven hand-written domain headers** have no generated shape:
+  =tenor_resolution=, =tenor_basis_swap_long_short_legs=,
+  =tenor_basis_swap_pay_receive_legs= and four smaller ones.
+- **Nothing in ores.refdata includes reflect-cpp** is therefore still unmet; 548
+  files name =rfl=.
+
+One suite assertion is red and is not this branch's: the curve-configuration
+round trip expects the store to keep one code per business day convention, and
+nothing canonicalises it. The investigation, the two defects and the remedy are
+in the inbox capture this PR files against the owning story.
+

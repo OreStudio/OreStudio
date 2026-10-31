@@ -281,15 +281,20 @@ internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32
 
 /**
  * @brief The security identifier (ISIN-shaped) of the security with the given
- * original term.
+ * original term and product.
  *
- * The population draws its trades from a pool of securities, one per currency
- * and whole year of the tenor band. A security is a fact about its issuer and
- * its terms and never about a book or a trade, so any book that keeps its
- * currency may hold it and every trade of it states the same maturity.
+ * The population draws its trades from a pool of securities, one per currency,
+ * whole year of the tenor band and product. The product is part of the name
+ * because the security's own rows are: a callable bond states the dates its
+ * issuer may call it and a plain bond of the same term states none, so the two
+ * are different securities. A security is a fact about its issuer and its terms
+ * and never about a book or a trade, so any book that keeps its currency may
+ * hold it and every trade of it states the same maturity.
  */
-ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
-                                                       std::uint32_t tenor_years);
+ORES_SYNTHETIC_CORE_EXPORT std::string
+security_id_for(const domain::trade_generation_scope& scope,
+                std::uint32_t tenor_years,
+                std::string_view product);
 
 /**
  * @brief The counterparty that issued the security with the given original

@@ -33,6 +33,7 @@ set(files
     "planner_import_planner_tests.cpp"
     "pricing_engines_import_tests.cpp"
     "results_canonical_rows_tests.cpp"
+    "results_output_catalogue_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "xml_binding_tests.cpp"
     "xml_calendaradjustment_roundtrip_tests.cpp"

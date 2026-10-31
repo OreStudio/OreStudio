@@ -1070,6 +1070,22 @@ CATALOGUE: tuple[Check, ...] = (
             " commit the result.",
     ),
     Check(
+        id="ore-output-catalogue",
+        title="The output catalogue matches the ORE samples",
+        argv=("python3", "projects/ores.ore/scripts/generate_output_catalogue.py",
+              "--check"),
+        classes=("cpp", "tooling"),
+        paths=(
+            "external/ore/*",
+            "projects/ores.ore/scripts/generate_output_catalogue.py",
+            "projects/ores.ore/core/include/ores.ore.core/results/output_catalogue.hpp",
+            "projects/ores.ore/core/src/results/output_catalogue_data.*",
+        ),
+        fix="Run projects/ores.ore/scripts/generate_output_catalogue.py and commit"
+            " the data it writes, or state in the generator why the sample is not"
+            " a family.",
+    ),
+    Check(
         id="dsh-environment",
         title="The DSH environment plugin passes its own checks",
         argv=(

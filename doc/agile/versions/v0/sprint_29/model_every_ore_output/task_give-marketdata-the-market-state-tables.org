@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-marketdata-the-market-state-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

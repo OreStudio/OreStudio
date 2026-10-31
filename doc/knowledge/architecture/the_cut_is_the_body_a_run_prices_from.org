@@ -335,16 +335,19 @@ so a person sees a stale choice before a run discovers it.
 * The resolution
 
 The selection is a rule; the resolution executes it. The run resolves the selection
-to a concrete cut before it gathers anything, and the rules are six.
+to a concrete cut before it gathers anything, and the rules are five.
 
 | Selection | Resolves to | Its timepoint | What the resolution refuses |
 |-----------+-------------+---------------+-----------------------------|
 | =EOD= | The end of day cut of the date the report covers, for the report's scope and centre | The centre's close of that date | No such cut, or one whose authorisation is not recorded |
 | =SOD= | The start of day cut of that date, for the same scope | The centre's open of that date | No such cut |
 | =IPV= | The independent verification cut of that date | The close of the cut it is built on | No such cut, or one whose authorisation is not recorded |
-| A process-named kind | The cut of that kind for the date, at the instant its process named | The instant the process named | No such cut |
 | =LIVE= | A new cut, minted at the run's instant | The instant the run starts | A body that cannot be assembled |
-| A specific cut | Itself | The cut's own instant | A cut that is not consumable, or one of another party or scope |
+| A specific cut, of any kind | Itself | The cut's own instant | A cut that is not consumable, or one of another party or scope |
+
+A flash cut and a process-named cut are not selected by kind. No rule resolves the
+occasion a flash cut takes, and the instant a process names belongs to that process:
+a report that wants either pins the cut.
 
 **The date the report covers is not the cut.** The report's covered date is a
 setting of the run settings, and the resolution reads it together with the report's

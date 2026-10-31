@@ -216,9 +216,11 @@ the run's own operation against the same store, with the cut's label, timepoint,
 state, basis and holdings; or the sentence that would refuse the run, naming the
 kind it looked for, the date and the scope.
 
-The *selection dialog* is where a person sets it. It offers the five kinds, each
-with the sentence it resolves against and whether it is signed, and the cuts the
-party holds for a report that pins one body. Selecting a kind previews it, and the
+The *selection dialog* is where a person sets it. It offers the four selection
+kinds — EOD, SOD, IPV and LIVE — each with the sentence it resolves against and
+whether it is signed, and the cuts the party holds for a report that pins one
+body; a flash or process-named cut is pinned, because no rule resolves its
+occasion. Selecting a kind previews it, and the
 preview is the same panel the report page draws. A person therefore reads the
 consequence of a choice before saving it, which is the whole reason the preview is
 the run's operation and not a second rule written for a screen.

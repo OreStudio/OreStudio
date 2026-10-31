@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: BD6335F9-290A-4BE2-8F96-49D047DFF106
+:END:
+#+title: ores.reporting.report_metric
+#+description: Codegen entity model for the reporting =report_metric= table. One figure a run produced, at one subject and one observation date.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One figure a run produced, at one subject and one observation date.
+#+entity_singular: report_metric
+#+entity_plural: report_metrics
+#+entity_title: Report Metric
+#+created: 2026-10-27
+#+updated: 2026-10-31
+
+One figure a run produced, at one subject and one observation date, with the
+qualifiers that say what the figure is about. Every family whose row is keys,
+qualifiers and figures lands here, and =family= says which family it came from.
+
+The row is written once, with the run, and never edited; a correction is a new
+run. A figure the engine stated as its null string is not here at all, because
+there is nothing to store. The =subject_id= is the engine's own identifier, such
+as a trade id or a netting set id, so it is text and not a uuid.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this metric.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run that produced the figure.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's runs are one query.
+
+** family
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The family the figure came from, as the catalogue names it: npv, curves, xva. It
+is what tells a reader which reader produced the row.
+
+** subject_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The kind of record the figure is about: trade, netting_set, portfolio, or row
+when the family states no record.
+
+** subject_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's own identifier for that record, such as a trade id. It is text
+because the engine names its records with strings, not with uuids.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:natural_key:  true
+:END:
+
+The observation date the figure belongs to: the run's priced date when the file
+states none, and the row's own date or time step when it does.
+
+** measure
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's name for the figure: a heading such as NPV, and also a curve or a
+risk factor, because a configuration-driven family states each figure as a
+column.
+
+** currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The currency the figure is stated in, empty when it states none.
+
+** scenario
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The scenario the figure was produced under, when the row states one. It is typed
+because the stress and sensitivity families all state it and a screen filters on
+it.
+
+** factor
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The risk factor the figure is a sensitivity to, when the row states one.
+
+** qualifiers
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+Every other qualifier the file stated, as a JSON object of name and value, so a
+family gains no column in the table.
+
+** value
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     double
+:END:
+
+The figure, as the engine stated it and never formatted.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The family and the row the reader read, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_reporting_report_metrics_tbl
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:append_insert:                true
+:bitemporal_trigger:           soft_update_delete
+:no_audit_columns:             true
+:rls_tenant_isolation:         true
+:rls_party_isolation:          true
+:END:
+
+** Bitemporal natural keys
+
+A run's figures are its own. The insert trigger closes the current row of the
+same key, and the key names the run, so posting one run never closes another
+run's rows.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| as_of              | false    |
+| family             | false    |
+| subject_type       | false    |
+| subject_id         | false    |
+| measure            | false    |
+| currency           | false    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: metric
+:entity_plural_short:   metrics
+:entity_singular_words: report metric
+:entity_plural_words:   report metrics
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| family       | Family       |
+| subject_type | Subject Type |
+| subject_id   | Subject Id   |
+| measure      | Measure      |
+| currency     | Currency     |
+| value        | Value        |
+| as_of        | As Of        |

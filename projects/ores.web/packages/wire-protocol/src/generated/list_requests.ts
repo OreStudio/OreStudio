@@ -1945,6 +1945,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.cap_floor_proxy_configs.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['cap_floor_proxy_configs'],
+    },
+    'refdata.v1.cap_floor_proxy_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.cap_floor_volatility_configs.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -2560,6 +2570,66 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.curve_volatility_constants.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_constants'],
+    },
+    'refdata.v1.curve_volatility_constants_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_curves.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_curves'],
+    },
+    'refdata.v1.curve_volatility_curves_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_delta_surfaces.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_delta_surfaces'],
+    },
+    'refdata.v1.curve_volatility_delta_surfaces_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_kinds.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_kinds'],
+    },
+    'refdata.v1.curve_volatility_kinds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_proxy_surfaces.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_proxy_surfaces'],
+    },
+    'refdata.v1.curve_volatility_proxy_surfaces_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_strike_surfaces.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_strike_surfaces'],
+    },
+    'refdata.v1.curve_volatility_strike_surfaces_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.day_count_fraction_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -2720,6 +2790,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.fx_volatility_smiles.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['fx_volatility_smiles'],
+    },
+    'refdata.v1.fx_volatility_smiles_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.ibor_index_conventions.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -2736,6 +2816,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['inflation_cap_floor_volatility_configs'],
     },
     'refdata.v1.inflation_cap_floor_volatility_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.inflation_cap_floor_volatility_strikes.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['inflation_strikes'],
+    },
+    'refdata.v1.inflation_cap_floor_volatility_strikes_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -3335,6 +3425,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.swaption_proxy_configs.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['swaption_proxy_configs'],
+    },
+    'refdata.v1.swaption_proxy_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.swaption_volatility_configs.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -3717,6 +3817,82 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.cut_families.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['families'],
+    },
+    'reporting.v1.cut_families_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.cut_gaps.list': {
+        asOf: true,
+        filter: ['cut_id', 'party_id', 'id_one_of', 'cut_id_one_of', 'party_id_one_of'],
+        rows: ['gaps'],
+    },
+    'reporting.v1.cut_gaps.list_by_cut_id': {
+        asOf: false,
+        filter: ['cut_id', 'party_id', 'id_one_of', 'cut_id_one_of', 'party_id_one_of'],
+        rows: ['gaps'],
+    },
+    'reporting.v1.cut_gaps_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.cut_kinds.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['kinds'],
+    },
+    'reporting.v1.cut_kinds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.cut_resolution_rules.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['rules'],
+    },
+    'reporting.v1.cut_resolution_rules_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.cuts.list': {
+        asOf: true,
+        filter: [
+            'kind_code',
+            'party_id',
+            'business_centre_code',
+            'id_one_of',
+            'kind_code_one_of',
+            'party_id_one_of',
+            'business_centre_code_one_of',
+        ],
+        rows: ['cuts'],
+    },
+    'reporting.v1.cuts.list_by_kind_code': {
+        asOf: false,
+        filter: [
+            'kind_code',
+            'party_id',
+            'business_centre_code',
+            'id_one_of',
+            'kind_code_one_of',
+            'party_id_one_of',
+            'business_centre_code_one_of',
+        ],
+        rows: ['cuts'],
+    },
+    'reporting.v1.cuts_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.engine_settings.list': {
         asOf: true,
         filter: ['configuration_id', 'id_one_of', 'configuration_id_one_of'],
@@ -3965,6 +4141,25 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.report_cashflows.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'subject_id',
+            'measure',
+            'part',
+            'flow_type',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'family_one_of',
+            'subject_id_one_of',
+            'measure_one_of',
+            'part_one_of',
+            'flow_type_one_of',
+        ],
+        rows: ['cashflows'],
+    },
     'reporting.v1.report_configurations.list': {
         asOf: true,
         filter: [
@@ -4024,7 +4219,14 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'reporting.v1.report_definitions.list': {
         asOf: true,
-        filter: ['party_id', 'id_one_of', 'party_id_one_of', 'search'],
+        filter: [
+            'party_id',
+            'cut_kind_code',
+            'id_one_of',
+            'party_id_one_of',
+            'cut_kind_code_one_of',
+            'search',
+        ],
         rows: ['definitions'],
     },
     'reporting.v1.report_definitions_versions.list': {
@@ -4076,7 +4278,15 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'reporting.v1.report_instances.list': {
         asOf: true,
-        filter: ['definition_id', 'kind', 'id_one_of', 'definition_id_one_of', 'kind_one_of'],
+        filter: [
+            'definition_id',
+            'kind',
+            'cut_id',
+            'id_one_of',
+            'definition_id_one_of',
+            'kind_one_of',
+            'cut_id_one_of',
+        ],
         rows: ['instances'],
     },
     'reporting.v1.report_instances_versions.list': {
@@ -4084,16 +4294,20 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'reporting.v1.report_result_rows.list': {
+    'reporting.v1.report_metrics.list': {
         asOf: true,
         filter: [
             'report_instance_id',
+            'family',
+            'subject_id',
             'measure',
             'id_one_of',
             'report_instance_id_one_of',
+            'family_one_of',
+            'subject_id_one_of',
             'measure_one_of',
         ],
-        rows: ['rows'],
+        rows: ['metrics'],
     },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,
@@ -4124,6 +4338,29 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
+    },
+    'reporting.v1.run_results.list': {
+        asOf: false,
+        filter: [
+            'party_id',
+            'report_instance_id',
+            'report_definition_id',
+            'subject_type',
+            'subject_id',
+            'measure',
+            'currency',
+            'counterparty_id',
+            'id_one_of',
+            'party_id_one_of',
+            'report_instance_id_one_of',
+            'report_definition_id_one_of',
+            'subject_type_one_of',
+            'subject_id_one_of',
+            'measure_one_of',
+            'currency_one_of',
+            'counterparty_id_one_of',
+        ],
+        rows: ['results'],
     },
     'scheduler.v1.job_definitions.list': {
         asOf: true,

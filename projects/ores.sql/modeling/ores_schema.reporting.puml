@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 44
+Tables: 45
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1060,6 +1060,50 @@ package "reporting" #E0F7FA {
     exactly one analytic kind, which is why the name alone is not the key.
     end note
 
+    entity ores_reporting_report_cashflows_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * family : text
+        * subject_type : text
+        * subject_id : text <<FK>>
+        * scenario : text
+        * cashflow_no : text
+        * leg_no : text
+        * measure : text
+        * part : text
+        * report_definition_id : uuid <<FK>>
+          pay_date : timestamptz
+          flow_type : text
+          currency : text
+          qualifiers : text
+        * value : double
+        * source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_cashflows_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Cashflow Table
+    A cashflow is not a metric. A metric states one figure about a subject; a
+    cashflow states a row per payment, keyed by the leg and the payment number, and
+    the stressed families state each of its figures three times, as a base, a
+    scenario and the difference between them.
+    The row here is therefore narrow, and keeps the cashflow's own keys: one figure,
+    named by its heading, with the part of the stressed comparison it states. A
+    family of cashflows adds no column to this table, and no figure of a cashflow is
+    flattened into report_metric, because the keys that make a cashflow a cashflow
+    have no place in a metric.
+    The row is written once, with the run, and never edited; a correction is a new
+    run.
+    end note
+
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1346,35 +1390,40 @@ package "reporting" #E0F7FA {
     begins. completed_at is NULL while running or in a terminal-before-start state.
     end note
 
-    entity ores_reporting_report_result_rows_tbl <<temporal>> #C6F0D8 {
+    entity ores_reporting_report_metrics_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * as_of : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * report_instance_id : uuid <<FK>>
+        * family : text
         * subject_type : text
-        * subject_id : uuid <<FK>>
+        * subject_id : text <<FK>>
         * measure : text
-        * currency : text
         * report_definition_id : uuid <<FK>>
-          counterparty_id : uuid <<FK>>
-        * figure : double
+        * currency : text
+          scenario : text
+          factor : text
+          qualifiers : text
+        * value : double
         * source : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
-    note right of ores_reporting_report_result_rows_tbl
+    note right of ores_reporting_report_metrics_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Report result row Table
-    One figure a run produced, for one subject in one measure, at the run's priced
-    date. The row is written once, with the run, and never edited; a correction is a
-    new run. as_of is the run's priced date, and it is the time column of the
-    series. The canonical row's shape and the reason it is narrow are stated in the
-    report post processing note.
+    Report Metric Table
+    One figure a run produced, at one subject and one observation date, with the
+    qualifiers that say what the figure is about. Every family whose row is keys,
+    qualifiers and figures lands here, and family says which family it came from.
+    The row is written once, with the run, and never edited; a correction is a new
+    run. A figure the engine stated as its null string is not here at all, because
+    there is nothing to store. The subject_id is the engine's own identifier, such
+    as a trade id or a netting set id, so it is text and not a uuid.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {

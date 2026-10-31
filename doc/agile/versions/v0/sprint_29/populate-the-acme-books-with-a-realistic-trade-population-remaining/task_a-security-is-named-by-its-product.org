@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/a-security-is-named-by-its-product
-#+pr:
+#+pr: 4209
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4209][#4209]] | [synthetic] Name a security by its product as well as its term |
 
 * Review
 

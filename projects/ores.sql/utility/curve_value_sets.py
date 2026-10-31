@@ -157,13 +157,6 @@ OWN_SETS = {
         "pattern": "^[+-]?([0-9]+[DdWwMmYy])+$",
         "is_ordered": False,
     },
-    "curve.text": {
-        "name": "Text",
-        "description": "Text ORE reads as it stands. The curve configuration holds it as "
-                       "text, so no list narrows it.",
-        "source_kind": "text",
-        "is_ordered": False,
-    },
 }
 
 
@@ -258,10 +251,10 @@ def set_of(term, curated, parsers, section):
         return parser_set_code(link), link
     if name in VALUE_SET_OF:
         value_set = VALUE_SET_OF[name]
-        return ("curve.text" if catalogue_of(value_set) is None else value_set), None
+        return ("text" if catalogue_of(value_set) is None else value_set), None
     if term["type"] in TYPE_SETS:
         return TYPE_SETS[term["type"]], None
-    return "curve.text", None
+    return "text", None
 
 
 def data():
@@ -332,4 +325,4 @@ def text_of():
     documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     return sorted({f"{section}|{term['name']}" for section, term in terms()
                    if (section, term["name"]) in documented
-                   and set_of(term, curated, parsers, section)[0] == "curve.text"})
+                   and set_of(term, curated, parsers, section)[0] == "text"})

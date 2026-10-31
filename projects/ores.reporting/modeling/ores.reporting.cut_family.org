@@ -33,6 +33,7 @@ is the LIVE kind.
 :product:       ores
 :component:     reporting
 :profile:       simple-lookup
+:system_tenant_visible: true
 :END:
 
 * Columns

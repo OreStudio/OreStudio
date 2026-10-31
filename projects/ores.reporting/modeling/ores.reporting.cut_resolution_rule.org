@@ -33,6 +33,7 @@ and the report reaches its cuts by pinning one rather than by selecting a kind.
 :product:       ores
 :component:     reporting
 :profile:       simple-lookup
+:system_tenant_visible: true
 :END:
 
 * Columns

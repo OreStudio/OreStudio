@@ -28,9 +28,9 @@ Step 6 of 7, one component. ores.refdata encodes and decodes without reflect-cpp
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | The generated JSON paths and the convention payloads read and print through the codec. 173 production files still name reflect-cpp, and 168 of those are the generated storage-entity printers. |
+| Now          | The generated JSON paths, the convention payloads and the storage-row printer read and write through the codec. Five production files still name reflect-cpp, each holding a hand-written type with no shape. |
 | Waiting on   | Nothing.                               |
-| Next         | Delete the storage-entity printer (168 units, no call site streams one), then give shapes to the four hand-written types that hold the last five sites. |
+| Next         | Give shapes to the four hand-written types behind the last five sites. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -215,16 +215,15 @@ What is left in the component, measured after these two:
 
 | Family | Files | What it needs |
 |--------+-------+---------------|
-| =*_entity.cpp= in =repository/= | 168 | The storage entity states no shape and no call site streams one. Deleting the unit and its declaration is the smaller answer. |
-| Two workflow request headers | 2 | =book_apply='s request and =counterparty_apply='s command state no shape. |
-| =party_handler.hpp= | 1 | Prints a response whose own type states no shape. |
-| =publish_from_dq_handler.cpp= | 1 | Reads a =dq= command and writes its result. |
+| Two workflow request headers | 2 | A request and a command with a single member each; a shape is a few lines. |
+| =party_handler.hpp= | 1 | Prints a response whose type states no shape. |
+| =publish_from_dq_handler.cpp= | 1 | Reads a =dq= workflow command and writes its result. |
 | =options.cpp= | 1 | Prints the service's options struct, which states no shape. |
-| core tests | 3 | They compare against reflect-cpp on purpose, so they stay. |
 
 Every count above is =grep -rlnE "^[^*/]*\brfl::" --include=*.cpp --include=*.hpp
 projects/ores.refdata | grep -v /tests/=, which counts code rather than a mention
-in a comment.
+in a comment. The generated storage-entity printers came off this list in #4259,
+by printing from the column list the entity already states.
 
 ** The storage entity printer cannot simply go (2026-10-31)
 
@@ -269,8 +268,9 @@ one from the reflector.
 So the printer reads the list it already has. =query_builder::write_json= walks
 =columns()= and writes each member with the codec its type selects, which is the
 same writer the wire uses. One helper in =ores.database=, one line in the entity
-unit, and all 480 of them stop naming reflect-cpp, in every component rather than
-only the ones that opted in.
+unit, and 478 of them stop naming reflect-cpp, in every component rather than only the ones
+that opted into the wire codec; the 479th, =dq='s =dataset_dependency_entity=, is
+hand-written and keeps the reflector.
 
 Two details that made the output equal to the reflector's rather than merely
 valid: a member the row does not state is left out of the object, as the wire's

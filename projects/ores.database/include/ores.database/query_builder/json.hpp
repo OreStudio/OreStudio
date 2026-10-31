@@ -22,25 +22,18 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstddef>
-#include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <yyjson.h>
 
 namespace ores::database::query_builder {
 
-namespace detail {
-
-template <typename T>
-struct is_optional : std::false_type {};
-
-template <typename T>
-struct is_optional<std::optional<T>> : std::true_type {};
-
-}
 
 /**
  * @brief The row as a JSON object, written from the columns the entity states.
@@ -71,17 +64,18 @@ std::string write_json(const Entity& v) {
         [&](const auto&... binding) {
             (
                 [&](const auto& b) {
-                    using member_type = std::decay_t<decltype(v.*(b.member))>;
-                    // A member the row does not state is left out of the object,
-                    // which is what the wire's own object writer does.
-                    if constexpr (detail::is_optional<member_type>::value) {
+                    using member_type = std::remove_cvref_t<decltype(v.*(b.member))>;
+                    if constexpr (ores::utility::codec::is_optional_member<member_type>) {
                         if (!(v.*(b.member)))
                             return;
                     }
                     auto* name = yyjson_mut_strncpy(doc, b.name.data(), b.name.size());
                     auto* value =
                         ores::utility::codec::json_codec<member_type>::write(doc, v.*(b.member));
-                    yyjson_mut_obj_add(object, name, value);
+                    if (!yyjson_mut_obj_add(object, name, value)) {
+                        yyjson_mut_doc_free(doc);
+                        throw std::runtime_error("Could not add a member to the document");
+                    }
                 }(binding),
                 ...);
         },

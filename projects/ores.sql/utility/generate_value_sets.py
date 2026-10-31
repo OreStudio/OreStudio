@@ -385,23 +385,34 @@ def render(data):
                 "change_reason_code, change_commentary", links, "link"))
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--check", action="store_true",
-                        help="fail if the committed script differs from the data")
-    args = parser.parse_args()
+def resolved():
+    """The curation every source has been applied to, and what went wrong.
+
+    The seed is rendered from this, and so is the element map: a leaf's rule and
+    the rule of the setting that names it are one fact, so both readers resolve
+    them once instead of each deriving the answer its own way.
+    """
     data = load()
     problems = resolve(data)
     problems = problems + add_conventions(data)
     problems = problems + add_curves(data)
     problems = problems + add_setup(data)
+    problems = problems + validate(data)
+    return data, problems
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--check", action="store_true",
+                        help="fail if the committed script differs from the data")
+    args = parser.parse_args()
+    data, problems = resolved()
     text = curve_value_sets.text_of()
     print(f"{len(text)} curve configuration leaves take text, for example "
           f"{', '.join(text[:3])}.", file=sys.stderr)
     for name, scopes in curve_value_sets.catalogue_scopes().items():
         print(f"{name} is matched in {len(scopes)} sections: {', '.join(scopes)}.",
               file=sys.stderr)
-    problems = problems + validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1

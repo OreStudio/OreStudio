@@ -795,8 +795,12 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/generate_ore_element_map.py",
             "projects/ores.sql/utility/generate_curve_column_guards.py",
             "projects/ores.sql/utility/generate_convention_kind_terms.py",
+            "projects/ores.sql/utility/generate_value_sets.py",
+            "projects/ores.sql/utility/curve_value_sets.py",
+            "projects/ores.sql/utility/convention_value_sets.py",
             "projects/ores.sql/utility/ore_parameter_vocabularies.json",
-            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/utility/curve_terms.json",
+            "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
         ),
         fix="Run projects/ores.sql/utility/generate_ore_element_map.py and commit"

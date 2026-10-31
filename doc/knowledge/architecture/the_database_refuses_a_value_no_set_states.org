@@ -2,7 +2,7 @@
 :ID: E693B10B-7C28-4F21-95EC-ED9579E23D1A
 :END:
 #+title: The database refuses a value that no value set states
-#+description: The four trigger functions that enforce a value set, the one verdict function they and the sign-off path share, why it runs as a definer, and the two places a missing rule still passes.
+#+description: The four trigger functions that enforce a value set, the one verdict function they and the sign-off path share, why it runs as a definer, and the three places a missing rule still passes.
 #+type: knowledge
 #+level: cross
 #+filetags: :ore:xml:value-sets:enforcement:architecture:
@@ -29,8 +29,8 @@ function all reach the same table, and only a trigger sees all four.
 | Trigger function | Attached to | Resolves the set by |
 |------------------+-------------+---------------------|
 | =ores_reporting_validate_parameter_value_fn= | =ores_analytics_pricing_model_product_parameters_tbl= | =(scope, name)= on the setting link |
-| =ores_refdata_validate_curve_values_fn= | each of the refdata curve configuration tables | the curve column's =(schema_name, xpath)=, then the contract, then the link |
-| =ores_refdata_validate_convention_terms_fn= | each of the convention and currency pair tables | the term's =(schema_name, xpath)=, then the contract, then the link |
+| =ores_refdata_validate_curve_values_fn= | each of the refdata curve configuration tables | the column's row in the element map, which names the set |
+| =ores_refdata_validate_convention_terms_fn= | each of the convention and currency pair tables | the term's row in the element map, which names the set |
 | =ores_reporting_validate_engine_settings_part_fn= | the fixings, building and execution part tables | =Setup:= and the part's ORE name |
 
 Each is a =security definer= trigger, and each raises an error that names the
@@ -81,10 +81,16 @@ and draws it, rather than carrying a copy of the rule.
 
 #+caption: Figure 1. Every writer reaches the same verdict, and the sign-off path asks it before the write.
 
-* The two places a missing rule still passes
+* The three places a missing rule still passes
 
-Both are stated here rather than left for a reader to discover.
+All are stated here rather than left for a reader to discover.
 
+- A leaf the element map states =text= for is admitted, because text is a rule
+  that admits every value. For 232 of the 480 leaves that is a decision the ORE
+  parser justifies. For 28 it is not: the extractor does not read the form those
+  leaves are read in, so no parser states a rule for them. The count is a
+  ratchet in =generate_ore_element_map.py= (=UNREAD_ALLOWED=), so it can fall but
+  not grow unnoticed.
 - A parameter with no set is admitted by the product parameter guard: it returns
   the row when the link is not found
   (=…reporting_ore_parameter_value_validate_fn_create.sql:231=). The engine
@@ -113,7 +119,7 @@ specific value should ask =ores_reporting_setting_value_verdict_fn= and read
 - [[id:D5FFD498-A6E9-45AA-B80D-E16E3A432BD0][A value set is the only place an
   ORE parameter's rule is written]] — *answers* what the guards read: this page
   is the reading, and that page is the thing read.
-- [[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE
+- [[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE
   element a row is]] — *contradicts* any claim that all three maps are enforced:
   the guards use the curve columns and the convention terms, so the vocabularies
   table states a rule with no enforcer.

@@ -27,7 +27,7 @@
  * - The curve leaves have links
  * - Every link a curve leaf has names a value set that exists
  * - Every documented curve leaf has a link
- * - Every set a curve leaf uses is a curve set, not a convention or pricing one
+ * - Every vocabulary a curve leaf uses is a curve vocabulary
  * - Every curve set has at least one leaf
  * - Every catalogue a curve set draws on is registered
  *
@@ -82,10 +82,19 @@ select is_empty(
                         where l.code = d.scope || ':' || d.name)$$,
     'every documented curve leaf has a link');
 
+-- A curve leaf may take the one set that states free text, because a value no
+-- vocabulary governs is governed by nothing in whichever schema it is written.
+-- Every set that does name a vocabulary must be the curve family's.
 select is_empty(
-    $$select code, value_set_code from t_links
-      where not starts_with(value_set_code, 'curve.')$$,
-    'every set a curve leaf uses is a curve set');
+    $$select l.code, l.value_set_code
+        from t_links l
+        join ores_reporting_ore_parameter_value_sets_tbl s
+          on s.code = l.value_set_code
+         and s.valid_to = ores_utility_infinity_timestamp_fn()
+         and s.tenant_id = ores_utility_system_tenant_id_fn()
+       where not starts_with(l.value_set_code, 'curve.')
+         and s.source_kind <> 'text'$$,
+    'every vocabulary a curve leaf uses is a curve vocabulary');
 
 select is_empty(
     $$select s.code from t_sets s

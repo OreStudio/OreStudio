@@ -103,9 +103,10 @@ Three kinds of place hold a value a set governs, and each is reached differently
 #+end_src
 
 - A curve or convention leaf, such as =VolatilityType=, becomes a column of a
-  refdata table, and the set is found through the parameter contract, as
-  [[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE
-  element a row is]] describes.
+  refdata table, and the set is found through the element map's row for that
+  leaf, as
+  [[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE element
+  a row is]] describes.
 - A named parameter, such as =EnforceMonotoneVariance=, becomes a row of the
   pricing model's parameter table, and its set is found by =(scope, name)=.
 - A run or engine setting becomes a column of an engine settings part table, and
@@ -141,7 +142,7 @@ Two gaps are known, and both are changes rather than open questions.
 - [[id:E693B10B-7C28-4F21-95EC-ED9579E23D1A][The database refuses a value that
   no value set states]] — *completes* this page by naming the one code path that
   reads =source_kind= and the four functions that call it.
-- [[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE
+- [[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE
   element a row is]] — the lookup half: this page is what the lookup finds, and
   that page is what finds it.
 - [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at

@@ -43,10 +43,6 @@ read, would otherwise leave the term free text with no one told.
 import json
 import os
 import re
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import convention_parameter_rows  # noqa: E402
 
 TERMS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "convention_terms.json")
 
@@ -146,29 +142,61 @@ def parser_set(parser, entry):
     }
 
 
-# The extractor states no parser for these members, so it typed them text even
+# The kinds the tree states for a term the extractor typed another way, and the
+# reason a reviewer can check. Keyed by the convention element and the ORE name.
+#
+# The extractor states no parser for some members, so it typed them text even
 # though the schema declares the leaf a whole number. The ORE schema is the
 # authority for the type, and it states xs:integer for every declaration of
 # SettlementDays and FixingDays, and for the commodity forward's SpotDays.
-# Keyed by the convention element and the ORE name.
+#
+# ORE stores three more as strings and never parses them, so a typo in one is
+# silent in the engine. The field means the same vocabulary the other twenty
+# conventions state, and the catalogue refuses the typo.
 TYPE_OVERRIDE = {
-    ("SettlementDays", None): "integer",
-    ("FixingDays", None): "integer",
-    ("CommodityForward", "SpotDays"): "integer",
-    # ORE stores these three as strings and never parses them, so a typo in one
-    # is silent in the engine. The field means the same vocabulary the other
-    # twenty conventions state, and the catalogue refuses the typo.
-    ("IborIndex", "DayCounter"): "day_counter",
-    ("IborIndex", "BusinessDayConvention"): "business_day_convention",
-    ("OvernightIndex", "DayCounter"): "day_counter",
+    ("SettlementDays", None): (
+        "integer",
+        "The ORE schema declares SettlementDays xs:integer, and the extractor "
+        "typed it text because no parser reaches it."),
+    ("FixingDays", None): (
+        "integer",
+        "The ORE schema declares FixingDays xs:integer, and the extractor typed "
+        "it text because no parser reaches it."),
+    ("CommodityForward", "SpotDays"): (
+        "integer",
+        "The ORE schema declares the commodity forward's SpotDays xs:integer, and "
+        "the extractor typed it text because no parser reaches it."),
+    ("IborIndex", "DayCounter"): (
+        "day_counter",
+        "ORE stores this day counter as a string and never parses it, so a typo "
+        "is silent in the engine; it means the vocabulary every other convention "
+        "states, so the catalogue refuses the typo."),
+    ("IborIndex", "BusinessDayConvention"): (
+        "business_day_convention",
+        "ORE stores this business day convention as a string and never parses it, "
+        "so a typo is silent in the engine; it means the vocabulary every other "
+        "convention states, so the catalogue refuses the typo."),
+    ("OvernightIndex", "DayCounter"): (
+        "day_counter",
+        "ORE stores this day counter as a string and never parses it, so a typo "
+        "is silent in the engine; it means the vocabulary every other convention "
+        "states, so the catalogue refuses the typo."),
 }
+
+
+def override_of(element, term):
+    """The kind the tree states for a term, and why, when it overrides the extractor."""
+    found = (TYPE_OVERRIDE.get((term["name"], None))
+             or TYPE_OVERRIDE.get((element, term["name"])))
+    if not found:
+        return None, None
+    return found
 
 
 def set_of(term, parsers, element=None):
     """The set code of one term, and the parser whose list it is, if any."""
-    kind = (TYPE_OVERRIDE.get((term["name"], None))
-            or TYPE_OVERRIDE.get((element, term["name"]))
-            or term["type"])
+    override, _ = override_of(element, term)
+    kind = override or term["type"]
     if kind in CATALOGUE_OF:
         return "convention." + kind, None
     if kind in TYPE_SETS:
@@ -183,11 +211,16 @@ def set_of(term, parsers, element=None):
 
 
 def data():
-    """The catalogues, the sets and the links the convention terms add."""
+    """The catalogues, the sets and the links the convention terms add.
+
+    Every term the ORE source reads is linked, whether or not the parameter
+    contract documents it. The rule follows from the parser the ORE code reads
+    the term with, and it holds of the term whether or not a person has written
+    a description of it, so a link is stated here and nowhere else.
+    """
     with open(TERMS) as f:
         extracted = json.load(f)
     parsers = extracted["parsers"]
-    documented = {(r["scope"], r["name"]) for r in convention_parameter_rows.rows()}
     sets = dict(OWN_SETS)
     for kind, catalogue in CATALOGUE_OF.items():
         sets["convention." + kind] = {
@@ -201,8 +234,6 @@ def data():
     links = {}
     for element, convention in sorted(extracted["conventions"].items()):
         for term in convention["terms"]:
-            if (element, term["name"]) not in documented:
-                continue
             code, parser = set_of(term, parsers, element)
             if parser and code not in sets:
                 sets[code] = parser_set(parser, parsers[parser])

@@ -7,10 +7,18 @@ knows, so a leaf's rule is stated once and a guard can reach it from the row it
 is about to write.
 
 Two sources name the columns: the curve configuration projection (123 leaves,
-212 columns) and the convention mappers (176 leaves, 270 columns). The value set
-of a leaf comes from the parameter contract and its setting links, which is the
-path the guards take today; a leaf the contract does not describe takes =text=,
-so it arrives in the map as a decision instead of vanishing.
+212 columns) and the convention mappers (176 leaves, 270 columns).
+
+The value set of a leaf comes from the parser the ORE source reads it with,
+through the same curation the value set seed is written from: the rule of a leaf
+and the rule of the setting that shares its name are one fact, so neither is
+derived from the other. A leaf no ORE source read names states =text=, and the
+row says so and names the extractor gap, which is what =UNREAD_ALLOWED= holds
+down.
+
+=seeded()= reads a populate script back, one row per column, so the evidence
+report can be written from the committed data rather than from a second
+derivation of it.
 
     generate_ore_element_map.py            write both populate scripts
     generate_ore_element_map.py --check    fail if either differs
@@ -27,13 +35,12 @@ sys.path.insert(0, HERE)
 
 import generate_curve_column_guards as curves  # noqa: E402
 import generate_convention_kind_terms as terms  # noqa: E402
+import generate_value_sets as value_sets  # noqa: E402
+import convention_value_sets as convention_sets  # noqa: E402
+import curve_value_sets as curve_sets  # noqa: E402
 
 MAP_JSON = os.path.join(ROOT, "projects", "ores.sql", "utility",
                         "ore_parameter_vocabularies.json")
-CONTRACT_SQL = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                            "reporting_ore_parameters_artefact_populate.sql")
-LINKS_SQL = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                         "reporting_ore_parameter_value_sets_populate.sql")
 CHILD = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                      "reporting_ore_element_map_columns_populate.sql")
 MAP = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
@@ -42,6 +49,14 @@ MAP = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
 TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_reporting_service', 'system.initial_load'"
 ELEMENT = re.compile(r"/([^/\[]+)(?:\[[^\]]*\])?$")
+
+# The leaves no ORE source read names, so no parser states a rule for them. A
+# projection column carries each of them, so the count is a coverage gap and not
+# a choice: the map states text for a value ORE may well constrain. The number
+# may only fall. It falls when extract_curve_terms.py learns a form of read it
+# does not know yet; it rises when a projection column adds a leaf the extractor
+# cannot read, which is a rule stated as nothing.
+UNREAD_ALLOWED = 28
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -116,20 +131,100 @@ def seeded(path, table):
     return [dict(zip(names, values)) for values in split_values(text[header.end():])]
 
 
-def contract_sets():
-    """The value set each leaf takes, from the contract and its links, by address."""
-    links = {f"{r['scope']}:{r['name']}": r["value_set_code"]
-             for r in seeded(LINKS_SQL,
-                             "ores_reporting_ore_parameter_setting_value_sets_tbl")}
+def leaf_rules():
+    """The value set every leaf the ORE sources read takes, by address.
+
+    The rule of a leaf and the rule of the setting that names it are one fact, so
+    this reads the curation the value sets are seeded from rather than deriving a
+    second answer from the parameter contract. A leaf the ORE sources read is
+    governed by the parser they read it with; a leaf no source read names is not
+    here, and map_rows() states that gap rather than inventing a rule.
+
+    Each rule is a row's worth of facts: the set, the name a person reads, where
+    the rule comes from, the file and line the ORE code reads the leaf at, and
+    why the set holds that rule, so a reviewer can check it.
+    """
+    data, problems = value_sets.resolved()
+    if problems:
+        raise ValueError("\n".join(problems))
+    links, sets = data["links"], data["sets"]
     found = {}
-    for row in seeded(CONTRACT_SQL, "ores_dq_ore_parameters_artefact_tbl"):
-        if not row.get("xpath", "").startswith("/"):
+    for section, term in curve_sets.terms():
+        code = links.get(f"{section}|{term['name']}")
+        if not code:
             continue
-        code = links.get(f"{row['scope']}:{row['name']}")
-        if code:
-            found.setdefault((row["schema_name"], row["xpath"]), code)
+        address = "curveconfig.xsd", "/CurveConfiguration/" + "/".join(term["path"])
+        found.setdefault(address, describe(code, sets[code], term))
+    for element, convention in terms_extracted()["conventions"].items():
+        for term in convention["terms"]:
+            code = links.get(f"{element}|{term['name']}")
+            if not code:
+                continue
+            leaf = term["name"]
+            if term.get("list_item"):
+                leaf = f"{term['name']}/{term['list_item']}"
+            address = "conventions.xsd", "/Conventions/" + "/".join(term["path"] + [leaf])
+            _, overridden = convention_sets.override_of(element, term)
+            found.setdefault(address, describe(code, sets[code], term, overridden))
     return found
 
+
+def describe(code, entry, term, overridden=None):
+    """Why one leaf takes one set, in the words a reviewer can check."""
+    kind, parser = entry["source_kind"], term.get("parser")
+    element, spelling = term["name"], term.get("type")
+    if overridden:
+        reason = overridden
+    elif kind == "catalogue":
+        reason = (f"ORE reads {element} with {parser}, which accepts the spellings "
+                  f"reference data holds, so the set names that catalogue instead of "
+                  f"copying it.")
+    elif kind == "enumerated":
+        reason = (f"ORE reads {element} with {parser}, and the set lists every value "
+                  f"that parser's map accepts.")
+    elif kind == "text" and spelling == "calendar":
+        reason = (f"ORE parses {element} with {parser}, and a calendar may be a joint "
+                  f"calendar such as US,MWK that no catalogue row holds, so the set "
+                  f"states text.")
+    elif kind == "text" and parser:
+        reason = (f"ORE parses {element} with {parser}, and this tree holds no "
+                  f"catalogue of the names it accepts, so the set states text.")
+    elif kind == "text":
+        reason = (f"ORE reads {element} and never parses it, so no vocabulary governs "
+                  f"the value and the set states text.")
+    else:
+        reason = (f"ORE reads {element} as {spelling or kind}, and the set states the "
+                  f"values that kind admits.")
+    return {"set": code, "name": entry["name"], "source": "ore_code",
+            "source_ref": term.get("source_ref", ""), "reason": reason}
+
+
+def unread_reason(row):
+    """Why a leaf the map carries holds no rule yet.
+
+    A leaf arrives in the map because a projection column carries it. Not every
+    such leaf is one the term extractor knows how to read, and a leaf it does not
+    read has no parser to take a rule from. The gap is stated here, counted by
+    coverage() and listed by the report the check prints, so it cannot grow
+    unnoticed.
+    """
+    return (f"No ORE source read names {row['element']} as a term: the extractor "
+            f"does not know the form this leaf is read in, so no parser states a "
+            f"rule for it and the set states text. Listed by the element map "
+            f"coverage report.")
+
+
+def terms_extracted():
+    """The convention terms, as extract_convention_terms.py wrote them."""
+    with open(terms.TERMS, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def coverage(rows):
+    """The leaves the map states a rule for, and the ones it does not."""
+    unread = [row for row in rows if not row["ruled"]]
+    text = [row for row in rows if row["set"] == "text"]
+    return unread, text
 
 def column_rows():
     """Every column that carries a leaf, from both projection families."""
@@ -177,7 +272,7 @@ def map_rows(columns):
     declared = {(entry["schema"], entry["element"]): entry
                 for entry in declared_json.values()}
 
-    sets = contract_sets()
+    sets = leaf_rules()
     found = {}
     for row in columns:
         found.setdefault(row["map_code"], row)
@@ -196,25 +291,22 @@ def map_rows(columns):
                 "source": declared_row["source"],
                 "source_ref": declared_row["source_ref"],
                 "reason": declared_row["reason"],
+                "ruled": True,
             }
             continue
-        code_of_set = sets.get((row["schema"], row["xpath"]))
+        rule = sets.get((row["schema"], row["xpath"]))
         out[code] = {
             "code": code,
             "schema": row["schema"],
             "xpath": row["xpath"],
             "element": row["element"],
-            "set": code_of_set or "text",
-            "name": row["element"],
-            "source": "ore_schema",
-            "source_ref": f"external/ore/xsd/{row['schema']}",
-            "reason": (
-                f"The ORE schema declares {row['element']}, and the parameter "
-                "contract states the value set its leaves take."
-                if code_of_set else
-                f"The ORE schema declares {row['element']} as a leaf no value "
-                "set governs yet: it is text until a rule is stated, so it "
-                "arrives here as a decision rather than as a silent pass."),
+            "set": rule["set"] if rule else "text",
+            "name": rule["name"] if rule else row["element"],
+            "source": rule["source"] if rule else "ore_schema",
+            "source_ref": rule["source_ref"] if rule
+                          else f"external/ore/xsd/{row['schema']}",
+            "reason": rule["reason"] if rule else unread_reason(row),
+            "ruled": rule is not None,
         }
     return [out[code] for code in sorted(out)]
 
@@ -313,6 +405,18 @@ def main():
         else:
             with open(path, "w", encoding="utf-8") as handle:
                 handle.write(content)
+
+    unread, text = coverage(rows)
+    print(f"{len(rows)} leaves: {len(rows) - len(text)} state a rule, "
+          f"{len(text)} state text.", file=sys.stderr)
+    print(f"{len(unread)} of the leaves name no term any ORE source reads:", file=sys.stderr)
+    for row in sorted(unread, key=lambda r: (r["schema"], r["xpath"])):
+        print(f"  {row['schema']}|{row['xpath']}", file=sys.stderr)
+    if len(unread) > UNREAD_ALLOWED:
+        print(f"{len(unread)} leaves name no term, which is above the {UNREAD_ALLOWED} "
+              "the map allows: teach the extractor the form the leaf is read in, or "
+              "state the rule another way.", file=sys.stderr)
+        return 1
     if args.check:
         print(f"{len(rows)} leaves over {len(columns)} columns.")
         return 0

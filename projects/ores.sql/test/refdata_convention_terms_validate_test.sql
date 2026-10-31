@@ -26,7 +26,7 @@
 
 begin;
 
-select plan(6);
+select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -96,6 +96,30 @@ select throws_like(
        where id = 'PGTAP-GOOD-SWAP'$$,
     '%Invalid value Fortnightly for swap_convention.fixed_frequency%',
     'an update of a term column is checked as an insert is');
+
+create or replace function pg_temp.bma(p_id text, p_convention text)
+returns void language sql as $$
+    insert into ores_refdata_bma_basis_swap_conventions_tbl (
+        id, tenant_id, version, party_id, index, bma_index, bma_payment_convention,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        p_id, ores_utility_system_tenant_id_fn(), 0, 'a0000000-0000-0000-0000-00000000c0df'::uuid,
+        'EUR-EURIBOR-3M', 'USDBMA', p_convention,
+        current_user, current_user, 'system.test', 'pgTAP convention terms fixture'
+    );
+$$;
+
+select lives_ok(
+    $$select pg_temp.bma('PGTAP-GOOD-BMA', 'ModifiedFollowing')$$,
+    'a BMA basis swap whose payment convention is in the catalogue is written');
+
+-- The map states no vocabulary for this leaf's siblings that ORE never parses,
+-- so this is the assertion that the rule comes from the parser and not from the
+-- set the leaf happened to take before.
+select throws_like(
+    $$select pg_temp.bma('PGTAP-BAD-BMA', 'Follwing')$$,
+    '%Invalid value Follwing for bma_basis_swap_convention.bma_payment_convention%',
+    'a payment convention outside the catalogue is refused, though ORE never parses it');
 
 select ok(
     (select count(*) > 0

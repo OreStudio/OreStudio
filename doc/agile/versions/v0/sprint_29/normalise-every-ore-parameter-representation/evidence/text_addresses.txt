@@ -1,141 +1,210 @@
-addresses the map leaves unconstrained
-  total                                     181
-  the contract states text for them         102
-  the contract holds no row for them         79
+the element map, by what each leaf's row states
+  leaves                                     480
+  a rule governs the value                   220
+  text, and the ORE source says why          232
+  text, because no ORE source read names it    28
 
-stated free text, by element
-  AdvanceCalendar                            1
-  BMAIndex                                   1
-  BusinessDayConvention                      1
-  ButterflyStyle                             1
-  Calendar                                   6
-  CommodityName                              1
-  Conventions                                2
-  DateGenerationRule                         1
-  DayCounter                                 2
-  DeliveryLocation                           2
-  ExpiryCalendar                             1
-  FXConventionID                             1
-  FixCalendar                                1
-  FixedCalendar                              3
-  FixingCalendar                             3
-  FixingDays                                 1
-  FlatIndex                                  1
-  Id                                        24
-  Index                                      8
-  IndexPaymentCalendar                       1
-  InflationCalendar                          1
-  LongIndex                                  2
-  LongPayTenor                               1
-  OffsetDays                                 1
-  OptionCalendarDaysBefore                   1
-  OptionExpiryDay                            1
-  OptionExpiryLastWeekdayOfMonth             1
-  OptionExpiryOffset                         1
-  OptionExpiryWeeklyDayOfTheWeek             1
-  OptionMinBusinessDaysBefore                1
-  OptionUnderlyingFutureConvention           1
-  OvernightIndexFutureNettingType            1
-  PayIndex                                   1
-  PaymentCalendar                            1
-  PaymentLag                                 1
-  PricingCalendar                            1
-  RateCutoff                                 2
-  ReceiveIndex                               1
-  RegionCode                                 1
-  RegionName                                 1
-  Revised                                    1
-  SavingsTime                                1
-  SettlementCalendar                         2
-  SettlementDays                             3
-  ShortIndex                                 2
-  ShortPayTenor                              1
-  SpotCalendar                               1
-  SpotDays                                   1
-  SpotLag                                    3
-  SpreadIndex                                1
-  SpreadOnShort                              1
-  TenorCalendar                              1
+a rule, by set
+  flag                                          38
+  convention.integer                            28
+  convention.business_day_convention            24
+  convention.period                             17
+  curve.day_counter                             16
+  curve.flag                                    16
+  convention.day_counter                        14
+  convention.frequency                          13
+  curve.currency                                 9
+  curve.business_day_convention                  6
+  curve.number                                   5
+  convention.currency                            4
+  number                                         4
+  curve.integer                                  3
+  convention.atm_type                            2
+  convention.compounding                         2
+  convention.date_generation_rule                2
+  convention.delta_type                          2
+  convention.sub_periods_coupon_type             2
+  convention.weekday                             2
+  convention.averaging_data_period               1
+  convention.bond_price_type                     1
+  convention.inflation_swap_publication_roll     1
+  convention.month                               1
+  convention.option_type                         1
+  curve.frequency                                1
+  curve.fx_volatility_time_interpolation         1
+  curve.period                                   1
+  curve.yield_curve_extrapolation_method         1
+  curve.yield_curve_interpolation_method         1
+  curve.yield_curve_interpolation_variable       1
 
-no rule at all, with the rule a sibling takes
-  conventions.xsd|/Conventions/BondYield/Accuracy                            -
+text the ORE source justifies, by element
+  AdjustForLosses                                1
+  AdvanceCalendar                                1
+  BMAIndex                                       1
+  BMAPaymentCalendar                             1
+  BalanceOfTheMonthPricingCalendar               1
+  BasePriceCurve                                 1
+  BaseRate                                       1
+  BaseVolatility1                                1
+  BaseVolatility2                                1
+  BaseYieldCurve                                 1
+  BusinessDaysAfter                              1
+  ButterflyStyle                                 1
+  CPRQuote                                       1
+  Calendar                                      19
+  CalendarDaysBefore                             1
+  CalendarSpreadUnderlyingName                   1
+  CommodityName                                  1
+  ContractName                                   1
+  Convention                                     1
+  Conventions                                    7
+  ConversionFactor                               1
+  CorrelationType                                1
+  DailyAveragePriceCurve                         1
+  DateGenerationRule                             1
+  DayOfMonth                                     1
+  DeliveryLocation                               2
+  Dimension                                      5
+  DiscountCurve                                  3
+  EquityId                                       1
+  ExerciseStyle                                  1
+  ExpiryCalendar                                 1
+  Extrapolation                                  4
+  FXConventionID                                 1
+  FXDomesticCurveID                              1
+  FXForeignCurveID                               1
+  FXIndexTag                                     1
+  FXSpotID                                       1
+  FixCalendar                                    1
+  FixedCalendar                                  3
+  FixingCalendar                                 3
+  FlatIndex                                      1
+  ForecastingCurve                               1
+  FutureConventions                              1
+  IborIndex                                      1
+  Id                                            24
+  Index                                         11
+  Index1                                         1
+  Index2                                         1
+  IndexCurve                                     1
+  IndexName                                      1
+  IndexPaymentCalendar                           1
+  IndexTerm                                      1
+  InflationCalendar                              1
+  InputType                                      1
+  InstrumentType                                 1
+  InterpolateOn                                  1
+  Interpolation                                  1
+  InterpolationMethod                            3
+  InterpolationVariable                          1
+  Lag                                            1
+  LastWeekday                                    1
+  LongIndex                                      2
+  LongPayTenor                                   1
+  NominalTermStructure                           1
+  Nth                                            2
+  ONCapSettlementDays                            1
+  OffPeakIndex                                   1
+  OffsetDays                                     1
+  OptionCalendarDaysBefore                       1
+  OptionExpiryDay                                1
+  OptionExpiryLastWeekdayOfMonth                 1
+  OptionExpiryOffset                             1
+  OptionExpiryRollDays                           1
+  OptionExpiryWeeklyDayOfTheWeek                 1
+  OptionMinBusinessDaysBefore                    1
+  OptionUnderlyingFutureConvention               1
+  OutputVolatilityType                           2
+  OvernightIndexFutureNettingType                1
+  PayIndex                                       1
+  PaymentCalendar                                1
+  PaymentLag                                     1
+  PeakCalendar                                   1
+  PeakIndex                                      1
+  PreferOutOfTheMoney                            3
+  PriceCurveId                                   1
+  PriceQuote                                     1
+  PricingCalendar                                1
+  QuoteIndex                                     1
+  QuoteName                                      2
+  QuoteSuffix                                    1
+  QuoteTag                                       1
+  QuoteType                                      2
+  RateComputationPeriod                          1
+  RateCutoff                                     2
+  ReceiveIndex                                   1
+  RecoveryRateQuote                              1
+  RegionCode                                     1
+  RegionName                                     1
+  Revised                                        1
+  Rule                                           1
+  SavingsTime                                    1
+  SettlementCalendar                             2
+  SettlementDays                                 2
+  ShapeQuoteName                                 1
+  ShortIndex                                     2
+  ShortPayTenor                                  1
+  ShortSwapIndexBase                             1
+  SmileDelta                                     1
+  SmileExtrapolation                             1
+  SmileInterpolation                             1
+  SmileType                                      1
+  SpotCalendar                                   1
+  SpotLag                                        3
+  SpotQuote                                      2
+  SpreadIndex                                    1
+  SpreadOnShort                                  1
+  SpreadQuote                                    1
+  StartDate                                      1
+  StrikeExtrapolation                            1
+  StrikeFactor                                   2
+  StrikeInterpolation                            1
+  StrikeType                                     1
+  SwapIndexBase                                  1
+  SwaptionVolatility                             1
+  TenorCalendar                                  1
+  TimeExtrapolation                              1
+  TimeInterpolation                              1
+  TimeWeighting                                  1
+  Tolerance                                      1
+  TreatAsEuropean                                1
+  Type                                           3
+  UpfrontSettlementDays                          1
+  UseOnlyPutCall                                 1
+  VolatilityType                                 4
+  WeeklyDayOfTheWeek                             1
+  YieldCurve                                     1
+  YieldCurveId                                   2
+  YieldTermStructure                             1
+
+text nothing was decided for, with the rule a sibling takes
   curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/AtmTenors -
-  conventions.xsd|/Conventions/BMABasisSwap/BMAPaymentCalendar               -
-  conventions.xsd|/Conventions/BMABasisSwap/BMAPaymentConvention             -
-  conventions.xsd|/Conventions/BMABasisSwap/BMAPaymentLag                    -
-  conventions.xsd|/Conventions/CommodityFuture/BalanceOfTheMonth             -
-  conventions.xsd|/Conventions/CommodityFuture/BalanceOfTheMonthPricingCalendar -
-  curveconfig.xsd|/CurveConfiguration/CommodityCurves/CommodityCurve/BaseYieldCurve -
   curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/BondTenors -
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/BusinessDaysAfter   -
-  curveconfig.xsd|/CurveConfiguration/Securities/Security/CPRQuote           -
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/CalendarDaysBefore  -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/CapStrikes -
-  curveconfig.xsd|/CurveConfiguration/Securities/Security/ConversionFactor   -
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/CorrelationType -
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/DayOfMonth          -
   curveconfig.xsd|/CurveConfiguration/FXVolatilities/FXVolatility/Deltas     -
   curveconfig.xsd|/CurveConfiguration/BaseCorrelations/BaseCorrelation/DetachmentPoints -
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/Dimension     curve.text
-  curveconfig.xsd|/CurveConfiguration/EquityVolatilities/EquityVolatility/Dimension curve.text
-  curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/Dimension curve.text
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/DiscountCurve curve.text
   curveconfig.xsd|/CurveConfiguration/CDSVolatilities/CDSVolatility/Expiries -
   curveconfig.xsd|/CurveConfiguration/EquityVolatilities/EquityVolatility/Expiries -
   curveconfig.xsd|/CurveConfiguration/FXVolatilities/FXVolatility/Expiries   -
-  curveconfig.xsd|/CurveConfiguration/FXVolatilities/FXVolatility/FXIndexTag -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/FloorStrikes -
-  conventions.xsd|/Conventions/BondYield/Guess                               -
-  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/IborIndex -
-  conventions.xsd|/Conventions/FRA/Index                                     curve.text
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/Index1        -
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/Index2        -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/IndexInterpolated -
-  conventions.xsd|/Conventions/CommodityFuture/IndexName                     -
-  curveconfig.xsd|/CurveConfiguration/BaseCorrelations/BaseCorrelation/IndexTerm -
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/LastWeekday         -
-  conventions.xsd|/Conventions/FxOption/LongTermAtmType                      -
-  conventions.xsd|/Conventions/FxOption/LongTermDeltaType                    -
-  conventions.xsd|/Conventions/BondYield/MaxEvaluations                      -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/ModelShift curve.number
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/NthWeekday/Nth      -
-  conventions.xsd|/Conventions/CommodityFuture/OptionNthWeekday/Nth          -
-  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/ONCapSettlementDays -
-  conventions.xsd|/Conventions/CommodityFuture/OffPeakPowerIndexData/OffPeakHours -
-  conventions.xsd|/Conventions/CommodityFuture/OffPeakPowerIndexData/OffPeakIndex -
   curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/OptionTenors  -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/OptionTenors -
   curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/OptionTenors -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/OutputShift curve.number
-  conventions.xsd|/Conventions/BMABasisSwap/OvernightLockouDays              -
-  conventions.xsd|/Conventions/CommodityFuture/OffPeakPowerIndexData/PeakCalendar -
-  conventions.xsd|/Conventions/CommodityFuture/OffPeakPowerIndexData/PeakIndex -
-  curveconfig.xsd|/CurveConfiguration/Securities/Security/PriceQuote         -
   curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/Qualifier -
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/QuoteType     curve.text
-  curveconfig.xsd|/CurveConfiguration/Securities/Security/RecoveryRateQuote  -
-  conventions.xsd|/Conventions/Deposit/SettlementDays                        convention.integer  curve.integer  curve.text
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileOptionTenors -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSpreads -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSwapTenors -
-  curveconfig.xsd|/CurveConfiguration/Securities/Security/SpreadQuote        -
   curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Strikes -
   curveconfig.xsd|/CurveConfiguration/EquityVolatilities/EquityVolatility/Strikes -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Strikes -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SwapTenors -
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/SwaptionVolatility -
   curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Tenors -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Tenors -
   curveconfig.xsd|/CurveConfiguration/BaseCorrelations/BaseCorrelation/Terms -
-  curveconfig.xsd|/CurveConfiguration/InflationCurves/InflationCurve/Tolerance curve.number
-  curveconfig.xsd|/CurveConfiguration/DefaultCurves/DefaultCurve/Type        curve.text
-  conventions.xsd|/Conventions/CDS/UpfrontSettlementDays                     -
+  curveconfig.xsd|/CurveConfiguration/DefaultCurves/DefaultCurve/Type        -
   curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/UseEffeciveVolatility -
-  curveconfig.xsd|/CurveConfiguration/InflationCurves/InflationCurve/UseLastFixingDate -
-  curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/VolatilityType curve.text
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/NthWeekday/Weekday  -
-  conventions.xsd|/Conventions/CommodityFuture/OptionNthWeekday/Weekday      -
-  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/WeeklyDayOfTheWeek  -
-  curveconfig.xsd|/CurveConfiguration/CommodityCurves/CommodityCurve/YieldCurve -
 
-12 of the 79 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.
+2 of the 28 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.

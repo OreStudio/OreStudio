@@ -1,0 +1,348 @@
+:PROPERTIES:
+:ID: 23F5286D-2B19-45BE-B63F-E8FD541AA917
+:END:
+#+title: Investigation: How the pricing engine types join the product type
+#+description: The 108 pricing engine types split into 51 product codes, 32 finer variants, 15 building blocks and 10 rows naming eight products the catalogue lacks. The join is a column, and the prose moves to the product type.
+#+type: investigation
+#+level: s1
+#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A point-in-time record, written while the story that commissioned it was open, of an investigation into how the pricing engine types join the product type: which of the 108 name a product, which are finer than one, which are building blocks, and which name a product the catalogue lacks.
+
+It is a snapshot, not a description of the system. The conclusions that the code must keep doing belong on the page that owns the subject. This one feeds the join task.
+
+* Context
+
+The pricing screens name a "product type" of their own. =ores_analytics_pricing_engine_types_tbl= holds 108 rows, seeded from the ORE user guide, and the pricing workbench's product select is labelled *Product type*.
+
+The product type catalogue holds 121 rows for the codes a tenant books. The two lists overlap on 51 codes and disagree on the rest: 70 product types have no pricing engine type of their own code, and 57 pricing engine types have no product type of their own code.
+
+The row already has a column that could carry the join. =instrument_type_code= points at =ores_refdata_instrument_codes_tbl=, the 115-row catalogue of short mnemonics. Only 32 of the 108 rows fill it; the rest hold =NONE=. And the table it points at is itself one of the duplicates the story retires.
+
+So the join cannot be read off the data. It has to be decided, and the 108 have to be classified one by one.
+
+* Methodology
+
+- Queried the 108 rows with their =instrument_type_code= and the instrument code's =ore_trade_type=, to see how far the existing column reaches.
+- Read the seeder's curation (==curation/types.json==) where the 108 paragraphs and the instrument codes are authored.
+- Read =generate_vocabulary_sql.py=, which emits the seed, to see where a new field belongs.
+- Classified all 108 by hand against the 121 catalogue codes, using ORE's product names, the instrument code where it exists and the guide's descriptions.
+- Validated the classification mechanically: every one of the 108 has a decision, every target code exists in the catalogue, and no target is invented.
+
+The tree is =78c91e47b4=. The database schema is behind the checkout, so the row counts are read from the seeds where they could differ.
+
+* Paths taken
+** The four kinds
+
+| Kind    | Rows | What it is                                                                                                            |
+|---------+------+-----------------------------------------------------------------------------------------------------------------------|
+| prices  | 51   | The code is a product type code. One row per product.                                                                 |
+| variant | 32   | A pricing product finer than its product type: exercise style, settlement, currency, tranche or averaging convention. |
+| block   | 15   | A leg or a coupon the pricing model is built from, not a product at all.                                              |
+| gap     | 10   | A pricing row naming a product the catalogue has no code for; eight distinct products.                                |
+
+51 + 32 + 15 + 10 = 108. The 51 exact matches are also the 51 the join query found.
+
+**The variants**
+
+| Product type                 | Rows | Pricing engine types                                                          |
+|------------------------------+------+-------------------------------------------------------------------------------|
+| =Swaption=                   | 9    | European, Bermudan and American, each also in =_NonStandard= and =_XCcy= form |
+| =FxOption=                   | 2    | =FxOptionAmerican=, =FxOptionEuropeanCS=                                      |
+| =EquityOption=               | 2    | =EquityOptionAmerican=, =EquityOptionEuropeanCS=                              |
+| =CommodityOption=            | 2    | =CommodityOptionAmerican=, =CommodityOptionEuropeanCS=                        |
+| =FxAsianOption=              | 4    | Arithmetic and geometric, each in price and strike form                       |
+| =EquityAsianOption=          | 4    | Arithmetic and geometric, each in price and strike form                       |
+| =CommodityAsianOption=       | 4    | Arithmetic and geometric, each in price and strike form                       |
+| =BondFutureOption=           | 1    | =BondFutureOptionAmerican=                                                    |
+| =RiskParticipationAgreement= | 4    | =_Vanilla=, =_Vanilla_XCcy=, =_Structured=, =_TLock=                          |
+
+The distinction a variant states is real and the pricing screen needs it: a Bermudan swaption and a European one select different models. The product type does not state it, because ORE prices both through one trade type. That is why the variant keeps a sentence of its own.
+
+**The building blocks**
+
+=FlooredLeg= types and coupon types, which no trade is:
+
+=CMS=, =CMSSpread=, =DurationAdjustedCMS=, =EquityLeg=, =FormulaBasedCoupon=,
+=IborRangeAccrualLeg=, =CapFlooredIborLeg=, =CapFlooredInterpolatedIborLeg=,
+=CapFlooredAverageBMACouponLeg=, =CapFlooredAverageONIndexedCouponLeg=,
+=CapFlooredOvernightIndexedCouponLeg=, =CapFlooredYYLeg=, =CapFlooredNonStdYYLeg=,
+=CappedFlooredCpiLegCoupons=, =CappedFlooredCpiLegCashFlows=.
+
+They are named by the pricing file because a leg's coupon can be capped or floored on its own. They belong to no product type, and forcing them onto one would be a lie in the other direction: a cap on a leg does not make the trade a =CapFloor=.
+
+**The gaps**
+
+| Pricing engine type                                   | Why the catalogue has no code for it                                                                                                                                   |
+|-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =CpiCapFloor= and =CPICapFloor=                       | Inflation cap/floor. The catalogue has =CapFloor= for rates and =InflationSwap=, and no inflation option. The two rows are also duplicates of each other, by spelling. |
+| =YYCapFloor=                                          | Year-on-year inflation cap/floor. Same gap.                                                                                                                            |
+| =QuantoEquityOption= and =QuantoEquityOptionAmerican= | An equity option settled in another currency. No product type states the quanto feature.                                                                               |
+| =EquityEuropeanCompositeOption=                       | A composite option, whose payoff is struck in another currency. No product type states it.                                                                             |
+| =CommodityCalendarSpreadOption=                       | A calendar spread on two commodity contracts. No product type.                                                                                                         |
+| =CommodityAveragePriceBarrierOption=                  | A barrier on an average-price option. No product type.                                                                                                                 |
+| =CommodityOptionForward=                              | A forward-starting commodity option. No product type.                                                                                                                  |
+| =FxOptionForward=                                     | A forward-starting FX option. No product type.                                                                                                                         |
+
+This investigation does not invent product types. It records that ten pricing rows name eight products the catalogue does not: =CpiCapFloor= and =CPICapFloor= are one product in two spellings, and the quanto pair is one product with an American variant. The page can state the gap, and a later decision can add the codes.
+
+** The other direction
+
+Seventy product types have no pricing engine type with their own code. Five of those are reached through a variant instead, so 65 have no pricing engine type at all, whatever the code:
+
+=CompositeTrade=, =CashPosition=, =BondPosition=, =EquityPosition=, =CommodityPosition=,
+=EquityOptionPosition=, =TotalReturnSwap=, =ContractForDifference=, =EquitySwap=,
+=ForwardRateAgreement=, =KnockOutSwap=, =InflationSwap=, =SwaptionStraddle=,
+=ForwardVolatilityAgreement=, the four =*ForwardVolatilityAgreement= codes,
+=FxSwap=, =FxAverageForward=, =FxAccumulator=, =FxTaRF=, =FxPairwiseVarianceSwap=,
+=FxBasketVarianceSwap=, =FxWorstOfBasketSwap=, =FxBestEntryOption=, =FxBasketOption=,
+=FxRainbowOption=, =FxStrikeResettableOption=, =FxWindowBarrierOption=,
+=FxGenericBarrierOption=, =FxKIKOBarrierOption=, =EquityAutoDeltaHedgedOption=,
+=EquityEuropeanBarrierOption=, =EquityWindowBarrierOption=, =EquityGenericBarrierOption=,
+=EquityDoubleTouchOption=, =EquityPairwiseVarianceSwap=, =EquityBasketVarianceSwap=,
+=EquityAccumulator=, =EquityTaRF=, =EquityWorstOfBasketSwap=, =EquityBestEntryOption=,
+=EquityBasketOption=, =EquityRainbowOption=, =EquityStrikeResettableOption=,
+=EquityOutperformanceOption=, =CommodityForwardVolatilityAgreement=, =IntradayPowerForward=,
+=CommodityDigitalOption=, =CommodityDigitalAveragePriceOption=, =CommodityOptionStrip=,
+=CommodityPairwiseVarianceSwap=, =CommodityBasketVarianceSwap=, =CommodityAccumulator=,
+=CommodityTaRF=, =CommodityWorstOfBasketSwap=, =CommodityBestEntryOption=,
+=CommodityWindowBarrierOption=, =CommodityGenericBarrierOption=, =CommodityBasketOption=,
+=CommodityRainbowOption=, =CommodityStrikeResettableOption=, =Autocallable_01=,
+=DoubleDigitalOption=, =EuropeanOptionBarrier=, =PerformanceOption_01=.
+
+The pricing vocabulary is not a list of products. It is the list of pricing products the ORE guide documents. The page must not read "no pricing engine type" as "cannot be priced": it states that the pricing configuration does not name the type, and that is a different thing.
+
+* Conclusions
+** Decision: the join is a column
+
+=A pricing engine type names at most one product type.=
+
+The classification above shows it: each of the 51 exact matches names one, each of the 32 variants names one, the 15 blocks name none and the 10 gaps name none. Nothing in the 108 belongs to two product types.
+
+So the join is a column on the pricing engine type, not a junction:
+
+| Column              | Type | Null | Meaning                                                                                                                |
+|---------------------+------+------+------------------------------------------------------------------------------------------------------------------------|
+| =product_type_code= | text | yes  | The product type this pricing product prices. Null when the row is a building block, or a product the catalogue lacks. |
+| =kind=              | text | no   | =product= or =block=.                                                                                                  |
+
+The constraint: =kind = 'block'= implies =product_type_code is null=. A product-kind row with a null code is a gap, and the page lists it as one.
+
+The column replaces =instrument_type_code=, which the story retires with the instrument code table. The 32 rows that fill it already agree with the mapping: =SWPTN= becomes =Swaption=, =IRS= becomes =Swap=, =CAPFLR= becomes =CapFloor=.
+
+Rejected alternatives:
+
+- *A junction keyed by both codes.* Rejected: it permits one pricing product to belong to two product types, which cannot happen, and it adds a table whose only column beyond the two keys would be a usage flag that duplicates =kind=. A junction earns its place when a row is a component of several products, and the blocks are exactly that case. Their use is *not* modelled today: =pricing_model_engine_pair= and =pricing_model_product= carry the pricing engine type code, the model and the engine, and name no catalogue product. Linking a block to the products that use it is a question for the pricing work, not a reason to make this join a junction.
+- *Reusing =instrument_type_code= as the join.* Rejected: it is filled on 32 of 108 rows, it points at a 115-row catalogue the story retires, and it carries a mnemonic rather than an identity.
+- *Forcing the blocks onto a product type.* Rejected: a capped leg belongs to whatever product carries the leg, which is many products, and the cap does not make the trade a =CapFloor=.
+
+** Decision: where the instrument prose lives
+
+The 108 paragraphs were hand-written for the pricing screens and land in =ores_reporting_ore_parameters_tbl= as the =Types= rows: 216 rows, one per tenant. They describe instruments.
+
+The product type is now the place that describes the instrument, so the prose is split by subject:
+
+- *A pricing engine type whose code is a product type code* carries no prose of its own. Its paragraph moves to the product type. The pricing engine type keeps its label and its code.
+- *A variant* keeps one sentence saying how it differs from its product type, because the product type cannot state an exercise style or a tranche. The screen shows the product type's description and then that sentence.
+- *A building block* keeps its paragraph, because it describes a coupon or a leg, not a product.
+- *A gap* keeps its paragraph until a product type names it.
+
+The seed changes on the =Types= rows to match, and the pricing workbench reads the product type for the instrument prose. That move is the join task's work; [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]] carries the rule that outlives this page.
+
+* Recommendations
+
+- *Join the pricing engine types to the product type* adds the two columns, replaces =instrument_type_code=, seeds the mapping from the seeder curation, moves the exact-match paragraphs, and makes the workbench read the product type.
+- *Author the description of every product type* writes the 121 paragraphs the exact matches need, and the variants' product types inherit the general description.
+- *Serve the product type catalogue* returns the pricing engine types per product type and a list of the gap products.
+- *Retire the duplicate product catalogues* drops =instrument_type_code= with the instrument code table, and the pricing screen reads the product type for the name and the asset class.
+- *A later decision* may add the 10 missing product types. This story records them.
+
+* Appendix: the mapping of all 108
+
+Each pricing engine type with the decision taken for it. The kind is the one the
+ruling above gives: =prices= for a code that is a product type code, =variant= for
+a pricing product finer than one, =block= for a part of a product, and =gap= for a
+row naming a product the catalogue lacks.
+
+| Pricing engine type                     | Kind    | Product type                 |
+|-----------------------------------------+---------+------------------------------|
+| AmericanSwaption                        | variant | Swaption                     |
+| AmericanSwaption_NonStandard            | variant | Swaption                     |
+| AmericanSwaption_XCcy                   | variant | Swaption                     |
+| Ascot                                   | prices  | Ascot                        |
+| BalanceGuaranteedSwap                   | prices  | BalanceGuaranteedSwap        |
+| BermudanSwaption                        | variant | Swaption                     |
+| BermudanSwaption_NonStandard            | variant | Swaption                     |
+| BermudanSwaption_XCcy                   | variant | Swaption                     |
+| Bond                                    | prices  | Bond                         |
+| BondFuture                              | prices  | BondFuture                   |
+| BondFutureOption                        | prices  | BondFutureOption             |
+| BondFutureOptionAmerican                | variant | BondFutureOption             |
+| BondOption                              | prices  | BondOption                   |
+| BondRepo                                | prices  | BondRepo                     |
+| BondTRS                                 | prices  | BondTRS                      |
+| CallableBond                            | prices  | CallableBond                 |
+| CallableSwap                            | prices  | CallableSwap                 |
+| CapFloor                                | prices  | CapFloor                     |
+| CapFlooredAverageBMACouponLeg           | block   | —                            |
+| CapFlooredAverageONIndexedCouponLeg     | block   | —                            |
+| CapFlooredIborLeg                       | block   | —                            |
+| CapFlooredInterpolatedIborLeg           | block   | —                            |
+| CapFlooredNonStdYYLeg                   | block   | —                            |
+| CapFlooredOvernightIndexedCouponLeg     | block   | —                            |
+| CapFlooredYYLeg                         | block   | —                            |
+| CappedFlooredCpiLegCashFlows            | block   | —                            |
+| CappedFlooredCpiLegCoupons              | block   | —                            |
+| CBO                                     | prices  | CBO                          |
+| CMS                                     | block   | —                            |
+| CMSSpread                               | block   | —                            |
+| CommodityAsianOptionArithmeticPrice     | variant | CommodityAsianOption         |
+| CommodityAsianOptionArithmeticStrike    | variant | CommodityAsianOption         |
+| CommodityAsianOptionGeometricPrice      | variant | CommodityAsianOption         |
+| CommodityAsianOptionGeometricStrike     | variant | CommodityAsianOption         |
+| CommodityAveragePriceBarrierOption      | gap     | —                            |
+| CommodityAveragePriceOption             | prices  | CommodityAveragePriceOption  |
+| CommodityCalendarSpreadOption           | gap     | —                            |
+| CommodityForward                        | prices  | CommodityForward             |
+| CommodityOption                         | prices  | CommodityOption              |
+| CommodityOptionAmerican                 | variant | CommodityOption              |
+| CommodityOptionEuropeanCS               | variant | CommodityOption              |
+| CommodityOptionForward                  | gap     | —                            |
+| CommoditySpreadOption                   | prices  | CommoditySpreadOption        |
+| CommoditySwap                           | prices  | CommoditySwap                |
+| CommoditySwaption                       | prices  | CommoditySwaption            |
+| CommodityVarianceSwap                   | prices  | CommodityVarianceSwap        |
+| ConvertibleBond                         | prices  | ConvertibleBond              |
+| CpiCapFloor                             | gap     | —                            |
+| CPICapFloor                             | gap     | —                            |
+| CreditDefaultSwap                       | prices  | CreditDefaultSwap            |
+| CreditDefaultSwapOption                 | prices  | CreditDefaultSwapOption      |
+| CreditLinkedSwap                        | prices  | CreditLinkedSwap             |
+| CrossCurrencySwap                       | prices  | CrossCurrencySwap            |
+| DurationAdjustedCMS                     | block   | —                            |
+| EquityAsianOptionArithmeticPrice        | variant | EquityAsianOption            |
+| EquityAsianOptionArithmeticStrike       | variant | EquityAsianOption            |
+| EquityAsianOptionGeometricPrice         | variant | EquityAsianOption            |
+| EquityAsianOptionGeometricStrike        | variant | EquityAsianOption            |
+| EquityBarrierOption                     | prices  | EquityBarrierOption          |
+| EquityCliquetOption                     | prices  | EquityCliquetOption          |
+| EquityDigitalOption                     | prices  | EquityDigitalOption          |
+| EquityDoubleBarrierOption               | prices  | EquityDoubleBarrierOption    |
+| EquityEuropeanCompositeOption           | gap     | —                            |
+| EquityForward                           | prices  | EquityForward                |
+| EquityFutureOption                      | prices  | EquityFutureOption           |
+| EquityLeg                               | block   | —                            |
+| EquityOption                            | prices  | EquityOption                 |
+| EquityOptionAmerican                    | variant | EquityOption                 |
+| EquityOptionEuropeanCS                  | variant | EquityOption                 |
+| EquityTouchOption                       | prices  | EquityTouchOption            |
+| EquityVarianceSwap                      | prices  | EquityVarianceSwap           |
+| EuropeanSwaption                        | variant | Swaption                     |
+| EuropeanSwaption_NonStandard            | variant | Swaption                     |
+| EuropeanSwaption_XCcy                   | variant | Swaption                     |
+| FlexiSwap                               | prices  | FlexiSwap                    |
+| FormulaBasedCoupon                      | block   | —                            |
+| ForwardBond                             | prices  | ForwardBond                  |
+| FxAsianOptionArithmeticPrice            | variant | FxAsianOption                |
+| FxAsianOptionArithmeticStrike           | variant | FxAsianOption                |
+| FxAsianOptionGeometricPrice             | variant | FxAsianOption                |
+| FxAsianOptionGeometricStrike            | variant | FxAsianOption                |
+| FxBarrierOption                         | prices  | FxBarrierOption              |
+| FxDigitalBarrierOption                  | prices  | FxDigitalBarrierOption       |
+| FxDigitalOption                         | prices  | FxDigitalOption              |
+| FxDoubleBarrierOption                   | prices  | FxDoubleBarrierOption        |
+| FxDoubleTouchOption                     | prices  | FxDoubleTouchOption          |
+| FxEuropeanBarrierOption                 | prices  | FxEuropeanBarrierOption      |
+| FxForward                               | prices  | FxForward                    |
+| FxOption                                | prices  | FxOption                     |
+| FxOptionAmerican                        | variant | FxOption                     |
+| FxOptionEuropeanCS                      | variant | FxOption                     |
+| FxOptionForward                         | gap     | —                            |
+| FxTouchOption                           | prices  | FxTouchOption                |
+| FxVarianceSwap                          | prices  | FxVarianceSwap               |
+| IborRangeAccrualLeg                     | block   | —                            |
+| IndexCreditDefaultSwap                  | prices  | IndexCreditDefaultSwap       |
+| IndexCreditDefaultSwapOption            | prices  | IndexCreditDefaultSwapOption |
+| QuantoEquityOption                      | gap     | —                            |
+| QuantoEquityOptionAmerican              | gap     | —                            |
+| RateDigitalOption                       | prices  | RateDigitalOption            |
+| RiskParticipationAgreement_Structured   | variant | RiskParticipationAgreement   |
+| RiskParticipationAgreement_TLock        | variant | RiskParticipationAgreement   |
+| RiskParticipationAgreement_Vanilla      | variant | RiskParticipationAgreement   |
+| RiskParticipationAgreement_Vanilla_XCcy | variant | RiskParticipationAgreement   |
+| ScriptedTrade                           | prices  | ScriptedTrade                |
+| Swap                                    | prices  | Swap                         |
+| SyntheticCDO                            | prices  | SyntheticCDO                 |
+| YYCapFloor                              | gap     | —                            |
+
+* Measurements
+
+| What                                             | Value      | Command                                                         | Commit       |
+|--------------------------------------------------+------------+-----------------------------------------------------------------+--------------|
+| Pricing engine types                             | 108        | =Q1=, below                                                     | =3d319f92=   |
+| Rows filling =instrument_type_code=              | 32 of 108  | =Q2=, below                                                     | =3d319f92=   |
+| Rows whose code is a product type code           | 51         | =Q3=, below                                                     | =3d319f92=   |
+| Variants, blocks and gaps                        | 32, 15, 10 | the appendix above: count the =variant=, =block= and =gap= rows | =78c91e47b4= |
+| Distinct products among the gap rows             | 8          | the gap table above                                             | =78c91e47b4= |
+| Product types with no pricing engine type at all | 65         | =Q4=, below                                                     | =3d319f92=   |
+
+** Reproduction
+
+Run each through =./compass.sh sql -- -c "<query>"=.
+
+#+begin_src sql
+-- Q1
+select count(*) from ores_analytics_pricing_engine_types_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Q2
+select count(*) filter (where instrument_type_code <> 'NONE')
+from ores_analytics_pricing_engine_types_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Q3
+select count(*)
+from ores_analytics_pricing_engine_types_tbl p
+join ores_trading_trade_types_tbl t
+  on t.code = p.code
+ and t.tenant_id = ores_utility_system_tenant_id_fn()
+ and t.valid_to = ores_utility_infinity_timestamp_fn()
+where p.tenant_id = ores_utility_system_tenant_id_fn()
+  and p.valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Q4: 70 product types lack a pricing engine type of their own code, and 5 of
+-- those are reached through a variant, so 65 are reached by none.
+with tt as (select code from ores_trading_trade_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()),
+     pet as (select code from ores_analytics_pricing_engine_types_tbl
+             where tenant_id = ores_utility_system_tenant_id_fn()
+               and valid_to = ores_utility_infinity_timestamp_fn()),
+     via_variant as (select unnest(array['Swaption','CommodityAsianOption',
+             'EquityAsianOption','FxAsianOption','RiskParticipationAgreement']) as code)
+select count(*) from tt
+left join pet using (code)
+left join via_variant v using (code)
+where pet.code is null and v.code is null;
+#+end_src
+
+* Sources
+
+- =projects/ores.sql/create/analytics/analytics_pricing_engine_types_create.sql= — the table and its columns.
+- =projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql= — the 108 rows, generated from the guide.
+- =projects/ores.seeder/datasets/ore_pricing_engines/curation/types.json= — the hand-written paragraph, source and instrument for each of the 108.
+- =projects/ores.seeder/datasets/ore_pricing_engines/generate_vocabulary_sql.py= — the generator the seed comes from.
+- =projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= — the 121 codes the classification is measured against.
+- =projects/ores.web/packages/bff/src/pricing-engines.ts= — the vocabulary the screen reads, and the label "Product type".
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]] — the durable rule this page derived.
+- [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a product type carries]] — the row the join points at.
+- [[id:87E92BE8-4C30-4060-9034-C369B4E32488][Join the pricing engine types to the product type]] — the task that implements this.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the catalogue, its routing and the trade type check.
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product notes the descriptions come from.

@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
+#+branch: feature/settle-the-axes-a-product-type-carries
+#+pr: 4297
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -24,27 +24,40 @@ The pricing screens and the product type page name the same thing. Every pricing
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                                |
+|--------------+--------------------------------------------------------------------------------------|
+| State        | DONE                                                                                 |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Now          | Nothing.                                                                             |
+| Waiting on   | Nothing.                                                                             |
+| Next         | Nothing.                                                                             |
+| Last touched | 2026-10-31                                                                           |
 
 * Acceptance
 
 - Every one of the 108 pricing engine types appears in the mapping with a product type code or a stated reason for having none.
-- The 57 types with no trade type are classified as product, configuration or building block, with the evidence for each.
-- The join shape is decided and written down: a junction keyed by both codes where one product type takes several engines, a column where it takes only one.
+- The 57 types with no trade type are classified: a finer variant of a product type, a building block, or a gap for a product the catalogue lacks, with the evidence for each and every row listed.
+- The join shape is decided and written down: a junction keyed by both codes where one product type takes several engines, a column where it takes only one, with the rejected shape and its reason.
 - The hand-written prose of the 108 is given one home, and the investigation says which.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task is an analysis, so the deliverable is the record rather than code.
+
+1. Query the 108 rows and the column that could already carry the join, to see
+   how far it reaches.
+2. Read the seeder curation and its generator, to find where a new field would
+   live.
+3. Classify all 108 against the 121 catalogue codes: which name a product, which
+   are finer, which are building blocks, which name a product the catalogue
+   lacks.
+4. Validate the classification mechanically: every row decided, every target a
+   real code, nothing invented.
+5. Decide the join shape: a column where each pricing type names at most one
+   product, a junction where one pricing type serves several.
+6. Decide where the instrument prose lives, since the product type now owns the
+   instrument description.
+7. Record the mapping's consequences on the tasks that consume it.
 
 * Measurements
 
@@ -56,9 +69,8 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+The numbers are recorded in [[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]],
+under Measurements, with the command and the commit for each.
 
 * Notes
 
@@ -75,9 +87,9 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                          | Title                                                            |
+|-------------------------------------------------------------+------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/4297][#4297]] | [agile] Settle the product type axes and the pricing engine join |
 
 * Review
 
@@ -86,3 +98,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The mapping and the join are settled in
+[[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]].
+
+- All 108 are classified: 51 name a product type by an identical code, 32 are
+  finer than one, 15 are building blocks and 10 name a product the catalogue
+  lacks. The four kinds replace the three the acceptance expected: the data has
+  a fourth, the product the catalogue cannot name.
+- The join is a column, not a junction. No pricing engine type names more than
+  one product type, so a junction would only permit a state that cannot happen.
+  The column replaces =instrument_type_code=, which was filled on 32 rows and
+  pointed at a catalogue the story retires.
+- A =kind= of =product= or =block= tells a row that names no product type
+  whether it is a gap or a building block.
+- The instrument prose moves to the product type. A pricing engine type whose
+  code is a product type code carries none of its own; a variant keeps one
+  sentence saying how it differs; a block and a gap keep theirs. The rule is on
+  [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].
+- The 65 product types no pricing engine type names are a fact of the ORE
+  guide's list, not evidence that the product cannot be priced. The page states
+  it that way.
+
+All 108 decisions are in the appendix of
+[[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]]. PR #4297, commit
+=f33bd3d2c1=. No follow-up task: the ten gap products are recorded for a later
+decision.

@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: ED964111-1F24-4A3B-B4CE-665E2CF527B0
+:END:
+#+title: Product Type
+#+description: What a product type is, the three classifications it carries, the markets it references and how the pricing engine types join it.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:refdata:taxonomy:product_type:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+* Summary
+
+A *product type* is one kind of instrument a desk can book: a single row in the
+catalogue, named by the code ORE uses, such as =BondOption= or =CrossCurrencySwap=.
+It is the unit the whole system names when it classifies a trade, prices it,
+allows a book to hold it, or reports on it.
+
+A product type carries three independent classifications — the *markets* it
+references, the *product family* that names its contract shape, and its
+*construction method* — and it declares the instrument table that holds a trade
+of its kind. It is not a risk taxonomy: the risk classes of a product are a
+different set, and a larger one, because discounting reaches every product.
+
+* Detail
+
+** The catalogue
+
+=ores_trading_product_types_tbl= holds one row per kind. The row states the code,
+the name a desk uses, a description of the product, the source that description
+came from, the family, the construction, whether a trade of the kind carries an
+option block or an extension block, the instrument table that holds it, its
+display order and the knowledge note that describes it.
+
+The catalogue is declared once, in codegen, and seeded into the system tenant.
+Every tenant reads those rows. A tenant does not hold a product type of its own,
+and no other table states a product type: this one is the golden source.
+
+A type with no instrument table routes nowhere, so nothing can hold a trade of
+it. That is a fact to state, not a gap to hide.
+
+** The markets a product type references
+
+The markets are a set, not a column, because a kind may reference more than one.
+A =CrossCurrencySwap= references interest rates and foreign exchange; an
+=InflationSwap= references inflation and interest rates; a =ConvertibleBond=
+references bonds and equity.
+
+The junction =ores_trading_product_type_asset_classes_tbl= holds the set. One
+row is marked as the *home market*: the market the catalogue groups the kind
+under, and the answer to "what is this product". The rest are the markets it also
+references.
+
+Two invariants hold:
+
+- A product type has *exactly one* home market when it has any rows at all, and
+  *no rows* when the markets are decided per trade. A =CompositeTrade= is a
+  container whose markets come from its legs, and a =ScriptedTrade= states its
+  markets in its script, so neither carries rows.
+- A type with rows but no home is not representable. The seed writes the home row
+  with the secondaries, and a check refuses a type that has rows and no home.
+
+The values are the codes of [[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]], which is the
+one taxonomy to reference. The external schemes — FpML's, ORE's, ISDA's — stay
+registered as schemes and are mapped to it, never adopted in its place.
+
+** The product family
+
+The family names the shape of the contract, independent of the market it
+references: Option, Swap, Forward, Position, Swaption, Future, Repo, Security.
+It exists so that every option can be seen across markets, which neither the
+market nor the product type permits on its own.
+
+A kind whose shape is unsettled carries no family, and the page draws the gap.
+[[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] holds the analysis behind the values.
+
+** The construction method
+
+Construction says how the payoff is expressed: =native= for a product the engine
+implements directly, =scripted= for one whose payoff is a script, and =container=
+for one whose legs determine it. It is independent of the market and of the
+family, and it is the attribute that the older eight-value =product_type_t= enum
+was trying to express when it also carried markets and a shape.
+
+** How the pricing engine types join
+
+The pricing configuration names its own products — 108 of them, in
+=ores_analytics_pricing_engine_types_tbl= — and they are not a second product
+catalogue. Each either names the product type it prices, is finer than one, or is
+a building block with no product at all:
+
+- *A product type's own code.* The pricing product is the product.
+- *Finer than a product type.* =EuropeanSwaption=, =BermudanSwaption= and
+  =AmericanSwaption= all price =Swaption=; the exercise style is a pricing
+  decision, not a different instrument.
+- *A building block.* A capped leg or a CMS index is a part of a product, not one.
+- *A product the catalogue lacks.* The pricing configuration names a few products
+  the catalogue has no code for, and the gap is stated rather than papered over.
+
+The join is a column on the pricing engine type, because no pricing product names
+more than one product type. The column is nullable and a =kind= of =product= or
+=block= says whether a row without a column value is a gap or a building block.
+
+The instrument description belongs to the product type. A pricing product that is
+its own code carries no prose of its own; one that is finer keeps a sentence
+saying how it differs; a building block keeps the prose that describes the part.
+
+** What the product type is not
+
+- It is not the risk class. A product's risk classes are the asset classes its
+  value is sensitive to, and discounting makes that set nearly always include
+  rates. [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] holds that relation, and it is a different one.
+- It is not the desk-facing product. A desk treats several configurations of one
+  =Swap= as several products, which is a finer classification many-to-one onto
+  this one, and a separate subject.
+- It is not a construction method, a family or a market. Those are the three
+  attributes the row carries.
+
+* See also
+
+- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the contract shape, and the analysis behind its values.
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the market taxonomy, and why one list is referenced.
+- [[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]] — where the market codes are declared.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the codegen declaration of the catalogue,
+  its routing and the trade type checks.
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the sensitivity relation this page is not.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

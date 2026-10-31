@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
+#+branch: feature/settle-the-axes-a-product-type-carries
+#+pr: 4297
+#+blocked_on: none
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -24,27 +24,38 @@ A product type says what a desk needs in one row, and no second classification i
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                                |
+|--------------+--------------------------------------------------------------------------------------|
+| State        | DONE                                                                                 |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Now          | Nothing.                                                                             |
+| Waiting on   | Nothing.                                                                             |
+| Next         | Nothing.                                                                             |
+| Last touched | 2026-10-31                                                                           |
 
 * Acceptance
 
-- The page records each axis, its code set, its spelling and the entity that owns it.
-- All eight product_type_t values map onto the axes, including composite and scripted, and the routing family the instrument table needs is named.
+- The page records each axis, its code set, its spelling and the entity that owns it: the market junction against =asset_class_codes=, and =ores_refdata_product_family_codes_tbl= for the family.
+- All eight product_type_t values map onto the axes, including composite and scripted, and no routing family survives, because the instrument table the catalogue declares does the routing.
 - rates, interest_rates, swap and InterestRate resolve to one spelling, and the mapping is recorded.
 - has_options and has_extension keep a stated meaning, or are replaced by something that states it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task is an analysis, so the deliverable is the record rather than code.
+
+1. Read the enum and every consumer, to see what actually reads it.
+2. Read the notes' identifier tables, to learn what class and shape the corpus
+   already states.
+3. Compare the three asset-class schemes and settle the spelling the row stores.
+4. Decide the family: what the values are, and whether they are a lookup or an
+   enum.
+5. Decide the construction values, and what happens to the two flags.
+6. Decide the routing, and state why no routing family survives.
+7. Write the column list the model task implements, and map every enum value
+   onto the axes.
+8. Record the decisions on the story and the open items on the tasks that own
+   them.
 
 * Measurements
 
@@ -56,9 +67,8 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+The numbers are recorded in [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a product type carries]], under
+Measurements, with the command and the commit for each.
 
 * Notes
 
@@ -75,9 +85,9 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                          | Title                                                            |
+|-------------------------------------------------------------+------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/4297][#4297]] | [agile] Settle the product type axes and the pricing engine join |
 
 * Review
 
@@ -86,3 +96,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The axes are settled in [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a product type carries]].
+
+- The row carries the shape (a reference to a new family lookup) and the
+  construction (=native=, =scripted=, =container=). The shape reference is
+  nullable, and null has a stated meaning.
+- The market is a junction, because a type may reference two: six do today, two
+  more would if the gap products were added, and two have none by construction.
+  One row is marked as the market the catalogue groups the type under, and a type
+  with no rows is decided per trade. The rule is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].
+- The enum is dropped and no routing family replaces it: the instrument table the
+  catalogue declares does the routing, and nothing reads the enum for anything
+  else.
+- The spelling the row stores is our taxonomy's: =interest_rates=, not =rates=,
+  =swap= or =InterestRate=. The external schemes stay registered and mapped.
+- The two flags are kept, with their meaning restated as facts about the trade
+  the type produces.
+- The eight enum values map onto the axes with no loss, and the distinctions the
+  enum could not state come back with the family.
+- The taxonomy's =scripted= value is not used by any product: renaming it or
+  retiring it is left to the taxonomy work.
+
+PR #4297, commit =f33bd3d2c1=. No follow-up task: the open items are on the tasks
+that own them, and the durable rule is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].

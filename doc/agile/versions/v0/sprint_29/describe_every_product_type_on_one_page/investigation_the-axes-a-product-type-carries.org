@@ -1,0 +1,390 @@
+:PROPERTIES:
+:ID: E7095E28-EB36-427C-9C14-AB6AB0593B33
+:END:
+#+title: Investigation: The axes a product type carries
+#+description: The product type row carries a set of markets, a product family and a construction method, and the eight enum values map onto them with no loss.
+#+type: investigation
+#+level: s1
+#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A point-in-time record, written while the story that commissioned it was open, of an investigation into the axes a product type carries: which classifications the row holds, which it references, and what each one means.
+
+It is a snapshot, not a description of the system. The conclusions that the code must keep doing belong on the page that owns the subject. This one feeds the model task.
+
+* Context
+
+The catalogue row states a code, a one-line description, a =product_type=, and two flags. The routing to the table that holds the instrument lives in the catalogue model rather than in the row.
+
+The =product_type= column is the eight-value =product_type_t= enum. Its own declaration says what it is:
+
+#+begin_quote
+This is a structural/routing classification, not a risk taxonomy. It answers
+"what kind of financial product is this?" (FpML: productType), not "what
+economic risk does it carry?" (FpML: assetClass).
+#+end_quote
+
+The values do not answer that question either. They mix three axes:
+
+- a market (=fx=, =bond=, =credit=, =equity=, =commodity=);
+- a contract shape (=swap=);
+- a construction method (=composite=, =scripted=).
+
+[[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] reached the same conclusion while classifying the catalogue: the
+column "conflates them. Its values mix asset classes, one contract shape and two
+construction methods, which is three axes in one attribute and the reason no
+value fits every product type cleanly."
+
+The same axis is spelled five ways across the tree: =rates= in the knowledge
+notes, =interest_rates= in our taxonomy, =swap= in the enum, =InterestRate= in
+the FpML scheme and =interest_rates= in the ORE scheme. The market for
+foreign exchange is spelled =fx= and =ForeignExchange=.
+
+The 88 product notes state an asset class and a product family for each product,
+in prose tables. Nothing reads them, and nothing in the store agrees with them.
+
+The model task cannot begin until someone says which columns the row has. This
+investigation says.
+
+* Methodology
+
+- Read the enum, its DDL and every consumer in C++, SQL, TypeScript and the
+  shell, with =grep -rn product_type= over the tree.
+- Read the catalogue model and the generated seed, and counted the rows and the
+  routing tables.
+- Read [[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]] and queried the two external
+  schemes the store holds.
+- Extracted the =* Identifiers= table of every knowledge note that has one, and
+  aggregated the class and the family each states by enum value.
+- Queried the database for the instrument codes' asset class column and for the
+  rows each scheme holds.
+
+The tree is =78c91e47b4=. The database schema is behind the checkout
+(=3d319f922611918b= against =e0d684c360b6c178=), so where the two could differ
+the counts are read from the seeds, and the queries only confirm them.
+
+* Paths taken
+** What the enum is used for
+
+| Where                                             | What it does with it                         |
+|---------------------------------------------------+----------------------------------------------|
+| =trading_product_type_create.sql=                 | declares the eight values                    |
+| =trading_trade_types_create.sql:66=               | stores it on the row                         |
+| =trade_type.hpp:72=, =trade_type_protocol.hpp:45= | carries it on the domain type and the wire   |
+| =trade_type_entity.hpp:57=, mapper, service       | carries it to and from the store             |
+| =trade_type_table.cpp:40=                         | prints it in a table                         |
+| =trade_type_commands.cpp:144-160=                 | takes it as a positional argument            |
+| =iam_tenant_provisioner_create.sql:292=           | copies it into each tenant                   |
+| =structures.ts:407=, =413-425=                    | reads it and turns it into an English label  |
+| =StructurePage.tsx:192=                           | draws that label as a tag on a structure leg |
+
+One consumer reads it for meaning: the structure screen's label, which turns
+=swap= into "Rates", =fx= into "FX" and =bond= into "Bond", and humanises
+anything else. Every other consumer carries it. Replacing it with references to
+code sets is mechanical.
+
+** What the eight values cover
+
+From the notes, which state the class and the family of each product:
+
+| Value       | Codes | Markets it holds         | Families it holds                                                     |
+|-------------+-------+--------------------------+-----------------------------------------------------------------------|
+| =swap=      | 13    | rates 9, unstated 4      | Swap 5, Option 2, Forward 1, Swaption 1, unstated 4                   |
+| =fx=        | 26    | fx 24, unstated 2        | Option 16, Swap 3, Forward 3, unstated 4                              |
+| =bond=      | 11    | bond 10, unstated 1      | Security 3, Option 2, Forward 1, Future 1, Repo 1, Swap 1, Position 1 |
+| =credit=    | 8     | credit 7, unstated 1     | Swap 3, Option 1, unstated 4                                          |
+| =equity=    | 32    | equity 30, unstated 2    | Option 18, Swap 4, Forward 3, Position 3, unstated 4                  |
+| =commodity= | 25    | commodity 19, unstated 6 | Option 9, Swap 3, Forward 3, Swaption 1, Position 1, unstated 8       |
+| =composite= | 1     | inherited, by definition | none; a container                                                     |
+| =scripted=  | 5     | determined per trade     | Option 3, unstated 2                                                  |
+
+The "unstated" counts are the 18 codes no note describes and the notes that say
+the class or the shape is decided per trade. They are evidence, not a census:
+the notes are prose and their coverage is 103 of 121.
+
+No value is a value of a single axis. =swap= holds two markets and four shapes.
+=bond= holds seven shapes. =composite= and =scripted= are construction methods,
+not markets at all. The enum is strictly less informative than the axes it is
+made of, so replacing it loses nothing and gains the distinctions it cannot
+state.
+
+** The classes and their spellings
+
+The store already holds two external schemes and one taxonomy of our own.
+
+| Our taxonomy code | ORE scheme    | FpML scheme           | Notes spell it | The enum says |
+|-------------------+---------------+-----------------------+----------------+---------------|
+| =fx=              | =fx=          | =ForeignExchange=     | =fx=           | =fx=          |
+| =interest_rates=  | =rates=       | =InterestRate=        | =rates=        | =swap=        |
+| =credit=          | =credit=      | =Credit=              | =credit=       | =credit=      |
+| =equity=          | =equity=      | =Equity=              | =equity=       | =equity=      |
+| =commodity=       | =commodity=   | =Commodity=           | =commodity=    | =commodity=   |
+| =inflation=       | =inflation=   | =Inflation=           | =inflation=    | =swap=        |
+| =bond=            | =bond=        | =Bond=                | =bond=         | =bond=        |
+| =scripted=        | =cross_asset= | =SecuritiesFinancing= | none           | =scripted=    |
+
+=SecuritiesFinancing= is FpML's name for the repo-like class, and it does not
+mean what our =scripted= value means; the two sit on the same row only because
+either is the nearest value in its scheme to the other.
+
+The resolution is that the product type stores *our taxonomy code*. The external
+schemes stay registered as schemes and stay mapped to the taxonomy, which is what
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] argues must not be collapsed into one attribute.
+
+The =scripted= value needs a word of its own. Its prose in the catalogue
+describes products, not a market: "trades whose payoff is stated as a script
+rather than as a named product, because the payoff spans asset classes". That is
+a construction method. No instrument code uses the value. And it cannot classify
+=CompositeTrade=, whose class is inherited from its components and which is a
+container rather than a script.
+
+Two consequences follow, and only one belongs to this story:
+
+- This story gives a product with no single market no market rows, and states what
+  that means. =CompositeTrade= proves the case: it is a container, so =scripted=
+  would be wrong.
+- The taxonomy's =scripted= value is left alone. Renaming it to =cross_asset=
+  (the ORE scheme's word) or retiring it is the taxonomy's own change, and it
+  has to migrate every row that uses it.
+
+** The families
+
+Eight shapes appear across the notes: Option 50, Swap 19, Forward 11, Position 5,
+Security 3, Swaption 2, Future 1, Repo 1. That accounts for 92 codes, and the
+other 29 carry no shape. The counts are the notes' own, before the authoring task
+resolves the places where two notes claim one code.
+
+Twenty-nine codes carry none, for five different reasons, and the page must not
+draw them the same way:
+
+- 16 codes no note mentions at all, so the shape is unknown rather than absent:
+  =BondFutureOption=, =CommodityAsianOption=, =CommodityDigitalOption=,
+  =CommodityDigitalAveragePriceOption=, =CommoditySpreadOption=,
+  =CommodityForwardVolatilityAgreement=, =ContractForDifference=,
+  =CreditDefaultSwapOption=, =CrossCurrencySwap=,
+  =EquityForwardVolatilityAgreement=, =ForwardVolatilityAgreement=,
+  =FxAverageForward=, =FxForwardVolatilityAgreement=, =InflationSwap=,
+  =IntradayPowerForward= and =SwaptionStraddle=. =CommodityAveragePriceOption= is
+  not in the list: its note states Option.
+- 2 codes whose note names another code: =Autocallable_01= and
+  =PerformanceOption_01=, whose identifier tables say =ScriptedTrade= while their
+  bodies name the variant. The authoring task fixes the tables.
+- 6 variance, pairwise-variance and basket-variance codes that only the umbrella
+  note covers, and that it leaves without a shape.
+- 4 codes whose shape the corpus states it has not settled: =CBO=,
+  =SyntheticCDO= and =RiskParticipationAgreement=, which are tranched or
+  guarantee-like, and =CompositeTrade=, a container.
+  [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] records the first three as open questions.
+
+=ScriptedTrade= is the one conflict the census cannot settle: two notes claim the
+code, one stating Option and one stating none. It is counted as none here, and
+the authoring task decides.
+
+The family is therefore nullable for a stated reason, and the page draws the
+gap rather than hiding the row.
+
+** Routing
+
+91 of the 121 codes route to one of 22 instrument tables; 30 route nowhere, so
+nothing holds a trade of those types. The catalogue model declares the routing as
+==instrument_table=, and every consumer of it wants the table name: the trade
+type check per instrument model, the export batch arrays and the importer
+routing.
+
+Nothing wants an eight-value routing family. The Qt form that the enum's
+documentation mentions is gone, and the web reads the instrument from the
+trade's own row.
+
+** The markets a product type references
+
+A product type does not always reference one market, and the store already holds
+the proof in its payloads.
+
+| Product type                                          | The second market | What shows it                                                                                                       |
+|-------------------------------------------------------+-------------------+---------------------------------------------------------------------------------------------------------------------|
+| =CrossCurrencySwap=                                   | fx                | =swap_leg.currency= is per leg, and the model's own prose says a cross-currency swap has legs in two currencies.    |
+| =InflationSwap=                                       | interest_rates    | The inflation leg carries =inflation_index_code=; the nominal legs sit beside it.                                   |
+| =EquitySwap=                                          | interest_rates    | The equity side carries =underlying_name=; the funding legs are rate legs.                                          |
+| =BondTRS=                                             | interest_rates    | The bond is the return leg and the funding leg is an index.                                                         |
+| =ConvertibleBond=                                     | equity            | =bond_issue_conversion_target=: the issue converts into equity shares.                                              |
+| =Ascot=                                               | equity            | Its brief: a convertible bond, an option, and a reference swap.                                                     |
+| =QuantoEquityOption=, =EquityEuropeanCompositeOption= | fx                | Two of the gap products: an equity payoff struck in another currency.                                               |
+| =CompositeTrade=, =ScriptedTrade=                     | decided per trade | A container of legs, and a payoff stated as a script.                                                               |
+| =TotalReturnSwap=                                     | open              | The notes say equity; the routing puts it in the composite table, whose legs decide. The authoring task settles it. |
+
+Six product types state a second market today, two more would if the gap products
+were added, two have none by construction, and one is open.
+
+* Conclusions
+** Decision: the columns
+
+| Column                | Type    | Null | Meaning                                                                            |
+|-----------------------+---------+------+------------------------------------------------------------------------------------|
+| =code=                | text    | no   | The ORE code. The identity.                                                        |
+| =name=                | text    | no   | The name a desk uses.                                                              |
+| =description=         | text    | no   | What the product is, in prose.                                                     |
+| =source=              | text    | no   | The body that states the description, such as the ORE User Guide.                  |
+| =source_ref=          | text    | no   | Where in that body, as a link.                                                     |
+| =product_family_code= | text    | yes  | FK to =ores_refdata_product_family_codes_tbl=. Null means the shape is not stated. |
+| =construction=        | text    | no   | =native=, =scripted= or =container=.                                               |
+| =has_options=         | boolean | no   | A trade of this type carries an option block.                                      |
+| =has_extension=       | boolean | no   | A trade of this type carries an extension block.                                   |
+| =instrument_table=    | text    | yes  | The table that holds a trade of this type. Null means nothing holds it yet.        |
+| =display_order=       | integer | no   | The order the catalogue lists it in.                                               |
+| =knowledge_note=      | text    | yes  | The note that describes it, by document id.                                        |
+
+The alternatives, and why they were not taken:
+
+- *Keep the enum as a routing family.* Rejected: nothing routes on it. The
+  table name routes, and it is already on the row.
+- *Use the taxonomy's =scripted= for a spanning product.* Rejected:
+  =CompositeTrade= is a container, and calling it scripted is false. No market
+  rows, with a stated meaning, say the true thing.
+- *Make the family an enum.* Rejected: the page groups and labels by family, and
+  a label and a display order are data. The lookup follows the
+  =asset_class_codes= precedent, which the page already reads for the other axis.
+- *Make the construction a lookup.* Rejected: three structural values, curated by
+  nobody, read by nobody as a list.
+
+The market is the one axis the row does not hold as a column. It is a junction,
+for the reason the next section gives.
+
+The two flags are kept, with the meaning restated. No code branches on them
+today; they are facts about the trade a type produces, the catalogue already
+declares them per row, and the page is the place that finally states them. A row
+that says a type carries an option block is information about the product, not
+dead weight.
+
+** Decision: the asset class is a junction
+
+The classification is a set, so it is a junction, not a column:
+
+| Column              | Type    | Meaning                                               |
+|---------------------+---------+-------------------------------------------------------|
+| =product_type_code= | text    | The product type, half the key.                       |
+| =asset_class_code=  | text    | A market it references, half the key.                 |
+| =is_home=           | boolean | True on the one market the catalogue groups it under. |
+
+The key is both codes. A partial unique index allows at most one =is_home= row
+per product type, and a check refuses a product type that holds rows and no home,
+so the only representable states are *one home plus its secondaries* and *no rows
+at all*. Zero rows means the markets are decided per trade, which is what
+=CompositeTrade= and =ScriptedTrade= carry.
+
+The alternatives, and why they were not taken:
+
+- *One column and no junction.* Rejected: it cannot state that a
+  =CrossCurrencySwap= references foreign exchange, and that is exactly the
+  special product type the question is about.
+- *A column for the home market plus a junction for the rest.* Rejected: the
+  home would be held twice, in two mechanisms that can disagree, and every
+  consumer that wants the full set would have to union them.
+- *A junction with no home marker.* Rejected: the page groups products by
+  market, and a product that appears under two markets would appear twice in a
+  list that is meant to place it once. The marker is what makes "the asset class
+  it belongs to" answerable while the set stays honest.
+- *Reusing the risk-class relation for this.* Rejected for now: discounting
+  makes almost every product sensitive to rates, so a bond's risk classes are
+  rates and credit while its own markets are bond and equity. The two relations
+  share a vocabulary and answer different questions, and the risk work builds
+  its own.
+
+The junction carries the same tenant column as the catalogue and lives in the
+system tenant with it. The rule it enforces, and the meaning of each column out
+of the context of this investigation, is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].
+
+** What each value of the enum becomes
+
+| Value       | Home market                                                      | Family                                                                   | Construction |
+|-------------+------------------------------------------------------------------+--------------------------------------------------------------------------+--------------|
+| =swap=      | =interest_rates= (rates products), =inflation= (=InflationSwap=) | from the note: Swap, Option, Forward or Swaption                         | native       |
+| =fx=        | =fx=                                                             | from the note: Option, Swap or Forward                                   | native       |
+| =bond=      | =bond=                                                           | from the note: Security, Option, Forward, Future, Repo, Swap or Position | native       |
+| =credit=    | =credit=                                                         | from the note: Swap or Option, or null                                   | native       |
+| =equity=    | =equity=                                                         | from the note: Option, Swap, Forward or Position                         | native       |
+| =commodity= | =commodity=                                                      | from the note: Option, Swap, Forward, Swaption or Position               | native       |
+| =composite= | none, inherited from the components                              | null, a container                                                        | =container=  |
+| =scripted=  | none, decided by the underlyings                                 | from the note: Option, or null                                           | =scripted=   |
+
+The secondary markets come from the table above; no value of the enum states
+them, which is the point.
+
+Every value becomes a smaller set of rows than the enum's single value covered,
+and the distinctions the enum could not state come back: a swap and a swaption
+are both =swap= today and differ in family; an inflation swap and a rates swap
+are both =swap= today and differ in market; and a =CrossCurrencySwap= and a
+=Swap= are both =swap= today and differ in the markets they reference.
+
+* Recommendations
+
+- *Model the product type* takes the column list above and the junction as the
+  market axis, drops =product_type_t=, and keeps the two flags with their
+  restated meaning.
+- *Author the description of every product type* fills the gaps: the 18 codes
+  with no note need a market and a shape as well as prose, the second markets in
+  the table above need confirming, and the unsettled shapes need a decision or a
+  stated non-decision.
+- *Serve the product type catalogue* returns the markets as a set with the home
+  one marked, groups by the home market and then by family, and draws a product
+  with no home as "decided per trade" and one with no family as "shape not
+  stated".
+- *Make the knowledge corpus read from the catalogue* changes the notes' =rates=
+  to =interest_rates= when it links them to the row, and stops stating a class
+  and a family that the row now holds.
+
+The rule that outlives this work is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]]: what the catalogue
+holds, the market junction and its two invariants, and how the pricing engine
+types join. This page is the snapshot of how that rule was reached.
+
+Outside this story: renaming or retiring the taxonomy's =scripted= value, adding
+=cross_asset= if the taxonomy wants a value for a spanning product, and the
+risk-class relation, which is a different set.
+
+* Measurements
+
+| What                                         | Value              | Command                                                         | Commit                                                                       |              |                           |        |              |
+|----------------------------------------------+--------------------+-----------------------------------------------------------------+------------------------------------------------------------------------------+--------------+---------------------------+--------+--------------|
+| Product types in the catalogue               | 121                | =grep -c '^                                                     | [A-Z]' projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= | =78c91e47b4= |                           |        |              |
+| Product types routed to an instrument table  | 91, into 22 tables | =grep '^                                                        | [A-Z]' <catalogue>                                                           | awk -F'      | ' 'NF==8 && $7 ~ /[a-z]/' | wc -l= | =78c91e47b4= |
+| Product types that route nowhere             | 30                 | same, with =!~= in place of =~=                                 | =78c91e47b4=                                                                 |              |                           |        |              |
+| Knowledge notes stating a class and a family | 88                 | =grep -l "ORE Studio product code" doc/knowledge/domain/*.org   | wc -l=                                                                       | =78c91e47b4= |                           |        |              |
+| Codes the notes name                         | 103 of 121         | the census above; no single command, the lists are the artefact | =78c91e47b4=                                                                 |              |                           |        |              |
+| Rows in each external asset-class scheme     | FpML 8, ORE 8      | =select coding_scheme_code, count(*) ... group by 1=            | =3d319f92=                                                                   |              |                           |        |              |
+| Instrument codes with no asset class         | 12 of 115          | =select count(*) ... where asset_class is null=                 | =3d319f92=                                                                   |              |                           |        |              |
+| Instrument codes using =scripted=            | 0                  | =select asset_class, count(*) ... group by 1=                   | =3d319f92=                                                                   |              |                           |        |              |
+| Product types stating a second market        | 6                  | the payload table above, each column read in its model          | =78c91e47b4=                                                                 |              |                           |        |              |
+| Product types with no market of their own    | 2                  | same                                                            | =78c91e47b4=                                                                 |              |                           |        |              |
+
+* Sources
+
+- =projects/ores.sql/create/trading/trading_product_type_create.sql= — the enum
+  and its declaration.
+- =projects/ores.trading/modeling/ores.trading.trade_type.org= — the columns and
+  the SQL generation.
+- =projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= — the
+  121 rows, the routing, and the record of why =InflationSwap= is classified
+  =swap=.
+- =projects/ores.trading/modeling/ores.trading.swap_leg.org= — the currency on
+  each leg, and the prose that names the cross-currency case.
+- =projects/ores.trading/modeling/ores.trading.inflation_swap_instrument.org=,
+  =…equity_swap_instrument.org=, =…bond_trs.org=, =…ascot.org= and
+  =…bond_issue_conversion_target.org= — the payloads that reference a second
+  market.
+- =doc/knowledge/domain/product_family.org= — the three axes, the eight shapes,
+  and the finding that the current column conflates them.
+- =doc/knowledge/domain/asset_classes.org= — the seven schemes compared, and why
+  one taxonomy is referenced rather than replaced.
+- =projects/ores.refdata/modeling/ores.refdata.asset_class_catalogue.org= — our
+  taxonomy, its prose and its display order.
+- The 88 =* Identifiers= tables under =doc/knowledge/domain/= — the class and the
+  family each note states.
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]] — the durable rule this page derived.
+- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the third classification, and the shape values this uses.
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the analysis behind the market values.
+- [[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]] — where the taxonomy is declared.
+- [[id:9AF7F2D8-0B89-490B-866F-60BC457E6952][Model the product type as the golden source]] — the task that implements this.
+- [[id:E2704422-9165-4D5C-9C29-A4C0B6E2B14A][Author the description of every product type]] — the task that fills the gaps.

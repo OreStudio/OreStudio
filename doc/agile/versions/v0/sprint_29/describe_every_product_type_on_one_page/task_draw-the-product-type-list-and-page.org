@@ -2,7 +2,7 @@
 :ID: 208C399F-560D-43A7-A0C9-FE7B097B19D5
 :END:
 #+title: Task: Draw the product type list and page
-#+description: Draw the list and the detail page under trading: the list grouped by asset class and family with search and counts, the page with the description and its source, the note, the routing table, the books and permission, and the engines.
+#+description: Draw the list and the detail page under trading: the list grouped by home market and family with search and counts, the page with the description and its source, the markets it references, the note, the routing table, the books and permission, and the engines.
 #+type: task
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
@@ -24,18 +24,19 @@ A person who has never booked a type can read what it is on one page, and reach 
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                                                                |
+|--------------+--------------------------------------------------------------------------------------|
+| State        | BACKLOG                                                                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Now          | Not yet started.                                                                     |
+| Waiting on   | Nothing.                                                                             |
+| Next         | Begin implementation.                                                                |
+| Last touched | 2026-10-31                                                                           |
 
 * Acceptance
 
-- The list opens from the trading area and from a card, groups by asset class and family, searches by code and name, and states each group count.
+- The list opens from the trading area and from a card, groups by the home market and family, searches by code and name, and states each group count.
+- The page states the markets the type references, with the home one named as such, and states that a type with none is decided per trade.
 - The page opens for every one of the 121 codes.
 - A type the catalogue holds and no note describes is drawn as undescribed rather than hidden.
 - A code the catalogue does not hold is refused with a stated message.

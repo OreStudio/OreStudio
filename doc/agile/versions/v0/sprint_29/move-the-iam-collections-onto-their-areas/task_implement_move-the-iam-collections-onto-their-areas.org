@@ -27,11 +27,11 @@ same path for different reasons.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CFA3BC5C-9297-4C49-8336-40DB598C61DB][Move the IAM collections onto their areas]] |
-| Now          | Six collections answer on access or auth, and the session door keeps the path the collection wanted. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then the operation routes, whose area differs per operation. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

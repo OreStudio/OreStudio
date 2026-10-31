@@ -21,11 +21,11 @@ The IAM entity collections answer under the area they belong to, and no two rout
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Six IAM collections answer on access or auth, and the session door keeps the path the collection wanted. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | The operation routes still answer under /api/v1/iam and need a declaration per operation. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -40,9 +40,22 @@ The IAM entity collections answer under the area they belong to, and no two rout
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:91F12BF9-BCF9-4367-9CFF-AB68EF3D7BEB][Scaffold story: Move the IAM collections onto their areas]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:D821E280-4837-4787-A71A-7064A7C883F8][Move the IAM collections to access and auth]] | STARTED | 2026-10-31 | | Initial task for: Move the IAM collections onto their areas |
+| [[id:D821E280-4837-4787-A71A-7064A7C883F8][Move the IAM collections to access and auth]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Move the IAM collections onto their areas |
 
 * Decisions
+
+- The session door keeps =/api/v1/auth/sessions= and the generated session collection moves to
+  =/api/v1/access/sessions=. The door mints the credential and the collection is the ledger an
+  administrator reads, so they are different things that wanted one path.
+- A model that renders no route unit does not declare an area. The declaration would be inert
+  and would read as a decision nobody can observe.
+
+* Result
+
+The IAM collections answer on their published areas, the collision between the session door
+and the session collection is settled with a reason a reviewer can check, and the generated
+tests pass against the built unit. The operation routes are the remaining IAM work, and they
+need the declaration to reach operations rather than entities.
 
 * Out of scope
 

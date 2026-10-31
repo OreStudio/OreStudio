@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-refdata-codecs-off-reflect-cpp
-#+pr:
+#+pr: 4182
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -224,7 +224,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4182][#4182]] | [refdata] Generate the wire codecs for every model and switch messaging onto them |
 
 * Review
 

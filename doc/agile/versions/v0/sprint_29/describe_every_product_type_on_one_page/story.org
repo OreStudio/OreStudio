@@ -27,14 +27,14 @@ and nothing joins that prose to the catalogue the store holds.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | STARTED                                                |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Tasks raised 2026-10-31. None started.  |
-| Waiting on    | Nothing.                               |
-| Next          | Start Settle the axes a product type carries. |
-| Last touched  | 2026-10-31                               |
+| Now           | Tasks 1 and 2 in review; the rest raised.              |
+| Waiting on    | Nothing.                                               |
+| Next          | Merge the analysis, then start Model the product type. |
+| Last touched  | 2026-10-31                                             |
 
 * Acceptance
 
@@ -45,9 +45,9 @@ and nothing joins that prose to the catalogue the store holds.
   source that description came from.
 - A page lists every product type the catalogue holds, by the name a desk uses
   and the code the store holds.
-- Each type states what it is, the asset class and the family it belongs to, and
-  where its documentation is: the ORE product page, the knowledge document, or
-  both.
+- Each type states what it is, the markets it references with its home market
+  named, the family it belongs to, and where its documentation is: the ORE
+  product page, the knowledge document, or both.
 - Each type states what allows it: the books a tenant has enabled for it, and the
   permission a person needs to book one. Both come from a junction against the
   catalogue.
@@ -56,32 +56,43 @@ and nothing joins that prose to the catalogue the store holds.
 - A type the catalogue holds and no page can describe is listed as undescribed
   rather than hidden, so the gap is visible.
 
+* Documents
+
+| Document                                                                                        | Kind          | Purpose                                                                       |
+|-------------------------------------------------------------------------------------------------+---------------+-------------------------------------------------------------------------------|
+| [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a product type carries]]                    | Investigation | How the axes, the market junction and the enum replacements were settled.     |
+| [[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]] | Investigation | The classification of the 108 pricing engine types and the shape of the join. |
+| [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]]                                       | Knowledge     | The durable rule the two investigations derived.                              |
+
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-| [[id:F9E49CE8-910E-4D28-A0E2-F982DC4A7FAD][Settle the axes a product type carries]] | BACKLOG | | | Decide which classifications the product type row holds and which it references: the asset class, the product family, the construction method and the routing family the instrument table needs. Resolve the three asset-class spellings in use and settle what the has_options and has_extension flags mean once the axes are separate. |
-| [[id:EAA15C1A-9AF7-4B29-B987-3139847A64DD][Analyse how the pricing engine types join the product type]] | BACKLOG | | | Map the 108 pricing engine types onto the 121 product types and decide the join. Only 51 codes are shared, so 57 pricing engine types need a product type or a stated reason for having none. |
-| [[id:9AF7F2D8-0B89-490B-866F-60BC457E6952][Model the product type as the golden source]] | BACKLOG | | | Model the product type as the one catalogue: code, name, description, source, the axes, the routing table, display order and the knowledge note. Generate the SQL, C++, wire and shell artefacts from it, migrate the 121 rows, and drop product_type_t. |
-| [[id:17A6AB0B-78DA-474D-AEEE-0DB8395EAF08][Publish the catalogue from the system tenant]] | BACKLOG | | | Seed the catalogue once into the system tenant, stop the provisioner copying it into each tenant, and let every tenant read the system rows. Point the trade check at the one copy and migrate the copies away. |
-| [[id:E2704422-9165-4D5C-9C29-A4C0B6E2B14A][Author the description of every product type]] | BACKLOG | | | Write the description of all 121 product types: what the product is, what it pays and when a desk uses it. Each row names the ORE User Guide file it comes from, and the 13 types with no description anywhere are written. |
-| [[id:BFF00B79-57EC-4382-86BB-C6233BD7EFA3][Hold what allows a product type]] | BACKLOG | | | Add the junctions that say what allows a product type: the books a tenant enables for it, and the permission a person needs to book one. Settle the difference between all types allowed and none. |
-| [[id:C92A71A3-578E-42EC-8EBB-F5265CA40698][Classify each product type as flow or non-flow]] | BACKLOG | | | Hold the flow and non-flow division against the product type, with the party override the capture asks for, and delete the eight-code set in the BFF. |
-| [[id:B1EF45DC-6624-465A-8C2B-D9EF7C7AA204][Serve the product type catalogue to the browser]] | BACKLOG | | | Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests. |
-| [[id:87E92BE8-4C30-4060-9034-C369B4E32488][Join the pricing engine types to the product type]] | BACKLOG | | | Implement the join the analysis decided, seed the mapping, and make the pricing-engine screens read the name and the documentation from the product type. |
-| [[id:DB56F37C-EB15-4B94-83DE-5FFAD3FF277C][Retire the duplicate product catalogues]] | BACKLOG | | | Fold the instrument codes into the product type, delete the English asset-class switch, the label and colour maps and the hardcoded Bond, and give the report results column a real value. |
-| [[id:208C399F-560D-43A7-A0C9-FE7B097B19D5][Draw the product type list and page]] | BACKLOG | | | Draw the list and the detail page under trading: the list grouped by asset class and family with search and counts, the page with the description and its source, the note, the routing table, the books and permission, and the engines. |
-| [[id:FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4][Link every mention of a product type]] | BACKLOG | | | Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists. |
-| [[id:1D8C71AD-F3A0-477B-8519-5F904085D87A][Make the knowledge corpus read from the catalogue]] | BACKLOG | | | Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets. |
-| [[id:162A3CC4-C1D3-4AC9-BCE1-074ABA76AFEF][Prove the product type catalogue holds one copy]] | BACKLOG | | | Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening. |
+| Task                                                                                                    | State   | Start      | End | Description                                                                                                                                                                                                                                                                                                                              |
+|---------------------------------------------------------------------------------------------------------+---------+------------+-----+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [[id:F9E49CE8-910E-4D28-A0E2-F982DC4A7FAD][Settle the axes a product type carries]]                     | STARTED | 2026-10-31 |     | Decide which classifications the product type row holds and which it references: the asset class, the product family, the construction method and the routing family the instrument table needs. Resolve the three asset-class spellings in use and settle what the has_options and has_extension flags mean once the axes are separate. |
+| [[id:EAA15C1A-9AF7-4B29-B987-3139847A64DD][Analyse how the pricing engine types join the product type]] | STARTED | 2026-10-31 |     | Map the 108 pricing engine types onto the 121 product types and decide the join. Only 51 codes are shared, so 57 pricing engine types need a product type or a stated reason for having none.                                                                                                                                            |
+| [[id:9AF7F2D8-0B89-490B-866F-60BC457E6952][Model the product type as the golden source]]                | BACKLOG |            |     | Model the product type as the one catalogue: code, name, description, source, a junction of the markets it references, its family, its construction, the routing table, display order and the knowledge note. Generate the SQL, C++, wire and shell artefacts from it, migrate the 121 rows, and drop product_type_t.                    |
+| [[id:17A6AB0B-78DA-474D-AEEE-0DB8395EAF08][Publish the catalogue from the system tenant]]               | BACKLOG |            |     | Seed the catalogue once into the system tenant, stop the provisioner copying it into each tenant, and let every tenant read the system rows. Point the trade check at the one copy and migrate the copies away.                                                                                                                          |
+| [[id:E2704422-9165-4D5C-9C29-A4C0B6E2B14A][Author the description of every product type]]               | BACKLOG |            |     | Write the description of all 121 product types: what the product is, what it pays and when a desk uses it. Each row names the ORE User Guide file it comes from, and the 13 types with no description anywhere are written.                                                                                                              |
+| [[id:BFF00B79-57EC-4382-86BB-C6233BD7EFA3][Hold what allows a product type]]                            | BACKLOG |            |     | Add the junctions that say what allows a product type: the books a tenant enables for it, and the permission a person needs to book one. Settle the difference between all types allowed and none.                                                                                                                                       |
+| [[id:C92A71A3-578E-42EC-8EBB-F5265CA40698][Classify each product type as flow or non-flow]]             | BACKLOG |            |     | Hold the flow and non-flow division against the product type, with the party override the capture asks for, and delete the eight-code set in the BFF.                                                                                                                                                                                    |
+| [[id:B1EF45DC-6624-465A-8C2B-D9EF7C7AA204][Serve the product type catalogue to the browser]]            | BACKLOG |            |     | Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests.                                                                                                                                                                             |
+| [[id:87E92BE8-4C30-4060-9034-C369B4E32488][Join the pricing engine types to the product type]]          | BACKLOG |            |     | Implement the join the analysis decided, seed the mapping, and make the pricing-engine screens read the name and the documentation from the product type.                                                                                                                                                                                |
+| [[id:DB56F37C-EB15-4B94-83DE-5FFAD3FF277C][Retire the duplicate product catalogues]]                    | BACKLOG |            |     | Fold the instrument codes into the product type, delete the English asset-class switch, the label and colour maps and the hardcoded Bond, and give the report results column a real value.                                                                                                                                               |
+| [[id:208C399F-560D-43A7-A0C9-FE7B097B19D5][Draw the product type list and page]]                        | BACKLOG |            |     | Draw the list and the detail page under trading: the list grouped by home market and family with search and counts, the page with the description and its source, the markets it references, the note, the routing table, the books and permission, and the engines.                                                                     |
+| [[id:FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4][Link every mention of a product type]]                       | BACKLOG |            |     | Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.                                                                                                                                |
+| [[id:1D8C71AD-F3A0-477B-8519-5F904085D87A][Make the knowledge corpus read from the catalogue]]          | BACKLOG |            |     | Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets.                                                                                                                               |
+| [[id:162A3CC4-C1D3-4AC9-BCE1-074ABA76AFEF][Prove the product type catalogue holds one copy]]            | BACKLOG |            |     | Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening.                                                                                                                                                                       |
 
 * Decisions
 
 - *Product type means the 121 codes a tenant books, and nothing else.* The
-  eight-value =product_type_t= enum is not a product type: it dissolves into an
-  asset class, a product family and a construction method, and keeps a routing
-  family only where the instrument table needs one. The 108 pricing engine types
-  are a pricing granularity, and they join the catalogue through a junction.
+  eight-value =product_type_t= enum is not a product type: it dissolves into a
+  set of asset classes, a product family and a construction method. No routing
+  family survives it, because nothing routes on the enum: the instrument table on
+  the row routes. The markets a product references are a junction, because a type
+  may reference two, and one of them is marked as the market it is grouped under.
+  [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a product type carries]] settles the columns, the junction, the
+  spellings and what a missing axis means.
 - *One table, one copy.* The catalogue is declared once in codegen and seeded
   into the system tenant. Every tenant reads those rows. The per-tenant copies
   and the provisioner copy go, because the trade check already reads the system
@@ -89,30 +100,34 @@ and nothing joins that prose to the catalogue the store holds.
 - *The row carries the documentation.* A description, the source it came from,
   and the knowledge note it belongs to. The page links to the note for the prose
   rather than restating it.
-- *Every use is a junction against the catalogue*: pricing engine types, the
-  books that allow a type, the permission to book one, and the flow
-  classification. No use keeps a list of its own, and no screen holds a code.
+- *Every use joins the catalogue.* The pricing engine types join it by a column,
+  because each names at most one product type; the allowed books, the permission
+  and the flow classification join it by a junction, because each is a set.
+  [[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]] settles which of the
+  108 name a product, which are finer, which are building blocks and which name
+  a product the catalogue lacks. No use keeps a list of its own, and no screen
+  holds a code.
 - *The page is a screen.* It reads the store, and it shows what the catalogue
   holds rather than hiding a type it cannot describe.
 
 * Order of work
 
-| Order | Task                                                   | Waits on   |
-|-------+--------------------------------------------------------+------------|
-| 1     | Settle the axes a product type carries                 | none       |
-| 2     | Analyse how the pricing engine types join the product  | none       |
-| 3     | Model the product type as the golden source            | 1          |
-| 4     | Publish the catalogue from the system tenant           | 3          |
-| 5     | Author the description of every product type           | 3          |
-| 6     | Hold what allows a product type                        | 3          |
-| 7     | Classify each product type as flow or non-flow         | 3          |
-| 8     | Serve the product type catalogue to the browser        | 3, 5, 6    |
-| 9     | Join the pricing engine types to the product type      | 2, 3, 8    |
-| 10    | Retire the duplicate product catalogues                | 3, 8, 9    |
-| 11    | Draw the product type list and page                    | 8          |
-| 12    | Link every mention of a product type                   | 11         |
-| 13    | Make the knowledge corpus read from the catalogue      | 5, 11      |
-| 14    | Prove the product type catalogue holds one copy        | 11, 12, 13 |
+| Order | Task                                                  | Waits on   |
+|-------+-------------------------------------------------------+------------|
+| 1     | Settle the axes a product type carries                | none       |
+| 2     | Analyse how the pricing engine types join the product | none       |
+| 3     | Model the product type as the golden source           | 1          |
+| 4     | Publish the catalogue from the system tenant          | 3          |
+| 5     | Author the description of every product type          | 3          |
+| 6     | Hold what allows a product type                       | 3          |
+| 7     | Classify each product type as flow or non-flow        | 3          |
+| 8     | Serve the product type catalogue to the browser       | 3, 5, 6    |
+| 9     | Join the pricing engine types to the product type     | 2, 3, 8    |
+| 10    | Retire the duplicate product catalogues               | 3, 8, 9    |
+| 11    | Draw the product type list and page                   | 8          |
+| 12    | Link every mention of a product type                  | 11         |
+| 13    | Make the knowledge corpus read from the catalogue     | 5, 11      |
+| 14    | Prove the product type catalogue holds one copy       | 11, 12, 13 |
 
 * Out of scope
 

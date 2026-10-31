@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 8BF75172-CD91-461A-A3BA-2B4E913D63A8
+:END:
+#+title: ORE output processing
+#+description: How ORE writes its output files, why their shape follows the configuration, and how ORE Studio reads them into the metric and cashflow stores.
+#+type: knowledge
+#+level: cross
+#+filetags: :ore:results:reporting:external:knowledge:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+* Summary
+
+ORE writes its results as one CSV file for each family of output, and it
+publishes no schema for any of them. A writer declares its columns
+imperatively through a generic =Report= sink and often adds them in a loop over
+the run's configuration, so a file's shape follows the run that produced it.
+ORE Studio therefore treats the samples ORE ships as the authority: a
+generated catalogue names 60 families and 1 584 columns, one reader driven by
+that catalogue turns their figures into metrics, and only the three cashflow
+families get a typed reader of their own. The format, the read model and the
+readers are =ores.ore='s; the tables belong to the component that stores them.
+
+* Detail
+
+** What ORE writes, and how
+
+Every output is a CSV whose first line names the columns, written through one
+interface:
+
+#+begin_src cpp
+// OREData/ored/report/report.hpp
+virtual Report& addColumn(const string& name, const ReportType&, Size precision = 0,
+                          bool scientific = false) = 0;
+virtual Report& next() = 0;
+virtual Report& add(const ReportType& rt) = 0;   // positional, in column order
+virtual void end() = 0;
+#+end_src
+
+=ReportType= is a variant of =Size=, =Real=, =string=, =Date= and =Period=.
+=CSVReport= writes a =#= then the headings, then the rows. There is no column
+count check, no type check and no registry of what a name means.
+
+The per-family knowledge lives in writer functions — 115 column blocks across
+39 files - and it is imperative. =curves.csv= shows the shape of it:
+
+#+begin_src cpp
+// reportwriters/pricingreportwriter.cpp
+report.addColumn("Tenor", Period()).addColumn("Date", Date());
+for (auto it : discountCurves)  report.addColumn(it.first, double(), 15);
+for (auto it : yieldCurves)     report.addColumn(it.first, double(), 15);
+for (auto it : indexCurves)     report.addColumn(it.first, double(), 15);
+#+end_src
+
+So a family is not a fixed list of columns. The other analytics take the same
+sink and prepend their own columns: the sensitivity analytic adds =Type=,
+=IsPar=, =Factor_1=, =Factor_2= and the shifts before it writes an
+=exposure_trade_<id>.csv=.
+
+File names come from the run's parameters in most cases — =npv.outputFileName=,
+=stress.scenarioOutputFile= — which our =file_type= seed already catalogues.
+The rest are conventions of the engine, such as =exposure_trade_<trade id>.csv=
+and =simm.csv=, and no parameter names them at all.
+
+A figure the engine has no value for is written as its null string (=#N/A= in
+the samples), not as an empty cell.
+
+** Why the shape varies
+
+The checked-in expected outputs show 76 header variants across 60 families, and
+they are three different things:
+
+| Cause | Example | What it is |
+|-------+---------+------------|
+| Configuration columns | =curves.csv= (4 variants), =dim_regression=, =var=, =scenario= | one column for each curve, regressor, quantile or factor the run asked for |
+| Analytic augmentation | =exposure_trade_*= and =exposure_nettingset_*= (3 variants) | the sensitivity analytic prepends its own columns to the same file |
+| A stale expected file | =flows.csv=, 25 columns in MinimalSetup against the writer's 27 | a strict subset, kept from an older release |
+
+Only the first two are shapes the engine writes. The third is an artefact of the
+corpus, which is worth knowing before treating a variant as a case.
+
+** What the corpus says
+
+The repository vendors ORE's samples under =external/ore/examples/*/ExpectedOutput=.
+At this writing they hold 473 CSV files under 192 file names. The catalogue
+those files generate states 60 families and 1 584 columns: 1 250 decimal, 280
+text, 36 date and 18 integer. The widest file, =stress_scenarios.csv=, states
+789 columns.
+
+The =file_type= seed declares 55 output parameters and the samples ship the file
+of 17 of them. The other 38 name files no sample carries — jacobi, crossgamma,
+calibration, creditcurves, crif, the scenario dumps and cubes, dim evolution and
+regression — so their shape can only be read from the writers.
+
+** How ORE Studio reads it
+
+The layering is fixed before any reader is written:
+
+- =ores.ore= holds the format, the read model and one reader for each row
+  shape. It holds no store: no session, no table and no mapping to another
+  component's entity.
+- The component that stores the data owns its tables and the mapping:
+  =ores.reporting= for what a run produced, =ores.marketdata= for market state.
+- The post-processor calls the readers. That gives =ores.reporting.core= a core
+  link to =ores.ore.core=, the same edge =ores.marketdata.core= already holds.
+
+The catalogue is generated from the corpus by
+=projects/ores.ore/scripts/generate_output_catalogue.py=, and the
+=ore-output-catalogue= local check fails when the corpus and the data disagree.
+Each family states the roles of its columns — keys that identify a row,
+qualifiers that state the context of a figure, and measures that are the figures
+— and whether its measure set is open.
+
+Reading follows from the roles:
+
+- **One metric reader** serves every family whose row is keys, qualifiers and
+  figures. It requires the keys, carries the qualifiers, and turns each measure
+  column into one metric named by its heading. A curve, a risk factor and a
+  quantile are therefore all measures, and a new one costs no code.
+- **Typed readers** serve the three families whose row is a child of a trade:
+  =flows=, =stresstest_flows= and =todaysmarketcalibration_cashflows=. There
+  the meaning is the relation between the columns — trade, leg, cashflow number
+  and pay date — and flattening it to metrics would lose the flow.
+- **Payloads** serve the wide market state. A scenario cube is stored as one
+  compressed object whose index names the dates, scenarios and factors it holds,
+  because exploding 789 columns into rows costs more than it answers.
+
+The stores follow the same three shapes: a metric hypertable with the family as
+a column, a cashflow table, and a view that keeps the one shape the screens
+read, so no screen learns a family. Sixty tables would be forty identical shapes
+and a UNION for every cross-family read.
+
+The full inventory and the task list behind it are on
+[[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]].
+
+** What is not covered
+
+The 38 output parameters whose files no sample ships are not in the catalogue,
+because the corpus cannot state their shape. They are filed as
+[[id:FC23D85D-2830-4D33-9239-7D268900A4DD][Read the outputs the samples do not ship]].
+
+* See also
+
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — what upstream is, and how we relate to it.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the inputs a run reads, and the parameters that name these outputs.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] — the measures and the report catalogue a person sees.
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Journey: read what a run produced]] — the reader's view of the same files.
+- [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].

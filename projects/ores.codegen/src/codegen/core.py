@@ -2552,8 +2552,16 @@ def _mapper_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
         for t in enum_types
         if (m := re.fullmatch(r'ores::(\w+)::domain::(\w+)', t or ''))
     })
+    # A column the model states a store transform for names the transform in
+    # the mapper's write direction, so the header that declares it is included
+    # once however many columns ask for the same one.
+    transform_headers = sorted({
+        c['store_transform_include'] for c in columns
+        if c.get('store_transform_include')
+    })
     return {
         'mapper_enum_includes': [{'path': h} for h in enum_headers],
+        'mapper_store_transform_includes': [{'path': h} for h in transform_headers],
         'mapper_uses_optional': any(
             c.get('is_optional_uuid') or c.get('is_optional_timestamp')
             or (c.get('is_date') and c.get('is_optional_date'))

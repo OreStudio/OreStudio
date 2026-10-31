@@ -74,6 +74,24 @@ def test_mapper_names_the_header_of_each_enum_column():
     ]
 
 
+def test_mapper_names_the_header_of_a_store_transform_once():
+    gates = _mapper_include_gates(_entity(columns=[
+        {'name': 'business_day_convention', 'store_transform': 'stored_code',
+         'store_transform_include': 'ores.refdata.core/repository/code.hpp'},
+        {'name': 'option_business_day_convention', 'store_transform': 'stored_code',
+         'store_transform_include': 'ores.refdata.core/repository/code.hpp'},
+        {'name': 'code'},
+    ]))
+    assert gates['mapper_store_transform_includes'] == [
+        {'path': 'ores.refdata.core/repository/code.hpp'},
+    ]
+
+
+def test_mapper_includes_nothing_for_a_column_with_no_store_transform():
+    gates = _mapper_include_gates(_entity(columns=[{'name': 'code'}]))
+    assert gates['mapper_store_transform_includes'] == []
+
+
 def test_service_pages_versions_only_when_derived_with_a_versions_list():
     assert _service_include_gates(
         _entity(protocol_derived=True, list_versions_operations=[{}]))['service_pages_versions']

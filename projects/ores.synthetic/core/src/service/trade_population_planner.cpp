@@ -1869,8 +1869,13 @@ std::string parameters_of(std::string_view trade_type,
     if (trade_type == "ScriptedTrade")
         return std::format(R"({{"Notional":"{}","PutCall":"Call","Strike":"{}"}})", money, level);
     if (trade_type == "DoubleDigitalOption")
+        /*
+         * The document's own members, which is what the projection writes from
+         * these keys and reads back into them. A key the document has no member
+         * for is written as an element the schema does not hold.
+         */
         return std::format(
-            R"({{"Type1":"Equity","Type2":"Equity","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","Notional":"{}","LowerBarrier":"{}","UpperBarrier":"{}"}})",
+            R"({{"Type1":"Equity","Type2":"Equity","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","BinaryPayout":"{}","BinaryLevel1":"{}","BinaryLevel2":"{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
             expiry,
             settlement,
             currency,
@@ -1878,11 +1883,12 @@ std::string parameters_of(std::string_view trade_type,
             level,
             std::format("{:.4f}", strike * 1.2));
     return std::format(
-        R"({{"Position":"Long","PayCcy":"{}","ValuationDate":"{}","SettlementDate":"{}","Notional":"{}","StrikePrices":"{},{},{}"}})",
-        currency,
+        R"({{"NotionalAmount":"{}","ParticipationRate":"1.0","Strike":"{}","ValuationDate":"{}","SettlementDate":"{}","Position":"Long","PayCcy":"{}","StrikePrices":"{},{},{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
+        money,
+        level,
         expiry,
         settlement,
-        money,
+        currency,
         level,
         std::format("{:.4f}", strike * 1.1),
         std::format("{:.4f}", strike * 1.2));

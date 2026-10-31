@@ -174,6 +174,7 @@
 #include "ores.refdata.service/messaging/portfolio_event_registrar.hpp"
 #include "ores.refdata.service/messaging/portfolio_right_event_registrar.hpp"
 #include "ores.refdata.service/messaging/producer_kind_event_registrar.hpp"
+#include "ores.refdata.service/messaging/product_family_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/purpose_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_book_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/rounding_type_event_registrar.hpp"
@@ -276,6 +277,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_payment_frequency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_person_role_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_product_family_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_portfolio_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_regulatory_book_type_event_mapping(event_source, event_bus, nats));

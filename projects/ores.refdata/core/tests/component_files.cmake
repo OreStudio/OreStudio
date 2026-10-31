@@ -155,6 +155,7 @@ set(files
     "portfolio_eventing_integration_tests.cpp"
     "portfolio_right_eventing_integration_tests.cpp"
     "producer_kind_eventing_integration_tests.cpp"
+    "product_family_code_eventing_integration_tests.cpp"
     "purpose_type_eventing_integration_tests.cpp"
     "regulatory_book_type_eventing_integration_tests.cpp"
     "regulatory_corporate_sector_eventing_integration_tests.cpp"

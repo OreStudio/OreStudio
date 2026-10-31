@@ -310,6 +310,10 @@
 \ir ./refdata_ledger_feed_types_drop.sql
 \ir ./refdata_sub_periods_coupon_types_notify_trigger_drop.sql
 \ir ./refdata_sub_periods_coupon_types_drop.sql
+-- Product family codes: no dependants, so they drop with the lookup set.
+\ir ./refdata_product_family_codes_notify_trigger_drop.sql
+\ir ./refdata_product_family_codes_drop.sql
+
 
 -- Product catalogue: instrument_codes before the asset_class_codes and
 -- curve_roles it references.

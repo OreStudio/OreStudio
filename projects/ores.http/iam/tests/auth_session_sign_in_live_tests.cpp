@@ -116,7 +116,7 @@ TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_sessio
 
     auto verifier = std::make_shared<ores::security::jwt::jwt_authenticator>(
         ores::security::jwt::jwt_authenticator::create_rs256_verifier(*public_key));
-    auth_session_routes routes(session, store, verifier, settings);
+    auth_session_routes routes(session, store, [verifier] { return verifier; }, settings);
 
     ores::iam::messaging::login_request credentials;
     credentials.principal = *username;

@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: A187CB8D-D3F3-4891-9B9A-BAF01D4E6F5E
+:END:
+#+title: Task: A security is named by its product
+#+description: A security's name leaves its product out, so two bond products of one term claim one issue. Ten codes route to the bond instrument table, the planner draws them all, and a provisioning run dies in the bond family on a security that already states other terms.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/a-security-is-named-by-its-product
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Name a security by its product as well as its term, so two bond products of one term state two securities and a provisioning run writes the bond family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A security's name states its product, so a callable bond and a plain bond of one term name two securities and two issues.
+- The bond family books, and a full provisioning run writes every family of the population.
+
+* Plan
+
+The name states the product as well as the currency, the anchor and the term.
+
+A security's own rows are what make two products different securities: a
+callable bond states the dates its issuer may call it, a convertible states what
+it may convert into, and a plain bond of the same term states neither. The
+store compares the issue it holds with the issue a second write states, and
+refuses the second when they differ — which is the run's =Bond issue … is stored
+with other terms=. So the product belongs in the name, and the pool of
+securities becomes one per currency, term and product.
+
+Two consequences are stated rather than left to be discovered:
+
+- A term now carries as many securities as the family routes products to it.
+  The case that asserted one security per term asserted the fault.
+- A security is no longer shared between two books by construction. With an
+  even product count and two books, the draw gives each book half the products,
+  so no security is shared across books; the name is still a function of the
+  security's own facts and of nothing about a book, which is what the case now
+  states.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

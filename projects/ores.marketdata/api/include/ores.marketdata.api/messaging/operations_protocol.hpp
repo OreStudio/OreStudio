@@ -1310,7 +1310,7 @@ struct get_series_ticks_response {
 };
 
 /**
- * @brief Asks marketdata to keep the market state a run priced against.
+ * @brief Asks this component to keep the market state a run priced against.
  *
  * The state is the output files the run left in its output archives, and those
  * files are far too large for a message: a cube states a column for every curve
@@ -1332,60 +1332,21 @@ struct store_market_state_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /**
-     * @brief The party that owns the run, so every payload carries it.
-     */
     std::string party_id;
-    /**
-     * @brief The run that priced against this state.
-     */
     std::string report_instance_id;
-    /**
-     * @brief The report the run came from.
-     */
     std::string report_definition_id;
-    /**
-     * @brief The date the run priced at, as an ISO 8601 date.
-     *
-     * It is the observation date of the state, and the time column of the table.
-     */
     std::string as_of;
-    /**
-     * @brief The run's storage token, which reads the archives it names.
-     *
-     * Scoped to the one run and short-lived, like the token a workunit is
-     * assigned with. It is carried here rather than minted, because the run's
-     * grant is the reporting service's to hold.
-     */
     std::string storage_token;
-    /**
-     * @brief Where each archive of the run's output is, as bucket and key.
-     */
     std::vector<std::string> output_uris;
 };
 
-/**
- * @brief What was stored, and what was left alone.
- */
 struct store_market_state_response {
     ores::utility::domain::result result;
-    /**
-     * @brief The families a payload was stored for, in the order they were read.
-     */
     std::vector<std::string> families;
-    /**
-     * @brief The files whose family states a market state and which were read.
-     */
     int payloads = 0;
-    /**
-     * @brief The compressed size of what was stored, so a caller can account for it.
-     */
-    long long payload_bytes = 0;
-    /**
-     * @brief The files the run wrote that are not market state, so the caller
-     * can see that they were not forgotten.
-     */
+    std::int64_t payload_bytes = 0;
     std::vector<std::string> left_alone;
+    std::vector<std::string> refusals;
 };
 
 }

@@ -2972,6 +2972,125 @@ For each tick, the index of its coordinate in =coordinates=.
 
 For each tick, its value.
 
+** store_market_state_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.store_market_state
+:response: store_market_state_response
+:END:
+
+Keeps the market state a run priced against: the output files the run left in
+its output archives, which are far too large for a message, so the caller names
+the archives and lends the token that reads them.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks this component to keep the market state a run priced against.
+ *
+ * The state is the output files the run left in its output archives, and those
+ * files are far too large for a message: a cube states a column for every curve
+ * and tenor the run built. The caller therefore names the archives and lends the
+ * token that reads them — the run's own, the same one the run's other steps use
+ * — and this reads the files rather than receiving them.
+ *
+ * The archives are named by their storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is left alone:
+ * the run's results belong to reporting.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party that owns the run, so every payload carries it.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The run that priced against this state.
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The report the run came from.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the run priced at, as an ISO 8601 date. It is the observation date of
+the state, and the time column of the table.
+
+*** storage_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The run's storage token, which reads the archives it names. Scoped to the one run
+and short-lived, like the token a workunit is assigned with. It is carried here
+rather than minted, because the run's grant is the reporting service's to hold.
+
+*** output_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Where each archive of the run's output is, as bucket and key.
+
+** store_market_state_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+How the call ended. A file of market state that cannot be read refuses the whole
+run's state, because a partial state reads as a complete one.
+
+*** families
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The families a payload was stored for, in the order they were read.
+
+*** payloads
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+The files whose family states a market state and which were read.
+
+*** payload_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The compressed size of what was stored, so a caller can account for it.
+
+*** left_alone
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The files the run wrote that are not market state, so the caller can see that
+they were not forgotten.
+
+*** refusals
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The reasons a market-state file could not be read.
+
 * See also
 
 - [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] — the story that models these operations.

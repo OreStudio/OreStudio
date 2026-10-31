@@ -1479,6 +1479,17 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.market_state_payloads.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'family_one_of',
+        ],
+        rows: ['payloads'],
+    },
     'marketdata.v1.observation_lineages.list': {
         asOf: true,
         filter: ['id_one_of'],

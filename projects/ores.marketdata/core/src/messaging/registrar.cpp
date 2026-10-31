@@ -52,6 +52,7 @@
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_state_handler.hpp"
 #include "ores.marketdata.core/messaging/market_state_payload_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
@@ -173,6 +174,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
             market_series_handler h(nats, ctx, verifier);
             h.export_to_storage(std::move(msg), http_base_url);
+        }));
+
+    // The market state a run priced against: the caller names the run's output
+    // archives and lends the token that reads them, because a cube is far too
+    // large for a message.
+    subs.push_back(nats.queue_subscribe(
+        std::string(store_market_state_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
+            market_state_handler h(nats, ctx, verifier);
+            h.store(std::move(msg), http_base_url);
         }));
 
     // The identity backfill: repairs the projection for series the write path

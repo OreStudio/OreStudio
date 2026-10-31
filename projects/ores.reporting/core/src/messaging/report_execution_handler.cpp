@@ -936,9 +936,11 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                      .priced_at = as_of};
 
         results::run_output_outcome output;
+        std::vector<std::string> output_uris;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
         for (const auto& result_id : result_ids) {
             const auto uri = ores::compute::net::compute_storage::output_path(result_id);
+            output_uris.push_back(uri);
             std::string bucket;
             std::string key;
             if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
@@ -1051,13 +1053,49 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
 
         const auto loaded = output.metrics.size() + output.cashflows.size();
 
+        // The market state the run priced against belongs to the market data
+        // store, and it is far too large to travel in a message: the archives
+        // are named and the run's own token is lent, so marketdata reads them.
+        // A state that is not stored leaves the run's figures intact, so it is
+        // stated and carried on with rather than failing the run.
+        std::string market_state_note;
+        try {
+            ores::marketdata::messaging::store_market_state_request state;
+            state.party_id = boost::uuids::to_string(instance->party_id);
+            state.report_instance_id = req.report_instance_id;
+            state.report_definition_id = boost::uuids::to_string(instance->definition_id);
+            state.as_of = std::format("{:%F}", std::chrono::floor<std::chrono::days>(as_of));
+            state.storage_token = run_token_value;
+            state.output_uris = output_uris;
+
+            std::string state_error;
+            auto owner = svc_nats_.with_delegation(run_token_value);
+            const auto answer = nats_call(owner, state, state_error);
+            if (!answer) {
+                market_state_note = "Its market state was not stored: " + state_error;
+            } else if (answer->result.outcome != ores::utility::domain::outcome::ok) {
+                market_state_note = "Its market state was not stored: " + answer->result.message;
+            } else {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Stored " << answer->payloads << " market-state payload(s) for "
+                    << req.report_instance_id << " (" << answer->payload_bytes << " bytes)";
+            }
+        } catch (const std::exception& e) {
+            market_state_note = std::string("Its market state was not stored: ") + e.what();
+        }
+        if (!market_state_note.empty()) {
+            BOOST_LOG_SEV(lg(), error) << market_state_note;
+            market_state_note = " " + market_state_note;
+        }
+
         post_process_results_result result;
         result.success = true;
         result.rows_loaded = static_cast<int>(loaded);
-        result.message = std::format("Loaded {} metrics and {} cashflow figures for run {}",
+        result.message = std::format("Loaded {} metrics and {} cashflow figures for run {}.{}",
                                      output.metrics.size(),
                                      output.cashflows.size(),
-                                     req.report_instance_id);
+                                     req.report_instance_id,
+                                     market_state_note);
 
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
                                   << req.report_instance_id << " rows=" << loaded;

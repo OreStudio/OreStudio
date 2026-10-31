@@ -1390,8 +1390,8 @@ this sentence, so a scheduled run nobody watched still says why it did not price
 :END:
 
 Reads the cuts a person reads on the cuts list, one row per body, narrowed by
-the kind, by the month the person is reading and by the state, and searched in
-the label.
+the kind, by the month the person is reading and by the state, searched in the
+label, and answered one page at a time.
 
 The party is the session's and is never a field of this request: a cut belongs
 to the party whose books it fixed, and the store refuses a row the session may
@@ -1402,8 +1402,12 @@ The label and the state are derived here and not in the screen. A derived label
 is a function of the kind, the scope and the instant, and a supersession is a
 function of every later cut of the same kind and scope, so a caller that
 filtered on the label or on the state would have to hold both rules itself. The
-search and the state filter are read here for that reason, and only the page the
-screen is reading is narrowed afterwards.
+search and the state filter are read here for that reason.
+
+The page is the caller's and the count is the read's: a cut accumulates at the
+rate of its occasion, so the answer states the rows the caller asked for beside
+the number of rows the query matched, and the caller reads that the page is not
+the whole of it.
 
 *** kind_code
 :PROPERTIES:
@@ -1443,6 +1447,25 @@ The derived state to read, as the design words it: =draft=, =incomplete=,
 =taken=, =in_use=, =authorised=, =refused= or =superseded=, or empty for every
 state. The state is derived and stored nowhere, so the filter runs here rather
 than in the store.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many of the rows the query matched to pass over. A list reads one page at a
+time, so the offset is the page's own and the store answers from there.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many rows to answer, up to the read's own paging cap, which bounds a scope
+that grows at the rate of its occasion however large a page the caller asks for.
+Zero asks for the cap.
 
 ** cut_row
 :PROPERTIES:

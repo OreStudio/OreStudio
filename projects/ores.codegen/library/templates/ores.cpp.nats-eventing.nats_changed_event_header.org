@@ -34,11 +34,28 @@ The full template source. Edit here and re-tangle with
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <rfl/json.hpp>
+#include <exception>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{#domain_entity}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/struct_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
+#include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{/domain_entity}}
+{{#junction}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/struct_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{/junction}}
 
 namespace ores::eventing::domain {
 
@@ -58,10 +75,22 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
     from_notification(const entity_event_notification& notification) {
         ores::{{component}}::messaging::{{entity_singular}}_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+{{#has_generated_wire_codec}}
+        // A key this build cannot read leaves the event's own key default, which
+        // is what the reflector-backed read did before the codec replaced it.
+        try {
+            event.key =
+                ores::utility::codec::json::read<ores::{{component}}::messaging::{{entity_singular}}_key>(
+                    notification.key);
+        } catch (const std::exception&) {
+        }
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
         if (const auto key =
                 rfl::json::read<ores::{{component}}::messaging::{{entity_singular}}_key>(
                     notification.key))
             event.key = *key;
+{{/has_generated_wire_codec}}
         event.action = notification.action;
         event.version = notification.version;
         event.occurred_at = notification.occurred_at;
@@ -83,11 +112,28 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <rfl/json.hpp>
+#include <exception>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+{{#domain_entity}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/struct_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
+#include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{/domain_entity}}
+{{#junction}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/struct_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{/junction}}
 
 namespace ores::eventing::domain {
 
@@ -107,10 +153,22 @@ struct entity_event_traits<ores::{{component}}::messaging::{{name_singular}}_eve
     from_notification(const entity_event_notification& notification) {
         ores::{{component}}::messaging::{{name_singular}}_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+{{#has_generated_wire_codec}}
+        // A key this build cannot read leaves the event's own key default, which
+        // is what the reflector-backed read did before the codec replaced it.
+        try {
+            event.key =
+                ores::utility::codec::json::read<ores::{{component}}::messaging::{{name_singular}}_key>(
+                    notification.key);
+        } catch (const std::exception&) {
+        }
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
         if (const auto key =
                 rfl::json::read<ores::{{component}}::messaging::{{name_singular}}_key>(
                     notification.key))
             event.key = *key;
+{{/has_generated_wire_codec}}
         event.action = notification.action;
         event.version = notification.version;
         event.occurred_at = notification.occurred_at;

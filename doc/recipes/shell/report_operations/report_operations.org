@@ -23,7 +23,7 @@ Sends =trigger_report_instance_request= and prints =trigger_report_instance_resp
 The command is shaped like this:
 
 #+begin_example
-report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>] [--kind <v>]
+report_operations trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>] [--kind <v>] [--covered_date <v>] [--scope_code <v>] [--business_centre_code <v>]
 #+end_example
 
 It is addressed at =reporting.v1.ops.trigger_report_instance=.
@@ -367,5 +367,26 @@ It is addressed at =reporting.v1.ops.get_next_fire=.
 #+name: report_operations-get-next-fire
 #+begin_src ores-shell :tangle report_operations-get-next-fire.ores :exports none
 report_operations get-next-fire __none__
+#+end_src
+
+** =resolve-cut=
+:PROPERTIES:
+:ID: BA703BB5-9388-535E-B49C-6095B4B2E768
+:END:
+
+Sends =resolve_cut_request= and prints =resolve_cut_response=, so the shape is the protocol's and the meaning is the service's. It reads =report_definition_id=, =covered_date=, =scope_code=, =business_centre_code=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations resolve-cut <report_definition_id> <covered_date> <scope_code> <business_centre_code> [--preview <v>] [--market_data_snapshot_id <v>] [--deal_population_id <v>] [--reference_data_version <v>] [--engine_version <v>] [--code_version <v>]
+#+end_example
+
+It is addressed at =reporting.v1.ops.resolve_cut=.
+
+#+name: report_operations-resolve-cut
+#+begin_src ores-shell :tangle report_operations-resolve-cut.ores :exports none
+report_operations resolve-cut 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__
 #+end_src
 

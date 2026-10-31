@@ -134,6 +134,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 entity: 'fx_volatility_config',
                 vector: 'fx_volatilities',
             },
+            {
+                entity: 'fx_volatility_smile',
+                vector: 'fx_volatility_smiles',
+            },
         ],
         parameters: [
             {
@@ -156,27 +160,9 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'fx_volatility_config',
-                column: 'smile_type',
-                ore: 'SmileType',
-                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileType',
-            },
-            {
-                entity: 'fx_volatility_config',
-                column: 'smile_interpolation',
-                ore: 'SmileInterpolation',
-                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileInterpolation',
-            },
-            {
-                entity: 'fx_volatility_config',
                 column: 'deltas',
                 ore: 'Deltas',
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/Deltas',
-            },
-            {
-                entity: 'fx_volatility_config',
-                column: 'smile_delta',
-                ore: 'SmileDelta',
-                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileDelta',
             },
             {
                 entity: 'fx_volatility_config',
@@ -239,25 +225,43 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/BaseVolatility2',
             },
             {
-                entity: 'fx_volatility_config',
+                entity: 'fx_volatility_smile',
+                column: 'smile_type',
+                ore: 'SmileType',
+                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileType',
+            },
+            {
+                entity: 'fx_volatility_smile',
+                column: 'smile_interpolation',
+                ore: 'SmileInterpolation',
+                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileInterpolation',
+            },
+            {
+                entity: 'fx_volatility_smile',
+                column: 'smile_delta',
+                ore: 'SmileDelta',
+                xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileDelta',
+            },
+            {
+                entity: 'fx_volatility_smile',
                 column: 'smile_extrapolation',
                 ore: 'SmileExtrapolation',
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/SmileExtrapolation',
             },
             {
-                entity: 'fx_volatility_config',
+                entity: 'fx_volatility_smile',
                 column: 'time_interpolation',
                 ore: 'TimeInterpolation',
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/TimeInterpolation',
             },
             {
-                entity: 'fx_volatility_config',
+                entity: 'fx_volatility_smile',
                 column: 'time_weighting',
                 ore: 'TimeWeighting',
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/TimeWeighting',
             },
             {
-                entity: 'fx_volatility_config',
+                entity: 'fx_volatility_smile',
                 column: 'butterfly_error_tolerance',
                 ore: 'ButterflyErrorTolerance',
                 xpath: 'CurveConfiguration/FXVolatilities/FXVolatility/ButterflyErrorTolerance',
@@ -280,6 +284,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         entryElement: 'SwaptionVolatility',
         definitionKey: 'curve_definition_id',
         entities: [
+            {
+                entity: 'swaption_proxy_config',
+                vector: 'swaption_proxy_configs',
+            },
             {
                 entity: 'swaption_volatility_config',
                 vector: 'swaption_volatilities',
@@ -354,6 +362,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'swaption_volatility_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/BusinessDayConvention',
+            },
+            {
+                entity: 'swaption_volatility_config',
                 column: 'option_tenors',
                 ore: 'OptionTenors',
                 xpath: 'CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/OptionTenors',
@@ -404,7 +418,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         blocks: [
             {
                 element: 'ProxyConfig',
-                presence: 'has_proxy_config',
+                presence: '',
             },
             {
                 element: 'ParametricSmileConfiguration',
@@ -478,6 +492,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'yield_volatility_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/YieldVolatilities/YieldVolatility/BusinessDayConvention',
+            },
+            {
+                entity: 'yield_volatility_config',
                 column: 'option_tenors',
                 ore: 'OptionTenors',
                 xpath: 'CurveConfiguration/YieldVolatilities/YieldVolatility/OptionTenors',
@@ -502,6 +522,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         entryElement: 'CapFloorVolatility',
         definitionKey: 'curve_definition_id',
         entities: [
+            {
+                entity: 'cap_floor_proxy_config',
+                vector: 'cap_floor_proxy_configs',
+            },
             {
                 entity: 'cap_floor_volatility_config',
                 vector: 'cap_floor_volatilities',
@@ -573,6 +597,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 column: 'calendar',
                 ore: 'Calendar',
                 xpath: 'CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Calendar',
+            },
+            {
+                entity: 'cap_floor_volatility_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/BusinessDayConvention',
             },
             {
                 entity: 'cap_floor_volatility_config',
@@ -686,7 +716,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
         blocks: [
             {
                 element: 'ProxyConfig',
-                presence: 'has_proxy_config',
+                presence: '',
             },
             {
                 element: 'ParametricSmileConfiguration',
@@ -1363,6 +1393,10 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 entity: 'inflation_cap_floor_volatility_config',
                 vector: 'inflation_cap_floor_volatilities',
             },
+            {
+                entity: 'inflation_cap_floor_volatility_strikes',
+                vector: 'inflation_volatility_strikes',
+            },
         ],
         parameters: [
             {
@@ -1415,24 +1449,6 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
             {
                 entity: 'inflation_cap_floor_volatility_config',
-                column: 'cap_strikes',
-                ore: 'CapStrikes',
-                xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/CapStrikes',
-            },
-            {
-                entity: 'inflation_cap_floor_volatility_config',
-                column: 'floor_strikes',
-                ore: 'FloorStrikes',
-                xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/FloorStrikes',
-            },
-            {
-                entity: 'inflation_cap_floor_volatility_config',
-                column: 'strikes',
-                ore: 'Strikes',
-                xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Strikes',
-            },
-            {
-                entity: 'inflation_cap_floor_volatility_config',
                 column: 'calendar',
                 ore: 'Calendar',
                 xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Calendar',
@@ -1442,6 +1458,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 column: 'day_counter',
                 ore: 'DayCounter',
                 xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/DayCounter',
+            },
+            {
+                entity: 'inflation_cap_floor_volatility_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/BusinessDayConvention',
             },
             {
                 entity: 'inflation_cap_floor_volatility_config',
@@ -1787,6 +1809,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 column: 'calendar',
                 ore: 'Calendar',
                 xpath: 'CurveConfiguration/BaseCorrelations/BaseCorrelation/Calendar',
+            },
+            {
+                entity: 'base_correlation_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/BaseCorrelations/BaseCorrelation/BusinessDayConvention',
             },
             {
                 entity: 'base_correlation_config',
@@ -2162,6 +2190,12 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 column: 'calendar',
                 ore: 'Calendar',
                 xpath: 'CurveConfiguration/Correlations/Correlation/Calendar',
+            },
+            {
+                entity: 'curve_correlation_config',
+                column: 'business_day_convention',
+                ore: 'BusinessDayConvention',
+                xpath: 'CurveConfiguration/Correlations/Correlation/BusinessDayConvention',
             },
             {
                 entity: 'curve_correlation_config',

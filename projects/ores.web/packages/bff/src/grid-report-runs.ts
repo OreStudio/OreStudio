@@ -60,6 +60,8 @@ async function readRuns(
                 kind: null,
                 id_one_of: [...ids],
                 definition_id_one_of: null,
+                cut_id: null,
+                cut_id_one_of: null,
                 kind_one_of: null,
             },
             as_of: null,
@@ -148,7 +150,14 @@ async function readDefinitionName(
         const reply = await session.client.callAuthenticated(
             definitionSubjects.list_report_definitions_request,
             {
-                filter: { party_id: null, id_one_of: [id], party_id_one_of: null, search: null },
+                filter: {
+                    party_id: null,
+                    id_one_of: [id],
+                    party_id_one_of: null,
+                    cut_kind_code: null,
+                    cut_kind_code_one_of: null,
+                    search: null,
+                },
                 as_of: null,
                 offset: 0,
                 limit: 1,
@@ -234,6 +243,8 @@ async function readRunsOfDefinition(
                 kind: null,
                 id_one_of: null,
                 definition_id_one_of: null,
+                cut_id: null,
+                cut_id_one_of: null,
                 kind_one_of: null,
             },
             as_of: null,

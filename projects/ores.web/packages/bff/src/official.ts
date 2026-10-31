@@ -117,7 +117,7 @@ export function registerOfficialRatesRoutes(
             return { providers: [] };
         }
         const [feeds, series] = await Promise.all([
-            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
+            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
                 filter: null,
                 as_of: null,
             }),

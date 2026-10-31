@@ -35,14 +35,14 @@ using namespace ores::reporting::service;
 
 namespace {
 
-boost::uuids::uuid uuid_of(const std::string& text) {
+boost::uuids::uuid plan_uuid_of(const std::string& text) {
     return boost::uuids::string_generator()(text);
 }
 
 }
 
 TEST_CASE("scheduler_job_name is the definition prefixed", "[service][scheduling]") {
-    const auto id = uuid_of("11111111-2222-3333-4444-555555555555");
+    const auto id = plan_uuid_of("11111111-2222-3333-4444-555555555555");
     CHECK(scheduler_job_name(id) == "report_definition.11111111-2222-3333-4444-555555555555");
 }
 
@@ -52,8 +52,8 @@ TEST_CASE("only a report job name is a report job name", "[service][scheduling]"
 }
 
 TEST_CASE("a report job a definition accounts for is kept", "[service][scheduling]") {
-    const auto definition = uuid_of("11111111-2222-3333-4444-555555555555");
-    const auto job = uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+    const auto definition = plan_uuid_of("11111111-2222-3333-4444-555555555555");
+    const auto job = plan_uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
     const std::map<std::string, boost::uuids::uuid> jobs{{scheduler_job_name(definition), job}};
     const std::set<boost::uuids::uuid> accounted{job};
 
@@ -61,8 +61,8 @@ TEST_CASE("a report job a definition accounts for is kept", "[service][schedulin
 }
 
 TEST_CASE("a report job no definition accounts for is removed", "[service][scheduling]") {
-    const auto definition = uuid_of("11111111-2222-3333-4444-555555555555");
-    const auto job = uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+    const auto definition = plan_uuid_of("11111111-2222-3333-4444-555555555555");
+    const auto job = plan_uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
     const std::map<std::string, boost::uuids::uuid> jobs{{scheduler_job_name(definition), job}};
 
     CHECK(unaccounted_report_jobs(jobs, {}).size() == 1);
@@ -71,7 +71,7 @@ TEST_CASE("a report job no definition accounts for is removed", "[service][sched
 
 TEST_CASE("another component's job is never a report orphan", "[service][scheduling]") {
     const std::map<std::string, boost::uuids::uuid> jobs{
-        {"marketdata.curve.refresh", uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}};
+        {"marketdata.curve.refresh", plan_uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}};
 
     CHECK(unaccounted_report_jobs(jobs, {}).empty());
 }

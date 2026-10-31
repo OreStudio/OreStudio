@@ -136,14 +136,14 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto spelling_of(const record_reader& r, std::string_view name) -> std::string {
+auto bond_spelling_of(const record_reader& r, std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -165,8 +165,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -221,19 +221,19 @@ auto read_schedule(const record_reader& sd) -> bond_schedule_data {
             row.end_date = bond_instrument_projection_text_of(r, "EndDate");
         if (r.has("AdjustEndDateToPreviousMonthEnd"))
             row.adjust_end_date_to_previous_month_end =
-                spelling_of(r, "AdjustEndDateToPreviousMonthEnd");
+                bond_spelling_of(r, "AdjustEndDateToPreviousMonthEnd");
         row.tenor = bond_instrument_projection_text_of(r, "Tenor");
         if (r.has("Calendar"))
             row.calendar = bond_instrument_projection_text_of(r, "Calendar");
-        row.convention = spelling_of(r, "Convention");
+        row.convention = bond_spelling_of(r, "Convention");
         if (r.has("TermConvention"))
-            row.term_convention = spelling_of(r, "TermConvention");
+            row.term_convention = bond_spelling_of(r, "TermConvention");
         if (r.has("Rule"))
-            row.rule = spelling_of(r, "Rule");
+            row.rule = bond_spelling_of(r, "Rule");
         if (r.has("EndOfMonth"))
-            row.end_of_month = spelling_of(r, "EndOfMonth");
+            row.end_of_month = bond_spelling_of(r, "EndOfMonth");
         if (r.has("EndOfMonthConvention"))
-            row.end_of_month_convention = spelling_of(r, "EndOfMonthConvention");
+            row.end_of_month_convention = bond_spelling_of(r, "EndOfMonthConvention");
         if (r.has("FirstDate"))
             row.first_date = bond_instrument_projection_text_of(r, "FirstDate");
         if (r.has("LastDate"))
@@ -251,13 +251,13 @@ auto read_schedule(const record_reader& sd) -> bond_schedule_data {
         if (block.has("Calendar"))
             row.calendar = bond_instrument_projection_text_of(block, "Calendar");
         if (block.has("Convention"))
-            row.convention = spelling_of(block, "Convention");
+            row.convention = bond_spelling_of(block, "Convention");
         if (block.has("Tenor"))
             row.tenor = bond_instrument_projection_text_of(block, "Tenor");
         if (block.has("EndOfMonth"))
-            row.end_of_month = spelling_of(block, "EndOfMonth");
+            row.end_of_month = bond_spelling_of(block, "EndOfMonth");
         if (block.has("IncludeDuplicateDates"))
-            row.include_duplicate_dates = spelling_of(block, "IncludeDuplicateDates");
+            row.include_duplicate_dates = bond_spelling_of(block, "IncludeDuplicateDates");
         if (const auto dates = block.child("Dates"))
             row.dates = dates->values("Date");
         result.dates.push_back(std::move(row));
@@ -267,7 +267,7 @@ auto read_schedule(const record_reader& sd) -> bond_schedule_data {
 
 auto read_amortization(const record_reader& a) -> bond_amortization_data {
     bond_amortization_data row;
-    row.type = spelling_of(a, "Type");
+    row.type = bond_spelling_of(a, "Type");
     if (a.has("Value"))
         row.value = bond_instrument_projection_decimal_of(a, "Value");
     if (a.has("StartDate"))
@@ -286,7 +286,7 @@ auto read_stub(const record_reader& s) -> bond_stub_interpolation {
     row.short_index = bond_instrument_projection_text_of(s, "ShortIndex");
     row.long_index = bond_instrument_projection_text_of(s, "LongIndex");
     if (s.has("RoundingType"))
-        row.rounding_type = spelling_of(s, "RoundingType");
+        row.rounding_type = bond_spelling_of(s, "RoundingType");
     if (s.has("RoundingPrecision"))
         row.rounding_precision = s.integer("RoundingPrecision");
     return row;
@@ -399,19 +399,19 @@ auto read_rate_group(const record_reader& leg) -> std::optional<bond_leg_rate_da
 auto read_leg(const record_reader& ld) -> bond_leg_data {
     bond_leg_data row;
     row.payer = is_flag_on(bond_instrument_projection_text_of(ld, "Payer"));
-    row.leg_type = spelling_of(ld, "LegType");
+    row.leg_type = bond_spelling_of(ld, "LegType");
     if (ld.has("Currency"))
         row.currency = bond_instrument_projection_text_of(ld, "Currency");
     if (ld.has("PaymentConvention"))
-        row.payment_convention = spelling_of(ld, "PaymentConvention");
+        row.payment_convention = bond_spelling_of(ld, "PaymentConvention");
     if (ld.has("PaymentLag"))
         row.payment_lag = bond_instrument_projection_text_of(ld, "PaymentLag");
     if (ld.has("PaymentCalendar"))
         row.payment_calendar = bond_instrument_projection_text_of(ld, "PaymentCalendar");
     if (ld.has("DayCounter"))
-        row.day_counter = spelling_of(ld, "DayCounter");
+        row.day_counter = bond_spelling_of(ld, "DayCounter");
     if (ld.has("LastPeriodDayCounter"))
-        row.last_period_day_counter = spelling_of(ld, "LastPeriodDayCounter");
+        row.last_period_day_counter = bond_spelling_of(ld, "LastPeriodDayCounter");
     if (ld.has("NotionalPaymentLag"))
         row.notional_payment_lag = ld.integer("NotionalPaymentLag");
     if (ld.has("StrictNotionalDates"))
@@ -446,7 +446,7 @@ auto read_leg(const record_reader& ld) -> bond_leg_data {
 
 auto read_option_settlement(const record_reader& s) -> bond_option_settlement {
     bond_option_settlement row;
-    row.pay_currency = spelling_of(s, "PayCurrency");
+    row.pay_currency = bond_spelling_of(s, "PayCurrency");
     row.fx_index = bond_instrument_projection_text_of(s, "FXIndex");
     if (s.has("FixingDate"))
         row.fixing_date = bond_instrument_projection_text_of(s, "FixingDate");
@@ -492,9 +492,9 @@ auto read_option_payment_data(const record_reader& p) -> bond_option_payment_dat
         r.lag = static_cast<std::uint64_t>(
             std::max<std::int64_t>(rules->integer("Lag").value_or(0), 0));
         r.calendar = bond_instrument_projection_text_of(*rules, "Calendar");
-        r.convention = spelling_of(*rules, "Convention");
+        r.convention = bond_spelling_of(*rules, "Convention");
         if (rules->has("RelativeTo"))
-            r.relative_to = spelling_of(*rules, "RelativeTo");
+            r.relative_to = bond_spelling_of(*rules, "RelativeTo");
         row.rules = std::move(r);
     }
     return row;
@@ -520,9 +520,9 @@ auto read_option_data(const record_reader& od) -> bond_option_data {
     if (od.has("MidCouponExercise"))
         row.mid_coupon_exercise = bond_instrument_projection_text_of(od, "MidCouponExercise");
     if (od.has("Settlement"))
-        row.settlement = spelling_of(od, "Settlement");
+        row.settlement = bond_spelling_of(od, "Settlement");
     if (od.has("SettlementMethod"))
-        row.settlement_method = spelling_of(od, "SettlementMethod");
+        row.settlement_method = bond_spelling_of(od, "SettlementMethod");
     if (od.has("PayOffAtExpiry"))
         row.pay_off_at_expiry = bond_instrument_projection_text_of(od, "PayOffAtExpiry");
     if (od.has("PremiumAmount"))
@@ -550,7 +550,7 @@ auto read_option_data(const record_reader& od) -> bond_option_data {
         row.exercise_fee_settlement_convention =
             bond_instrument_projection_text_of(od, "ExerciseFeeSettlementConvention");
     if (od.has("AutomaticExercise"))
-        row.automatic_exercise = spelling_of(od, "AutomaticExercise");
+        row.automatic_exercise = bond_spelling_of(od, "AutomaticExercise");
     if (const auto exercise = od.child("ExerciseData"))
         row.exercise_data = read_option_exercise(*exercise);
     if (const auto payment = od.child("PaymentData"))
@@ -570,7 +570,7 @@ auto read_strike_data(const record_reader& sd) -> bond_strike_data {
     if (const auto yield = sd.child("StrikeYield")) {
         row.yield_value = bond_instrument_projection_decimal_of(*yield, "Yield");
         if (yield->has("Compounding"))
-            row.yield_compounding = spelling_of(*yield, "Compounding");
+            row.yield_compounding = bond_spelling_of(*yield, "Compounding");
     }
     if (sd.has("Value"))
         row.bare_value = bond_instrument_projection_decimal_of(sd, "Value");
@@ -675,11 +675,11 @@ void read_bond_terms(const record_reader& bd, bond_instrument_data& result) {
     if (bd.has("SubType"))
         issue.sub_type = bond_instrument_projection_text_of(bd, "SubType");
     if (bd.has("PriceType"))
-        issue.price_type = spelling_of(bd, "PriceType");
+        issue.price_type = bond_spelling_of(bd, "PriceType");
     if (bd.has("Payer"))
         issue.payer = bond_instrument_projection_text_of(bd, "Payer");
     if (bd.has("CreditRisk"))
-        issue.credit_risk = spelling_of(bd, "CreditRisk");
+        issue.credit_risk = bond_spelling_of(bd, "CreditRisk");
     if (bd.has("BondNotional"))
         result.instrument.notional =
             decimal_from_text(bond_instrument_projection_text_of(bd, "BondNotional"));
@@ -807,7 +807,7 @@ auto read_bond_option(const record_reader& trade) -> bond_instrument_data {
     if (data->has("PriceType"))
         result.option_price_type = bond_instrument_projection_text_of(*data, "PriceType");
     if (data->has("KnocksOut"))
-        result.option_knocks_out = spelling_of(*data, "KnocksOut");
+        result.option_knocks_out = bond_spelling_of(*data, "KnocksOut");
     return result;
 }
 
@@ -877,7 +877,7 @@ auto read_bond_repo(const record_reader& trade) -> bond_instrument_data {
 
     bond_repo row;
     row.repo_type = "Fixed";
-    if (repo_leg && spelling_of(*repo_leg, "LegType") == "Floating")
+    if (repo_leg && bond_spelling_of(*repo_leg, "LegType") == "Floating")
         row.repo_type = "Floating";
     if (repo_leg) {
         if (const auto fixed = repo_leg->child("FixedLegData")) {
@@ -963,9 +963,8 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;

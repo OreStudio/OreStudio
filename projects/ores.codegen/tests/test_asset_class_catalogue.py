@@ -31,12 +31,12 @@ def _catalogue():
     return load_org_asset_class_catalogue_model(CATALOGUE)["asset_class_catalogue"]
 
 
-def test_the_taxonomy_holds_the_seven_product_classes_in_display_order():
+def test_the_taxonomy_holds_the_eight_product_classes_in_display_order():
     taxonomy = _catalogue()["taxonomy"]
     assert [entry["code"] for entry in taxonomy] == [
         "fx", "interest_rates", "credit", "equity", "commodity", "inflation",
-        "bond"]
-    assert [entry["display_order"] for entry in taxonomy] == list(range(1, 8))
+        "bond", "scripted"]
+    assert [entry["display_order"] for entry in taxonomy] == list(range(1, 9))
     # Every class carries the prose the seed SQL used to hold on its own.
     assert all(len(entry["description"]) > 200 for entry in taxonomy)
     assert taxonomy[0]["name"] == "FX"
@@ -181,8 +181,8 @@ def test_the_real_catalogue_carries_the_dq_rows_the_badges_need(tmp_path):
     # ``{codes}`` is replaced by the taxonomy's own codes, in display order.
     assert domain["description_sql"] == (
         "Top-level product classification codes (fx, interest_rates, credit, "
-        "equity, commodity, inflation, bond), shown on instrument_code and "
-        "asset_class_code.")
+        "equity, commodity, inflation, bond, scripted), shown on instrument_code "
+        "and asset_class_code.")
 
 
 def test_a_catalogue_with_two_code_domains_is_refused(tmp_path):

@@ -99,7 +99,7 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
             process_trigger_report_instance(std::ref(out), std::ref(session), std::move(args));
         },
         "trigger-report-instance <report_definition_id> <tenant_id> [--job_instance_id <v>] "
-        "[--kind <v>]");
+        "[--kind <v>] [--covered_date <v>] [--scope_code <v>] [--business_centre_code <v>]");
 
     menu->Insert(
         "get-run-health",
@@ -250,6 +250,9 @@ void report_operations_operations_commands::process_trigger_report_instance(
     const std::vector<flag_spec> specs{
         {.name = "job_instance_id", .requires_value = true, .default_value = ""},
         {.name = "kind", .requires_value = true, .default_value = ""},
+        {.name = "covered_date", .requires_value = true, .default_value = ""},
+        {.name = "scope_code", .requires_value = true, .default_value = ""},
+        {.name = "business_centre_code", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -278,6 +281,17 @@ void report_operations_operations_commands::process_trigger_report_instance(
         }
         if (const auto& raw_kind = parsed->flag("kind"); !raw_kind.empty()) {
             req.kind = raw_kind;
+        }
+        if (const auto& raw_covered_date = parsed->flag("covered_date");
+            !raw_covered_date.empty()) {
+            req.covered_date = raw_covered_date;
+        }
+        if (const auto& raw_scope_code = parsed->flag("scope_code"); !raw_scope_code.empty()) {
+            req.scope_code = raw_scope_code;
+        }
+        if (const auto& raw_business_centre_code = parsed->flag("business_centre_code");
+            !raw_business_centre_code.empty()) {
+            req.business_centre_code = raw_business_centre_code;
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-structure-page
-#+pr:
+#+pr: 4305
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4305][#4305]] | [trading] Make a leg move for a reason the person gives |
 
 * Review
 

@@ -99,6 +99,8 @@
 \ir ./reporting_ore_parameter_value_sets_drop.sql
 \ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_drop.sql
 \ir ./reporting_ore_parameter_value_set_catalogues_drop.sql
+\ir ./reporting_ore_element_map_columns_notify_trigger_drop.sql
+\ir ./reporting_ore_element_map_columns_drop.sql
 \ir ./reporting_ore_parameter_vocabularies_notify_trigger_drop.sql
 \ir ./reporting_ore_parameter_vocabularies_drop.sql
 

@@ -783,6 +783,25 @@ CATALOGUE: tuple[Check, ...] = (
             " curve_schema_exemptions.json, with the ORE source line.",
     ),
     Check(
+        id="ore-element-map",
+        title="The ORE element map and its columns are the tree's",
+        argv=("python3", "projects/ores.sql/utility/generate_ore_element_map.py",
+              "--check"),
+        classes=("sql", "cpp", "modeling"),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_vocabularies_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_element_map_columns_populate.sql",
+            "projects/ores.sql/utility/generate_ore_element_map.py",
+            "projects/ores.sql/utility/generate_curve_column_guards.py",
+            "projects/ores.sql/utility/generate_convention_kind_terms.py",
+            "projects/ores.sql/utility/ore_parameter_vocabularies.json",
+            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
+        ),
+        fix="Run projects/ores.sql/utility/generate_ore_element_map.py and commit"
+            " the map and the column seed.",
+    ),
+    Check(
         id="curve-column-guards",
         title="The curve column map and its guard are the projection's",
         argv=(

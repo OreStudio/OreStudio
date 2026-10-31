@@ -161,6 +161,32 @@ struct report_definition final {
     std::optional<std::string> regulatory_book_type;
 
     /**
+     * @brief The kind of cut the report prices from, or null where the report was created without a
+     * selection.
+     *
+     * The selection is one of two things: a kind of cut, or a kind of cut and one specific body. A
+     * report that selects a kind says *value this scope against the close of its day*; a report
+     * that names a cut says *price from this body*. The pair is one fact, which is why cut_id is
+     * set only where this column is.
+     *
+     * The selection sits on the definition and not on the run settings configuration: two reports
+     * bound to one configuration may serve different cycles, a board pack of the close and an
+     * intraday monitor, and a selection on the shared configuration would give both the same body.
+     */
+    std::optional<std::string> cut_kind_code;
+
+    /**
+     * @brief The specific cut the report prices from, or null where the selection names a kind and
+     * the run resolves it.
+     *
+     * A pinned cut is how a report reaches a body no rule resolves, such as a flash cut or an
+     * instant a process named. The cut belongs to the reporting component, so this column is not a
+     * checked foreign key: a definition may name a cut that has since left the warm tier, and the
+     * run's refusal says so rather than the store refusing the write.
+     */
+    std::optional<boost::uuids::uuid> cut_id;
+
+    /**
      * @brief Username of the person who last modified this report definition.
      */
     std::string modified_by;

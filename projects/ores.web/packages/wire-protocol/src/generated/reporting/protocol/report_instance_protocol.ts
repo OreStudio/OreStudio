@@ -47,6 +47,10 @@ export interface ReportInstanceWrite {
     price_note: string;
     engine_settings_id: string | null;
     engine_settings_version: number | null;
+    cut_id: string | null;
+    cut_label: string | null;
+    cut_kind_code: string | null;
+    cut_timepoint: string | null;
 }
 
 export interface ReportInstanceChange {
@@ -67,9 +71,11 @@ export interface ReportInstanceLookup {
 export interface ReportInstancesFilter {
     definition_id: string | null;
     kind: string | null;
+    cut_id: string | null | null;
     id_one_of: string[] | null;
     definition_id_one_of: string[] | null;
     kind_one_of: string[] | null;
+    cut_id_one_of: string[] | null;
 }
 
 export interface ReportInstanceEvent {

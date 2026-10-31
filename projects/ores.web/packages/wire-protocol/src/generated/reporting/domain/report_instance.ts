@@ -50,6 +50,10 @@ export interface ReportInstance {
     price_note: string;
     engine_settings_id: string | null;
     engine_settings_version: number | null;
+    cut_id: string | null;
+    cut_label: string | null;
+    cut_kind_code: string | null;
+    cut_timepoint: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

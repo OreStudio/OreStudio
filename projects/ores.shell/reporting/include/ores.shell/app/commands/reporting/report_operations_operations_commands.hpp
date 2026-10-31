@@ -187,6 +187,15 @@ public:
     static void process_get_next_fire(std::ostream& out,
                                       ores::nats::service::nats_client& session,
                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief resolve-cut <report_definition_id> <covered_date> <scope_code> <business_centre_code>
+     * [--preview <v>] [--market_data_snapshot_id <v>] [--deal_population_id <v>]
+     * [--reference_data_version <v>] [--engine_version <v>] [--code_version <v>]
+     */
+    static void process_resolve_cut(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
 };
 
 }

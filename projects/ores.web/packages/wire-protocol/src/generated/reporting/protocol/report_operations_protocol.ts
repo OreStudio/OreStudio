@@ -29,6 +29,9 @@ export interface TriggerReportInstanceRequest {
     tenant_id: string;
     job_instance_id: number;
     kind: string;
+    covered_date: string;
+    scope_code: string;
+    business_centre_code: string;
 }
 
 export interface TriggerReportInstanceResponse {
@@ -374,6 +377,30 @@ export interface GetNextFireResponse {
     schedules: DefinitionNextFire[];
 }
 
+export interface ResolveCutRequest {
+    report_definition_id: string;
+    covered_date: string;
+    scope_code: string;
+    business_centre_code: string;
+    preview: boolean;
+    market_data_snapshot_id: string;
+    deal_population_id: string;
+    reference_data_version: string;
+    engine_version: string;
+    code_version: string;
+}
+
+export interface ResolveCutResponse {
+    result: Result;
+    cut_id: string;
+    cut_label: string;
+    cut_kind_code: string;
+    cut_timepoint: string;
+    cut_state: string;
+    output_is_indicative: boolean;
+    refusal: string;
+}
+
 export const subjects = {
     trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
     get_run_health_request: 'reporting.v1.ops.get_run_health',
@@ -400,6 +427,7 @@ export const subjects = {
     resolve_prepared_input_request: 'reporting.v1.ops.resolve_prepared_input',
     ignore_compute_results_request: 'reporting.v1.ops.ignore_compute_results',
     get_next_fire_request: 'reporting.v1.ops.get_next_fire',
+    resolve_cut_request: 'reporting.v1.ops.resolve_cut',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -429,4 +457,5 @@ export const requiresSession = {
     resolve_prepared_input_request: true,
     ignore_compute_results_request: true,
     get_next_fire_request: true,
+    resolve_cut_request: true,
 } as const;

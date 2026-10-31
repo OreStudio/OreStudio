@@ -26,11 +26,11 @@ Every family states which of its columns identify a row, which state the context
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The roles are derived and the catalogue carries them: 112 keys, 240 qualifiers, 1 232 measures over 60 families. |
+| Now          | Nothing. |
 | Waiting on   | The catalogue from #4189, which this task extends. |
-| Next         | Nothing; the metric reader measures itself against the roles. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31 |
 
 * Acceptance
@@ -75,9 +75,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Columns with a role | 1 584: 112 keys, 240 qualifiers, 1 232 measures | =ores.ore.core.tests "[output_catalogue]"= | PENDING |
-| Families whose measures are open | 5: curves, dim_evolution, dim_regression, stress_scenarios, var | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | PENDING |
-| The roles partition the columns | every column states exactly one role | =ores.ore.core.tests "[output_catalogue]"= | PENDING |
+| Columns with a role | 1 584: 112 keys, 240 qualifiers, 1 232 measures | =ores.ore.core.tests "[output_catalogue]"= | 52dd57ee52 |
+| Families whose measures are open | 5: curves, dim_evolution, dim_regression, stress_scenarios, var | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 52dd57ee52 |
+| The roles partition the columns | every column states exactly one role | =ores.ore.core.tests "[output_catalogue]"= | 52dd57ee52 |
 
 * Notes
 
@@ -123,3 +123,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every family states the job of each of its columns. The catalogue reports 112
+keys, 240 qualifiers and 1 232 measures over the same 1 584 columns, so the
+roles partition what the catalogue already named, and five families say their
+measures are open: curves, dim_evolution, dim_regression, stress_scenarios and
+var.
+
+The suite proves the partition rather than trusting it: no column without a
+role, no column with two, and the three lists together equal the family's
+columns. It also proves a key is always a required column, and that npv states
+NPV and Notional as measures while Maturity and NpvCurrency are qualifiers.
+
+Deriving the roles turned up two facts worth keeping. A column that only some
+variants state cannot be a key, which is why the keys come from the required
+set and not from the union of the samples. And openness can only be seen where
+the samples show more than one shape, so a family that gains a configuration
+column in a shape the corpus never shows reads as closed; the reader that
+refuses an unknown measure must say what it refused rather than guess.

@@ -26,11 +26,11 @@ A change recorded in the coalescer reaches a stream without anyone calling the p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | One timer per process closes the window on an interval and a stopped ticker goes quiet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The feed that records the change events, and wiring the ticker beside it. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

@@ -106,6 +106,10 @@ def canonical_map(table, parser_values=None):
     the other: a rendering one names and the other does not is a document ORE
     reads and this store refuses, or a rule the reader cannot reach, and both stop
     the run.
+
+    The form a configuration holds is one of the renderings, so a document may
+    write it. A form no document writes would need a second table to leave the
+    store, and the fact would be stated twice.
     """
     known = {}
     for spelling, canonical in tables().get(table, []):
@@ -126,6 +130,12 @@ def canonical_map(table, parser_values=None):
             f"the {table} table maps {', '.join(repr(value) for value in unreachable)} "
             "and ORE's reader accepts no such rendering; the row states a rule "
             "nothing can apply")
+    unwritable = sorted({form for form in known.values() if form not in read})
+    if unwritable:
+        raise ValueError(
+            f"the {table} table makes {', '.join(repr(form) for form in unwritable)} "
+            "the form a configuration holds, and no document may write it; the "
+            "writer would need a second table, so choose a form the schema states")
     return known
 
 

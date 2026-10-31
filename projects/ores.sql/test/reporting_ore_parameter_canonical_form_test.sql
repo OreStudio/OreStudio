@@ -28,8 +28,8 @@
  * - No row names itself as its canonical form
  * - Every row that names a canonical form names a row the same set holds
  * - Every canonical form a row names is a row of its own, with no canonical value
- * - The day counter set offers 23 choices and states 52 renderings
- * - The business day convention set offers 7 choices and states 20 renderings
+ * - The day counter set offers 23 choices and states 49 renderings
+ * - The business day convention set offers 7 choices and states 19 renderings
  * - The frequency set offers Once, and Z only as a rendering of it
  * - A setting's choices leave the renderings out
  *
@@ -80,8 +80,8 @@ select is(
     (select count(*)::int from t_values
       where value_set_code = 'convention.day_counter'
         and canonical_value is not null),
-    52,
-    'the day counter set states 52 renderings of them');
+    49,
+    'the day counter set states 49 renderings of them');
 
 select is(
     (select count(*)::int from t_values
@@ -94,8 +94,8 @@ select is(
     (select count(*)::int from t_values
       where value_set_code = 'convention.business_day_convention'
         and canonical_value is not null),
-    20,
-    'the business day convention set states 20 renderings of them');
+    19,
+    'the business day convention set states 19 renderings of them');
 
 select is(
     (select canonical_value from t_values

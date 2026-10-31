@@ -45,7 +45,7 @@ const code_table business_day_conventions = {
     {"HalfMonthMF", "HalfMonthModifiedFollowing"},
     {"Half Month Modified Following", "HalfMonthModifiedFollowing"},
     {"HALFMONTHMF", "HalfMonthModifiedFollowing"},
-    {"NEAREST", "Nearest"},
+    {"NEAREST", "NEAREST"},
     {"NONE", "Unadjusted"},
     {"NotApplicable", "Unadjusted"},
     {"U", "Unadjusted"},
@@ -58,10 +58,10 @@ const code_table day_counters = {
     {"Actual/360", "ACT/360"},
     {"ACT/360", "ACT/360"},
     {"Act/360", "ACT/360"},
-    {"A360 (Incl Last)", "ACT/360 (incl. last)"},
-    {"Actual/360 (Incl Last)", "ACT/360 (incl. last)"},
-    {"ACT/360 (Incl Last)", "ACT/360 (incl. last)"},
-    {"Act/360 (Incl Last)", "ACT/360 (incl. last)"},
+    {"A360 (Incl Last)", "ACT/360 (Incl Last)"},
+    {"Actual/360 (Incl Last)", "ACT/360 (Incl Last)"},
+    {"ACT/360 (Incl Last)", "ACT/360 (Incl Last)"},
+    {"Act/360 (Incl Last)", "ACT/360 (Incl Last)"},
     {"A365", "ACT/365.FIXED"},
     {"A365F", "ACT/365.FIXED"},
     {"Actual/365 (Fixed)", "ACT/365.FIXED"},
@@ -71,7 +71,7 @@ const code_table day_counters = {
     {"Act/365", "ACT/365.FIXED"},
     {"ACT/365L", "ACT/365L"},
     {"Act/365L", "ACT/365L"},
-    {"Act/365 (Canadian Bond)", "ACT/365 (Canadian Bond)"},
+    {"Act/365 (Canadian Bond)", "Act/365 (Canadian Bond)"},
     {"T360", "T360"},
     {"30/360", "30/360"},
     {"30/360 US", "30/360"},
@@ -118,7 +118,7 @@ const code_table day_counters = {
     {"Actual/365 (No Leap)", "NL/365"},
     {"Act/365 (NL)", "NL/365"},
     {"NL/365", "NL/365"},
-    {"Actual/365 (JGB)", "ACT/365 (JGB)"},
+    {"Actual/365 (JGB)", "Actual/365 (JGB)"},
     {"Simple", "Simple"},
     {"Year", "Year"},
     {"A364", "ACT/364"},
@@ -169,23 +169,6 @@ const code_table date_rules = {
     {"NthBusinessDay", "NthBusinessDay"},
     {"EighthBusinessDay", "EighthBusinessDay"},
     {"LastWednesday", "LastWednesday"},
-};
-
-// A day counter's canonical code is not always a spelling the schema allows,
-// so writing one back needs the spelling. A code that is already a spelling
-// is written as it stands.
-const std::map<std::string, std::string, std::less<>> day_counter_spellings = {
-    {"ACT/360", "Actual/360"},
-    {"ACT/360 (incl. last)", "A360 (Incl Last)"},
-    {"ACT/365.FIXED", "A365F"},
-    {"ACT/365 (Canadian Bond)", "Act/365 (Canadian Bond)"},
-    {"30/360 (German)", "30/360 German"},
-    {"30/360 (Italian)", "30/360 Italian"},
-    {"ACT/ACT.ISDA", "ActActISDA"},
-    {"ACT/ACT.ISMA", "ActActISMA"},
-    {"ACT/ACT.AFB", "ActActAFB"},
-    {"ACT/365 (JGB)", "Actual/365 (JGB)"},
-    {"ACT/364", "A364"},
 };
 
 std::string text_of(const record_reader& v, std::string_view name) {
@@ -330,17 +313,8 @@ std::optional<std::int64_t> as_integer(const std::optional<int>& v) {
     return std::nullopt;
 }
 
-std::string bdc_spelling(const std::string& code) {
-    return code == "Nearest" ? std::string("NEAREST") : code;
-}
-
-std::string day_counter_spelling(const std::string& code) {
-    const auto it = day_counter_spellings.find(code);
-    return it == day_counter_spellings.end() ? code : it->second;
-}
-
 void put_bdc(record_writer& w, std::string_view name, const std::string& code) {
-    w.set_spelling(name, bdc_spelling(code), "business day convention");
+    w.set_spelling(name, code, "business day convention");
 }
 void put_bdc(record_writer& w, std::string_view name, const std::optional<std::string>& code) {
     if (code)
@@ -348,7 +322,7 @@ void put_bdc(record_writer& w, std::string_view name, const std::optional<std::s
 }
 
 void put_day_counter(record_writer& w, std::string_view name, const std::string& code) {
-    w.set_spelling(name, day_counter_spelling(code), "day counter");
+    w.set_spelling(name, code, "day counter");
 }
 void put_day_counter(record_writer& w,
                      std::string_view name,

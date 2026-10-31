@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-10-31
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Cap and floor, swaption, curve volatility and FX are split end to end; the inflation cap and floor entry still carries its block. |
+| Now          | All five entries are split end to end; the branch is green apart from gates that name other environments' stale renders. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the inflation entry's =Type= and split its strike axis. |
-| Last touched | 2026-10-30                               |
+| Next         | Prove a smile entry through the database, which needs its conventions and calendars. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -258,6 +258,9 @@ task and name that file in the Command column.
 | Members the five kind parts carry | 4, 6, 11, 16 and 7 | same, for `curve_volatility_constant`, `..._curve`, `..._strike_surface`, `..._delta_surface` and `..._proxy_surface` | `b4fc185da2` |
 | FX entry members, before and after the split | 22 and 15 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="fx_volatility_config"'` | `3e353c1d4e` |
 | Members the FX smile part carries | 10 | same, for `fx_volatility_smile` | `3e353c1d4e` |
+| Inflation entry members, before and after the split | 22 and 19 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="inflation_cap_floor_volatility_config"'` | `5504038223` |
+| Members the strike part carries | 5 | same, for `inflation_cap_floor_volatility_strikes` | `5504038223` |
+| Refdata files the drift gate named while the rule was a hand edit, and after it moved to the model | 3 and 0 | `python3 projects/ores.codegen/scripts/check_component_drift.py --component refdata --dry-run` | `9d807b7f2f` |
 | Tables the schema states | 655 | `python3 projects/ores.codegen/src/plantuml_er_parse_sql.py --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop --output build/output/codegen/plantuml_er_model.json --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict` | `d6f963d868` |
 
 * Notes
@@ -287,7 +290,7 @@ via its "Verifies task" field.
 
 * Result
 
-Four of the five entries are split end to end.
+All five entries are split end to end.
 
 Cap and floor and swaption are done: their proxy blocks are parts, the entries
 lost the columns, and the document, service and projection carry the parts.
@@ -334,13 +337,37 @@ read only where the holder's type declares them, and the ORE booleans
 (=Extrapolation= and its relatives) are enumerations, so they are read and
 written as spellings.
 
-Verified: =./compass.sh build= exits 0; =ores.refdata.core.tests=,
-=ores.ore.core.tests=, =ores.shell.refdata.tests= and the refdata api, client,
-service and http suites pass; =validate_schemas.sh= passes over 2989 files;
-the strict ER parse reports 654 tables and no warnings; =component-drift
---sweep= is clean; the ER diagrams are regenerated; =compass lint=, the event
-and history registrar composition gates, the shell command composition gate
-and the protocol twin gate pass.
+=inflation_cap_floor_volatility_config= is done, and it is the one entry where
+the plan named the wrong instrument. The plan called for a =strike_axis= field
+group; a field group embeds its columns in the host row, so the three strike
+lists would have stayed three nullable columns of one row. The shape is a part
+instead: =inflation_cap_floor_volatility_strikes= is keyed by =(entry, axis)=,
+where =axis= is =Cap=, =Floor= or =Both=, and states whether the document wrote
+the list at all -- an entry whose caps are stated and empty is a row with an
+empty list, not an absent row. The entry falls from 22 members to 19.
+
+=Type= was read before the split and it is not a discriminator: =inflationType=
+is =ZC= or =YY=, and both state every other element the same way. It stays a
+column.
+
+One more finding, from the database round trip. The store keeps one code per
+business day convention -- twenty-seven spellings, seven conventions -- and the
+conversion lived as a hand edit in eleven generated mappers. Regenerating a
+mapper dropped it, silently, because the row still compiled; the round trip
+caught it as ='ModifiedFollowing' became 'MF'= on the inflation entry. A hand
+edit to a generated file is not a place to keep a rule. The model now states it:
+a column declares =:store_code: business_day_convention=, the mapper template
+renders the conversion on the write side only, and a column that declares the
+flag with a type the conversion cannot carry is refused at generation time. The
+drift gate named two of those mappers before the fix and now names none.
+
+Verified: =./compass.sh build= exits 0; =ores.refdata.core.tests= and
+=ores.ore.core.tests= pass; the codegen suite passes 1692 tests; =compass db
+recreate= applies the schema; the drift check names no =refdata= file; the ER
+diagrams, =compass lint= and the ER check pass. =compass check --only
+component-drift= still names three files in =marketdata= and =trading= that this
+branch does not touch: the branch changes the generator, so the check selects
+every component, and those three were stale on =main=.
 
 The branch was 166 commits behind =origin/main=, and rebasing it first is part
 of this result: the tree it started from was missing main's inflation cap and
@@ -355,7 +382,6 @@ calendars a smile entry names, which is the next step.
 
 Still to do:
 
-- =inflation_cap_floor_volatility_config='s =quote_type= with one column per
-  quote structure, and =Type= read before deciding whether it is a
-  discriminator;
-- a database case for a smile surface, with its conventions and calendars.
+- a database case for a smile surface, with its conventions and calendars;
+- the three stale renders the drift gate names, which belong to =marketdata=
+  and =trading= and predate this branch.

@@ -382,25 +382,6 @@ inline constexpr std::string_view deleted =
                               &cap_floor_volatility_config_write::use_effecive_volatility},
         utility::codec::field{"use_effective_volatility",
                               &cap_floor_volatility_config_write::use_effective_volatility},
-        utility::codec::field{"has_proxy_config",
-                              &cap_floor_volatility_config_write::has_proxy_config},
-        utility::codec::field{"proxy_source_curve_id",
-                              &cap_floor_volatility_config_write::proxy_source_curve_id},
-        utility::codec::field{"proxy_source_index",
-                              &cap_floor_volatility_config_write::proxy_source_index},
-        utility::codec::field{
-            "proxy_source_rate_computation_period",
-            &cap_floor_volatility_config_write::proxy_source_rate_computation_period},
-        utility::codec::field{"proxy_target_index",
-                              &cap_floor_volatility_config_write::proxy_target_index},
-        utility::codec::field{
-            "proxy_target_rate_computation_period",
-            &cap_floor_volatility_config_write::proxy_target_rate_computation_period},
-        utility::codec::field{
-            "proxy_target_on_cap_settlement_days",
-            &cap_floor_volatility_config_write::proxy_target_on_cap_settlement_days},
-        utility::codec::field{"proxy_scaling_factor",
-                              &cap_floor_volatility_config_write::proxy_scaling_factor},
     };
 }
 

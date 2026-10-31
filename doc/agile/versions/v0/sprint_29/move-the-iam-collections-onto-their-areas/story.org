@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: CFA3BC5C-9297-4C49-8336-40DB598C61DB
+:END:
+#+title: Story: Move the IAM collections onto their areas
+#+description: The IAM entity collections answer under /api/v1/iam, a component name, while the inventory decides their areas as access or auth. Declare each entity's area, regenerate what follows from it, and settle the one collision the move exposes, that the generated session collection and the session door both want /api/v1/auth/sessions.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The IAM entity collections answer under the area they belong to, and no two routes want the same path for different reasons.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- Each IAM entity model declares the area the inventory decided for it.
+- The generated routes, tests, recipes and hurl scripts state the new paths.
+- The session door keeps its path and the generated session collection takes another, with the reason recorded.
+- The iam tests build and pass, and the gates are green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:91F12BF9-BCF9-4367-9CFF-AB68EF3D7BEB][Scaffold story: Move the IAM collections onto their areas]] | STARTED | 2026-10-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D821E280-4837-4787-A71A-7064A7C883F8][Move the IAM collections to access and auth]] | BACKLOG | | | Initial task for: Move the IAM collections onto their areas |
+
+* Decisions
+
+* Out of scope
+
+-

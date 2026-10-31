@@ -26,11 +26,11 @@ One table states which ORE element a leaf column is and which value set states i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Every leaf the map carries states a rule or the reason it has none, and both guards read the map. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The task's acceptance is met. The setting link that cannot hold two leaves of one name is the next task's work, and it is recorded below. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -706,9 +706,24 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR    | Title |
+|-------+-------|
+| #4167 | Measure the leaf maps and design the one that replaces them |
+| #4170 | Seed the element map and the columns that carry it |
+| #4172 | Publish the currencies a fresh database's publish test reads |
+| #4175 | Key the element map by the leaf's address, and read it from both guards |
+| #4186 | Census the leaf rules the map inherits |
+| #4188 | State the type three convention modifiers are read as |
+| #4190 | State the catalogue on the index conventions' vocabulary fields |
+| #4194 | Collapse the two free-text sets into one |
+| #4199 | Take a leaf's rule from the ORE parser, not the contract |
+| #4207 | State how many values a set governs, and read ORE's list forms |
+| #4208 | Let the ORE schema state the rule where the parser states none |
+| #4213 | State what one item of a list may be |
+| #4217 | Take the values the ORE schema enumerates |
+| #4219 | Read the leaves ORE names after a class label |
+| #4225 | Take the pattern and the range the ORE schema states |
+| #4226 | State the map's shape as a test |
 
 * Review
 
@@ -717,3 +732,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The map is one table keyed by a leaf's address, its child names the projection
+column that carries the leaf, and both leaf guards join the pair, so the parameter
+contract is no longer a prerequisite of enforcement.
+
+Every one of the 480 leaves states a rule or the reason it has none, and each row
+names the authority that decided it: the ORE parser for 207 rules and 171 text
+decisions, the ORE user guide for 14, and the ORE schema for 88. No leaf is left
+unaccounted, and =UNREAD_ALLOWED= is zero so one cannot arrive quietly.
+
+The value set states what one value may be by its kind, how many the document
+writes by its cardinality, and the values, pattern, bounds or catalogue it draws
+on. A set is generated from the parser's map or the schema's restriction wherever
+a source states it, and curated with its reason where a person does.
+
+What the work found that the plan did not expect: the contract was the wrong
+source for a leaf's rule, a set could not say how many values it governed, the
+extractor could not read a list or a name a class builds, and the schema was an
+authority nobody consulted. Each is a case of a rule that lived in prose, in a
+name, or in another table rather than in the model.
+
+What is left belongs to the next task. A setting link is keyed by =(scope, name)=
+and so cannot state two rules for two leaves of one name: the equity volatility
+curve's =Expiries= is a list of dates and the report grid beside it is a list of
+periods, and only the drawn leaf is linked. No drawn leaf disagrees today, so no
+data is wrong; the key is what has to change before a screen can draw both.
+

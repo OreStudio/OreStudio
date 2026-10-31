@@ -258,6 +258,25 @@ So the printer is used after all, and the three ways forward are:
 Whichever is chosen is generator-wide work with an estate-wide build, not a
 refdata-only edit, so it does not belong inside this task's remaining five
 hand-written sites. The five are unaffected by it.
+=======
+** A storage row prints from its own column list (2026-10-31)
+
+The storage entity already states its columns: =columns()= names each one and
+the member that holds it, because the query builder needs exactly that. The
+printer was the only thing that needed a second statement of the row, and it took
+one from the reflector.
+
+So the printer reads the list it already has. =query_builder::write_json= walks
+=columns()= and writes each member with the codec its type selects, which is the
+same writer the wire uses. One helper in =ores.database=, one line in the entity
+unit, and all 480 of them stop naming reflect-cpp, in every component rather than
+only the ones that opted in.
+
+Two details that made the output equal to the reflector's rather than merely
+valid: a member the row does not state is left out of the object, as the wire's
+own object writer leaves it out, and the members come out in the order
+=columns()= binds them, which is why the test compares documents rather than
+text.
 
 * Test Scenarios
 

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/query_builder/json.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -26,6 +27,7 @@
 #include "ores.refdata.api/domain/currency_json_io.hpp"
 #include "ores.refdata.api/eventing/currency_event.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.core/repository/currency_entity.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -35,9 +37,11 @@
 #include <chrono>
 #include <optional>
 #include <rfl/json.hpp>
+#include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <sstream>
 #include <string>
+#include <yyjson.h>
 
 namespace {
 
@@ -251,4 +255,31 @@ TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") 
     std::ostringstream printed;
     printed << c;
     CHECK(printed.str() == rfl::json::write(c));
+}
+
+TEST_CASE("a printed storage row carries what the reflector prints",
+          "[codec][refdata][storage]") {
+    // The repository logs the row it maps. The row prints from its own column
+    // list now, so the log has to say the same thing the reflector said.
+    auto row = ores::refdata::repository::currency_entity{};
+    row.iso_code = "GBP";
+    row.name = "Pound Sterling";
+    row.version = 3;
+    row.fractions_per_unit = 100;
+    row.rounding_precision = 2;
+    row.spot_days = 2;
+    row.base_precedence = 1;
+
+    const auto printed = ores::database::query_builder::write_json(row);
+    const auto reflected = rfl::json::write(row);
+
+    INFO(printed);
+    INFO(reflected);
+    auto* mine = yyjson_read(printed.data(), printed.size(), 0);
+    auto* theirs = yyjson_read(reflected.data(), reflected.size(), 0);
+    REQUIRE(mine != nullptr);
+    REQUIRE(theirs != nullptr);
+    CHECK(yyjson_equals(yyjson_doc_get_root(mine), yyjson_doc_get_root(theirs)));
+    yyjson_doc_free(mine);
+    yyjson_doc_free(theirs);
 }

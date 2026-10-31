@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 3664F26F-8F35-4A9F-98FC-2696360DAAF6
+:END:
+#+title: Task: Move the currency routes onto reference-data
+#+description: The first URL the project moves. Declare the area on the currency model, regenerate the route unit, its tests, its recipe and its hurl scripts, update the classification rules and the inventory, and prove nothing else in the tree still names the old path.
+#+type: task
+#+level: s1
+#+filetags: :let-the-area-come-from-the-model:sprint_29:v0:
+#+owner: marco
+#+branch: feature/move-the-currency-routes-onto-reference-data
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The currency endpoints answer under their published area, and every artefact generated from
+that model agrees with the new path.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] |
+| Now          | The currency routes answer on =/api/v1/reference-data/currencies= and every generated artefact follows. |
+| Waiting on   | Nothing.                               |
+| Next         | Review, then move the next component's entities. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- [X] The generated route unit registers =/api/v1/reference-data/currencies= and its siblings.
+- [X] The generated route tests, the recipe document and the hurl scripts state the same path.
+- [X] The inventory and the classification rules agree with the new path, and the gates pass.
+- [X] A search of the tree finds no source that still names the old path.
+
+* Plan
+
+One model declares one area, and the generator writes everything that follows from it: the
+route unit and its header, the route tests, the recipe page, and the ten hurl scripts tangled
+from the recipe. Nothing is edited by hand except the two classification rules that decide
+the path, because the decisions live outside the generator.
+
+The move was kept to one entity on purpose. It is the first URL this project has moved, so
+the whole chain is exercised once before it is repeated eleven times for the rest of the
+generated collections.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes moved | 10 | =grep -c "reference-data/currencies" projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp= | this branch |
+| Generated test assertions on the new path | 20 | =grep -c "reference-data/currencies" projects/ores.http/refdata/tests/currency_routes_tests.cpp= | this branch |
+| Hurl scripts regenerated | 10 | =git status --short projects/ores.http/scripts/library/currencies | wc -l= | this branch |
+| Sources still naming the old path | 0 | =grep -rn "api/v1/refdata/currencies" projects doc build/scripts= | this branch |
+| Generated route tests | 2 cases, 41 assertions, all passing | =./ores.http.refdata.tests= from the preset's =publish/bin= | this branch |
+
+* Notes
+
+- The first attempt to build =ores.http.refdata.tests= was piped through =tail=, which
+  prints nothing until the build ends, so fifty minutes of compiling looked like a hang and
+  the job was cancelled. The second attempt ran bare and finished: the version manifest had
+  moved, so it rebuilt 319 targets on the way to the test binary. The lesson is the one this
+  repository already writes down for compass commands, that a build's progress belongs on
+  the terminal and not behind a filter.
+- The tangle gate fails on an uncommitted tree by construction, because it compares the
+  recipe with the committed scripts. It passes once the change is committed.
+- The design's route-table sample named the old path. It now names the new one, so the plan
+  does not teach a URL the tree no longer answers.
+
+* Result
+
+The currency collection answers on =/api/v1/reference-data/currencies=. Ten routes, ten hurl
+scripts, the generated tests, the recipe page and the inventory all state that path, no
+source in the tree names the old one, and the generated tests run green against the built
+unit: 2 cases, 41 assertions. The chain works, and the remaining generated collections can
+follow it one component at a time.

@@ -480,7 +480,7 @@ Replace it with a trie built once at startup from a generated manifest:
 #+begin_src cpp
 struct route_entry {
     std::string_view method;          // interned, compared as an enum
-    std::string_view path_template;   // "/api/v1/refdata/currencies/{iso_code}"
+    std::string_view path_template;   // "/api/v1/reference-data/currencies/{iso_code}"
     std::uint16_t segment_count;
     auth_profile profile;             // anonymous | session | bearer
     body_limit body;

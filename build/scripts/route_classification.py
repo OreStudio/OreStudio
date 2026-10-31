@@ -305,12 +305,13 @@ RULES = (
          " count of each kind so no screen reads the feeds."),
 
     Rule("the currency collection",
-         ("prefix", "GET /api/v1/refdata/currencies"),
+         ("prefix", "GET /api/v1/reference-data/currencies"),
          CPP, RESOURCE, "reference-data",
          "The currency collection, generated with list, create, replace, remove, bulk get and"
-         " put, and a version read."),
+         " put, and a version read; the first collection to answer under its published area"
+         " rather than under the component's name."),
     Rule("the currency collection writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/refdata/currencies"),
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/reference-data/currencies"),
          CPP, RESOURCE, "reference-data",
          "A generated write of the currency collection: create, replace, remove, or one of"
          " the bulk get, put and delete calls."),

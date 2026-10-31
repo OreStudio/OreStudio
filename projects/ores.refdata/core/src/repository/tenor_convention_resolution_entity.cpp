@@ -24,14 +24,13 @@
  */
 
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.database/query_builder/json.hpp"
 #include <ostream>
-#include <rfl/json/write.hpp>
 
 namespace ores::refdata::repository {
 
 std::ostream& operator<<(std::ostream& s, const tenor_convention_resolution_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

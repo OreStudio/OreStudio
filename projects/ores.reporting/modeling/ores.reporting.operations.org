@@ -46,9 +46,18 @@ gathers anything and records the cut it resolved. Both callers read one
 operation, because a preview computed by a second path is a preview of that
 path and not of the run.
 
+=list_cut_rows= and =get_cut_record= are the two reads the cut screens draw. A
+cut states no state and no label, because both are derived from its own facts,
+and the derivation lives in the reporting service and not in a screen. The reads
+therefore answer the state, the label and the run tally beside the facts, so no
+second path derives them and the list and the record cannot disagree.
+
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.reporting.api/domain/cut.hpp"
+#include "ores.reporting.api/domain/cut_gap.hpp"
+#include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -1373,6 +1382,364 @@ indicative carries it before any body exists.
 One sentence saying why nothing resolved, or empty where something did. The
 preview's sentence, the report page's sentence and the run's output message are
 this sentence, so a scheduled run nobody watched still says why it did not price.
+
+** list_cut_rows_request
+:PROPERTIES:
+:subject: reporting.v1.ops.list_cut_rows
+:response: list_cut_rows_response
+:END:
+
+Reads the cuts a person reads on the cuts list, one row per body, narrowed by
+the kind, by the month the person is reading and by the state, searched in the
+label, and answered one page at a time.
+
+The party is the session's and is never a field of this request: a cut belongs
+to the party whose books it fixed, and the store refuses a row the session may
+not see. An administrator signed in to several parties therefore reads the cuts
+of the party the session stands in.
+
+The label and the state are derived here and not in the screen. A derived label
+is a function of the kind, the scope and the instant, and a supersession is a
+function of every later cut of the same kind and scope, so a caller that
+filtered on the label or on the state would have to hold both rules itself. The
+search and the state filter are read here for that reason.
+
+The page is the caller's and the count is the read's: a cut accumulates at the
+rate of its occasion, so the answer states the rows the caller asked for beside
+the number of rows the query matched, and the caller reads that the page is not
+the whole of it.
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The kind of cut to read, or empty for every kind. The list's kind filter and a
+type's page both name one.
+
+*** month
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The month of the cuts' instants, as an ISO 8601 year and month (=YYYY-MM=), or
+empty for every month. The month is the period the list reads by, because the
+cuts of one occasion accumulate at the rate of the occasion and a person reads
+them a month at a time.
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+A text the label of a row must contain, or empty for every row.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The derived state to read, as the design words it: =draft=, =incomplete=,
+=taken=, =in_use=, =authorised=, =refused= or =superseded=, or empty for every
+state. The state is derived and stored nowhere, so the filter runs here rather
+than in the store.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many of the rows the query matched to pass over. A list reads one page at a
+time, so the offset is the page's own and the store answers from there.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many rows to answer, up to the read's own paging cap, which bounds a scope
+that grows at the rate of its occasion however large a page the caller asks for.
+Zero asks for the cap.
+
+** cut_row
+:PROPERTIES:
+:END:
+
+One row of the cuts list: the body's identity, its derived state and label, the
+acts that made it and how many runs priced from it.
+
+The row states the kind's name, the acts and the run tally, which the cut itself
+does not hold: the screens draw them on every row, and a caller that read them
+one cut at a time would read the store once per row.
+
+*** cut_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The cut, in the text form of its id, which is the address of its record.
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The label a person quotes for the cut, derived from the kind, the scope and the
+instant. Never typed and never stored.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The state the design words for the cut, with supersession applied.
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The kind of cut the body was taken under.
+
+*** kind_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The kind's name, as the cut kind lookup states it, so a row names the occasion
+in words a person reads rather than in a code.
+
+*** timepoint
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The instant the body fixes, in ISO-8601 UTC.
+
+*** timepoint_timezone
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The clock the centre states that instant in.
+
+*** scope_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The book population the cut fixes.
+
+*** business_centre_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rates centre whose market data the scope's books revalue against.
+
+*** taken_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The account that took the cut, or empty where no take holds yet.
+
+*** taken_at
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+When the body was taken, in ISO-8601 UTC, or empty where no take holds.
+
+*** approved_by
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The person whose authorisation released the body, or empty where none is
+recorded. A cut whose kind requires none leaves this empty and states the basis
+in its state.
+
+*** approved_at
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+When the authorisation was recorded, in ISO-8601 UTC, or empty.
+
+*** refused_at
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+When the authorisation was refused, in ISO-8601 UTC, or empty.
+
+*** requires_authorisation
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the kind required an authorisation when the cut was taken, copied onto
+the cut at the take.
+
+*** output_is_indicative
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether a result priced from the cut carries the indicative mark, copied from
+the kind at the take. The mark is the kind's and not the state's.
+
+*** take_ordinal
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+Which take of the occasion this body is, counting from one.
+
+*** run_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many report runs priced from the body. The provenance a superseded cut
+still carries is this number.
+
+*** superseded_by_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The later cut of the same kind and scope that holds this one's place, in the
+text form of its id, or empty where no later body stands in this one's place.
+
+** list_cut_rows_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation. A session that may read no cut gets a refusal here,
+not an empty list.
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<cut_row>
+:END:
+
+The cuts the query read, newest instant first.
+
+*** total
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many cuts the query matched, which may be more than the rows returned: a
+list reads the newest page of a scope that grows at the rate of its occasion.
+
+** get_cut_record_request
+:PROPERTIES:
+:subject: reporting.v1.ops.get_cut_record
+:response: get_cut_record_response
+:END:
+
+Reads one cut as its record page draws it: the body's facts, the derived state
+and label, the kind's declarations, the gaps the assembly could not fill and the
+runs that priced from it.
+
+*** cut_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The cut to read.
+
+** get_cut_record_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation. A cut the session may not see is a missing record.
+
+*** cut
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::cut
+:END:
+
+The body's facts as the store holds them: the occasion, the instant with its
+clock, the scope, the four input references, the acts and the retention the cut
+copied from its kind at the take.
+
+*** kind
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::cut_kind
+:END:
+
+The kind the body was taken under, which is what the label is derived from and
+what declares whether a signature was required and whether the values are
+indicative. Read live, because a kind's rules are a person's decision and not a
+copy on the cut.
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The label a person quotes for the cut.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The state the design words for the cut, with supersession applied.
+
+*** superseded_by_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The later cut that holds this one's place, in the text form of its id, or empty.
+
+*** gaps
+:PROPERTIES:
+:cpp_type: std::vector<ores::reporting::domain::cut_gap>
+:END:
+
+Every part the assembly could not fill, with the item and the reason. Empty for
+a complete body, which is the state a body waiting on a signature is in.
+
+*** run_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many report runs priced from the body.
 
 
 * See also

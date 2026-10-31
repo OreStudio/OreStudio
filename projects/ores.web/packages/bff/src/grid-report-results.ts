@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
-import { subjects as resultRowSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_result_row_protocol';
+import { subjects as runResultSubjects } from '@ores/wire-protocol/generated/reporting/protocol/run_result_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
@@ -669,7 +669,7 @@ function figureOf(row: AggregateRow): number {
  */
 async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
     const reply = await session.client.callAuthenticated(
-        resultRowSubjects.list_report_result_rows_request,
+        runResultSubjects.list_run_results_request,
         {
             filter: {
                 report_instance_id: runId,
@@ -677,6 +677,18 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
                 id_one_of: null,
                 report_instance_id_one_of: null,
                 measure_one_of: null,
+                report_definition_id: null,
+                report_definition_id_one_of: null,
+                party_id: null,
+                party_id_one_of: null,
+                counterparty_id: null,
+                counterparty_id_one_of: null,
+                currency: null,
+                currency_one_of: null,
+                subject_id: null,
+                subject_id_one_of: null,
+                subject_type: null,
+                subject_type_one_of: null,
             },
             as_of: null,
             offset: 0,

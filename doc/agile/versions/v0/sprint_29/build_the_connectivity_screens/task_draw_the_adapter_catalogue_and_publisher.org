@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:build_the_connectivity_screens:sprint_29:v0:
 #+owner: marco
-#+branch: feature/build-the-connectivity-screens
-#+pr: 4262
+#+branch:
+#+pr: 4276
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment: prime_origin
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The adapter catalogue and the publisher record are drawn.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -56,13 +56,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-| Web suite | 2336 pass | =npm run test -w @ores/web= | 71f401d756 |
-| BFF suite | 1153 pass | =npx vitest run packages/bff= | 71f401d756 |
-| Web check | pass | =./compass.sh check --only web= | 71f401d756 |
-| Build | green | =./compass.sh build= | 71f401d756 |
-| Live read | 200, 11 publishers, 2 suppliers, 2 adapters, 2 sessions, 10 feeds | =curl .../api/marketdata/connectivity= | 71f401d756 |
+|      |       |         |        |
 
 * Notes
 
@@ -81,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4262][#4262]] | [marketdata] Finish the connectivity and public rates screens |
+| [[https://github.com/OreStudio/OreStudio/pull/4276][#4276]] | [chore] Bring the generated bookkeeping back in step |
 
 * Review
 
@@ -90,14 +84,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-** Outcome
-
-The Connectivity screen draws the adapter catalogue read-only: code, process,
-module version, classes, services and the configuration schema's field names,
-with the count of sessions configured from each. A publisher record shows its
-code, kind, classes, terms state and the feeds that carry it.
-
-The screen is the delivery tree on the left and the record on the right, and
-the adapters catalogue is one click from the rail. No adapter is created from
-the screen, as the story decided.

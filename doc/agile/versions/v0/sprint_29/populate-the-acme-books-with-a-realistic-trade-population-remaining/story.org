@@ -34,11 +34,11 @@ The investigation this story commissioned is
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Every routed product of six families books. Bonds cover all ten routed codes; inflation and scripted have no planner yet. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | The inflation and scripted families, then sizing every class to the weights. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-30                             |
 
 * Acceptance
@@ -85,6 +85,8 @@ The investigation this story commissioned is
 | [[id:A187CB8D-D3F3-4891-9B9A-BAF01D4E6F5E][A security is named by its product]] | DONE | 2026-10-31 | 2026-10-31 | Ten bond codes route to the bond instrument table and they share a security name, because the name states the currency, the anchor and the term and leaves the product out. A callable bond states the dates its issuer may call it and a plain bond of the same term states none, so the second product of a term is written against the first one's issue and the store refuses it: =Bond issue … is stored with other terms=. The population therefore books one product of every term and the run stops in the bond family. |
 | [[id:1A24BEED-0F86-4571-8B25-4C143B3BF6B9][Name a bond security by its issuer]] | DONE | 2026-10-31 | 2026-10-31 | Two bond configs of one tenant name the same security id and mean two issues, because the security's name states the currency, the anchor, the term and the product but not the issuer whose bond it is. The second config's issuer differs, so the store refuses its issue as stored with other terms and the population stops. |
 | [[id:101334AF-64CA-4A52-AE68-F21E26CE0FE2][Let the ACME inflation curve state the type the schema holds]] | ABANDONED | | | The ACME curve configuration seeds state ZeroInflation for inflation_type, which is the ORE market data model name, while the curveconfig schema enumerates ZC and YY. The refdata trigger refuses the bundle, so provisioning stops before the population and no tenant is created. |
+| [[id:8E34C710-6367-46C9-9F65-015FD9B824AE][Trade Population Weights states a trade-count mix: interest …]] | DONE | 2026-10-31 | 2026-10-31 | Trade Population Weights states a trade-count mix: interest rates 42%, fx 25%, equity 12%, credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each. The seeded configs were never sized to it. On a fresh tenant the mix is rates 27 of 162 (17%), fx 64 (40%), equity 17 (10%), credit 5 (3%), commodity 25 (15%), bonds 24 (15%); inflation and scripted book nothing at all. Each class books one trade per routed code, which is what coverage needs, and a weighted population needs a different rule: the weights set the counts, and the codes are drawn within those counts. Doing that changes the seeded configs for every class at once and needs the weights page's tolerance stated, so it is its own task. |
+| [[id:ED403AF1-77EF-406A-AF45-1A67CA99A261][Expose the population's size and mix in the provisioning UI]] | DONE | | 2026-10-31 | Task for: Populate the ACME books with a realistic trade population — the remaining work |
 
 * Decisions
 
@@ -178,6 +180,44 @@ The investigation this story commissioned is
   writes an unrecognised key as an element the schema does not hold, so the
   population states the document's names and a round-trip case holds it to
   them.
+- The population's total is not a free choice: it is the smallest number where
+  every class can be its weight *and* keep one trade per routed code. A class's
+  count cannot fall below its code count, and its share cannot fall below that
+  floor, so the class with the worst floor-to-weight ratio sets the total. At a
+  thousand trades every class states its weight exactly; at a hundred and ninety
+  commodity was twice its weight and rates a third of it.
+- The population's size and mix are profile parameters, not a screen's own
+  form. The provisioning form renders every parameter a profile declares, so a
+  knob the profile declares costs no screen code and the arithmetic has one home
+  on the server. A run that states no size keeps the seeded counts; one that
+  states a size and no mix keeps the seeded mix.
+
+* Result
+
+ACME's books hold a realistic population, and an operator can size it.
+
+Every class the refdata taxonomy states has a planner, and a fresh tenant holds a
+thousand trades: interest rates 420, FX 250, equity 120, credit 60, commodity 50,
+bonds 40, inflation 30 and scripted 30 — the weights page's own mix, exactly, with
+every routed code appearing between two and sixteen times. The population exports
+as the ORE portfolio, and each family's round trip is proved in the ORE suite.
+
+Four things the arc settled, and one it exposed:
+
+- A class's count cannot fall below the codes its planner cycles, and its share
+  cannot fall below that floor, so the total is the smallest number where every
+  class fits both. At 190 commodity was twice its weight; at 1000 every class is
+  its weight exactly.
+- A payoff the taxonomy cannot classify gets a class in the taxonomy, not a class
+  that stands for something else.
+- A family books the codes its export can carry and names the rest out of scope.
+- The population's size and mix are profile parameters, so the provisioning form
+  states them and one place computes what they mean.
+
+What it exposed and did not fix here: the seeded inflation curve states no
+fixings, so an inflation swap books and exports and cannot price. That is the
+capture *The seeded inflation curve states its index, its conventions and no
+fixings*, and it belongs to the market-data surface rather than to this story.
 
 * Out of scope
 

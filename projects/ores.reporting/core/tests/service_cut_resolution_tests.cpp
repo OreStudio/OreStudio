@@ -48,10 +48,10 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <format>
-#include <algorithm>
 #include <optional>
 #include <string>
 #include <vector>
@@ -72,7 +72,7 @@ using ores::platform::time::datetime;
 
 const auto covered = datetime::from_iso8601_utc("2026-10-06T00:00:00Z");
 
-boost::uuids::uuid uuid_of(const std::string& text) {
+boost::uuids::uuid cut_uuid_of(const std::string& text) {
     return boost::uuids::string_generator()(text);
 }
 
@@ -93,9 +93,13 @@ domain::cut_kind lookup(const std::string& code,
 std::vector<domain::cut_kind> the_seven_kinds() {
     return {
         lookup("EOD", "end_of_day", "same_day_close", "reporting.eod_cut_authorisation"),
-        lookup("EOM", "end_of_day", "last_business_day_of_month_close",
+        lookup("EOM",
+               "end_of_day",
+               "last_business_day_of_month_close",
                "reporting.eod_cut_authorisation"),
-        lookup("EOY", "end_of_day", "last_business_day_of_year_close",
+        lookup("EOY",
+               "end_of_day",
+               "last_business_day_of_year_close",
                "reporting.eod_cut_authorisation"),
         lookup("SOD", "start_of_day", "same_day_open"),
         lookup("IPV", "verification", "cut_it_is_built_on", "reporting.ipv_cut_authorisation"),
@@ -104,11 +108,9 @@ std::vector<domain::cut_kind> the_seven_kinds() {
     };
 }
 
-domain::cut cut_of(const std::string& kind_code,
-                   const std::string& instant_text,
-                   int ordinal = 1) {
+domain::cut cut_of(const std::string& kind_code, const std::string& instant_text, int ordinal = 1) {
     domain::cut cut;
-    cut.id = uuid_of(std::format("00000000-0000-0000-0000-{:012}", ordinal));
+    cut.id = cut_uuid_of(std::format("00000000-0000-0000-0000-{:012}", ordinal));
     cut.kind_code = kind_code;
     cut.scope_code = "ACME-LONDON";
     cut.business_centre_code = "LDN";
@@ -117,8 +119,8 @@ domain::cut cut_of(const std::string& kind_code,
     cut.take_ordinal = ordinal;
     cut.taken_by = "a.reyes";
     cut.taken_at = cut.timepoint;
-    cut.requires_authorisation = kind_code == "EOD" || kind_code == "EOM" ||
-                                 kind_code == "EOY" || kind_code == "IPV";
+    cut.requires_authorisation =
+        kind_code == "EOD" || kind_code == "EOM" || kind_code == "EOY" || kind_code == "IPV";
     cut.approved_by = "m.silva";
     cut.approved_at = cut.taken_at;
     cut.retention_months = 25;
@@ -131,7 +133,7 @@ domain::cut waiting_cut(const std::string& kind_code, const std::string& instant
     auto cut = cut_of(kind_code, instant_text);
     cut.approved_by.clear();
     cut.approved_at.reset();
-    cut.approval_request_id = uuid_of("aaaaaaaa-0000-0000-0000-000000000001");
+    cut.approval_request_id = cut_uuid_of("aaaaaaaa-0000-0000-0000-000000000001");
     return cut;
 }
 
@@ -140,7 +142,7 @@ cut_resolution_context context_of(std::chrono::system_clock::time_point covered_
     ctx.covered_date = covered_date;
     ctx.scope_code = "ACME-LONDON";
     ctx.business_centre_code = "LDN";
-    ctx.party_id = uuid_of("bbbbbbbb-0000-0000-0000-000000000001");
+    ctx.party_id = cut_uuid_of("bbbbbbbb-0000-0000-0000-000000000001");
     ctx.timepoint_timezone = "Europe/London";
     ctx.run_instant = datetime::from_iso8601_utc("2026-10-07T07:40:00Z");
     ctx.taken_by = "svc.reporting";
@@ -195,12 +197,11 @@ TEST_CASE("an end of day selection prices from the month end body on a month's l
     // 2026-10-30 is the last business day of October, so both a plain close and
     // the month end cut stand, and the more specific occasion is the one meant.
     const auto month_end = datetime::from_iso8601_utc("2026-10-30T00:00:00Z");
-    const auto candidates = std::vector<domain::cut>{
-        cut_of("EOD", "2026-10-30T17:00:00Z"),
-        cut_of("EOM", "2026-10-30T17:00:00Z", 2)};
+    const auto candidates = std::vector<domain::cut>{cut_of("EOD", "2026-10-30T17:00:00Z"),
+                                                     cut_of("EOM", "2026-10-30T17:00:00Z", 2)};
 
-    const auto resolution = resolve_cut_selection(
-        select("EOD"), the_seven_kinds(), candidates, context_of(month_end));
+    const auto resolution =
+        resolve_cut_selection(select("EOD"), the_seven_kinds(), candidates, context_of(month_end));
 
     REQUIRE(resolution.cut.has_value());
     CHECK(resolution.cut->kind_code == "EOM");
@@ -213,22 +214,21 @@ TEST_CASE("an end of day selection falls back to the plain close where no month 
     const auto month_end = datetime::from_iso8601_utc("2026-10-30T00:00:00Z");
     const auto candidates = std::vector<domain::cut>{cut_of("EOD", "2026-10-30T17:00:00Z")};
 
-    const auto resolution = resolve_cut_selection(
-        select("EOD"), the_seven_kinds(), candidates, context_of(month_end));
+    const auto resolution =
+        resolve_cut_selection(select("EOD"), the_seven_kinds(), candidates, context_of(month_end));
 
     REQUIRE(resolution.cut.has_value());
     CHECK(resolution.cut->kind_code == "EOD");
 }
 
-TEST_CASE("a month end selection refuses a plain close of that day",
-          "[service][cut][resolution]") {
+TEST_CASE("a month end selection refuses a plain close of that day", "[service][cut][resolution]") {
 
     auto lg(make_logger(test_suite));
     const auto month_end = datetime::from_iso8601_utc("2026-10-30T00:00:00Z");
     const auto candidates = std::vector<domain::cut>{cut_of("EOD", "2026-10-30T17:00:00Z")};
 
-    const auto resolution = resolve_cut_selection(
-        select("EOM"), the_seven_kinds(), candidates, context_of(month_end));
+    const auto resolution =
+        resolve_cut_selection(select("EOM"), the_seven_kinds(), candidates, context_of(month_end));
 
     CHECK_FALSE(resolution.ok());
     CHECK_FALSE(resolution.refusal.empty());
@@ -304,8 +304,7 @@ TEST_CASE("a cut that waits on an authorisation is refused and names the request
     CHECK(resolution.refusal.contains("waits"));
 }
 
-TEST_CASE("a selection finds nothing and says what it looked for",
-          "[service][cut][resolution]") {
+TEST_CASE("a selection finds nothing and says what it looked for", "[service][cut][resolution]") {
 
     auto lg(make_logger(test_suite));
     const auto resolution =
@@ -326,8 +325,7 @@ TEST_CASE("a kind whose instant the run supplies mints a body at the run's clock
     REQUIRE(resolution.ok());
     REQUIRE(resolution.mint.has_value());
     CHECK(resolution.mint->kind_code == "LIVE");
-    CHECK(resolution.mint->timepoint ==
-          datetime::from_iso8601_utc("2026-10-07T07:40:00Z"));
+    CHECK(resolution.mint->timepoint == datetime::from_iso8601_utc("2026-10-07T07:40:00Z"));
     CHECK(resolution.mint->taken_by == "svc.reporting");
     CHECK(resolution.mint->scope_code == "ACME-LONDON");
 }
@@ -352,8 +350,8 @@ TEST_CASE("a run mints a body once every part is assembled", "[service][cut][res
     auto ctx = context_of();
     ctx.preview = false;
     cut_body body;
-    body.market_data_snapshot_id = uuid_of("cccccccc-0000-0000-0000-000000000001");
-    body.deal_population_id = uuid_of("cccccccc-0000-0000-0000-000000000002");
+    body.market_data_snapshot_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000001");
+    body.deal_population_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000002");
     body.reference_data_version = "rd-2026-10-07";
     body.engine_version = "ore-1.2.3";
     body.code_version = "abc1234";
@@ -470,7 +468,7 @@ TEST_CASE("a body of another centre or another party supersedes nothing",
     other_centre.business_centre_code = "ZRH";
     auto other_party = other_centre;
     other_party.business_centre_code = early.business_centre_code;
-    other_party.party_id = uuid_of("bbbbbbbb-0000-0000-0000-000000000099");
+    other_party.party_id = cut_uuid_of("bbbbbbbb-0000-0000-0000-000000000099");
 
     CHECK_FALSE(later_cut_holds_its_place(early, {other_centre, other_party}));
 }
@@ -604,8 +602,8 @@ cut_resolution_context run_context(const occasion& occasion,
     ctx.taken_by = actor;
 
     cut_body body;
-    body.market_data_snapshot_id = uuid_of("cccccccc-0000-0000-0000-000000000001");
-    body.deal_population_id = uuid_of("cccccccc-0000-0000-0000-000000000002");
+    body.market_data_snapshot_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000001");
+    body.deal_population_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000002");
     body.reference_data_version = "rd-2026-10-07";
     body.engine_version = "ore-1.2.3";
     body.code_version = "abc1234";
@@ -615,8 +613,7 @@ cut_resolution_context run_context(const occasion& occasion,
 }
 
 domain::cut read_back(const ores::database::context& db, const boost::uuids::uuid& id) {
-    const auto held =
-        repository::cut_repository{}.read_latest(db, boost::uuids::to_string(id));
+    const auto held = repository::cut_repository{}.read_latest(db, boost::uuids::to_string(id));
     REQUIRE(held.size() == 1);
     return held.front();
 }
@@ -632,8 +629,9 @@ TEST_CASE("a minted cut records the kind's retention, indicativeness and basis",
     const auto occasion = seed_occasion(h, gen);
 
     cut_resolution_service service(h.context());
-    const auto resolution = service.resolve(
-        select(occasion.kind_code), run_context(occasion, occasion.business_centre_code, h.db_user()));
+    const auto resolution =
+        service.resolve(select(occasion.kind_code),
+                        run_context(occasion, occasion.business_centre_code, h.db_user()));
 
     REQUIRE(resolution.ok());
     REQUIRE(resolution.cut.has_value());
@@ -668,13 +666,15 @@ TEST_CASE("a retake of one occasion takes the next ordinal and another centre it
     const auto occasion = seed_occasion(h, gen);
 
     cut_resolution_service service(h.context());
-    const auto first = service.resolve(
-        select(occasion.kind_code), run_context(occasion, occasion.business_centre_code, h.db_user()));
-    const auto second = service.resolve(
-        select(occasion.kind_code), run_context(occasion, occasion.business_centre_code, h.db_user()));
-    const auto other_centre = service.resolve(
-        select(occasion.kind_code),
-        run_context(occasion, occasion.other_business_centre_code, h.db_user()));
+    const auto first =
+        service.resolve(select(occasion.kind_code),
+                        run_context(occasion, occasion.business_centre_code, h.db_user()));
+    const auto second =
+        service.resolve(select(occasion.kind_code),
+                        run_context(occasion, occasion.business_centre_code, h.db_user()));
+    const auto other_centre =
+        service.resolve(select(occasion.kind_code),
+                        run_context(occasion, occasion.other_business_centre_code, h.db_user()));
 
     REQUIRE(first.cut.has_value());
     REQUIRE(second.cut.has_value());

@@ -167,11 +167,18 @@ begin
         return ores_reporting_value_in_set_item_fn(p_set_code, v_kind, v_relation, p_value);
     end if;
 
+    /*
+     * A list is often written across several lines in the document, so an item
+     * carries the whitespace around it and btrim's default of spaces alone would
+     * leave a tab on the first item and refuse a good list. An item that is
+     * nothing but whitespace is the typo a doubled comma leaves, and it is
+     * refused rather than trimmed away.
+     */
     foreach v_part in array string_to_array(p_value, ',') loop
-        if v_part is null or btrim(v_part) = '' then
+        if v_part is null or btrim(v_part, E' \t\n\r') = '' then
             v_ok := false;
         elsif not ores_reporting_value_in_set_item_fn(
-                p_set_code, v_kind, v_relation, btrim(v_part)) then
+                p_set_code, v_kind, v_relation, btrim(v_part, E' \t\n\r')) then
             v_ok := false;
         end if;
     end loop;

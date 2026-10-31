@@ -1,0 +1,292 @@
+:PROPERTIES:
+:ID: 3F6E1C24-8A57-4D0B-9B1E-6D2C4A7E9B58
+:END:
+#+title: ores.reporting.report_cashflow
+#+description: Codegen entity model for the reporting =report_cashflow= table. One figure of one cashflow a run produced, with the keys that say which cashflow it belongs to.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One figure of one cashflow a run produced, with the keys that name the cashflow.
+#+entity_singular: report_cashflow
+#+entity_plural: report_cashflows
+#+entity_title: Report Cashflow
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A cashflow is not a metric. A metric states one figure about a subject; a
+cashflow states a row per payment, keyed by the leg and the payment number, and
+the stressed families state each of its figures three times, as a base, a
+scenario and the difference between them.
+
+The row here is therefore narrow, and keeps the cashflow's own keys: one figure,
+named by its heading, with the part of the stressed comparison it states. A
+family of cashflows adds no column to this table, and no figure of a cashflow is
+flattened into =report_metric=, because the keys that make a cashflow a cashflow
+have no place in a metric.
+
+The row is written once, with the run, and never edited; a correction is a new
+run.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this cashflow figure.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run that produced the cashflow.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's runs are one query.
+
+** family
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The family the cashflow came from: flows, stresstest_flows, or the calibration's
+cashflows. It says which reader read the row.
+
+** subject_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The kind of record the cashflow belongs to: a trade, or a market object.
+
+** subject_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's own identifier for that record. It is text because the engine names
+its records with strings, not with uuids.
+
+** scenario
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The scenario the cashflow was stressed under, empty when the file states none.
+
+** cashflow_no
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The engine's number for the payment within its leg.
+
+** leg_no
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The engine's number for the leg the payment belongs to.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:natural_key:  true
+:END:
+
+The observation date the cashflow belongs to: the run's priced date when the file
+states none, and the row's own date when it does.
+
+** pay_date
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::optional<std::chrono::system_clock::time_point>
+:nullable:     true
+:END:
+
+The day the payment falls due.
+
+** flow_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:filterable:   true
+:END:
+
+The engine's name for the kind of payment, such as Interest or Notional.
+
+** currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The currency the cashflow is stated in.
+
+** measure
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's name for the figure, which is its heading: Amount, Coupon,
+PresentValue(Base).
+
+** part
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+Which part of a stressed comparison the figure is: base, scen or diff. A family
+that states one figure for each payment leaves it empty.
+
+** qualifiers
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+Every other qualifier the file stated, as a JSON object of name and value, so a
+family gains no column in the table: the accrual period, the fixing date, the
+strike and the volatility the payment was calculated at all travel here.
+
+** value
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     double
+:END:
+
+The figure, as the engine stated it and never formatted.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The family and the row the reader read, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_reporting_report_cashflows_tbl
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:append_insert:                true
+:bitemporal_trigger:           soft_update_delete
+:no_audit_columns:             true
+:rls_tenant_isolation:         true
+:rls_party_isolation:          true
+:END:
+
+** Bitemporal natural keys
+
+A run's cashflows are its own. The insert trigger closes the current row of the
+same key, and the key names the run, so posting one run never closes another
+run's rows.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| as_of              | false    |
+| family             | false    |
+| subject_type       | false    |
+| subject_id         | false    |
+| measure            | false    |
+| cashflow_no        | false    |
+| leg_no             | false    |
+| scenario           | false    |
+| part               | false    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cashflow
+:entity_plural_short:   cashflows
+:entity_singular_words: report cashflow
+:entity_plural_words:   report cashflows
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| family       | Family       |
+| subject_id   | Subject Id   |
+| cashflow_no  | Cashflow No  |
+| leg_no       | Leg No       |
+| pay_date     | Pay Date     |
+| flow_type    | Flow Type    |
+| measure      | Measure      |
+| part         | Part         |
+| value        | Value        |

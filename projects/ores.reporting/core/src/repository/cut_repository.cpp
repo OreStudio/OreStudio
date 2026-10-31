@@ -33,6 +33,7 @@
 #include "ores.reporting.core/repository/cut_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -422,6 +423,45 @@ void cut_repository::remove(context ctx, const std::vector<std::string>& ids) {
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing cuts.");
 }
 
+
+std::vector<domain::cut>
+cut_repository::read_for_party_in_window(context ctx,
+                                         const boost::uuids::uuid& party_id,
+                                         const std::string& kind_code,
+                                         std::chrono::system_clock::time_point from,
+                                         std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(party_id);
+    if (kind_code.empty()) {
+        const auto query = query_builder::read<std::vector<cut_entity>> |
+                           query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                                                "timepoint"_c >= from && "timepoint"_c < to &&
+                                                "valid_to"_c == max) |
+                           query_builder::order_by("timepoint"_c.desc());
+
+        return query_builder::execute_read_query<cut_entity, domain::cut>(
+            ctx,
+            query,
+            [](const auto& entities) { return cut_mapper::map(entities); },
+            lg(),
+            "Reading the cuts of a party in a window.");
+    }
+
+    const auto query = query_builder::read<std::vector<cut_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                                            "kind_code"_c == kind_code && "timepoint"_c >= from &&
+                                            "timepoint"_c < to && "valid_to"_c == max) |
+                       query_builder::order_by("timepoint"_c.desc());
+
+    return query_builder::execute_read_query<cut_entity, domain::cut>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_mapper::map(entities); },
+        lg(),
+        "Reading the cuts of a party, a kind and a window.");
+}
 
 std::vector<domain::cut>
 cut_repository::read_by_kind_and_month(context ctx,

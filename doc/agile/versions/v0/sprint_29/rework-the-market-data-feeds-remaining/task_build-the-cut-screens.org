@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 6ACEEC70-8EAC-4920-9854-9ABF2B6530AE
+:END:
+#+title: Task: Build the cut screens
+#+description: The cut model exists; build its screens: the cut types in Reference data, and the cuts list and record in Reporting.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/build-the-cut-screens
+#+pr: 4258
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person browses the cut types and their rules, lists the cuts and reads one, with the data the cut model already holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The BFF answers the cut types and the cuts with the reads the screens need.
+- The cut types list and record draw the rules and the retention; the cuts list filters by type and groups by month; the cut record draws the body, the acts and the derived state.
+- The permissions, the i18n, the tests, the route inventory and the menu design are wired and green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4258][#4258]] | [reporting] Build the cut screens |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The choices contract omits retentionDestinations, so the form's selects are empty | bff/src/cuts.ts | Fixed | The route answers the destinations the store's kinds hold; the form states the value its kind keeps and offers no other |
+| 2 | Both lists page in the browser | web/src/reporting/cuts/*.tsx | Fixed | One page each from the server with the shared Pager; the cuts read states offset and limit, the kinds are paged in the BFF |
+| 3 | The type edit is a hand-built dialog | CutTypePage.tsx | Fixed | The kind is a record of a reporting store, and the edit is the shared RecordDialog over a field table |
+| 4 | The tabs and the version line | CutPage.tsx, CutTypePage.tsx | Fixed | Details, Cuts, History and The body, Authorisation, Runs, History; both lead lines read the record's key and version |
+| 5 | Raw permission strings, unused constants | shell/cards.ts, shell/areas.ts | Fixed | PERMISSION.cutsRead and PERMISSION.cutKindsRead name the reads; the unused Identity helper is gone |
+| 6 | The cut read tests carry no logger | service_cut_read_tests.cpp | Fixed | Each case makes the suite's logger, as its sibling does |
+| 7 | cut_window_of throws for caller input | cut_read_service.hpp | Fixed | The window and the list answer std::expected, and the handler maps the refusal to the invalid range the BFF states as a 400 |
+| 8 | The read window's comment is stale | cut_read_service.cpp | Fixed | It states the day before the body and the day past now the code reads |
+| 9 | The Runs tab is missing, and the gap that says nothing reads runs by cut | bff/src/cuts.ts, CutPage.tsx | Fixed | New GET /api/reporting/cuts/:id/runs reads the runs by the cut column, and the tab draws them with their state |
+| 10 | cuts.readerNote must state the report-selection gap | i18n/locales/*.ts | Fixed | It names the take flow, the authorisation, the report's selection and the LIVE mint |
+| 11 | The indicative mark is missing from a type's cuts table | CutTypePage.tsx | Fixed | The table draws the state cell, mark and all |
+| 12 | The approval request is a bare id | CutPage.tsx | Fixed | The authorisation tab links the inbox's request page |
+| 13 | The CLI trigger-report-instance's resolution flags | ores.shell/reporting | Left | The command is generated from trigger_report_instance_request, which main already declares with those three fields and whose handler reads them; removing the surface is a contract change the selection work owns |
+| 14 | Approvals required on the type record | CutTypePage.tsx | Fixed | The row is gone: the inbox kind owns the fact, and no route here reads its record |
+| 15 | Retention destinations and the month filter | CutTypePage.tsx, CutsPage.tsx | Fixed | The destination is read-only and carried over by the write; the month filter is removed, because the task and the prototype name only kind and search |
+| 16 | The grouping is always by month | shared.tsx | Fixed | The frequency is derived from the resolution rule; daily by month, monthly by year, yearly as one group, on-demand by day; the heading names the period |
+| 17 | The superseded basis is not the prototype's | shared.tsx, CutPage.tsx | Fixed | Authorised before, or in use until, a later cut replaced it, and the record names the replacing label |
+| 18 | The not-consumable notice counts a draft | CutsPage.tsx | Fixed | The set is taken, incomplete and refused: a draft is not a cut yet |
+| 19 | A cut whose kind is gone says the body is unfixed | CutPage.tsx | Fixed | The page says the kind, and with it the label, is missing |
+| S1 | replacement_of restates the supersession predicate | cut_state.hpp | Fixed | One predicate, stands_in_the_place_of, serves both readers |
+| S2 | A twenty-field CutRow is rebuilt for two fields | shared.tsx | Fixed | StateBasis reads a StateFacts: the state, the authoriser and the replacing label |
+| S3 | A local stateWord and a duplicated markup | CutsPage.tsx, shared.tsx | Fixed | The shared useStateName, Absent and Reference are used |
+| S4 | The record read reads every kind and every cut, and a run count per row | cuts.ts, cut_read_service.cpp | Fixed | The record reads the kind the cut names; a page's runs are counted in one read |
+| S5 | The magic 1000 | cut_read_service.cpp | Fixed | paging_cap, with page_bounds stating the page |
+
+* Result
+
+The cut screens' first unit is built, reviewed and repaired.
+
+- The reads: list_cut_rows (the derived state and label per row, the replacing
+  body, the page's run tally) and get_cut_record (the body, the acts, the gaps,
+  the state), with the cut read service, the paged read and the refusal of a
+  malformed month as a value.
+- Seven BFF routes: the cut types (list, record, choices, write, remove) and the
+  cuts (list, record, runs). The signed-or-not is derived from the approval
+  kind; the choices answer the retention destinations the store holds.
+- The screens: Reference data > Cut types (the rules, the retention, the type's
+  cuts grouped by the type's frequency, the edit through the standard dialog,
+  the delete through the shared remove dialog) and Reporting > Cuts (the filters,
+  the state badges with their basis and the indicative mark, the body cards, the
+  gaps, the authorisation tab with the request link, the Runs tab, the history).
+- The i18n in three locales, the server paging, the menu and paths, the route
+  inventory and the menu design.
+- The two-axis review was run and its findings closed: the choices contract, the
+  server paging, the standard dialogs, the tabs and the version line, the
+  permission constants, the test logger, the std::expected refusal, the Runs
+  tab, the reader-note gap, the indicative mark, the request link, the grouping
+  by frequency, the superseded basis, the draft notice, the retired-kind
+  sentence, and the smells named in the review. One finding is deliberately
+  left: the trigger's three resolution flags are generated from the contract
+  main already holds; removing them is the selection work's change.
+- Checks: the web build, BFF 85 files/1179 tests, web 188 files/2369 tests, the
+  codegen drift check, the route inventory (417 routes) and lint. The reporting
+  core suite's cut-read cases pass; two unrelated tests fail against the shared
+  database, which is behind main (missing canonical_value and the report
+  metrics tables) and is recreated at the deploy.
+
+Left for the following units: the take flow, the authorisation raise and decide,
+the report's cut selection and the LIVE mint UI; the screens state those gaps.

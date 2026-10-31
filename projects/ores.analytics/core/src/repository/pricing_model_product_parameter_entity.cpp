@@ -23,14 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/repository/pricing_model_product_parameter_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.database/query_builder/json.hpp"
 #include <ostream>
-#include <rfl/json/write.hpp>
 
 namespace ores::analytics::repository {
 
 std::ostream& operator<<(std::ostream& s, const pricing_model_product_parameter_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

@@ -99,6 +99,10 @@
     },
     {
       "core": "ores.reporting.core.lib",
+      "links": "ores.ore.core.lib"
+    },
+    {
+      "core": "ores.reporting.core.lib",
       "links": "ores.storage.core.lib"
     },
     {

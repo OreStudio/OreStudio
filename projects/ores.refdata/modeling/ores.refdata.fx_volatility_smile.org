@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7E4C1D92-6B08-4F3A-9C51-2D8B7A0E5F14
 :END:
 #+title: ores.refdata.fx_volatility_smile

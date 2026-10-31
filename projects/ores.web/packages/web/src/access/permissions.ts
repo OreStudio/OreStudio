@@ -66,6 +66,17 @@ export const PERMISSION = {
     sensitivityTemplatesRead: 'analytics::sensitivity_templates:read',
     sensitivityTemplatesWrite: 'analytics::sensitivity_templates:write',
     sensitivityTemplatesDelete: 'analytics::sensitivity_templates:delete',
+    /**
+     * The cuts a party has taken, and the cut a run priced from.
+     *
+     * A cut has no write code a client reaches: the take is the write, and it
+     * carries its own permission, so nothing here offers one.
+     */
+    cutsRead: 'reporting::cuts:read',
+    /** The kinds of cut a report may select, which Reference data maintains. */
+    cutKindsRead: 'reporting::cut_kinds:read',
+    cutKindsWrite: 'reporting::cut_kinds:write',
+    cutKindsDelete: 'reporting::cut_kinds:delete',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

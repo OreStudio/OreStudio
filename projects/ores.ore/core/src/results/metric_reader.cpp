@@ -18,46 +18,14 @@
  *
  */
 #include "ores.ore.core/results/metric_reader.hpp"
+#include "output_csv.hpp"
 #include <algorithm>
-#include <charconv>
 #include <string>
 
 namespace ores::ore::results {
 namespace {
 
-// The engine states a figure it has no value for as its null string. It is not
-// a metric, and it is not a refusal: there is nothing to load.
-bool is_null(std::string_view text) {
-    return text.empty() || text == "#N/A" || text == "#NA" || text == "N/A" || text == "null" ||
-           text == "NULL" || text == "NaN" || text == "-nan";
-}
-
-std::vector<std::string> metric_fields(std::string_view line) {
-    std::vector<std::string> fields;
-    std::string field;
-    bool quoted = false;
-    for (const auto c : line) {
-        if (c == '"') {
-            quoted = !quoted;
-        } else if (c == ',' && !quoted) {
-            fields.push_back(field);
-            field.clear();
-        } else if (c != '\r') {
-            field.push_back(c);
-        }
-    }
-    fields.push_back(field);
-    return fields;
-}
-
-bool metric_figure_of(std::string_view text, double& figure) {
-    if (text.empty())
-        return false;
-    const auto* first = text.data();
-    const auto* last = text.data() + text.size();
-    const auto parsed = std::from_chars(first, last, figure);
-    return parsed.ec == std::errc() && parsed.ptr == last;
-}
+using namespace ores::ore::results::output_csv;
 
 std::string subject_type_of(std::string_view key) {
     if (key == "TradeId" || key == "TradeID")
@@ -77,6 +45,36 @@ std::string subject_type_of(std::string_view key) {
 // first, then any key that is not the observation itself. The corpus states a
 // total whose trade is empty and whose netting set is not, so the subject is
 // chosen for each row and not for the family.
+bool same_letters(std::string_view left, std::string_view right) {
+    if (left.size() != right.size())
+        return false;
+    for (std::size_t i = 0; i < left.size(); ++i) {
+        const auto lower = [](char c) {
+            return static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
+        };
+        if (lower(left[i]) != lower(right[i]))
+            return false;
+    }
+    return true;
+}
+
+// The currency of one figure. A family states it once for the row, or once for
+// each figure it states, as npv states NpvCurrency beside NPV. The heading that
+// names the figure decides which, so no family is listed here.
+std::string_view currency_of(const std::vector<std::string>& headings, std::string_view measure) {
+    const auto exact = std::ranges::find(headings, "Currency");
+    if (exact != headings.end())
+        return *exact;
+    for (const auto& heading : headings) {
+        if (heading.size() <= std::string_view("Currency").size())
+            continue;
+        if (same_letters(heading.substr(0, heading.size() - 8), measure) &&
+            same_letters(heading.substr(heading.size() - 8), "Currency"))
+            return heading;
+    }
+    return {};
+}
+
 std::vector<std::size_t> subject_order(const output_family& family) {
     std::vector<std::size_t> order;
     for (std::size_t i = 0; i < family.key_columns.size(); ++i) {
@@ -89,16 +87,6 @@ std::vector<std::size_t> subject_order(const output_family& family) {
             order.push_back(i);
     }
     return order;
-}
-
-std::string joined(const std::vector<std::string>& names) {
-    std::string out;
-    for (const auto& name : names) {
-        if (!out.empty())
-            out += ", ";
-        out += name;
-    }
-    return out;
 }
 
 }
@@ -119,7 +107,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         header_line.remove_prefix(1);
     if (!header_line.empty() && header_line.back() == '\r')
         header_line.remove_suffix(1);
-    const auto headings = metric_fields(header_line);
+    const auto headings = fields_of(header_line);
 
     // Every required column must be there, or the file is not this family's.
     for (const auto& required : family.required_columns) {
@@ -152,7 +140,6 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
 
     const auto subject_keys = subject_order(family);
     const auto date_at = std::ranges::find(headings, "Date");
-    const auto currency_at = std::ranges::find(headings, "Currency");
 
     std::vector<std::pair<std::string, std::size_t>> qualifier_at;
     for (const auto& name : family.qualifier_columns) {
@@ -174,7 +161,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (line.find_first_not_of("\r \t") == std::string_view::npos)
             continue;
 
-        const auto fields = metric_fields(line);
+        const auto fields = fields_of(line);
         const auto field_at = [&fields](std::size_t index) -> std::string_view {
             return index < fields.size() ? std::string_view(fields[index]) : std::string_view();
         };
@@ -194,23 +181,27 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (date_at != headings.end())
             base.as_of =
                 field_at(static_cast<std::size_t>(std::distance(headings.begin(), date_at)));
-        if (currency_at != headings.end())
-            base.currency =
-                field_at(static_cast<std::size_t>(std::distance(headings.begin(), currency_at)));
 
-        for (const auto& [name, at] : qualifier_at) {
-            const auto value = field_at(at);
-            if (!is_null(value))
-                base.qualifiers.emplace_back(name, std::string(value));
-        }
+        // The scenario and the factor are stated by name, because a screen
+        // filters on them; everything else travels as one qualifier.
+        const auto lift = [&base](std::string_view name, std::string_view value) {
+            if (is_null(value))
+                return;
+            if (name == "Scenario" || name == "ScenarioLabel")
+                base.scenario = value;
+            else if (name == "Factor")
+                base.factor = value;
+            else
+                base.qualifiers.emplace_back(std::string(name), std::string(value));
+        };
+        for (const auto& [name, at] : qualifier_at)
+            lift(name, field_at(at));
         // A key that is neither the subject nor the observation date states
         // context, so it travels with the metric.
         for (std::size_t i = 0; i < family.key_columns.size(); ++i) {
             if (i == subject_key || family.key_columns[i] == "Date")
                 continue;
-            const auto value = field_at(key_at[i]);
-            if (!is_null(value))
-                base.qualifiers.emplace_back(family.key_columns[i], std::string(value));
+            lift(family.key_columns[i], field_at(key_at[i]));
         }
 
         for (const auto& measure : measures) {
@@ -222,7 +213,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
             if (is_null(text))
                 continue;
             double figure = 0.0;
-            if (!metric_figure_of(text, figure)) {
+            if (!figure_of(text, figure)) {
                 outcome.refusals.push_back(family.code + " line " + std::to_string(line_number) +
                                            " states " + measure + " as '" + std::string(text) +
                                            "', which is not a figure.");
@@ -231,6 +222,15 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
             auto metric = base;
             metric.measure = measure;
             metric.value = figure;
+            // The currency is the row's or the figure's own, and the heading
+            // that names it is chosen from the ones the file states.
+            const auto currency_heading = currency_of(headings, measure);
+            if (!currency_heading.empty()) {
+                const auto currency = field_at(static_cast<std::size_t>(std::distance(
+                    headings.begin(), std::ranges::find(headings, std::string(currency_heading)))));
+                if (!is_null(currency))
+                    metric.currency = currency;
+            }
             outcome.metrics.push_back(std::move(metric));
         }
     }

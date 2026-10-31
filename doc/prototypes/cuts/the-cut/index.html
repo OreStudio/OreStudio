@@ -1081,8 +1081,11 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             rows + '</tbody></table></div>' +
             '<p class="rule">A run refused before the engine is not in this list, because a refusal is not ' +
             'a result.</p>' +
-            '<div class="gap"><b>Gap.</b> Nothing reads runs by cut, and a run does not record its cut or its ' +
-            'engine version. Both are needed before this tab has a source.</div>';
+            // A run records the cut it resolved and the label that cut carries,
+            // so the tab has a source. What the tab leaves out is the comparison:
+            // it names the runs, and the audit journey reads the two results.
+            '<div class="gap"><b>Gap.</b> The comparison is the audit journey\u2019s, and this ' +
+            'tab names the runs only.</div>';
     }
 
     function historyTab(c) {

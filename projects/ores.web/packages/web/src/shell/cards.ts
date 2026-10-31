@@ -21,6 +21,7 @@
 
 import type { IconName } from '../ui/Icon.js';
 import { DEPLOYMENT_READ } from '@ores/contracts';
+import { PERMISSION } from '../access/permissions.js';
 import { PATHS } from './paths.js';
 import type { MenuItem } from './areas.js';
 
@@ -347,6 +348,28 @@ export const CARDS = {
         permission: 'refdata::curve_configurations:read',
         screenTitleKey: 'curveConfiguration.list.title',
     },
+    /*
+     * The cuts, and the kinds of cut a report may select. A person who asks what
+     * a number was computed from looks where the reports are, so the cuts sit in
+     * the reporting area; the kinds are a lookup the take and the resolution
+     * read, so they sit in Reference data.
+     */
+    cuts: {
+        titleKey: 'reporting.area.screens.cuts',
+        bodyKey: 'reporting.area.screens.cutsBody',
+        to: PATHS.cuts,
+        icon: 'record',
+        permission: PERMISSION.cutsRead,
+        screenTitleKey: 'cuts.title',
+    },
+    cutTypes: {
+        titleKey: 'refdata.area.screens.cutTypes',
+        bodyKey: 'refdata.area.screens.cutTypesBody',
+        to: PATHS.cutTypes,
+        icon: 'apps',
+        permission: PERMISSION.cutKindsRead,
+        screenTitleKey: 'cuts.types.title',
+    },
     engineSettings: {
         titleKey: 'reporting.area.screens.engineSettings',
         bodyKey: 'reporting.area.screens.engineSettingsBody',
@@ -405,6 +428,7 @@ export const AREA_CARDS = {
         'classifications',
         'tenors',
         'conventions',
+        'cutTypes',
         'bookStructure',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
@@ -420,6 +444,7 @@ export const AREA_CARDS = {
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataFeeds'],
     reporting: [
         'reports',
+        'cuts',
         'pricingEngines',
         'sensitivityTemplates',
         'curveConfigurations',

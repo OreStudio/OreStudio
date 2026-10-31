@@ -136,6 +136,10 @@ import { ReportPage } from './reporting/ReportPage.js';
 import { ReportRunPage } from './reporting/ReportRunPage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
+import { CutsPage } from './reporting/cuts/CutsPage.js';
+import { CutPage } from './reporting/cuts/CutPage.js';
+import { CutTypesPage } from './reporting/cuts/CutTypesPage.js';
+import { CutTypePage } from './reporting/cuts/CutTypePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -1060,6 +1064,54 @@ export function AppRoutes({
                     shell,
                     () => (
                         <SensitivityTemplatePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.cuts}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CutsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.cuts}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CutPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.cutTypes}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CutTypesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.cutTypes}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CutTypePage />
                     ),
                     'workspace',
                 )}

@@ -387,6 +387,39 @@ export {
 } from './timeline.js';
 export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './timeline.js';
 
+// The cuts: the kinds of cut a person maintains, and the cuts a party holds.
+export {
+    CUT_STATE_WORDS,
+    cutBodySchema,
+    cutGapSchema,
+    cutKindChoicesSchema,
+    cutKindRecordSchema,
+    cutKindRowSchema,
+    cutKindWriteSchema,
+    cutKindsPageSchema,
+    cutRecordSchema,
+    cutRowSchema,
+    cutRunsSchema,
+    cutRunSchema,
+    cutStateWordSchema,
+    cutsPageSchema,
+} from './cuts.js';
+export type {
+    CutBody,
+    CutGap,
+    CutKindChoices,
+    CutKindRecord,
+    CutKindRow,
+    CutKindWrite,
+    CutKindsPage,
+    CutRecord,
+    CutRow,
+    CutRuns,
+    CutRun,
+    CutStateWord,
+    CutsPage,
+} from './cuts.js';
+
 // The reports a party runs: a definition composed with its latest run.
 export {
     REPORT_HEALTH_WORDS,

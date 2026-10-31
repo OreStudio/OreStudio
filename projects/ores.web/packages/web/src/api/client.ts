@@ -185,8 +185,36 @@ import {
     type ReportHealthTally,
     type ReportNameChoice,
     type ReportsPage,
+    cutKindsPageSchema,
+    cutKindRecordSchema,
+    cutKindChoicesSchema,
+    cutKindRowSchema,
+    cutsPageSchema,
+    cutRecordSchema,
+    cutRunsSchema,
+    type CutKindRow,
+    type CutKindRecord,
+    type CutKindChoices,
+    type CutKindWrite,
+    type CutKindsPage,
+    type CutRecord,
+    type CutRuns,
+    type CutsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request, requestFile, type ServedFile } from './transport.js';
+
+/**
+ * One page of a read that pages on the server: which rows, and how they are
+ * ordered. A record store hands its own page request straight through, so the
+ * two shapes are one.
+ */
+export interface ServerPage {
+    readonly offset: number;
+    readonly limit: number;
+    readonly search: string;
+    readonly sort: string;
+    readonly descending: boolean;
+}
 
 /**
  * The session and account calls.
@@ -4006,6 +4034,147 @@ export const api = {
     async imageUploadPolicy(): Promise<ImageUploadPolicy> {
         return imageUploadPolicyViewSchema.parse(
             await request('/api/image-upload-policy', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The kinds of cut a person maintains, each with its family's name, the
+     * approval kind that signs it and the cuts the party holds of it.
+     *
+     * The server derives the signed-or-not from the approval kind the type
+     * points at, so this side draws the word and derives nothing.
+     */
+    async cutKinds(page: ServerPage): Promise<CutKindsPage> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            descending: page.descending ? 'true' : 'false',
+        });
+        if (page.search !== '') {
+            query.set('search', page.search);
+        }
+        if (page.sort !== '') {
+            query.set('sort', page.sort);
+        }
+        return cutKindsPageSchema.parse(
+            await request(`/api/reporting/cut-kinds?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /** One kind of cut and the cuts the party holds of it. */
+    async cutKind(code: string): Promise<CutKindRecord> {
+        return cutKindRecordSchema.parse(
+            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** The families, resolution rules and approval kinds a form may name. */
+    async cutKindChoices(): Promise<CutKindChoices> {
+        return cutKindChoicesSchema.parse(
+            await request('/api/reporting/cut-kind-choices', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Writes the naming and the rules of a kind, and nothing else.
+     *
+     * The BFF rebuilds the row from the read it makes at write time, so a field
+     * the form does not offer keeps its stored value whatever is sent.
+     */
+    async saveCutKind(
+        code: string,
+        edit: {
+            readonly version: number;
+            readonly change: CutKindWrite;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<CutKindRow> {
+        return cutKindRowSchema.parse(
+            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    version: edit.version,
+                    change: edit.change,
+                    intent: { reason_code: edit.reasonCode, commentary: edit.commentary },
+                }),
+            }),
+        );
+    },
+
+    /** Removes a kind no cut was taken under. */
+    async removeCutKind(
+        code: string,
+        removal: {
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                version: removal.version,
+                intent: { reason_code: removal.reasonCode, commentary: removal.commentary },
+            }),
+        });
+    },
+
+    /**
+     * The cuts the session's party holds, narrowed by a kind, a month, a text in
+     * the label and a state.
+     *
+     * The state and the label arrive derived from the server: both are functions
+     * of the facts a cut records, so a screen that derived either would state the
+     * rule a second time.
+     */
+    async cuts(narrow: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly kindCode: string;
+        readonly search: string;
+        readonly state: string;
+    }): Promise<CutsPage> {
+        const query = new URLSearchParams({
+            offset: String(narrow.offset),
+            limit: String(narrow.limit),
+        });
+        if (narrow.kindCode !== '') {
+            query.set('kind_code', narrow.kindCode);
+        }
+        if (narrow.search !== '') {
+            query.set('search', narrow.search);
+        }
+        if (narrow.state !== '') {
+            query.set('state', narrow.state);
+        }
+        return cutsPageSchema.parse(
+            await request(`/api/reporting/cuts?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The runs that priced from one cut, newest start first.
+     *
+     * The run records the cut its report's selection resolved to, so this is one
+     * read of the runs and one of their states, whatever the cut holds.
+     */
+    async cutRuns(id: string): Promise<CutRuns> {
+        return cutRunsSchema.parse(
+            await request(`/api/reporting/cuts/${encodeURIComponent(id)}/runs`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One cut's record: the body, the acts, the gaps and the derived state. */
+    async cut(id: string): Promise<CutRecord> {
+        return cutRecordSchema.parse(
+            await request(`/api/reporting/cuts/${encodeURIComponent(id)}`, { method: 'GET' }),
         );
     },
 };

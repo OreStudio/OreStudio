@@ -82,6 +82,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:5B166095-7D72-4D11-BA88-34A278589E98][Port the market data cuts reference]] | DONE | 2026-10-30 | 2026-10-30 | The external cuts reference defines the concept the report binding depends on; our docs have only fragments. |
 | [[id:949A1AD7-D380-45DB-95A8-9F4F7C9E9552][Design the cut's journeys and screens]] | DONE | 2026-10-30 | 2026-10-31 | The cut is the report binding's foundation: the fixed body at a timepoint for a reproducible valuation. Design its journeys and screens before the data model. |
 | [[id:AD373F0C-1A56-4B48-A93F-259401496B80][Build the cut data model]] | DONE | 2026-10-31 | 2026-10-31 | The cut design is signed off; build the data model: the cut type lookup, the cut entity, the report's selection, the resolution, and the retention. |
+| [[id:7CF59990-A5EC-40C0-B335-D1207D078032][Repair the web after the feed rename]] | STARTED | 2026-10-31 | | The source entity became the feed; the generated source protocol is gone and the web still imports and names it. |
 
 * Decisions
 

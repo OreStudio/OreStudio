@@ -41,6 +41,7 @@
 #include "ores.shell/app/commands/trading/credit_default_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/credit_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/credit_linked_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/draft_reason_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"
@@ -127,6 +128,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     credit_default_swap_instrument_commands::register_commands(root_menu, session);
     credit_instrument_commands::register_commands(root_menu, session);
     credit_linked_swap_instrument_commands::register_commands(root_menu, session);
+    draft_reason_commands::register_commands(root_menu, session);
     equity_accumulator_instrument_commands::register_commands(root_menu, session);
     equity_asian_option_instrument_commands::register_commands(root_menu, session);
     equity_barrier_option_instrument_commands::register_commands(root_menu, session);

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: FBE43389-1524-5439-8300-3DD44668FEA9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the draft_reasons commands from the shell?
+#+description: Every command the draft_reasons submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:draft_reasons:
+
+This file documents the draft_reasons resource at the shell, one section per command. Every command is a subcommand of =draft_reasons=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9E80558C-8369-50A5-A8A4-8088E521CE9F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.list=.
+
+#+name: draft_reasons-list
+#+begin_src ores-shell :tangle draft_reasons-list.ores :exports none
+draft_reasons list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FC0E41D5-54D6-56EF-A0B8-6B07FB29F930
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons get <code>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.get=.
+
+#+name: draft_reasons-get
+#+begin_src ores-shell :tangle draft_reasons-get.ores :exports none
+draft_reasons get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: CE0C860C-9860-5B42-B4D4-4BC784BF998F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons get-many <code>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.get_many=.
+
+#+name: draft_reasons-get-many
+#+begin_src ores-shell :tangle draft_reasons-get-many.ores :exports none
+draft_reasons get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1800FCED-DF8E-5098-8335-06CFB77224FB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons add <code> <description> <responsible_role> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.put=.
+
+#+name: draft_reasons-add
+#+begin_src ores-shell :tangle draft_reasons-add.ores :exports none
+draft_reasons add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: EDDE1980-FC54-5DD7-B13D-D3FC35E53FC0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons set <code> <description> <responsible_role> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.put=.
+
+#+name: draft_reasons-set
+#+begin_src ores-shell :tangle draft_reasons-set.ores :exports none
+draft_reasons set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 83351359-9AE6-5177-B44F-DC322D278C4B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons put-many --count <n> <code> <description> <responsible_role> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.put_many=.
+
+#+name: draft_reasons-put-many
+#+begin_src ores-shell :tangle draft_reasons-put-many.ores :exports none
+draft_reasons put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 306B0982-5F01-5F7D-A960-A5631BB4476B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.delete=.
+
+#+name: draft_reasons-delete
+#+begin_src ores-shell :tangle draft_reasons-delete.ores :exports none
+draft_reasons delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: BC778A2A-82DE-552F-AB45-72C43D8E7396
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons.delete_many=.
+
+#+name: draft_reasons-delete-many
+#+begin_src ores-shell :tangle draft_reasons-delete-many.ores :exports none
+draft_reasons delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: AD856F95-2A50-5528-BDD1-CC66EDB450BE
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons_versions.list=.
+
+#+name: draft_reasons-versions
+#+begin_src ores-shell :tangle draft_reasons-versions.ores :exports none
+draft_reasons versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: BDBD6452-8225-53E8-B233-AD18B9D3799C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+draft_reasons version <code> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.draft_reasons_versions.get=.
+
+#+name: draft_reasons-version
+#+begin_src ores-shell :tangle draft_reasons-version.ores :exports none
+draft_reasons version __none__ --version 1
+#+end_src
+

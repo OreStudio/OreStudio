@@ -48,6 +48,7 @@ ore_parameter_value_set_mapper::map(const ore_parameter_value_set_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.source_kind = v.source_kind;
+    r.cardinality = v.cardinality;
     r.catalogue_code = v.catalogue_code.value_or("");
     r.minimum = v.minimum;
     r.maximum = v.maximum;
@@ -74,6 +75,7 @@ ore_parameter_value_set_mapper::map(const domain::ore_parameter_value_set& v) {
     r.name = v.name;
     r.description = v.description;
     r.source_kind = v.source_kind;
+    r.cardinality = v.cardinality;
     r.catalogue_code = v.catalogue_code.empty() ? std::nullopt : std::optional(v.catalogue_code);
     r.minimum = v.minimum;
     r.maximum = v.maximum;

@@ -56,7 +56,7 @@ ELEMENT = re.compile(r"/([^/\[]+)(?:\[[^\]]*\])?$")
 # may only fall. It falls when extract_curve_terms.py learns a form of read it
 # does not know yet; it rises when a projection column adds a leaf the extractor
 # cannot read, which is a rule stated as nothing.
-UNREAD_ALLOWED = 28
+UNREAD_ALLOWED = 7
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -131,14 +131,14 @@ def seeded(path, table):
     return [dict(zip(names, values)) for values in split_values(text[header.end():])]
 
 
-def leaf_rules():
-    """The value set every leaf the ORE sources read takes, by address.
+def leaf_rules(addresses):
+    """The value set each leaf the ORE sources read takes, by address.
 
-    The rule of a leaf and the rule of the setting that names it are one fact, so
-    this reads the curation the value sets are seeded from rather than deriving a
-    second answer from the parameter contract. A leaf the ORE sources read is
-    governed by the parser they read it with; a leaf no source read names is not
-    here, and map_rows() states that gap rather than inventing a rule.
+    The rule of a leaf follows from the parser the ORE source reads the leaf with,
+    so this resolves each term through the same curation the value set seed is
+    written from, by the leaf and not by its name. Only the addresses the
+    projection carries are resolved: a term whose leaf no column carries is not a
+    rule the tree states anywhere, and reading it would claim one.
 
     Each rule is a row's worth of facts: the set, the name a person reads, where
     the rule comes from, the file and line the ORE code reads the leaf at, and
@@ -147,34 +147,57 @@ def leaf_rules():
     data, problems = value_sets.resolved()
     if problems:
         raise ValueError("\n".join(problems))
-    links, sets = data["links"], data["sets"]
+    sets = data["sets"]
     found = {}
     for section, term in curve_sets.terms():
-        code = links.get(f"{section}|{term['name']}")
-        if not code:
-            continue
         address = "curveconfig.xsd", "/CurveConfiguration/" + "/".join(term["path"])
+        if address not in addresses:
+            continue
+        code = curve_sets.set_of_leaf(term, section)
         found.setdefault(address, describe(code, sets[code], term))
     for element, convention in terms_extracted()["conventions"].items():
         for term in convention["terms"]:
-            code = links.get(f"{element}|{term['name']}")
-            if not code:
-                continue
             leaf = term["name"]
             if term.get("list_item"):
                 leaf = f"{term['name']}/{term['list_item']}"
             address = "conventions.xsd", "/Conventions/" + "/".join(term["path"] + [leaf])
+            if address not in addresses:
+                continue
+            code = convention_sets.set_of_leaf(term, element)
             _, overridden = convention_sets.override_of(element, term)
             found.setdefault(address, describe(code, sets[code], term, overridden))
     return found
+
+
+# What one item of a list may be, in the words a person reads beside the leaf.
+ITEM_WORDS = {
+    "number": "a number",
+    "integer": "a whole number",
+    "regex": "a period",
+    "enumerated": "one of the values the set lists",
+    "catalogue": "one of the values the catalogue holds",
+    "flag": "a flag",
+    "boolean": "a flag",
+    "text": None,
+}
 
 
 def describe(code, entry, term, overridden=None):
     """Why one leaf takes one set, in the words a reviewer can check."""
     kind, parser = entry["source_kind"], term.get("parser")
     element, spelling = term["name"], term.get("type")
+    cardinality = entry.get("cardinality", "one")
     if overridden:
         reason = overridden
+    elif spelling == "list" and curve_sets.LIST_ITEM.get(element):
+        reason = curve_sets.LIST_ITEM[element][1]
+    elif cardinality == "many":
+        item = ITEM_WORDS.get(kind)
+        reason = (f"ORE reads {element} into one vector, so the leaf holds a comma "
+                  f"separated list and the set states what one item may be"
+                  + (f": {item}." if item else
+                     ", which no rule states yet: the set says the leaf is a list "
+                     "and admits any item."))
     elif kind == "catalogue":
         reason = (f"ORE reads {element} with {parser}, which accepts the spellings "
                   f"reference data holds, so the set names that catalogue instead of "
@@ -272,10 +295,10 @@ def map_rows(columns):
     declared = {(entry["schema"], entry["element"]): entry
                 for entry in declared_json.values()}
 
-    sets = leaf_rules()
     found = {}
     for row in columns:
         found.setdefault(row["map_code"], row)
+    sets = leaf_rules({(row["schema"], row["xpath"]) for row in found.values()})
 
     out = {}
     for code, row in found.items():

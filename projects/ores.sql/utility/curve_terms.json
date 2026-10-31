@@ -2656,6 +2656,44 @@
      "default": null,
      "element": "BaseCorrelation",
      "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:37",
+     "guide_text": "Comma-separated list of tenors, sorted in increasing order, possibly a single term to represent a flat term structure in time-direction",
+     "mandatory": true,
+     "member": "terms_",
+     "name": "Terms",
+     "parser": null,
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "Terms"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:154",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:38",
+     "guide_text": "Comma-separated list of equity tranche detachment points, sorted in increasing order Allowable values: Any positive number less than one",
+     "mandatory": true,
+     "member": "detachmentPoints_",
+     "name": "DetachmentPoints",
+     "parser": null,
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "DetachmentPoints"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:155",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "guide_optional": false,
      "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:40",
      "guide_text": "The floating term structure's settlement days argument used in the reference date calculation",
      "mandatory": true,
@@ -2934,7 +2972,7 @@
       "Rule"
      ],
      "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:187",
-     "type": "text"
+     "type": "date_generation_rule"
     },
     {
      "conditional": false,
@@ -2953,7 +2991,7 @@
       "AdjustForLosses"
      ],
      "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:194",
-     "type": "text"
+     "type": "boolean"
     }
    ],
    "unresolved": [
@@ -3135,7 +3173,7 @@
       "StrikeFactor"
      ],
      "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:128",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -3173,7 +3211,7 @@
       "PreferOutOfTheMoney"
      ],
      "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:136",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -3192,7 +3230,7 @@
       "TreatAsEuropean"
      ],
      "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:141",
-     "type": "text"
+     "type": "boolean"
     }
    ],
    "unresolved": []
@@ -3240,6 +3278,25 @@
      ],
      "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:166",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:128",
+     "guide_text": "comma separated list of expiry tenors and or expiry dates. A single wildcard character, *, can be used here also to indicate that all expiries found in the market data for this CDS volatility configuration should be used when building the CDS volatility surface.",
+     "mandatory": true,
+     "member": "expiries",
+     "name": "Expiries",
+     "parser": null,
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:190",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -3353,7 +3410,7 @@
       "StrikeFactor"
      ],
      "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:243",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -3575,6 +3632,44 @@
     },
     {
      "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:94",
+     "guide_text": "A comma separated list of valid tenor strings giving the cap floor maturity tenors to be used in the ATM curve. If omitted, the tenors for the ATM curve must be provided in the AtmTenors node instead. If the tenors are provided here, the AtmTenors node may be omitted.",
+     "mandatory": false,
+     "member": "tenors_",
+     "name": "Tenors",
+     "parser": null,
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Tenors"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:192",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "strikes_",
+     "name": "Strikes",
+     "parser": null,
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:193",
+     "type": "list"
+    },
+    {
+     "conditional": false,
      "default": "false",
      "element": "CapFloorVolatility",
      "guide_optional": true,
@@ -3591,6 +3686,25 @@
      ],
      "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:196",
      "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:106",
+     "guide_text": "A comma separated list of valid tenor strings giving the cap floor maturities to be used in the ATM curve. If omitted, the tenors for the ATM curve must be provided in the Tenors node instead. If the tenors are provided here, the Tenors node may be omitted.",
+     "mandatory": false,
+     "member": "atmTenors_",
+     "name": "AtmTenors",
+     "parser": null,
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "AtmTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:205",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -3742,7 +3856,7 @@
       "RateComputationPeriod"
      ],
      "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:152",
-     "type": "text"
+     "type": "period"
     },
     {
      "conditional": false,
@@ -3761,7 +3875,7 @@
       "ONCapSettlementDays"
      ],
      "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:158",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -3780,7 +3894,7 @@
       "SettlementDays"
      ],
      "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:164",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -3933,7 +4047,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -3953,7 +4067,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -3973,7 +4087,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -3993,7 +4107,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4013,7 +4127,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -4033,7 +4147,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -4053,7 +4167,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -4073,7 +4187,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -4093,7 +4207,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -4113,7 +4227,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -4133,7 +4247,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -4466,7 +4580,7 @@
       "Accuracy"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:35",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -4486,7 +4600,7 @@
       "GlobalAccuracy"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:41",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -4506,7 +4620,7 @@
       "DontThrow"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4526,7 +4640,7 @@
       "MaxAttempts"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:51",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -4546,7 +4660,7 @@
       "MaxFactor"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:58",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -4566,7 +4680,7 @@
       "MinFactor"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:63",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -4586,7 +4700,7 @@
       "DontThrowSteps"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:68",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -4606,7 +4720,7 @@
       "Global"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:75",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4626,7 +4740,7 @@
       "SmoothnessLambda"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:80",
-     "type": "text"
+     "type": "double"
     }
    ],
    "unresolved": []
@@ -4882,7 +4996,7 @@
       "OptionExpiryRollDays"
      ],
      "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:179",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -4920,7 +5034,7 @@
       "PreferOutOfTheMoney"
      ],
      "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:200",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4940,7 +5054,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4960,7 +5074,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -4980,7 +5094,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5000,7 +5114,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5020,7 +5134,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -5040,7 +5154,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5060,7 +5174,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5080,7 +5194,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5100,7 +5214,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -5120,7 +5234,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -5140,7 +5254,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -5284,6 +5398,25 @@
      ],
      "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:139",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": "optionTenors_",
+     "name": "OptionTenors",
+     "parser": null,
+     "path": [
+      "Correlations",
+      "Correlation",
+      "OptionTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:148",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -5540,7 +5673,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5560,7 +5693,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5580,7 +5713,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5600,7 +5733,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -5620,7 +5753,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -5640,7 +5773,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5660,7 +5793,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5680,7 +5813,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -5700,7 +5833,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -5720,7 +5853,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -5740,7 +5873,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -6174,6 +6307,25 @@
      "default": null,
      "element": "EquityVolatility",
      "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:94",
+     "guide_text": "comma separated list of expiry tenors and or expiry dates. A single wildcard character, *, can be used here also to indicate that all expiries found in the market data for this equity volatility configuration should be used when building the equity volatility surface.",
+     "mandatory": true,
+     "member": "expiries",
+     "name": "Expiries",
+     "parser": null,
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:125",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "guide_optional": false,
      "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:106",
      "guide_text": "extrapolation in the option expiry direction. If both Strikes and Expiries are configured explicitly, the extrapolation in the time direction is flat in volatility regardless of the setting here. If either Strikes or Expiries are configured with a wildcard character, Linear, UseInterpolator, Flat or None are allowed. If Linear or UseInterpolator is specified, the extrapolation is linear. If Flat is specified, the extrapolation is flat. If None is specified, it is ignored and the extrapolation is flat since extrapolation in the time direction cannot be turned off in isolation i.e.\\ extrapolation can only be turned off for the surface as a whole using the Extrapolation flag.",
      "mandatory": true,
@@ -6211,6 +6363,25 @@
      "conditional": false,
      "default": null,
      "element": "EquityVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:91",
+     "guide_text": "comma separated list of strikes, representing the absolute strike values for the option. In other words, A single wildcard character, *, can be used here also to indicate that all strikes found in the market data for this equity volatility configuration should be used when building the equity volatility surface.",
+     "mandatory": false,
+     "member": "strikes",
+     "name": "Strikes",
+     "parser": null,
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:135",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
      "guide_optional": true,
      "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:19",
      "guide_text": "A configuration for the one dimensional solver used in deriving volatilities from prices. This node is described in detail in Section . If not provided, a default step based configuration is used. This is only used when volatilities are stripped from prices.",
@@ -6243,7 +6414,7 @@
       "PreferOutOfTheMoney"
      ],
      "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:116",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6263,7 +6434,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6283,7 +6454,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6303,7 +6474,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6323,7 +6494,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6343,7 +6514,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -6363,7 +6534,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -6383,7 +6554,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -6403,7 +6574,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -6423,7 +6594,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -6443,7 +6614,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -6463,7 +6634,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -6833,6 +7004,44 @@
      "default": null,
      "element": "FXVolatility",
      "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:167",
+     "guide_text": "Strike grid, required in case of SmileType Delta Allowable values: ATM, *P, *C, see example in the guide",
+     "mandatory": true,
+     "member": "deltas_",
+     "name": "Deltas",
+     "parser": null,
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:167",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:164",
+     "guide_text": "Option expiries in period form. A wildcard may also be used. In the wildcard case, it will look for any matching quotes provided in the loader, and construct the curve from these. This is currently only supported for ATM or Delta or BFRR or Absolute curves.",
+     "mandatory": true,
+     "member": "expiries_",
+     "name": "Expiries",
+     "parser": null,
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:208",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "guide_optional": true,
      "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:173",
      "guide_text": "Yield curve, in ORE format Yield/CCY/ID, used as foreign yield curve in smile curves, may be omitted for ATM curves.",
      "mandatory": false,
@@ -6941,7 +7150,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6961,7 +7170,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -6981,7 +7190,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7001,7 +7210,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7021,7 +7230,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -7041,7 +7250,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7061,7 +7270,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7081,7 +7290,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7101,7 +7310,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -7121,7 +7330,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -7141,7 +7350,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -7386,6 +7595,82 @@
      "conditional": false,
      "default": null,
      "element": "InflationCapFloorVolatility",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": "tenors_",
+     "name": "Tenors",
+     "parser": null,
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Tenors"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:162",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:50",
+     "guide_text": "The strikes for which cap prices are quoted (may, and will usually, overlap with the floor strike region); if the QuoteType above is Price, either CapStrikes or FloorStrikes or both are required.",
+     "mandatory": true,
+     "member": "capStrikes_",
+     "name": "CapStrikes",
+     "parser": null,
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "CapStrikes"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:165",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:52",
+     "guide_text": "The strikes for which floor prices are quoted (may and will usually) overlap with the cap strike region); if the QuoteType above is Price, either CapStrikes or FloorStrikes or both are required.",
+     "mandatory": true,
+     "member": "floorStrikes_",
+     "name": "FloorStrikes",
+     "parser": null,
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "FloorStrikes"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:167",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:48",
+     "guide_text": "In the case of QuoteType Volatility, the strikes for which floor prices are quoted (may, and will usually, overlap with the cap strike region); neither CapStrikes nor FloorStrikes are expected in this case.",
+     "mandatory": true,
+     "member": "strikes_",
+     "name": "Strikes",
+     "parser": null,
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:185",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
      "guide_optional": false,
      "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:45",
      "guide_text": "The term structure's calendar",
@@ -7589,7 +7874,7 @@
       "SettlementDays"
      ],
      "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:189",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -7609,7 +7894,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7629,7 +7914,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7649,7 +7934,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7669,7 +7954,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -7689,7 +7974,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -7709,7 +7994,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7729,7 +8014,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7749,7 +8034,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -7769,7 +8054,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -7789,7 +8074,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -7809,7 +8094,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -8598,6 +8883,44 @@
     },
     {
      "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:96",
+     "guide_text": "Optional, defaults to input market data shift. Specifies the shift used for SABR model if applicable",
+     "mandatory": false,
+     "member": "modelShift_",
+     "name": "ModelShift",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ModelShift"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:230",
+     "type": "number_list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:94",
+     "guide_text": "Optional, defaults to input market data shift. Specifies the shift if OutputVolatilityType is Lognormal / ShiftedLognormal",
+     "mandatory": false,
+     "member": "outputShift_",
+     "name": "OutputShift",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "OutputShift"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:233",
+     "type": "number_list"
+    },
+    {
+     "conditional": false,
      "default": "Linear",
      "element": null,
      "guide_optional": false,
@@ -8633,6 +8956,25 @@
      ],
      "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:244",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:102",
+     "guide_text": "Option expiry in period form",
+     "mandatory": true,
+     "member": "optionTenors_",
+     "name": "OptionTenors",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "OptionTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:256",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -8728,6 +9070,44 @@
      ],
      "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:272",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:109",
+     "guide_text": "Option expiries, in period form, where smile section data is to be taken into account",
+     "mandatory": true,
+     "member": "smileOptionTenors_",
+     "name": "SmileOptionTenors",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "SmileOptionTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:277",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:111",
+     "guide_text": "Strikes in smile direction expressed as strike spreads, relative to the ATM strike at the expiry/term point of the ATM matrix. Note that trailing 0s are not ignored.",
+     "mandatory": true,
+     "member": "smileSpreads_",
+     "name": "SmileSpreads",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "SmileSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:280",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -8850,7 +9230,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -8870,7 +9250,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -8890,7 +9270,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -8910,7 +9290,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -8930,7 +9310,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -8950,7 +9330,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -8970,7 +9350,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -8990,7 +9370,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -9010,7 +9390,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -9030,7 +9410,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -9050,7 +9430,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -9349,7 +9729,7 @@
       "Accuracy"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:35",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -9369,7 +9749,7 @@
       "GlobalAccuracy"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:41",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -9389,7 +9769,7 @@
       "DontThrow"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9409,7 +9789,7 @@
       "MaxAttempts"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:51",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -9429,7 +9809,7 @@
       "MaxFactor"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:58",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -9449,7 +9829,7 @@
       "MinFactor"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:63",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -9469,7 +9849,7 @@
       "DontThrowSteps"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:68",
-     "type": "text"
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -9489,7 +9869,7 @@
       "Global"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:75",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9509,7 +9889,7 @@
       "SmoothnessLambda"
      ],
      "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:80",
-     "type": "text"
+     "type": "double"
     },
     {
      "conditional": false,
@@ -9529,7 +9909,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9549,7 +9929,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9569,7 +9949,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9589,7 +9969,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -9609,7 +9989,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -9629,7 +10009,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -9649,7 +10029,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -9669,7 +10049,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -9689,7 +10069,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -9709,7 +10089,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -9729,7 +10109,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -11030,7 +11410,7 @@
       "ExtrapolateFlat"
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:732",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -11198,7 +11578,7 @@
       "ExtrapolateFlat"
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:909",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -11807,7 +12187,7 @@
       "Spread"
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:856",
-     "type": "text"
+     "type": "double"
     }
    ],
    "unresolved": [
@@ -12204,6 +12584,44 @@
     },
     {
      "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "modelShift_",
+     "name": "ModelShift",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ModelShift"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:230",
+     "type": "number_list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "outputShift_",
+     "name": "OutputShift",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "OutputShift"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:233",
+     "type": "number_list"
+    },
+    {
+     "conditional": false,
      "default": "Linear",
      "element": null,
      "guide_optional": false,
@@ -12239,6 +12657,25 @@
      ],
      "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:244",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": "optionTenors_",
+     "name": "OptionTenors",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "OptionTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:256",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -12334,6 +12771,44 @@
      ],
      "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:272",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": "smileOptionTenors_",
+     "name": "SmileOptionTenors",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "SmileOptionTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:277",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": "smileSpreads_",
+     "name": "SmileSpreads",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "SmileSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:280",
+     "type": "list"
     },
     {
      "conditional": false,
@@ -12456,7 +12931,7 @@
       "ReportOnDeltaGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -12476,7 +12951,7 @@
       "ReportOnMoneynessGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -12496,7 +12971,7 @@
       "ReportOnStrikeGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -12516,7 +12991,7 @@
       "ReportOnStrikeSpreadGrid"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
-     "type": "text"
+     "type": "boolean"
     },
     {
      "conditional": false,
@@ -12536,7 +13011,7 @@
       "Deltas"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -12556,7 +13031,7 @@
       "Moneyness"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -12576,7 +13051,7 @@
       "Strikes"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -12596,7 +13071,7 @@
       "StrikeSpreads"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
-     "type": "text"
+     "type": "number_list"
     },
     {
      "conditional": false,
@@ -12616,7 +13091,7 @@
       "Expiries"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,
@@ -12636,7 +13111,7 @@
       "PillarDates"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-     "type": "text"
+     "type": "list"
     },
     {
      "conditional": false,
@@ -12656,7 +13131,7 @@
       "UnderlyingTenors"
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
-     "type": "text"
+     "type": "period_list"
     },
     {
      "conditional": false,

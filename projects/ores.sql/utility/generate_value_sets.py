@@ -113,7 +113,8 @@ def rows_of(data):
     for code, entry in sorted(data["sets"].items()):
         sets.append([
             q(code), TENANT, "0", q(entry["name"]), q(entry["description"]),
-            q(entry["source_kind"]), q(entry.get("catalogue_code")),
+            q(entry["source_kind"]), q(entry.get("cardinality", "one")),
+            q(entry.get("catalogue_code")),
             q(entry.get("minimum")), q(entry.get("maximum")), q(entry.get("pattern")),
             q(entry.get("is_ordered", False)), ACTOR, q(SEED)])
         for value in entry.get("values", []):
@@ -260,6 +261,9 @@ def validate(data):
         if kind not in ("enumerated", "catalogue", "range", "regex", "boolean",
                         "integer", "number", "text"):
             problems.append(f"{code}: unknown source kind {kind}")
+        cardinality = entry.get("cardinality", "one")
+        if cardinality not in ("one", "many"):
+            problems.append(f"{code}: unknown cardinality {cardinality}")
         registry = data["catalogues"]
         if isinstance(registry, list):
             registry = {catalog: None for catalog in registry}
@@ -373,7 +377,8 @@ def render(data):
                 "code, tenant_id, version, name, relation, description, is_active, modified_by, "
                 "change_reason_code, change_commentary", catalogues, "catalogue")
         + write("Value Sets", "ores_reporting_ore_parameter_value_sets_tbl",
-                "code, tenant_id, version, name, description, source_kind, catalogue_code, "
+                "code, tenant_id, version, name, description, source_kind, cardinality, "
+                "catalogue_code, "
                 "minimum, maximum, pattern, is_ordered, modified_by, change_reason_code, "
                 "change_commentary", sets, "set")
         + write("Value Set Values", "ores_reporting_ore_parameter_value_set_values_tbl",
@@ -413,6 +418,12 @@ def main():
     for name, scopes in curve_value_sets.catalogue_scopes().items():
         print(f"{name} is matched in {len(scopes)} sections: {', '.join(scopes)}.",
               file=sys.stderr)
+    conflicted = curve_value_sets.data()["conflicted"]
+    if conflicted:
+        print(f"{len(conflicted)} setting has no link, because two drawn leaves of "
+              "its name take different sets:", file=sys.stderr)
+        for key, codes in sorted(conflicted.items()):
+            print(f"  {key}: {', '.join(codes)}", file=sys.stderr)
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1

@@ -11,7 +11,7 @@
 #+entity_plural: ore_parameter_value_sets
 #+entity_title: Ore Parameter Value Set
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-31
 
 A parameter states its storage type in the value domain and its allowed values
 here. A set is enumerated, in which case its values are rows of
@@ -19,6 +19,14 @@ here. A set is enumerated, in which case its values are rows of
 are the current rows of another ORE Studio catalogue named by
 =ore_parameter_value_set_catalogue=. A range and a regular expression carry
 their rules on the set itself. A boolean is the built-in pair true and false.
+
+The kind states what one value may be. The cardinality states how many values
+the document writes: one, or a comma separated list of them. They are separate
+facts because a period and a list of periods obey the same rule and differ only
+in how many the element holds, and ORE writes both into a single string. Keeping
+them apart is what lets a screen draw one control instead of one control per
+combination, and what lets the guard check every item of a list rather than wave
+the whole string through.
 
 The set is shared by every parameter that names it, so one list of values serves
 every product type and every pair that takes the setting.
@@ -75,6 +83,23 @@ flag from it.
 
 #+begin_src cpp :name generator
 std::string("enumerated")
+#+end_src
+
+** cardinality
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+How many values the document writes for a parameter that names this set: =one=,
+the default, or =many=, which is a comma separated list of values each obeying
+the set's kind. ORE writes a list into a single element, so the kind alone cannot
+say how many items to expect, and a guard that reads one without the other either
+refuses a good list or admits a list where the engine reads one value.
+
+#+begin_src cpp :name generator
+std::string("one")
 #+end_src
 
 ** catalogue_code
@@ -183,4 +208,5 @@ false
 | code         | Code        |
 | name         | Name        |
 | source_kind  | Source      |
+| cardinality  | Cardinality |
 | catalogue_code | Catalogue |

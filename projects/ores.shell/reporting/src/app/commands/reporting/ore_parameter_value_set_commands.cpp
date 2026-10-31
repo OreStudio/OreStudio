@@ -144,24 +144,24 @@ void ore_parameter_value_set_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> "
-        "<pattern> <is_ordered> <reason> <commentary>");
+        "add <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum> "
+        "<maximum> <pattern> <is_ordered> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> "
-        "<pattern> <is_ordered> <reason> <commentary> [--version <n>]");
+        "set <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum> "
+        "<maximum> <pattern> <is_ordered> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <name> <description> <source_kind> <catalogue_code> <minimum> "
-        "<maximum> <pattern> <is_ordered> <reason> <commentary>");
+        "put-many --count <n> <code> <name> <description> <source_kind> <cardinality> "
+        "<catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void ore_parameter_value_set_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +369,8 @@ void ore_parameter_value_set_commands::process_add(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         ore_parameter_value_set_read_token(
             req.change.write.source_kind, parsed->positionals[next++], "source_kind");
+        ore_parameter_value_set_read_token(
+            req.change.write.cardinality, parsed->positionals[next++], "cardinality");
         ore_parameter_value_set_read_token(
             req.change.write.catalogue_code, parsed->positionals[next++], "catalogue_code");
         ore_parameter_value_set_read_token(
@@ -421,8 +423,8 @@ void ore_parameter_value_set_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -434,6 +436,8 @@ void ore_parameter_value_set_commands::process_set(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         ore_parameter_value_set_read_token(
             req.change.write.source_kind, parsed->positionals[next++], "source_kind");
+        ore_parameter_value_set_read_token(
+            req.change.write.cardinality, parsed->positionals[next++], "cardinality");
         ore_parameter_value_set_read_token(
             req.change.write.catalogue_code, parsed->positionals[next++], "catalogue_code");
         ore_parameter_value_set_read_token(
@@ -498,8 +502,8 @@ void ore_parameter_value_set_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -513,6 +517,8 @@ void ore_parameter_value_set_commands::process_put_many(std::ostream& out,
                 change.write.description, parsed->positionals[next++], "description");
             ore_parameter_value_set_read_token(
                 change.write.source_kind, parsed->positionals[next++], "source_kind");
+            ore_parameter_value_set_read_token(
+                change.write.cardinality, parsed->positionals[next++], "cardinality");
             ore_parameter_value_set_read_token(
                 change.write.catalogue_code, parsed->positionals[next++], "catalogue_code");
             ore_parameter_value_set_read_token(

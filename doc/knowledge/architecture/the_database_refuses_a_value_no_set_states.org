@@ -14,7 +14,9 @@
 A value that no set states is refused by a trigger on the table that stores it,
 not by the service that writes it. Four trigger functions cover the four ways a
 value reaches a row, and all of them delegate the verdict to one function,
-=ores_reporting_value_in_set_fn=. A fifth function,
+=ores_reporting_value_in_set_fn=. That function asks
+=ores_reporting_value_in_set_item_fn= what one value may be, and splits a comma
+separated list first when the set states =cardinality = many=. A fifth function,
 =ores_reporting_setting_value_verdict_fn=, answers the same question in a form a
 caller can read: whether the setting names a set at all, which set, and whether
 the value is in it. The engine settings sign-off path asks that one before a
@@ -86,11 +88,11 @@ and draws it, rather than carrying a copy of the rule.
 All are stated here rather than left for a reader to discover.
 
 - A leaf the element map states =text= for is admitted, because text is a rule
-  that admits every value. For 232 of the 480 leaves that is a decision the ORE
-  parser justifies. For 28 it is not: the extractor does not read the form those
-  leaves are read in, so no parser states a rule for them. The count is a
-  ratchet in =generate_ore_element_map.py= (=UNREAD_ALLOWED=), so it can fall but
-  not grow unnoticed.
+  that admits every value. For 227 of the 480 leaves that is a decision the ORE
+  parser justifies. For 7 it is not: the extractor does not read the form those
+  leaves are read in, so no parser states a rule for them. The count is a ratchet
+  in =generate_ore_element_map.py= (=UNREAD_ALLOWED=), so it can fall but not grow
+  unnoticed.
 - A parameter with no set is admitted by the product parameter guard: it returns
   the row when the link is not found
   (=…reporting_ore_parameter_value_validate_fn_create.sql:231=). The engine

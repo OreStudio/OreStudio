@@ -210,6 +210,13 @@ def set_of(term, parsers, element=None):
                      f"which states no list, and its kind {kind} names no set")
 
 
+def set_of_leaf(term, element):
+    """The set code of one convention term, resolved by the term itself."""
+    with open(TERMS) as f:
+        parsers = json.load(f)["parsers"]
+    return set_of(term, parsers, element)[0]
+
+
 def data():
     """The catalogues, the sets and the links the convention terms add.
 

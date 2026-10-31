@@ -1,30 +1,33 @@
 the element map, by what each leaf's row states
   leaves                                     480
-  a rule governs the value                   220
-  text, and the ORE source says why          232
-  text, because no ORE source read names it    28
+  a rule governs the value                   253
+  text, and the ORE source says why          220
+  text, because no ORE source read names it     7
 
 a rule, by set
   flag                                          38
   convention.integer                            28
   convention.business_day_convention            24
+  curve.flag                                    21
   convention.period                             17
   curve.day_counter                             16
-  curve.flag                                    16
+  curve.list                                    16
   convention.day_counter                        14
   convention.frequency                          13
   curve.currency                                 9
+  curve.integer                                  7
+  curve.number                                   7
   curve.business_day_convention                  6
-  curve.number                                   5
+  curve.number_list                              5
   convention.currency                            4
   number                                         4
-  curve.integer                                  3
   convention.atm_type                            2
   convention.compounding                         2
   convention.date_generation_rule                2
   convention.delta_type                          2
   convention.sub_periods_coupon_type             2
   convention.weekday                             2
+  curve.period                                   2
   convention.averaging_data_period               1
   convention.bond_price_type                     1
   convention.inflation_swap_publication_roll     1
@@ -32,13 +35,11 @@ a rule, by set
   convention.option_type                         1
   curve.frequency                                1
   curve.fx_volatility_time_interpolation         1
-  curve.period                                   1
   curve.yield_curve_extrapolation_method         1
   curve.yield_curve_interpolation_method         1
   curve.yield_curve_interpolation_variable       1
 
 text the ORE source justifies, by element
-  AdjustForLosses                                1
   AdvanceCalendar                                1
   BMAIndex                                       1
   BMAPaymentCalendar                             1
@@ -103,14 +104,12 @@ text the ORE source justifies, by element
   LongPayTenor                                   1
   NominalTermStructure                           1
   Nth                                            2
-  ONCapSettlementDays                            1
   OffPeakIndex                                   1
   OffsetDays                                     1
   OptionCalendarDaysBefore                       1
   OptionExpiryDay                                1
   OptionExpiryLastWeekdayOfMonth                 1
   OptionExpiryOffset                             1
-  OptionExpiryRollDays                           1
   OptionExpiryWeeklyDayOfTheWeek                 1
   OptionMinBusinessDaysBefore                    1
   OptionUnderlyingFutureConvention               1
@@ -121,7 +120,6 @@ text the ORE source justifies, by element
   PaymentLag                                     1
   PeakCalendar                                   1
   PeakIndex                                      1
-  PreferOutOfTheMoney                            3
   PriceCurveId                                   1
   PriceQuote                                     1
   PricingCalendar                                1
@@ -130,7 +128,6 @@ text the ORE source justifies, by element
   QuoteSuffix                                    1
   QuoteTag                                       1
   QuoteType                                      2
-  RateComputationPeriod                          1
   RateCutoff                                     2
   ReceiveIndex                                   1
   RecoveryRateQuote                              1
@@ -140,7 +137,6 @@ text the ORE source justifies, by element
   Rule                                           1
   SavingsTime                                    1
   SettlementCalendar                             2
-  SettlementDays                                 2
   ShapeQuoteName                                 1
   ShortIndex                                     2
   ShortPayTenor                                  1
@@ -157,7 +153,6 @@ text the ORE source justifies, by element
   SpreadQuote                                    1
   StartDate                                      1
   StrikeExtrapolation                            1
-  StrikeFactor                                   2
   StrikeInterpolation                            1
   StrikeType                                     1
   SwapIndexBase                                  1
@@ -167,7 +162,6 @@ text the ORE source justifies, by element
   TimeInterpolation                              1
   TimeWeighting                                  1
   Tolerance                                      1
-  TreatAsEuropean                                1
   Type                                           3
   UpfrontSettlementDays                          1
   UseOnlyPutCall                                 1
@@ -178,33 +172,12 @@ text the ORE source justifies, by element
   YieldTermStructure                             1
 
 text nothing was decided for, with the rule a sibling takes
-  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/AtmTenors -
   curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/BondTenors -
-  curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/CapStrikes -
-  curveconfig.xsd|/CurveConfiguration/FXVolatilities/FXVolatility/Deltas     -
-  curveconfig.xsd|/CurveConfiguration/BaseCorrelations/BaseCorrelation/DetachmentPoints -
-  curveconfig.xsd|/CurveConfiguration/CDSVolatilities/CDSVolatility/Expiries -
-  curveconfig.xsd|/CurveConfiguration/EquityVolatilities/EquityVolatility/Expiries -
-  curveconfig.xsd|/CurveConfiguration/FXVolatilities/FXVolatility/Expiries   -
-  curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/FloorStrikes -
   curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/IndexInterpolated -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/ModelShift curve.number
-  curveconfig.xsd|/CurveConfiguration/Correlations/Correlation/OptionTenors  -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/OptionTenors -
-  curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/OptionTenors -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/OutputShift curve.number
   curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/Qualifier -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileOptionTenors -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSpreads -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSwapTenors -
-  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Strikes -
-  curveconfig.xsd|/CurveConfiguration/EquityVolatilities/EquityVolatility/Strikes -
-  curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Strikes -
   curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SwapTenors -
-  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Tenors -
-  curveconfig.xsd|/CurveConfiguration/InflationCapFloorVolatilities/InflationCapFloorVolatility/Tenors -
-  curveconfig.xsd|/CurveConfiguration/BaseCorrelations/BaseCorrelation/Terms -
   curveconfig.xsd|/CurveConfiguration/DefaultCurves/DefaultCurve/Type        -
   curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/UseEffeciveVolatility -
 
-2 of the 28 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.
+0 of the 7 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.

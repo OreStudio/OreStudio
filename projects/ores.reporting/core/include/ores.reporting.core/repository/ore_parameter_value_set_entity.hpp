@@ -55,6 +55,7 @@ struct ore_parameter_value_set_entity {
     std::string name;
     std::string description;
     std::string source_kind;
+    std::string cardinality;
     std::optional<std::string> catalogue_code;
     std::optional<double> minimum;
     std::optional<double> maximum;
@@ -78,6 +79,7 @@ struct ore_parameter_value_set_entity {
                query_builder::bind("version", &e::version) | query_builder::bind("name", &e::name) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("source_kind", &e::source_kind) |
+               query_builder::bind("cardinality", &e::cardinality) |
                query_builder::bind("catalogue_code", &e::catalogue_code) |
                query_builder::bind("minimum", &e::minimum) |
                query_builder::bind("maximum", &e::maximum) |

@@ -68,8 +68,10 @@ FUNCTION = re.compile(
 INLINE = re.compile(r"^\s*(?:virtual\s+)?void\s+fromXML\(\s*XMLNode\*\s*(\w+)\s*\)", re.M)
 CHECK = re.compile(r'XMLUtils::checkNode\(\s*(\w+)\s*,\s*"(\w+)"\s*\)')
 READ = re.compile(
-    r"XMLUtils::(getChildValue(?:AsBool|AsInt|AsDouble)?"
-    r"|getChildrenValues(?:AsDoubles)?)\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*"
+    r"XMLUtils::(getChildValue(?:AsBool|AsInt|AsDouble|AsPeriod)?"
+    r"|getChildrenValues(?:AsDoubles|AsStrings|AsPeriods"
+    r"|AsDoublesCompact|AsPeriodsCompact)?)"
+    r"\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*"
     r"(?:,\s*(true|false))?(?:\s*,\s*([^;]*?))?\s*\)")
 CHILD = re.compile(
     r"(?:auto|XMLNode\*)\s+(\w+)\s*=\s*XMLUtils::getChildNode\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*\)")
@@ -107,8 +109,13 @@ TYPED = {
     "getChildValueAsBool": "boolean",
     "getChildValueAsInt": "integer",
     "getChildValueAsDouble": "double",
+    "getChildValueAsPeriod": "period",
     "getChildrenValues": "text",
     "getChildrenValuesAsDoubles": "double",
+    "getChildrenValuesAsDoublesCompact": "number_list",
+    "getChildrenValuesAsPeriods": "period_list",
+    "getChildrenValuesAsPeriodsCompact": "period_list",
+    "getChildrenValuesAsStrings": "list",
     "getChildValue": "text",
 }
 
@@ -182,6 +189,37 @@ def parser_behind(chunk, offset, member_parsers):
     return member, parser
 
 
+# The item a `parseListOfValues<T>` template reads, so a list of reals and a list
+# of periods are told apart by the code rather than by the leaf's name.
+ITEM_OF = {
+    "Real": "number_list", "double": "number_list", "Time": "number_list",
+    "Period": "period_list",
+}
+LISTED = re.compile(r"parseListOfValues\s*(?:<\s*([\w:]+)\s*>)?\s*\(")
+WRAPPED = re.compile(r"(parse[A-Z]\w*)\s*\(")
+
+
+def node_value_type(chunk, offset):
+    """The type the code gives a node's value, from the call that wraps the read.
+
+    A leaf read with `getNodeValue` is typed by what encloses the read, not by the
+    read: `parseListOfValues<Real>(getNodeValue(node))` is a list of numbers and
+    `parseBool(getNodeValue(node))` is a flag. The window stops at the previous
+    statement boundary so a parser earlier in the body is not mistaken for this
+    one's.
+    """
+    start = max(chunk.rfind(";", 0, offset), chunk.rfind("{", 0, offset),
+                chunk.rfind("}", 0, offset)) + 1
+    window = chunk[start:offset]
+    listed = LISTED.search(window)
+    if listed:
+        return ITEM_OF.get(listed.group(1) or "", "list")
+    wrapped = WRAPPED.search(window)
+    if wrapped:
+        return TYPE_OF.get(wrapped.group(1), "text")
+    return "text"
+
+
 def parse_function(path, text, chunk, start, node, element, member_parsers=None):
     """The leaves and blocks one `fromXML` body reads from its own node."""
     reads, nested = [], []
@@ -201,7 +239,8 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
         reads.append(leaf(name, kind, mandatory == "true", literal(rest),
                           m.start(), member, parser))
 
-    valued = {m.group(1) for m in NODEVALUE.finditer(chunk)}
+    node_reads = [(m.start(), m.group(1)) for m in NODEVALUE.finditer(chunk)]
+    valued = {var for _, var in node_reads}
     # A parser may build the class it needs on the spot (`Parameter p;`) rather
     # than hold it as a member, so the declaration says what parses the node.
     locals_of = {m.group(2): m.group(1) for m in LOCAL.finditer(chunk)
@@ -209,6 +248,25 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
     calls = {m.group(2): m.group(1) for m in CALL.finditer(chunk)}
     types = {var: locals_of.get(member) for var, member in calls.items()}
     children = list(CHILD.finditer(chunk))
+
+    def value_type_of(m, var):
+        """The type of the node value this read takes.
+
+        The parser reuses one variable for every child, so a read is matched to
+        the child that precedes it rather than to the variable's name, bounded by
+        the next read into the same variable. Without the bound the first child's
+        parser would type every later child, and a report grid's list of strikes
+        would be recorded as the flag beside it.
+        """
+        bound = len(chunk)
+        for other in children:
+            if other.start() > m.start() and other.group(1) == var:
+                bound = other.start()
+                break
+        for start, other in node_reads:
+            if other == var and m.start() < start < bound:
+                return node_value_type(chunk, start)
+        return "text"
 
     def parser_of(m, var):
         """The member that parses the node this read takes, and its type.
@@ -242,7 +300,7 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
         if parent != node:
             continue
         if var in valued:
-            reads.append(leaf(name, "text", False, None, m.start()))
+            reads.append(leaf(name, value_type_of(m, var), False, None, m.start()))
             used.add(m.start())
             continue
         member, kind = parser_of(m, var)

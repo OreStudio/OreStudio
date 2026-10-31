@@ -41,6 +41,7 @@ render_ore_parameter_value_set_fields(const domain::ore_parameter_value_set& v) 
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Source Kind", .value = v.source_kind});
+    fields.push_back({.name = "Cardinality", .value = v.cardinality});
     fields.push_back({.name = "Catalogue Code", .value = v.catalogue_code});
     fields.push_back(
         {.name = "Minimum", .value = v.minimum ? std::to_string(*v.minimum) : std::string{}});

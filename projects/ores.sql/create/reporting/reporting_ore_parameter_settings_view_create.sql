@@ -23,8 +23,9 @@
  *
  * One row per (scope, name), whatever product type holds it, because the allowed
  * values belong to the setting and not to one product's copy of it. A reader
- * sees the type, the set, the catalogue it draws on and, for an enumerated set,
- * its choices in order. The check that no parameter lacks a set reads this view.
+ * sees the type, the set, how many values the document writes, the catalogue it
+ * draws on and, for an enumerated set, its choices in order. The check that no
+ * parameter lacks a set reads this view.
  */
 
 create or replace view ores_reporting_ore_parameter_settings_v as
@@ -33,6 +34,7 @@ select p.scope,
        p.ore_parameter_value_domain_code as domain,
        l.value_set_code,
        s.source_kind,
+       s.cardinality,
        s.catalogue_code,
        s.minimum,
        s.maximum,

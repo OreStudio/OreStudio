@@ -1279,6 +1279,8 @@ construct_rate_batch(const domain::rate_terms& drawn,
             using fact_type = std::decay_t<decltype(fact)>;
             if constexpr (std::is_same_v<fact_type, tdom::vanilla_swap_instrument>)
                 batch.vanilla_swap_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::inflation_swap_instrument>)
+                batch.inflation_swap_instruments.push_back(fact);
             else if constexpr (std::is_same_v<fact_type, tdom::fra_instrument>)
                 batch.fra_instruments.push_back(fact);
             else if constexpr (std::is_same_v<fact_type, tdom::cap_floor_instrument>)

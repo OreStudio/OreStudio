@@ -49,6 +49,40 @@
 #include "ores.reporting.core/messaging/engine_settings_group_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_group_setting_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_registrar.hpp"
+#include "ores.reporting.core/messaging/analytic_type_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/concurrency_policy_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_analytic_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_analytic_parameter_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_market_binding_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_parameter_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/configuration_type_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_family_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_gap_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_kind_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_resolution_rule_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_building_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_change_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_execution_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_fixings_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_group_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_group_setting_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/file_type_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_setting_value_set_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_domain_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_catalogue_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_value_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_configuration_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_definition_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_error_scope_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_instance_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_instance_kind_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_trigger_type_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_setting_value_set_registrar.hpp"
@@ -76,6 +110,8 @@
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.core/messaging/run_result_registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <iterator>
@@ -88,6 +124,14 @@ namespace ores::reporting::messaging {
 
 namespace {
 constexpr std::string_view queue_group = "ores.reporting.service";
+
+// Function-local static: must outlive the history.v1.get subscription
+// (see ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
 }
 
 std::vector<ores::nats::service::subscription>
@@ -730,6 +774,55 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(std::move(sub));
     for (auto& sub : register_run_result_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject, dispatched on the entity type the
+    // caller names. The registrar resolves each request into a scoped
+    // context exactly like every other subject (make_request_context), so
+    // a provider sees the same tenant, party and roles visibility, and the
+    // permission the provider was registered with is checked before it runs.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+
+        register_analytic_type_history_provider(hist_registry);
+        register_concurrency_policy_history_provider(hist_registry);
+        register_configuration_analytic_history_provider(hist_registry);
+        register_configuration_analytic_parameter_history_provider(hist_registry);
+        register_configuration_history_provider(hist_registry);
+        register_configuration_market_binding_history_provider(hist_registry);
+        register_configuration_parameter_history_provider(hist_registry);
+        register_configuration_type_history_provider(hist_registry);
+        register_cut_family_history_provider(hist_registry);
+        register_cut_gap_history_provider(hist_registry);
+        register_cut_history_provider(hist_registry);
+        register_cut_kind_history_provider(hist_registry);
+        register_cut_resolution_rule_history_provider(hist_registry);
+        register_engine_settings_building_history_provider(hist_registry);
+        register_engine_settings_change_history_provider(hist_registry);
+        register_engine_settings_execution_history_provider(hist_registry);
+        register_engine_settings_fixings_history_provider(hist_registry);
+        register_engine_settings_group_history_provider(hist_registry);
+        register_engine_settings_group_setting_history_provider(hist_registry);
+        register_engine_settings_history_provider(hist_registry);
+        register_file_type_history_provider(hist_registry);
+        register_ore_parameter_history_provider(hist_registry);
+        register_ore_parameter_setting_value_set_history_provider(hist_registry);
+        register_ore_parameter_value_domain_history_provider(hist_registry);
+        register_ore_parameter_value_set_catalogue_history_provider(hist_registry);
+        register_ore_parameter_value_set_history_provider(hist_registry);
+        register_ore_parameter_value_set_value_history_provider(hist_registry);
+        register_report_configuration_history_provider(hist_registry);
+        register_report_definition_history_provider(hist_registry);
+        register_report_error_scope_history_provider(hist_registry);
+        register_report_instance_history_provider(hist_registry);
+        register_report_instance_kind_history_provider(hist_registry);
+        register_report_trigger_type_history_provider(hist_registry);
+        register_report_type_history_provider(hist_registry);
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "reporting", group, ctx, verifier));
+    }
 
     return subs;
 }

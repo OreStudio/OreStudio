@@ -63,7 +63,10 @@ import { Button, Dialog, Notice } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
 import {
     Absent,
+    CutAuthorisationLabel,
+    CutFamilyLabel,
     CutStateTag,
+    CutValuesLabel,
     IndicativeTag,
     StateBasis,
     frequencyOf,
@@ -142,7 +145,7 @@ function CutTypeBody({
                 title={kind.kind.name}
                 recordKey={kind.kind.code}
                 version={kind.kind.version}
-                detail={kind.kind.familyName}
+                detail={t(`cuts.family.${kind.kind.familyCode}`)}
                 access={mayWrite}
                 {...(mayWrite ? { onEdit: () => setEditing(true) } : {})}
                 {...(mayDelete ? { onDelete: () => setRemoving(true) } : {})}
@@ -236,7 +239,10 @@ function DetailsTab({
                     )}
                 </div>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <Rule label={t('cuts.columns.family')} value={kind.familyName} />
+                    <Rule
+                        label={t('cuts.columns.family')}
+                        value={<CutFamilyLabel code={kind.familyCode} />}
+                    />
                     <Rule
                         label={t('cuts.types.repeats')}
                         value={t(`cuts.frequency.${frequency}`)}
@@ -257,15 +263,13 @@ function DetailsTab({
                                         )}
                                 </span>
                             ) : (
-                                t('cuts.types.unsigned')
+                                <CutAuthorisationLabel />
                             )
                         }
                     />
                     <Rule
                         label={t('cuts.columns.indicative')}
-                        value={
-                            kind.outputIsIndicative ? <IndicativeTag /> : t('cuts.types.official')
-                        }
+                        value={<CutValuesLabel indicative={kind.outputIsIndicative} />}
                     />
                     <Rule
                         label={t('cuts.types.resolutionRule')}
@@ -277,7 +281,7 @@ function DetailsTab({
                         value={t('cuts.types.months', { count: String(kind.retentionMonths) })}
                     />
                     <Rule
-                        label={t('cuts.types.destination')}
+                        label={t('cuts.types.destinationName')}
                         value={kind.retentionDestinationCode}
                         mono
                     />

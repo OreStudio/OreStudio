@@ -6874,7 +6874,20 @@ const fr: SourceCatalogue = {
         labelKindGone:
             'Le magasin ne détient pas le type {code} sous lequel cette coupure a été prise, elle n’a donc pas de libellé. Les faits que la coupure a copiés de son type sont ceux ci-dessous.',
         labelMissing: 'Le type de cette coupure n’est pas dans le magasin',
-        indicative: 'Indicatif',
+        family: {
+            end_of_day: 'Fin de journée',
+            start_of_day: 'Début de journée',
+            verification: 'Vérification',
+            intraday: 'Intrajournalier',
+            consumer: 'Consommateur',
+        },
+        values: {
+            official: 'Officiel',
+            indicative: 'Indicatif',
+        },
+        authorisation: {
+            unsigned: 'Aucune signature',
+        },
         cutCount: '{count} coupures',
         group: {
             year: 'Année {year}',
@@ -6944,10 +6957,9 @@ const fr: SourceCatalogue = {
                 'Un type se lit ici. En créer un n’est pas encore offert : sa destination de conservation est un palier que le magasin connaît par une contrainte, et aucune liste ne nomme les paliers.',
             partialCounts:
                 'Les décomptes portent sur les coupures les plus récentes que la liste a pu lire, un type peut donc en détenir davantage.',
-            unsigned: 'Aucune signature',
-            official: 'Officiel',
             months: '{count} mois',
             destination: 'vers {destination}',
+            destinationName: 'Destination',
             rules: 'Ses règles',
             repeats: 'Fréquence',
             resolutionRule: 'Règle de résolution',

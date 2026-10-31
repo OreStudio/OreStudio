@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 1011BE35-F85F-4505-9385-75A0BB36B4A2
+:END:
+#+title: Task: Give the cut families and values system labels, and fix the history
+#+description: The cut types screen shows raw family names and ad-hoc value words, and the History tab fails because the cut entities' history providers are not registered.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: fix/cut-labels-and-history
+#+pr: 4282
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The family and the values render from the DQ's system labels, and the cut entities' history answers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The cut family and the values carry DQ labels and render from them on the types and cuts screens.
+- The cut entities' history providers are registered and /api/history answers for them.
+- The live screens and the history tab work for a normal role.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4282][#4282]] | [reporting] Compose the history providers and label the cuts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both defects are fixed and verified live.
+
+- History: the reporting component composed none of its history providers, so
+  the History tab answered "Cannot reach the message bus" for every reporting
+  entity, the cuts and the report definitions alike. The core registrar now
+  builds the dispatch registry, registers all 34 generated providers and the
+  generic history subject; ores.reporting joins the composition gate, which
+  passes. Live: /api/history answers version 1 for ores.reporting.cut_kind EOD
+  and for a report definition by its key.
+- Labels: the families and values are DQ system labels. Three code domains
+  (cut_family, cut_values, cut_authorisation), eight badge definitions and eight
+  mappings in the system and artefact seeds, published to the Acme tenant; the
+  screens paint the Family and Values columns and the authorisation word through
+  the shared label catalogue (the interface translates by the same code; the
+  catalogue owns the paint and the tooltip). The live patch was additive.
+- Checks: the web build; BFF 88 files/1188 tests; web 191 files/2385 tests; the
+  composition gate; compass lint.
+- Not verified: the cut provider (no cut exists), fr/pt in a browser, the
+  pre-existing schema fingerprint drift.
+- Housekeeping found: build/cj.txt is committed and holds a live curl session
+  cookie; it should be removed and the session revoked.

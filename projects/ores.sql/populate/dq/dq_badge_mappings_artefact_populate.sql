@@ -216,4 +216,12 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'bootstrap_curve_role', 'SWAP', 'bootstrap_curve_role_swap', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 'published', 'curve_publish_state_published', 0),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 'withdrawn', 'curve_publish_state_withdrawn', 0),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 'superseded', 'curve_publish_state_superseded', 0);
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 'superseded', 'curve_publish_state_superseded', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 'end_of_day', 'cut_family_end_of_day', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 'start_of_day', 'cut_family_start_of_day', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 'verification', 'cut_family_verification', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 'intraday', 'cut_family_intraday', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_family', 'consumer', 'cut_family_consumer', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_values', 'official', 'cut_values_official', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_values', 'indicative', 'cut_values_indicative', 0),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'cut_authorisation', 'unsigned', 'cut_authorisation_unsigned', 0);

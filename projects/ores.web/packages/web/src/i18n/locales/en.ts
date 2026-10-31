@@ -6774,7 +6774,20 @@ export const en: SourceCatalogue = {
         labelKindGone:
             'The store does not hold the kind {code} this cut was taken under, so it has no label. The facts the cut copied from its kind are the ones below.',
         labelMissing: 'The kind of this cut is not in the store',
-        indicative: 'Indicative',
+        family: {
+            end_of_day: 'End of day',
+            start_of_day: 'Start of day',
+            verification: 'Verification',
+            intraday: 'Intraday',
+            consumer: 'Consumer',
+        },
+        values: {
+            official: 'Official',
+            indicative: 'Indicative',
+        },
+        authorisation: {
+            unsigned: 'No signature',
+        },
         cutCount: '{count} cuts',
         group: {
             year: 'Year {year}',
@@ -6843,10 +6856,9 @@ export const en: SourceCatalogue = {
                 'A type is read here. Creating a new one is not offered yet: its retention destination is a tier the store knows by a check, and no lookup states the tiers.',
             partialCounts:
                 'The cut counts are of the newest cuts the list could read, so a type may hold more than it says.',
-            unsigned: 'No signature',
-            official: 'Official',
             months: '{count} months',
             destination: 'to {destination}',
+            destinationName: 'Destination',
             rules: 'Its rules',
             repeats: 'Repeats',
             resolutionRule: 'Resolution rule',

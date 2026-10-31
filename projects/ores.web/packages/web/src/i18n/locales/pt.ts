@@ -6821,7 +6821,20 @@ const pt: SourceCatalogue = {
         labelKindGone:
             'O armazém não detém o tipo {code} sob o qual este corte foi tomado, por isso não tem rótulo. Os factos que o corte copiou do seu tipo são os de baixo.',
         labelMissing: 'O tipo deste corte não está no armazém',
-        indicative: 'Indicativo',
+        family: {
+            end_of_day: 'Fim do dia',
+            start_of_day: 'Início do dia',
+            verification: 'Verificação',
+            intraday: 'Intradiário',
+            consumer: 'Consumidor',
+        },
+        values: {
+            official: 'Oficial',
+            indicative: 'Indicativo',
+        },
+        authorisation: {
+            unsigned: 'Sem assinatura',
+        },
         cutCount: '{count} cortes',
         group: {
             year: 'Ano {year}',
@@ -6890,10 +6903,9 @@ const pt: SourceCatalogue = {
                 'Um tipo lê-se aqui. Criar um novo ainda não é oferecido: o seu destino de retenção é um nível que o armazém conhece por uma restrição, e nenhuma lista nomeia os níveis.',
             partialCounts:
                 'As contagens são dos cortes mais recentes que a lista conseguiu ler, pelo que um tipo pode deter mais do que indica.',
-            unsigned: 'Sem assinatura',
-            official: 'Oficial',
             months: '{count} meses',
             destination: 'para {destination}',
+            destinationName: 'Destino',
             rules: 'As suas regras',
             repeats: 'Frequência',
             resolutionRule: 'Regra de resolução',

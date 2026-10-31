@@ -268,6 +268,61 @@ function render(path: string, seed: (client: QueryClient) => void): string {
     );
 }
 
+/** The name and paint of one label, as the catalogue answers it. */
+function badge(
+    code: string,
+    label: string,
+    backgroundColour: string,
+): {
+    code: string;
+    label: string;
+    description: string;
+    backgroundColour: string;
+    textColour: string;
+    severity: string;
+} {
+    return {
+        code,
+        label,
+        description: `What ${label} means.`,
+        backgroundColour,
+        textColour: '#ffffff',
+        severity: 'info',
+    };
+}
+
+/**
+ * The DQ label catalogue, as the deployment holds it for the cut domains.
+ *
+ * The screen holds a kind's family code and a boolean, never the badge: the
+ * domain, the badge and the mapping from the code are all the catalogue's, and
+ * this is the shape the BFF answers with.
+ */
+const LABELS = {
+    labels: [
+        badge('cut_family_end_of_day', 'End of day', '#2563eb'),
+        badge('cut_family_intraday', 'Intraday', '#f59e0b'),
+        badge('cut_values_official', 'Official', '#475569'),
+        badge('cut_values_indicative', 'Indicative', '#eab308'),
+        badge('cut_authorisation_unsigned', 'No signature', '#6b7280'),
+    ],
+    domains: {
+        cut_family: ['cut_family_end_of_day', 'cut_family_intraday'],
+        cut_values: ['cut_values_official', 'cut_values_indicative'],
+        cut_authorisation: ['cut_authorisation_unsigned'],
+    },
+    mapped: {
+        cut_family: { end_of_day: 'cut_family_end_of_day', intraday: 'cut_family_intraday' },
+        cut_values: { official: 'cut_values_official', indicative: 'cut_values_indicative' },
+        cut_authorisation: { unsigned: 'cut_authorisation_unsigned' },
+    },
+};
+
+/** Seeds the label catalogue the screens paint their coded values from. */
+function seedLabels(client: QueryClient): void {
+    client.setQueryData(['labels'], LABELS);
+}
+
 /** Seeds the first page of the type list, as the shared list reads it. */
 function seedTypes(client: QueryClient, rows: readonly CutKindRow[]): void {
     client.setQueryData(['cuts', 'types'], { rows, total: rows.length, partial: false });
@@ -297,6 +352,52 @@ describe('the cut types list', () => {
         expect(page).toContain('25 months');
         expect(page).toContain('to cold');
         expect(page).toContain('Indicative');
+    });
+
+    it('paints the family and the values from the DQ label catalogue', () => {
+        const html = render('/refdata/cut-types', (client) => {
+            seedTypes(client, [KIND, FLASH]);
+            seedLabels(client);
+            client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
+        });
+        // The family the row's own code names, in the colour the catalogue holds
+        // for that code, and the two families the two rows belong to.
+        expect(html).toContain('#2563eb');
+        expect(html).toContain('#f59e0b');
+        // The values column reads the same catalogue: official for the end of
+        // day kind, indicative for the intraday one.
+        expect(html).toContain('#475569');
+        expect(html).toContain('#eab308');
+    });
+
+    it('names a family the interface has no words for as the catalogue names it', () => {
+        const SCD: CutKindRow = {
+            ...KIND,
+            code: 'SCD',
+            name: 'Settlement cycle',
+            familyCode: 'settlement_cycle',
+            familyName: 'Settlement cycle',
+        };
+        const html = render('/refdata/cut-types', (client) => {
+            seedTypes(client, [SCD]);
+            client.setQueryData(['labels'], {
+                ...LABELS,
+                labels: [
+                    ...LABELS.labels,
+                    badge('cut_family_settlement_cycle', 'Settlement cycle', '#0ea5e9'),
+                ],
+                mapped: {
+                    ...LABELS.mapped,
+                    cut_family: {
+                        ...LABELS.mapped.cut_family,
+                        settlement_cycle: 'cut_family_settlement_cycle',
+                    },
+                },
+            });
+            client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
+        });
+        expect(textOf(html)).toContain('Settlement cycle');
+        expect(html).toContain('#0ea5e9');
     });
 
     it('says that a type is read here and that a new one is not offered', () => {

@@ -92,6 +92,52 @@ export interface BookTradeResponse {
 }
 
 /**
+ * @brief Takes a draft trade live: the activity that executes it, and the
+ * state that activity moves it to.
+ *
+ * The activity, the state and the authorisation request join one
+ * transaction, so an actual trade is never live without a request.
+ */
+export interface ExecuteTradeRequest {
+    /**
+     * @brief The draft to execute.
+     */
+    trade_id: string;
+    /**
+     * @brief The version the caller read. A draft that moved since is refused
+     * rather than executed on terms nobody read.
+     */
+    expected_version: number;
+    /**
+     * @brief When the deal executed; the clock when absent.
+     */
+    occurred_at: string | null;
+    /**
+     * @brief Why the draft was executed.
+     */
+    change_reason_code: string;
+    /**
+     * @brief The note that goes with the reason.
+     */
+    change_commentary: string;
+}
+
+/**
+ * @brief The outcome of executing a draft.
+ */
+export interface ExecuteTradeResponse {
+    /**
+     * @brief Outcome of the operation: conflict when the trade is not a draft or
+     * has moved since the caller read it, not found when no such trade exists.
+     */
+    result: Result;
+    /**
+     * @brief The activity that executed the trade; absent when it was refused.
+     */
+    activity_id: string | null;
+}
+
+/**
  * @brief Creates a bond issue with its legs, in one transaction.
  *
  * The issue is the security master. It is whole or absent: a refused child
@@ -281,6 +327,7 @@ export interface ExportTradesToStorageResponse {
 
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
+    execute_trade_request: 'trading.v1.ops.execute_trade',
     put_bond_issue_composite_request: 'trading.v1.ops.put_bond_issue_composite',
     export_portfolio_request: 'trading.v1.ops.export_portfolio',
     export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
@@ -292,6 +339,7 @@ export const subjects = {
  */
 export const requiresSession = {
     book_trade_request: true,
+    execute_trade_request: true,
     put_bond_issue_composite_request: true,
     export_portfolio_request: true,
     export_trades_to_storage_request: true,

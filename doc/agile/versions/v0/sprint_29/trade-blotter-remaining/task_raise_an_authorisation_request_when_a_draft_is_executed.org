@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/raise-an-authorisation-request-when-a-draft-is-executed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-24
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A trade can go live without passing through book_trade: Execute takes a draft to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built: the execution operation and the one-request rule. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-22                               |
+| Next         | The local suite is blocked by a break on main; CI is the proof. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -42,9 +42,30 @@ A trade can go live without passing through book_trade: Execute takes a draft to
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+There was no Execute path in the code base: nothing took a draft live, so the
+hole the task names was open through the generic state write instead. The state
+machine states the transitions, and it says the shape:
+
+| Activity | From | To |
+|----------+------+----|
+| =draft_capture= | none | draft |
+| =execution= | draft | live |
+
+So the unit is the operation the transition was waiting for:
+=trading.v1.ops.execute_trade=, modelled beside =book_trade= and served by the
+same hand-written service. It writes the activity and the state and raises the
+request in one transaction, which is what makes the trade live and asking in the
+same breath.
+
+The duplicate rule the operation needs is in =raise_if_awaiting=: a trade raises
+one request per moment it waits, not one per write it takes. An answered request
+does not suppress the next amendment, because only a request still waiting
+counts.
+
+The generic state write can still take a draft live without a request. That is
+the codegen's seam rather than this task's: a state write has no hand-written
+hook to raise from, and adding one to every entity's service is a change to the
+generator, not to this operation.
 
 * Measurements
 
@@ -58,7 +79,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The transition the operation takes | =execution= moves a trade from draft (=8e013d12=) to live (=3d1f894c=), and =draft_capture= starts the machine at draft | =select * from ores_trading_resolve_trade_transition_fn('execution')= | this branch |
+| The two statuses | the state the transition lands on is live, and the one it leaves is a draft | =select ores_trading_status_is_live_fn(...), ores_trading_status_is_draft_fn(...)= | this branch |
+| The service compiles | the unity object holding =trade_operations_service.cpp= builds clean | =ninja .../unity_52_cxx.cxx.o= | this branch |
+| The cases compile | the unity object holding the service's tests builds clean | =ninja .../unity_5_cxx.cxx.o= | this branch |
+| The suite | not run: =ores.synthetic= and =ores.iam= do not compile on main (see the Result) | =ninja ores.trading.core.tests= | this branch |
 
 * Notes
 
@@ -86,3 +111,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A draft is executed by an operation of its own, and the trade goes live and
+waits for Operations in one transaction.
+
+| Piece | Where |
+|-------+-------|
+| The messages | =execute_trade_request= and =execute_trade_response= in [[proj:projects/ores.trading/modeling/ores.trading.trade_operations.org][trade_operations]] |
+| The service | =trade_operations_service::execute_trade= |
+| The subject | =trading.v1.ops.execute_trade=, served by the hand-written operations handler |
+| The duplicate rule | =operational_authorisation_service::raise_if_awaiting= |
+
+The operation refuses a trade that is not a draft, one that moved since the
+caller read it, and one that is not an actual trade. A draft that stays a draft
+raises nothing, because only the execution touches the live status.
+
+* What was not proved
+
+The suite did not run. =origin/main= does not compile: =cb28cc941d= calls
+=ores::synthetic::service::routed_code_count=, which no header declares, and
+=trade_population_planner.cpp= does not build against the instrument batch it is
+handed. Both are other environments' work, so the local binary could not be
+linked and the cases below are compiled but not executed.
+
+The generic state write is still a way to take a draft live with no request. The
+fix is a hook in the generated service, which the codegen owns.
+
+* Cases written
+
+- An actual draft executed raises one request, and the summary says the trade is
+  live.
+- A draft that is not executed raises none.
+- A second raise for a trade already waiting raises none.
+- An amendment after the last request was answered raises its own.
+- An execution of a trade that moved since it was read is refused.
+- A trade that is not a draft cannot be executed.

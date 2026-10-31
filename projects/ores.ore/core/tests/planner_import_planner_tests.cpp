@@ -227,6 +227,54 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
     CHECK(plan.books.size() >= sr.portfolio_files.size());
 }
 
+// The import is run more than once by design: an operator re-runs it after a
+// failure, and a nightly job re-runs it over a directory that grew. A second run
+// that named the trades afresh would book every one of them again, so the plan is
+// the same plan twice.
+TEST_CASE("the_same_import_planned_twice_names_the_same_trades",
+          "[ore][planner][import_planner]") {
+    auto lg(make_logger(test_suite));
+
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1");
+    auto sr = make_scan_result(root / "Input");
+    sr.root = root;
+    sr.portfolio_files.clear();
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".xml")
+            continue;
+        if (entry.path().filename().string().starts_with("portfolio"))
+            sr.portfolio_files.push_back(entry.path());
+    }
+    if (sr.portfolio_files.empty()) {
+        SUCCEED("No portfolio files in Example_1 — skipping");
+        return;
+    }
+
+    auto choices = default_choices(root);
+    choices.create_parent_portfolio = true;
+    choices.parent_portfolio_name = "Example1";
+
+    const auto first = ore_import_planner(sr, {}, choices).plan();
+    const auto second = ore_import_planner(sr, {}, choices).plan();
+
+    REQUIRE(!first.trades.empty());
+    REQUIRE(first.trades.size() == second.trades.size());
+
+    std::vector<std::string> first_ids;
+    std::vector<std::string> second_ids;
+    for (const auto& trade : first.trades)
+        first_ids.push_back(boost::uuids::to_string(trade.anchor.id));
+    for (const auto& trade : second.trades)
+        second_ids.push_back(boost::uuids::to_string(trade.anchor.id));
+
+    BOOST_LOG_SEV(lg, info) << "Planned " << first_ids.size() << " trades twice";
+    CHECK(first_ids == second_ids);
+    // Distinct within one plan, or the second trade of a file would collide
+    // with the first when it is booked.
+    const std::set<std::string> distinct(first_ids.begin(), first_ids.end());
+    CHECK(distinct.size() == first_ids.size());
+}
+
 // A portfolio directory above the books is what gives every book a parent.
 // The wrapping parent portfolio sits above that directory, so it adds one
 // portfolio to the plan and nothing else.

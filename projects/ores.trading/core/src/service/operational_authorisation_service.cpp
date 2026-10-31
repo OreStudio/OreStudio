@@ -60,6 +60,25 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
     if (live.empty() || live.front() != "true")
         return std::nullopt;
 
+    /*
+     * A trade raises one request per moment it is waiting, not one per write it
+     * takes: a booking and an execution both land here, and the second must not
+     * ask a decider the same question twice. An answered request does not count,
+     * so an amendment raises its own.
+     */
+    ores::inbox::service::approval_lifecycle decisions(ctx_);
+    for (const auto& earlier : repository::trade_authorisation_request_repository()
+                                  .read_latest_by_trade_id(ctx_, id, 0, 100)) {
+        const auto request = decisions.request(boost::uuids::to_string(earlier.request_id));
+        if (!request)
+            continue;
+        if (request->state_code == "waiting" || request->state_code == "held") {
+            BOOST_LOG_SEV(lg(), debug) << "Trade " << id << " already awaits authorisation by request "
+                                       << boost::uuids::to_string(earlier.request_id);
+            return std::nullopt;
+        }
+    }
+
     ores::inbox::service::approval_lifecycle lifecycle(ctx_);
     auto kind = lifecycle.kind(kind_code);
     if (!kind)

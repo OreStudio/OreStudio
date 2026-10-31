@@ -75,6 +75,16 @@ public:
                                               std::string_view actor_token);
 
     /**
+     * @brief Takes a draft trade live, and raises the request Operations
+     * answers, in one transaction.
+     *
+     * The activity and the state join the request, so an actual trade is never
+     * live without one. A trade that is not a draft, or that moved since the
+     * caller read it, is answered with a conflict and writes nothing.
+     */
+    messaging::execute_trade_response execute_trade(const messaging::execute_trade_request& request);
+
+    /**
      * @brief Creates a bond issue with its legs and their child rows, in one
      * transaction.
      *

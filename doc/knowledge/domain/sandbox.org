@@ -233,6 +233,22 @@ what source, and what it created (see
   Operations releases it; the authorisation queue is the controlled
   staging area for agreements. The next section explains why.
 
+An import is run more than once: an operator re-runs it after a failure, and a
+nightly job re-runs it over a directory that grew. It is planned from what the
+document set is, not from when it was read, so a second run names the same
+portfolios, the same books and the same trades. The trades it names are already
+booked, so the store refuses them and the run reports each one rather than
+booking it again.
+
+A row the import cannot book is reported against its source file and its trade
+id, with the store's own message. Nothing of that row is stored: the booking it
+had already written is closed again before the run moves on, so a row is either
+booked whole or absent.
+
+A row that does book raises the same operational authorisation request a manual
+booking does, because it takes the same write. A sandbox trade is a test and
+raises none.
+
 ** The regulatory boundary
 
 The sandbox stays outside every regulatory obligation by holding

@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_OPTION_EXERCISE_FEE_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_OPTION_EXERCISE_FEE_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -68,6 +70,22 @@ struct bond_option_exercise_fee {
     friend bool operator==(const bond_option_exercise_fee&,
                            const bond_option_exercise_fee&) = default;
 };
+/**
+ * @brief The members of bond_option_exercise_fee, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_option_exercise_fee&) {
+    return std::tuple{
+        utility::codec::field{"amount", &bond_option_exercise_fee::amount},
+        utility::codec::field{"type", &bond_option_exercise_fee::type},
+        utility::codec::field{"start_date", &bond_option_exercise_fee::start_date},
+        utility::codec::field{"currency", &bond_option_exercise_fee::currency},
+    };
+}
 
 }
 

@@ -30,9 +30,11 @@
 #include "ores.trading.api/domain/bond_option_payment_data.hpp"
 #include "ores.trading.api/domain/bond_option_premium.hpp"
 #include "ores.trading.api/domain/bond_option_settlement.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -188,6 +190,46 @@ struct bond_option_data {
      */
     friend bool operator==(const bond_option_data&, const bond_option_data&) = default;
 };
+/**
+ * @brief The members of bond_option_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_option_data&) {
+    return std::tuple{
+        utility::codec::field{"long_short", &bond_option_data::long_short},
+        utility::codec::field{"option_type", &bond_option_data::option_type},
+        utility::codec::field{"payoff_type", &bond_option_data::payoff_type},
+        utility::codec::field{"payoff_type_2", &bond_option_data::payoff_type_2},
+        utility::codec::field{"style", &bond_option_data::style},
+        utility::codec::field{"notice_period", &bond_option_data::notice_period},
+        utility::codec::field{"notice_calendar", &bond_option_data::notice_calendar},
+        utility::codec::field{"notice_convention", &bond_option_data::notice_convention},
+        utility::codec::field{"mid_coupon_exercise", &bond_option_data::mid_coupon_exercise},
+        utility::codec::field{"settlement", &bond_option_data::settlement},
+        utility::codec::field{"settlement_method", &bond_option_data::settlement_method},
+        utility::codec::field{"pay_off_at_expiry", &bond_option_data::pay_off_at_expiry},
+        utility::codec::field{"premium_amount", &bond_option_data::premium_amount},
+        utility::codec::field{"premium_currency", &bond_option_data::premium_currency},
+        utility::codec::field{"premium_pay_date", &bond_option_data::premium_pay_date},
+        utility::codec::field{"premiums", &bond_option_data::premiums},
+        utility::codec::field{"exercise_prices", &bond_option_data::exercise_prices},
+        utility::codec::field{"exercise_fees", &bond_option_data::exercise_fees},
+        utility::codec::field{"exercise_fee_settlement_period",
+                              &bond_option_data::exercise_fee_settlement_period},
+        utility::codec::field{"exercise_fee_settlement_calendar",
+                              &bond_option_data::exercise_fee_settlement_calendar},
+        utility::codec::field{"exercise_fee_settlement_convention",
+                              &bond_option_data::exercise_fee_settlement_convention},
+        utility::codec::field{"automatic_exercise", &bond_option_data::automatic_exercise},
+        utility::codec::field{"exercise_data", &bond_option_data::exercise_data},
+        utility::codec::field{"payment_data", &bond_option_data::payment_data},
+        utility::codec::field{"settlement_data", &bond_option_data::settlement_data},
+    };
+}
 
 }
 

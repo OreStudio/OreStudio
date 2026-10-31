@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_RULES_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_RULES_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -139,6 +141,34 @@ struct bond_schedule_rules {
      */
     friend bool operator==(const bond_schedule_rules&, const bond_schedule_rules&) = default;
 };
+/**
+ * @brief The members of bond_schedule_rules, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_schedule_rules&) {
+    return std::tuple{
+        utility::codec::field{"start_date", &bond_schedule_rules::start_date},
+        utility::codec::field{"end_date", &bond_schedule_rules::end_date},
+        utility::codec::field{"adjust_end_date_to_previous_month_end",
+                              &bond_schedule_rules::adjust_end_date_to_previous_month_end},
+        utility::codec::field{"tenor", &bond_schedule_rules::tenor},
+        utility::codec::field{"calendar", &bond_schedule_rules::calendar},
+        utility::codec::field{"convention", &bond_schedule_rules::convention},
+        utility::codec::field{"term_convention", &bond_schedule_rules::term_convention},
+        utility::codec::field{"rule", &bond_schedule_rules::rule},
+        utility::codec::field{"end_of_month", &bond_schedule_rules::end_of_month},
+        utility::codec::field{"end_of_month_convention",
+                              &bond_schedule_rules::end_of_month_convention},
+        utility::codec::field{"first_date", &bond_schedule_rules::first_date},
+        utility::codec::field{"last_date", &bond_schedule_rules::last_date},
+        utility::codec::field{"remove_first_date", &bond_schedule_rules::remove_first_date},
+        utility::codec::field{"remove_last_date", &bond_schedule_rules::remove_last_date},
+    };
+}
 
 }
 

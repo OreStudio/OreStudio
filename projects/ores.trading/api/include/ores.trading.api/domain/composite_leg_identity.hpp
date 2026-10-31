@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_IDENTITY_HPP
 #define ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_IDENTITY_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -87,10 +89,13 @@ instrument, so it is the parent key rather than a separate instrument key.
      */
     friend bool operator==(const composite_leg_identity&, const composite_leg_identity&) = default;
 };
-
 /**
- * @brief The members of composite_leg_identity, named as the wire names them and in the order
- * the type declares them, so the carriers find its shape by lookup.
+ * @brief The members of composite_leg_identity, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(const composite_leg_identity&) {
     return std::tuple{
@@ -103,7 +108,6 @@ instrument, so it is the parent key rather than a separate instrument key.
         utility::codec::field{"leg_sequence", &composite_leg_identity::leg_sequence},
     };
 }
-
 
 }
 

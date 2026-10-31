@@ -40,9 +40,11 @@
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -214,6 +216,48 @@ struct bond_instrument_data {
      */
     friend bool operator==(const bond_instrument_data&, const bond_instrument_data&) = default;
 };
+/**
+ * @brief The members of bond_instrument_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_instrument_data&) {
+    return std::tuple{
+        utility::codec::field{"instrument", &bond_instrument_data::instrument},
+        utility::codec::field{"issue", &bond_instrument_data::issue},
+        utility::codec::field{"call_dates", &bond_instrument_data::call_dates},
+        utility::codec::field{"conversion_targets", &bond_instrument_data::conversion_targets},
+        utility::codec::field{"option", &bond_instrument_data::option},
+        utility::codec::field{"trs", &bond_instrument_data::trs},
+        utility::codec::field{"repo", &bond_instrument_data::repo},
+        utility::codec::field{"future", &bond_instrument_data::future},
+        utility::codec::field{"ascot_row", &bond_instrument_data::ascot_row},
+        utility::codec::field{"option_exercise_dates",
+                              &bond_instrument_data::option_exercise_dates},
+        utility::codec::field{"option_data", &bond_instrument_data::option_data},
+        utility::codec::field{"strike_data", &bond_instrument_data::strike_data},
+        utility::codec::field{"option_exercise_schedule",
+                              &bond_instrument_data::option_exercise_schedule},
+        utility::codec::field{"option_redemption", &bond_instrument_data::option_redemption},
+        utility::codec::field{"option_price_type", &bond_instrument_data::option_price_type},
+        utility::codec::field{"option_knocks_out", &bond_instrument_data::option_knocks_out},
+        utility::codec::field{"trs_price_type", &bond_instrument_data::trs_price_type},
+        utility::codec::field{"forward_long_in_forward",
+                              &bond_instrument_data::forward_long_in_forward},
+        utility::codec::field{"forward_settlement", &bond_instrument_data::forward_settlement},
+        utility::codec::field{"forward_premium", &bond_instrument_data::forward_premium},
+        utility::codec::field{"trs_payer", &bond_instrument_data::trs_payer},
+        utility::codec::field{"trs_initial_price", &bond_instrument_data::trs_initial_price},
+        utility::codec::field{"trs_schedule", &bond_instrument_data::trs_schedule},
+        utility::codec::field{"bond_legs", &bond_instrument_data::bond_legs},
+        utility::codec::field{"trs_funding_leg", &bond_instrument_data::trs_funding_leg},
+        utility::codec::field{"repo_leg", &bond_instrument_data::repo_leg},
+        utility::codec::field{"ascot_swap_leg", &bond_instrument_data::ascot_swap_leg},
+    };
+}
 
 }
 

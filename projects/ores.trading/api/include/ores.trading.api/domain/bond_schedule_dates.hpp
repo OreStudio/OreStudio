@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATES_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATES_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -87,6 +89,25 @@ struct bond_schedule_dates {
      */
     friend bool operator==(const bond_schedule_dates&, const bond_schedule_dates&) = default;
 };
+/**
+ * @brief The members of bond_schedule_dates, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_schedule_dates&) {
+    return std::tuple{
+        utility::codec::field{"calendar", &bond_schedule_dates::calendar},
+        utility::codec::field{"convention", &bond_schedule_dates::convention},
+        utility::codec::field{"tenor", &bond_schedule_dates::tenor},
+        utility::codec::field{"end_of_month", &bond_schedule_dates::end_of_month},
+        utility::codec::field{"include_duplicate_dates",
+                              &bond_schedule_dates::include_duplicate_dates},
+        utility::codec::field{"dates", &bond_schedule_dates::dates},
+    };
+}
 
 }
 

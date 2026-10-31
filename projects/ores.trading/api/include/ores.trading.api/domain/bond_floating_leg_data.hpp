@@ -28,9 +28,11 @@
 #include "ores.trading.api/domain/bond_float_data.hpp"
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_stub_interpolation.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -168,6 +170,46 @@ struct bond_floating_leg_data {
      */
     friend bool operator==(const bond_floating_leg_data&, const bond_floating_leg_data&) = default;
 };
+/**
+ * @brief The members of bond_floating_leg_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_floating_leg_data&) {
+    return std::tuple{
+        utility::codec::field{"index", &bond_floating_leg_data::index},
+        utility::codec::field{"is_in_arrears", &bond_floating_leg_data::is_in_arrears},
+        utility::codec::field{"last_recent_period", &bond_floating_leg_data::last_recent_period},
+        utility::codec::field{"last_recent_period_calendar",
+                              &bond_floating_leg_data::last_recent_period_calendar},
+        utility::codec::field{"fixing_days", &bond_floating_leg_data::fixing_days},
+        utility::codec::field{"lookback", &bond_floating_leg_data::lookback},
+        utility::codec::field{"rate_cutoff", &bond_floating_leg_data::rate_cutoff},
+        utility::codec::field{"is_averaged", &bond_floating_leg_data::is_averaged},
+        utility::codec::field{"has_sub_periods", &bond_floating_leg_data::has_sub_periods},
+        utility::codec::field{"include_spread", &bond_floating_leg_data::include_spread},
+        utility::codec::field{"is_not_resetting_xccy",
+                              &bond_floating_leg_data::is_not_resetting_xccy},
+        utility::codec::field{"spreads", &bond_floating_leg_data::spreads},
+        utility::codec::field{"caps", &bond_floating_leg_data::caps},
+        utility::codec::field{"floors", &bond_floating_leg_data::floors},
+        utility::codec::field{"gearings", &bond_floating_leg_data::gearings},
+        utility::codec::field{"naked_option", &bond_floating_leg_data::naked_option},
+        utility::codec::field{"local_cap_floor", &bond_floating_leg_data::local_cap_floor},
+        utility::codec::field{"fixing_schedule", &bond_floating_leg_data::fixing_schedule},
+        utility::codec::field{"reset_schedule", &bond_floating_leg_data::reset_schedule},
+        utility::codec::field{"front_stub_interpolation",
+                              &bond_floating_leg_data::front_stub_interpolation},
+        utility::codec::field{"back_stub_interpolation",
+                              &bond_floating_leg_data::back_stub_interpolation},
+        utility::codec::field{"stub_use_original_curve",
+                              &bond_floating_leg_data::stub_use_original_curve},
+        utility::codec::field{"observation_shift", &bond_floating_leg_data::observation_shift},
+    };
+}
 
 }
 

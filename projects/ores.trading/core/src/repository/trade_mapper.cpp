@@ -32,12 +32,12 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_entity.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/enums.hpp>
 #include <vector>
 
 namespace ores::trading::repository {
@@ -56,13 +56,15 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.counterparty_id = v.counterparty_id;
     r.trade_type = v.trade_type;
     r.counterparty_scope =
-        rfl::string_to_enum<ores::trading::domain::counterparty_scope>(v.counterparty_scope)
-            .value();
+        ores::utility::codec::text_form<ores::trading::domain::counterparty_scope>::from_text(
+            v.counterparty_scope);
     r.booking_nature =
-        rfl::string_to_enum<ores::trading::domain::booking_nature>(v.booking_nature).value();
+        ores::utility::codec::text_form<ores::trading::domain::booking_nature>::from_text(
+            v.booking_nature);
     r.entry_channel =
-        rfl::string_to_enum<ores::trading::domain::entry_channel>(v.entry_channel).value();
-    r.origin = rfl::string_to_enum<ores::trading::domain::origin>(v.origin).value();
+        ores::utility::codec::text_form<ores::trading::domain::entry_channel>::from_text(
+            v.entry_channel);
+    r.origin = ores::utility::codec::text_form<ores::trading::domain::origin>::from_text(v.origin);
     r.origin_reference = v.origin_reference.value_or("");
     r.external_version = v.external_version;
     r.draft_reason_code = v.draft_reason_code.value_or("");
@@ -87,10 +89,13 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.party_id = v.party_id;
     r.counterparty_id = v.counterparty_id;
     r.trade_type = v.trade_type;
-    r.counterparty_scope = rfl::enum_to_string(v.counterparty_scope);
-    r.booking_nature = rfl::enum_to_string(v.booking_nature);
-    r.entry_channel = rfl::enum_to_string(v.entry_channel);
-    r.origin = rfl::enum_to_string(v.origin);
+    r.counterparty_scope = ores::utility::codec::text_form<decltype(v.counterparty_scope)>::to_text(
+        v.counterparty_scope);
+    r.booking_nature =
+        ores::utility::codec::text_form<decltype(v.booking_nature)>::to_text(v.booking_nature);
+    r.entry_channel =
+        ores::utility::codec::text_form<decltype(v.entry_channel)>::to_text(v.entry_channel);
+    r.origin = ores::utility::codec::text_form<decltype(v.origin)>::to_text(v.origin);
     r.origin_reference =
         v.origin_reference.empty() ? std::nullopt : std::optional(v.origin_reference);
     r.external_version = v.external_version;

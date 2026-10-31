@@ -29,9 +29,9 @@
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_type_entity.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <optional>
-#include <rfl/enums.hpp>
 #include <vector>
 
 namespace ores::trading::repository {
@@ -48,7 +48,8 @@ domain::trade_type trade_type_mapper::map(const trade_type_entity& v) {
     r.code = v.code;
     r.description = v.description.value_or("");
     r.product_type =
-        rfl::string_to_enum<ores::trading::domain::product_type>(v.product_type).value();
+        ores::utility::codec::text_form<ores::trading::domain::product_type>::from_text(
+            v.product_type);
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;
@@ -69,7 +70,8 @@ trade_type_entity trade_type_mapper::map(const domain::trade_type& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.product_type = rfl::enum_to_string(v.product_type);
+    r.product_type =
+        ores::utility::codec::text_form<decltype(v.product_type)>::to_text(v.product_type);
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;

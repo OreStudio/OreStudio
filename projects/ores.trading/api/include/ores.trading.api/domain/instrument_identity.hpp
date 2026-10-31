@@ -88,10 +88,13 @@ identity rather than two and the two cannot disagree.
      */
     friend bool operator==(const instrument_identity&, const instrument_identity&) = default;
 };
-
 /**
- * @brief The members of instrument_identity, named as the wire names them and in the order
- * the type declares them, so the carriers find its shape by lookup.
+ * @brief The members of instrument_identity, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(const instrument_identity&) {
     return std::tuple{
@@ -103,7 +106,6 @@ identity rather than two and the two cannot disagree.
         utility::codec::field{"trade_activity_id", &instrument_identity::trade_activity_id},
     };
 }
-
 
 /**
  * @brief Names the members of instrument_identity that are economic.

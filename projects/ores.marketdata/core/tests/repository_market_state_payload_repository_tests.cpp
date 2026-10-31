@@ -56,11 +56,11 @@ std::string cube_file() {
 TEST_CASE("a stored market state reads back with its index and its payload", payload_tags) {
     database_helper h;
     const auto body = cube_file();
-    const auto run = market_state_run{.party_id = boost::uuids::random_generator()(),
-                                      .report_instance_id = boost::uuids::random_generator()(),
-                                      .report_definition_id = boost::uuids::random_generator()(),
-                                      .as_of = std::chrono::sys_days{
-                                          std::chrono::year{2026} / 10 / 31}};
+    const auto run =
+        market_state_run{.party_id = boost::uuids::random_generator()(),
+                         .report_instance_id = boost::uuids::random_generator()(),
+                         .report_definition_id = boost::uuids::random_generator()(),
+                         .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31}};
 
     const auto outcome =
         read_market_state({market_state_file{.name = "stress_scenarios.csv", .body = body}}, run);
@@ -71,9 +71,8 @@ TEST_CASE("a stored market state reads back with its index and its payload", pay
     repo.insert(h.context(), outcome.payloads);
 
     const auto read = repo.read_latest(h.context());
-    const auto stored = std::ranges::find_if(read, [&](const auto& one) {
-        return one.report_instance_id == run.report_instance_id;
-    });
+    const auto stored = std::ranges::find_if(
+        read, [&](const auto& one) { return one.report_instance_id == run.report_instance_id; });
     REQUIRE(stored != read.end());
 
     // The index survives the round trip, and so does the payload it describes.

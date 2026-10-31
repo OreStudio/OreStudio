@@ -50,6 +50,11 @@ public:
     /**
      * @brief Returns the router for registering endpoints.
      */
+    /// The verifier every session authenticates its caller with.
+    [[nodiscard]] const std::shared_ptr<ores::security::jwt::jwt_authenticator>& verifier() const {
+        return verifier_;
+    }
+
     /**
      * @brief The sessions this server holds, so a sign-in route can open one.
      */

@@ -29,6 +29,7 @@
 #include "ores.http.core/routes/web_bundle_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
+#include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
@@ -163,6 +164,20 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
+
+    /*
+     * The browser's door: a sign-in keeps the token here and gives the browser a
+     * cookie. The session's cookie name is the deployment's, so two deployments on
+     * one host do not share one.
+     */
+    http::domain::cookie_settings session_cookie;
+    session_cookie.name = cfg.web_session_name;
+    session_cookie.secure = cfg.server.enable_ssl;
+    server.set_cookie_settings(session_cookie);
+
+    http::routes::iam::auth_session_routes auth_sessions(
+        service_nats, server.sessions(), server.verifier(), session_cookie);
+    auth_sessions.register_routes(router, registry);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);

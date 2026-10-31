@@ -8,7 +8,7 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-the-door-reach-the-verifier
-#+pr:
+#+pr: 4289
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4289][#4289]] | [http] Let the door reach the verifier |
 
 * Review
 

@@ -18,7 +18,9 @@
  *
  */
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/fx_instruments.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -83,4 +85,38 @@ TEST_CASE("a_generated_trade_states_the_rows_its_slot_carries", "[writer]") {
     const auto request = trading_trade_population_writer::book_request_for(a_slot(), a_scope());
 
     CHECK(request.instruments.commodity_instruments.size() == 1);
+}
+
+/*
+ * The batch travels to the trading service as the operation's own domain type,
+ * so a date that arrives changed is a wire defect and not a planning one. The
+ * variance swap's table states that its end falls after its start, which is the
+ * only place in the population that can catch a date the codec lost.
+ */
+TEST_CASE("a_wire_round_trip_keeps_a_variance_swaps_dates", "[writer]") {
+    using ores::trading::domain::fx_variance_swap_terms;
+
+    const auto start = std::chrono::year_month_day{std::chrono::year{2026},
+                                                   std::chrono::month{10},
+                                                   std::chrono::day{31}};
+    const auto end = std::chrono::year_month_day{std::chrono::year{2027},
+                                                 std::chrono::month{10},
+                                                 std::chrono::day{31}};
+    fx_variance_swap_terms terms{start,          end,      "USD", "AAPL",
+                                 "Long",         16.0,     {},    "Variance"};
+    terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
+
+    ores::trading::messaging::book_trade_request request;
+    request.instruments.fx_variance_swap_instruments.push_back(
+        ores::trading::domain::construct_fx_variance_swap(terms));
+
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto bytes = codec.encode(request);
+    const auto decoded = codec.decode<ores::trading::messaging::book_trade_request>(bytes);
+    REQUIRE(decoded.has_value());
+    REQUIRE(decoded->instruments.fx_variance_swap_instruments.size() == 1);
+
+    const auto& row = decoded->instruments.fx_variance_swap_instruments.front();
+    CHECK(row.start_date == start);
+    CHECK(row.end_date == end);
 }

@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/book-a-generated-trade-without-asking-for-authorisation
-#+pr: 4202
+#+pr: 4205
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -94,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4205][#4205]] | [synthetic,trading] Pin the dates a variance swap carries to its table |
 | [[https://github.com/OreStudio/OreStudio/pull/4202][#4202]] | [agile] Correct the provisioning record and prove the queue empty |
 | [[https://github.com/OreStudio/OreStudio/pull/4192][#4192]] | [synthetic] Book a generated trade so it asks nobody for authorisation |
 

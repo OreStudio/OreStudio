@@ -16,10 +16,12 @@ Three journeys describe the person's side of that — taking a cut, pricing a re
 from one, and rerunning and auditing one — and no cut exists in the application
 today: no component, no table, no read and no screen.
 
-One prototype answers to the group. It draws every surface the three journeys
-name, and it settles what the design note cannot: what a body that could not be
-assembled looks like, what each state of a cut reads as on a screen, what a picker
-says when it refuses a cut, and what a run states about the body it priced from.
+One prototype answers to the group. It draws every surface the three journeys name,
+and it settles what the design note cannot: what a body that could not be assembled
+looks like, what each state of a cut reads as on a screen, how a report comes to
+price from one cut, what the resolution says before a run, and what a run states
+about the body it priced from. There is no pricing surface, because there is none:
+a cut is selected where a report is defined.
 
 The conventions the take reads — the named cut times — have no prototype of their
 own. They are two surfaces of the same page, because a person taking a cut reads a
@@ -36,15 +38,17 @@ page draws, but the grouping is what the decision note argues: a cut is a record
 with a derived state, an authorisation that is the inbox's, and a second binding
 that a run names.
 
-The prototype therefore turns on one question — *what does a person need to see to
-trust a body they did not assemble?* — and every surface is one answer to it: the
-counts of the parts, the gaps where a part stands open, the two accounts of the two
-acts, the runs that already rest on the body, and the verdict on a reproduction.
+The prototype therefore turns on two questions — *what does a person need to see to
+trust a body they did not assemble?* and *how does a person know what a report will
+price from before they run it?* — and every surface answers one of them: the counts
+of the parts, the gaps where a part stands open, the accounts of the acts, the runs
+that already rest on the body, the verdict on a reproduction, the badge on the
+report, and the preview that states what the selection resolves to now.
 
 #+ATTR_HTML: :class hug-leading
 | Prototype | What it argues | Open it | Review |
 |-----------+----------------+---------+--------|
-| [[file:the-cut.org][The cut]] | The screens a cut needs, in one page with seven surfaces. The list draws the seven states with the taker, the authoriser and the count of runs, and the default order is the timepoint so the cut in use is the first row. *In use* is the state of a body whose kind requires no authorisation, and the basis stands under each state that has one, apart from the indicative mark, which is the kind's and not the state's. The record draws the body as the four inputs the cluster argues for, a gap table where a part could not be filled, the acts — two where the kind requires an authorisation, with the four-eyes rule stated as a fact, and one where it does not, with the basis in its place — the runs that rest on the body, and a history of one entry or two because a taken body is immutable. The take is four steps on a rail, and the second step is where the body is refused: no *Take the cut* is drawn while a gap stands, and the draft keeps the gaps because the list is what a person chases. The picker refuses a taken, an incomplete and a refused cut in the same words the run uses, offers a superseded cut with its sentence, and offers a cut in use, because its kind requires no authorisation and the take raised no request. The run's page carries the card that names the cut, read from the run and never from the configuration, and below it a comparison in three verdicts — reproduced, differs, and cannot be compared for one of three reasons — with all eight outcomes one strip away. The named cut times are a standard list and a standard record in Reference data, and the take reads the close from them. | [[file:the-cut/][prototype]] | none |
+| [[file:the-cut.org][The cut]] | The screens a cut needs, in one page with nine surfaces: the reports list with the cut badge, the report that carries the selection, the selection dialog with its resolution preview, and the run that resolved — then the cuts list, the cut's record, the take flow and the named cut times. The list draws the seven states with the taker, the authoriser and the count of runs, and the default order is the timepoint so the cut in use is the first row. *In use* is the state of a body whose kind requires no authorisation, and the basis stands under each state that has one, apart from the indicative mark, which is the kind's and not the state's. The record draws the body as the four inputs the cluster argues for, a gap table where a part could not be filled, the acts — two where the kind requires an authorisation, with the four-eyes rule stated as a fact, and one where it does not, with the basis in its place — the runs that rest on the body, and a history of one entry or two because a taken body is immutable. The take is four steps on a rail, and the second step is where the body is refused: no *Take the cut* is drawn while a gap stands, and the draft keeps the gaps because the list is what a person chases. The report side draws the selection as a property of the definition, the resolution preview computed by the run's own operation, a report with no selection, one pinned to a cut, one whose selection resolves to nothing, and the LIVE report whose body exists only after a run — which the run's card states as a body it minted, marked indicative and reproducible only by naming its cut. The selection is the only market association: the market bindings retire, and the binding decision now records that. The run's page carries the card that names the cut, read from the run and never from the configuration, and below it a comparison in three verdicts — reproduced, differs, and cannot be compared, with its reason stated — and the outcomes one strip away. The named cut times are a standard list and a standard record in Reference data, and the take reads the close from them. | [[file:the-cut/][prototype]] | none |
 
 * What it settles
 
@@ -78,9 +82,10 @@ writes the reason down, and the figures are what follow from it.
 Whether the gap table becomes a shared part of the standard, or stays the take's
 own. Whether the comparison reads a run's archive into figures, or the run records
 its figures as rows when it completes. Whether the cut's scope is one book group,
-as drawn, or a composition of the cuts of its books. And whether one inbox kind
-serves every occasion that needs a signature, as drawn, or each occasion registers
-its own.
+as drawn, or a composition of the cuts of its books. Whether one inbox kind serves
+every occasion that needs a signature, as drawn, or each occasion registers its own.
+And whether the selection earns its own step on the create flow, or stays a field on
+the step that names the report.
 
 * Adding a prototype
 

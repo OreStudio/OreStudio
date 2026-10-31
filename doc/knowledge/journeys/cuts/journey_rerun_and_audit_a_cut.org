@@ -57,7 +57,7 @@ with a comparison on the screen.
 This journey reads and re-runs. It does not authorise a cut, which is
 [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]], and it does not choose
 which cut a report prices from, which is
-[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]].
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]].
 
 * Steps
 
@@ -113,7 +113,7 @@ which cut a report prices from, which is
    list draws, so the two screens agree.
 9. *Open one run.* A row opens the run's page, and the run's card names the cut it
    priced from, as
-   [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] draws
+   [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] draws
    it. The two pages are the same fact read from each side.
 10. *Read a run that did not price.* A run refused before the engine appears in the
    list with its refusal and does not count as a run that priced from the cut. The
@@ -142,19 +142,26 @@ which cut a report prices from, which is
     | The engine version differs | The original run used one version and today serves another. The body is the same and the software is not, which is the condition the cluster's quoted definition of reproduction excludes |
     | A part of the body is no longer served | The body records the part and the store no longer serves it: today, a fixed market data snapshot that was never stored, or a configuration version that was withdrawn. The screen names the part and the series |
     | The body was retaken | The run priced from an earlier cut of the same day, and the comparison names both labels. A retaken body is a different body, and its results are comparable only as a movement |
+    | A LIVE report was run twice | The two runs each minted a cut at their own instant, so they share no body at all. The card names both cuts and says the two are comparable only as a movement, and that the first is reproduced by naming its cut |
 
 14. *Read what the rerun keeps.* The new run records the cut it priced from, its own
     instant and its engine version, so a third person can repeat the exercise without
     asking the person who ran it. The screen states that no figure is overwritten: the
     two runs are two records.
+15. *Reproduce a LIVE result by naming its cut.* A run of a LIVE selection minted the
+    body it priced from, and running the report again months later would mint another.
+    The card therefore offers the one route the promise allows: a rerun against the cut
+    the first run recorded, which is a selection of that specific cut, or the rerun the
+    run's own page starts. The screen says plainly that a second LIVE run is a view of
+    a later instant and not a repeated result.
 
 ** The audit across the day**
 
-15. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
+16. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
     order: the cut taken at the close, the retake that superseded it, and the runs
     that rested on each. The sequence is the audit trail a challenge asks for, and it
     is why a superseded cut is kept and drawn rather than hidden.
-16. *Read who rests on a superseded cut.* The *Runs* tab of a superseded cut names
+17. *Read who rests on a superseded cut.* The *Runs* tab of a superseded cut names
     the runs that priced from it and the cut that replaced it. That is the question a
     person asks before a retake is authorised — *what already rests on the body I am
     about to replace?* — and the answer is a list rather than a guess.
@@ -174,8 +181,8 @@ The judgement, per step, against the standards.
 | 2, the body's parts | A panel per part, with counts and links | No rule draws a body yet; the prototype defines the shape |
 | 4 to 6, the authorisation | A panel of the two acts, and a link to the request | The entity screen specification's timeline shape, and the inbox's own page for the request |
 | 8 to 10, the runs | The standard's parts panel with its rows | RS-RELATED-04 to RS-RELATED-06 |
-| 11 to 14, the reproduction | A comparison of two runs, with a verdict | No rule draws a comparison of two results yet; the prototype defines it and [[*What is missing][What is missing]] records the gap |
-| 15 to 16, the day | The list ordered by timepoint, and the *Runs* tab | RS-LIST-12 and RS-RELATED-04 |
+| 11 to 15, the reproduction | A comparison of two runs, with a verdict | No rule draws a comparison of two results yet; the prototype defines it and [[*What is missing][What is missing]] records the gap |
+| 16 to 17, the day | The list ordered by timepoint, and the *Runs* tab | RS-LIST-12 and RS-RELATED-04 |
 
 #+caption: The audit of a cut: the body's parts, the two acts, the runs that rested on it, and the comparison of a rerun with its original.
 #+attr_html: :width 100%
@@ -234,36 +241,36 @@ are its cut, its engine version and its state.
 
 * What is missing
 
-2. *Nothing compares two runs.* The reproduction promise is the purpose of the whole
+3. *Nothing compares two runs.* The reproduction promise is the purpose of the whole
    cluster and no operation answers it. A comparison needs the two runs' figures as
    rows, which needs the archive parsed, which is a gap the reporting journeys already
    record.
-3. *The run does not record its engine version.* A run records the date it priced at
+4. *The run does not record its engine version.* A run records the date it priced at
    and the note that explains a moved date, and nothing names the version of the
    engine that computed its result. A reproduction verdict that cannot state the
    software is not a verdict.
-4. *The cut records the service build, and nothing provides it.* The body's engine and
+5. *The cut records the service build, and nothing provides it.* The body's engine and
    code part needs a revision for the services that assembled it, and the platform
    records no build for a service. The
    [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] journey records the
    same gap from the side of the take.
-5. *A fixed snapshot is recorded and not served.* A cut whose market data half is a
+6. *A fixed snapshot is recorded and not served.* A cut whose market data half is a
    snapshot nothing materialises can be read today only if the store still holds the
    values. That is the second reason a comparison fails, and it is a property of the
    gap rather than of the audit.
-6. *No list of runs by cut.* Runs are read by definition, by health and by instance.
+7. *No list of runs by cut.* Runs are read by definition, by health and by instance.
    Nothing reads them by cut, so the *Runs* tab and the cuts list's count have no
    source.
-7. *No route and no screen for reporting.* The cut's record, the run's card and the
+8. *No route and no screen for reporting.* The cut's record, the run's card and the
    comparison are all new, as the two journeys beside this one record.
-8. *The day's sequence is not a read.* The list ordered by timepoint answers it for
+9. *The day's sequence is not a read.* The list ordered by timepoint answers it for
    one scope, and no read groups the cuts of a day by kind and ordinal. The first
    slice reads the list and states the order it uses.
 
 * Related journeys
 
 - [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the acts this journey reads, and the retake that supersedes.
-- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — the run whose card this journey compares, and the other side of the same facts.
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] — the run whose card this journey compares, and the other side of the same facts.
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the numbers a comparison needs, and the archive that holds them.
 - [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the runs of one report, which this journey reads by cut instead.
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the press this journey re-uses for a rerun.

@@ -19,12 +19,20 @@ model the screens imply is on
 [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
 from]].
 
-The three read as one answer. The take fixes a body and has it signed; the run
-names the cut and prices from it; the audit reproduces a figure from it or says
-why it cannot. A cut that nobody consumes is a day's paperwork, and a run that
-names no cut is a number whose production no screen can account for, which is
-what the [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]]
-records when it says that a binding to a curve leaves the deal population open.
+The three read as one answer. The take fixes a body and has it signed; the report
+selects a kind of cut and the run resolves it to one body; the audit reproduces a
+figure from it or says why it cannot. A cut that nobody consumes is a day's
+paperwork, and a run that names no cut is a number whose production no screen can
+account for — which is what the
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] recorded when
+it found that a binding to a curve left the deal population open. That decision is
+now superseded in part: the cut is what a run names, and the binding row retires.
+
+Reporting is the only surface. There is no pricing screen, so a cut is not chosen
+while a price is looked at: a report carries a cut selection, and the run resolves
+it. A selection is a kind — end of day, start of day, independent verification, a
+process-named instant, or LIVE — or a specific cut. LIVE is the kind whose body does
+not exist until a run gives it a timepoint: the run mints the cut it prices from.
 
 * Journeys
 
@@ -32,7 +40,7 @@ records when it says that a binding to a curve leaves the deal population open.
 | Journey | Actor | Gist |
 |---------+-------+------|
 | [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] | finance, market-risk, trading-desk | Choose the kind and its timepoint, assemble the body, review what it holds against the previous cut, take it, and have a second person authorise it — or read the gaps that stop it |
-| [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] | market-risk, tenant administrator | Name the cut a report prices from, read what it holds and who signed it, be refused a cut that is not consumable, run the report, and read the card that names the cut and says whether the run reproduced |
+| [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] | market-risk, tenant administrator | Give a report its cut selection on create or update, read what the selection would resolve to now, run the report, and read the run that resolved it to one cut — with the badge on the report and the cut on the run's card |
 | [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] | auditor, market-risk, engineer | The body, the two acts, the runs that rested on the cut, and a rerun compared with its original in one of three verdicts |
 
 Two of the three write: the take writes the cut and raises its authorisation, and

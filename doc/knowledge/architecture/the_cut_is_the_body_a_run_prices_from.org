@@ -2,7 +2,7 @@
 :ID: F6362451-D569-4609-97A3-F1C785AAAF02
 :END:
 #+title: The cut is the body a run prices from
-#+description: The cut model the screens imply: the facts a cut records, the states those facts derive, the kind's declaration of whether it needs an authorisation, the inbox record that authorises one, the identity the screens draw, and how the cut meets the report binding.
+#+description: The cut model the screens imply: the facts a cut records, the states those facts derive, the kind's declaration of whether it needs an authorisation, the inbox record that authorises one, a report's cut selection and how a run resolves it, the LIVE kind whose timepoint the run supplies, and what the cut does to the market bindings.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:cut:valuation:reporting:
@@ -13,30 +13,30 @@
 
 The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note fixes
 what a cut is, what it holds and why. It settles no state, no act, no
-authorisation and no identity, and the screens cannot be drawn without those
-four. This page settles them. A cut records the body it fixed and the acts that
-made it, and nothing else; its state is derived from those facts and stored
-nowhere; a cut kind declares whether a cut of its occasion needs an
-authorisation at all, and where it does the authorisation is an approval request
-of [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the inbox]] whose detail the
-reporting component holds; its label is derived from the kind, the scope and the
-timepoint, and never typed. The cut is then the object a run names, which is what
-the report binding lacks.
+authorisation, no identity, and nothing about what selects a cut. This page
+settles them. A cut records the body it fixed and the acts that made it, and
+nothing else; its state is derived from those facts and stored nowhere; a cut
+kind declares whether a cut of its occasion needs an authorisation, and where it
+does the authorisation is an approval request of
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the inbox]]. A report carries a cut
+*selection* as a property — a kind, or a specific cut — and the run resolves the
+selection to a concrete cut at the moment it starts, records that cut and its
+timepoint, and prices from its body. One selection kind, LIVE, has no timepoint
+of its own: the run supplies it, and the run mints the cut.
 
-The authorisation is not a mechanism this cluster invents. One record already
-holds everything that waits on a person, four eyes is a rule of its schema, and
-the queue, the notifications and the history are written once. A cut is a kind of
-that record, with a detail table of its own, and the only thing the cluster adds
-is the declaration that says which occasions need one.
+The authorisation is not a mechanism this cluster invents, and neither is the
+selection a second market association. One record already holds everything that
+waits on a person, and one object now names the body a run prices from, which is
+what the market bindings were doing in the absence of a cut.
 
 Everything on this page is our working convention. No public source states how a
-firm should model the authorisation of a cut, and the
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records which claims in
-the cluster rest on a source and which do not.
+firm should model the authorisation of a cut or the selection a report carries,
+and the [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records which
+claims in the cluster rest on a source and which do not.
 
 * What the screens must settle
 
-Three journeys and one prototype need five things, and the cluster's domain pages
+Three journeys and one prototype need six things, and the cluster's domain pages
 supply none of them.
 
 | Need | The question | Where the answer is |
@@ -45,13 +45,8 @@ supply none of them.
 | The states | What is a cut before it is authorised, and what may a run do with it then? | [[*The states and what derives them][The states and what derives them]] |
 | The acts | Who takes a cut, what authorises it, and what stops one person doing both? | [[*The authorisation is the inbox's][The authorisation is the inbox's]] |
 | The permissions | Which permission reaches each act? | [[*The permissions][The permissions]] |
+| The consumer | How does a report come to price from one cut rather than another? | [[*The report carries the cut][The report carries the cut]] |
 | The identity | What does a person quote, and is it typed or derived? | [[*The identity][The identity]] |
-
-The sixth thing the screens need is not about the cut alone: a run must be able
-to name the cut it priced from, which is the hole the
-[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] records
-and leaves open. [[*How it meets the report binding][How it meets the report
-binding]] answers it.
 
 * The facts a cut records
 
@@ -73,12 +68,14 @@ Two of these facts are ours alone and no prior art supplies them. The gap list
 follows from the definition: a cut missing a part is incomplete rather than
 smaller, so the absence is recorded where the body is recorded rather than left
 to a run to discover. The act of taking follows from the same sentence:
-something fixes the body, and the something is a person acting at an instant.
+something fixes the body, and the something is a person acting at an instant — or,
+for the one kind whose consumer supplies the instant, the run acting for that
+person.
 
 ** What is derived, and why nothing is stored
 
-The state, the consumability verdict and every word the screens print about a
-cut are functions of the facts above. None is stored.
+The state, the consumability verdict and every word the screens print about a cut
+are functions of the facts above. None is stored.
 
 The precedent is the published set.
 [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]]
@@ -93,20 +90,20 @@ state cannot disagree with the facts it is derived from.
 
 A cut kind is a row, and it carries five facts beyond its code and name.
 
-| Declaration | What it decides | The end of day kind | The flash kind |
-|-------------+-----------------+---------------------+----------------|
-| What it fixes | The instant, the recurrence and the centre | The centre's close | An instant the process names |
-| =requires_authorisation= | Whether the take raises an approval request at all | Yes | No |
-| =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | No | Yes |
-| =approval_kind_code= | Which inbox kind authorises it, where it requires one | =reporting.cut_authorisation= | None |
-| =display_order= | The order the take offers the kinds | 10 | 40 |
+| Declaration | What it decides | EOD | SOD | IPV | FLASH | LIVE |
+|-------------+-----------------+-----+-----+-----+-------+------|
+| What fixes the instant | Where the timepoint comes from | The centre's close | The centre's open | The close of the cut it is built on | An instant the process names | The instant the run starts |
+| =requires_authorisation= | Whether a cut of the kind raises an approval request | Yes | No | Yes | No | No |
+| =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | No | No | No | Yes | Yes |
+| =approval_kind_code= | Which inbox kind authorises it, where it requires one | =reporting.cut_authorisation= | none | =reporting.cut_authorisation= | none | none |
+| =display_order= | The order the take offers the kinds | 10 | 20 | 30 | 40 | 50 |
 
-Two of those facts are independent, and the start of day kind is the case that
-proves it. A start of day cut is carried forward from the previous end of day
-cut, so it needs no authorisation at the opening, and its result is not
-indicative because the body was approved when it was first fixed. The flash kind
-needs none and is indicative, because its occasion is before the day settles.
-Neither fact implies the other, so the kind states both.
+The declarations are independent, and the kinds show it. A start of day cut needs
+no authorisation and is not indicative, because the body was approved when it was
+first fixed. A flash cut needs none and is indicative, because its occasion is
+before the day settles. A LIVE cut needs none and is indicative, and it differs
+from both in where its instant comes from: no person chooses it and no centre
+publishes it, so [[*The LIVE kind][the LIVE kind]] takes it from the run.
 
 * The states and what derives them
 
@@ -124,25 +121,25 @@ order of the tests is the order a reader needs them.
 | Superseded | The cut was authorised or in use, and a later cut of the same kind and scope holds its place | Price from it, and say a later cut is in use | Grey, as the published lists draw an ended set |
 
 The table is a derivation and not a lifecycle: a state is one of the seven and
-never a mixture of two. Two facts decide which of the three usable states
-applies, and neither is a matter of taste: whether the kind requires an
-authorisation, and whether one was recorded.
+never a mixture of two. Two facts decide which of the three usable states applies,
+and neither is a matter of taste: whether the kind requires an authorisation, and
+whether one was recorded.
 
 Six consequences follow, and each is a decision the screens draw.
 
 **The gate follows the kind, not a single rule about cuts.** A run prices from a
-body that is fixed and signed where a signature was required. A cut of a kind
-that requires none is usable the moment it is taken, and a cut of a kind that
-requires one is not usable until the approval is recorded. A gate that demanded an
+body that is fixed and signed where a signature was required. A cut of a kind that
+requires none is usable the moment it is taken, and a cut of a kind that requires
+one is not usable until the approval is recorded. A gate that demanded an
 authorisation of every cut would refuse the occasions that need none, and a gate
 that accepted any taken body would price from an unsigned one.
 
 **A draft is a record, not a scratchpad, and a gap is what separates it from an
-incomplete body.** The gaps a body cannot close name a person to chase — a series with no value at or before the instant, a deal at no
-version, a curve nobody has approved, an engine version nothing recorded. A take
-that threw the attempt away would make the person remember the list. The draft
-therefore holds the attempt, each gap with its reason, and the cut's own page is
-where the list is read.
+incomplete body.** The gaps a body cannot close name a person to chase — a series
+with no value at or before the instant, a deal at no version, a curve nobody has
+approved, an engine version nothing recorded. A take that threw the attempt away
+would make the person remember the list. The draft therefore holds the attempt,
+each gap with its reason, and the cut's own page is where the list is read.
 
 **An incomplete body is refused before it is signed.** The take raises no request
 while a gap stands, because a decider would be asked to sign a body that does not
@@ -155,16 +152,22 @@ request is held, and the waiting time is the request's to report.
 
 **Supersession does not withdraw authorisation.** A superseded cut is still a
 record of an instant, and a run that priced from it still reproduces from it. The
-published-set rule that an ended set is refused unless its as-of is pinned does
-not carry over, because a curve is a value in use and a cut is a record of what
-was used. The one word the screen must say is that a later cut replaced it: a
-person who reads a result must not take it for the day's cut.
+published-set rule that an ended set is refused unless its as-of is pinned does not
+carry over, because a curve is a value in use and a cut is a record of what was
+used. The one word the screen must say is that a later cut replaced it: a person
+who reads a result must not take it for the day's cut.
 
 **The indicative mark is the kind's, and it is not the state's.** A result priced
-from a flash cut is indicative because the kind says so, and the mark is drawn on
-the cut, on the picker's row and on every result it prices. A cut of a kind that
-requires no authorisation is not therefore indicative, and the start of day kind
-is the case that shows it.
+from a flash cut or a LIVE cut is indicative because the kind says so, and the mark
+is drawn on the cut, on the selection's badge and on every result it prices. A cut
+of a kind that requires no authorisation is not therefore indicative, and the start
+of day kind is the case that shows it.
+
+A LIVE cut is never a draft and never taken by a person: the run mints it with its
+body already fixed, so its first state is *In use*. A selection whose cut does not
+exist yet is not a state of a cut at all — there is no row to carry one — and
+[[*The resolution][the resolution]] refuses such a run and says which cut it looked
+for.
 
 * The authorisation is the inbox's
 
@@ -212,11 +215,8 @@ become another.
 **The apply is a reconciliation, not a second screen.** When a request reaches
 approved, the reporting service writes the cut's authorisation facts and marks the
 detail row applied. It does so from the request's change event and from the state
-the request holds, so a missed event, a repeated one, or an approval made while
-the service was down all converge on one outcome, as a role grant does. The
-alternative — an apply workflow — is named in
-[[*What this page does not settle][what this page does not settle]], because the
-work is one row and idempotent.
+the request holds, so a missed event, a repeated one, or an approval made while the
+service was down all converge on one outcome, as a role grant does.
 
 **The cut's page links the request and never the reverse.** The request is the
 record of the wait and the cut is the record of the body; the request page draws
@@ -230,31 +230,35 @@ the third is the inbox's.
 
 | Permission | What it governs | Who holds it, in the fixture |
 |------------+-----------------+------------------------------|
-| =reporting::cuts:read= | The list, the record, the picker over cuts, and the run's card that names one | Market risk, finance, a reader |
-| =reporting::cuts:take= | Assembling and taking a cut, which raises its authorisation where the kind requires one | Finance, for the end of day kind |
+| =reporting::cuts:read= | The list, the record, the report's selection, and the run's card that names a cut | Market risk, finance, a reader |
+| =reporting::cuts:take= | Assembling and taking a cut by hand, which raises its authorisation where the kind requires one | Finance, for the end of day kind |
 | =inbox::approvals:decide_finance= | The decision that authorises an end of day cut: the inbox kind's own decide permission | Finance, and a different person from the taker |
 
 The first two names are proposals and follow the platform's namespace for a
 component's own record. The third is not new: it is a permission the inbox has
 already seeded, and the cut's kind names it rather than inventing one.
 
+**A LIVE cut is taken by the run, and the run's permission is the reporter's.**
+Nobody presses *Take a cut* for a LIVE selection, so =reporting::cuts:take= is not
+the permission that guards it: the person who may run the report is the person who
+may cause a LIVE cut, and that is =reporting::report_instances:write=. The run
+writes the taking identity as itself acting for the run's account, so the cut's
+page names a system account and the run that minted it.
+
 **One permission decides every cut that needs a signature.** A cut body is signed
 by one function whatever the occasion that produced it, so the inbox kind carries
-one decide permission and every authorisation cut kind names that same kind. The
-occasions differ in whether they require a signature and in how many approvals
-close it, not in who signs. A firm that splits the duty grants the permission to
-the role that does the work, which is the inbox's own rule: a part is decided by a
-permission and not by a named job.
+one decide permission and every authorising cut kind names that same kind.
 
 * The identity
 
-The cut's key is a generated identifier. The label a person quotes is derived
-from the three facts that name the occasion, and it is never typed:
+The cut's key is a generated identifier. The label a person quotes is derived from
+the three facts that name the occasion, and it is never typed:
 
 #+begin_example
-  <kind code>.<scope code>.<timepoint date>[.<take ordinal>]
+  <kind code>.<scope code>.<timepoint>[.<take ordinal>]
   EOD.ACME-LONDON.2026-10-06
   EOD.ACME-LONDON.2026-10-06.2
+  LIVE.ACME-LONDON.2026-10-07T07:40:00Z
 #+end_example
 
 The derivation is the rule the
@@ -266,149 +270,307 @@ A typed label is a name, and a name is what the binding decision rejects: it say
 nothing about which body it means, and two bodies can carry one. A derived label
 states the kind, the scope and the instant, and no second cut can carry it.
 
-The take ordinal is the hub's numbered sequence made visible. A retake of the
-same day, kind and scope is the second cut of that day, and the ordinal says so
-in the one place a person looks. The published sets carry no such ordinal because
-a curve is one value in use; a cut is one act among several on the same day.
+The take ordinal is the hub's numbered sequence made visible. A retake of the same
+day, kind and scope is the second cut of that day, and the ordinal says so in the
+one place a person looks. A LIVE cut carries its instant instead, to the second,
+because two LIVE runs in one morning are two bodies and the date alone cannot tell
+them apart.
 
 The label is not the authorisation. A person reading =EOD.ACME-LONDON.2026-10-06=
-knows which day's body is meant and not whether anybody signed it, so every
-screen that shows the label shows the state beside it, and a cut of a kind that
-requires no authorisation shows that basis in the same place.
+knows which day's body is meant and not whether anybody signed it, so every screen
+that shows the label shows the state beside it, and a cut of a kind that requires
+no authorisation shows that basis in the same place.
+
+* The report carries the cut
+
+A report definition holds a *cut selection*, and the selection is one of two
+things: a kind of cut, or a specific cut. The pair is one fact — the kind code with
+no cut named, or the kind code and a cut — because a specific cut is a kind of cut
+plus the identity of the one body meant.
+
+**The selection sits on the definition, and not on the run settings
+configuration.** Four reasons carry the choice.
+
+A report is the thing a person reads a badge on, and two reports bound to one
+configuration may serve different cycles: a board pack of the close and an intraday
+monitor share an engine but not a body. A selection on the shared configuration
+would give both the same badge and the same body, which is false for one of them.
+
+The selection states what the report *is*, beside its type, its scope and its
+regulatory book type. The configuration states how the engine runs and which
+documents it reads. The two are different kinds of fact, and the badge belongs to
+the first.
+
+The definition is versioned, so a change to the selection is a version with an
+account and a reason, and the runs already produced keep the cut they recorded. A
+change on a shared configuration would reach every report bound to it without any
+of their pages saying so.
+
+A report is a version of an intent, and the intent is *value this scope against the
+close of its day*. The configuration cannot express that sentence for one report
+and not for another.
+
+**The badge is the selection's kind, drawn on the list and the record.** A person
+who reads a list of thirty-one reports sees which of them price from the close,
+which from the open and which from the run itself, without opening one. The badge
+is a chip carrying the kind's code, and under it the fact that qualifies it: *no
+cut selected* where the report was created without one, *pinned* where the
+selection names a specific cut, and *indicative* where the kind's values are. LIVE
+is the one kind whose badge carries a note rather than a value, because its body
+does not exist until a run gives it a timepoint.
+
+The badge is not a status: it is a classification of the report, so it borrows no
+green, amber or red. The health of the last run stands elsewhere on the row, where
+the reporting journeys already put it.
+
+**Create and update ask for the selection and nothing else.** The selection is one
+field on the create flow and one field on the report's *Definition* tab, and the
+dialog offers the kinds the party may select plus the cuts already taken, with a
+preview of what the current choice would resolve to right now: *EOD would resolve
+to EOD.ACME-LONDON.2026-10-06, authorised by a.reyes*, or *LIVE will fix a body at
+the instant the run starts, and every result it prices is indicative*. The preview
+is the resolution the run will make, run against the same rules and the same store,
+so a person sees a stale choice before a run discovers it.
+
+* The resolution
+
+The selection is a rule; the resolution executes it. The run resolves the selection
+to a concrete cut before it gathers anything, and the rules are six.
+
+| Selection | Resolves to | Its timepoint | What the resolution refuses |
+|-----------+-------------+---------------+-----------------------------|
+| =EOD= | The end of day cut of the date the report covers, for the report's scope and centre | The centre's close of that date | No such cut, or one whose authorisation is not recorded |
+| =SOD= | The start of day cut of that date, for the same scope | The centre's open of that date | No such cut |
+| =IPV= | The independent verification cut of that date | The close of the cut it is built on | No such cut, or one whose authorisation is not recorded |
+| A process-named kind | The cut of that kind for the date, at the instant its process named | The instant the process named | No such cut |
+| =LIVE= | A new cut, minted at the run's instant | The instant the run starts | A body that cannot be assembled |
+| A specific cut | Itself | The cut's own instant | A cut that is not consumable, or one of another party or scope |
+
+**The date the report covers is not the cut.** The report's covered date is a
+setting of the run settings, and the resolution reads it together with the report's
+scope and its centre. A cut states its own instant; the date says which cut to look
+for. That is why a weekly report can price from the daily cut of the day it covers,
+and why the same report next week prices from a different body.
+
+**The scope is not chosen at the resolution.** The report's scope names books, and
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] states
+that the books that revalue together share one centre's market data. The resolution
+reads the centres of the report's books, and a scope spanning two is refused before
+anything is gathered: no cut of one centre can value books that read another.
+
+**A refusal is one sentence, spoken before the engine.** A selection that resolves
+to nothing is refused with the kind it looked for, the date, the scope and — where
+there is a cut but its authorisation is not recorded — the request and the person it
+waits on. The preview's sentence, the report page's sentence and the run's output
+message are one sentence, so a scheduled run nobody watched still says why it did
+not price.
+
+**The run records what it resolved.** The run keeps the cut, its label, its kind and
+its timepoint, and the report's *Market* tab shows the selection beside the last
+run's resolved cut, because the two are different facts: the selection may have
+moved since the run. The run's own card names the body, read through the cut.
+
+**The resolution is one operation and it is previewable.** One operation answers the
+cut a selection resolves to, its state and the sentence that would refuse it, for a
+preview or for a run. One operation serves both, because a preview computed by a
+second code path is a preview of that path and not of the run.
+
+* The LIVE kind
+
+LIVE is the kind whose timepoint the consumer supplies. It differs from the four
+occasions of [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] in that
+nothing outside the run fixes it: no centre publishes its instant, no person chooses
+it, and no process names it. A report that selects LIVE says *value this scope at
+whatever time you start*.
+
+**Its body is the four inputs at the instant the run starts.** The population is
+what the trade store holds then, the market data is the snapshot the profile
+resolves then, the reference data and the settings are the versions in force then,
+and the engine and code are what the run will execute. It is the whole body and not
+a smaller one, because a LIVE result that could not be reproduced would be a number
+with a claim it cannot meet. If a part cannot be assembled the run is refused with
+the gaps, and no partial body is minted.
+
+**Its values are indicative, and that is our convention.** No authorisation precedes
+a LIVE cut, and the values it fixes are the values in the store at the instant the
+run began, which the day's official data will replace. A result priced from a LIVE
+cut therefore carries the indicative mark, as a flash result does, and the mark is
+read from the kind.
+
+**It requires no authorisation, and the reason is structural.** The run both mints
+the cut and consumes it in one act, so an authorisation would hold the intake until
+a person answered, and the report it serves would have no result by the time it was
+read. Four eyes is not weakened by this: nothing is signed, so there is no signature
+to protect. A firm that wanted LIVE signed does not want LIVE; it wants a flash cut,
+which a person takes at an instant they name, and which is signed or not by its own
+kind.
+
+**A LIVE cut is reproducible only by naming it.** A rerun of the same LIVE report
+tomorrow resolves to a new instant, so it is a different body and a different
+result. The first result is reproduced by naming its cut: a selection of that
+specific cut, or a rerun against the resolved cut, which the run's page offers
+because the run knows what it priced from. The card states the difference in the
+words the reproduction verdict already uses: two runs of one cut are one result
+computed twice, two LIVE runs are two results of two bodies and comparable only as
+a movement.
+
+**Supersession applies as it does to any cut.** A later LIVE cut of the same kind and
+scope becomes the kind's cut in use, and the earlier one stays in use as a record.
+Because LIVE cuts accumulate at the rate of runs, the cuts list's kind filter and its
+date order are what make them readable, and a LIVE cut's label carries its instant
+to the second for the same reason.
+
+* The role bindings retire
+
+The [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] made a run
+settings configuration name, per market role, the published set the run prices from,
+with its as-of, a pin for a historical rerun, and a derived ORE name. That row was
+the report's market association because nothing else named the market a run read. A
+cut now names it, and two records that name the same curves drift.
+
+**The finding.** A binding row and a cut both name the curves a run reads. The
+binding names one published set per role at an as-of; the cut names the fixed
+snapshot that resolved every role at its instant. Where both stand, a report can
+price from a binding that disagrees with its cut — and the pin makes the
+disagreement look deliberate. The precedence is not a matter of taste: the cut is
+the body, the binding is a rule of the profile the body was built from, and a rule
+does not travel with the result. A result that named a rule instead of the body would
+be reproducible only while the rule and the store held still.
+
+**What the selection replaces.** The configuration's market bindings, the *Market
+bindings* tab, the pinned as-of, and the binding row as an input to a run. The
+profile the bindings were — one published set per market role — becomes a fact of
+the market data side, resolved when a cut is assembled, which is where the
+[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] page already puts the
+profile.
+
+**What carries over, and is not lost.** The published-state refusal still holds, one
+layer down: a candidate set cannot be part of a body, so the assembly reports it as
+a gap and the cut is incomplete rather than wrong. The ORE market configuration name
+is still derived from the curve and the party, and the cut's market data half records
+it. The export still builds the XML from the published set's points, in the ORE
+vocabulary of the boundary
+([[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]). The run's
+market card survives and is read through the cut. The role vocabulary problem
+survives with it, because the roles are still a free string in the profile.
+
+**What retires with the row.** The pin, because naming a specific cut is the same
+intent and is stronger: a pinned as-of reproduced one curve, and a named cut
+reproduces the whole body. And the picker over published sets on the run settings,
+because a person who wants a particular curve publishes it and takes a cut; the
+report then names the cut.
+
+**The supersession is marked where the decision is cited.** The earlier page carries
+a dated status note saying which parts stand and which retire, and the pages that
+cite it say *superseded in part* where they name its row, its pin or its tab. Its
+argument — that a name is not provenance — stands, and it is the reason the cut, and
+not a name, is what a run now records.
 
 * How it meets the report binding
 
-The [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] makes
-a market role name a publish record and its as-of, and records that it settles
-the curve and leaves the deal population open: *a report that must state both
-needs a second binding, to a cut.* This page supplies the second binding and
-says how the two fit.
+The earlier decision asked for a binding that names the published set rather than a
+free name, and recorded that it left the deal population open: *a report that must
+state both needs a second binding, to a cut.* This page supplies the cut, and the
+selection is where the report states it. The second binding is not a second row
+beside the first: it is the object the first row was approximating, so the row
+retires and the cut carries both halves.
 
-**They are not two names for one thing.** A binding is a rule: one market role,
-one published set, one as-of, and a pin where a rerun needs an earlier result. A
-cut is the materialisation of every rule at one instant, beside the deals, the
-reference data and the engine. The
-[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] page supplies the
-vocabulary: a *profile* is a set of rules and carries no values, a *snapshot* is
-the profile materialised at an instant, and the market data half of an end of day
-cut is a fixed snapshot. The market role bindings are rules of the profile; the
-cut records the identity of the fixed snapshot that resolved them.
+**The chain, in the words the screens use.** A report names a cut selection; the run
+resolves it to a cut; the cut holds the body; the body holds the deal population, the
+fixed snapshot with its publish records, the reference data and the engine. A result
+names one object at the head of that chain, and every input is reachable from it.
 
-**The run settings configuration gains the cut it prices from.** One row, one
-choice, shared by every report bound to that configuration, exactly as the
-market roles are. The bindings stay where the decision put them, as the rules the
-cut resolves; the cut is what a run names.
-
-**The run keeps the cut, and the cut keeps the publish records.** The run records
-the cut it priced from, and the market card the binding decision settles reads
-its role, curve, party, as-of, publisher, published instant, points and publish
-record *through* the cut. A result therefore names one object that reaches every
-input, which is the promise the cluster exists to keep. The run does not copy the
-cut's parts; it names the cut, and the cut is immutable once its body is fixed.
-
-**The gate is one sentence, spoken in three places.** The picker refuses a cut
-that is not consumable where it is picked, the run refuses it before the engine
-is reached, and the run's output message carries the same sentence so a scheduled
-run that nobody watched still says why it did not price. The sentence states what
-the cut's kind requires: a body awaiting its kind's authorisation is refused with
-the request and the person it waits on, and a body of a kind that requires none is
-never refused on that ground.
-
-**What the deal population becomes.** Today the gathering step reads the trade
-store by valuation date and the run records the date it priced at. After this
-page, the gathering step reads the cut's deal population, which is a copy of what
-the store held at the cut instant and not a query re-run against it. The
-[[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] page states why: the
-interval a versioned row states is rewritten when a correction arrives, so two
-executions of the same query at different moments can return different bodies.
-The cut's population is a fact of the cut, and a rerun replays it.
+**What the deal population becomes.** Today the gathering step reads the trade store
+by valuation date and the run records the date it priced at. After this page, the
+gathering step reads the cut's deal population, which is a copy of what the store
+held at the cut instant and not a query re-run against it. The
+[[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] page states why: the interval
+a versioned row states is rewritten when a correction arrives, so two executions of
+the same query at different moments can return different bodies. The cut's population
+is a fact of the cut, and a rerun replays it.
 
 * What this page does not settle
 
-**The entity.** No cut component exists, no table holds one, and no service
-answers a read of one. This page settles what a cut must record, which states
-follow, who may act and what a run may name; it does not design the columns, the
-generated types or the subjects. That is the next work, and it starts from this
-page and from [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
+**The entity.** No cut component exists and no table holds one, and the report
+definition holds no selection. This page settles what a cut must record, which states
+follow, who may act, what a report selects and how a run resolves it; it does not
+design the columns, the generated types or the subjects. That is the next work, and
+it starts from this page and from
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
 
 **One inbox kind, or one for each occasion.** This page takes one inbox kind,
 =reporting.cut_authorisation=, whose detail row names the cut and therefore the
-occasion. The alternative is a kind per occasion, which buys a decide permission
-per occasion and a queue grouped by occasion, at the price of a seeded kind for
-every kind of cut. The choice is the firm's, and the screens draw one kind.
+occasion. The alternative is a kind per occasion, which buys a decide permission per
+occasion and a queue grouped by occasion, at the price of a seeded kind for every
+kind of cut.
 
 **The apply.** The decision is applied by reconciliation, as a role grant is. The
 alternative is an apply workflow, which the inbox already offers a kind through
-=apply_workflow_type= and which buys a visible run and a retry where this page
-buys one idempotent row. The cut's apply is one row, so this page takes the
-reconciliation; a firm that wants the apply on the workflow screens changes one
-column of the kind.
+=apply_workflow_type= and which buys a visible run and a retry where this page buys
+one idempotent row.
 
-**The scope of a cut.** The convention taken here is that a cut's scope is the
-set of books that revalue against one centre's market data, which
-[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]]
-supplies the reason for: a body whose market data half names one centre cannot
-value books that read another. The hub's narrower convention, one cut per book,
-is the smallest such scope and not the only one. Whether a group report prices
-from one cut of the group or from a composition of its books' cuts is open, and
-the prototype draws the single scope only.
+**The scope of a cut.** The convention taken here is that a cut's scope is the set of
+books that revalue against one centre's market data. The hub's narrower convention,
+one cut per book, is the smallest such scope and not the only one. Whether a group
+report prices from one cut of the group or from a composition of its books' cuts is
+open, and a report whose books span two centres is refused rather than composed.
 
-**The reference data half, by version or by value.** The part holds the versions
-of the conventions, the calendars, the settings and the curve configurations the
-run reads. Whether the cut stores those versions or the identifiers of the
-documents is open. The difference is what a rerun needs when a document is
-withdrawn: a version read back from a store that no longer serves it is not a
-reproduction.
+**The resolution of a selection the party took no cut for.** A report may select EOD
+and find no EOD cut of its date, because nobody took one. The run is refused and says
+which cut it looked for. Whether the report should also draw a warning before the run
+— and whether a scheduled run should raise a request for somebody to take the cut —
+is open, and belongs with the schedule's journey.
 
-**The ordinal, and whether a retake is a new cut.** This page takes the retake to
-be a second cut of the same day with its own ordinal and its own authorisation.
-The alternative is one cut with versions, and it is rejected here on the ground
-that an approval is a decision on one body: a versioned cut would let a decided
-body change under the signature. The alternative is named rather than dismissed
-because a firm that keeps one cut per day and amends it would read this
-differently.
+**A LIVE cut's volume.** One LIVE cut per run accumulates fast, and the cuts list must
+stay readable: the kind filter, the date order and the scope are what carry it. Whether
+LIVE cuts are archived after a period is open.
 
-**Which occasions need no authorisation.** The cluster's classification gives the
-start of day kind and the flash kind, and the fixtures draw those two. Whether a
-process-named instant needs one is the process owner's answer, and the kind
-declares it rather than the design assuming it.
+**The reference data half, by version or by value.** The part holds the versions of the
+conventions, the calendars, the settings and the curve configurations the run reads.
+Whether the cut stores those versions or the identifiers of the documents is open, and
+a LIVE cut makes the question sharper, because the versions in force move between runs.
+
+**Which occasions need no authorisation.** The classification gives the start of day,
+flash and LIVE kinds, and the fixtures draw them. Whether a process-named instant needs
+one is the process owner's answer, and the kind declares it rather than the design
+assuming it.
 
 **Who takes a cut where a party has one person.** The four-eyes rule makes an
-authorisation impossible, and this page leaves that as a refusal to draw rather
-than a rule to bend. A kind that requires no authorisation sidesteps it, which is
-a fact about the occasion and not a route past the rule. Whether the installation
-should let a named second account authorise across parties is not settled.
+authorisation impossible, and this page leaves that as a refusal to draw rather than a
+rule to bend. A kind that requires no authorisation sidesteps it, which is a fact about
+the occasion and not a route past the rule.
 
-**The relation to the run's settings.** A cut holds the settings in force.
-Whether the cut names the engine run settings configuration and its version, or
-the individual settings, is open, and it belongs to
-[[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] rather than
-to this page.
+**The relation to the run's settings.** A cut holds the settings in force. Whether the
+cut names the engine run settings configuration and its version, or the individual
+settings, is open, and it belongs to
+[[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] rather than to this
+page.
 
 * What the sources establish
 
-No claim on this page rests on a public source. The definitions of the states,
-the kind's declarations, the permissions, the derivation of the label and the
-relation to the binding are ours, and the pages they rest on are cited above. The
-rules of the authorisation are not ours: they are the inbox's, stated on
-[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and enforced by
-its schema. The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records
-which claims of the cluster do rest on a public source, and this page adds none
-to that list.
+No claim on this page rests on a public source. The definitions of the states, the
+kind's declarations, the permissions, the selection and its resolution, the LIVE kind,
+the derivation of the label and the retirement of the binding row are ours, and the
+pages they rest on are cited above. The rules of the authorisation are not ours: they
+are the inbox's, stated on
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and enforced by its
+schema. The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records which
+claims of the cluster do rest on a public source, and this page adds none to that list.
 
 * See also
 
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster; this page answers the questions it leaves to the screens.
-- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions, and the two that need no authorisation of their own.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the five occasions, including the LIVE kind whose instant the consumer supplies.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, the rules, the queue and the lifecycle the authorisation is.
 - [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the kind this one is shaped after: a detail table keyed by the request, the subject at the raise, the applied facts at the decision.
 - [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the journey of the person who decides, and the rules of the kind the cut's kind takes.
-- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item that would add several deciding functions to the inbox, which a cut does not need.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the decision this page supersedes in part, and the argument it keeps.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] — where the rule that an authorisation is metadata, and never the record it releases, is argued.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item that would add several deciding functions to the inbox, which a cut does not need.
 - [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the deal population, and why the cut copies it rather than querying it.
-- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the fixed snapshot the cut records, and the profile the bindings are.
-- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding this page completes with the second one, to a cut.
-- [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the journey that takes one, and the gaps it draws.
-- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — the journey that consumes one, and the gate it meets.
+- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the fixed snapshot the cut records, and the profile the bindings were.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — why a scope revalues against one centre, and why the resolution refuses two.
+- [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the journey that takes one by hand, and the gaps it draws.
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] — the journey that selects one, and the run that resolves it.
 - [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the journey that reproduces a result from one.
 - [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts journeys]] — the group these journeys belong to.

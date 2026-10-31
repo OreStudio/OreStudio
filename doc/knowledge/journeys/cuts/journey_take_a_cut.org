@@ -64,14 +64,18 @@ reports of the day cannot run, or because the deal cut must be retaken until the
 population is clean, as the [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]]
 note records. The journey ends on the cut's page, in a state the page draws.
 
-This journey takes a cut and has it authorised. It does not approve or withdraw a
-published curve — those are
+This journey takes a cut and has it authorised. The cut is taken for a report to
+price from, and the report selects it through
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]]; the two
+journeys meet at the resolution, which reads the cuts this one leaves behind. The
+kind whose instant a run supplies is not taken here at all: a LIVE cut is minted by
+the run that consumes it, and a person never presses a button to make one.
+
+This journey does not approve or withdraw a published curve — those are
 [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]]
 and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published
-curve]] — and it does not run a report:
-[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] is the
-journey that does. It does not author a convention, a calendar or a curve
-configuration: it reads the version in force and records it.
+curve]] — and it does not run a report. It does not author a convention, a calendar
+or a curve configuration: it reads the version in force and records it.
 
 * Steps
 
@@ -113,6 +117,8 @@ configuration: it reads the version in force and records it.
    offers the centre's close, the start of day kind the centre's open, and the
    flash and process kinds an instant the person states. A kind the party has no
    centre for is not offered, and the step says which centre each kind would use.
+   LIVE is the one kind the step does not offer, and it says why: that kind's
+   instant comes from the run that consumes it, so there is no take to press.
 6. *Fix the timepoint.* For the end of day kind the timepoint is the close of the
    centre the scope revalues against, read from the cut times reference data and
    drawn so the person reads it rather than types it. For a flash cut or a cut a
@@ -382,7 +388,7 @@ record, the rules and the queue, so neither reimplements the other.
 
 * Related journeys
 
-- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — what the cut is taken for, and the gate it meets when it is not authorised.
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] — what the cut is taken for: the report's selection, and the gate the resolution meets when no usable cut exists.
 - [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the runs that price from this cut, and the reproduction of one of them.
 - [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the remedy for a curve that is still a candidate, which is one of the gaps.
 - [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the decision the gap waits on, and the same inbox this journey's authorisation uses.

@@ -54,6 +54,12 @@ the body; the kind fixes the instant, the recurrence and the centre, and the use
 the result is put to. The classification, and the argument for it, is on
 [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]].
 
+One kind takes its instant from the consumer rather than from a centre, a person
+or a process: a live cut is fixed at the instant the run that consumes it starts,
+and the run mints it. It is the kind a report selects when it says *value this
+scope at whatever time you start*, and it is why a run may bring a cut into being
+rather than only choose one.
+
 * The purpose and the body
 
 Within ORE Studio the purpose of a cut is single: to provide a valuation that is

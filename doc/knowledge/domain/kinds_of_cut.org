@@ -19,11 +19,12 @@ produces it.
 
 The kinds of cut classify the occasion a cut is taken for, and not the size of
 the body. The purpose is single, a valuation that can be reproduced, so the body
-is the entire fixed world of one valuation in every kind. Four occasions are in
-use, the official valuation, the verification of prices, the intraday view and
-the start of the day, and a process may name an instant of its own. Each kind is
-stated by what it is for, what it fixes, the attributes its occasion gives it,
-and its relation to the two reviewed halves of the body.
+is the entire fixed world of one valuation in every kind. Five occasions are in
+use: the official valuation, the verification of prices, the intraday view, the
+start of the day, and the live view whose instant its consumer supplies. A process
+may also name an instant of its own. Each kind is stated by what it is for, what it
+fixes, the attributes its occasion gives it, and its relation to the two reviewed
+halves of the body.
 
 * The principle
 
@@ -130,14 +131,12 @@ recurs while the market moves.
 The run values deals and reads prices, so it holds the deal population and the
 market data of that instant, and the rest of the body is recorded with it.
 
-The output is indicative by construction. This kind is the one that fixes the
-values it produces as indicative rather than official, because the occasion is
-before the day's data settles. One kind does not follow the other: the start of
-day kind below needs no authorisation either, and its values are official because
-they were approved when the previous day's cut was fixed. The kind therefore
-states both facts, and the
-[[id:F6362451-D569-4609-97A3-F1C785AAAF02][cut model]] takes them as its
-declaration.
+The output is indicative by construction, because the occasion is before the day's
+data settles. One declaration does not follow the other: the start of day kind below
+needs no authorisation either, and its values are official because they were
+approved when the previous day's cut was fixed. The kind therefore states both
+facts, and the [[id:F6362451-D569-4609-97A3-F1C785AAAF02][cut model]] takes them as
+its declaration.
 
 * The start of the day: start of day cut
 
@@ -154,6 +153,35 @@ reason as at the close.
 *How it relates to the components.* Both components, inherited rather than
 approved at the opening. What the kind adds is a direction of inheritance.
 
+* The live view: live cut
+
+*What it is for.* A report that values its scope at whatever instant it is run: a
+monitor, an intraday risk view, a check before a decision. The person who wants the
+view does not know in advance when they will want it, so no instant can be stated
+before the run.
+
+*What it fixes.* The complete body the run reads, at the instant the run starts,
+with the values the store holds then and the reference data and settings in force
+then. It is the same four inputs as every other kind, taken at the run's own clock
+rather than at a published one.
+
+*What the occasion gives it.* Nothing outside the run fixes the instant: no centre
+publishes it, no person chooses it, and no process names it. The occasion is a
+property of the consumer, so the kind contributes one attribute that no other kind
+has: the timepoint comes from the run. Recurrence follows the run and not a
+schedule, so a report that runs twice in a morning fixes two bodies.
+
+*How it relates to the components.* Both reviewed halves, at the run's instant. The
+body is assembled as any other is, and a part that cannot be assembled refuses the
+run rather than yielding a smaller body.
+
+The output is indicative, and no authorisation precedes the body. Both follow from
+the same fact: the run both mints the cut and consumes it, so the instant it fixes
+is the instant it prices at, and the values it fixes are the values the day's
+official data will replace. Whether an indicative view is signed is not a question
+about this occasion: a view that waited for a signature would arrive after the
+decision it serves.
+
 * Where a kind sits against a component
 
 A kind qualifies the cut as a whole, and the process that takes the cut chooses
@@ -164,12 +192,12 @@ the occasion, and its body, which the purpose fixes.
 
 A kind also declares two further facts, and neither follows from the other. It
 states whether a cut of its occasion is authorised before it is used, and
-whether the values a cut of it fixes are indicative. The four occasions above
-fall two on each side of the first: the end of day cut and the independent
-verification are signed, and the flash and start of day cuts are not. The second
-separates the flash cut, whose values are indicative, from the start of day cut,
-whose values are official because they were approved when the previous day's cut
-was fixed.
+whether the values a cut of it fixes are indicative. The five occasions above fall
+two on one side of the first and three on the other: the end of day cut and the
+independent verification are signed, and the flash, start of day and live cuts are
+not. The second separates the flash and live cuts, whose values are indicative,
+from the start of day cut, whose values are official because they were approved
+when the previous day's cut was fixed.
 
 * An instant a process names
 

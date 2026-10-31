@@ -29,7 +29,7 @@ The change stream carries what the stores announce. One subscription hears every
 | State        | STARTED                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
 | Now          | Code and tests are done. The live proof of the HTTP end is blocked. |
-| Waiting on   | [[id:7550D48A-AD0F-49C8-90FE-38B351DAD237][The session door holds no verifier]] |
+| Waiting on   | [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]] |
 | Next         | Fix the session door, then open a stream and read a frame. |
 | Last touched | 2026-10-31                               |
 
@@ -105,7 +105,7 @@ although the same log shows =Fetched JWKS public key from IAM= and
 constructed with =server.verifier()= before the service runner installs the
 verifier, so it holds an empty one forever. No browser can sign in, so no
 browser can open a stream: the change stream has no client until that is fixed.
-Captured as [[id:7550D48A-AD0F-49C8-90FE-38B351DAD237][The session door holds no verifier]].
+Fixed by [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]].
 
 What is proven without a browser:
 

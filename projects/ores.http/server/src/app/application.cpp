@@ -179,8 +179,13 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     session_cookie.secure = cfg.server.enable_ssl;
     server.set_cookie_settings(session_cookie);
 
+    /*
+     * The door finds the verifier when a sign-in needs it. The runner installs the
+     * verifier from IAM's public key after the routes are built, so a door that kept
+     * the one it was given would keep an empty one and refuse every sign-in.
+     */
     http::routes::iam::auth_session_routes auth_sessions(
-        service_nats, server.sessions(), server.verifier(), session_cookie);
+        service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);

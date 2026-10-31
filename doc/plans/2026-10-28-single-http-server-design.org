@@ -689,6 +689,12 @@ and it is one direction, which is all the design needs.
   written to for the stall deadline is closed, because that is a dead client and
   not a quiet market.
 
+The stream above needs a body source that can wait. The synchronous =body_source=
+serves a file, which always has its next piece; an event stream does not, and reading it
+synchronously would hold the connection's thread. =awaitable_body_source= is the same
+contract with a =co_await= in it, and the session takes the loop that suits whichever source
+the response names.
+
 *File transfer.* The grid already moves every package, input, output and log
 through this server over =/api/v1/storage/{bucket}/{key}=, with a capability
 token minted for one assignment. Today that path buffers: =store_.put(bucket, key,

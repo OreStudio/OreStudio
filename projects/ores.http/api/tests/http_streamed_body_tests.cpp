@@ -34,6 +34,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <vector>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -472,6 +473,57 @@ private:
     std::string bytes_;
     bool states_length_;
     std::size_t offset_ = 0;
+};
+
+/**
+ * @brief A source whose next piece is not ready yet.
+ *
+ * It gives its pieces in order, waiting between them, and records the waits so a
+ * case can prove that the wait suspended the response and not the thread.
+ */
+class streamed_waiting_source final : public awaitable_body_source {
+public:
+    streamed_waiting_source(std::vector<std::string> pieces, std::chrono::milliseconds wait,
+                            bool states_length = true, bool fail_after_first = false)
+        : pieces_(std::move(pieces))
+        , wait_(wait)
+        , states_length_(states_length)
+        , fail_after_first_(fail_after_first) {
+        for (const auto& piece : pieces_)
+            total_ += piece.size();
+    }
+
+    [[nodiscard]] std::optional<std::uint64_t> size() const override {
+        if (!states_length_)
+            return std::nullopt;
+        return total_;
+    }
+
+    asio::awaitable<std::size_t> read(std::span<char> into) override {
+        // The wait is before every piece, the first included, so a case can hold
+        // a whole response open and prove the thread went on serving.
+        {
+            asio::steady_timer timer(co_await asio::this_coro::executor);
+            timer.expires_after(wait_);
+            co_await timer.async_wait(asio::use_awaitable);
+        }
+        if (fail_after_first_ && index_ == 1)
+            throw std::runtime_error("the source cannot produce what it promised");
+        if (index_ >= pieces_.size())
+            co_return 0;
+        const auto& piece = pieces_[index_++];
+        const auto take = std::min(into.size(), piece.size());
+        std::copy_n(piece.data(), take, into.data());
+        co_return take;
+    }
+
+private:
+    std::vector<std::string> pieces_;
+    std::chrono::milliseconds wait_;
+    bool states_length_;
+    bool fail_after_first_;
+    std::size_t total_ = 0;
+    std::size_t index_ = 0;
 };
 
 /**
@@ -1115,6 +1167,179 @@ TEST_CASE("a_source_that_fails_mid_body_closes_the_connection", "[http_response_
     // The status was already on the wire, so the client sees a short read and not
     // a whole answer to a request the server could not satisfy.
     REQUIRE(!answered.has_value());
+}
+
+TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length",
+          "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a response body is written from a source that waits";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/slow")
+            .summary("Answer from a source that waits")
+            .auth_optional()
+            .handler([](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/plain";
+                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                    std::vector<std::string>{"alpha", "beta"}, std::chrono::milliseconds(5));
+                co_return resp;
+            })
+            .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/slow", std::chrono::seconds(5));
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(answered->body() == "alphabeta");
+    // A source that states its length is answered with it, not chunked.
+    REQUIRE(!answered->chunked());
+    REQUIRE((*answered)[http::field::content_length] == "9");
+}
+
+TEST_CASE("a_source_with_no_length_is_chunked_while_it_waits", "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a waiting source without a length is chunked";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/chunks")
+            .summary("Answer in chunks from a source that waits")
+            .auth_optional()
+            .handler([](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/plain";
+                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                    std::vector<std::string>{"one", "two"}, std::chrono::milliseconds(5), false);
+                co_return resp;
+            })
+            .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/chunks", std::chrono::seconds(5));
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(answered->chunked());
+    REQUIRE(answered->body() == "onetwo");
+}
+
+TEST_CASE("a_source_that_waits_does_not_hold_another_connection", "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that one waiting response does not block another";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    // One worker thread, so a blocked loop would show: the fast request has no
+    // other thread to be answered on.
+    options.worker_threads = 1;
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/waiting")
+            .summary("Answer after a wait")
+            .auth_optional()
+            .handler([](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/plain";
+                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                    std::vector<std::string>{"late"}, std::chrono::milliseconds(400));
+                co_return resp;
+            })
+            .build());
+    router->add_route(
+        router->get("/prompt")
+            .summary("Answer at once")
+            .auth_optional()
+            .handler([](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/plain";
+                resp.body = "prompt";
+                co_return resp;
+            })
+            .build());
+
+    std::atomic<bool> waiting_done{false};
+    std::atomic<long long> waiting_finished_ms{-1};
+    const auto started = std::chrono::steady_clock::now();
+
+    std::thread slow([&] {
+        const auto answered = fetch_streamed(fixture.port(), "/waiting", std::chrono::seconds(5));
+        REQUIRE(answered.has_value());
+        waiting_finished_ms.store(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                      std::chrono::steady_clock::now() - started)
+                                      .count());
+        waiting_done.store(true);
+    });
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    const auto prompt = fetch_streamed(fixture.port(), "/prompt", std::chrono::seconds(5));
+    const auto prompt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::steady_clock::now() - started)
+                               .count();
+
+    slow.join();
+
+    REQUIRE(prompt.has_value());
+    REQUIRE(prompt->body() == "prompt");
+    // The prompt answer lands well before the waiting one, on the one thread that
+    // would have been held by a synchronous read.
+    REQUIRE(prompt_ms < 300);
+    REQUIRE(waiting_done.load());
+    REQUIRE(waiting_finished_ms.load() >= 400);
+}
+
+TEST_CASE("an_awaitable_source_that_fails_mid_body_closes_the_connection",
+          "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a failing awaitable source closes the connection";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/broken")
+            .summary("Answer from a source that cannot finish")
+            .auth_optional()
+            .handler([](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/plain";
+                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                    std::vector<std::string>{"first", "second"},
+                    std::chrono::milliseconds(1), true, true);
+                co_return resp;
+            })
+            .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/broken", std::chrono::seconds(5));
+
+    // The headers promise ten bytes and the source cannot deliver them, so the
+    // client sees a short body or a broken connection rather than a status.
+    if (answered.has_value())
+        REQUIRE(answered->body().size() < 10);
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

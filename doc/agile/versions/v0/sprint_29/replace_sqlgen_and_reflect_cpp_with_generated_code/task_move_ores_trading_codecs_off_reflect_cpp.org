@@ -8,11 +8,11 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-trading-codecs-off-reflect-cpp
-#+pr:
+#+pr: 4278
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-27
+#+updated: 2026-10-31
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -77,6 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4278][#4278]] | [wip] Carry an enumerator as its name, and start the trading sweep |
 |    |       |
 
 * Review

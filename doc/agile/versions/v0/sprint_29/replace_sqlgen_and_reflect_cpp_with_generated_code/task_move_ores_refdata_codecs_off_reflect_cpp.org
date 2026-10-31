@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-refdata-hand-written-json-off-reflect-cpp
-#+pr: 4278
+#+pr: 4259
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -293,7 +293,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4278][#4278]] | [wip] Carry an enumerator as its name, and start the trading sweep |
 | [[https://github.com/OreStudio/OreStudio/pull/4273][#4273]] | [refdata] Opt the models the trunk added into the wire codec |
 | [[https://github.com/OreStudio/OreStudio/pull/4259][#4259]] | [codegen] Print a storage row from the columns it already states |
 | [[https://github.com/OreStudio/OreStudio/pull/4236][#4236]] | [docs] Record why the storage entity printer cannot be deleted |

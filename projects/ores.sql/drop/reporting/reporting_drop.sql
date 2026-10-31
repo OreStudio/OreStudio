@@ -43,6 +43,12 @@
 \ir ./reporting_engine_settings_fixings_drop.sql
 \ir ./reporting_engine_settings_notify_trigger_drop.sql
 \ir ./reporting_engine_settings_drop.sql
+\ir ./reporting_cut_kinds_notify_trigger_drop.sql
+\ir ./reporting_cut_kinds_drop.sql
+\ir ./reporting_cut_resolution_rules_notify_trigger_drop.sql
+\ir ./reporting_cut_resolution_rules_drop.sql
+\ir ./reporting_cut_families_notify_trigger_drop.sql
+\ir ./reporting_cut_families_drop.sql
 \ir ./reporting_risk_report_config_books_drop.sql
 \ir ./reporting_risk_report_config_portfolios_drop.sql
 \ir ./reporting_risk_report_configs_notify_trigger_drop.sql

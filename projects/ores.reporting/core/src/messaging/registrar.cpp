@@ -32,6 +32,12 @@
 #include "ores.reporting.core/messaging/configuration_analytic_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_family_handler.hpp"
+#include "ores.reporting.core/messaging/cut_resolution_rule_handler.hpp"
+#include "ores.reporting.core/messaging/cut_kind_handler.hpp"
+#include "ores.reporting.core/messaging/cut_family_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_resolution_rule_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_kind_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_building_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_change_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_execution_registrar.hpp"
@@ -142,44 +148,126 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // ----------------------------------------------------------------
-    // Report definitions (generated CRUD handler)
+    // Cut families (generated CRUD handler)
     // ----------------------------------------------------------------
-    auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier);
+    auto cfh = std::make_shared<cut_family_handler>(nats, ctx, verifier);
     subs.push_back(nats.queue_subscribe(
-        list_report_definitions_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->list_report_definitions(std::move(msg));
+        list_cut_families_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->list_cut_families(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_report_definition_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->put_report_definition(std::move(msg));
+        get_cut_family_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->get_cut_family(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_report_definition_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->delete_report_definition(std::move(msg));
+        get_many_cut_families_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->get_many_cut_families(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_report_definition_versions_request::nats_subject,
-        group,
-        [rdh](ores::nats::message msg) { rdh->list_report_definition_versions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_definition_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->get_report_definition(std::move(msg));
+        put_cut_family_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->put_cut_family(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_report_definitions_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->get_many_report_definitions(std::move(msg));
+        put_many_cut_families_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->put_many_cut_families(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_report_definitions_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->put_many_report_definitions(std::move(msg));
+        delete_cut_family_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->delete_cut_family(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_report_definitions_request::nats_subject,
-        group,
-        [rdh](ores::nats::message msg) { rdh->delete_many_report_definitions(std::move(msg)); }));
+        delete_many_cut_families_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->delete_many_cut_families(std::move(msg));
+        }));
     subs.push_back(nats.queue_subscribe(
-        get_report_definition_version_request::nats_subject, group, [rdh](ores::nats::message msg) {
-            rdh->get_report_definition_version(std::move(msg));
+        list_cut_family_versions_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->list_cut_family_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_cut_family_version_request::nats_subject, group, [cfh](ores::nats::message msg) {
+            cfh->get_cut_family_version(std::move(msg));
+        }));
+
+    // ----------------------------------------------------------------
+    // Cut resolution rules (generated CRUD handler)
+    // ----------------------------------------------------------------
+    auto crrh = std::make_shared<cut_resolution_rule_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        list_cut_resolution_rules_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->list_cut_resolution_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_cut_resolution_rule_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->get_cut_resolution_rule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_cut_resolution_rules_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->get_many_cut_resolution_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_cut_resolution_rule_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->put_cut_resolution_rule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_cut_resolution_rules_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->put_many_cut_resolution_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_cut_resolution_rule_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->delete_cut_resolution_rule(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_cut_resolution_rules_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->delete_many_cut_resolution_rules(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_cut_resolution_rule_versions_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->list_cut_resolution_rule_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_cut_resolution_rule_version_request::nats_subject, group, [crrh](ores::nats::message msg) {
+            crrh->get_cut_resolution_rule_version(std::move(msg));
+        }));
+
+    // ----------------------------------------------------------------
+    // Cut kinds (generated CRUD handler)
+    // ----------------------------------------------------------------
+    auto ckh = std::make_shared<cut_kind_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        list_cut_kinds_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->list_cut_kinds(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_cut_kind_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->get_cut_kind(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_many_cut_kinds_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->get_many_cut_kinds(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_cut_kind_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->put_cut_kind(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_cut_kinds_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->put_many_cut_kinds(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_cut_kind_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->delete_cut_kind(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_cut_kinds_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->delete_many_cut_kinds(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_cut_kind_versions_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->list_cut_kind_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_cut_kind_version_request::nats_subject, group, [ckh](ores::nats::message msg) {
+            ckh->get_cut_kind_version(std::move(msg));
         }));
 
     // ----------------------------------------------------------------

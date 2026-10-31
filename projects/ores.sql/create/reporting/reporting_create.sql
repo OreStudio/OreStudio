@@ -44,6 +44,16 @@
 \ir ./reporting_configuration_analytic_parameters_notify_trigger_create.sql
 \ir ./reporting_configuration_market_bindings_create.sql
 \ir ./reporting_configuration_market_bindings_notify_trigger_create.sql
+-- The cuts: the family and resolution lookups, the kinds that name them, the
+-- body a run prices from, and the gaps that body could not fill. The kinds are
+-- read by report definitions, so they load before them.
+\ir ./reporting_cut_families_create.sql
+\ir ./reporting_cut_families_notify_trigger_create.sql
+\ir ./reporting_cut_resolution_rules_create.sql
+\ir ./reporting_cut_resolution_rules_notify_trigger_create.sql
+\ir ./reporting_cut_kinds_create.sql
+\ir ./reporting_cut_kinds_notify_trigger_create.sql
+
 \ir ./reporting_ore_parameter_value_domains_create.sql
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql
 \ir ./reporting_ore_parameters_create.sql

@@ -27,6 +27,9 @@
 #include "ores.reporting.api/eventing/report_definition_event.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
+#include "ores.reporting.service/messaging/cut_family_event_registrar.hpp"
+#include "ores.reporting.service/messaging/cut_kind_event_registrar.hpp"
+#include "ores.reporting.service/messaging/cut_resolution_rule_event_registrar.hpp"
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
 #include "ores.reporting.service/messaging/engine_settings_proposal_registrar.hpp"
 #include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
@@ -115,6 +118,14 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         ores::reporting::service::messaging::register_report_instance_event_mapping(
             event_source, event_bus, nats);
     auto rt_changed_sub = ores::reporting::service::messaging::register_report_type_event_mapping(
+        event_source, event_bus, nats);
+    auto cf_changed_sub =
+        ores::reporting::service::messaging::register_cut_family_event_mapping(
+            event_source, event_bus, nats);
+    auto crr_changed_sub =
+        ores::reporting::service::messaging::register_cut_resolution_rule_event_mapping(
+            event_source, event_bus, nats);
+    auto ck_changed_sub = ores::reporting::service::messaging::register_cut_kind_event_mapping(
         event_source, event_bus, nats);
 
     event_source.start();

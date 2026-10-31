@@ -1673,6 +1673,7 @@ const fr: SourceCatalogue = {
                 title: 'La décision',
                 decided:
                     'Cette opération est décidée. Annuler une décision n’est pas encore proposé ici.',
+                denied: 'L’autorisation est refusée : une opération refusée ne peut pas devenir autorisée. Annuler le refus n’est pas encore proposé ici, et la correction est une nouvelle version soumise à autorisation.',
                 comment: 'Commentaire, obligatoire',
                 commentPlaceholder: 'Qu’avez-vous vérifié, et qu’avez-vous constaté ?',
                 holdReason: 'Motif de mise en attente, obligatoire pour mettre en attente',

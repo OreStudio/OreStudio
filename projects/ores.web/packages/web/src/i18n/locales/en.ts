@@ -1653,6 +1653,7 @@ export const en: SourceCatalogue = {
             decision: {
                 title: 'The decision',
                 decided: 'This deal is decided. Undoing a decision is not offered here yet.',
+                denied: 'Authorisation is refused: a denied deal cannot become authorised. Undoing the denial is not offered here yet, and the fix is a new version raised for authorisation.',
                 comment: 'Comment, required',
                 commentPlaceholder: 'What did you check, and what did you find?',
                 holdReason: 'Hold reason, required to hold over',

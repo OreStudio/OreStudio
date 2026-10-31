@@ -1665,6 +1665,7 @@ const pt: SourceCatalogue = {
                 title: 'A decisão',
                 decided:
                     'Esta operação está decidida. Anular uma decisão ainda não é oferecido aqui.',
+                denied: 'A autorização foi recusada: uma operação recusada não pode passar a autorizada. Anular a recusa ainda não é oferecido aqui, e a correção é uma nova versão submetida a autorização.',
                 comment: 'Comentário, obrigatório',
                 commentPlaceholder: 'O que verificou, e o que encontrou?',
                 holdReason: 'Motivo de espera, obrigatório para colocar em espera',

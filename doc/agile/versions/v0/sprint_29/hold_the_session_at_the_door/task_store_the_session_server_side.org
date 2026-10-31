@@ -7,9 +7,10 @@
 #+level: s1
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
+#+branch: feature/store-the-session-server-side
+#+pr: 4183
+#+blocked_on: review
+#+blocked_since: 2026-10-31 02:40
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -26,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | Not yet started.                       |
+| Now          | The store holds sessions, hashes their identifiers and slides their expiry. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the cookie carries it.    |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -55,9 +56,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Store cases | 7 cases, 28 assertions, all passing | =./ores.http.api.tests "[session_store]"= | =#4183= |
+| =ores.http.api= test cases | 114 cases, 374 assertions, all passing | =./ores.http.api.tests= | =#4183= |
 
 * Notes
+
+- The clock is injected, so the expiry cases decide what time it is instead of
+  sleeping and hoping. One case had to be rewritten when it proved I had misread my
+  own semantics: touching at twenty-nine seconds slides the expiry to fifty-nine, so
+  the session is not quiet for thirty seconds. The sliding case is the one that says
+  so now.
+- The identifier is 256 bits from =std::random_device=, rendered as hex, and the store
+  keys on its SHA-256. =key_of= is exposed so a case can assert the identifier never
+  appears as a key.
+- =rotate= exists for the change of privilege the design names, and a case pins it:
+  the old identifier stops working and the session survives.
 
 * Test Scenarios
 
@@ -74,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4183](https://github.com/OreStudio/OreStudio/pull/4183) | [http] Hold the session server side |
 
 * Review
 

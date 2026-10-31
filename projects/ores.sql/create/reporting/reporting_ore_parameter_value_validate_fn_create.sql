@@ -61,6 +61,81 @@ $$ language plpgsql;
  * leaf's value, so a parameter and a convention term get the same answer from
  * the same set. A set code the tables do not hold admits every value.
  */
+create or replace function ores_reporting_value_in_set_item_fn(
+    p_set_code text, p_kind text, p_relation text, p_value text)
+returns boolean
+security definer
+set search_path = public, pg_temp
+stable
+as $$
+declare
+    v_ok boolean := false;
+begin
+    if p_kind = 'enumerated' then
+        select exists (
+            select 1
+              from ores_reporting_ore_parameter_value_set_values_tbl v
+             where v.value_set_code = p_set_code
+               and v.value = p_value
+               and v.is_active
+               and v.valid_to = ores_utility_infinity_timestamp_fn())
+          into v_ok;
+    elsif p_kind = 'boolean' then
+        /*
+         * A boolean has two spellings in this tree. ORE's XML states it as Y or
+         * N and the projection stores what the document said, so a document
+         * that reads Y writes Y; the screens state true or false. Both are the
+         * same value. The check accepts either and stores it as it arrived,
+         * because normalising it would change the document an export writes
+         * back and break a roundtrip that is meant to be lossless.
+         */
+        v_ok := lower(p_value) in ('true', 'false', 'y', 'n');
+    elsif p_kind = 'range' then
+        begin
+            v_ok := ores_reporting_number_in_bounds_fn(p_set_code, p_value::numeric);
+        exception when others then
+            v_ok := false;
+        end;
+    elsif p_kind = 'regex' then
+        select p_value ~ s.pattern
+          into v_ok
+          from ores_reporting_ore_parameter_value_sets_tbl s
+         where s.code = p_set_code
+           and s.valid_to = ores_utility_infinity_timestamp_fn();
+    elsif p_kind = 'integer' then
+        v_ok := p_value ~ '^-?[0-9]+$'
+            and ores_reporting_number_in_bounds_fn(p_set_code, p_value::numeric);
+    elsif p_kind = 'number' then
+        begin
+            v_ok := ores_reporting_number_in_bounds_fn(p_set_code, p_value::numeric);
+        exception when others then
+            v_ok := false;
+        end;
+    elsif p_kind in ('period', 'text') then
+        v_ok := true;
+    elsif p_kind = 'catalogue' then
+        if p_relation is null or to_regclass(p_relation) is null then
+            raise exception 'The value set % names no readable catalogue relation. Rename it or fix the registry.', p_set_code;
+        end if;
+        execute format(
+            'select exists (select 1 from %I where value = $1 and is_active)', p_relation)
+          into v_ok using p_value;
+    end if;
+
+    return coalesce(v_ok, false);
+end;
+$$ language plpgsql;
+
+/**
+ * Whether a value lies in a value set: the one rule of every check of an ORE
+ * leaf's value, so a parameter and a convention term get the same answer from
+ * the same set. A set code the tables do not hold admits every value.
+ *
+ * The set states what one value may be and how many the document writes. A set
+ * of cardinality many holds a comma separated list, and every item is held to
+ * the set's own rule, so a list is as guarded as a single value and an empty
+ * item, which is a trailing or doubled comma, is a typo rather than a value.
+ */
 create or replace function ores_reporting_value_in_set_fn(p_set_code text, p_value text)
 returns boolean
 security definer
@@ -68,14 +143,14 @@ set search_path = public, pg_temp
 stable
 as $$
 declare
-    v_set_code text := p_set_code;
     v_kind text;
+    v_cardinality text;
     v_relation text;
-    v_ok boolean := false;
+    v_ok boolean := true;
     v_part text;
 begin
-    select s.source_kind, c.relation
-      into v_kind, v_relation
+    select s.source_kind, s.cardinality, c.relation
+      into v_kind, v_cardinality, v_relation
       from ores_reporting_ore_parameter_value_sets_tbl s
       left join ores_reporting_ore_parameter_value_set_catalogues_tbl c
         on c.code = s.catalogue_code
@@ -87,78 +162,20 @@ begin
         return true;
     end if;
 
-    if v_kind = 'enumerated' then
-        select exists (
-            select 1
-              from ores_reporting_ore_parameter_value_set_values_tbl v
-             where v.value_set_code = v_set_code
-               and v.value = p_value
-               and v.is_active
-               and v.valid_to = ores_utility_infinity_timestamp_fn())
-          into v_ok;
-    elsif v_kind = 'boolean' then
-        /*
-         * A boolean has two spellings in this tree. ORE's XML states it as Y or
-         * N and the projection stores what the document said, so a document
-         * that reads Y writes Y; the screens state true or false. Both are the
-         * same value. The check accepts either and stores it as it arrived,
-         * because normalising it would change the document an export writes
-         * back and break a roundtrip that is meant to be lossless.
-         */
-        v_ok := lower(p_value) in ('true', 'false', 'y', 'n');
-    elsif v_kind = 'range' then
-        begin
-            v_ok := ores_reporting_number_in_bounds_fn(v_set_code, p_value::numeric);
-        exception when others then
-            v_ok := false;
-        end;
-    elsif v_kind = 'regex' then
-        select p_value ~ s.pattern
-          into v_ok
-          from ores_reporting_ore_parameter_value_sets_tbl s
-         where s.code = v_set_code
-           and s.valid_to = ores_utility_infinity_timestamp_fn();
-    elsif v_kind in ('integer', 'number') then
-        /*
-         * A numeric parameter may state one number or a list of them, such as
-         * the discretisation grid a replicating engine reads. Each comma
-         * separated part is checked and an empty part is a typo, so a list is
-         * as guarded as a single value rather than waved through. A set that
-         * states a bound holds every part to it, because a numeric set is the
-         * one place a floor or a ceiling lives.
-         */
-        v_ok := true;
-        foreach v_part in array string_to_array(p_value, ',') loop
-            if v_part is null or btrim(v_part) = '' then
-                v_ok := false;
-            elsif v_kind = 'integer' then
-                if btrim(v_part) !~ '^-?[0-9]+$' then
-                    v_ok := false;
-                elsif not ores_reporting_number_in_bounds_fn(v_set_code, btrim(v_part)::numeric) then
-                    v_ok := false;
-                end if;
-            else
-                begin
-                    if not ores_reporting_number_in_bounds_fn(v_set_code, btrim(v_part)::numeric) then
-                        v_ok := false;
-                    end if;
-                exception when others then
-                    v_ok := false;
-                end;
-            end if;
-        end loop;
-    elsif v_kind in ('period', 'text') then
-        v_ok := true;
-    elsif v_kind = 'catalogue' then
-        if v_relation is null or to_regclass(v_relation) is null then
-            raise exception 'The value set % names no readable catalogue relation. Rename it or fix the registry.', v_set_code;
-        end if;
-        execute format(
-            'select exists (select 1 from %I where value = $1 and is_active)', v_relation)
-          into v_ok using p_value;
+    if v_cardinality <> 'many' then
+        return ores_reporting_value_in_set_item_fn(p_set_code, v_kind, v_relation, p_value);
     end if;
 
-    return coalesce(v_ok, false);
+    foreach v_part in array string_to_array(p_value, ',') loop
+        if v_part is null or btrim(v_part) = '' then
+            v_ok := false;
+        elsif not ores_reporting_value_in_set_item_fn(
+                p_set_code, v_kind, v_relation, btrim(v_part)) then
+            v_ok := false;
+        end if;
+    end loop;
+
+    return v_ok;
 end;
 $$ language plpgsql;
 

@@ -2,7 +2,7 @@
 :ID: D5FFD498-A6E9-45AA-B80D-E16E3A432BD0
 :END:
 #+title: A value set is the only place an ORE parameter's rule is written
-#+description: The five tables that state what a parameter accepts, the nine kinds of rule, the two links that find a set from a parameter or a leaf, and the seed that writes them from the ORE source.
+#+description: The five tables that state what a parameter accepts, the nine kinds of rule and the one cardinality, the two links that find a set from a parameter or a leaf, and the seed that writes them from the ORE source.
 #+type: knowledge
 #+level: cross
 #+filetags: :ore:xml:value-sets:architecture:
@@ -15,7 +15,9 @@ One table states what one ORE parameter accepts, once, and every other table
 that needs the answer points at it. A set states a kind, and the kind decides
 which of its other columns mean anything: an enumerated set states its values, a
 catalogue set names a relation to read, a range states a floor and a ceiling, a
-regex states a pattern. Nothing else in the tree repeats the rule: the part
+regex states a pattern. A set also states a cardinality, which says whether the
+document writes one value or a comma separated list of them; the kind then says
+what one value may be. Nothing else in the tree repeats the rule: the part
 tables carry no CHECK constraint on the columns a set governs, and a screen
 decides no rule of its own; it asks the store and draws the answer.
 
@@ -23,11 +25,11 @@ decides no rule of its own; it asks the store and draws the answer.
 
 | Table | States |
 |-------+--------|
-| =ores_reporting_ore_parameter_value_sets_tbl= | the rule: =source_kind=, plus =minimum=, =maximum=, =pattern=, =catalogue_code=, =is_ordered= |
+| =ores_reporting_ore_parameter_value_sets_tbl= | the rule: =source_kind= and =cardinality=, plus =minimum=, =maximum=, =pattern=, =catalogue_code=, =is_ordered= |
 | =ores_reporting_ore_parameter_value_set_values_tbl= | the values of an enumerated set: =value=, =label=, =display_order=, =is_active= |
 | =ores_reporting_ore_parameter_value_set_catalogues_tbl= | the relation a catalogue set reads, such as =ores_refdata_currency_catalogue_v= |
 | =ores_reporting_ore_parameter_setting_value_sets_tbl= | the link from =(scope, name)= to a set, which is how a parameter finds its rule |
-| =ores_reporting_ore_parameter_vocabularies_tbl= | the link from an ORE element to a set, which nothing reads yet |
+| =ores_reporting_ore_parameter_vocabularies_tbl= | the link from an ORE leaf's address to a set, which both leaf guards read |
 
 [[file:a_value_set_is_the_only_statement_of_a_rule.png]]
 
@@ -36,8 +38,9 @@ decides no rule of its own; it asks the store and draws the answer.
 * The nine kinds
 
 =source_kind= holds one of nine values, and
-=projects/ores.sql/create/reporting/reporting_ore_parameter_value_validate_fn_create.sql:64=
-is the only code that reads it. Everything a rule can say is in this list.
+=projects/ores.sql/create/reporting/reporting_ore_parameter_value_validate_fn_create.sql=
+is the only code that reads it. Everything a rule can say about one value is in
+this list.
 
 The seed uses seven of the nine on 2026-10-31: 149 sets are =text=, 75 =number=,
 52 =enumerated=, 47 =integer=, 10 =boolean=, 7 =catalogue= and 2 =regex=, with no
@@ -49,17 +52,29 @@ a file path or a date, and it is recorded as a decision rather than left absent.
 |------+----------------+----------------|
 | =enumerated= | the value is an active row of the set's values | the values table |
 | =boolean= | =true=, =false=, =Y= or =N=, in any case | nothing; the chart is in the function |
-| =integer= | every comma-separated part matches =-?[0-9]+= and is in bounds | the set row |
-| =number= | every part parses as a number and is in bounds | the set row |
+| =integer= | the value matches =-?[0-9]+= and is in bounds | the set row |
+| =number= | the value parses as a number and is in bounds | the set row |
 | =range= | the value is a number within =minimum= and =maximum= | the set row |
 | =regex= | the value matches =pattern= | the set row |
 | =catalogue= | the value is an active row of the relation the set names | the catalogue relation |
 | =period= | nothing: a period is a value ORE parses, not a list to choose from | nothing |
 | =text= | nothing: the set states that the parameter is free text | nothing |
 
-A numeric set checks every comma-separated part, because a grid such as
-=128,128,128= is one value in the XML and several numbers in the rule. That is
-why the list is checked rather than waved through.
+* The one cardinality
+
+=cardinality= holds =one= or =many=, and it is what makes a list a rule rather
+than a string. ORE writes a list into a single element, so =1Y,2Y,5Y= is one value
+in the XML and three periods in the rule, and a kind alone cannot tell that from
+a single period. A set of cardinality =many= splits on the comma, trims each item,
+holds every item to the kind's rule, and refuses an empty item, which is a
+trailing or doubled comma. A set of cardinality =one= refuses the comma, because
+a comma there is a document the engine cannot parse.
+
+Keeping the two facts apart is what keeps the kinds at nine: the alternative is
+=period=, =period_list=, =number=, =number_list= and a kind for every
+combination, and a screen would have to read a name to know how to draw a
+control. A screen reads the kind for the control and the cardinality for whether
+the control repeats.
 
 * What a set looks like as data
 

@@ -50,6 +50,7 @@ generate_synthetic_ore_parameter_value_set(utility::generation::generation_conte
     r.name = std::string(faker::word::noun());
     r.description = std::string(faker::word::noun());
     r.source_kind = std::string("enumerated");
+    r.cardinality = std::string("one");
     r.is_ordered = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

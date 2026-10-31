@@ -44,6 +44,7 @@ struct ore_parameter_value_set_write {
     std::string name;
     std::string description;
     std::string source_kind;
+    std::string cardinality;
     std::string catalogue_code;
     std::optional<double> minimum;
     std::optional<double> maximum;

@@ -31,6 +31,14 @@
  * ore_parameter_value_set_catalogue. A range and a regular expression carry
  * their rules on the set itself. A boolean is the built-in pair true and false.
  *
+ * The kind states what one value may be. The cardinality states how many values
+ * the document writes: one, or a comma separated list of them. They are separate
+ * facts because a period and a list of periods obey the same rule and differ only
+ * in how many the element holds, and ORE writes both into a single string. Keeping
+ * them apart is what lets a screen draw one control instead of one control per
+ * combination, and what lets the guard check every item of a list rather than wave
+ * the whole string through.
+ *
  * The set is shared by every parameter that names it, so one list of values serves
  * every product type and every pair that takes the setting.
  */
@@ -42,6 +50,7 @@ create table if not exists "ores_reporting_ore_parameter_value_sets_tbl" (
     "name" text not null,
     "description" text not null,
     "source_kind" text not null,
+    "cardinality" text not null,
     "catalogue_code" text null,
     "minimum" double precision null,
     "maximum" double precision null,

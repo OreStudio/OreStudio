@@ -124,12 +124,27 @@ def catalogue_of(value_set):
 # says what the map holds: a value set, not a catalogue.
 VALUE_SET_OF = vocabularies()
 
+# A list leaf whose items ORE reads as strings, and the kind one item has. The
+# extractor sees the read and not what parses an item, so a person states it here
+# and names the place the ORE code proves it.
+LIST_ITEM = {
+    "Strikes": ("number_list",
+                "The report grid beside the curve parses its strike list as a real "
+                "(OREData/ored/configuration/reportconfig.cpp:68), and both leaves "
+                "name the same set of strikes, so one item is a number."),
+}
+
 TYPE_SETS = {
     "boolean": "curve.flag",
     "double": "curve.number",
     "integer": "curve.integer",
     "period": "curve.period",
+    "number_list": "curve.number_list",
+    "period_list": "curve.period_list",
+    "list": "curve.list",
 }
+
+PERIOD_PATTERN = "^[+-]?([0-9]+[DdWwMmYy])+$"
 
 OWN_SETS = {
     "curve.flag": {
@@ -154,8 +169,34 @@ OWN_SETS = {
         "name": "Period",
         "description": "A period such as 2D, 3M or 1Y6M, which the ORE code parses as a period.",
         "source_kind": "regex",
-        "pattern": "^[+-]?([0-9]+[DdWwMmYy])+$",
+        "pattern": PERIOD_PATTERN,
         "is_ordered": False,
+    },
+    "curve.number_list": {
+        "name": "Numbers",
+        "description": "A comma separated list of numbers, which the ORE code reads "
+                       "into one vector.",
+        "source_kind": "number",
+        "cardinality": "many",
+        "is_ordered": True,
+    },
+    "curve.period_list": {
+        "name": "Periods",
+        "description": "A comma separated list of periods such as 1Y,2Y,5Y, which "
+                       "the ORE code reads into one vector.",
+        "source_kind": "regex",
+        "pattern": PERIOD_PATTERN,
+        "cardinality": "many",
+        "is_ordered": True,
+    },
+    "curve.list": {
+        "name": "List of text",
+        "description": "A comma separated list whose items no value set states yet. "
+                       "ORE reads it into one vector, so the leaf holds many values "
+                       "and the tree cannot yet say what one may be.",
+        "source_kind": "text",
+        "cardinality": "many",
+        "is_ordered": True,
     },
 }
 
@@ -253,17 +294,42 @@ def set_of(term, curated, parsers, section):
         value_set = VALUE_SET_OF[name]
         return ("text" if catalogue_of(value_set) is None else value_set), None
     if term["type"] in TYPE_SETS:
+        if term["type"] == "list":
+            stated = item_set_of(term)
+            if stated:
+                return stated, None
         return TYPE_SETS[term["type"]], None
     return "text", None
+
+
+def item_set_of(term):
+    """The set of one item of a list leaf ORE reads as strings, if a person stated it.
+
+    One leaf of a name may be read into a vector of strings while another leaf of
+    the same name is read with a template that states its item, and the setting
+    link cannot hold both: its key is the section and the name. Where the two
+    disagree the proven item wins for the name, because they name the same set of
+    values and the unproven read is the extractor's gap rather than a second rule.
+    """
+    stated = LIST_ITEM.get(term["name"])
+    return TYPE_SETS[stated[0]] if stated else None
 
 
 def data():
     """The catalogues, the sets and the links the curve leaves add.
 
-    Every leaf the ORE source reads is linked, whether or not the parameter
+    Every leaf the ORE source reads takes a set, whether or not the parameter
     contract documents it. The rule follows from the parser the ORE code reads
     the leaf with, and it holds of the leaf whether or not a person has written
-    a description of it, so a link is stated here and nowhere else.
+    a description of it.
+
+    A link is a different statement: it says which set governs a *setting*, keyed
+    by section and name. Two leaves of one section that share a name can be read
+    differently, as the equity volatility curve's Expiries are read as strings and
+    the report grid's beside them as periods. The link follows the leaf the
+    projection draws, because that is the leaf a screen states; when two drawn
+    leaves disagree the key cannot hold both, so it is returned in =conflicted=
+    instead of guessed, and the map states each leaf's own rule.
     """
     with open(TERMS) as f:
         extracted = json.load(f)
@@ -282,26 +348,51 @@ def data():
             "catalogue_code": catalogue,
             "is_ordered": False,
         }
-    links = {}
+    import generate_curve_column_guards as curves
+
+    projected = {row["xpath"] for row in curves.rows()}
+    codes = {}
     for section, term in terms():
         code, parser = set_of(term, curated, parsers, section)
         if parser and code not in sets:
             sets[code] = parser_set(parser, parsers[parser])
         key = f"{section}|{term['name']}"
-        if links.get(key, code) != code:
-            raise ValueError(f"{key} would take two sets, {links[key]} and {code}")
-        links[key] = code
+        address = "/CurveConfiguration/" + "/".join(term["path"])
+        found = codes.setdefault(key, {})
+        found.setdefault(code, set()).add(address in projected)
+    links, conflicted = {}, {}
+    for key, found in codes.items():
+        drawn = {code for code, shown in found.items() if True in shown}
+        if len(drawn) == 1:
+            links[key] = next(iter(drawn))
+        elif not drawn and len(found) == 1:
+            links[key] = next(iter(found))
+        elif len(found) > 1:
+            conflicted[key] = sorted(found)
     for key in curated:
         section, _, name = key.partition("|")
         if not any((section in ("", "*") or section == sec) and nm == name
                    for sec, nm in ((s, t["name"]) for s, t in terms())):
             raise ValueError(f"curation entry {key} matches no curve leaf the ORE "
                              "source reads; correct the key or drop the entry")
-    named = set(links.values())
+    named = {code for found in codes.values() for code in found}
     sets = {code: entry for code, entry in sets.items() if code in named}
     catalogues = {code: entry for code, entry in CATALOGUES.items()
                   if any(s.get("catalogue_code") == code for s in sets.values())}
-    return {"catalogues": catalogues, "sets": sets, "links": links}
+    return {"catalogues": catalogues, "sets": sets, "links": links,
+            "conflicted": conflicted}
+
+
+def set_of_leaf(term, section=None):
+    """The set code of one curve leaf, resolved by the leaf and not by its name.
+
+    A caller that holds a term keys the rule by the leaf it is about. The link
+    table cannot answer that question, because its key is the section and the name
+    and two leaves of one name can differ.
+    """
+    with open(TERMS) as f:
+        parsers = json.load(f)["parsers"]
+    return set_of(term, curation(), parsers, section or term["path"][0])[0]
 
 
 def catalogue_scopes():

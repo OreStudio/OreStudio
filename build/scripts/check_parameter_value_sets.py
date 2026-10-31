@@ -92,6 +92,8 @@ VALUE_CHECK = re.compile(r"check\s*\([^)]*(>=|<=|\bin\s*\(|\bbetween\b)", re.IGN
 
 SOURCE_KINDS = ("enumerated", "catalogue", "range", "regex", "boolean", "integer", "number", "text")
 
+CARDINALITIES = ("one", "many")
+
 
 def curation():
     """The value sets the seed is written from, resolved as the generator does."""
@@ -125,6 +127,9 @@ def set_problems(data):
         if kind not in SOURCE_KINDS:
             problems.append(f"{code}: unknown source kind {kind!r}")
             continue
+        cardinality = entry.get("cardinality", "one")
+        if cardinality not in CARDINALITIES:
+            problems.append(f"{code}: unknown cardinality {cardinality!r}")
         minimum = entry.get("minimum")
         maximum = entry.get("maximum")
         if minimum is not None and not isinstance(minimum, (int, float)):

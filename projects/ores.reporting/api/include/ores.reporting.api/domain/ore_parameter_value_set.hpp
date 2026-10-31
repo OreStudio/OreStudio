@@ -42,6 +42,14 @@ namespace ores::reporting::domain {
  * ore_parameter_value_set_catalogue. A range and a regular expression carry
  * their rules on the set itself. A boolean is the built-in pair true and false.
  *
+ * The kind states what one value may be. The cardinality states how many values
+ * the document writes: one, or a comma separated list of them. They are separate
+ * facts because a period and a list of periods obey the same rule and differ only
+ * in how many the element holds, and ORE writes both into a single string. Keeping
+ * them apart is what lets a screen draw one control instead of one control per
+ * combination, and what lets the guard check every item of a list rather than wave
+ * the whole string through.
+ *
  * The set is shared by every parameter that names it, so one list of values serves
  * every product type and every pair that takes the setting.
  */
@@ -76,6 +84,15 @@ struct ore_parameter_value_set final {
      * draws a combo, a bounded number field, a text field or a flag from it.
      */
     std::string source_kind;
+
+    /**
+     * @brief How many values the document writes for a parameter that names this set: one, the
+     * default, or many, which is a comma separated list of values each obeying the set's kind. ORE
+     * writes a list into a single element, so the kind alone cannot say how many items to expect,
+     * and a guard that reads one without the other either refuses a good list or admits a list
+     * where the engine reads one value.
+     */
+    std::string cardinality;
 
     /**
      * @brief The catalogue, when the kind is catalogue. Soft foreign key to

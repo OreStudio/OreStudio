@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_sets add <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
+ore_parameter_value_sets add <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_sets.put=.
 
 #+name: ore_parameter_value_sets-add
 #+begin_src ores-shell :tangle ore_parameter_value_sets-add.ores :exports none
-ore_parameter_value_sets add __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+ore_parameter_value_sets add __none__ __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_sets set <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary> [--version <n>]
+ore_parameter_value_sets set <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_sets.put=.
 
 #+name: ore_parameter_value_sets-set
 #+begin_src ores-shell :tangle ore_parameter_value_sets-set.ores :exports none
-ore_parameter_value_sets set __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+ore_parameter_value_sets set __none__ __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_sets put-many --count <n> <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
+ore_parameter_value_sets put-many --count <n> <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_sets.put_many=.
 
 #+name: ore_parameter_value_sets-put-many
 #+begin_src ores-shell :tangle ore_parameter_value_sets-put-many.ores :exports none
-ore_parameter_value_sets put-many --count 1 __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+ore_parameter_value_sets put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
 #+end_src
 
 ** =delete=

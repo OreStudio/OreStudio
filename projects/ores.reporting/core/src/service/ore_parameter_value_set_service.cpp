@@ -103,6 +103,7 @@ ore_parameter_value_set_to_domain(const messaging::ore_parameter_value_set_write
     v.name = write.name;
     v.description = write.description;
     v.source_kind = write.source_kind;
+    v.cardinality = write.cardinality;
     v.catalogue_code = write.catalogue_code;
     v.minimum = write.minimum;
     v.maximum = write.maximum;

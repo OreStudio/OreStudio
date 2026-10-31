@@ -37,6 +37,7 @@ export interface OreParameterValueSetWrite {
     name: string;
     description: string;
     source_kind: string;
+    cardinality: string;
     catalogue_code: string;
     minimum: number | null;
     maximum: number | null;

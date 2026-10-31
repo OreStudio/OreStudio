@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum>
-     * <pattern> <is_ordered> <reason> <commentary>
+     * @brief add <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum>
+     * <maximum> <pattern> <is_ordered> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum>
-     * <pattern> <is_ordered> <reason> <commentary> [--version <n>]
+     * @brief set <code> <name> <description> <source_kind> <cardinality> <catalogue_code> <minimum>
+     * <maximum> <pattern> <is_ordered> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <name> <description> <source_kind> <catalogue_code>
-     * <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
+     * @brief put-many --count <n> <code> <name> <description> <source_kind> <cardinality>
+     * <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

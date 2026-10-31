@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | The map is keyed by the leaf's address, states the rule the ORE parser gives each leaf, and both guards read it. |
+| Now          | The map states the rule each leaf's parser gives it, a set says how many values a document writes, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The 28 leaves no ORE source read names, which need the extractor to learn the form they are read in. |
+| Next         | The 7 leaves no ORE source read names: three are built from a variable and four the extractor cannot reach. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -359,6 +359,88 @@ vocabulary governs the value. The assertion now reads the set's kind and states
 that rule, so it can still catch a curve leaf pointing at another family's
 catalogue.
 
+* The extractor learns the list forms
+
+The 28 leaves the map could not rule were mostly lists, and the reason was the
+extractor. `READ` knew `getChildValue`, `getChildNode`, `getNodeValue` and their
+typed forms; ORE reads a list with `getChildrenValuesAsStrings`,
+`getChildrenValuesAsDoublesCompact`, `getChildrenValuesAsPeriods` and
+`getChildValueAsPeriod`, and none of them matched. A leaf read that way produced
+no term, so no parser stated a rule and the leaf took =text=.
+
+Two changes, both in =extract_curve_terms.py=:
+
+- the four accessors are read, and each records the type of one item: a template
+  that names its item (=parseListOfValues<Real>=) states a list of numbers, a
+  template that names none states a list of strings, and the compact forms state
+  what their name says;
+- a leaf read with =getNodeValue= takes the type of the call that wraps the read,
+  so =parseListOfValues<Real>(getNodeValue(node))= is a list of numbers and
+  =parseBool(getNodeValue(node))= is a flag.
+
+The second change is why the count moved so far. A report grid's leaves were all
+typed =text= because the read is a =getNodeValue=, and the parse sits around it;
+reading the wrapper types the grid's flags as flags and its expiry and strike
+lists as lists. The parser reuses one variable for every child, so a read is
+matched to the child that precedes it, bounded by the next read into the same
+variable: without the bound the first child's parser typed every later child and
+a grid's strikes became the flag beside them.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 220 | 253 |
+| text, and the ORE source says why | 232 | 227 |
+| text, because no ORE source read names the leaf | 28 | 7 |
+| leaves the ORE source reads as terms | 483 | 508 |
+
+The 7 that remain: =SwapTenors=, =BondTenors= and =SmileSwapTenors= are named by
+a string the code builds (=underlyingLabel_ + "Tenors"=), so no read spells them;
+=UseEffeciveVolatility= is spelled that way in ORE and read elsewhere;
+=DefaultCurve/Type=, =IndexInterpolated= and =Qualifier= the extractor still does
+not reach.
+
+* A set says how many values it governs
+
+A value set stated a kind and nothing else, so it could say what one period is and
+could not say whether the document writes one period or a list of them. ORE writes
+a list into a single element, and a numeric set already split on commas to admit
+one, with a comment saying why. That was a rule in the wrong place: it applied to
+every numeric parameter, whether or not its element holds a list.
+
+=ores_reporting_ore_parameter_value_sets_tbl= gains =cardinality=, =one= or
+=many=. The kind states what one value may be; the cardinality states how many.
+=ores_reporting_value_in_set_fn= splits on the comma when the set says =many= and
+holds every item to the kind, and refuses an empty item, which is a trailing or
+doubled comma. A set of =one= refuses the comma, because a comma there is a
+document the engine cannot parse. The numeric split left the function with the
+comment, because =curve.number_list= now says the same rule as data.
+
+Keeping the two facts apart keeps the kinds at nine. The alternative is a kind per
+combination, =period_list= beside =period= and so on, and then a screen reads a
+name to know whether its control repeats; with a cardinality it reads the kind for
+the control and the cardinality for whether it repeats.
+
+** The link cannot hold two leaves of one name
+
+The map resolves a leaf's rule by the leaf. The setting link still keys a rule by
+=(scope, name)=, and two leaves of one section can share a name while ORE reads
+them differently: the equity volatility curve's =Expiries= is a list of strings,
+and the report grid's beside it is a list of periods. The link holds one, so a
+name whose drawn leaves disagree is not linked, and =curve_value_sets.py= returns
+it in =conflicted= and =generate_value_sets.py= prints it. Today no drawn leaf
+disagrees: the link follows the leaf the projection draws, and only that leaf.
+
+This is the same lesson as the contract one level down, and it is the next slice:
+a setting keyed by scope and name cannot state two rules, so either the link gains
+a subtype or the curve screens read the map by address.
+
+** A list is checked item by item, and a test says so
+
+=reporting_ore_parameter_list_value_set_test.sql= states both directions: a list of
+numbers is in =curve.number_list=, an item that is not a number is not, an empty
+item is not, a list of periods is in =curve.period_list=, a value that is not a
+period is not, and =curve.period=, which is one value, refuses a comma.
+
 * Plan
 
 ** Read the three maps
@@ -421,7 +503,10 @@ task and name that file in the Command column.
 | leaves no ORE source read names | 28 | the same, and =evidence/text_addresses.txt= | =337d74dbfc= plus this branch |
 | setting links to a value set | 972 | =generate_value_sets.py --check= | =337d74dbfc= plus this branch |
 | value sets | 226 | the same | =337d74dbfc= plus this branch |
-| pgTAP suites | 71 files, 663 tests, one failure that also fails on main | =projects/ores.sql/test/run_tests.sh= | =337d74dbfc= plus this branch |
+| leaves that state a rule | 253 | the same, first line of its report | =337d74dbfc= plus this branch |
+| leaves no ORE source read names | 7 | the same, and =evidence/text_addresses.txt= | =337d74dbfc= plus this branch |
+| setting links to a value set | 991 | =generate_value_sets.py --check= | =337d74dbfc= plus this branch |
+| pgTAP suites | 72 files, 669 tests, one failure that also fails on main | =projects/ores.sql/test/run_tests.sh= | =337d74dbfc= plus this branch |
 
 * Notes
 

@@ -41,7 +41,7 @@ sections.
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first task: a response reads its body from a source. |
+| Next          | Serve the built bundle from the manifest. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -64,7 +64,7 @@ sections.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B5375542-0026-47CE-A6AD-EA01FF6D838D][Answer from a body source]] | STARTED | 2026-10-31 | | Give a response a body it reads from in chunks, so a file or a stream costs a buffer and not an object, and use it for the storage download. |
+| [[id:B5375542-0026-47CE-A6AD-EA01FF6D838D][Answer from a body source]] | DONE | 2026-10-31 | 2026-10-31 | Give a response a body it reads from in chunks, so a file or a stream costs a buffer and not an object, and use it for the storage download. |
 | [[id:883B6C71-71D8-4F07-AA81-5877BB5DE359][Serve the built bundle]] | BACKLOG | | | Serve the SPA bundle from the built manifest with the cache headers, the history fallback and the compression it offers. |
 | [[id:8837CE16-1FE6-4A85-8695-B33BBBC9E79C][Report health and metrics]] | BACKLOG | | | Answer /health and /metrics from what the server knows about itself, not from a placeholder. |
 

@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch: feature/answer-from-a-body-source
 #+pr: 4173
-#+blocked_on: review
-#+blocked_since: 2026-10-31 01:10
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -28,11 +26,11 @@ can be sent until it does. A response needs a body it can read from in pieces.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | A response reads its body from a source, and the storage download uses it. |
+| Now          | Nothing; #4173 is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then the bundle is served the same way. |
+| Next         | The bundle is served the same way.     |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -109,3 +107,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+A response may name a body source, and the session writes it in pieces from the
+connection's own executor: =Content-Length= when the source states a length and
+chunked framing when it does not. A source that fails mid-body closes the connection
+rather than send a body shorter than its promise. The storage download uses it, which
+also closed the last task of A3.

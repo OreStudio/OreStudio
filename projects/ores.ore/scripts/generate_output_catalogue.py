@@ -96,6 +96,12 @@ CONVENTION = {
     "xva": "xva",
 }
 
+# Numeric columns that state the context of a figure rather than the figure:
+# the size of a shift, the time to a maturity, the index of a point.
+NUMERIC_QUALIFIERS = {
+    "ShiftSize_1", "ShiftSize_2", "MaturityTime", "DateIndex", "Depth", "TimeStep",
+}
+
 # The columns that identify a row rather than measure it. A key is text
 # whatever its values look like.
 KEYS = [
@@ -221,10 +227,36 @@ def rows(families, seed):
             for name in header:
                 if name and name not in [c[0] for c in columns]:
                     columns.append((name, None))
-        keys = [k for k in KEYS if any(k in h for h in headers)]
+
+        # A column every variant states is required; the rest are the shape of
+        # one configuration. A key is required by definition, so a name that
+        # only some variants state is not a key.
+        required = {name for name, _ in columns if all(name in h for h in headers)}
+        keys = [k for k in KEYS if k in required]
+
         named = []
+        qualifiers = []
+        measures = []
         for name, _ in columns:
-            named.append((name, kind_of(entry["values"].get(name, []), name in keys)))
+            kind = kind_of(entry["values"].get(name, []), name in keys)
+            named.append((name, kind))
+            if name in keys:
+                continue
+            if kind in ("text", "date", "time") or name in NUMERIC_QUALIFIERS:
+                qualifiers.append(name)
+            else:
+                measures.append(name)
+
+        # A family whose variants disagree on their measures gains columns from
+        # the configuration: a curve, a factor or a quantile the run asked for.
+        measure_sets = [
+            {n for n in h if n not in keys and
+             n not in [q for q, k in named if k in ("text", "date", "time")]
+             and n not in NUMERIC_QUALIFIERS}
+            for h in headers
+        ]
+        is_open = len({tuple(sorted(m)) for m in measure_sets}) > 1
+
         matches = seed.get(entry["pattern"], [])
         parameter = matches[0][0] if matches else ""
         analytic = ",".join(sorted({m[1] for m in matches})) if matches \
@@ -235,6 +267,10 @@ def rows(families, seed):
             "parameter": parameter,
             "analytic": analytic,
             "keys": ",".join(keys),
+            "required": ",".join(sorted(required)),
+            "qualifiers": ",".join(qualifiers),
+            "measures": ",".join(measures),
+            "open": "1" if is_open else "0",
             "variants": len(headers),
             "sample": entry["sample"],
             "columns": named,
@@ -319,8 +355,9 @@ def render(catalogue):
     for row in catalogue:
         cols = ",".join(f"{name}:{kind}" for name, kind in row["columns"])
         lines.append("\t".join([row["family"], row["pattern"], row["parameter"],
-                                row["analytic"], row["keys"], str(row["variants"]),
-                                row["sample"], cols]))
+                                row["analytic"], row["keys"], row["required"],
+                                row["qualifiers"], row["measures"], row["open"],
+                                str(row["variants"]), row["sample"], cols]))
     lines.append(')CAT"');
     lines.append("};")
     lines.append("")

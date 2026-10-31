@@ -35,7 +35,9 @@ using ores::ore::results::family_named;
 using ores::ore::results::family_of_file;
 using ores::ore::results::output_column;
 using ores::ore::results::output_column_kind;
+using ores::ore::results::output_column_role;
 using ores::ore::results::output_families;
+using ores::ore::results::role_of;
 
 std::vector<std::string> headings_of(const std::filesystem::path& path) {
     std::ifstream in(path);
@@ -156,4 +158,59 @@ TEST_CASE("a decimal column is a figure and a key is text or a date", catalogue_
     CHECK(npv_column->kind == output_column_kind::decimal);
 
     CHECK(std::ranges::find(npv->key_columns, std::string("TradeId")) != npv->key_columns.end());
+}
+
+TEST_CASE("every column of a family states exactly one role", catalogue_tags) {
+    for (const auto& family : output_families()) {
+        INFO("the family is " << family.code);
+        std::vector<std::string> seen;
+        for (const auto& column : family.columns) {
+            const auto role = role_of(family, column.name);
+            INFO("the column is " << column.name);
+            CHECK(role != output_column_role::none);
+            CHECK(std::ranges::count(seen, column.name) == 0);
+            seen.push_back(column.name);
+        }
+        CHECK(seen.size() == family.key_columns.size() + family.qualifier_columns.size() +
+                                 family.measure_columns.size());
+    }
+}
+
+TEST_CASE("a key is required, and a required column is a column", catalogue_tags) {
+    for (const auto& family : output_families()) {
+        INFO("the family is " << family.code);
+        for (const auto& key : family.key_columns)
+            CHECK(std::ranges::find(family.required_columns, key) != family.required_columns.end());
+        for (const auto& required : family.required_columns)
+            CHECK(is_column(family.columns, required));
+    }
+}
+
+TEST_CASE("npv states its figures as measures and its context as qualifiers", catalogue_tags) {
+    const auto* npv = family_named("npv");
+    REQUIRE(npv != nullptr);
+
+    CHECK_FALSE(npv->measures_open);
+    CHECK(role_of(*npv, "NPV") == output_column_role::measure);
+    CHECK(role_of(*npv, "Notional") == output_column_role::measure);
+    CHECK(role_of(*npv, "Maturity") == output_column_role::qualifier);
+    CHECK(role_of(*npv, "NpvCurrency") == output_column_role::qualifier);
+    CHECK(role_of(*npv, "TradeId") == output_column_role::key);
+    CHECK(role_of(*npv, "NoSuchColumn") == output_column_role::none);
+}
+
+TEST_CASE("a configuration-driven family says its measures are open", catalogue_tags) {
+    for (const auto& code : {"curves", "var", "dim_regression"}) {
+        const auto* family = family_named(code);
+        REQUIRE(family != nullptr);
+        INFO("the family is " << code);
+        CHECK(family->measures_open);
+    }
+
+    for (const auto& code : {"npv", "exposure-trade", "flows"}) {
+        const auto* family = family_named(code);
+        REQUIRE(family != nullptr);
+        INFO("the family is " << code);
+        CHECK_FALSE(family->measures_open);
+    }
 }

@@ -26,7 +26,7 @@
 
 begin;
 
-select plan(8);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -120,6 +120,24 @@ select throws_like(
     $$select pg_temp.bma('PGTAP-BAD-BMA', 'Follwing')$$,
     '%Invalid value Follwing for bma_basis_swap_convention.bma_payment_convention%',
     'a payment convention outside the catalogue is refused, though ORE never parses it');
+
+-- The parser reads these two leaves as strings, so before the schema was an
+-- authority the map stated text for them and no rule reached the screen.
+select is(
+    (select value_set_code || ' ' || source
+       from ores_reporting_ore_parameter_vocabularies_tbl
+      where xpath = '/Conventions/OIS/SpotLag'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'convention.integer ore_schema',
+    'a leaf the parser reads as a string takes the type the schema declares');
+
+select is(
+    (select value_set_code || ' ' || source
+       from ores_reporting_ore_parameter_vocabularies_tbl
+      where xpath = '/Conventions/TenorBasisSwap/SpreadOnShort'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'flag ore_schema',
+    'a leaf the parser reads as a string takes the flag the schema declares');
 
 select ok(
     (select count(*) > 0

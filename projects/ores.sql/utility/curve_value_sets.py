@@ -43,8 +43,12 @@ Only a leaf the contract documents is linked, because the link names a row of it
 import json
 import os
 import re
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import ore_schema_types as schema_types  # noqa: E402
+
 TERMS = os.path.join(HERE, "curve_terms.json")
 CURATION = os.path.join(HERE, "curve_value_set_curation.json")
 
@@ -143,6 +147,10 @@ TYPE_SETS = {
     "period_list": "curve.period_list",
     "list": "curve.list",
 }
+
+# The kind the ORE schema declares, as this family's TYPE_SETS names it.
+SCHEMA_TYPE_SETS = {"integer": "integer", "number": "double",
+                    "boolean": "boolean", "period": "period"}
 
 PERIOD_PATTERN = "^[+-]?([0-9]+[DdWwMmYy])+$"
 
@@ -299,7 +307,21 @@ def set_of(term, curated, parsers, section):
             if stated:
                 return stated, None
         return TYPE_SETS[term["type"]], None
+    stated = schema_rule(term)
+    if stated:
+        return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
     return "text", None
+
+
+def schema_rule(term):
+    """The kind the ORE schema declares for a leaf the parser read as a string.
+
+    The parser says what the engine accepts and is the first authority. Where it
+    reads a leaf as a plain string without saying more, the schema still declares
+    a type, and a leaf declared xs:integer is not free text.
+    """
+    found = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
+    return found[0] if found else None
 
 
 def item_set_of(term):

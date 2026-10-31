@@ -43,8 +43,13 @@ read, would otherwise leave the term free text with no one told.
 import json
 import os
 import re
+import sys
 
-TERMS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "convention_terms.json")
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import ore_schema_types as schema_types  # noqa: E402
+
+TERMS = os.path.join(HERE, "convention_terms.json")
 
 CATALOGUES = {
     "refdata.business_day_convention": {
@@ -75,6 +80,10 @@ WITHOUT_LIST = {"calendar": "text", "index": "text", "text": "text"}
 
 # A kind whose value one parser lists, whichever parser the term names.
 LIST_OF = {"frequency": "parseFrequency"}
+
+# The kind the ORE schema declares, as this family's TYPE_SETS names it.
+SCHEMA_TYPE_SETS = {"integer": "integer", "number": "double",
+                    "boolean": "boolean", "period": "period"}
 
 TYPE_SETS = {
     "boolean": "flag",
@@ -205,9 +214,27 @@ def set_of(term, parsers, element=None):
     if parser and parser in parsers:
         return parser_set_code(parser), parser
     if kind in WITHOUT_LIST:
+        stated = schema_rule(term)
+        if stated:
+            return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
         return WITHOUT_LIST[kind], None
     raise ValueError(f"{term['source_ref']}: {term['name']} is read by {term['parser']}, "
                      f"which states no list, and its kind {kind} names no set")
+
+
+def schema_rule(term):
+    """The kind the ORE schema declares for a term the parser read as a string.
+
+    The parser says what the engine accepts and is the first authority. Where it
+    reads a term as a plain string without saying more, the schema still declares
+    a type, and a term declared xs:integer or bool is not free text.
+    """
+    leaf = term["name"]
+    if term.get("list_item"):
+        leaf = f"{term['name']}/{term['list_item']}"
+    found = schema_types.rule("conventions.xsd",
+                              "/Conventions/" + "/".join(term["path"] + [leaf]))
+    return found[0] if found else None
 
 
 def set_of_leaf(term, element):

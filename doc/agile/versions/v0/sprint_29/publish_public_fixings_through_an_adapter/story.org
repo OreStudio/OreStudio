@@ -38,7 +38,9 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - A synthetic feed starts from the latest fixing of its best-ranked item, and the screen shows the provider and the time of the value.
 - No vintage remains: a generator takes its level and volatility only from its ranked public fixing items, a fixed level is a stated fallback, and the notes, the seeds and the default no longer describe a vintage.
 - The calibration screen states, for one generator, the ranked items, the item and provider chosen, the value and time taken, the measured volatility over the window, and why a run kept its fixed level.
-- The class screen lists every feed of the asset class with its start and state, and a feed opens its own record with two tabs: *This feed* for its candidates, measures and exceptions, and *Inherits the policy* for the shared policy and coverage. Nothing on the class screen selects a subset for calibration, because every feed is calibrated.
+- Calibration is per asset class, with one policy and one list per class behind a class switch.
+- The class list is the landing and is just a list: a policy line with a link, the counts, the filters and every feed with its start and state. Nothing on it selects a subset for calibration, because every feed is calibrated.
+- A feed opens its detail with two tabs: *Feed record* for its start, candidates, measures and exceptions, and *Flow* for how it resolved. The class policy is its own class-level screen, not a feed tab.
 - Calibration needs no configuration: with no policy the defaults (provider catalogue order, a 90-day window, inverse allowed, keep the fixed level) calibrate every feed. A class policy and a feed's pin are optional refinements.
 - A class policy sets the window, the inverse rule, the provider order and the fallback. A feed derives its candidates from the policy or the defaults and its pair; it pins an item or a window only as a stated exception. A feed may also name its items explicitly, but no feed needs to.
 - A recalculation of a class resolves every feed and records each start, with the coverage of resolved, fallback and blocked feeds.

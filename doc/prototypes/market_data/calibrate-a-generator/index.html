@@ -29,8 +29,14 @@
     <span class="dot">·</span>
     <span class="mono">public fixings, no vintage</span>
   </div>
+  <div class="class-switch">
+    <span class="label">Asset class</span>
+    <button class="act primary" aria-pressed="true">FX</button>
+    <button class="act" disabled title="Its own sources and measurements; not in this prototype">IR · coming</button>
+    <span class="note">Each asset class has its own sources, its own policy and its own list.</span>
+  </div>
   <div class="notice">
-    <span class="badge ok">Policy</span>
+    <span class="badge ok">Automatic</span>
     <span>Every feed resolves from the fixing catalogue with or without a policy. A class policy and a feed's pin are optional refinements. <b>Vintage is retired:</b> it is not a source anywhere.</span>
   </div>
 </header>
@@ -46,9 +52,9 @@
     <span class="control-note" id="controlNote"></span>
   </section>
 
-  <section class="variant" id="variant-a" aria-live="polite"></section>
-  <section class="variant" id="variant-b" aria-live="polite"></section>
-  <section class="variant" id="variant-c" aria-live="polite"></section>
+  <section class="screen" id="screen-list" aria-live="polite"></section>
+  <section class="screen" id="screen-feed" aria-live="polite"></section>
+  <section class="screen" id="screen-policy" aria-live="polite"></section>
 
   <details class="state" id="state">
     <summary>State after the last action</summary>
@@ -56,11 +62,11 @@
   </details>
 </main>
 
-<div class="proto-switch" role="tablist" aria-label="Variants">
-  <span class="proto-switch-label">Variant</span>
-  <button role="tab" data-variant="a">A · Class list</button>
-  <button role="tab" data-variant="b">B · Feed record</button>
-  <button role="tab" data-variant="c">C · Flow (diagnostic)</button>
+<div class="proto-switch" role="tablist" aria-label="Screens">
+  <span class="proto-switch-label">Screens</span>
+  <button role="tab" data-screen="list">List</button>
+  <button role="tab" data-screen="feed">Feed detail</button>
+  <button role="tab" data-screen="policy">Policy</button>
 </div>
 
 <script src="prototype.js"></script>

@@ -90,14 +90,14 @@ The page is at
 [[file:../../../../../prototypes/market_data/calibrate-a-generator/index.html][calibrate-a-generator]]. It carries three variants of the calibration screen,
 switchable by =?variant= or the bottom bar:
 
-- *A, class list* — the policy (automatic or custom), every feed with its
-  start and state, the filters and the coverage.
-- *B, feed record* — two tabs. *This feed* carries the resolved start, the
+- *List* — the class switch, the policy in one line, the counts, the filters
+  and every feed with its start and state. No policy form.
+- *Feed detail* — two tabs. *Feed record* carries the resolved start, the
   derived candidates with their reasons, the measures and the three
-  exceptions. *Inherits the policy* carries the shared policy, what it means
-  for this feed and the class coverage, with the way back to the list.
-- *C, resolution flow* — a diagnostic view of one feed's path from policy to
-  process, beside the recalculation record.
+  exceptions. *Flow* explains the path from policy to process and lists the
+  recent recalculations.
+- *Policy* — the class-level policy screen, with its coverage and the
+  recalculation record.
 
 Every variant shows the level a run takes, the item and provider behind it,
 the time received, the inversion, the daily and hourly spread, the factor

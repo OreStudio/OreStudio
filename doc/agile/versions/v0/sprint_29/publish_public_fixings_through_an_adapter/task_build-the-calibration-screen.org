@@ -40,11 +40,14 @@ volatility it measured.
 - The class screen lists every feed of the asset class with its start, source
   and state, filters by all, needs attention and overridden, and opens a feed's
   record; it never selects a subset for calibration.
-- The feed record has two tabs, with a way back to the class screen: *This
-  feed* carries the start, the candidates, the measures and the exceptions;
-  *Inherits the policy* carries the shared policy, what it means for this
-  feed, and the class coverage, with a warning that a change affects every
-  feed.
+- The list is clean: a class switch, a one-line policy summary with a link,
+  the counts, the filters and the feeds. It carries no policy form.
+- A feed detail has two tabs, with a way back to the list: *Feed record*
+  carries the start, the candidates, the measures and the exceptions; *Flow*
+  explains how it resolved and links to the policy.
+- The policy is its own class-level screen with the coverage and the
+  recalculation record, warning that a change affects every feed of the
+  class.
 - With no configuration the screens state automatic calibration and the
   defaults, and every feed resolves.
 - The class screen optionally states the policy: window, inverse allowed,

@@ -444,3 +444,19 @@ svg.spark .area { fill: rgba(88, 166, 255, .12); }
 }
 .tabs button:hover { color: var(--ink); }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+/* --- Screens ------------------------------------------------------------ */
+.screen { display: none; }
+.screen.active { display: block; }
+.class-switch { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.class-switch .note { font-size: .76rem; }
+.policy-line {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 12px; padding: 8px 12px;
+  background: var(--raised); border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.policy-line .mono { font-size: .76rem; color: var(--ink-muted); }
+.policy-line .act { margin-left: auto; }
+.summary-line { display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-muted); font-size: .8rem; margin-bottom: 10px; }
+.summary-line b { color: var(--ink); font-family: var(--mono); }

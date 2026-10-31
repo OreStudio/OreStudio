@@ -85,9 +85,14 @@ them.
   policy's scope, how many feeds resolved and how many kept a level.
 - **The list is the landing, and it is exhaustive.** Every feed appears with
   its state; nothing is chosen for calibration. Recalculation is class-wide;
-  a feed's own record may recalculate it alone.
-- **The record has two tabs.** *This feed* carries the calibration of one
-  feed; *Inherits the policy* carries the shared policy and its coverage.
+  a feed's own record may recalculate it alone. The list carries no policy
+  form, only a line and a link.
+- **The feed detail has two tabs.** *Feed record* carries the calibration of
+  one feed; *Flow* explains how it resolved.
+- **The policy is its own class screen.** It is shared, so it does not live in
+  a feed tab.
+- **Calibration is per asset class.** One policy and one list per class, with
+  a class switch on the list.
 - **Coverage is the point of the class screen.** How many feeds resolve, keep
   a level or are blocked is the number a person governs, and a recalculation
   records every start.
@@ -97,27 +102,49 @@ them.
   window and the factor are shown with the start.
 - **Vintage is absent.** No vintage control, field or wording offers one.
 
-* Two screens, and the record's two tabs
+* Three screens: list, feed detail, policy
 
-The class screen is the landing. It lists **every feed of the class**, not a
-subset chosen for calibration: every feed is calibrated on start and on
-recalculation, and the list is how a person sees where each one landed. The
-filters (all, needs attention, overridden) narrow the list; they do not choose
-what to calibrate.
+** The list
 
-The feed screen is a record, opened from a row and closed with *All FX feeds*.
-It has two tabs:
+The list is the landing and it is deliberately plain: the class switch, the
+policy in one line, the counts, the filters, and the feeds. It lists **every
+feed of the class**, not a subset chosen for calibration: every feed is
+calibrated on start and on recalculation, and the list is how a person sees
+where each one landed. The filters (all, needs attention, overridden) narrow
+the list; they do not choose what to calibrate. The policy is a link, not a
+form on this screen.
 
-- *This feed* — the resolved start, the derived candidates, the measures, and
+** The feed detail
+
+Opened from a row and closed with *All FX feeds*. It has two tabs:
+
+- *Feed record* — the resolved start, the derived candidates, the measures, and
   the three exceptions (pin, window, explicit list).
-- *Inherits the policy* — the shared class policy, what it means for this
-  feed, and the coverage of the class, with a warning that a change here
-  affects every feed.
+- *Flow* — how this feed resolved: the policy or defaults into the candidates
+  into the resolver, the trail, and the recent recalculations. It is read-only.
 
-The flow view is a diagnostic, not a third screen of the product.
+** The policy
 
-Recalculation is class-wide from the class screen. A record may also ask for
-its own recalculation, which is the same resolution for one feed.
+A class-level screen, reached from the list's policy line and from the flow
+tab. It carries the policy, its coverage and the recalculation record. It is
+not a tab of a feed: the policy is shared, and putting it beside a feed's
+exceptions would suggest that editing it changes only that feed, or that every
+feed needs one.
+
+** Why per asset class
+
+Each class has its own sources, instruments and measurements: FX reads daily
+fixings and reads a pair as =1/x=; interest rates read a par curve and a set of
+overnight rates and bootstrap a curve; the others differ again. One policy per
+class keeps the provider order and the fallback meaningful, and one list per
+class keeps the numbers comparable. The screen carries a class switch rather
+than a top-level menu item per class, so the journey stays one place.
+
+** What this rules out
+
+- A policy card on the list: it buries the list and implies a step.
+- A policy tab on a feed: it misplaces a class decision inside a feed.
+- A flow that edits: the flow explains, the policy and the exceptions act.
 
 * The measures
 
@@ -147,9 +174,11 @@ never blocks a start; a pair with no series says it has nothing to measure.
 - Where the policy lives in the product: a market data settings page, the feed
   class page, or the feed screen itself. The prototype draws it on the class
   screen.
-- Whether the class screen is one screen with an asset-class switch or one
-  screen per class, and whether the filters need more than all, attention and
-  overridden.
+- Whether the class switch stays on the list or the policy moves to a market
+  data settings area; the prototype keeps both on the class screen.
+- Whether a cross-class view is needed, such as "all classes needing
+  attention". The prototype has none: one class at a time.
+- Whether the filters need more than all, attention and overridden.
 - The explicit list keeps the derived order: a person includes and excludes
   items but does not reorder them. The product may or may not need the extra
   freedom.

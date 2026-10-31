@@ -460,3 +460,8 @@ svg.spark .area { fill: rgba(88, 166, 255, .12); }
 .policy-line .act { margin-left: auto; }
 .summary-line { display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-muted); font-size: .8rem; margin-bottom: 10px; }
 .summary-line b { color: var(--ink); font-family: var(--mono); }
+
+/* A row is the link to its feed. */
+table.list tr.row-link { cursor: pointer; }
+table.list tr.row-link:hover td { background: var(--overlay); }
+table.list tr.row-link:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }

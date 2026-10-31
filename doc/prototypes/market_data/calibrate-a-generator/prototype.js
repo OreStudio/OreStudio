@@ -400,18 +400,17 @@ function feedTable(results) {
         ? `${esc(result.candidate.provider)} · ${esc(result.candidate.pair)} · ${esc(result.candidate.date)}`
         : '—';
       const override = result.feed.overrideItem || result.feed.overrideWindow ? badge('off', 'override') : '';
-      return `<tr>
+      return `<tr class="row-link" data-act="open-feed" data-feed="${esc(result.feed.name)}" tabindex="0" role="link" aria-label="Open ${esc(result.feed.pair)}">
         <td><b>${esc(result.feed.pair)}</b><div class="why mono">${esc(result.feed.name)}</div></td>
         <td class="num">${result.level === null ? '—' : fmt(result.level, 4)}</td>
         <td>${source}</td>
         <td>${stateBadge} ${override}</td>
-        <td class="acts"><button class="act" data-act="open-feed" data-feed="${esc(result.feed.name)}">Open</button></td>
       </tr>`;
     })
     .join('');
   return `<table class="list">
-    <thead><tr><th>Feed</th><th>Start</th><th>Source</th><th>State</th><th></th></tr></thead>
-    <tbody>${rows || '<tr><td colspan="5" class="note">No feed matches this filter.</td></tr>'}</tbody>
+    <thead><tr><th>Feed</th><th>Start</th><th>Source</th><th>State</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="4" class="note">No feed matches this filter.</td></tr>'}</tbody>
   </table>`;
 }
 
@@ -781,6 +780,14 @@ function onChange(event) {
   render();
 }
 
+function onKeyDown(event) {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  const row = event.target.closest('tr[data-act="open-feed"]');
+  if (!row) return;
+  event.preventDefault();
+  act('open-feed', row.dataset.feed);
+}
+
 function onClick(event) {
   const button = event.target.closest('[data-act]');
   if (!button) return;
@@ -809,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tab = params.get('tab');
   if (['record', 'flow'].includes(tab)) state.feedTab = tab;
   document.body.addEventListener('click', onClick);
+  document.body.addEventListener('keydown', onKeyDown);
   document.body.addEventListener('change', onChange);
   document.getElementById('resolve').addEventListener('click', () => act('calibrate'));
   document.querySelectorAll('.proto-switch button').forEach((button) => {

@@ -120,6 +120,17 @@ private:
     boost::beast::http::response<boost::beast::http::string_body>
     convert_response(const domain::http_response& resp, unsigned version, bool keep_alive);
 
+    /**
+     * @brief Writes a response, from its bytes or in chunks from its source.
+     *
+     * @param send_body false for a HEAD request, which answers the headers that
+     *        body would have carried and none of it.
+     */
+    boost::asio::awaitable<void> write_response(const domain::http_response& resp,
+                                                unsigned version,
+                                                bool keep_alive,
+                                                bool send_body);
+
     domain::http_method convert_method(boost::beast::http::verb verb);
 
     void parse_query_params(const std::string& target, domain::http_request& req);

@@ -79,6 +79,14 @@ struct http_server_options final {
     std::size_t body_chunk_size = 64 * 1024;
 
     /**
+     * @brief How much of a streamed response is written at a time, in bytes.
+     *
+     * The write buffer is the response's memory bound: a body read from a source is
+     * written one of these at a time, never held whole.
+     */
+    std::size_t response_chunk_size = 64 * 1024;
+
+    /**
      * @brief Maximum accepted size of the request headers, in bytes.
      *
      * Beast's default header_limit is 8KB. The access token a session sends in the

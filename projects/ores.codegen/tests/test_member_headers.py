@@ -5,16 +5,6 @@ the header that declares that shape. Getting this wrong is not a formatting
 problem: the compiler reads the recursion as a type with no shape at all and
 refuses it with ``implicit instantiation of undefined template text_form<T>``.
 
-Three defects reached the compiler before this test existed:
-
-- the root was spelled without the product prefix the templates carry, so a
-  member's header was looked for at ``refdata.api/...``;
-- a member named qualified (``std::vector<ores::refdata::domain::csa>``) was
-  taken to the plain header, while the same member named bare resolved to the
-  codec header, so only one of the two spellings carried the shape;
-- the two callers (a row's columns, a message's fields) were separate copies of
-  the same logic, so they could disagree.
-
 Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_member_headers.py
@@ -81,8 +71,7 @@ def test_a_field_group_takes_its_own_header(tmp_path):
 def test_the_root_carries_the_product_prefix(tmp_path):
     """The templates write 'ores.{{component_include}}/...', so the root must too."""
     headers = _member_headers(["widget_role"], a_model_dir(tmp_path), a_model())
-    assert all(h.startswith("ores.") for h in headers)
-    assert "refdata.api/domain" not in headers[0]
+    assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
 
 
 def test_a_foreign_type_keeps_its_own_component(tmp_path):

@@ -28,7 +28,7 @@ Step 6 of 7, one component. ores.refdata encodes and decodes without reflect-cpp
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Every refdata model states its shape and every entity has its codec pair; the component's hand-written JSON is the remaining rfl use. |
+| Now          | Every generated refdata model states its shape and every generated entity has its codec pair; seven hand-written domain headers have no generated shape, and the component's hand-written JSON still uses reflect-cpp. |
 | Waiting on   | Nothing.                               |
 | Next         | Move the component's hand-written JSON off reflect-cpp, starting with the per-entity json_io units. |
 | Last touched | 2026-10-31                               |
@@ -83,9 +83,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Distinct member types in refdata's generated structs | 24, of which 22 already had a carrier | a census over =projects/ores.refdata/api/include/ores.refdata.api/domain/*.hpp= | measured at the start of the branch |
-| Uses of =double= | 3 direct, 13 as an optional | the same census | measured at the start of the branch |
-| Codec cases after the doubles | 133 assertions in 34 cases | =ores.utility.tests "[codec]"= | this branch |
+| Distinct member types in refdata's generated structs | 24, of which 22 already had a carrier | a census over =projects/ores.refdata/api/include/ores.refdata.api/domain/*.hpp= | =90e66bad0b= |
+| Uses of =double= | 3 direct, 13 as an optional | the same census | =90e66bad0b= |
+| Codec cases after the doubles | 133 assertions in 34 cases | =ores.utility.tests "[codec]"= | =31d89c21e9= |
+| Models opted into the wire-codec facet | 178 (159 entities, 10 junctions, 9 field groups) | =grep -l "ores.cpp.wire-codec.enabled: true" projects/ores.refdata/modeling/*.org \| wc -l= | =9ea273feff= |
+| Generated files the facet materialised | 501 | =git diff --name-only origin/main...HEAD \| grep -c "_codec\.\(hpp\|cpp\)$"= | =9ea273feff= |
+| refdata suites | api 83 cases / 598 assertions, client, service, and core 492 cases / 5781 assertions with two round-trip failures | =ctest --preset linux-clang-release-ninja -R "ores\.refdata\."= | =a9edc52ede= |
+| Bytes compared against reflect-cpp | 58 assertions in 4 cases, a row, nine messages, a field group and the NATS path | =ores.refdata.core.tests "[codec][refdata]"= | =a9edc52ede= |
 
 * Notes
 
@@ -96,46 +100,28 @@ for the same value -- and it held for =0.1=, for a negative and for =1e300=,
 which is the answer to the question the shortest-round-trip spelling could have
 made awkward.
 
-The whole-component sweep was tried and it stops on one shape. Every entity
-opted in at once, regenerated and built, and the build refuses on
-=tenor_basis_swap_pay_receive=: a *grouped* entity, whose members sit in an
-=identity= or an =audit= group rather than flat. The codec header states no shape
-for such a type -- the review of the previous task gated the shape on the three
-group flags, because the flat member list the first version stated would have
-been wrong for them -- so a type that *holds* one has nothing to recurse into.
+The whole-component sweep was tried four times before it compiled, and each
+stop named a source of types the include set did not carry. The first was the
+grouped shape; after that came a generated unit that included no codec header at
+all for the types its members hold, then a composite message whose rows no column
+of its own entity names, and last the path of a junction named from another row,
+which came out as =refdata.api/...= rather than =ores.refdata.api/...=.
 
-So the sweep waits on the grouped shape, which is a template change of its own
-kind rather than another opt-in: a grouped entity's shape is one field per group
-member (=identity=, =audit=, or the =domain_groups= the entity names), and
-recursing into those groups is what the field-group work above just made
-possible. The 158 opt-ins are reverted until then; =currency= stays, because its
-row is flat.
+None of those is an opt-in. Each is a rule about where a member's shape is
+declared, and the four are now one resolver with one classifier, which reads a
+model's =#+type:= line rather than its filename. Two of the four were the same
+defect fixed once for a row and once for a message, because the two callers were
+copies; that is why they are one function now, and why the function has a test.
 
-A second sweep followed the grouped shape, and it stops on two more boundaries,
-both worth stating because they are not about carriers:
+Seven of the component's domain headers remain hand-written -- =tenor_resolution=,
+=tenor_basis_swap_long_short_legs=, =tenor_basis_swap_pay_receive_legs= and four
+smaller ones -- so nothing generates their shapes; each needs the hand-written
+treatment =dataset_dependency= got in dq.
 
-- **A generated codec unit does not include the codec headers of the types its
-  members hold.** This one is now derived, from the columns and the groups a row
-  is made of, and it carries a row's recursion to its end. It does not carry a
-  *composite message*: =put_counterparty_composite_request= holds
-  =csa_eligible_currency=, which no column of the counterparty row names, so the
-  message's own field types are the second source the include set needs, and
-  they are wired in now. What the sweep still needs is the *path* of a junction
-  named from another row: the include came out as =refdata.api/...= rather than
-  =ores.refdata.api/...=, so the last step is the junction's component include,
-  not another source of types. A junction holding a =csa= recurses into =wire_fields(csa)=,
-  which is declared in another header the unit never includes, so the compile
-  fails as though the type had no shape. The include has to be derived from the
-  member types, which is a template change and not an opt-in.
-- **Seven of the component's domain headers are hand-written** --
-  =tenor_resolution=, =tenor_basis_swap_long_short_legs=,
-  =tenor_basis_swap_pay_receive_legs= and four smaller ones -- so nothing
-  generates their shapes; each needs the hand-written treatment
-  =dataset_dependency= got in dq.
-
-The grouped shape itself is in the template and unexercised until the sweep can
-run: a grouped entity states one field per group member, which is what the
-reflector writes for them.
+The grouped shape ran once the sweep could: a grouped entity states one field per
+group member, which is what the reflector writes for them. =convention= is the
+worked example, carrying =identity=, =payload= and the =audit= group that =ores.dq=
+owns.
 
 The field groups followed. =cpp_field_group.hpp.mustache= states each group's
 shape beside the struct now, from the same iteration that writes its members, and
@@ -230,6 +216,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No refdata test compares the generated bytes with reflect-cpp's, so "the wire bytes match" has no evidence | =ores.refdata/core/tests/message_codec_tests.cpp= | Fixed | A row, nine messages, a field group and the NATS path: 58 assertions in 4 cases, both formats |
+| 2 | The test docstring narrates the defects rather than stating the rule | =test_member_headers.py= | Fixed | The narration is gone; the module docstring states what the test is for |
+| 3 | The generator re-implements =#+type:= parsing and drops =IGNORECASE= | =core.py= | Fixed | Uses the existing =_ORG_TYPE_RE=; three redundant local =import re= removed |
+| 4 | A template flag is computed in the loader, importing a private helper back from core, and the facet tuple is copied a third time | =org_loader.py=, =core.py= | Fixed | One =WIRE_CODEC_ADDRESSES= and =_has_wire_codec=; a field group's flag is derived in core with the rest |
+| 5 | Header paths are hand-spelled in six places | =core.py= | Fixed, partly | =_domain_header= owns the new sites; three older ones predate this branch and are left |
+| 6 | The member resolver hardcodes =.api= and silently skips deeper namespaces | =core.py= | Fixed | One classifier; an unknown namespace shape now raises instead of guessing a path |
+| 7 | A model with =domain_groups= plus an audit group silently drops =audit= | =codec_header.org= | Rejected | =audit= is itself a =domain_groups= row; the generated shape for =convention= carries identity, payload and audit |
+| 8 | The field-group shape ignores =no_wire=, which a field node may carry | =field_group_header.org= | Fixed | The same filter the entity template applies |
+| 9 | The capture keeps scaffold placeholders and repeats its =* Why= heading | inbox capture | Fixed | Filled in, references named, one =* Why= |
+| 10 | A test assertion names another component's path and passes trivially | =test_member_headers.py= | Fixed | Asserts the exact path the fixture yields |
+| 11 | "Both writers" for =double= is only asserted for JSON | =codec_*_tests.cpp= | Rejected | JSON is asserted in =codec_json_tests.cpp= and MessagePack in =codec_msgpack_tests.cpp=; non-finite values are untested and out of scope |
+| 12 | Two acceptance lines are deferred and the page did not say so | task page | Fixed | Status and Acceptance now say which lines wait for the JSON task, and the seven hand-written headers are named |
+| 13 | Commit =9ea273feff= states the suites pass and then names the one that does not | commit message | Accepted | The tree is right and the finding is fair; rewriting a pushed commit adds noise, so the correction is in the review-round commit and here |
+| 14 | The Measurements table breaks its own rule: no commits, no sweep row | task page | Fixed | Every row names a command and a commit, and the sweep, the file count, the suites and the byte comparison are rows |
 
 * Result

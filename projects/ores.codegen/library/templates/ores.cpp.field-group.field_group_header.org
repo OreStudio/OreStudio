@@ -160,8 +160,10 @@ struct {{field_group.entity_singular}} {
  */
 [[nodiscard]] constexpr auto wire_fields(const {{field_group.entity_singular}}&) {
     return std::tuple{
-{{#field_group.fields}}        utility::codec::field{"{{name}}",
+{{#field_group.fields}}
+{{^no_wire}}        utility::codec::field{"{{name}}",
                                  &{{field_group.entity_singular}}::{{name}}},
+{{/no_wire}}
 {{/field_group.fields}}    };
 }
 {{/field_group.has_generated_wire_codec}}

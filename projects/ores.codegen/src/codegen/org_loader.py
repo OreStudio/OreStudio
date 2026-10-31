@@ -2570,14 +2570,6 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fg["economic_fields"] = economic
     fg["has_economic_fields"] = bool(economic)
 
-    from .core import _facet_enabled
-    fg["has_generated_wire_codec"] = _facet_enabled(
-        path,
-        "ores.cpp.wire-codec",
-        ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
-         "ores.cpp.wire-codec.protocol_codec_impl"),
-    )
-
     return {"field_group": fg}
 
 

@@ -1656,13 +1656,11 @@ def _model_type_names(directory):
             field group singulars). A group states its shape in its own header,
             an entity or a junction in the codec header beside it.
     """
-    import re
-
     names = set()
     groups = set()
     for path in sorted(Path(directory).glob("*.org")):
         text = path.read_text(encoding="utf-8")
-        found = re.search(r"^#\+type:\s*(\S+)\s*$", text, re.M)
+        found = _ORG_TYPE_RE.search(text)
         kind = found.group(1) if found else ""
         if kind == "ores.codegen.entity":
             name = re.search(r"^#\+entity_singular:\s*(\S+)\s*$", text, re.M)
@@ -1688,6 +1686,16 @@ def _model_member_names(model_path):
     return _model_type_names(str(Path(model_path).resolve().parent))
 
 
+def _domain_header(component_include, name, codec=True):
+    """The header that declares a generated domain type.
+
+    The templates spell this path too, so it is stated once here for the units
+    whose includes the generator derives.
+    """
+    suffix = "_codec" if codec else ""
+    return f"{component_include}/domain/{name}{suffix}.hpp"
+
+
 def _member_headers(cpp_types, model_path, domain_entity):
     """The headers that declare the shape of every type these names hold.
 
@@ -1699,7 +1707,7 @@ def _member_headers(cpp_types, model_path, domain_entity):
     A member is named either qualified ("ores::refdata::domain::csa", the
     message's own field types) or bare ("counterparty_identifier", resolved by a
     using-declaration, the row's columns). Both forms name the same declaration,
-    so both resolve here.
+    so both resolve through one classifier below.
 
     Args:
         cpp_types: the C++ member types, as the model states them.
@@ -1708,9 +1716,11 @@ def _member_headers(cpp_types, model_path, domain_entity):
 
     Returns:
         list[str]: include paths, in first-seen order.
-    """
-    import re
 
+    Raises:
+        ValueError: if a member names a namespace shape this generator does not
+            know, rather than guessing an include path for it.
+    """
     names, groups = _model_member_names(model_path)
     # The templates spell a header "ores.{{component_include}}/...", so the
     # root here carries the product prefix too.
@@ -1723,22 +1733,30 @@ def _member_headers(cpp_types, model_path, domain_entity):
         if header not in out:
             out.append(header)
 
+    def add_named(name, fallback_root):
+        """The header for one name, or its foreign root when it is not ours."""
+        if name in groups:
+            add(_domain_header(root, name, codec=False))
+        elif name in names:
+            add(_domain_header(root, name))
+        elif fallback_root:
+            # Another component's domain types live under its API subcomponent.
+            add(_domain_header(fallback_root, name, codec=False))
+
     for cpp_type in (str(t) for t in cpp_types):
         for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
             parts = [p for p in namespace.split("::") if p]
-            if len(parts) != 2 or parts[1] == "utility":
+            if len(parts) != 2:
+                raise ValueError(
+                    f"{domain_entity.get('entity_singular', '?')}: member type "
+                    f"'{cpp_type}' names a namespace this generator does not "
+                    f"know ('{namespace}')")
+            # The wire envelope's own types arrive through its header.
+            if parts[1] == "utility":
                 continue
-            if name in groups:
-                add(f"{root}/domain/{name}.hpp")
-            elif name in names:
-                add(f"{root}/domain/{name}_codec.hpp")
-            else:
-                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
+            add_named(name, f"{parts[0]}.{parts[1]}.api")
         for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
-            if name in groups:
-                add(f"{root}/domain/{name}.hpp")
-            elif name in names:
-                add(f"{root}/domain/{name}_codec.hpp")
+            add_named(name, None)
     return out
 
 
@@ -1781,6 +1799,19 @@ def _message_codec_includes(domain_entity, model_path):
              for message in domain_entity.get("messages") or []
              for f in message.get("fields") or []]
     return _member_headers(types, model_path, domain_entity)
+
+
+# Every archetype address the wire-codec facet renders. One list, because the
+# addresses resolve together: a model that names a single address must still
+# have every one enabled, or it emits a declaration with no definition.
+WIRE_CODEC_ADDRESSES = (
+    "ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
+    "ores.cpp.wire-codec.protocol_codec_impl")
+
+
+def _has_wire_codec(model_path):
+    """Whether this model states its own wire shape."""
+    return _facet_enabled(model_path, "ores.cpp.wire-codec", WIRE_CODEC_ADDRESSES)
 
 
 def _facet_enabled(model_path, facet, addresses):
@@ -6335,10 +6366,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['wire_codec_includes'] = _codec_includes(domain_entity, model_path)
         domain_entity['message_codec_includes'] = _message_codec_includes(
             domain_entity, model_path)
-        domain_entity['has_generated_wire_codec'] = _facet_enabled(
-            model_path, "ores.cpp.wire-codec",
-            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
-             "ores.cpp.wire-codec.protocol_codec_impl"))
+        domain_entity['has_generated_wire_codec'] = _has_wire_codec(model_path)
         # The wire-shape function below iterates a message's fields, and a
         # field states its own name, which shadows the message's. The message
         # states its name a second time so the field loop can still reach it.
@@ -6664,10 +6692,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # field loop can reach it.
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
-        junction['has_generated_wire_codec'] = _facet_enabled(
-            model_path, "ores.cpp.wire-codec",
-            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
-             "ores.cpp.wire-codec.protocol_codec_impl"))
+        junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
         for _message in junction['messages']:
             _message['struct_name'] = _message['name']
         # The record a caller sends, on the shape rather than on the junction
@@ -6870,6 +6895,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fg.setdefault('component_include', component)
             fg['component_dir'] = f"ores.{component}"
         fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
+        fg['has_generated_wire_codec'] = _has_wire_codec(model_path)
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()

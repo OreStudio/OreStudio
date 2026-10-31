@@ -1097,15 +1097,13 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:read', 'View the parts of a cut body the assembly could not fill');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:write', 'Record the parts of a cut body the assembly could not fill');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:delete', 'Delete the recorded gaps of a cut body');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:read', 'View the result rows a run produced');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:write', 'Write result rows');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:delete', 'Delete result rows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:read', 'View the metrics a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:write', 'Write report metrics');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:delete', 'Delete report metrics');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:read', 'View the cashflows a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:write', 'Write report cashflows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:delete', 'Delete report cashflows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::run_results:read', 'View the figures of a run as the result screen shows them');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:read', 'View report errors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:write', 'Create and modify report errors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:delete', 'Delete report errors');

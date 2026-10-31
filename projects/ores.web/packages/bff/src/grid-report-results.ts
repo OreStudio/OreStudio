@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
-import { subjects as resultRowSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_result_row_protocol';
+import { subjects as runResultSubjects } from '@ores/wire-protocol/generated/reporting/protocol/run_result_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
@@ -669,7 +669,7 @@ function figureOf(row: AggregateRow): number {
  */
 async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
     const reply = await session.client.callAuthenticated(
-        resultRowSubjects.list_report_result_rows_request,
+        runResultSubjects.list_run_results_request,
         {
             filter: {
                 report_instance_id: runId,

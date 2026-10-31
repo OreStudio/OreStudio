@@ -125,12 +125,13 @@
 \ir ./reporting_in_flight_instance_fn_create.sql
 -- The figures a report run produced, and their triggers. Each table names the
 -- run it belongs to, so these load after the run tables above them.
-\ir ./reporting_report_result_rows_create.sql
-\ir ./reporting_report_result_rows_notify_trigger_create.sql
 \ir ./reporting_report_metrics_create.sql
 \ir ./reporting_report_metrics_notify_trigger_create.sql
 \ir ./reporting_report_cashflows_create.sql
 \ir ./reporting_report_cashflows_notify_trigger_create.sql
+-- The screen's view of a run's figures. It reads the metric table, so it loads
+-- after it.
+\ir ./reporting_run_results_create.sql
 
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_configuration_analytics_fn_create.sql

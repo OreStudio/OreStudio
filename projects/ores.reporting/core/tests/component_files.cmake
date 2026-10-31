@@ -62,6 +62,7 @@ set(files
     "repository_report_definition_repository_tests.cpp"
     "repository_report_input_bundle_repository_tests.cpp"
     "repository_report_type_repository_tests.cpp"
+    "repository_run_result_repository_tests.cpp"
     "results_canonical_log_reader_tests.cpp"
     "results_run_output_reader_tests.cpp"
     "run_document_handler_tests.cpp"

@@ -98,6 +98,23 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 - 2026-10-30: The node stops projecting =npv.csv= into canonical rows. The
   archive it already uploads is what the post-processor reads, so there is one
   writer of an ORE format and not two. The run's log rows keep their own file.
+- 2026-10-31: A cashflow family is read by the same declaration-driven reader,
+  and the three typed readers it replaces are gone. A typed row could not carry
+  every figure a family states — =flows.csv= states ten, and the stressed
+  family states each of them three times — and the table stores them all, so
+  the reader reads each heading the catalogue calls a measure. The stressed
+  suffix =_Base=, =_Scen= and =_Diff= becomes the part of the figure rather
+  than part of its name, so a reader compares the three without learning it.
+- 2026-10-31: The metric table carries the scenario and the risk factor as
+  columns of their own, because the corpus states them by name and a screen
+  filters on them, and it does not carry the shift: the sensitivity files state
+  one shift column for each factor of the run, so the shift of a figure is not
+  one field of its row. Every other qualifier travels as one JSON object.
+- 2026-10-31: The screen reads a read model, not a second table.
+  =ores.reporting.run_result= is a view over the metric table that names the
+  engine's headings once — =NPV= is =npv= — and reads the counterparty out of
+  the qualifiers. The result-row table it replaces held the same figures under
+  the same names, so keeping it would have been two stores of one fact.
 - 2026-10-30: The tests read the checked-in expected outputs; the sample suite
   does not run. At this commit the corpus is 473 files under 192 file names,
   which group into 66 family shapes by name, and the widest file states 789

@@ -28,9 +28,9 @@ family a figure came from.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The metric table is modelled and its layers are generated: 31 files, from the entity model to the create and drop SQL. The files are not yet in the component's CMake lists, so nothing compiles them and the build stays green. |
-| Waiting on   | The metric and child-row readers, and the column roles. |
-| Next         | State the new entity in the reporting component's file-list model so the generated layers compile, then wire the post-processor. |
+| Now          | The two stores and the read model are built and fed: the metric and cashflow tables take what the readers read out of the run's own output archive, and the run result view serves the screen in its own words. |
+| Waiting on   | Nothing. |
+| Next         | Prove a whole run through the grid, which is the story it belongs to. |
 | Last touched | 2026-10-31 |
 
 * Acceptance
@@ -94,3 +94,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tables and the read model are in place, and the post-processor reads the
+run's output archive rather than the rows the node used to project.
+
+- =ores_reporting_report_metrics_tbl= takes every family whose row is keys,
+  qualifiers and figures. A metric is the run, the party, the family, the
+  subject, the observation date, the measure as the engine's heading, the
+  currency, the scenario, the risk factor, the other qualifiers as one JSON
+  object, and the figure. It is a hypertable on the observation date.
+- =ores_reporting_report_cashflows_tbl= takes the three families whose row is a
+  payment. A row is the payment's trade, scenario, leg, number, pay date, flow
+  type and currency, one figure named by its heading, and the part of a
+  stressed comparison it states.
+- =ores_reporting_run_results_vw= is the read model the screen reads: the figures
+  of the =npv= family under the names the screen knows them by, with the
+  counterparty read out of the qualifiers. The result-row table is gone.
+- The post-processor downloads each result's output archive, unpacks it, reads
+  every file by its family, and writes one bulk insert for each family of each
+  table. A file no family covers is counted and logged, not refused. The node no
+  longer projects =npv.csv=, and the canonical row pipeline is deleted from both
+  sides of the wire.
+
+Measured at this tree:
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ORE core suite | 442 cases, 484 588 assertions | =ores.ore.core.tests= | |
+| Reporting core suite | 213 cases, 1 173 assertions | =ores.reporting.core.tests= | |
+| Corpus files read whole | 460 of 460 | =[corpus_gate]= | |
+| Web suite | 108 tests in bff and wire-protocol, 2 342 in web | =vitest run= | |
+

@@ -251,9 +251,9 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR    | Title |
+|-------+-------|
+| #4244 | [reporting] Carry one canonical form for each ORE value |
 
 * Review
 
@@ -262,3 +262,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Slice 1: the set states the form a configuration holds
+
+A value row names the form a configuration holds and is empty when the row is
+that form, so one table states which renderings are accepted, what each means and
+which one a configuration carries. The four sets that drew on a refdata
+catalogue became enumerated, because a catalogue set holds no value rows and so
+had nowhere to put the column; the registers keep the whitelist a guard checks.
+
+The numbers, measured after the seed and read back through =ores.shell=:
+
+| Set | Choices | Renderings |
+|-----+---------+------------|
+| =convention.day_counter= | 23 | 52 |
+| =curve.day_counter= | 23 | 52 |
+| =convention.business_day_convention= | 7 | 20 |
+| =curve.business_day_convention= | 7 | 20 |
+| =convention.frequency= | 9 | 9 |
+| **total** | **71** | **153** |
+
+The renderings are read from ORE's reader and its parser rather than curated, so
+the check that they agree runs on every build. It found five defects, all fixed:
+three renderings the reader refused and five rows it could never apply.
+
+Acceptance, as it stands:
+
+- Every parameter whose ORE reader accepts more than one rendering is named, with
+  the reader that accepts it and the canonical form chosen for it. **Done**, by
+  =ore_aliases.py= reading the reader's six tables and the five parsers.
+- The map from an accepted rendering to the canonical form is data, and no
+  compiled table holds ORE's spellings. **Half done**: the reading direction is
+  data; the direction a write emits is still =day_counter_spellings= and
+  =bdc_spelling=, because the store's form is not always a form a document may
+  write. Slice 4 states that direction as data too.
+- A write converts through one boundary and refuses a rendering the map does not
+  know, naming the set. **Not yet**: slice 2.
+- The screens offer the canonical forms and the guard accepts every rendering.
+  **Half done**: a combo offers the canonical forms; the guard accepts renderings
+  because the registers still hold them, not because it converts.
+- A check fails when a table holds more than one rendering of one fact. **Not
+  yet**: slice 3's query over the map and the guarded tables.
+
+** What the next slice needs
+
+Slice 2 adds =ores_reporting_canonical_value_fn(set_code, value)= and calls it
+from the four leaf guards while the mappers still convert. The helper reads a
+set's rows: the enumerated values, or the catalogue relation the set names. It
+returns the value when the set holds no row for it and the guard's whitelist is
+what refuses it, which is the one case a reader has to keep straight.
+
+The three copies of the knowledge named in Discovery are still there. The refdata
+=conventions_code= header and the seeder normalisers are slice 3 and 4 work: once
+the guards convert, each has no reason to.
+

@@ -86,24 +86,69 @@ same shape and the same reason. A stored state follows a write that may fail, ma
 be repeated or may be missed, so the row and its state can disagree; a derived
 state cannot disagree with the facts it is derived from.
 
-** What the kind declares
+** The kind is reference data
 
-A cut kind is a row, and it carries five facts beyond its code and name.
+A kind is not a sentence in a knowledge page. It is a row of a lookup a person
+maintains, because four of the facts it carries are decisions a firm changes and
+reads back: whether the occasion is signed, whether its values are indicative, how
+a report resolves it, and how long its cuts are kept.
 
-| Declaration | What it decides | EOD | SOD | IPV | FLASH | LIVE |
-|-------------+-----------------+-----+-----+-----+-------+------|
-| What fixes the instant | Where the timepoint comes from | The centre's close | The centre's open | The close of the cut it is built on | An instant the process names | The instant the run starts |
-| =requires_authorisation= | Whether a cut of the kind raises an approval request | Yes | No | Yes | No | No |
-| =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | No | No | No | Yes | Yes |
-| =approval_kind_code= | Which inbox kind authorises it, where it requires one | =reporting.cut_authorisation= | none | =reporting.cut_authorisation= | none | none |
-| =display_order= | The order the take offers the kinds | 10 | 20 | 30 | 40 | 50 |
+| Column | What it holds | Why it is the kind's |
+|--------+---------------+----------------------|
+| =code=, =name=, =description= | The kind's identity, in the reference data's own words | A person selects it by code, and a person new to the team reads what it means |
+| =family_code= | The family the kind belongs to: =end_of_day=, =start_of_day=, =verification=, =intraday=, =consumer= | The family fixes the body rule and the source of the instant; a kind inside it fixes the rest |
+| =requires_authorisation= | Whether a cut of the kind raises an approval request | The end of day and the verification are signed; the open, the intraday view and the live view are not |
+| =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | The intraday and the live views are indicative; the close and the open are official |
+| =resolution_rule_code= | The rule by which a report resolves a selection of this kind to a cut | [[*The resolution][The resolution]] states the rules; the kind names one |
+| =retention_months= | How long a cut of the kind is kept before it leaves the warm tier | [[*Retention][Retention]] states the rule |
+| =retention_destination_code= | Where a cut of the kind goes when it leaves the warm tier | The tiers are the ones [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][the data tiers]] states |
+| =legal_hold_default= | Whether a cut of the kind starts under legal hold | A held cut is never removed, whatever its retention says |
+| =display_order= | The order a person reads the kinds in | The take and the selection both read it |
+| =version=, =valid_from=, =valid_to= | The bitemporal window every reference row keeps | A changed rule is a version a person can read, and no rule is silently overwritten |
 
-The declarations are independent, and the kinds show it. A start of day cut needs
-no authorisation and is not indicative, because the body was approved when it was
-first fixed. A flash cut needs none and is indicative, because its occasion is
-before the day settles. A LIVE cut needs none and is indicative, and it differs
-from both in where its instant comes from: no person chooses it and no centre
-publishes it, so [[*The LIVE kind][the LIVE kind]] takes it from the run.
+The kind is held by the reporting component, because reporting both resolves a
+selection and draws the cuts, and no cut component exists. A cut component would
+own the kind beside the cuts, and [[*What this page does not settle][the open list]]
+records that as the move to make when the cut entity is built.
+
+*** Why a family, and why EOM and EOY are kinds
+
+Two questions, and the corpus's own vocabulary answers them. A *family* groups the
+kinds whose body is the same and whose instant comes from the same place. A *kind*
+is one row per occasion that differs in its declarations.
+
+The end of day family holds three kinds: the ordinary close, the month end and the
+year end. All three fix the same four inputs, read them at the same centre's close,
+and differ in one thing that matters to the archive: how long the cut is kept. That
+is why the month end and the year end are kinds and not a flag on one end of day
+kind — the retention is the kind's, and one row cannot hold three retention
+periods. And it is why they are one family and not three, because a report that
+selects the ordinary close must still price from the body fixed at a month end, and
+the family is what lets it.
+
+The start of day family holds one kind, the verification family one, the intraday
+family one, and the consumer family one. A family of one is not a wasted row: it
+states the body rule and the instant source for every kind that will join it, and
+a kind that fixes the same body at a new instant is added to it rather than
+invented beside it.
+
+** Resolution rules the kind may name
+
+| Rule code | What it resolves to |
+|-----------+---------------------|
+| =same_day_close= | The end of day family's cut of the date the report covers, at the centre's close |
+| =last_business_day_of_month_close= | The month end cut of the month the report covers, at the close of that month's last business day |
+| =last_business_day_of_year_close= | The year end cut of the year the report covers, at the close of that year's last business day |
+| =same_day_open= | The start of day cut of the date the report covers |
+| =cut_it_is_built_on= | The verification cut of the date the report covers |
+| =run_instant= | A cut the run mints at the instant it starts |
+| =the_cut_named= | The cut the selection names, and nothing else |
+
+A kind whose occasion no rule can resolve names =the_cut_named=, and a report
+reaches its cuts by pinning one rather than by selecting a kind. The intraday flash
+cut and any cut an ad-hoc process names are such kinds: their instant answers to no
+schedule, so a report cannot say *the flash cut of the date* and mean one body. The
+selection therefore offers the kinds that have a rule, and pins the rest.
 
 * The states and what derives them
 
@@ -182,7 +227,7 @@ cut adds a detail table and a descriptor.
 |--------------------+----------------+---------------|
 | The record of the ask, the decision and the wait | An =ores.inbox= approval request: its kind, state, asker, reason, decision and expiry | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
 | What the request is about | A detail table in the reporting component, keyed by =request_id=: the cut and the counts of the body's parts | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
-| Whether a cut needs one at all | The cut kind's =requires_authorisation=, and the take raises nothing where it says no | [[*What the kind declares][What the kind declares]] |
+| Whether a cut needs one at all | The cut kind's =requires_authorisation=, and the take raises nothing where it says no | [[*The kind is reference data][The kind is reference data]] |
 | Who may decide | The inbox kind's =decide_permission_code= | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
 | How many approvals close it | The inbox kind's =approvals_required=; one for a cut | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
 | Four eyes | A rule of the schema: a decision by the asker is refused, and one person counts once | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
@@ -339,7 +384,9 @@ to a concrete cut before it gathers anything, and the rules are five.
 
 | Selection | Resolves to | Its timepoint | What the resolution refuses |
 |-----------+-------------+---------------+-----------------------------|
-| =EOD= | The end of day cut of the date the report covers, for the report's scope and centre | The centre's close of that date | No such cut, or one whose authorisation is not recorded |
+| =EOD= | The end of day *family*'s cut of the date the report covers — plain, or the month end or year end cut where that date is one — for the report's scope and centre | The centre's close of that date | No such cut, or one whose authorisation is not recorded |
+| =EOM= | The month end cut of the month the report covers, taken on that month's last business day | The close of that last business day | No such cut, or one whose authorisation is not recorded. A plain end of day cut on that day does not serve, because its retention is the shorter one |
+| =EOY= | The year end cut of the year the report covers, taken on that year's last business day | The close of that last business day | No such cut, or one whose authorisation is not recorded. A month end or plain cut on that day does not serve, for the same reason |
 | =SOD= | The start of day cut of that date, for the same scope | The centre's open of that date | No such cut |
 | =IPV= | The independent verification cut of that date | The close of the cut it is built on | No such cut, or one whose authorisation is not recorded |
 | =LIVE= | A new cut, minted at the run's instant | The instant the run starts | A body that cannot be assembled |
@@ -377,6 +424,50 @@ moved since the run. The run's own card names the body, read through the cut.
 cut a selection resolves to, its state and the sentence that would refuse it, for a
 preview or for a run. One operation serves both, because a preview computed by a
 second code path is a preview of that path and not of the run.
+
+* Retention
+
+A cut is kept for as long as its kind says. The rule is short and it has three
+parts.
+
+**The kind states the period and the destination.** =retention_months= and
+=retention_destination_code= on the kind are the floor and the place. The periods
+are ours and the fixture draws them: an end of day cut is kept 25 months in the warm
+tier, a month end 84, a year end 120, a verification 84, a start of day 25, an
+intraday view three, and a live cut one. A year end is the longest because it is the
+body a yearly report states and the body an auditor asks for years later; a live cut
+is the shortest because it is a view and its result is reproduced by naming it.
+
+**The cut records the rule it was taken under.** A cut copies its kind's retention
+and destination when it is taken, so a later change to the kind does not move the
+retention of a body already fixed. The opposite would be a rule that rewrites the
+past: a firm that shortened a kind's period would delete cuts it had promised to
+keep, and no record of the promise would survive the change.
+
+**The kind's rules are read live where they are a decision and copied where they are
+a promise.** Authorisation and indicative values are recorded on the cut when it is
+taken, because they are facts about that body. Retention is recorded with them, for
+the reason above. The resolution rule is read from the kind at the moment of the
+resolution, because a report resolving today must follow today's rule and not the
+rule in force when the report was defined.
+
+**Retention is a floor, and a person may raise it.** A cut's retention may be
+extended by hand, with the reason and the account, and never shortened below its
+kind's period: shortening is a change to the kind, where it is a decision a person
+with the right permission takes and a version the history holds. The extension is
+drawn on the cut's page beside the kind's period, so a reader sees which of the two
+is in force.
+
+**A legal hold outranks both.** A cut under legal hold is never removed, whatever
+its period says, and neither is one whose kind's default puts it there. The hold is
+a fact a person sets — on the kind as a default, or on one cut — and clearing it is
+its own act with its own reason.
+
+**Nothing removes a cut today.** No retention job exists, and this page states the
+rule the archive will follow rather than a job that runs. What the rule already
+decides is that removing a cut is an archive act and not a delete: the row moves to
+the destination its kind named, and the run that priced from it keeps a reference
+that still resolves.
 
 * The LIVE kind
 
@@ -500,6 +591,25 @@ follow, who may act, what a report selects and how a run resolves it; it does no
 design the columns, the generated types or the subjects. That is the next work, and
 it starts from this page and from
 [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
+
+**Where the kind lives.** The kind is the reporting component's today, because
+reporting resolves a selection and draws the cuts. A cut component would own the
+kind beside the cut records, and moving it then is a move of one lookup and its
+subjects. The page takes the smaller step and names the larger one.
+
+**The end of day family's fallback.** An end of day selection accepts the month end
+or year end cut of its date, because the body is the same one and a report of the
+close must price from it. The alternative — an end of day selection refusing a
+month end body — would leave every report of a month's last business day with no
+body unless it selected the month end kind, which no report of the close should have
+to know. The prototype draws the fallback and the month end selection's stricter
+rule beside it.
+
+**The retention periods.** The numbers in this page are ours and no public source we
+verified fixes a firm's retention. A firm sets them from its own regulatory
+position, and the kind is where it sets them. Whether a cut may be retained *shorter*
+than its kind by a person with a stronger permission is open; this page treats
+retention as a floor.
 
 **One inbox kind, or one for each occasion.** This page takes one inbox kind,
 =reporting.cut_authorisation=, whose detail row names the cut and therefore the

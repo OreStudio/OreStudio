@@ -153,6 +153,25 @@ reason as at the close.
 *How it relates to the components.* Both components, inherited rather than
 approved at the opening. What the kind adds is a direction of inheritance.
 
+* The month end and the year end: month end cut and year end cut
+
+*What they are for.* The same body as the end of day cut, fixed on the day a month
+or a year closes, and kept longer because a monthly or a yearly report states it and
+an auditor asks for it years later.
+
+*What they fix.* The complete body of the end of day cut: the four inputs, at the
+centre's close of the last business day of the month or of the year.
+
+*What the occasion gives it.* The instant is the centre's close of that day, so the
+instant and the centre are the end of day cut's; the occasion adds the period the
+result covers and the retention the archive applies. Nothing about the body changes,
+which is why the three are one family and why a report that selects the ordinary
+close still prices from the body fixed on a month end.
+
+*How it relates to the components.* Both components, complete, exactly as at an
+ordinary close. What differs is the occasion, the resolution of a report that selects
+it, and how long the cut is kept.
+
 * The live view: live cut
 
 *What it is for.* A report that values its scope at whatever instant it is run: a
@@ -191,8 +210,9 @@ world in every kind. A complete description of a cut states its kind, which fixe
 the occasion, and its body, which the purpose fixes.
 
 A kind also declares two further facts, and neither follows from the other. It
-states whether a cut of its occasion is authorised before it is used, and
-whether the values a cut of it fixes are indicative. The five occasions above fall
+states whether a cut of its occasion is authorised before it is used,
+whether the values a cut of it fixes are indicative, the rule by which a report
+resolves a selection of it, and how long a cut of it is kept. The five occasions above fall
 two on one side of the first and three on the other: the end of day cut and the
 independent verification are signed, and the flash, start of day and live cuts are
 not. The second separates the flash and live cuts, whose values are indicative,

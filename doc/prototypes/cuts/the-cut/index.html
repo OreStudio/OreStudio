@@ -204,6 +204,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         tab: Q.get('tab') || 'body',
         cut: Q.get('cut') || '',
         report: Q.get('report') || '',
+        type: Q.get('type') || '',
         sel: Q.get('sel') || '',
         pin: Q.get('pin') || '',
         step: Q.get('step') || '',
@@ -230,9 +231,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         IPV:   { name: 'Independent verification', requires_auth: true, indicative: false,
                  resolves: 'the signed verification cut of that date' },
         FLASH: { name: 'Flash', requires_auth: false, indicative: true,
-                 resolves: 'the flash cut of that date, at the instant its process named' },
+                 resolves: 'no rule: a report pins one of its cuts' },
         LIVE:  { name: 'Live', requires_auth: false, indicative: true,
-                 resolves: 'the instant the run starts, and the run mints the cut' }
+                 resolves: 'the instant the run starts, and the run mints the cut' },
+        EOM:   { name: 'Month end', requires_auth: true, indicative: false, family: 'EOD',
+                 resolves: "the close of the month's last business day" },
+        EOY:   { name: 'Year end', requires_auth: true, indicative: false, family: 'EOD',
+                 resolves: "the close of the year's last business day" }
     };
 
     var CUTS = [
@@ -283,6 +288,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
           auth_by: '', auth_at: '', request: '7a5e0b3f',
           part: 'Market Risk', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
           engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 0 },
+        { id: 'c9', code: 'EOM', kind: 'Month end', label: 'EOM.ACME-LONDON.2026-09-30',
+          instant: '2026-09-30T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'authorised',
+          taken_by: 'm.oduya', taken_at: '2026-09-30T16:37:00Z',
+          auth_by: 'a.reyes', auth_at: '2026-09-30T17:02:00Z', request: '5c2a91bd',
+          part: 'Finance', ordinal: 1, deals: 1280, values: 3904, sets: 7, fixings: 145,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 2 },
         { id: 'c8', code: 'LIVE', kind: 'Live', label: 'LIVE.ACME-LONDON.2026-10-07T08:31:00Z',
           instant: '2026-10-07T08:31:00Z', tz: 'UTC', cuttime: '',
           scope: SCOPE, state: 'in_use',
@@ -307,6 +319,49 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
           refused_reason: 'The population omits a deal the desk booked before the close. Take it again.' }
     ];
 
+    /* The cut types: reference data a person maintains. Each carries the rules
+       that used to live as sentences, and the retention its cuts are kept for. */
+    var CUT_TYPES = [
+        { code: 'EOD', name: 'End of day', family: 'End of day', freq: 'daily',
+          desc: 'The body one valuation reads, fixed at the centre\u2019s close of the day.',
+          auth: 'Signed by Finance', indicative: false, resolution: 'same_day_close',
+          months: 25, dest: 'warm', hold: false, order: 10 },
+        { code: 'EOM', name: 'Month end', family: 'End of day', freq: 'monthly',
+          desc: 'The same body as the end of day cut, fixed on the month\u2019s last business day ' +
+                'and kept for the monthly reports and their auditors.',
+          auth: 'Signed by Finance', indicative: false,
+          resolution: 'last_business_day_of_month_close',
+          months: 84, dest: 'archive', hold: false, order: 11 },
+        { code: 'EOY', name: 'Year end', family: 'End of day', freq: 'yearly',
+          desc: 'The same body as the end of day cut, fixed on the year\u2019s last business day ' +
+                'and kept longest of all.',
+          auth: 'Signed by Finance', indicative: false,
+          resolution: 'last_business_day_of_year_close',
+          months: 120, dest: 'archive', hold: true, order: 12 },
+        { code: 'SOD', name: 'Start of day', family: 'Start of day', freq: 'daily',
+          desc: 'The previous close carried forward to the centre\u2019s open.',
+          auth: 'Not signed', indicative: false, resolution: 'same_day_open',
+          months: 25, dest: 'warm', hold: false, order: 20 },
+        { code: 'IPV', name: 'Independent verification', family: 'Verification', freq: 'daily',
+          desc: 'The end of day body with selected values replaced by values the firm did not produce.',
+          auth: 'Signed by Market Risk', indicative: false, resolution: 'cut_it_is_built_on',
+          months: 84, dest: 'archive', hold: false, order: 30 },
+        { code: 'FLASH', name: 'Flash', family: 'Intraday', freq: 'on-demand',
+          desc: 'An indicative view taken at an instant a process names while the day moves.',
+          auth: 'Not signed', indicative: true, resolution: 'the_cut_named',
+          months: 3, dest: 'warm', hold: false, order: 40 },
+        { code: 'LIVE', name: 'Live', family: 'Consumer', freq: 'on-demand',
+          desc: 'The body at the instant a run starts; the run mints the cut and its values are indicative.',
+          auth: 'Not signed', indicative: true, resolution: 'run_instant',
+          months: 1, dest: 'warm', hold: false, order: 50 }
+    ];
+
+    function typeByCode(code) {
+        var found = null;
+        CUT_TYPES.forEach(function (t) { if (t.code === code) found = t; });
+        return found;
+    }
+
     /* The report definitions of the fixture, and the cut each selects. */
     var REPORTS = [
         { id: 'r1', name: 'Group Consolidated Exposure', type: 'risk', cycle: 'eod',
@@ -324,7 +379,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         { id: 'r7', name: 'Large Exposures', type: 'risk', cycle: 'eod',
           sel: 'IPV', pinned: '', last: '#4760', health: 'completed clean' },
         { id: 'r8', name: 'Liquidity Coverage', type: 'risk', cycle: 'eod',
-          sel: 'EOD', pinned: '', date: '2026-10-04', last: '#4752', health: 'failed' }
+          sel: 'EOD', pinned: '', date: '2026-10-04', last: '#4752', health: 'failed' },
+        { id: 'r10', name: 'FRTB SA Capital', type: 'risk', cycle: 'eod',
+          sel: 'EOM', pinned: '', date: '2026-09-30', last: '#4750', health: 'completed clean' }
     ];
 
     function reportById(id) {
@@ -470,7 +527,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     function q(params) {
         var base = { surface: S.surface, fcase: S.fcase, tab: S.tab,
                      cut: S.cut, report: S.report, sel: S.sel, pin: S.pin,
-                     step: S.step, verdict: S.verdict };
+                     type: S.type, step: S.step, verdict: S.verdict };
         Object.keys(params || {}).forEach(function (k) {
             var v = params[k];
             if (v === undefined || v === null || v === '') delete base[k];
@@ -516,8 +573,11 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
                         ['The cut', { surface: 'record', fcase: '', tab: 'body' }, 'record'],
                         ['Take a cut', { surface: 'take', fcase: '', step: '1' }, 'take'],
                         ['Cut times', { surface: 'times', fcase: '' }, 'times'],
-                        ['A cut time', { surface: 'time', fcase: '' }, 'time']];
-        var cases = [['EOD', 'eod'], ['SOD', 'sod'], ['LIVE', 'live'],
+                        ['A cut time', { surface: 'time', fcase: '' }, 'time'],
+                        ['Cut types', { surface: 'types', fcase: '' }, 'types'],
+                        ['A cut type', { surface: 'type', fcase: '' }, 'type']];
+        var cases = [['EOD', 'eod'], ['EOM', 'eom'], ['EOY', 'eoy'],
+                     ['SOD', 'sod'], ['LIVE', 'live'],
                      ['no selection', 'none'], ['pinned', 'pinned'],
                      ['missing cut', 'missing'],
                      ['taken', 'taken'], ['in use', 'in-use'],
@@ -661,7 +721,10 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<option>Independent verification</option><option>Flash</option>' +
             '<option>Start of day</option></select>' +
             '<select><option>State: all</option><option>Authorised</option><option>Taken</option>' +
-            '<option>Incomplete</option><option>Refused</option><option>Superseded</option></select></div>' +
+            '<option>Incomplete</option><option>Refused</option><option>Superseded</option></select>' +
+            '<select><option>Type: all</option>' +
+            CUT_TYPES.map(function (t) { return '<option>' + esc(t.code) + ' \u2014 ' + esc(t.name) +
+                '</option>'; }).join('') + '</select></div>' +
             body;
     }
 
@@ -1295,17 +1358,33 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         if (r.sel === 'LIVE')
             return { ok: true, live: true,
                      why: null };
-        var want = { EOD: 'EOD', SOD: 'SOD', IPV: 'IPV', FLASH: 'FLASH' }[r.sel];
         var date = coverDate(r);
         var match = null;
         CUTS.forEach(function (c) {
-            if (c.code !== want) return;
-            if (c.instant.slice(0, 10) !== date && !match) match = match || null;
-            if (c.instant.slice(0, 10) === date) match = c;
+            if (r.sel === 'EOD') {
+                /* the end of day family: a plain close, or the month end or year
+                   end body of the same day */
+                if (c.instant.slice(0, 10) === date && (c.code === 'EOD' || c.code === 'EOM' ||
+                        c.code === 'EOY')) match = c.code === 'EOD' ? c : (match || c);
+                return;
+            }
+            if (r.sel === 'EOM' || r.sel === 'EOY') {
+                /* the occasion's own kind, in the month or the year covered */
+                if (c.code !== r.sel) return;
+                if (c.instant.slice(0, 7) === date.slice(0, 7)) match = c;
+                return;
+            }
+            if (c.code === r.sel && c.instant.slice(0, 10) === date) match = c;
         });
-        if (!match)
-            return { ok: false, why: 'No ' + (KIND_DECL[want] || {}).name.toLowerCase() +
-                ' cut of ' + date + ' exists for these books. Somebody must take one.' };
+        if (!match) {
+            var want = r.sel === 'EOD' || r.sel === 'EOM' || r.sel === 'EOY'
+                ? (r.sel === 'EOD' ? 'end of day family' :
+                   (r.sel === 'EOM' ? 'month end' : 'year end'))
+                : (KIND_DECL[r.sel] || {}).name.toLowerCase();
+            return { ok: false, why: 'No ' + want + ' cut covers ' +
+                (r.sel === 'EOM' ? 'the month of ' : (r.sel === 'EOY' ? 'the year of ' : '')) +
+                date + ' for these books. Somebody must take one.' };
+        }
         var verdict = consumable(match);
         if (!verdict.ok) return { ok: false, cut: match, why: verdict.why };
         return { ok: true, cut: match, indicative: indicativeOutput(match) };
@@ -1366,6 +1445,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         case 'pinned': return reportById('r6');
         case 'taken': return reportById('r7');
         case 'refused': return reportById('r8');
+        case 'eom': return reportById('r10');
         case 'missing': return { id: 'r9', name: 'Stressed VaR', type: 'risk', cycle: 'eod',
                                  sel: 'EOD', pinned: '', date: '2026-10-08',
                                  last: '\u2014', health: 'never run' };
@@ -1485,7 +1565,11 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         var r = reportForRecord();
         var chosen = S.sel || r.sel || '';
         var pinned = S.pin || r.pinned || '';
-        var kinds = ['EOD', 'SOD', 'IPV', 'LIVE'].map(function (k) {
+        /* Only the kinds a rule can resolve are offered here. A flash cut or one
+           an ad-hoc process names answers to no schedule, so a report reaches it by
+           pinning one of its cuts. */
+        var kinds = CUT_TYPES.filter(function (t) { return t.resolution !== 'the_cut_named'; })
+            .map(function (t) { return t.code; }).map(function (k) {
             var d = KIND_DECL[k];
             return '<tr class="pick' + (chosen === k && !pinned ? ' sel' : '') + '" data-sel="' + k + '">' +
                 '<td class="key">' + esc(k) + '<span class="sub">' + esc(d.name) + '</span></td>' +
@@ -1511,10 +1595,11 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<div class="body">' +
             '<div class="panel"><table class="rows"><thead><tr><th>Selection kind</th>' +
             '<th>Resolves to</th><th>Authorisation</th></tr></thead><tbody>' + kinds + '</tbody></table></div>' +
-            '<p class="rule">A selection names an occasion, and the selection kinds are the four a rule ' +
-            'can resolve. LIVE is the one whose instant comes from the run, so its cut does not exist ' +
-            'until a run mints it. A flash or process-named cut has no occasion a rule resolves, and is ' +
-            'pinned below instead.' +
+            '<p class="rule">A selection names an occasion, and the rows here are the kinds whose rule ' +
+            'can resolve one: the three end of day types, the open, the verification and the live view. ' +
+            'LIVE is the one whose instant comes from the run, so its cut does not exist until a run ' +
+            'mints it. A flash cut, or one an ad-hoc process names, answers to no schedule, so it is ' +
+            'pinned below instead of selected by kind.' +
             '</p>' +
             '<div class="spacer"></div>' +
             '<div class="panel"><h2>Or one specific cut <span class="sub">pin the report to a body</span></h2>' +
@@ -1760,7 +1845,144 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     }
 
     /* ---------------------------------------------------------------- */
-    /* Surface 6 and 7: the named cut times, as reference data.           */
+    /* Surfaces 7 and 8: the cut types, as reference data.                */
+    /* ---------------------------------------------------------------- */
+
+    /* The cuts of a type, grouped. The group is the period one step above the
+       type's frequency, so a daily type reads by month, a monthly one by year,
+       a yearly one as a single group, and an on-demand one by day. */
+    function groupFor(t, c) {
+        var day = c.instant.slice(0, 10);
+        var month = c.instant.slice(0, 7);
+        var year = c.instant.slice(0, 4);
+        if (t.freq === 'daily') return { key: month, label: mon(month) };
+        if (t.freq === 'monthly') return { key: year, label: 'Year ' + year };
+        if (t.freq === 'yearly') return { key: 'all', label: 'Every year' };
+        return { key: day, label: dt(day + 'T00:00:00Z').slice(0, 11) };
+    }
+
+    function mon(m) {
+        var names = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                     'August', 'September', 'October', 'November', 'December'];
+        return names[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(0, 4);
+    }
+
+    function cutsOfType(code) {
+        return CUTS.filter(function (c) { return c.code === code; })
+            .sort(function (a, b) { return a.instant < b.instant ? 1 : -1; });
+    }
+
+    function surfaceTypes() {
+        var rows = CUT_TYPES.map(function (t) {
+            return '<tr class="pick" data-type="' + t.code + '">' +
+                '<td class="key">' + esc(t.code) + '<span class="sub">' + esc(t.name) + '</span></td>' +
+                '<td>' + esc(t.family) + '</td>' +
+                '<td class="dim">' + esc(t.auth) + '</td>' +
+                '<td>' + (t.indicative ? badge('Indicative', 'indicative')
+                    : badge('Official', 'inactive')) + '</td>' +
+                '<td class="num">' + t.months + ' months<span class="sub">' + esc(t.dest) + '</span></td>' +
+                '<td class="num">' + cutsOfType(t.code).length + '</td></tr>';
+        }).join('');
+        return typesFrame('<div class="panel"><table class="rows"><thead><tr>' +
+            '<th>Type</th><th>Family</th><th>Authorisation</th><th>Values</th>' +
+            '<th>Retention</th><th>Cuts</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<div class="pager"><span>1\u2013' + CUT_TYPES.length + ' of ' + CUT_TYPES.length + '</span>' +
+            '<span class="right">Page size <span class="dash">15</span></span></div></div>' +
+            '<p class="sentence"><b>What a type is.</b> Reference data a person maintains: what the ' +
+            'occasion is for, whether a cut of it is signed, whether its values are indicative, the rule ' +
+            'by which a report resolves a selection of it, and how long its cuts are kept.</p>' +
+            '<p class="rule"><b>The family.</b> End of day, start of day, verification, intraday and ' +
+            'consumer. A family fixes the body rule and where the instant comes from; a type inside it ' +
+            'fixes the rest. The three end of day types share one body and differ in their occasion and ' +
+            'their retention.</p>' +
+            '<div class="gap"><b>Gap.</b> No cut type lookup exists: these six rules live in a knowledge ' +
+            'page and in this fixture. Nothing reads them at a take, at a resolution or at an archive.</div>');
+    }
+
+    function typesFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut types</p>' +
+            '<div class="pagehead"><div><h1>Cut types</h1>' +
+            '<p class="lead">The occasions a cut is taken for, the rules each carries, and the cuts ' +
+            'already taken of each.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button><button class="btn">Import</button>' +
+            '<button class="btn">Export</button><button class="btn primary">Add</button></div></div>' +
+            '<div class="listtools"><div class="searchbox"><input placeholder="Search the code or the name">' +
+            '</div><select><option>Family: all</option><option>End of day</option>' +
+            '<option>Start of day</option><option>Verification</option><option>Intraday</option>' +
+            '<option>Consumer</option></select></div>' + body;
+    }
+
+    function surfaceType() {
+        var t = typeByCode(S.type || 'EOD') || CUT_TYPES[0];
+        var cuts = cutsOfType(t.code);
+        var groups = [];
+        cuts.forEach(function (c) {
+            var g = groupFor(t, c);
+            var found = null;
+            groups.forEach(function (x) { if (x.key === g.key) found = x; });
+            if (!found) { found = { key: g.key, label: g.label, cuts: [] }; groups.push(found); }
+            found.cuts.push(c);
+        });
+        var body = '';
+        if (!groups.length) {
+            body = '<div class="tblstate"><b>No cuts of this type yet.</b>' +
+                'A cut of this type is taken on its occasion, and reported here once it exists.</div>';
+        } else {
+            body = groups.map(function (g) {
+                return '<div class="panel" style="margin:0 0 16px"><h2>' + esc(g.label) +
+                    ' <span class="sub">' + g.cuts.length + ' cut' + (g.cuts.length === 1 ? '' : 's') +
+                    '</span></h2><table class="rows"><thead><tr><th>Cut</th><th>Timepoint</th>' +
+                    '<th>State</th><th>Taker</th><th>Authoriser</th><th>Runs</th></tr></thead><tbody>' +
+                    g.cuts.map(function (c) {
+                        return '<tr class="pick" data-cut="' + c.id + '"><td class="key">' + esc(c.label) +
+                            '</td><td class="mono nowrap">' + dt(c.instant) + '</td>' +
+                            '<td>' + stateBadge(c) + indicativeTag(c) + '</td>' +
+                            '<td>' + esc(c.taken_by) + '</td>' +
+                            '<td>' + (c.auth_by || '<span class="dash">&mdash;</span>') + '</td>' +
+                            '<td class="num">' + c.runs + '</td></tr>';
+                    }).join('') + '</tbody></table></div>';
+            }).join('');
+        }
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut types <span class="sep">&rsaquo;</span> ' +
+            esc(t.code) + '</p>' +
+            '<div class="pagehead"><div><h1>' + esc(t.name) + '</h1>' +
+            '<p class="lead">' + esc(t.code) + ' &middot; version 4 &middot; family ' + esc(t.family) +
+            '</p></div><div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Edit</button><button class="btn">Delete</button></div></div>' +
+            '<div class="tabs"><span class="on">Details</span><span>Cuts</span><span>History</span></div>' +
+            '<div class="card"><p class="sentence">' + esc(t.desc) + '</p>' +
+            '<div class="facts">' +
+            fact('Family', esc(t.family)) +
+            fact('Repeats', esc(t.freq)) +
+            fact('Authorisation', esc(t.auth)) +
+            fact('Values', t.indicative ? 'Indicative' : 'Official') +
+            fact('Resolution rule', '<span class="mono" style="word-break:break-all">' +
+                esc(t.resolution) + '</span>') +
+            fact('Retention', t.months + ' months &middot; ' + esc(t.dest)) +
+            fact('Legal hold on take', t.hold ? 'Yes' : 'No') +
+            fact('Order', String(t.order)) +
+            '</div>' +
+            '<p class="rule"><b>The rules are the type\u2019s.</b> A cut copies its type\u2019s ' +
+            'authorisation and retention when it is taken, so a later change to the type does not move a ' +
+            'body already fixed. The resolution rule is read from the type at the moment of the ' +
+            'resolution, because a report must follow the rule in force when it runs.</p></div>' +
+            '<div class="spacer"></div>' +
+            '<p class="sentence"><b>The cuts of this type, grouped.</b> The group is the period one step ' +
+            'above the type\u2019s frequency: a daily type reads by month, a monthly type by year, a ' +
+            'yearly type as one group, and an on-demand type by day. ' + esc(t.name) + ' repeats ' +
+            esc(t.freq) + ', so its cuts are grouped ' +
+            (t.freq === 'daily' ? 'by month' : (t.freq === 'monthly' ? 'by year'
+                : (t.freq === 'yearly' ? 'as one group' : 'by day'))) + '.</p>' +
+            body +
+            '<div class="gap"><b>Gap.</b> The type is a fixture. No lookup holds the rules, and nothing ' +
+            'reads a type\u2019s retention when a cut is taken or archived.</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surfaces 9 and 10: the named cut times, as reference data.        */
     /* ---------------------------------------------------------------- */
 
     var CUT_TIMES = [
@@ -1874,7 +2096,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
 
     function render() {
         var area = 'Reporting';
-        if (S.surface === 'times' || S.surface === 'time') area = 'Reference data';
+        if (S.surface === 'times' || S.surface === 'time' ||
+            S.surface === 'types' || S.surface === 'type') area = 'Reference data';
         document.getElementById('shell').innerHTML = shell(area);
         document.getElementById('bar').innerHTML = bar();
         var app = document.getElementById('app');
@@ -1885,6 +2108,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         case 'record': app.innerHTML = surfaceRecord(); break;
         case 'take': app.innerHTML = surfaceTake(); break;
         case 'run': app.innerHTML = surfaceRun(); break;
+        case 'types': app.innerHTML = surfaceTypes(); break;
+        case 'type': app.innerHTML = surfaceType(); break;
         case 'times': app.innerHTML = surfaceTimes(); break;
         case 'time': app.innerHTML = surfaceTime(); break;
         default: app.innerHTML = surfaceList();
@@ -1924,6 +2149,12 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             e.preventDefault();
             location.search = q({ surface: 'select', tab: 'definition',
                 sel: 'EOD', pin: pc.getAttribute('data-pin-cut') });
+            return;
+        }
+        var ty = e.target.closest('[data-type]');
+        if (ty) {
+            e.preventDefault();
+            location.search = q({ surface: 'type', fcase: '', type: ty.getAttribute('data-type') });
             return;
         }
         var t = e.target.closest('[data-time]');

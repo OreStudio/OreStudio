@@ -17,11 +17,12 @@
 
 * Summary
 
-The screens a cut needs, as one plain page with nine surfaces: the reports list
-with the badge, the report that carries its cut selection, the selection dialog
-with its resolution preview, the run that resolved, the cuts list, the cut's record
-page, the take flow, and the named cut times of Reference data with the record of
-one.
+The screens a cut needs, as one plain page with eleven surfaces: the reports list
+with the badge, the report that carries its cut selection, the selection dialog with
+its resolution preview, the run that resolved, the cuts list, the cut's record page,
+the take flow, and two Reference data lookups — the cut types with the record of one,
+which draws the type's rules and its cuts grouped by period, and the named cut times
+with the record of one.
 
 The page draws the model
 [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
@@ -79,11 +80,37 @@ Switch with the bottom bar, or with the query string. The default is the list.
 | The cuts list | =?surface=list= | The cuts of the scope: label, kind, timepoint, state, taker, authoriser, runs. The empty state, the loading state and the server's error |
 | The cut's record | =?surface=record= | The label as the title, the state, the four tabs: *The body*, *Authorisation*, *Runs*, *History* |
 | The take flow | =?surface=take&step=1= | Four steps on a rail: the kind and the instant, the body with its gaps, the review against the previous cut, the press that takes and raises |
+| The cut types | =?surface=types= | The types a person maintains: code, name, family, whether signed, whether indicative, the retention and how many cuts each holds |
+| A cut type | =?surface=type= | One type: its description, its rules, its retention, and the cuts of that type grouped by the period one step above its frequency |
 | The cut times | =?surface=times= | The reference data list: the code, the time of day, the timezone, the centre and the kinds each serves |
 | A cut time | =?surface=time= | The record page of one: the fields, what uses it, the history |
 
-The list is the home of the journey that takes a cut, and the record is the home
-of the journey that audits one. The picker and the run are the second journey's.
+The cuts list is the home of the journey that takes a cut, and the cut's record is
+the home of the journey that audits one. The reports, the report and the selection
+are the report journey's. The cut types are the lookup both of those read: the take
+offers the types, and the selection names one.
+
+** The cut types, and the grouping**
+
+The type list is a standard Reference data list: the code and its name, the family,
+whether the type is signed, whether its values are indicative, the retention and the
+count of cuts the party holds of it. The family is what the list groups by and what
+a person scanning it reads first, because the three end of day types share a body
+and differ in their occasion and their retention.
+
+The type record draws four things: what the type is for, in its own description; its
+rules — the family, whether it repeats, who signs it, whether its values are
+indicative, the resolution rule it names and its retention with the destination; the
+rule that a cut copies its type's authorisation and retention when it is taken; and
+its cuts, grouped.
+
+The grouping rule is one sentence and it is the type's frequency: the group is the
+period one step above it. A daily type reads by month, which is why the end of day
+type's October cuts sit under one heading; a monthly type reads by year; a yearly
+type reads as one group, because there is one of it a year and a decade of them is
+still one screen; and an on-demand type reads by day, because that is the only period
+its cuts share. The prototype draws every one of those groupings, and the end of day
+type's cuts under a single month heading.
 
 ** Why the cuts live in Reporting, and the cut times in Reference data
 
@@ -276,6 +303,7 @@ and the state of the world.
 | Report | =?surface=report&case=none= | A report with no selection: the badge says so, and the preview names what the run lacks |
 | Report | =?surface=report&case=sod= | A report that selects SOD, resolving to the start of day cut of its date |
 | Report | =?surface=report&case=live= | A report that selects LIVE: no body until a run, and the indicative sentence |
+| Report | =?surface=report&case=eom= | A report that selects the month end, resolving to the month end cut of its month |
 | Report | =?surface=report&case=missing= | A selection whose cut does not exist yet, and the sentence that says so |
 | Report | =?surface=report&case=pinned= | A report pinned to one cut, which resolves to that body whatever the date |
 | Report | =?surface=report&case=taken= | A selection that resolves to a cut whose authorisation nobody has recorded |
@@ -284,6 +312,7 @@ and the state of the world.
 | Selection | =?surface=select= | The dialog: the kinds, the cuts a report may pin, and the preview of the current choice |
 | Selection | =?surface=select&sel=LIVE= | LIVE chosen, and the preview that cannot name a body |
 | Selection | =?surface=select&sel=EOD&pin=c2= | One cut pinned, and the preview of that body |
+| Selection | =?surface=select&sel=EOM= | The month end chosen, which reads as stricter than the close: it needs the month end cut, and not the plain close of that day |
 | Run | =?surface=run= | The run that resolved EOD, the sentence naming the selection, the card and *Reproduced* |
 | Run | =?surface=run&case=live= | The LIVE run: the cut it minted, the indicative mark, and two LIVE runs that cannot be compared |
 | Run | =?surface=run&case=missing= | A run refused because the selection resolved to nothing |
@@ -319,6 +348,10 @@ and the state of the world.
 | Take | =?surface=take&step=4= | The press on a kind that requires an authorisation: the body frozen, the request raised, the taker refused the decision |
 | Take | =?surface=take&step=4&case=flash= | The press on a kind that requires none: the body frozen, no request raised, the cut in use |
 | Take | =?surface=take&case=none= | A party with no centre, and what would give it one |
+| Cut types | =?surface=types= | The six types with their family, authorisation, indicative mark, retention and cut counts |
+| A cut type | =?surface=type= | The end of day type: its rules, and its four October cuts under one month heading |
+| A cut type | =?surface=type&type=EOY= | The year end type: ten years of retention, a legal hold on take, and no cuts yet — the one-group reading and the empty state |
+| A cut type | =?surface=type&type=FLASH= | The intraday type: unsigned, indicative, three months, and its cuts grouped by day |
 | Cut times | =?surface=times= | The list of named cut times, and the times are our convention |
 | A cut time | =?surface=time= | One cut time: the fields, what uses it, the history |
 
@@ -338,9 +371,9 @@ Everything on the page is mock data: the party, its three books, its eight repor
 and their selections, its nine cuts with their labels, takers, authorisers and
 instants, the twelve hundred and eighty-four deals, the three thousand nine hundred
 and twelve market data values, the seven published sets, the eight runs and their
-figures, the six cut times and their counts, and the five rows of the kind table
-that say which occasions need an authorisation, which are indicative, and what each
-resolves against. There is no server, no session, no framework and no build step. A press
+figures, the six cut times and their counts, and the seven rows of the cut type table, which
+carry the rules the screens read: the family, the authorisation, the indicative mark,
+the resolution rule and the retention. There is no server, no session, no framework and no build step. A press
 writes nothing; the query string is the only state, and a reload returns the page
 as it was.
 
@@ -398,9 +431,11 @@ LIVE as a kind whose body exists only after a run; cuts in Reporting with the li
 the record and the four-step take; the seven states in the UX Language's colours
 with *In use* for a body whose kind requires no authorisation; the basis drawn under
 every state that has one and apart from the indicative mark, which is the kind's;
-the run's card read through the cut with the comparison in three verdicts; and the
-named cut times as reference data in Reference data. It also signs off the
-retirement of the market bindings, which the binding decision now records as
+the run's card read through the cut with the comparison in three verdicts; the named
+cut times as reference data in Reference data, and the cut types beside them — a
+lookup a person maintains, whose rules the take, the resolution and the archive read,
+with each type's cuts grouped by the period above its frequency. It also signs off
+the retirement of the market bindings, which the binding decision now records as
 superseded in part.
 
 ** What it does not settle
@@ -428,6 +463,15 @@ the same detail either way. The screen does not answer it.
 report's *Definition* tab and says that create asks for it; it does not draw the
 create flow's steps, because that flow is another prototype's. Whether the selection
 is its own step or a field on the step that names the report is open.
+
+*Whether the cut types keep their own screens.* They are drawn as a Reference data
+list and record, which is the standard's shape for a lookup. Whether a type's cuts
+deserve a tab of their own rather than the body of the *Details* tab, and whether a
+person should be able to take a cut from the type's page, are open.
+
+*The retention numbers, and the archive.* The prototype draws months and a
+destination of =warm= or =archive=. No retention job exists, so nothing moves a cut,
+and the tiers are named but not wired.
 
 *The badge's shape.* The chip is neutral and carries the code, with *pinned* and
 *indicative* beside it. Whether a list of thirty-one reports reads better with the

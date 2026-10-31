@@ -111,14 +111,16 @@ or a curve configuration: it reads the version in force and records it.
    fixes a body across four parts and the review is the point of it. Its rail is
    the [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime's]], and its
    address is =/reporting/cuts/take=.
-5. *Choose the kind.* The first step offers the kinds the party may take. Each row
-   is a kind, the instant it fixes and what it is for, in the words of
-   [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]]. The end of day kind
-   offers the centre's close, the start of day kind the centre's open, and the
-   flash and process kinds an instant the person states. A kind the party has no
-   centre for is not offered, and the step says which centre each kind would use.
-   LIVE is the one kind the step does not offer, and it says why: that kind's
-   instant comes from the run that consumes it, so there is no take to press.
+5. *Choose the kind.* The first step offers the kinds the party may take, read from
+   the cut type list rather than written into the screen. Each row is a type, the
+   instant it fixes, what it is for, and whether it is signed and how long its cuts
+   are kept. The end of day family offers the centre's close, and its month end and
+   year end kinds are the same body taken on their month's or year's last business
+   day, kept longer. The start of day kind offers the centre's open, and the flash
+   and process kinds an instant the person states. A kind the party has no centre
+   for is not offered, and the step says which centre each kind would use. LIVE is
+   the one kind the step does not offer, and it says why: that kind's instant comes
+   from the run that consumes it, so there is no take to press.
 6. *Fix the timepoint.* For the end of day kind the timepoint is the close of the
    centre the scope revalues against, read from the cut times reference data and
    drawn so the person reads it rather than types it. For a flash cut or a cut a
@@ -141,6 +143,7 @@ or a curve configuration: it reads the version in force and records it.
 
    | Part | What the row holds |
    |------+-------------------|
+   | The kind and its retention | The type the cut is taken under, and the period and destination the cut will carry, copied from the type at the take |
    | The deals | The population at the timepoint: the deal count, how many are live, expired, fixed or settled, the books they belong to, and the corrections inside the body |
    | The market data | The fixed snapshot: the published sets each market role resolves to, their publish records and as-of, the fixings in force, and the value count |
    | The reference data | The versions in force of the conventions, the calendars, the curve configurations and the engine run settings the run reads |

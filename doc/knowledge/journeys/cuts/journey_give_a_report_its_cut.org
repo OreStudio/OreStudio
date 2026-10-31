@@ -107,13 +107,22 @@ published curve, and it does not read what a run produced, which is
    the rest of the definition, in one version, with a change reason and a
    commentary; a change to the selection is a material change, because it moves what
    the report prices from.
-6. *Read what each kind resolves to.* The field offers the kinds, each with the
-   sentence that says what it resolves against: *End of day — the close of the date
-   this report covers*, *Start of day — the open of that date*, *Independent
-   verification — the signed verification cut of that date*, *Live — the instant you
-   press Run, and the body it fixes is indicative*. A kind the party has taken no
-   cut for is still offered, because the party may take one; the preview says what
-   it would need.
+6. *Read what each kind resolves to.* The field offers the kinds the party's cut
+   type list holds, each with the sentence that says what it resolves against:
+   *End of day — the close of the date this report covers*, *Month end — the close of
+   the date's month's last business day*, *Year end — the close of the year's last
+   business day*, *Start of day — the open of that date*, *Independent verification —
+   the signed verification cut of that date*, *Live — the instant you press Run, and
+   the body it fixes is indicative*. The kinds are read from the type list rather
+   than named here, so a firm that adds a kind adds it once. A kind the party has
+   taken no cut for is still offered, because the party may take one; the preview
+   says what it would need.
+6a. *Read the family's fallback.* A report that selects the ordinary close prices
+   from the body fixed on the date, whether that body was taken as an ordinary close,
+   a month end or a year end, because the family fixes the same four inputs at the
+   same centre's close. A report that selects the month end is stricter: it needs the
+   month end cut, because the longer retention is the reason the occasion exists and a
+   plain close of that day was not kept as one.
 
 ** Step 3: read the preview, which is the resolution
 
@@ -129,7 +138,7 @@ published curve, and it does not read what a run produced, which is
 
    | What the preview finds | What it says |
    |------------------------+--------------|
-   | No cut of the kind and date exists | That no cut of that kind covers the date, for these books and this centre, and that somebody must take one |
+   | No cut of the kind and date exists | That no cut of that kind covers the date, for these books and this centre, and that somebody must take one. For a month end or year end selection it names the last business day it looked at |
    | A cut that is taken and unsigned | That the cut is waiting on its kind's authorisation, and the request and account it waits on |
    | A cut whose body is incomplete | That its body has gaps, and where they are read |
    | A cut that was refused | That its authorisation was refused, and that the remedy is a new take |
@@ -238,6 +247,7 @@ cut exists only because the run minted it. Every value is a fixture.
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
 | =report_definition= | The report, which gains the cut selection: the kind code, and the cut where the selection names one | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| the cut kind | The type a selection names: its family, whether it is signed, whether its values are indicative, the rule that resolves it and its retention | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
 | the cut | The body the selection resolves to, its state, its parts and its acts | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
 | =report_instance= | The run, which gains the cut it resolved, the cut's timepoint, and the selection it resolved from | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
 | =configuration= | The run settings, which keep the valuation date the resolution reads and lose the market bindings | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |

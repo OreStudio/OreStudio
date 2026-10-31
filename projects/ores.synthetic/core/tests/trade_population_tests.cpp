@@ -150,6 +150,24 @@ domain::trade_generation_scope rate_scope() {
 }
 
 /*
+ * A scope of the scripted family. The class is the refdata taxonomy's own name
+ * for a payoff that spans asset classes, and the underlyings are the tenant's
+ * equity catalogue, which is what a scripted trade observes.
+ */
+domain::trade_generation_scope scripted_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "cross_asset";
+    scope.equity_underlyings = {
+        domain::equity_underlying_reference{
+            .code = "GB0005405286", .kind = "share", .currency = "GBP"},
+        domain::equity_underlying_reference{
+            .code = "US0378331005", .kind = "share", .currency = "USD"},
+        domain::equity_underlying_reference{
+            .code = "DE0007164600", .kind = "share", .currency = "EUR"}};
+    return scope;
+}
+
+/*
  * A scope of the inflation family. The tenant holds three curves, one per
  * currency its catalogue carries an index for, so a population of more than
  * three slots states an index more than once.
@@ -930,6 +948,59 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     scope.currency_pairs.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes",
+          "[trade_population]") {
+    const auto scope = scripted_scope();
+    const auto plan = plan_of(scope);
+
+    std::set<std::string> types;
+    std::set<std::string> observed;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
+        const auto& row = slot.instruments.scripted_instruments.front();
+        CHECK(row.identity.trade_type_code == slot.trade_type_code);
+        CHECK_FALSE(row.script_name.empty());
+        /*
+         * The projection writes the script's own fields into the document and
+         * reads them back, so both carry the tenant's names rather than a
+         * placeholder.
+         */
+        CHECK(row.underlyings_json.starts_with("["));
+        CHECK(row.underlyings_json.ends_with("]"));
+        CHECK(row.parameters_json.starts_with("{"));
+        CHECK(row.parameters_json.ends_with("}"));
+        const auto names = row.underlyings_json;
+        CHECK(std::ranges::any_of(scope.equity_underlyings, [&](const auto& underlying) {
+            return names.find(underlying.code) != std::string::npos;
+        }));
+        types.insert(row.identity.trade_type_code);
+        observed.insert(row.underlyings_json);
+    }
+
+    /*
+     * The three codes the projection writes an element for. The autocallable is
+     * routed and left out: the projection has no writer for its data element, so
+     * it would book and export as an empty product.
+     */
+    CHECK(types.size() == 3u);
+    CHECK_FALSE(types.contains("Autocallable_01"));
+    CHECK(observed.size() > 1u);
+}
+
+TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_population]") {
+    auto scope = scripted_scope();
+    scope.equity_underlyings.clear();
+
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("the_scripted_family_answers_to_the_cross_asset_class", "[trade_population]") {
+    CHECK(planner_for("cross_asset").asset_class_code() == "cross_asset");
+
+    const auto classes = planned_asset_classes();
+    CHECK(std::ranges::find(classes, std::string_view("cross_asset")) != classes.end());
 }
 
 TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_population]") {

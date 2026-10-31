@@ -717,6 +717,17 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
             row.audit.change_commentary = "Generated trade population.";
             book_req.instruments.credit_instruments.push_back(row);
         }
+    } else if (!slot.instruments.scripted_instruments.empty()) {
+        /*
+         * A scripted trade is one flat row: the script's name, the underlyings
+         * it observes and the parameters it is given, all text the store keeps
+         * as it stands.
+         */
+        for (auto row : slot.instruments.scripted_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.scripted_instruments.push_back(row);
+        }
     } else {
         throw trade_population_write_error(
             "The slot states no rows this writer knows how to book.");

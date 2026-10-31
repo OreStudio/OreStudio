@@ -198,6 +198,7 @@ DESKS = [
     # people would rename every account the earlier demonstrations know.
     {"code": "equity_derivatives", "name": "Equity Derivatives", "head_count": 0, "trader_count": 0},
     {"code": "commodity_derivatives", "name": "Commodity Derivatives", "head_count": 0, "trader_count": 0},
+    {"code": "scripted_derivatives", "name": "Cross Asset Solutions", "head_count": 0, "trader_count": 0},
 ]
 
 # The portfolio tree of each trading entity. Every entity has one global root
@@ -235,6 +236,10 @@ OFFICE_TREE = {
                 ("usd_commodity", "USD Commodity Derivatives", "USD", "GBLO",
                  ["USD Commodity Derivatives"]),
             ],
+            "scripted_derivatives": [
+                ("gbp_cross_asset", "Cross Asset Solutions", "GBP", "GBLO",
+                 ["Cross Asset Solutions"]),
+            ],
             "fx_rates": [
                 ("cable", "Cable and Sterling", "GBP", "GBLO", ["Cable Spot Forward", "Cable Options"]),
                 ("g10_majors", "G10 Majors", "USD", "GBLO", ["G10 Majors Spot Forward", "G10 Majors Options"]),
@@ -262,6 +267,7 @@ OFFICE_TREE = {
             ],
             "equity_derivatives": [],
             "commodity_derivatives": [],
+            "scripted_derivatives": [],
             "fx_rates": [
                 ("g10_americas", "G10 FX Americas", "USD", "USNY", ["G10 Americas Spot Forward"]),
                 ("latam_fx", "LatAm FX", "USD", "USNY", ["LatAm Spot Forward", "LatAm NDF"]),
@@ -286,6 +292,7 @@ OFFICE_TREE = {
             ],
             "equity_derivatives": [],
             "commodity_derivatives": [],
+            "scripted_derivatives": [],
             "fx_rates": [
                 ("g10_apac", "G10 FX APAC", "USD", "HKHK", ["G10 APAC Spot Forward"]),
                 ("asia_em_fx", "Asia EM FX", "USD", "HKHK", ["Asia EM Spot Forward", "Asia EM NDF"]),
@@ -807,7 +814,8 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
                 "credit_trading": "CREDIT",
                 "fx_rates": "FX",
                 "equity_derivatives": "EQUITY",
-                "commodity_derivatives": "COMMODITY"}[desk["code"]]
+                "commodity_derivatives": "COMMODITY",
+                "scripted_derivatives": "SOLUTIONS"}[desk["code"]]
         for suffix, label, ccy, rates_centre, names in tree["desks"][desk["code"]]:
             leaf_code = f"{desk_portfolio_code}.{suffix}"
             portfolio(leaf_code, f"{label} Portfolio", desk_portfolio_code, desk_code, ccy, False)

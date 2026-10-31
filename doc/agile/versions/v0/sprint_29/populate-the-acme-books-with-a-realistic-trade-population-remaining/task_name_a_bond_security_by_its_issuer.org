@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,15 +26,17 @@ A security's identity states whose bond it is, so two issuers of one currency, a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Built and unit-tested; the live proof waits on provisioning. |
+| Waiting on   | The curve configuration's inflation type, which refuses ZeroInflation. |
+| Next         | Provision once that value set accepts the family. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
+- Two scopes that name different issuers state different securities for the same currency, anchor, term and product.
+- A provisioned ACME tenant completes both bond configs without a stored-with-other-terms refusal.
 - Two scopes that name different issuers state different securities for the same currency, anchor, term and product.
 - A provisioned ACME tenant completes both bond configs without a stored-with-other-terms refusal.
 
@@ -56,7 +58,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Planner suite | 40 cases, 1013 assertions, all passing | =ores.synthetic.core.tests "[trade_population]"= with =.env= loaded | this branch |
 
 * Notes
 
@@ -84,3 +86,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A security's name now states its issuer. =security_id_for= takes the issuer
+id and the digest covers it, so two issuers of one currency, anchor, term and
+product hold two securities, and an issue id derived from the security no
+longer collides. The planner draws the issuer before it names the security,
+because the name needs it.
+
+A case states the rule: two scopes whose issuer lists differ state different
+securities for the same term and product.
+
+* What could not be proved
+
+The live proof did not run. Provisioning now stops earlier, in the curve
+configuration bundle, because the ACME dataset states =ZeroInflation= for
+=inflation_curve_config.inflation_type= and the refdata value set does not hold
+it:
+
+#+begin_example
+Invalid value ZeroInflation for inflation_curve_config.inflation_type: the value
+is not in set curve.inflation_type.
+#+end_example
+
+That is the inflation family's work in flight on main, not this change. Once it
+lands, the two bond configs are the next thing to provision and read.

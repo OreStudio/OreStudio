@@ -1006,8 +1006,8 @@ TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
 
     const auto term = plan.slots.front();
     const auto& bond = bond_of(term);
-    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond") !=
-            security_id_for(bond_scope(), bond.tenor_years, "CallableBond"));
+    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond", bond.issuer_id) !=
+            security_id_for(bond_scope(), bond.tenor_years, "CallableBond", bond.issuer_id));
 }
 
 TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_population]") {
@@ -1016,8 +1016,11 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_po
     auto dollar = bond_scope();
     dollar.currency_code = "USD";
 
-    REQUIRE(security_id_for(euro, 5, "Bond") != security_id_for(dollar, 5, "Bond"));
-    REQUIRE(security_id_for(euro, 5, "Bond") == security_id_for(euro, 5, "Bond"));
+    const auto issuer = issuer_id_for(euro, 5);
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer) !=
+            security_id_for(dollar, 5, "Bond", issuer));
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer) ==
+            security_id_for(euro, 5, "Bond", issuer));
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
@@ -1032,7 +1035,28 @@ TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
     auto second = bond_scope();
     second.book_ids = {second_book};
 
-    REQUIRE(security_id_for(first, 5, "Bond") == security_id_for(second, 5, "Bond"));
+    const auto issuer = issuer_id_for(first, 5);
+    REQUIRE(security_id_for(first, 5, "Bond", issuer) ==
+            security_id_for(second, 5, "Bond", issuer));
+}
+
+TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
+    /*
+     * Each legal entity of a tenant holds its own issuer catalogue, so the same
+     * currency, anchor, term and product under two issuers is two securities.
+     * One name for both made the second entity's config write against the first
+     * one's issue, and the store refused it as stored with other terms.
+     */
+    auto first = bond_scope();
+    first.issuer_ids = {bank};
+    auto second = bond_scope();
+    second.issuer_ids = {second_bank};
+
+    const auto first_issuer = issuer_id_for(first, 5);
+    const auto second_issuer = issuer_id_for(second, 5);
+    REQUIRE(first_issuer != second_issuer);
+    REQUIRE(security_id_for(first, 5, "Bond", first_issuer) !=
+            security_id_for(second, 5, "Bond", second_issuer));
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {

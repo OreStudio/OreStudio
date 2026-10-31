@@ -706,6 +706,19 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
     Check(
+        id="ore-value-renderings",
+        title="The renderings the value sets read match ORE's reader",
+        argv=("python3", "projects/ores.sql/utility/generate_value_renderings.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/utility/ore_renderings.json",
+            "projects/ores.sql/utility/generate_value_renderings.py",
+            "projects/ores.sql/utility/ore_aliases.py",
+            "projects/ores.sql/utility/ore_renderings.json",
+        ),
+        fix="Run projects/ores.sql/utility/generate_value_renderings.py and commit the file.",
+    ),
+    Check(
         id="ore-parameter-value-sets",
         title="The ore parameter value sets match their sources",
         argv=("python3", "projects/ores.sql/utility/generate_value_sets.py", "--check"),
@@ -836,7 +849,7 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/ore_parameter_vocabularies.json",
             "projects/ores.sql/utility/ore_schema_types.py",
             "projects/ores.sql/utility/ore_aliases.py",
-            "projects/ores.ore/core/src/domain/conventions_fields.cpp",
+            "projects/ores.sql/utility/ore_renderings.json",
             "projects/ores.sql/utility/curve_terms.json",
             "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",

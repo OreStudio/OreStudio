@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 4DBC8953-25FC-403A-A8C3-94BA54F33786
+:END:
+#+title: Story: Hotfix: Keep the build warning-free on every toolchain
+#+description: The nightly CI builds with a compiler this checkout never runs: gcc on Linux and MSVC on Windows, both with warnings as errors. Two gcc warnings in ores.nats are errors there and invisible to a clang build, so the branch that introduces them passes locally. The web build and the MSVC unity build fail for their own reasons; those belong to the work that introduced them.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:ci:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:53628EFD-225D-4C9F-BBD7-EC0FCC601186][Name the two types gcc refuses in a unity build]] | STARTED | 2026-10-31 | | gcc's -Wsubobject-linkage rejects a subobject whose type has no linkage. The nats client holds a latch from its anonymous namespace and the jwks coroutine holds a lambda from its own function scope, so the gcc nightly fails on ores.nats.lib and nothing in a clang build says so. |
+
+* Decisions
+
+* Out of scope
+
+-

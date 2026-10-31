@@ -22,6 +22,7 @@
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <fstream>
 #include <string>
 #include <string_view>
 
@@ -107,4 +108,43 @@ TEST_CASE("a local store lists a bucket by prefix", "[filesystem]") {
     CHECK(store.list("never-written", "").empty());
 
     BOOST_LOG_SEV(lg, debug) << "Listed " << all.size() << " objects";
+}
+
+TEST_CASE("a part file is named for one caller and published by its own hand", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the part-file protocol the streamed upload uses";
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    const auto first = store.begin_put("bucket", "key");
+    const auto second = store.begin_put("bucket", "key");
+
+    // Two callers writing one key never share a file.
+    REQUIRE(first != second);
+    REQUIRE(!store.exists("bucket", "key"));
+
+    {
+        std::ofstream out(first, std::ios::binary | std::ios::trunc);
+        REQUIRE(static_cast<bool>(out));
+        out << "first";
+    }
+    {
+        std::ofstream out(second, std::ios::binary | std::ios::trunc);
+        REQUIRE(static_cast<bool>(out));
+        out << "second";
+    }
+
+    // A part file is not an object, so it is not listed as one.
+    REQUIRE(store.list("bucket", "").empty());
+
+    store.commit_put(first, "bucket", "key");
+    REQUIRE(store.get("bucket", "key") == "first");
+
+    store.commit_put(second, "bucket", "key");
+    REQUIRE(store.get("bucket", "key") == "second");
+
+    // Discarding a part that is already gone is not an error.
+    REQUIRE_NOTHROW(local_store::abandon_put(first));
+    REQUIRE_NOTHROW(local_store::abandon_put(root.path() / "nothing.here"));
 }

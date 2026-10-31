@@ -9,9 +9,6 @@
 #+owner: marco
 #+branch: feature/make-sign-in-and-out-resources
 #+pr: 4187
-#+blocked_on: review
-#+blocked_since: 2026-10-31 04:20
-#+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
 #+environment: clever_dijkstra
@@ -21,61 +18,78 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give a person the three acts of a session as resources of their own: sign in with
+=POST /api/v1/auth/sessions=, sign out with =DELETE /api/v1/auth/sessions=, and ask
+who the caller is with =GET /api/v1/auth/sessions/me=. Signing in answers with the
+principal and sets the cookie; the token never appears in the answer.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | Sign in, sign out and me are resources; the sign-in round trip is unproven. |
+| Now          | Sign in, sign out and me are resources, and a sign-in is proven against a live IAM. |
 | Waiting on   | Nothing.                               |
-| Next         | Prove the sign-in round trip against a live IAM. |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-31                              |
 
 * Acceptance
 
--
+- [X] =POST /api/v1/auth/sessions= opens a session, sets the cookie, and answers with
+      the principal only.
+- [X] =DELETE /api/v1/auth/sessions= closes the session and clears the cookie.
+- [X] =GET /api/v1/auth/sessions/me= answers who the caller is, with no token.
+- [X] The live round trip is proven against a provisioned tenant, for the tenant
+      administrator and for a seeded member of staff.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The door delegates identity to IAM and keeps the session itself: the token is held
+server side, the cookie carries an opaque identifier, and the principal is projected
+from the claims the session already resolved. The live case drives the same code the
+server runs, against the running fleet, so it needs no HTTP client of its own.
 
 * Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Session door cases | 3 cases, 18 assertions, all passing | =./ores.http.iam.tests "[auth_session]"= | =#4187= |
 | =ores.http.iam= test cases | 34 cases, 285 assertions, one skipped | =./ores.http.iam.tests= | =#4188= |
+| Live round trip, tenant administrator | 10 assertions, all passing | =./ores.http.iam.tests "[live]"= | =#4200= |
+| Live round trip, seeded staff (=adrian.vance@acme_corporation=) | 10 assertions, all passing | =ORES_SHELL_LOGIN_USERNAME=adrian.vance@acme_corporation ./ores.http.iam.tests "[live]"= | =#4200= |
+| Accounts in the provisioned tenant | 294 | =select count(*) from ores_iam_accounts_tbl a join ores_iam_tenants_tbl t on t.id=a.tenant_id where t.code='acme_corporation'= | =#4200= |
 
 * Notes
 
 - =me= and signing out are proven without IAM, because neither needs it: =me= reads
   the claims the session already resolved, and signing out closes a session the test
   opened. Both are cases in =ores.http.iam.tests=.
-- Signing in has a case of its own and it now runs against the fleet. It found a real
+- Signing in has a case of its own and it runs against the fleet. It found a real
   defect on its first run: the sign-in asked for an *authenticated* NATS call with no
   token, and the client refused it before the request left the process. A sign-in
   cannot present a session, so it sends an ordinary request, and it is answered.
-- What it still cannot prove is a *success*, because the recreated database holds no
-  accounts: =select username from ores_iam_accounts_tbl= returns none, so IAM answers
-  =invalid_credentials= and the case says so. The door is exercised end to end —
-  request, IAM, decode, refusal mapping — and provisioning an account is what is
-  missing, not the door.
-- To run it: =compass services start= (which asks for =db recreate= when the schema
-  moved), then =./ores.http.iam.tests "[live]"= from the preset's =publish/bin= with
-  the environment file loaded.
+- The case then skipped, because the recreated database held no accounts and IAM
+  answered =invalid_credentials=. That was a fact about the database and not about the
+  door, and it stayed true until the tenant was provisioned.
+- Provisioning the tenant made the case's last assertion visible for the first time,
+  and it was wrong: it looked for the qualified principal the sign-in form sends
+  (=tenant_admin@acme_corporation=) while the answer states the account alone
+  (="username":"tenant_admin"=) with the tenant id beside it. The answer is right — it
+  reports what the token states, and the BFF's session record has the same shape — so
+  the assertion was corrected to name the account exactly and to require a tenant.
+- The door was then proven twice: once for the tenant administrator, and once for a
+  seeded member of staff, whose password the =acme_demo= profile sets.
+- The tenant is still =bootstrapping=, because the profile's last step,
+  =generate_trades=, fails on an FX variance swap that violates its own check
+  constraint. That is a defect of the generator and not of this door, and it is
+  captured separately; the sign-in that this task is about does not wait for it.
+- Getting there cost time to two operational traps, both captured: a service binary
+  older than its libraries crashed with a stack that named innocent code, and a
+  provisioning run that dies cannot be resumed.
+- To run the live case: =compass services start=, provision the tenant, then
+  =./ores.http.iam.tests "[live]"= from the preset's =publish/bin= with the
+  environment file loaded.
 - The cookie's name comes from =--web-session-name= and its =Secure= from the
   deployment's TLS flag, so one deployment cannot read another's session.
 
@@ -95,6 +109,8 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [#4187](https://github.com/OreStudio/OreStudio/pull/4187) | [iam] Make signing in and out resources of their own |
+| [#4198](https://github.com/OreStudio/OreStudio/pull/4198) | [iam] Send a sign-in as an ordinary request |
+| [#4200](https://github.com/OreStudio/OreStudio/pull/4200) | [iam] Name the account the sign-in answer carries |
 
 * Review
 
@@ -103,3 +119,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three acts are resources and the door is proven: a person signs in with the
+credential the deployment gave them, the answer names them and the tenant, the
+cookie carries only an opaque identifier, and the token stays in the gateway's own
+store. The live case runs against the fleet, so the next change to IAM's sign-in
+answer is measured by a test that talks to IAM.

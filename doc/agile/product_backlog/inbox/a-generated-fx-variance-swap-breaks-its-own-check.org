@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9342E44A-42A1-47BD-87EF-4BCA5FD23F6C
+:END:
+#+title: A generated FX variance swap breaks its own check constraint
+#+description: generate_trades fails at step 8 of 8 on acme_demo: the booked FX variance swap violates CHECK (end_date > start_date), which the product's own constructor refuses to build, so the row reaching the database did not pass through it.
+#+type: capture
+#+level: cross
+#+filetags: :code:trading:seeder:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The `acme_demo` seed profile fails on its last step. `generate_trades` books a
+population of trades and one of them is refused by the database:
+
+#+begin_example
+[8/8] generate_trades: failed — Booking trade fc77dd4a-ef13-5f4d-b590-101ed75bad75
+failed: Repository error: ores_q_34: ERROR:  new row for relation
+"ores_trading_fx_variance_swap_instruments_tbl" violates check constraint
+"ores_trading_fx_variance_swap_instruments_tbl_check1"
+#+end_example
+
+`ores_trading_fx_variance_swap_instruments_tbl_check1` is
+`CHECK ((end_date > start_date))`. The tenant is left in `bootstrapping` with
+everything else loaded, and `compass smoke ticks --fresh` — which the gate's
+`ticks-smoke` check runs — cannot pass while this holds.
+
+* Why
+
+The interesting part is not that a generated row was bad but that it should be
+impossible. The product's own constructor refuses the condition:
+
+#+begin_example
+if (!(terms.end_date > terms.start_date))
+    refuse("fx variance swap", "an end date after its start");
+#+end_example
+
+(`projects/ores.trading/api/include/ores.trading.api/domain/fx_instruments.hpp`,
+`construct_fx_variance_swap`.) The planner that generates the population calls that
+constructor (`construct_fx_batch`, `trade_population_planner.cpp:1523`), and it
+computes the two dates one from the other:
+
+#+begin_example
+const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+const auto end = add_years(start, static_cast<int>(tenor_years));
+#+end_example
+
+So a row that violates the constraint reached the database without passing through
+the check, or had its dates changed after it. Both are worth finding, and the
+second is the more likely: the booking path, the batch splitter
+(`instrument_batch_mapper.cpp`) and the wire protocol each carry the two dates, and
+a swap anywhere on that road is invisible to a unit test that checks one of them.
+
+The next step is to make the failure name the two dates — the error stops at the
+constraint, so the reader cannot tell whether the generator drew an inverted pair
+or something downstream swapped it.
+
+* References
+
+- `projects/ores.synthetic/core/src/service/trade_population_planner.cpp`
+  (`fx_trade_planner::plan`, `construct_fx_batch`).
+- `projects/ores.trading/api/include/ores.trading.api/domain/fx_instruments.hpp`
+  (`construct_fx_variance_swap`).
+- `projects/ores.trading/core/src/repository/fx_variance_swap_instrument_mapper.cpp`,
+  which copies both dates symmetrically.
+- Reproduced 2026-10-31 with `./compass.sh smoke ticks --fresh --leave-running`
+  at `75b8fc7132`.
+
+* See also
+
+- Capture: a provisioning run that dies cannot be resumed — this failure is what
+  leaves the tenant in `bootstrapping`.

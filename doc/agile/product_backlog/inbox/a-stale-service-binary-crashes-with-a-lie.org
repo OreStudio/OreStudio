@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 8590B6F6-4A85-41D0-AFCB-910CA2524F46
+:END:
+#+title: A service binary older than its libraries crashes with a lie
+#+description: compass services start does not rebuild, so a binary built before a library it loads starts and segfaults inside that library; the stack names innocent code and the failure reads as a source defect.
+#+type: capture
+#+level: cross
+#+filetags: :code:ops:services:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service starts and dies with a stack trace that points into innocent code,
+because its executable and some of the libraries it loads came from different
+builds. `compass services start` installs and starts units but never rebuilds, so
+a tree whose libraries moved forward — a codegen run, a partial `cmake --build`
+of another target — leaves a service binary that was linked against an older
+layout. The loader is happy, the first read of a struct whose shape changed is
+not.
+
+* Why
+
+The time is lost twice. First to the crash, which reads as a source defect in
+whatever function the stack names, and which is deterministic enough to look
+like one. Second to the whole provisioning chain that stalls behind the dead
+service: a tenant provisioned with a profile waits for a step that the service
+owns and never answers.
+
+Measured on 2026-10-31 in this worktree:
+
+| Artefact | Built |
+|----------+-------|
+| `publish/bin/ores.marketdata.service` | 2026-10-30 17:44 |
+| `publish/lib/libores.marketdata.service.so.0.0.29` | 2026-10-30 17:27 |
+| `publish/lib/libores.marketdata.api.so.0.0.29` | 2026-10-30 23:04 |
+| `publish/lib/libores.marketdata.core.so.0.0.29` | 2026-10-31 01:22 |
+
+The stack named `std::erase_if` inside
+`feed_ingest_loop::refresh` → `keep_live_tenants`, a two-line template that cannot
+segfault on its own. Rebuilding `ores.marketdata.service` (`cmake --build …
+--target ores.marketdata.service`) and restarting the fleet brought all 25 units
+up, with no source change at all.
+
+The same binary had already failed the same way an hour earlier, on a database
+whose schema fingerprint genuinely did not match the build. Recreating the database
+was right and needed, and it also hid this: the service crashed identically on the
+fresh, matching schema, which is what showed the binary and not the schema to be
+the cause. A reader who stopped at the schema warning would have reported a source
+defect that does not exist.
+
+Two things would have saved the hour: a start that refuses when a unit's binary is
+older than a library it loads, and a `compass build --target` that the services
+command implies. The first is cheap and local — the launcher already reads the
+publish tree to write the units, so it can compare mtimes and say so.
+
+* References
+
+- `projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp`, `refresh()`.
+- `projects/ores.marketdata/service/include/ores.marketdata.service/app/live_tenants.hpp`.
+- Evidence: `journalctl --user -u ores.marketdata.service-clever_dijkstra.service`
+  for 2026-10-31 02:42 and 03:06, both `code=dumped status=11/SEGV`.
+
+* See also
+
+-

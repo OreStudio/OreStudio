@@ -161,7 +161,16 @@ TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_sessio
     REQUIRE(store->size() == 1);
     const auto opened = answer->body.find(R"("subject":")");
     REQUIRE(opened != std::string::npos);
-    REQUIRE(answer->body.find(*username) != std::string::npos);
+
+    /*
+     * The answer names the account the token names. IAM states the account alone,
+     * and the tenant it belongs to is the field beside it; the principal the person
+     * typed is that account qualified by the tenant's hostname, which is how the
+     * sign-in form states it and not how the session reports it back.
+     */
+    const auto account = username->substr(0, username->find('@'));
+    REQUIRE(answer->body.find(R"("username":")" + account + "\"") != std::string::npos);
+    REQUIRE(answer->body.find(R"("tenant":"")") == std::string::npos);
 
     session.disconnect();
 }

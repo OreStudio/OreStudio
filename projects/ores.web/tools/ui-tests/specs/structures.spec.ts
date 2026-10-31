@@ -172,7 +172,10 @@ test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
     ]);
     await page.getByRole('tab', { name: /^members$/i }).click({ timeout: 20_000 });
     const held = page.locator('tbody tr:visible');
-    await held.first().waitFor({ state: 'visible', timeout: 20_000 }).catch(() => undefined);
+    await held
+        .first()
+        .waitFor({ state: 'visible', timeout: 20_000 })
+        .catch(() => undefined);
     test.skip((await held.count()) === 0, 'No structure holds a leg: an earlier run emptied them.');
 
     const legs = page.locator('tbody tr:visible');

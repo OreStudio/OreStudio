@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 38
+Tables: 39
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -544,6 +544,41 @@ package "reporting" #E0F7FA {
     A name may be a pattern with a key, for example portfolio_{{BOOK_ID}}.xml, for a file
     that a run splits. The table can hold the pattern. Splitting is a later task.
     The table lists names and patterns. It does not hold the content of a file.
+    end note
+
+    entity ores_reporting_ore_element_map_columns_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * element_map_code : text
+        * entity_name : text
+        * table_name : text
+        * column_name : text
+        * xpath : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_element_map_columns_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Element Map Column Table
+    A value set governs a leaf, and a leaf is carried by a column of a table the
+    projection writes. The map names the leaf; this table names the columns that
+    carry it, so a guard can start from the row it is about to write and reach the
+    rule without knowing either the document's path or the parameter contract.
+    The row exists because the same leaf is carried by many columns: DayCounter is
+    a column of every curve family table. One map row, many columns, one rule.
+    The xpath stays here because it is the leaf's address in the document, which is
+    what the import and the convention screens show. The entity, the table and the
+    column are what the guard needs, because a trigger sees a row of one table.
     end note
 
     entity ores_reporting_ore_parameter_setting_value_sets_tbl <<temporal>> #C6F0D8 {

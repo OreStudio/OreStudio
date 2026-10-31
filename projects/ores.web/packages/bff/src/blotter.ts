@@ -337,12 +337,9 @@ export function registerBlotterRoutes(
             readAll(session, instrumentCodeSubjects.list_instrument_codes_request, 'instruments', {
                 filter: { code_one_of: null },
             }),
-            readAll(
-                session,
-                assetClassSubjects.list_asset_class_codes_request,
-                'asset_classes',
-                { filter: { code_one_of: null } },
-            ),
+            readAll(session, assetClassSubjects.list_asset_class_codes_request, 'asset_classes', {
+                filter: { code_one_of: null },
+            }),
         ]);
 
         /*

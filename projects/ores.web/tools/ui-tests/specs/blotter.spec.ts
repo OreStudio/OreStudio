@@ -39,7 +39,10 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     const dateCell = rows.first().locator('td').nth(4);
     expect((await dateCell.innerText()).trim()).toMatch(/^(\d{4}-\d{2}-\d{2}|—)$/);
     expect(
-        await dateCell.locator('span').first().evaluate((el) => getComputedStyle(el).whiteSpace),
+        await dateCell
+            .locator('span')
+            .first()
+            .evaluate((el) => getComputedStyle(el).whiteSpace),
     ).toBe('nowrap');
     const fits = async (): Promise<boolean> =>
         page.evaluate(() => {
@@ -96,7 +99,10 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     expect(counterpartyCount).toBeGreaterThan(0);
     await counterpartyNode.click();
     await expect(rows.first()).toBeVisible({ timeout: 20_000 });
-    const pager = await page.getByText(/^\d+\u2013\d+ of \d+$/).first().innerText();
+    const pager = await page
+        .getByText(/^\d+\u2013\d+ of \d+$/)
+        .first()
+        .innerText();
     const of = pager.match(/of (\d+)/);
     expect(Number(of?.[1] ?? '0')).toBe(counterpartyCount);
     await page.screenshot({ path: 'shots/blotter-counterparty.png', fullPage: true });

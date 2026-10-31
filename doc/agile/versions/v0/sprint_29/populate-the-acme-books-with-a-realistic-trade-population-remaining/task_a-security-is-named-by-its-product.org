@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Name a security by its product as well as its term, so two bond products of one 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -72,7 +72,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Where a run on main stops | the bond family: =Bond issue 6fc76aae-d7d3-5f38-ba65-da466ec095da is stored with other terms=, with the fx family already written | the provisioning script, run 3e68f6be | main at ef22248ad4 |
+| The population a fresh tenant holds | 178 trades: bond 40, commodity 25, interest rates 27, fx 64, equity 17, credit 5 | the family tables counted by distinct trade id, over the union | branch head |
+| Bond issues a fresh tenant holds | 39 issues over the 10 routed codes, every one a distinct security | =select count(distinct issue_id), count(distinct security_id) from ores_trading_bond_issues_tbl= | branch head |
+| The bond children the securities state | 8 call dates, 4 conversion targets | =select count(*) from ores_trading_bond_issue_call_dates_tbl= and the conversion targets beside it | branch head |
+| The provisioning run | all 9 steps completed, =generate_trades= among them | the provisioning script, run ed22f4eb | branch head |
+| Date columns at the sentinel | 0 | the =do= block that counts each date column at =0002-11-30 BC= | branch head |
+| Suite | synthetic.core 1006 assertions in 38 cases | =set -a && . ./.env && set +a && publish/bin/ores.synthetic.core.tests= | branch head |
 
 * Notes
 
@@ -100,3 +106,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A security is named by its product, and a provisioning run writes every family.
+
+What that bought, measured on a fresh tenant:
+
+- The bond family books all ten routed codes: 40 trades over 39 securities and 39
+  issues. Before the fix the same run stopped at the second product of one term,
+  because two products of one term claimed one issue and the store compares the
+  terms it holds with the terms a write states.
+- The population is 178 trades: bond 40, commodity 25, interest rates 27, fx 64,
+  equity 17 and credit 5. The provisioning run completes all nine of its steps.
+- No date column in the tenant holds =0002-11-30 BC=, which is the sentinel the
+  previous task removed from the planner's arithmetic.
+- The bond securities state their children: 8 call dates and 4 conversion
+  targets, which is what makes two products of one term two securities.
+
+One consequence is stated rather than left to be found: with an even number of
+products per term and two books, the draw gives each book half the products, so
+no security is shared between two books. The name is still a function of the
+security's own facts and of nothing about a book or a trade, which is what the
+case now asserts in place of the old one that read the draw as the rule.

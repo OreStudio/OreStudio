@@ -942,15 +942,46 @@ TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", "[trade_popula
 TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
-    std::set<std::string> securities;
+    /*
+     * A security is named by its term and its product, so a term carries several
+     * securities and no security carries two terms.
+     */
+    std::map<std::string, std::uint32_t> term_of;
     std::set<std::uint32_t> terms;
     for (const auto& slot : plan.slots) {
-        securities.insert(bond_of(slot).security_id);
-        terms.insert(bond_of(slot).tenor_years);
+        const auto bond = bond_of(slot);
+        terms.insert(bond.tenor_years);
+        const auto [found, inserted] = term_of.emplace(bond.security_id, bond.tenor_years);
+        if (!inserted)
+            REQUIRE(found->second == bond.tenor_years);
     }
 
-    REQUIRE(securities.size() == terms.size());
     REQUIRE(terms.size() > 1);
+    REQUIRE(term_of.size() >= terms.size());
+}
+
+TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
+    const auto plan = plan_of(bond_scope());
+
+    /*
+     * Ten bond codes route to the instrument table and each states its own rows,
+     * so two products of one term are two securities: a callable bond states the
+     * dates its issuer may call it and a plain bond of the same term states none.
+     */
+    std::map<std::string, std::set<std::string>> products_of;
+    for (const auto& slot : plan.slots) {
+        const auto bond = bond_of(slot);
+        products_of[bond.security_id].insert(slot.trade_type_code);
+    }
+    const auto two_products = std::ranges::any_of(products_of, [](const auto& entry) {
+        return entry.second.size() > 1u;
+    });
+    REQUIRE_FALSE(two_products);
+
+    const auto term = plan.slots.front();
+    const auto& bond = bond_of(term);
+    REQUIRE(security_id_for(bond_scope(), bond.tenor_years, "Bond") !=
+            security_id_for(bond_scope(), bond.tenor_years, "CallableBond"));
 }
 
 TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_population]") {
@@ -959,20 +990,23 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_po
     auto dollar = bond_scope();
     dollar.currency_code = "USD";
 
-    REQUIRE(security_id_for(euro, 5) != security_id_for(dollar, 5));
-    REQUIRE(security_id_for(euro, 5) == security_id_for(euro, 5));
+    REQUIRE(security_id_for(euro, 5, "Bond") != security_id_for(dollar, 5, "Bond"));
+    REQUIRE(security_id_for(euro, 5, "Bond") == security_id_for(euro, 5, "Bond"));
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
-    const auto plan = plan_of(bond_scope());
+    /*
+     * The name comes from the security's own facts, so the same security named
+     * from a scope that keeps one book and from a scope that keeps another is one
+     * name. The draw may still put a given security in one book only, because
+     * the product and the book are both taken from the slot.
+     */
+    auto first = bond_scope();
+    first.book_ids = {bond_book};
+    auto second = bond_scope();
+    second.book_ids = {second_book};
 
-    std::map<std::string, std::set<boost::uuids::uuid>> books_of;
-    for (const auto& slot : plan.slots)
-        books_of[bond_of(slot).security_id].insert(slot.book_id);
-
-    const auto shared =
-        std::ranges::any_of(books_of, [](const auto& entry) { return entry.second.size() > 1; });
-    REQUIRE(shared);
+    REQUIRE(security_id_for(first, 5, "Bond") == security_id_for(second, 5, "Bond"));
 }
 
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {

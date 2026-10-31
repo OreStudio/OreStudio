@@ -26,17 +26,17 @@ A product type says what a desk needs in one row, and no second classification i
 
 | Field        | Value                                                                                |
 |--------------+--------------------------------------------------------------------------------------|
-| State        | STARTED                                                                              |
+| State        | DONE                                                                                 |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Analysis complete. Review round 1.                                                   |
+| Now          | Nothing.                                                                             |
 | Waiting on   | Nothing.                                                                             |
-| Next         | Merge, then close the task.                                                          |
+| Next         | Nothing.                                                                             |
 | Last touched | 2026-10-31                                                                           |
 
 * Acceptance
 
 - The page records each axis, its code set, its spelling and the entity that owns it: the market junction against =asset_class_codes=, and =ores_refdata_product_family_codes_tbl= for the family.
-- All eight product_type_t values map onto the axes, including composite and scripted, and the routing family the instrument table needs is named.
+- All eight product_type_t values map onto the axes, including composite and scripted, and no routing family survives, because the instrument table the catalogue declares does the routing.
 - rates, interest_rates, swap and InterestRate resolve to one spelling, and the mapping is recorded.
 - has_options and has_extension keep a stated meaning, or are replaced by something that states it.
 
@@ -105,9 +105,10 @@ The axes are settled in [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a pr
 - The market is a junction, because a type may reference two: six do today, two
   more would if the gap products were added, and two have none by construction.
   One row is marked as the market the catalogue groups the type under, and a type
-  with no rows is decided per trade.
-- The enum is dropped and no routing family replaces it: the instrument table on
-  the row does the routing, and nothing reads the enum for anything else.
+  with no rows is decided per trade. The rule is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].
+- The enum is dropped and no routing family replaces it: the instrument table the
+  catalogue declares does the routing, and nothing reads the enum for anything
+  else.
 - The spelling the row stores is our taxonomy's: =interest_rates=, not =rates=,
   =swap= or =InterestRate=. The external schemes stay registered and mapped.
 - The two flags are kept, with their meaning restated as facts about the trade
@@ -116,3 +117,6 @@ The axes are settled in [[id:E7095E28-EB36-427C-9C14-AB6AB0593B33][The axes a pr
   enum could not state come back with the family.
 - The taxonomy's =scripted= value is not used by any product: renaming it or
   retiring it is left to the taxonomy work.
+
+PR #4297, commit =f33bd3d2c1=. No follow-up task: the open items are on the tasks
+that own them, and the durable rule is on [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].

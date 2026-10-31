@@ -26,11 +26,11 @@ The pricing screens and the product type page name the same thing. Every pricing
 
 | Field        | Value                                                                                |
 |--------------+--------------------------------------------------------------------------------------|
-| State        | STARTED                                                                              |
+| State        | DONE                                                                                 |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Analysis complete. Review round 1.                                                   |
+| Now          | Nothing.                                                                             |
 | Waiting on   | Nothing.                                                                             |
-| Next         | Merge, then close the task.                                                          |
+| Next         | Nothing.                                                                             |
 | Last touched | 2026-10-31                                                                           |
 
 * Acceptance
@@ -114,7 +114,13 @@ The mapping and the join are settled in
   whether it is a gap or a building block.
 - The instrument prose moves to the product type. A pricing engine type whose
   code is a product type code carries none of its own; a variant keeps one
-  sentence saying how it differs; a block and a gap keep theirs.
+  sentence saying how it differs; a block and a gap keep theirs. The rule is on
+  [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]].
 - The 65 product types no pricing engine type names are a fact of the ORE
   guide's list, not evidence that the product cannot be priced. The page states
   it that way.
+
+All 108 decisions are in the appendix of
+[[id:23F5286D-2B19-45BE-B63F-E8FD541AA917][How the pricing engine types join the product type]]. PR #4297, commit
+=f33bd3d2c1=. No follow-up task: the ten gap products are recorded for a later
+decision.

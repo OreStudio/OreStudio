@@ -298,7 +298,7 @@ const BASIS = {
 describe('GET /api/reporting/cut-kinds', () => {
     it('derives the signed-or-not from the approval kind and counts the cuts of each type', async () => {
         const { server, sessionId } = buildTestServer(BASIS);
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds');
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=0&limit=15');
         expect(answer.statusCode).toBe(200);
         const page = answer.json() as {
             rows: readonly Record<string, unknown>[];
@@ -325,7 +325,7 @@ describe('GET /api/reporting/cut-kinds', () => {
 
     it('reads the cuts once for the page, not once for each type', async () => {
         const { server, sessionId, calls } = buildTestServer(BASIS);
-        await send(server, sessionId, 'GET', '/api/reporting/cut-kinds');
+        await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=0&limit=15');
         expect(calls.filter((call) => call.subject === CUT_ROWS)).toHaveLength(1);
     });
 
@@ -346,8 +346,58 @@ describe('GET /api/reporting/cut-kinds', () => {
                 total: 0,
             },
         });
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds');
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=0&limit=15');
         expect(answer.statusCode).toBe(200);
+    });
+
+    it('answers one page of the kinds, with the server’s total beside it', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=1&limit=1');
+        expect(answer.statusCode).toBe(200);
+        const page = answer.json() as { rows: readonly Record<string, unknown>[]; total: number };
+        // The read answers the row the person's page holds and the count of
+        // every row the query matched, so the pager can state both.
+        expect(page.total).toBe(2);
+        expect(page.rows).toHaveLength(1);
+        expect(page.rows[0]?.['code']).toBe('FLASH');
+    });
+
+    it('searches and orders the kinds on the server', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const searched = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=0&limit=15&search=flash',
+        );
+        const page = searched.json() as { rows: readonly Record<string, unknown>[] };
+        expect(page.rows.map((row) => row['code'])).toEqual(['FLASH']);
+
+        const ordered = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=0&limit=15&sort=code&descending=true',
+        );
+        expect(
+            (ordered.json() as { rows: readonly Record<string, unknown>[] }).rows.map(
+                (row) => row['code'],
+            ),
+        ).toEqual(['FLASH', 'EOD']);
+
+        const refused = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=0&limit=15&sort=retention',
+        );
+        expect(refused.statusCode).toBe(400);
+    });
+
+    it('refuses a read that states no page', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds');
+        expect(answer.statusCode).toBe(400);
     });
 });
 
@@ -487,7 +537,7 @@ describe('GET /api/reporting/cuts', () => {
             server,
             sessionId,
             'GET',
-            '/api/reporting/cuts?kind_code=EOD&month=2026-10&state=authorised&search=06',
+            '/api/reporting/cuts?offset=30&limit=15&kind_code=EOD&month=2026-10&state=authorised&search=06',
         );
         expect(answer.statusCode).toBe(200);
         expect(calls.find((call) => call.subject === CUT_ROWS)?.body).toMatchObject({
@@ -495,6 +545,8 @@ describe('GET /api/reporting/cuts', () => {
             month: '2026-10',
             state: 'authorised',
             search: '06',
+            offset: 30,
+            limit: 15,
         });
         const page = answer.json() as { rows: readonly Record<string, unknown>[]; partial: boolean };
         expect(page.rows[0]).toMatchObject({
@@ -507,18 +559,27 @@ describe('GET /api/reporting/cuts', () => {
         expect(page.partial).toBe(false);
     });
 
-    it('says when the rows are the newest page of a scope that is larger', async () => {
+    it('says when the rows are one page of a scope that is larger', async () => {
         const { server, sessionId } = buildTestServer({
             ...BASIS,
             [CUT_ROWS]: { result: ok, rows: [cutRow(), cutRow({ label: 'EOD.ACME-LONDON.2026-10-05' })], total: 40 },
         });
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts');
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15');
         expect((answer.json() as { partial: boolean }).partial).toBe(true);
+    });
+
+    it('refuses a read that states no page, and an order the read does not keep', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        expect((await send(server, sessionId, 'GET', '/api/reporting/cuts')).statusCode).toBe(400);
+        expect(
+            (await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15&sort=label'))
+                .statusCode,
+        ).toBe(400);
     });
 
     it('refuses a state the design does not word', async () => {
         const { server, sessionId } = buildTestServer(BASIS);
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?state=happy');
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15&state=happy');
         expect(answer.statusCode).toBe(400);
     });
 
@@ -536,9 +597,121 @@ describe('GET /api/reporting/cuts', () => {
                 total: 0,
             },
         });
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?month=2026-13');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts?offset=0&limit=15&month=2026-13',
+        );
         expect(answer.statusCode).toBe(400);
         expect((answer.json() as { message: string }).message).toContain('YYYY-MM');
+    });
+});
+
+describe('GET /api/reporting/cuts/:id/runs', () => {
+    const RUNS = {
+        result: ok,
+        instances: [
+            {
+                id: '99999999-9999-4999-8999-999999999991',
+                name: 'Board Risk Dashboard',
+                cut_id: '11111111-1111-4111-8111-111111111111',
+                started_at: '2026-10-06 17:22:00.000000Z',
+                completed_at: '2026-10-06 17:31:00.000000Z',
+                priced_at: '2026-10-06 17:30:00.000000Z',
+            },
+            {
+                id: '99999999-9999-4999-8999-999999999992',
+                name: 'NPV',
+                cut_id: '11111111-1111-4111-8111-111111111111',
+                started_at: '2026-10-06 18:05:00.000000Z',
+                completed_at: '2026-10-06 18:09:00.000000Z',
+                priced_at: '2026-10-06 18:08:00.000000Z',
+            },
+        ],
+        total: 2,
+    };
+
+    const HEALTH = {
+        result: ok,
+        health: [
+            {
+                report_instance_id: '99999999-9999-4999-8999-999999999991',
+                state_name: 'completed',
+                health: 'completed clean',
+            },
+            {
+                report_instance_id: '99999999-9999-4999-8999-999999999992',
+                state_name: 'completed',
+                health: 'completed with errors',
+            },
+        ],
+    };
+
+    it('answers the runs that priced from the cut, newest start first, with their state', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            ...BASIS,
+            'reporting.v1.report_instances.list': RUNS,
+            'reporting.v1.ops.get_report_instance_health': HEALTH,
+        });
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts/11111111-1111-4111-8111-111111111111/runs',
+        );
+        expect(answer.statusCode).toBe(200);
+        const body = answer.json() as {
+            runs: readonly {
+                id: string;
+                name: string;
+                stateName: string;
+                health: string | null;
+                startedAt: string | null;
+                pricedAt: string | null;
+            }[];
+        };
+        expect(body.runs.map((run) => run.name)).toEqual(['NPV', 'Board Risk Dashboard']);
+        expect(body.runs[0]?.health).toBe('completed with errors');
+        expect(body.runs[0]?.stateName).toBe('completed');
+        expect(body.runs[1]?.startedAt).toBe('2026-10-06 17:22:00.000000Z');
+
+        // The filter is the read's own: a run names the cut it resolved to, so
+        // the tab reads the runs by that column and nothing else.
+        const listCall = calls.find((call) => call.subject === 'reporting.v1.report_instances.list');
+        expect(listCall?.body).toMatchObject({
+            filter: { cut_id_one_of: ['11111111-1111-4111-8111-111111111111'] },
+        });
+        // The states are one read for the whole page, not one for each run.
+        expect(
+            calls.filter((call) => call.subject === 'reporting.v1.ops.get_report_instance_health'),
+        ).toHaveLength(1);
+    });
+
+    it('leaves the state empty when the health read fails, and does not fail the tab', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...BASIS,
+            'reporting.v1.report_instances.list': RUNS,
+            'reporting.v1.ops.get_report_instance_health': {
+                result: { outcome: 'failed', code: 'internal_error', message: 'No.', fields: [] },
+                health: [],
+            },
+        });
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts/11111111-1111-4111-8111-111111111111/runs',
+        );
+        expect(answer.statusCode).toBe(200);
+        const body = answer.json() as { runs: readonly { health: string | null }[] };
+        expect(body.runs[0]?.health).toBeNull();
+    });
+
+    it('refuses an address that is not a cut id', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts/not-an-id/runs');
+        expect(answer.statusCode).toBe(400);
     });
 });
 

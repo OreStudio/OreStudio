@@ -26,10 +26,14 @@ import { subjects as cutFamilySubjects } from '@ores/wire-protocol/generated/rep
 import { subjects as resolutionRuleSubjects } from '@ores/wire-protocol/generated/reporting/protocol/cut_resolution_rule_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { subjects as approvalKindSubjects } from '@ores/wire-protocol/generated/inbox/protocol/approval_kind_protocol';
+import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
+import { reportHealthWordSchema } from '@ores/wire-protocol/browser';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import {
+    NO_ORDER,
     input,
     intentSchema,
+    pageQuerySchema,
     readAll,
     refusal,
     resultSchema,
@@ -81,7 +85,13 @@ const kindRemovalBodySchema = z.object({
     intent: intentSchema,
 });
 
-/** The cuts list's own narrowing: a kind, a month, a text in the label and a state. */
+/**
+ * The cuts list's own narrowing: a kind, a month, a text in the label, a state
+ * and the page of them.
+ *
+ * The month is the read's, because the window a month names is the caller's
+ * clock and the server states the instants; no screen offers it.
+ */
 const cutsQuerySchema = z.object({
     kind_code: z.string().trim().max(100).default(''),
     month: z.string().trim().max(7).default(''),
@@ -103,6 +113,20 @@ const codeSchema = z.string().trim().min(1).max(100);
 
 /** A cut's id, as the address states it. */
 const cutIdSchema = z.uuid();
+
+/**
+ * How many of a party's cuts one read answers when the route narrows by a kind.
+ *
+ * A type's page groups the cuts it was given and says when it holds more, so the
+ * read states a page rather than a promise of the whole.
+ */
+const CUTS_OF_A_KIND_PAGE = 500;
+
+/** How many cuts the type list counts its kinds from, which is the list's own page. */
+const KIND_COUNTS_READ = 1000;
+
+/** How many runs of one cut the Runs tab reads, newest start first. */
+const RUNS_OF_A_CUT_PAGE = 200;
 
 /** The code an address names, or a 400. */
 function codeOf(request: FastifyRequest): string {
@@ -260,6 +284,8 @@ async function readCutRows(
         readonly month: string;
         readonly search: string;
         readonly state: string;
+        readonly offset: number;
+        readonly limit: number;
     },
 ): Promise<{ rows: readonly CutRow[]; total: number; partial: boolean }> {
     const reply = await session.client.callAuthenticated(
@@ -269,6 +295,8 @@ async function readCutRows(
             month: narrow.month,
             search: narrow.search,
             state: narrow.state,
+            offset: narrow.offset,
+            limit: narrow.limit,
         },
         cutRowsSchema,
     );
@@ -296,28 +324,91 @@ async function readCutRows(
         runCount: count(entry['run_count']),
         supersededById: nullable(entry['superseded_by_id']),
     }));
-    return { rows, total: count(reply.total), partial: count(reply.total) > rows.length };
+    return {
+        rows,
+        total: count(reply.total),
+        partial: count(reply.total) > narrow.offset + rows.length,
+    };
+}
+
+/** The lookups a kind's row is assembled from, read once for the page. */
+interface KindLookups {
+    readonly families: Map<string, string>;
+    readonly rules: Map<string, string>;
+    readonly approvals: Map<string, ApprovalKind>;
+}
+
+/** The lookups a type names, read once so a page of types costs one read each. */
+async function kindLookups(session: LiveSession): Promise<KindLookups> {
+    const [families, rules, approvals] = await Promise.all([
+        lookupNames(session, cutFamilySubjects.list_cut_families_request, 'families'),
+        lookupNames(session, resolutionRuleSubjects.list_cut_resolution_rules_request, 'rules'),
+        approvalKinds(session),
+    ]);
+    return { families, rules, approvals };
+}
+
+/** One kind of cut, as the type list and the type record read it. */
+function kindRowOf(kind: Read, lookups: KindLookups, cutsCount: number): KindRow {
+    const code = text(kind['code']);
+    const approvalKindCode = nullable(kind['approval_kind_code']);
+    const approval = approvalKindCode === null ? null : lookups.approvals.get(approvalKindCode);
+    return {
+        code,
+        name: text(kind['name']),
+        description: text(kind['description']),
+        familyCode: text(kind['family_code']),
+        familyName:
+            lookups.families.get(text(kind['family_code'])) ?? text(kind['family_code']),
+        // The signed-or-not a person reads is the approval kind's, and the
+        // column that names it is the whole of the rule.
+        signed: approvalKindCode !== null,
+        approvalKindCode,
+        approvalKindName:
+            approvalKindCode === null ? null : (approval?.name ?? approvalKindCode),
+        approvalsRequired: approval?.approvalsRequired ?? null,
+        decidePermissionCode: approval?.decidePermissionCode ?? null,
+        outputIsIndicative: flag(kind['output_is_indicative']),
+        resolutionRuleCode: text(kind['resolution_rule_code']),
+        resolutionRuleName:
+            lookups.rules.get(text(kind['resolution_rule_code'])) ??
+            text(kind['resolution_rule_code']),
+        retentionMonths: count(kind['retention_months']),
+        retentionDestinationCode: text(kind['retention_destination_code']),
+        legalHoldDefault: flag(kind['legal_hold_default']),
+        displayOrder: count(kind['display_order']),
+        cutsCount,
+        version: count(kind['version']),
+    };
 }
 
 /**
- * The kinds of cut and the fields a page draws for each, with the cuts the party
- * holds of each kind.
+ * The kinds of cut the store holds, with the fields a page draws for each and
+ * the cuts the party holds of each kind.
  *
- * One read of the cuts answers the counts of every kind on the list, so the list
- * costs one cut read rather than one per row.
+ * One read of the cuts answers the counts of every kind, so the list costs one
+ * cut read rather than one per row.
  */
 async function kindRows(
     session: LiveSession,
 ): Promise<{ rows: readonly KindRow[]; partial: boolean }> {
-    const [kinds, families, rules, approvals, cuts] = await Promise.all([
+    const [lookups, kinds, cuts] = await Promise.all([
+        kindLookups(session),
         readAll(session, cutKindSubjects.list_cut_kinds_request, 'kinds', {
             filter: null,
             as_of: null,
         }),
-        lookupNames(session, cutFamilySubjects.list_cut_families_request, 'families'),
-        lookupNames(session, resolutionRuleSubjects.list_cut_resolution_rules_request, 'rules'),
-        approvalKinds(session),
-        readCutRows(session, { kindCode: '', month: '', search: '', state: '' }),
+        readCutRows(session, {
+            kindCode: '',
+            month: '',
+            search: '',
+            state: '',
+            // The counts of every kind are one read of the newest page of the
+            // party's cuts, and the list says when a kind holds more than it
+            // counts.
+            offset: 0,
+            limit: KIND_COUNTS_READ,
+        }),
     ]);
 
     const counts = new Map<string, number>();
@@ -325,38 +416,92 @@ async function kindRows(
         counts.set(cut.kindCode, (counts.get(cut.kindCode) ?? 0) + 1);
     }
 
-    const rows = kinds.map((kind): KindRow => {
-        const code = text(kind['code']);
-        const approvalKindCode = nullable(kind['approval_kind_code']);
-        const approval = approvalKindCode === null ? null : approvals.get(approvalKindCode);
-        return {
-            code,
-            name: text(kind['name']),
-            description: text(kind['description']),
-            familyCode: text(kind['family_code']),
-            familyName: families.get(text(kind['family_code'])) ?? text(kind['family_code']),
-            // The signed-or-not a person reads is the approval kind's, and the
-            // column that names it is the whole of the rule.
-            signed: approvalKindCode !== null,
-            approvalKindCode,
-            approvalKindName:
-                approvalKindCode === null ? null : (approval?.name ?? approvalKindCode),
-            approvalsRequired: approval?.approvalsRequired ?? null,
-            decidePermissionCode: approval?.decidePermissionCode ?? null,
-            outputIsIndicative: flag(kind['output_is_indicative']),
-            resolutionRuleCode: text(kind['resolution_rule_code']),
-            resolutionRuleName:
-                rules.get(text(kind['resolution_rule_code'])) ?? text(kind['resolution_rule_code']),
-            retentionMonths: count(kind['retention_months']),
-            retentionDestinationCode: text(kind['retention_destination_code']),
-            legalHoldDefault: flag(kind['legal_hold_default']),
-            displayOrder: count(kind['display_order']),
-            cutsCount: counts.get(code) ?? 0,
-            version: count(kind['version']),
-        };
-    });
-    rows.sort((left, right) => left.displayOrder - right.displayOrder || left.code.localeCompare(right.code));
+    const rows = kinds.map((kind) => kindRowOf(kind, lookups, counts.get(text(kind['code'])) ?? 0));
+    rows.sort(
+        (left, right) => left.displayOrder - right.displayOrder || left.code.localeCompare(right.code),
+    );
     return { rows, partial: cuts.partial };
+}
+
+/**
+ * The fields the types list orders by, and nothing else.
+ *
+ * The list's natural order is the one a person reads the kinds in, which is the
+ * display order; the three named fields are the ones its columns state.
+ */
+const KIND_SORTS = ['code', 'name', 'family'] as const;
+
+/** One kind of cut as the type record reads it, with the cuts the party holds of it. */
+async function kindRow(session: LiveSession, code: string): Promise<KindRow | null> {
+    const [lookups, kinds, cuts] = await Promise.all([
+        kindLookups(session),
+        readAll(session, cutKindSubjects.list_cut_kinds_request, 'kinds', {
+            filter: null,
+            as_of: null,
+        }),
+        readCutRows(session, {
+            kindCode: code,
+            month: '',
+            search: '',
+            state: '',
+            offset: 0,
+            limit: 1,
+        }),
+    ]);
+    const kind = kinds.find((entry) => text(entry['code']) === code);
+    return kind === undefined ? null : kindRowOf(kind, lookups, cuts.total);
+}
+
+/**
+ * One page of the kinds, the server's total and the sort the person chose.
+ *
+ * The kind lookup is a closed set of a handful that a firm seeds, and the row a
+ * screen reads joins it to its family, its rule and its approval kind, so the
+ * whole lookup is read and the page is a slice of what the read narrowed. The
+ * screen reads one page and never pages to the end to show everything.
+ */
+async function kindPage(
+    session: LiveSession,
+    page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+        readonly sort: string;
+        readonly descending: boolean;
+    },
+): Promise<{ rows: readonly KindRow[]; total: number; partial: boolean }> {
+    const { rows, partial } = await kindRows(session);
+    const needle = page.search.toLowerCase();
+    const matched =
+        needle === ''
+            ? rows
+            : rows.filter(
+                  (row) =>
+                      row.code.toLowerCase().includes(needle) ||
+                      row.name.toLowerCase().includes(needle) ||
+                      row.familyName.toLowerCase().includes(needle),
+              );
+    const ordered = [...matched].sort((left, right) => {
+        switch (page.sort) {
+            case 'code':
+                return left.code.localeCompare(right.code);
+            case 'name':
+                return left.name.localeCompare(right.name);
+            case 'family':
+                return left.familyName.localeCompare(right.familyName);
+            default:
+                return (
+                    left.displayOrder - right.displayOrder ||
+                    left.code.localeCompare(right.code)
+                );
+        }
+    });
+    const directed = page.descending ? ordered.reverse() : ordered;
+    return {
+        rows: directed.slice(page.offset, page.offset + page.limit),
+        total: directed.length,
+        partial,
+    };
 }
 
 /** One cut's record, as `get_cut_record` answers it. */
@@ -394,9 +539,11 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
     const body = reply.cut;
     const cutKindCode = text(body['kind_code']);
 
-    const [kinds, approvals, superseding] = await Promise.all([
-        kindRows(session),
-        approvalKinds(session),
+    // The kind the cut names, read once, and the body that holds its place. No
+    // other kind and no other cut is read: a page that read the lot to find one
+    // would cost the party's whole history.
+    const [kind, superseding] = await Promise.all([
+        kindRow(session, cutKindCode),
         reply.superseded_by_id === ''
             ? Promise.resolve(null)
             : session.client
@@ -408,9 +555,7 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
                   .then((later) => (later.result.outcome === 'ok' ? later.label : null))
                   .catch(() => null),
     ]);
-
-    const kind = kinds.rows.find((entry) => entry.code === cutKindCode) ?? kindOfItself(body);
-    const approval = kind.approvalKindCode === null ? null : approvals.get(kind.approvalKindCode);
+    const resolved = kind ?? kindOfItself(body);
 
     return {
         cut: {
@@ -451,7 +596,7 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
         state: reply.state,
         supersededById: reply.superseded_by_id === '' ? null : reply.superseded_by_id,
         supersededByLabel: superseding,
-        kind: { ...kind, approvalsRequired: approval?.approvalsRequired ?? kind.approvalsRequired },
+        kind: resolved,
         gaps: reply.gaps.map((gap) => ({
             id: text(gap['id']),
             partCode: text(gap['part_code']),
@@ -460,6 +605,116 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
         })),
         runCount: reply.run_count,
     };
+}
+
+/** The shape `list_report_instances` answers, as this module reads it. */
+const reportRunsSchema = z.looseObject({
+    result: resultSchema,
+    instances: z.array(row).default([]),
+    total: z.number().default(0),
+});
+
+/** The shape `get_report_instance_health` answers, as this module reads it. */
+const runHealthSchema = z.looseObject({
+    result: resultSchema,
+    health: z.array(row).default([]),
+});
+
+/** An instant the wire states as text, or null where the run holds none. */
+function instantOf(value: unknown): string | null {
+    const stated = text(value);
+    return stated === '' ? null : stated;
+}
+
+/**
+ * The runs that priced from one cut, newest start first.
+ *
+ * The run records the cut it resolved to, so the tab reads the runs by that
+ * column: one read for the runs and one for their states, whatever number of
+ * runs the cut holds. A run the session may not see is not in the list, because
+ * the store's policy decides what a session reads.
+ */
+async function runsOfCut(
+    session: LiveSession,
+    id: string,
+): Promise<readonly Record<string, unknown>[]> {
+    const reply = await session.client.callAuthenticated(
+        instanceSubjects.list_report_instances_request,
+        {
+            filter: {
+                definition_id: null,
+                kind: null,
+                cut_id: null,
+                id_one_of: null,
+                definition_id_one_of: null,
+                kind_one_of: null,
+                cut_id_one_of: [id],
+            },
+            as_of: null,
+            offset: 0,
+            limit: RUNS_OF_A_CUT_PAGE,
+            order: NO_ORDER,
+        },
+        reportRunsSchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    const runs = [...reply.instances].sort((left, right) =>
+        text(right['started_at']).localeCompare(text(left['started_at'])),
+    );
+    const states = await runStates(
+        session,
+        runs.map((run) => text(run['id'])),
+    );
+    return runs.map((run) => {
+        const state = states.get(text(run['id']));
+        return {
+            id: text(run['id']),
+            name: text(run['name']),
+            stateName: state?.stateName ?? '',
+            health: state?.health ?? null,
+            startedAt: instantOf(run['started_at']),
+            completedAt: instantOf(run['completed_at']),
+            pricedAt: instantOf(run['priced_at']),
+        };
+    });
+}
+
+/**
+ * The state and health each run reached, keyed by run id.
+ *
+ * A failed read of the states leaves the column empty and does not fail the
+ * page: the run is the fact and the state is the decoration.
+ */
+async function runStates(
+    session: LiveSession,
+    ids: readonly string[],
+): Promise<ReadonlyMap<string, { readonly stateName: string; readonly health: string | null }>> {
+    if (ids.length === 0) {
+        return new Map();
+    }
+    try {
+        const reply = await session.client.callAuthenticated(
+            instanceSubjects.get_report_instance_health_request,
+            { instance_ids: [...ids] },
+            runHealthSchema,
+        );
+        if (reply.result.outcome !== 'ok') {
+            return new Map();
+        }
+        return new Map(
+            reply.health.map((entry) => [
+                text(entry['report_instance_id']),
+                {
+                    stateName: text(entry['state_name']),
+                    health: reportHealthWordSchema.safeParse(entry['health']).data ?? null,
+                },
+            ]),
+        );
+    } catch {
+        return new Map();
+    }
 }
 
 /**
@@ -555,11 +810,20 @@ export function registerCutRoutes(
      * The types a person maintains: the code, the family they belong to, whether
      * they are signed and by whom, whether their values are indicative, the
      * retention they carry and how many cuts the party holds of each.
+     *
+     * A page of them, with the server's total, so the list never reads a large
+     * fixed slice and never pages to the end to show everything.
      */
     server.get('/api/reporting/cut-kinds', async (request) => {
         const session = requireSession(request);
-        const { rows, partial } = await kindRows(session);
-        return { rows, total: rows.length, partial };
+        const page = pageQuerySchema.safeParse(request.query);
+        if (!page.success) {
+            throw invalidRequest('A page names an offset and a limit of 1 to 1000.');
+        }
+        if (page.data.sort !== '' && !(KIND_SORTS as readonly string[]).includes(page.data.sort)) {
+            throw invalidRequest(`The kinds of cut cannot be ordered by ${page.data.sort}.`);
+        }
+        return kindPage(session, page.data);
     });
 
     /*
@@ -615,12 +879,18 @@ export function registerCutRoutes(
     server.get('/api/reporting/cut-kinds/:code', async (request) => {
         const session = requireSession(request);
         const code = codeOf(request);
-        const [kinds, cuts] = await Promise.all([
-            kindRows(session),
-            readCutRows(session, { kindCode: code, month: '', search: '', state: '' }),
+        const [kind, cuts] = await Promise.all([
+            kindRow(session, code),
+            readCutRows(session, {
+                kindCode: code,
+                month: '',
+                search: '',
+                state: '',
+                offset: 0,
+                limit: CUTS_OF_A_KIND_PAGE,
+            }),
         ]);
-        const kind = kinds.rows.find((entry) => entry.code === code);
-        if (kind === undefined) {
+        if (kind === null) {
             throw notFound('There is no such cut type, or you may not see it.');
         }
         return { kind, cuts: cuts.rows, partial: cuts.partial };
@@ -652,9 +922,8 @@ export function registerCutRoutes(
         if (reply.result.outcome !== 'ok') {
             throw refusal(reply.result);
         }
-        const types = await kindRows(session);
-        const written = types.rows.find((entry) => entry.code === code);
-        if (written === undefined) {
+        const written = await kindRow(session, code);
+        if (written === null) {
             throw notFound('There is no such cut type, or you may not see it.');
         }
         return written;
@@ -699,12 +968,37 @@ export function registerCutRoutes(
                 'The cuts list names a kind, a month of the form YYYY-MM, a search of at most 256 characters and a state.',
             );
         }
+        const page = pageQuerySchema.safeParse(request.query);
+        if (!page.success) {
+            throw invalidRequest('A page names an offset and a limit of 1 to 1000.');
+        }
+        if (page.data.sort !== '') {
+            throw invalidRequest(
+                `The cuts are read newest instant first and cannot be ordered by ${page.data.sort}.`,
+            );
+        }
         return readCutRows(session, {
             kindCode: query.data.kind_code,
             month: query.data.month,
             search: query.data.search,
             state: query.data.state,
+            offset: page.data.offset,
+            limit: page.data.limit,
         });
+    });
+
+    /*
+     * The runs that priced from one cut: the run, the state it reached and the
+     * instant it started.
+     *
+     * A run records the cut it resolved its report's selection to, and that
+     * column is what the tab reads. The tally the list draws and this list are
+     * the same rows, so a body that says four runs shows four.
+     */
+    server.get('/api/reporting/cuts/:id/runs', async (request) => {
+        const session = requireSession(request);
+        const id = cutIdOf(request);
+        return { runs: await runsOfCut(session, id) };
     });
 
     /* One cut's record: the body, the acts, the gaps and the derived state. */

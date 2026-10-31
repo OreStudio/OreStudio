@@ -26,11 +26,11 @@ ores.nats.lib compiles with gcc at -Werror in the unity build the project uses.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ ores.nats.lib compiles with gcc at -Werror in the unity build the project uses.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reproduce the gcc error without a gcc build tree: the compiler sees the same
+sources the clang build's unity file includes, so compiling that one file with
+g++ and the project's warning flags is the same test, in seconds rather than an
+hour of vcpkg and configure.
+
+Then give each type a name that has linkage: the latch goes at namespace scope
+beside =client::impl=, and the jwks attempt becomes a functor with the client,
+the timeout and the result string as members.
 
 * Measurements
 
@@ -57,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| nats unity unit under gcc | compiles, 0 warnings | =g++ -std=c++23 -O3 -Wall -Wextra -Werror -c unity_0_cxx.cxx= with the target's include paths | branch head |
+| nats unity unit under clang | compiles, 0 warnings | =clang++ -std=c++23 -O2 -Wall -Wextra -Werror -c unity_0_cxx.cxx= | branch head |
+| local checks | 21 of 21 pass | =compass check --exclude-heavy= | branch head |
 
 * Notes
 
@@ -85,3 +92,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.nats.lib compiles clean under gcc 16.2 and clang 21 with -Werror, so the
+gcc nightly no longer stops on this library.
+
+The two other failures in the same nightly are not this task's: the web build
+reads a generated marketdata module that the source-to-feed rename deleted, and
+the MSVC unity build runs out of template context on a generated entity. Each is
+recorded on the parent story.

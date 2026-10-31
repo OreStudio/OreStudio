@@ -215,10 +215,15 @@ What is left in the component, measured after these two:
 
 | Family | Files | What it needs |
 |--------+-------+---------------|
-| =*_entity.cpp= in =repository/= | 168 (zero call sites stream a storage entity) | The storage entity has no generated shape. Either it states one, or the =operator<<= goes. |
-| =convention_family_*=.cpp | 27 | Hand-written; they hold a convention's payload as a document. |
-| =options.cpp=, =application.cpp= | 2 | Hand-written configuration printing. |
-| the seven hand-written domain headers | 7 | No generated shape at all; they need the =dataset_dependency= treatment. |
+| =*_entity.cpp= in =repository/= | 168 | The storage entity has no generated shape. No call site streams one, so deleting the unit is the smaller answer. |
+| =convention_family_*=.cpp | 26 of 27 | Hand-written; each holds a convention's payload as a document. =convention_family_dispatch.cpp= is the one that names no reflector. |
+| Hand-written domain headers | 11 | Seven have no generated shape at all; four are the tenor basis swap documents and their parts. |
+| =conventions_bundle_service.cpp=, =publish_from_dq_handler.cpp= | 2 | Read or write a convention's payload document. |
+| Two workflow headers | 2 | Parse a request and write a command. |
+| =options.cpp= | 1 | Prints the service configuration. |
+| core tests | 181 | They compare against reflect-cpp on purpose, so they stay. |
+
+Every count above is =grep -rlnE "\brfl::" --include=*.cpp --include=*.hpp projects/ores.refdata=, production files only.
 | core tests | 181 | They compare against reflect-cpp on purpose, so they stay. |
 
 * Test Scenarios

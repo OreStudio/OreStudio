@@ -28,7 +28,7 @@ One table names every route either server answers today. It is generated from th
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
-| Now          | The inventory is generated from both surfaces and gated: 402 routes, none classified yet. |
+| Now          | The inventory is generated from what both servers register and is gated. Every route is listed, and none is classified yet. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing: the list is the input to the classification task. |
 | Last touched | 2026-10-31                               |

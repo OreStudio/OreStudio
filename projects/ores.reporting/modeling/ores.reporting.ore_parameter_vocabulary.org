@@ -2,11 +2,11 @@
 :ID: 0C6F2B41-8B7E-4E52-9C3D-5A1E7F4D2B90
 :END:
 #+title: ores.reporting.ore_parameter_vocabulary
-#+description: Codegen entity model for the reporting =ore_parameter_vocabulary= table. The ORE element names whose values are a closed list, and the value set each one takes.
+#+description: Codegen entity model for the reporting =ore_parameter_vocabulary= table. The ORE leaves whose values a rule governs, keyed by the leaf's address in its schema, and the value set each one takes.
 #+type: ores.codegen.entity
 #+component: reporting
 #+filetags: :model:entity:reporting:
-#+brief: One ORE element name, and the value set its leaves take.
+#+brief: One ORE leaf, and the value set it takes.
 #+entity_singular: ore_parameter_vocabulary
 #+entity_plural: ore_parameter_vocabularies
 #+entity_title: Ore Parameter Vocabulary
@@ -64,6 +64,17 @@ example =curveconfig.xsd|Currency=.
 
 The schema whose leaves the row applies to, for example =curveconfig.xsd=.
 
+** xpath
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The leaf's address in its schema, for example
+=/CurveConfiguration/YieldCurves/YieldCurve/DayCounter=. Two leaves of one name
+are two rows here when their addresses differ.
+
 ** element_name
 :PROPERTIES:
 :type:         text
@@ -72,6 +83,7 @@ The schema whose leaves the row applies to, for example =curveconfig.xsd=.
 :END:
 
 The ORE element name, spelled as the schema spells it, for example =Currency=.
+It is what a reader searches by; the address is what the rule is keyed by.
 
 ** value_set_code
 :PROPERTIES:

@@ -117,18 +117,17 @@ def seeded(path, table):
 
 
 def contract_sets():
-    """The value set each leaf takes, from the contract and its links."""
+    """The value set each leaf takes, from the contract and its links, by address."""
     links = {f"{r['scope']}:{r['name']}": r["value_set_code"]
              for r in seeded(LINKS_SQL,
                              "ores_reporting_ore_parameter_setting_value_sets_tbl")}
     found = {}
     for row in seeded(CONTRACT_SQL, "ores_dq_ore_parameters_artefact_tbl"):
-        match = ELEMENT.search(row.get("xpath", ""))
-        if not match:
+        if not row.get("xpath", "").startswith("/"):
             continue
         code = links.get(f"{row['scope']}:{row['name']}")
         if code:
-            found.setdefault((row["schema_name"], match.group(1)), code)
+            found.setdefault((row["schema_name"], row["xpath"]), code)
     return found
 
 
@@ -149,7 +148,7 @@ def column_rows():
             if not match:
                 raise ValueError(f"{row['code']}: no element in {row['xpath']}")
             element = match.group(1)
-            map_code = f"{row['schema']}|{element}"
+            map_code = f"{row['schema']}|{row['xpath']}"
             code = f"{map_code}|{row['entity']}|{row['column']}"
             found[code] = {
                 "code": code,
@@ -172,9 +171,11 @@ def column_rows():
 
 
 def map_rows(columns):
-    """The map: one row per leaf, with the set that governs it."""
+    """The map: one row per leaf address, with the set that governs it."""
     with open(MAP_JSON, encoding="utf-8") as handle:
-        declared = json.load(handle)
+        declared_json = json.load(handle)
+    declared = {(entry["schema"], entry["element"]): entry
+                for entry in declared_json.values()}
 
     sets = contract_sets()
     found = {}
@@ -183,11 +184,12 @@ def map_rows(columns):
 
     out = {}
     for code, row in found.items():
-        declared_row = declared.get(code)
+        declared_row = declared.get((row["schema"], row["element"]))
         if declared_row:
             out[code] = {
                 "code": code,
                 "schema": row["schema"],
+                "xpath": row["xpath"],
                 "element": row["element"],
                 "set": declared_row["value_set"],
                 "name": declared_row["name"],
@@ -196,11 +198,11 @@ def map_rows(columns):
                 "reason": declared_row["reason"],
             }
             continue
-        leaf = (row["schema"], row["element"])
-        code_of_set = sets.get(leaf)
+        code_of_set = sets.get((row["schema"], row["xpath"]))
         out[code] = {
             "code": code,
             "schema": row["schema"],
+            "xpath": row["xpath"],
             "element": row["element"],
             "set": code_of_set or "text",
             "name": row["element"],
@@ -255,8 +257,8 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 def render_map(rows):
     values = ",\n".join(
         "    (" + ", ".join([
-            q(row["code"]), TENANT, "0", q(row["schema"]), q(row["element"]),
-            q(row["set"]), q(row["name"]), q(row["source"]),
+            q(row["code"]), TENANT, "0", q(row["schema"]), q(row["xpath"]),
+            q(row["element"]), q(row["set"]), q(row["name"]), q(row["source"]),
             q(row["source_ref"]), q(row["reason"]), ACTOR,
             q("Seed the ORE element map"),
         ]) + ")" for row in rows)
@@ -276,8 +278,8 @@ def render_map(rows):
  */
 
 insert into ores_reporting_ore_parameter_vocabularies_tbl (
-    code, tenant_id, version, schema_name, element_name, value_set_code, name,
-    source, source_ref, reason, modified_by, change_reason_code,
+    code, tenant_id, version, schema_name, xpath, element_name, value_set_code,
+    name, source, source_ref, reason, modified_by, change_reason_code,
     change_commentary
 ) values
 {values}

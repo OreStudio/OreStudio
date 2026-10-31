@@ -143,16 +143,16 @@ verified.
 |  |  | get | =/api/login-info= | bff | projects/ores.web/packages/bff/src/server.ts:1762 |  |
 |  |  | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1782 |  |
 |  |  | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:87 |  |
-|  |  | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:171 |  |
-|  |  | get | =/api/marketdata/official= | bff | projects/ores.web/packages/bff/src/official.ts:95 |  |
-|  |  | post | =/api/marketdata/official/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/official.ts:206 |  |
-|  |  | get | =/api/marketdata/official/fixings= | bff | projects/ores.web/packages/bff/src/official.ts:170 |  |
-|  |  | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:157 |  |
-|  |  | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:242 |  |
-|  |  | delete | =/api/marketdata/routes/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:265 |  |
-|  |  | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:145 |  |
-|  |  | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:192 |  |
-|  |  | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:220 |  |
+|  |  | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:177 |  |
+|  |  | get | =/api/marketdata/official= | bff | projects/ores.web/packages/bff/src/official.ts:101 |  |
+|  |  | post | =/api/marketdata/official/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/official.ts:212 |  |
+|  |  | get | =/api/marketdata/official/fixings= | bff | projects/ores.web/packages/bff/src/official.ts:176 |  |
+|  |  | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:163 |  |
+|  |  | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:251 |  |
+|  |  | delete | =/api/marketdata/routes/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:274 |  |
+|  |  | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:151 |  |
+|  |  | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:201 |  |
+|  |  | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:229 |  |
 |  |  | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1202 |  |
 |  |  | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1655 |  |
 |  |  | put | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1667 |  |
@@ -447,8 +447,8 @@ verified.
 |  |  | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2647 |  |
 |  |  | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2661 |  |
 |  |  | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 |  |
-|  |  | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:212 | path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) |
-|  |  | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:203 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:186 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | head | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:194 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | put | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:169 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:212 | path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) |
+|  |  | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:203 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:186 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | head | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:194 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | put | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:169 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |

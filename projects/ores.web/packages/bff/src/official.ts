@@ -21,7 +21,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as fixingSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_fixing_protocol';
 import { subjects as seriesSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_series_protocol';
-import { subjects as sourceSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_data_source_protocol';
+import { subjects as feedSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
 import { subjects as providerSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_protocol';
 import { subjects as termsSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_terms_operations_protocol';
 import { invalidRequest } from './errors.js';
@@ -29,9 +29,15 @@ import { input, readAll } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The official rates: the providers that publish them, their terms, their sources and the
- * fixings the official rates adapter stores. A provider is official when it states a terms
- * page, since only such a provider is read through the adapter.
+ * The official rates: the publishers that publish them, their terms, their feeds and the
+ * fixings the official rates adapter stores. A publisher is official when it states a terms
+ * page, since only such a publisher is read through the adapter.
+ *
+ * The catalogue renamed its source rows to feeds: a feed is one configured adapter at a
+ * publisher, with the session, the service and the publisher key the old row did not carry.
+ * The screen still says source, and this route still answers a =sources= array, because the
+ * row a person reads there is the feed. Its kind column shows the feed's service, which is
+ * the only fact of that shape the renamed row carries.
  */
 
 const officialProviderSchema = z.looseObject({
@@ -48,11 +54,11 @@ const officialProviderSchema = z.looseObject({
     terms_accepted_at: z.string().nullable().default(null),
 });
 
-const sourceSchema = z.looseObject({
+const feedSchema = z.looseObject({
     id: z.string(),
     name: z.string(),
-    provider_code: z.string(),
-    kind: z.string().default(''),
+    publisher_code: z.string(),
+    service: z.string().default(''),
 });
 
 const seriesSchema = z.looseObject({
@@ -106,8 +112,8 @@ export function registerOfficialRatesRoutes(
         if (codes.length === 0) {
             return { providers: [] };
         }
-        const [sources, series] = await Promise.all([
-            readAll(session, sourceSubjects.list_market_data_sources_request, 'sources', {
+        const [feeds, series] = await Promise.all([
+            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
                 filter: null,
                 as_of: null,
             }),
@@ -116,7 +122,7 @@ export function registerOfficialRatesRoutes(
                 as_of: null,
             }),
         ]);
-        const parsedSources = sources.map((row) => sourceSchema.parse(row));
+        const parsedFeeds = feeds.map((row) => feedSchema.parse(row));
         const parsedSeries = series
             .map((row) => seriesSchema.parse(row))
             .flatMap((row) => {
@@ -149,9 +155,9 @@ export function registerOfficialRatesRoutes(
                     terms_accepted: provider.terms_accepted_digest !== '',
                     terms_accepted_by: provider.terms_accepted_by,
                     terms_accepted_at: provider.terms_accepted_at,
-                    sources: parsedSources
-                        .filter((source) => source.provider_code === provider.code)
-                        .map((source) => ({ id: source.id, name: source.name, kind: source.kind })),
+                    sources: parsedFeeds
+                        .filter((feed) => feed.publisher_code === provider.code)
+                        .map((feed) => ({ id: feed.id, name: feed.name, kind: feed.service })),
                     series: parsedSeries
                         .filter((row) => row.provider_code === provider.code)
                         .map((row) => ({

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 2021D52A-3A77-4176-AC3E-AE571DDA9AAE
+:END:
+#+title: Task: Repair the generated files main left drifted
+#+description: A codegen change renders the whole estate, so the drift gate now reads two files main carries drifted: a generated eventing test hand-edited to name a catalogue feed, and a generated TypeScript view missing two columns its model declares. Both are the same defect the story names: the model is not the whole truth.
+#+type: task
+#+level: s1
+#+filetags: :let-the-model-state-how-the-store-keeps-a-column:sprint_29:v0:
+#+owner: marco
+#+branch: feature/repair-the-generated-files-main-left-drifted
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0B2C266E-6A32-4495-950E-44DE8054A6D7][Let the model state how the store keeps a column]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The estate renders without drift, so a codegen change can land.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0B2C266E-6A32-4495-950E-44DE8054A6D7][Let the model state how the store keeps a column]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The feed scope model states the feed its row references, and the generated test seeds that parent by reading the catalogue
+- No hand edit to a generated file remains in the estate
+- The drift gate over every component reports no drift
+
+* Plan
+
+A codegen change under =projects/ores.codegen= selects every component for the
+drift gate, because a template decides every component's output. The gate
+therefore read the two files main carries drifted, and neither belongs to this
+branch's own commit.
+
+Take each one at its cause.
+
+The feed scope test needed a feed the system catalogue holds. The hand edit
+named one by id and carried its include. The model states the reference
+instead: a soft FK to the feed catalogue with =:use_system_tenant:=, and
+=:skip_check:= because the invariants trigger already refuses a scope whose
+feed is absent and says more than a plain existence check would. The generated
+test then reads the catalogue and takes the first feed.
+
+The trade summary files are stale output: the model declares =structure_id= and
+=is_leg=, and the TypeScript was generated before they landed. Regenerate.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| marketdata drift | no drift | =check_component_drift.py --component marketdata= | branch head |
+| trading drift | no drift | =check_component_drift.py --component trading-cpp= | branch head |
+| marketdata suite | 340 cases, 0 failures | =compass test run -- -R ores.marketdata.core.tests= | branch head |
+| BFF list requests | 1054 requests agree with the protocol | =python3 projects/ores.codegen/scripts/check_bff_list_requests.py= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generated eventing test seeds its feed by reading the system catalogue, so
+no hand edit and no hardcoded id remain. The trade summary TypeScript carries
+the two columns its model declares. Both components render without drift, which
+is what a codegen change needs before it can land.

@@ -64,6 +64,15 @@ struct options final {
     std::string storage_dir{"/var/ores/http-server/storage"};
 
     /**
+     * @brief The name the session cookie is issued under.
+     *
+     * Carries this deployment's environment, so two deployments on one host cannot
+     * overwrite each other's session. Over TLS the server adds the =__Host-= prefix a
+     * Secure cookie requires.
+     */
+    std::string web_session_name{"ores_web_session"};
+
+    /**
      * @brief The built browser bundle this server answers for, when there is one.
      *
      * The directory a build wrote: =index.html=, the =assets/= it names, and the

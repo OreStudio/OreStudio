@@ -24,6 +24,7 @@ set(files
     "account_operations_routes_tests.cpp"
     "account_routes_tests.cpp"
     "auth_event_operations_routes_tests.cpp"
+    "auth_session_routes_tests.cpp"
     "authorization_routes_tests.cpp"
     "bootstrap_routes_tests.cpp"
     "geo_operations_routes_tests.cpp"

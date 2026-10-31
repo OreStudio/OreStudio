@@ -63,7 +63,7 @@ whose *Session store* and *CSRF* sections state the rules.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:20CB2B3E-5F2C-4049-B426-5CAB8278DC4D][Store the session server side]] | BACKLOG | | | Keep an opaque identifier in the cookie and the bearer token in memory, keyed by the identifier's SHA-256, with a sliding expiry the server owns. |
+| [[id:20CB2B3E-5F2C-4049-B426-5CAB8278DC4D][Store the session server side]] | STARTED | 2026-10-31 | | Keep an opaque identifier in the cookie and the bearer token in memory, keyed by the identifier's SHA-256, with a sliding expiry the server owns. |
 | [[id:897125F5-8B0C-45FB-943F-438E62B2E6E4][Carry the session in a cookie]] | BACKLOG | | | Set the cookie on sign in and resolve a request from it, with HttpOnly, SameSite, Secure over TLS and the per-environment name. |
 | [[id:C72957A3-2954-489C-BFA3-9986CE20A512][Make sign in and out resources]] | BACKLOG | | | POST and DELETE on /api/v1/auth/sessions, and a me alias that answers who the caller is without handing the token back. |
 | [[id:53943BC2-F8E5-45FB-9598-741B29897352][Guard the unsafe methods]] | BACKLOG | | | A cookie is not proof of intent: an unsafe method on a session request must carry the deployment's Origin and a custom header a cross-site form cannot set. |

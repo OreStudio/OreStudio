@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-inflation-family
-#+pr:
+#+pr: 4235
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4235][#4235]] | [synthetic,trading,refdata] Populate the inflation family |
 
 * Review
 

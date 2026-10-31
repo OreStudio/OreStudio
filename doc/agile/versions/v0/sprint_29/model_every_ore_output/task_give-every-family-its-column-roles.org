@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: C00098A3-A017-46DF-90DF-D214A1098DA0
+:END:
+#+title: Task: Give every family its column roles
+#+description: The catalogue names every column and its kind but not its job. Give each family three roles: the keys that identify a row, the qualifiers that state the context of a figure (scenario, factor, shift, par flag, leg), and the measures that are the figures, and say whether its measure set is open, which is how a configuration-driven family gains one column per curve, factor or quantile. Derive the roles from the corpus and the writers, and let the gate rely on them.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every family states which of its columns identify a row, which state the context of a figure, and which measure, so one reader can serve them all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started. |
+| Waiting on   | The catalogue from #4189, which this task extends. |
+| Next         | Add the two roles and the open-measure flag to the catalogue, derived from the corpus. |
+| Last touched | 2026-10-31 |
+
+* Acceptance
+
+- Each family states =key_columns=, =qualifier_columns=, =measure_columns= and whether its measures are open.
+- A column every variant of a family states is required; a column only some variants state is a qualifier another analytic added or an open measure, and the family says which.
+- A configuration-driven family states its measures as open, so a curve, factor or quantile the samples do not show is still a measure.
+- The catalogue's test fails when a family's required columns disagree with a sample it covers.
+
+* Plan
+
+A column's role is a fact about how the writer uses it, and the corpus shows it: a column every variant states is required, and a column that only some variants state is either a qualifier a caller prepended or a measure the configuration added. The writers settle which: =curves.csv= adds one column per curve from the market, and the sensitivity analytic adds =Type=, =IsPar=, =Factor_1= and the shift before it writes an exposure file. The roles go in the generated data, and a reviewer checks the inference against the writers.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The three causes of a variant, from the corpus: configuration columns (curves, dim regression, var, scenario), analytic augmentation (exposure under stress or sensitivity) and a stale expected file (the 25-column =flows.csv= in MinimalSetup is a subset of the writer's 27).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

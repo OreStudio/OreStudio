@@ -2,7 +2,7 @@
 :ID: D971BA73-8A68-4047-AEE1-4C8704737148
 :END:
 #+title: Task: Read the child-row outputs
-#+description: The families whose row is a child of a trade or a curve: flows (27 columns), stresstest_flows (48, with Base, Scen and Diff of every figure) and todaysmarketcalibration_cashflows (24) are cashflow rows keyed by trade, leg, cashflow number and pay date, and curves, parshifts, scenario_par_rates and stress_scenario_par_rates are pillar rows keyed by curve, tenor or pillar date. These cannot be read as one figure per row without losing the key that gives the figure its meaning, so each family gets its own row type.
+#+description: Three families have a row that is a child of a trade rather than a bag of figures: flows (27 columns), stresstest_flows (48, every figure stated as base, scenario and difference) and todaysmarketcalibration_cashflows (24). Their meaning is the relation between columns — trade, leg, cashflow number and pay date — so each gets a typed row and a reader of its own, which is the one place the metric reader cannot serve.
 #+type: task
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-10-31
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every child-row family is read into typed rows that keep the key that gives each figure its meaning.
+The three child-row families are read into typed rows that keep the key that gives each figure its meaning.
 
 * Status
 
@@ -28,22 +28,21 @@ Every child-row family is read into typed rows that keep the key that gives each
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-30                               |
+| Now          | Not yet started. |
+| Waiting on   | Nothing; it does not depend on the column roles. |
+| Next         | Write the typed rows and their readers against the checked-in samples. |
+| Last touched | 2026-10-31 |
 
 * Acceptance
 
-- Each family has a reader and a test over a checked-in expected output.
-- A flow row keeps its trade, leg, cashflow number and pay date, and a stressed flow keeps the base, scenario and difference of each figure as three values.
-- A pillar row keeps its curve and its tenor or pillar date.
+- =flows=, =stresstest_flows= and =todaysmarketcalibration_cashflows= each have a typed row and a reader.
+- A flow row keeps its trade, leg, cashflow number and pay date, and the reader refuses a row that omits one of them.
+- A stressed flow states base, scenario and difference for each figure, and the reader refuses a row that states fewer than three.
+- The tests read the checked-in sample of each family.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A cashflow row is a relation, not a bag: =LegNo= and =CashflowNo= together name the flow, =PayDate= dates it, and the figures describe it. Flattening it to metrics would keep the figures and lose the flow. The stressed family triples every figure, so its row states three values beside each other and the reader checks that they agree in count.
 
 * Measurements
 

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 93B2ACA5-5887-4C9D-A9B7-C7856EDC9F65
+:END:
+#+title: Task: Read the metric outputs
+#+description: One reader serves every family whose row is keys, qualifiers and figures: the trade figures (npv, xva, sensitivity, simm, saccr, smrc, var, pnl, correlation, credit migration), the observation series (exposure trade and netting set, colva, dim evolution), the pillar files (curves, parshifts) and the configuration-driven ones (scenario, dim regression). It reads by heading name against the family's roles, requires the keys, carries the qualifiers, turns each measure column into one metric, and refuses a row whose key is empty or a figure it cannot read.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every metric family is read by one declaration-driven reader into rows of subject, observation date, measure, qualifiers and value.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started. |
+| Waiting on   | The column roles, so a reader knows what a heading is. |
+| Next         | Read the metric families through the declaration the catalogue gives them. |
+| Last touched | 2026-10-31 |
+
+* Acceptance
+
+- One reader serves every family whose row shape is metric, and no family has a reader of its own.
+- A row becomes one metric for each measure column, named by that column's heading, so a curve or a risk factor is a measure name.
+- A qualifier travels with the metric, and =Currency= is the metric's currency rather than a measure.
+- The reader refuses a file that omits a required key or states a figure it cannot read, and names the heading that failed.
+- The tests read a checked-in expected output of every metric family.
+
+* Plan
+
+The reader walks the heading, asks the catalogue which role each column has, and emits one metric for each measure column on each row. A variant is not a case: an extra column is another metric when it is a figure and another qualifier when it is not, and a missing open measure is not an error. The observation date is the row's own date or time step, never the run's priced date.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The reader is generic on purpose. ORE declares its columns imperatively and adds them in loops over the configuration, so a family's shape is not a fixed list; a reader per family would be sixty readers that disagree with each other and with the samples.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

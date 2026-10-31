@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-10-31
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -36,7 +36,9 @@ A build fails when a checked-in ORE output is not read, so the catalogue cannot 
 * Acceptance
 
 - The test reads every checked-in expected output and passes, or names the file and the reason it is out of scope.
-- The test fails when a catalogue family has no reader or no table.
+- The test fails when a catalogue family has no reader or no storage shape.
+- A sample that omits an open measure, or states a measure the family does not declare, parses: the required columns are the test, not an exact header.
+- A family whose file no sample ships is listed with that reason, so an unreadable family cannot hide behind a missing sample.
 - The test runs in the local check gate and needs no engine binary or database.
 
 * Plan

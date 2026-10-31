@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 6C1F463B-29F6-43F4-A6C5-45EE161BBD35
+:END:
+#+title: Task: Compute and serve the calibration measures
+#+description: Realised volatility, drift, range, sample coverage, jump count, freshness and provider dispersion from the fixings behind a start, served to the calibration screens and recorded for a later policy that learns from them.
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the calibration the measures it can learn from: what the fixings behind a
+start actually did, served beside the start and recorded for later policies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin after [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]]; the measures decorate a start, they do not gate it. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A start reports the realised volatility over the window, daily and hourly,
+  and the drift annualised from the same returns.
+- It reports the daily range, the number of samples against the window, and
+  the age of the fixing.
+- It reports the jump count above three deviations and the dispersion against
+  another accepted provider of the same pair, in basis points.
+- The screen says which measure changed the calibration today (the realised
+  volatility scales the mixture) and which are recorded for later.
+- The measures are information: a missing measure never blocks a start, and a
+  feed without a usable fixing reports that it has nothing to measure.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

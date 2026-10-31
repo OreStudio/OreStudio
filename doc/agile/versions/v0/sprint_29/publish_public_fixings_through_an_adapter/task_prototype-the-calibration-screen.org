@@ -112,6 +112,11 @@ page. Turning the inverse off sends GBP/USD to its fixed level; the refuse
 fallback blocks AUD/USD. The state panel prints the policy, the recalculation
 count and every start.
 
+The measures card reports the realised volatility over the window, the
+annualised drift, the daily range, the samples and freshness, the jump count
+and the dispersion against another provider. Only the volatility is marked as
+used today; the rest are marked as future inputs.
+
 The design note is
 [[file:../../../../../prototypes/market_data/calibrate-a-generator.org][calibrate-a-generator.org]]. The decision taken here belongs in
 [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]], and the data it reads in

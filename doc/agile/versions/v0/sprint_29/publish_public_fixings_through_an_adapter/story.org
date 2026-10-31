@@ -23,7 +23,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Eight of thirteen tasks done. The feeds start from the ranked public fixings and the feed page shows where each run started. The prototype now argues one market-wide policy instead of a list per feed. |
+| Now           | Eight of fourteen tasks done. The feeds start from the ranked public fixings and the feed page shows where each run started. The prototype now argues one market-wide policy instead of a list per feed. |
 | Waiting on    | Nothing.                               |
 | Next          | Start [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]]: the shape of the screen is the next decision. |
 | Last touched  | 2026-10-31                               |
@@ -41,6 +41,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - Calibration needs no configuration: with no policy the defaults (provider catalogue order, a 90-day window, inverse allowed, keep the fixed level) calibrate every feed. A class policy and a feed's pin are optional refinements.
 - A class policy sets the window, the inverse rule, the provider order and the fallback. A feed derives its candidates from the policy or the defaults and its pair; it pins an item or a window only as a stated exception. A feed may also name its items explicitly, but no feed needs to.
 - A recalculation of a class resolves every feed and records each start, with the coverage of resolved, fallback and blocked feeds.
+- The calibration shows the measures behind a start — realised volatility over the window, annualised drift, daily range, sample coverage, jump count, fixing age and provider dispersion — and says that only the volatility changes the calibration today, the rest being recorded for a later policy.
 
 * Tasks
 
@@ -59,6 +60,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 | [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] | BACKLOG | | | The class policy screen and the feed page that inherits it: the coverage of every feed, the derived candidates with their reasons, the resolved start, and the pin or window exception. |
 | [[id:E34BBE9C-DCD2-4F4C-99E7-CE088A097CEA][Retire the vintage path and make fixings the default]] | BACKLOG | | | The code no longer reads a vintage, but the notes, the seeds and the config default still describe one. State that ranked public fixings are the only calibration, make the fixing path the default, and keep a fixed level only as a stated fallback. |
 | [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] | BACKLOG | | | One policy per asset class states the window, whether an inverse is allowed, the provider order and the fallback; a feed derives its candidates from the pair and the catalogue, and pins an item or a window only as an exception. |
+| [[id:6C1F463B-29F6-43F4-A6C5-45EE161BBD35][Compute and serve the calibration measures]] | BACKLOG | | | Realised volatility, drift, range, sample coverage, jump count, freshness and provider dispersion from the fixings behind a start, served to the calibration screens and recorded for a later policy that learns from them. |
 
 * Decisions
 
@@ -69,6 +71,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - The durable fixings are kept for good, in a table of their own (2026-10-28).
 - The catalogue starts wide: every daily Frankfurter provider whose terms allow storage, so each main pair has several providers from the first day (2026-10-28).
 - Calibration belongs to the market, not to each feed (2026-10-31). With nothing configured, the defaults calibrate every feed; a policy per asset class and a pin on one feed are optional refinements. A list authored on every feed does not scale and hides the market's actual coverage, so no feed needs one, though a feed may still state one as an exception.
+- The measures are recorded, and only volatility calibrates today (2026-10-31). Realised volatility scales the mixture; drift, jumps, dispersion, freshness and coverage are visible and stored for a later policy that learns from them. A measure never blocks a start.
 - Vintage is decommissioned, and public fixings are the only calibration (2026-10-31). The old path read an observation from a stored vintage; it is gone from the code. The notes, the seeds and the config default follow. A pair with no fixing keeps a fixed level, and the screen says so: that is a stated fallback, not a second source.
 - It supersedes the task [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]], whose five new tables are not built. The design and its history are in [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 

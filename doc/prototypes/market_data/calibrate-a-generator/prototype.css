@@ -409,3 +409,25 @@ table.list .acts { white-space: nowrap; text-align: right; }
 }
 
 input[type="checkbox"] { accent-color: var(--accent); }
+
+/* --- Measures ----------------------------------------------------------- */
+.measure-metrics {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px; margin-bottom: 10px;
+}
+.measure-metrics .metric { background: var(--sunk); border: 1px solid var(--line-subtle); border-radius: var(--radius-chip); padding: 7px 9px; }
+.measure-metrics .metric .k { display: block; font: 600 var(--micro)/1.3 var(--mono); letter-spacing: var(--tracking); text-transform: uppercase; color: var(--ink-faint); }
+.measure-metrics .metric .v { font: 600 1rem/1.35 var(--mono); }
+.measure-metrics .metric .sub { display: block; font: 400 .7rem/1.4 var(--sans); color: var(--ink-faint); }
+svg.spark { width: 100%; height: 64px; display: block; margin: 4px 0 10px; }
+svg.spark .axis { stroke: var(--line-subtle); stroke-width: 1; }
+svg.spark .line { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+svg.spark .area { fill: rgba(88, 166, 255, .12); }
+.measure-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.measure-list li {
+  display: flex; gap: 8px; align-items: baseline; justify-content: space-between;
+  padding: 4px 0; border-bottom: 1px solid var(--line-subtle);
+  font-size: .78rem; color: var(--ink-muted);
+}
+.measure-list li:last-child { border-bottom: 0; }
+.measure-list .badge { flex: 0 0 auto; }

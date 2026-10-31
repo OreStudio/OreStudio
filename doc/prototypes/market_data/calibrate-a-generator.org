@@ -94,6 +94,25 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
   window and the factor are shown with the start.
 - **Vintage is absent.** No vintage control, field or wording offers one.
 
+* The measures
+
+Each start carries the measures of the series behind it, and the screen shows
+them beside the value:
+
+- **Realised volatility** over the window, daily and hourly. This is the one
+  measure that changes the calibration today: it scales the mixture.
+- **Drift**, annualised from the same daily returns.
+- **Daily range** and the number of samples against the window.
+- **Freshness**: how old the fixing is against the market clock.
+- **Jumps** above three deviations, as a count.
+- **Provider dispersion**, in basis points against another accepted provider
+  of the same pair.
+
+Every measure carries a badge: *used today*, for the volatility, or *future
+input* for the rest. The card says that only the volatility changes the
+calibration now, and that the rest are recorded for a later policy. A measure
+never blocks a start; a pair with no series says it has nothing to measure.
+
 * What it does not settle
 
 - Who may edit the policy, and whether a change needs approval. The prototype
@@ -106,6 +125,10 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 - The explicit list keeps the derived order: a person includes and excludes
   items but does not reorder them. The product may or may not need the extra
   freedom.
+- Which measures become inputs, and how: whether drift tilts the process mean,
+  whether dispersion penalises a provider, whether jumps set a separate
+  intensity, and whether a policy window is chosen from coverage rather than
+  stated. The prototype records them; it does not fit them.
 - Terms acceptance is shown, not edited: the Bank of Canada's items stay
   visible with their reason, and the prototype does not offer the accept or
   withdraw action.

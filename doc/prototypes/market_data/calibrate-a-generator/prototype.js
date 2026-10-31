@@ -211,6 +211,89 @@ function startCard(result) {
   return card({ title: 'A run that starts now will take', cls: 'start-card', body });
 }
 
+function measuresOf(candidate, windowDays) {
+  const window = Math.max(2, Math.min(180, Number(windowDays) || 2));
+  const series = candidate.returns.slice(-window);
+  const mean = series.reduce((sum, r) => sum + r, 0) / series.length;
+  const variance = series.reduce((sum, r) => sum + (r - mean) ** 2, 0) / (series.length - 1 || 1);
+  const daily = Math.sqrt(variance);
+  const hourly = daily / Math.sqrt(24);
+  const sd = daily || 1;
+  const jumps = series.filter((r) => Math.abs(r) > 3 * sd).length;
+  const latest = candidate.date;
+  const age = Math.max(0, Math.round((Date.parse(state.clock) - Date.parse(latest)) / 86400000));
+  const others = CATALOGUE.filter(
+    (item) => item.pair === candidate.pair && item.provider !== candidate.provider && PROVIDERS[item.provider].terms === 'accepted',
+  );
+  const dispersion = others.length
+    ? (others.map((item) => Math.abs(Number(item.value) - Number(candidate.value)) / Number(candidate.value) * 10000))
+    : [];
+  return {
+    window,
+    samples: series.length,
+    daily,
+    hourly,
+    scale: hourly / BASELINE_HOURLY,
+    drift: mean * 252,
+    min: Math.min(...series),
+    max: Math.max(...series),
+    jumps,
+    age,
+    dispersion,
+    series,
+  };
+}
+
+function sparkline(series) {
+  const width = 300;
+  const height = 64;
+  const max = Math.max(...series.map((v) => Math.abs(v)), 1e-6);
+  const step = series.length > 1 ? width / (series.length - 1) : width;
+  const points = series.map((value, index) => [index * step, height / 2 - (value / max) * (height / 2 - 4)]);
+  const line = points.map(([x, y], index) => `${index === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const area = `${line} L${width},${height / 2} L0,${height / 2} Z`;
+  return `<svg class="spark" viewBox="0 0 ${width} ${height}" role="img" aria-label="Daily log returns over the window">
+    <line x1="0" y1="${height / 2}" x2="${width}" y2="${height / 2}" class="axis"></line>
+    <path d="${area}" class="area"></path>
+    <path d="${line}" class="line"></path>
+  </svg>`;
+}
+
+function measureBadge(used) {
+  return used ? badge('ok', 'used today') : badge('off', 'future input');
+}
+
+function measuresCard(result) {
+  const candidate = result.candidate ?? result.candidates.find((entry) => entry.direct && entry.usable) ?? result.candidates[0];
+  if (!candidate) {
+    return card({ title: 'Measures behind the start', sub: 'no candidate has a series', body: '<p class="note">No fixing history covers this pair, so there is nothing to measure.</p>' });
+  }
+  const m = measuresOf(candidate, windowOf(result.feed));
+  const dispersion = m.dispersion.length
+    ? `${m.dispersion.map((value) => value.toFixed(0)).join(' / ')} bp against ${CATALOGUE.filter((item) => item.pair === candidate.pair && item.provider !== candidate.provider && PROVIDERS[item.provider].terms === 'accepted').map((item) => item.provider.toUpperCase()).join(', ')}`
+    : 'no second accepted provider for this pair';
+  return card({
+    title: 'Measures behind the start',
+    sub: `${candidate.provider.toUpperCase()} · ${candidate.pair} · ${m.window} days`,
+    aside: badge('off', 'information'),
+    body: `<div class="measure-metrics">
+      <div class="metric"><span class="k">Realised volatility</span><span class="v">${pct(m.daily)}<span class="sub"> daily · ${pct(m.hourly)} hourly</span></span></div>
+      <div class="metric"><span class="k">Drift, annualised</span><span class="v">${(m.drift * 100).toFixed(1)}%</span></div>
+      <div class="metric"><span class="k">Daily range</span><span class="v mono">${pct(m.min)} … ${pct(m.max)}</span></div>
+      <div class="metric"><span class="k">Samples</span><span class="v">${m.samples}<span class="sub"> of ${m.window} days · ${m.age} day${m.age === 1 ? '' : 's'} old</span></span></div>
+    </div>
+    ${sparkline(m.series)}
+    <ul class="measure-list">
+      <li><span>Volatility sets the mixture scale</span>${measureBadge(true)}</li>
+      <li><span>Drift could tilt the process's mean</span>${measureBadge(false)}</li>
+      <li><span>Jumps above three deviations: ${m.jumps}</span>${measureBadge(false)}</li>
+      <li><span>Provider dispersion: ${dispersion}</span>${measureBadge(false)}</li>
+      <li><span>Freshness and coverage could widen the window or skip a source</span>${measureBadge(false)}</li>
+    </ul>
+    <p class="note">The measures describe the fixings; only the realised volatility changes the calibration today. The rest are recorded for a later policy that learns from them.</p>`,
+  });
+}
+
 function trailList(result) {
   const rows = result.trail
     .map((step) => `<li class="${step.ok ? 'ok' : 'skip'}"><b>${esc(step.label)}</b> — ${esc(step.reason)}</li>`)
@@ -395,6 +478,7 @@ function renderA(results) {
     <div class="stack">${policyCard()}${body}</div>
     <div class="stack">
       ${card({ title: `How the ${state.policyMode === 'automatic' ? 'defaults' : 'policy'} resolve ${sample.feed.pair}`, sub: sample.fromFixing ? 'one example, at the clock' : 'no candidate applies', body: trailList(sample) })}
+      ${measuresCard(sample)}
       ${card({ title: 'Fixed level', body: `<p class="start-value" style="font-size:1.25rem">${fmt(Number(sample.feed.fixedLevel), 4)}</p><p class="note">The fixed level is per feed and used only when no candidate has a fixing. The policy, or the defaults, say whether to keep it or refuse.</p><p style="margin-top:8px"><button class="act" data-act="open-feed" data-feed="${esc(sample.feed.name)}">Open ${esc(sample.feed.pair)}</button></p>` })}
     </div>
   </div>`;
@@ -419,6 +503,7 @@ function renderB(results) {
     </div>
     <div class="stack">
       ${card({ title: 'Resolution trail', body: trailList(result) })}
+      ${measuresCard(result)}
       ${card({
         title: 'This feed',
         body: `<div class="kv">
@@ -468,7 +553,8 @@ function renderC(results) {
       ${card({ title: 'Recalculations', sub: 'the policy applied to every feed', body: `<table class="list"><thead><tr><th>When</th><th>Scope</th><th>Resolved</th><th>Fallback</th><th>By</th></tr></thead><tbody>${history}</tbody></table>` })}
     </div>
     <div class="stack">
-      ${card({ title: 'This feed', body: `<div class="kv"><span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span><span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span><span class="k">Exception</span><span class="v">${result.feed.overrideItem || result.feed.overrideWindow ? 'overridden' : 'none'}</span></div><p style="margin-top:10px"><button class="act" data-act="open-feed" data-feed="${esc(result.feed.name)}">Open ${esc(result.feed.pair)}</button></p>` })}
+      ${card({ title: 'This feed', body: `<div class="kv"><span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span><span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span><span class="k">Exception</span><span class="v">${result.feed.overrideItem || result.feed.overrideWindow || result.feed.explicit ? 'overridden' : 'none'}</span></div><p style="margin-top:10px"><button class="act" data-act="open-feed" data-feed="${esc(result.feed.name)}">Open ${esc(result.feed.pair)}</button></p>` })}
+      ${measuresCard(result)}
     </div>
   </div>`;
 }

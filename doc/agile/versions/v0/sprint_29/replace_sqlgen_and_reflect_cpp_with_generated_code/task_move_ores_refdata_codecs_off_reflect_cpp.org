@@ -226,6 +226,39 @@ Every count above is =grep -rlnE "^[^*/]*\brfl::" --include=*.cpp --include=*.hp
 projects/ores.refdata | grep -v /tests/=, which counts code rather than a mention
 in a comment.
 
+** The storage entity printer cannot simply go (2026-10-31)
+
+The plan for the last 168 units was deletion: the storage entity's =operator<<=
+looked like dead code, since =grep= finds no call site that streams one and no
+test prints one.
+
+The linker disagreed. Removing the archetype and its 480 generated units left
+three components undefined on
+=operator<<(std::ostream&, <component>::repository::<row>_entity const&)=. The
+callers are the mappers, and every one logs the row it is mapping:
+
+  BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+479 of them, one per row type, all generated from
+=ores.cpp.repository.mapper_impl.org=. That is why =grep= missed it: the stream
+expression is a bare =<< v=, and the two hits =grep= does find are the template's
+own two sections.
+
+So the printer is used after all, and the three ways forward are:
+
+1. **Log the key instead of the row**, in the mapper template. One template edit
+   and 479 regenerated mappers, but the key's type varies (text, uuid, timestamp),
+   so the template needs the key as text, which it already derives elsewhere.
+2. **Print the entity generically over its own =columns()=**, the =query_builder=
+   reflection the entity already states. No member list restated, no mapper
+   touched, but it is a new mechanism in the codec.
+3. **Leave it.** The entity printer keeps the reflector for every component,
+   including the ones that opted into the wire codec.
+
+Whichever is chosen is generator-wide work with an estate-wide build, not a
+refdata-only edit, so it does not belong inside this task's remaining five
+hand-written sites. The five are unaffected by it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

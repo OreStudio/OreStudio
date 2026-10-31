@@ -26,11 +26,11 @@ One table names every route either server answers today. It is generated from th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
-| Now          | The inventory is generated from both surfaces and gated; every route is listed and none is classified yet. |
+| Now          | The inventory is generated from both surfaces and gated: 402 routes, none classified yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then classify the rows against the four-way rule. |
+| Next         | Nothing: the list is the input to the classification task. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -109,3 +109,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One table, read from the two surfaces' own registrations rather than typed, holding
+402 routes and gated in both directions. The classification now has a list that
+cannot go short without the gate saying so, and a place to record each decision that
+a regeneration cannot overwrite.
+

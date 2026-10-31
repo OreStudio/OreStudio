@@ -42,7 +42,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3B66B152-DDF0-425C-9218-1D5B4F185D6A][Inventory every route on both servers]] | STARTED | 2026-10-31 | | Extract every route the BFF and ores.http answer, from their own declarations, into one generated table with its method, path, source and owner, so the classification has a complete list to work from and a gate that keeps it complete. |
+| [[id:3B66B152-DDF0-425C-9218-1D5B4F185D6A][Inventory every route on both servers]] | DONE | 2026-10-31 | 2026-10-31 | Extract every route the BFF and ores.http answer, from their own declarations, into one generated table with its method, path, source and owner, so the classification has a complete list to work from and a gate that keeps it complete. |
+| [[id:25E9A1BD-8AB5-4FC3-B2EA-63247FED1F74][Classify every row against the four-way rule]] | BACKLOG | | | Decide each of the inventory's rows: a resource, a composed view, a transport capability, or a rendering concern that is not an API. Name each composed view with its owner, and state the evidence for every route that is not a resource. |
 
 * Decisions
 

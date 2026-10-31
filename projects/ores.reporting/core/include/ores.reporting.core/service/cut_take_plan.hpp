@@ -90,14 +90,11 @@ struct cut_take_plan {
 /**
  * @brief The cut one take writes, with the kind's decisions copied onto it.
  *
- * The copy is the whole of this function, and it is the point of it: the
- * retention, the destination, the legal hold and whether an authorisation is
- * required are facts about this body, fixed at the take, so a later change to
- * the kind does not move the promise made about a body already in use. The
- * values are read from @p kind and never from the caller.
- *
- * A kind that names no approval kind took a body that requires no
- * authorisation, and the cut records that rather than looking unsigned.
+ * The retention, its destination, the legal hold, whether an authorisation is
+ * required and whether the values are indicative are facts about this body,
+ * fixed at the take, so a later change to the kind does not move the promise
+ * made about a body already in use. The values are read from @p kind and never
+ * from the caller.
  *
  * @param plan The body, the identity and the instant, as the caller stated them.
  * @param kind The kind the cut is taken under, as the store holds it.

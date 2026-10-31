@@ -25,22 +25,18 @@
 #include "ores.reporting.core/export.hpp"
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::reporting::service {
 
 /**
- * @brief The state a reader sees for a cut.
- *
- * A derivation and not a lifecycle: the state is one of the seven and never a
- * mixture of two. It is stored nowhere, for the reason the published set states
- * its own state nowhere: a stored state follows a write that may fail, may be
- * repeated or may be missed, so the row and its state can disagree.
+ * @brief The state a reader sees for a cut: one of seven, derived and never stored.
  */
 enum class cut_state {
-    /** The attempt is saved and no taking instant holds, and no gap stands. */
+    /** No taking instant holds and no gap stands. */
     draft,
 
-    /** The attempt is saved, no taking instant holds, and a gap stands. */
+    /** No taking instant holds and a gap stands. */
     incomplete,
 
     /** The body is fixed and waits on an authorisation the kind requires. */
@@ -62,10 +58,6 @@ enum class cut_state {
 /**
  * @brief The state a cut's own facts state, before supersession is known.
  *
- * The order of the tests is the order a reader needs them: a row that no take
- * completed is not a cut yet, whatever else it holds, and a refused body is
- * never a usable one.
- *
  * @param cut The record, as the store holds it.
  * @param open_gap_count How many parts the assembly could not fill.
  */
@@ -75,22 +67,30 @@ derive_state(const domain::cut& cut, int open_gap_count);
 /**
  * @brief The state a reader sees, once a later cut's place is known.
  *
+ * Supersession moves a usable cut and leaves every other state as it was.
+ *
  * @param cut The record, as the store holds it.
  * @param open_gap_count How many parts the assembly could not fill.
  * @param later_cut_holds_its_place Whether a later cut of the same kind and
- * scope stands in this one's place. It moves a usable cut to superseded and
- * leaves every other state as it was, because a superseded cut is still a
- * record of an instant and a run that priced from it still reproduces from it.
+ * scope stands in this one's place.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_state
 derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_its_place);
 
 /**
- * @brief Whether a run may price from a cut in this state.
+ * @brief Whether a later cut of the same kind, party, scope and centre replaced this one.
  *
- * A body that is fixed and signed where a signature was required is usable, and
- * a superseded one still is: the run reads an older body, and the state says a
- * later cut is in use rather than refusing the read.
+ * Only a later body a run may price from holds a place: a later cut that waits on
+ * a person, or one that was refused, holds nothing.
+ *
+ * @param cut The record whose place is in question.
+ * @param candidates The cuts read for the same scope, in any order.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT bool
+later_cut_holds_its_place(const domain::cut& cut, const std::vector<domain::cut>& candidates);
+
+/**
+ * @brief Whether a run may price from a cut in this state.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT bool is_usable(cut_state state);
 
@@ -100,21 +100,12 @@ derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_it
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string_view to_string(cut_state state);
 
 /**
- * @brief The label a person quotes for a cut.
+ * @brief The label a person quotes for a cut, derived and never typed.
  *
- * Derived from the kind, the scope and the timepoint, and never typed:
  * =EOD.ACME-LONDON.2026-10-06=, =EOD.ACME-LONDON.2026-10-06.2= for a retake,
  * and =LIVE.ACME-LONDON.2026-10-07T07:40:00Z= for a kind whose bodies are
- * separated by their instant rather than by an ordinal.
- *
- * The date is the date of the stored instant, which the platform holds in UTC.
- * The cut's own =timepoint_timezone= states the clock the instant was taken in,
- * so a date that falls on either side of midnight for a centre east or west of
- * UTC is read through the two columns together.
- *
- * A kind of the consumer family is the one whose instant the run supplies, so
- * its bodies are separated by their instant and not by an ordinal: the kind is
- * what tells the two shapes apart, which is why it is stated here.
+ * separated by their instant rather than by an ordinal. The date is the date of
+ * the stored instant, which the platform holds in UTC.
  *
  * @param cut The record the label names.
  * @param kind The kind the cut was taken under.

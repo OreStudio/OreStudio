@@ -27,7 +27,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
-#include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/service/cut_resolution_service.hpp"
 #include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -151,18 +150,19 @@ inline resolve_cut_response apply_cut_resolution(service::report_definition_serv
         response.cut_id = boost::uuids::to_string(cut.id);
         response.cut_kind_code = cut.kind_code;
         response.cut_timepoint = ores::platform::time::datetime::to_iso8601_utc(cut.timepoint);
-        response.cut_state = std::string(service::to_string(service::derive_state(cut, 0)));
-
-        repository::cut_kind_repository kinds;
-        const auto kinds_held = kinds.read_latest(ctx, cut.kind_code);
-        if (!kinds_held.empty())
-            response.cut_label = service::cut_label_of(cut, kinds_held.front());
+        response.cut_label = resolution_result.label.value_or(std::string());
+        response.output_is_indicative = resolution_result.output_is_indicative;
+        if (resolution_result.state)
+            response.cut_state = std::string(service::to_string(*resolution_result.state));
         return response;
     }
 
     const auto& plan = *resolution_result.mint;
     response.cut_kind_code = plan.kind_code;
     response.cut_timepoint = ores::platform::time::datetime::to_iso8601_utc(plan.timepoint);
+    response.output_is_indicative = resolution_result.output_is_indicative;
+    if (resolution_result.state)
+        response.cut_state = std::string(service::to_string(*resolution_result.state));
     return response;
 }
 
@@ -185,8 +185,11 @@ public:
     /**
      * @brief Serves reporting.v1.ops.resolve_cut.
      *
-     * A read of the cuts and the definition, so it is gated by the permission
-     * the cuts reads are gated by.
+     * A preview reads the cuts and nothing else, so it is gated by the permission
+     * the cut reads are gated by. A run resolves the same selection and mints the
+     * body where the kind's instant is the run's, which is a write to the report's
+     * own record of what it priced from: the design gives that act the reporter's
+     * permission, =reporting::report_instances:write=, and not the cut's read.
      */
     void resolve_cut(ores::nats::message msg) {
         BOOST_LOG_SEV(report_cut_resolution_handler_lg(), debug) << "Handling " << msg.subject;
@@ -198,15 +201,17 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
             report_cut_resolution_handler_lg(), msg, req_ctx.tenant_id().to_string());
-        if (!has_permission(req_ctx, "reporting::cuts:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
         auto req = decode<resolve_cut_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_cut_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        const auto permission = req->preview ? "reporting::cuts:read"
+                                            : "reporting::report_instances:write";
+        if (!has_permission(req_ctx, permission)) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
 

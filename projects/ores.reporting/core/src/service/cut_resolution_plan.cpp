@@ -30,13 +30,7 @@ namespace ores::reporting::service {
 
 namespace {
 
-constexpr std::string_view rule_same_day_close = "same_day_close";
-constexpr std::string_view rule_month_close = "last_business_day_of_month_close";
-constexpr std::string_view rule_year_close = "last_business_day_of_year_close";
-constexpr std::string_view rule_same_day_open = "same_day_open";
-constexpr std::string_view rule_cut_it_is_built_on = "cut_it_is_built_on";
-constexpr std::string_view rule_run_instant = "run_instant";
-constexpr std::string_view rule_the_cut_named = "the_cut_named";
+using namespace resolution_rules;
 
 std::chrono::year_month_day date_of(const std::chrono::system_clock::time_point& tp) {
     return std::chrono::year_month_day(std::chrono::floor<std::chrono::days>(tp));
@@ -48,7 +42,6 @@ std::string date_text(const std::chrono::system_clock::time_point& tp) {
 
 std::string instant_text(const std::chrono::system_clock::time_point& tp) {
     auto text = ores::platform::time::datetime::to_iso8601_utc(tp);
-    // The wire shape carries microseconds; a refusal names the second.
     if (text.size() > 19)
         text.erase(19);
     return text + "Z";
@@ -71,26 +64,44 @@ cut_resolution refuse(std::string sentence) {
     return out;
 }
 
+/// The state a candidate is in, with the later bodies read for the scope applied.
+cut_state state_of(const candidate& c, const std::vector<domain::cut>& bodies) {
+    return derive_state(*c.cut, 0, later_cut_holds_its_place(*c.cut, bodies));
+}
+
+std::vector<domain::cut> bodies_of(const std::vector<candidate>& candidates) {
+    std::vector<domain::cut> bodies;
+    bodies.reserve(candidates.size());
+    for (const auto& c : candidates)
+        bodies.push_back(*c.cut);
+    return bodies;
+}
+
 /**
  * @brief The usable candidate first, else a sentence saying what stood in its way.
  *
- * A cut that waits on an authorisation is a body that exists and cannot be
- * priced from, and the refusal names the request it waits on: the difference is
- * worth stating, because the remedy is to chase a person and not to take a cut.
+ * A cut that waits on an authorisation is a body that exists and cannot be priced
+ * from, and the refusal names the request it waits on: the remedy is to chase a
+ * person and not to take a cut.
  */
 cut_resolution settle(const std::vector<candidate>& matches,
                       const std::string& looked_for,
                       const cut_resolution_context& ctx) {
+    const auto bodies = bodies_of(matches);
+
     for (const auto& c : matches) {
-        if (is_usable(derive_state(*c.cut, 0))) {
+        if (is_usable(state_of(c, bodies))) {
             cut_resolution out;
             out.cut = *c.cut;
+            out.label = cut_label_of(*c.cut, *c.kind);
+            out.output_is_indicative = c.cut->output_is_indicative;
+            out.state = state_of(c, bodies);
             return out;
         }
     }
 
     for (const auto& c : matches) {
-        const auto state = derive_state(*c.cut, 0);
+        const auto state = state_of(c, bodies);
         if (state == cut_state::taken) {
             const auto label = cut_label_of(*c.cut, *c.kind);
             std::string sentence = "The cut " + label + " for scope " + ctx.scope_code +
@@ -128,68 +139,100 @@ std::vector<candidate> matching(const std::vector<candidate>& candidates,
     return matches;
 }
 
+cut_resolution resolve_same_day_open(const std::vector<candidate>& candidates,
+                                     const cut_resolution_context& ctx) {
+    return settle(matching(candidates, same_day_open, date_of(ctx.covered_date)),
+                  "start of day cut",
+                  ctx);
+}
+
+cut_resolution resolve_cut_it_is_built_on(const std::vector<candidate>& candidates,
+                                          const cut_resolution_context& ctx) {
+    return settle(matching(candidates, cut_it_is_built_on, date_of(ctx.covered_date)),
+                  "verification cut",
+                  ctx);
+}
+
+cut_resolution resolve_last_business_day_of_month_close(
+    const std::vector<candidate>& candidates, const cut_resolution_context& ctx) {
+    const auto covered = date_of(ctx.covered_date);
+    return settle(matching(candidates,
+                           last_business_day_of_month_close,
+                           last_business_day_of_month(
+                               std::chrono::year_month(covered.year(), covered.month()))),
+                  "month end cut",
+                  ctx);
+}
+
+cut_resolution resolve_last_business_day_of_year_close(
+    const std::vector<candidate>& candidates, const cut_resolution_context& ctx) {
+    return settle(matching(candidates,
+                           last_business_day_of_year_close,
+                           last_business_day_of_year(date_of(ctx.covered_date).year())),
+                  "year end cut",
+                  ctx);
+}
+
+/**
+ * @brief The close of the covered date, from the most specific occasion of it.
+ *
+ * The body is the same one on every end of day occasion, so a report of the close
+ * prices from the month end or the year end cut of its date where that date is
+ * one: the most specific occasion wins and the plain close is the fallback.
+ */
+cut_resolution resolve_same_day_close(const std::vector<candidate>& candidates,
+                                      const cut_resolution_context& ctx) {
+    const auto covered = date_of(ctx.covered_date);
+    const std::string looked_for = "end of day cut";
+
+    if (covered == last_business_day_of_year(covered.year())) {
+        if (auto matches = matching(candidates, last_business_day_of_year_close, covered);
+            !matches.empty())
+            return settle(matches, looked_for, ctx);
+    }
+    if (covered == last_business_day_of_month(
+                        std::chrono::year_month(covered.year(), covered.month()))) {
+        if (auto matches = matching(candidates, last_business_day_of_month_close, covered);
+            !matches.empty())
+            return settle(matches, looked_for, ctx);
+    }
+    return settle(matching(candidates, same_day_close, covered), looked_for, ctx);
+}
+
 cut_resolution resolve_by_rule(std::string_view rule,
                                const std::vector<candidate>& candidates,
                                const cut_resolution_context& ctx) {
-    const auto covered = date_of(ctx.covered_date);
-
-    if (rule == rule_same_day_open)
-        return settle(matching(candidates, rule, covered), "start of day cut", ctx);
-
-    if (rule == rule_cut_it_is_built_on)
-        return settle(matching(candidates, rule, covered), "verification cut", ctx);
-
-    if (rule == rule_month_close) {
-        const std::chrono::year_month month(covered.year(), covered.month());
-        return settle(matching(candidates, rule, last_business_day_of_month(month)),
-                      "month end cut",
-                      ctx);
-    }
-
-    if (rule == rule_year_close)
-        return settle(matching(candidates, rule, last_business_day_of_year(covered.year())),
-                      "year end cut",
-                      ctx);
-
-    if (rule == rule_same_day_close) {
-        // The body is the same one on every end of day occasion, so a report of
-        // the close prices from the month end or the year end cut of its date
-        // where that date is one. The most specific occasion wins and the plain
-        // close is the fallback.
-        const std::string looked_for = "end of day cut";
-
-        if (const auto year_end = last_business_day_of_year(covered.year()); covered == year_end) {
-            auto matches = matching(candidates, rule_year_close, covered);
-            if (!matches.empty())
-                return settle(matches, looked_for, ctx);
-        }
-        if (const std::chrono::year_month month(covered.year(), covered.month());
-            covered == last_business_day_of_month(month)) {
-            auto matches = matching(candidates, rule_month_close, covered);
-            if (!matches.empty())
-                return settle(matches, looked_for, ctx);
-        }
-        return settle(matching(candidates, rule_same_day_close, covered), looked_for, ctx);
-    }
+    if (rule == same_day_open)
+        return resolve_same_day_open(candidates, ctx);
+    if (rule == cut_it_is_built_on)
+        return resolve_cut_it_is_built_on(candidates, ctx);
+    if (rule == last_business_day_of_month_close)
+        return resolve_last_business_day_of_month_close(candidates, ctx);
+    if (rule == last_business_day_of_year_close)
+        return resolve_last_business_day_of_year_close(candidates, ctx);
+    if (rule == same_day_close)
+        return resolve_same_day_close(candidates, ctx);
 
     return refuse("The cut kind names the resolution rule " + std::string(rule) +
                   ", which no rule the component knows executes. A kind whose occasion no "
                   "rule resolves names " +
-                  std::string(rule_the_cut_named) + " and a report reaches its cuts by pinning one.");
+                  std::string(the_cut_named) + " and a report reaches its cuts by pinning one.");
 }
 
-cut_resolution mint_live(const domain::cut_kind& kind, const cut_resolution_context& ctx) {
+cut_resolution resolve_run_instant(const domain::cut_kind& kind,
+                                   const cut_resolution_context& ctx) {
     if (!ctx.preview) {
+        if (!ctx.body)
+            return refuse("A body of kind " + kind.code + " cannot be fixed at " +
+                          instant_text(ctx.run_instant) +
+                          ": nothing in the request states the body the assembly built.");
+
         std::string missing;
         const auto note = [&missing](const char* part) {
             if (!missing.empty())
                 missing += " and ";
             missing += part;
         };
-        if (!ctx.body)
-            return refuse("A " + kind.code + " body cannot be fixed at " +
-                          instant_text(ctx.run_instant) + ": nothing in the request states the "
-                          "body the assembly built.");
         if (!ctx.body->market_data_snapshot_id)
             note("the market data snapshot");
         if (!ctx.body->deal_population_id)
@@ -201,7 +244,7 @@ cut_resolution mint_live(const domain::cut_kind& kind, const cut_resolution_cont
         if (!ctx.body->code_version)
             note("the code version");
         if (!missing.empty())
-            return refuse("A " + kind.code + " body cannot be fixed at " +
+            return refuse("A body of kind " + kind.code + " cannot be fixed at " +
                           instant_text(ctx.run_instant) + ": " + missing +
                           " could not be assembled.");
     }
@@ -227,13 +270,16 @@ cut_resolution mint_live(const domain::cut_kind& kind, const cut_resolution_cont
 
     cut_resolution out;
     out.mint = std::move(plan);
+    out.mint_kind = kind;
+    out.output_is_indicative = kind.output_is_indicative;
+    out.state = cut_state::in_use;
     return out;
 }
 
-cut_resolution resolve_pinned(const domain::cut_kind& kind,
-                              const std::optional<boost::uuids::uuid>& cut_id,
-                              const std::vector<candidate>& candidates,
-                              const cut_resolution_context& ctx) {
+cut_resolution resolve_the_cut_named(const domain::cut_kind& kind,
+                                     const std::optional<boost::uuids::uuid>& cut_id,
+                                     const std::vector<candidate>& candidates,
+                                     const cut_resolution_context& ctx) {
     const auto id = boost::uuids::to_string(*cut_id);
     std::vector<candidate> matches;
     for (const auto& c : candidates) {
@@ -252,13 +298,17 @@ cut_resolution resolve_pinned(const domain::cut_kind& kind,
         return refuse("No cut " + id + " is held for scope " + ctx.scope_code + ".");
 
     const auto& c = matches.front();
-    const auto state = derive_state(*c.cut, 0);
+    const auto bodies = bodies_of(candidates);
+    const auto state = state_of(c, bodies);
     if (!is_usable(state))
         return refuse("The cut " + cut_label_of(*c.cut, *c.kind) + " is " +
                       std::string(to_string(state)) + " and cannot be priced from.");
 
     cut_resolution out;
     out.cut = *c.cut;
+    out.label = cut_label_of(*c.cut, *c.kind);
+    out.output_is_indicative = c.cut->output_is_indicative;
+    out.state = state;
     return out;
 }
 
@@ -280,7 +330,9 @@ cut_resolution resolve_cut_selection(const cut_selection& selection,
                                      const std::vector<domain::cut>& cuts,
                                      const cut_resolution_context& ctx) {
     const auto kind_it = std::find_if(
-        kinds.begin(), kinds.end(), [&selection](const auto& k) { return k.code == selection.kind_code; });
+        kinds.begin(), kinds.end(), [&selection](const auto& k) {
+            return k.code == selection.kind_code;
+        });
     if (kind_it == kinds.end())
         return refuse("The cut kind " + selection.kind_code + " is not held.");
 
@@ -297,13 +349,13 @@ cut_resolution resolve_cut_selection(const cut_selection& selection,
     }
 
     if (selection.cut_id)
-        return resolve_pinned(*kind_it, selection.cut_id, candidates, ctx);
+        return resolve_the_cut_named(*kind_it, selection.cut_id, candidates, ctx);
 
     const auto rule = kind_it->resolution_rule_code;
-    if (rule == rule_run_instant)
-        return mint_live(*kind_it, ctx);
+    if (rule == run_instant)
+        return resolve_run_instant(*kind_it, ctx);
 
-    if (rule == rule_the_cut_named)
+    if (rule == the_cut_named)
         return refuse("The cut kind " + kind_it->code +
                       " names no rule that resolves a date, so a report reaches its cuts by "
                       "pinning one and this report pins none.");

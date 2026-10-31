@@ -64,6 +64,12 @@ struct nats_trigger_body {
     boost::uuids::uuid tenant_id;
     std::int64_t job_instance_id = 0;
     std::string kind;
+    // The run's cut inputs. A schedule states none of them: the covered date,
+    // the scope and the rates centre belong to whoever asks for the run, so a
+    // scheduled run records no resolved cut until the run itself states them.
+    std::string covered_date;
+    std::string scope_code;
+    std::string business_centre_code;
 };
 
 boost::uuids::uuid parse_uuid(const std::string& value, const std::string& what) {
@@ -150,7 +156,10 @@ nats_publish_action_handler::execute(const action_context& ctx) {
                 parse_uuid(*parsed->report_definition_id, "report_definition_id"),
             .tenant_id = parse_uuid(parsed->tenant_id.value_or(""), "tenant_id"),
             .job_instance_id = ctx.inst_id,
-            .kind = "production"};
+            .kind = "production",
+            .covered_date = "",
+            .scope_code = "",
+            .business_centre_code = ""};
 
         // A report trigger is a request: the reporting service answers, and a
         // refusal has to reach the job rather than being discarded. The reply

@@ -87,18 +87,14 @@ cut_resolution cut_resolution_service::run(const cut_selection& selection,
                                << candidates.size() << " candidate cuts.";
 
     auto resolution = resolve_cut_selection(selection, kinds, candidates, context);
-    if (!resolution.mint || preview_only)
-        return resolution;
-
-    const auto kind_it =
-        std::find_if(kinds.begin(), kinds.end(), [&selection](const auto& k) {
-            return k.code == selection.kind_code;
-        });
-    if (kind_it == kinds.end())
+    if (!resolution.mint || preview_only || !resolution.mint_kind)
         return resolution;
 
     cut_resolution resolved;
-    resolved.cut = mint(*resolution.mint, *kind_it);
+    resolved.cut = mint(*resolution.mint, *resolution.mint_kind);
+    resolved.label = cut_label_of(*resolved.cut, *resolution.mint_kind);
+    resolved.output_is_indicative = resolved.cut->output_is_indicative;
+    resolved.state = derive_state(*resolved.cut, 0);
     return resolved;
 }
 
@@ -106,15 +102,18 @@ domain::cut cut_resolution_service::mint(const cut_take_plan& plan,
                                          const domain::cut_kind& kind) {
     repository::cut_repository cuts_repo;
 
-    // The occasion is the kind, the scope, the centre and the instant. Its takes
-    // are read over the instant itself, because a LIVE body is separated from
-    // its neighbours by the second and not by the day.
+    // The takes are read over the whole natural key of the cut: the kind, the
+    // party, the scope, the centre and the instant. The read is party-filtered,
+    // so the party is stated here beside the index's own columns rather than
+    // left to whatever the session may see: a count narrower than the unique
+    // index would number a take another row already holds.
     auto same_occasion = cuts_repo.read_by_kind_and_month(
         ctx_, plan.kind_code, plan.timepoint, plan.timepoint + std::chrono::seconds(1));
     same_occasion.erase(std::remove_if(same_occasion.begin(),
                                        same_occasion.end(),
                                        [&plan](const auto& cut) {
-                                           return cut.scope_code != plan.scope_code ||
+                                           return cut.party_id != plan.party_id ||
+                                                  cut.scope_code != plan.scope_code ||
                                                   cut.business_centre_code !=
                                                       plan.business_centre_code ||
                                                   cut.timepoint != plan.timepoint;

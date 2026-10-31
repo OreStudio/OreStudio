@@ -48,6 +48,9 @@ struct trigger_report_instance_request {
     boost::uuids::uuid tenant_id;
     std::int64_t job_instance_id = 0;
     std::string kind = "production";
+    std::string covered_date = "";
+    std::string scope_code = "";
+    std::string business_centre_code = "";
 };
 
 struct trigger_report_instance_response {
@@ -617,6 +620,7 @@ struct resolve_cut_response {
     std::string cut_kind_code;
     std::string cut_timepoint;
     std::string cut_state;
+    bool output_is_indicative = false;
     std::string refusal;
 };
 

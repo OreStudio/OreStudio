@@ -291,22 +291,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_many_cuts_request::nats_subject, group, [ch](ores::nats::message msg) {
             ch->get_many_cuts(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        put_cut_request::nats_subject, group, [ch](ores::nats::message msg) {
-            ch->put_cut(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_cuts_request::nats_subject, group, [ch](ores::nats::message msg) {
-            ch->put_many_cuts(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_cut_request::nats_subject, group, [ch](ores::nats::message msg) {
-            ch->delete_cut(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_cuts_request::nats_subject, group, [ch](ores::nats::message msg) {
-            ch->delete_many_cuts(std::move(msg));
-        }));
+    // A cut carries no client write verb: the take is the write, and nothing
+    // removes a cut. The mint writes through the resolution service.
     subs.push_back(nats.queue_subscribe(
         list_by_kind_code_cuts_request::nats_subject, group, [ch](ores::nats::message msg) {
             ch->list_by_kind_code_cuts(std::move(msg));

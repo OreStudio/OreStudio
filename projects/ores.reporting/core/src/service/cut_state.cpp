@@ -19,9 +19,11 @@
  */
 #include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <string>
+#include <vector>
 
 namespace ores::reporting::service {
 
@@ -73,6 +75,15 @@ cut_state derive_state(const domain::cut& cut,
     if (later_cut_holds_its_place && is_usable(state))
         return cut_state::superseded;
     return state;
+}
+
+bool later_cut_holds_its_place(const domain::cut& cut, const std::vector<domain::cut>& candidates) {
+    return std::any_of(candidates.begin(), candidates.end(), [&cut](const auto& other) {
+        return other.id != cut.id && other.kind_code == cut.kind_code &&
+               other.party_id == cut.party_id && other.scope_code == cut.scope_code &&
+               other.business_centre_code == cut.business_centre_code &&
+               other.timepoint > cut.timepoint && is_usable(derive_state(other, 0));
+    });
 }
 
 bool is_usable(cut_state state) {

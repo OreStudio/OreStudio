@@ -104,6 +104,35 @@ prepares the engine's input and stops, so a developer can inspect and run the pa
 the compute grid would receive. The default is =production=, which is what the scheduler
 asks for. The concurrency policy applies to production instances only.
 
+*** covered_date
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The date the report covers, as an ISO 8601 date, or empty where the caller states
+none. The run resolves its definition's cut selection before it admits anything,
+and the covered date is one of the three facts that resolution reads: it says
+which cut to look for, where the cut states its own instant.
+
+*** scope_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The book population the run values, as the report's scope names it, or empty
+where the caller states none. A definition that selects no cut resolves nothing,
+so a caller of such a report may leave the three resolution fields empty.
+
+*** business_centre_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The rates centre whose market data the scope's books revalue against, or empty.
+
 ** trigger_report_instance_response
 
 *** result
@@ -1324,6 +1353,17 @@ The instant of the resolved cut, in ISO-8601 UTC, or empty.
 The state the resolved cut is in, as the design words it: =draft=, =incomplete=,
 =taken=, =in_use=, =authorised=, =refused= or =superseded=. Empty where nothing
 resolved. The state is derived from the cut's own facts and stored nowhere.
+
+*** output_is_indicative
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether a result priced from the resolved cut carries the indicative mark, read
+from the cut where one resolved and from the kind where the run mints one. The
+mark is the kind's and not the state's, so a preview of a kind whose values are
+indicative carries it before any body exists.
 
 *** refusal
 :PROPERTIES:

@@ -23,22 +23,43 @@
 #include "ores.reporting.api/domain/cut.hpp"
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/cut_state.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::reporting::service {
 
 /**
+ * @brief The resolution rule codes a kind may name, as the design states them.
+ *
+ * The codes are also rows of the cut resolution rule lookup, which is where a
+ * person reads what each one means. These names are what the resolution matches
+ * on, so a rule added to the lookup without a branch here is refused by name
+ * rather than resolved by accident.
+ */
+namespace resolution_rules {
+inline constexpr std::string_view same_day_close = "same_day_close";
+inline constexpr std::string_view last_business_day_of_month_close =
+    "last_business_day_of_month_close";
+inline constexpr std::string_view last_business_day_of_year_close =
+    "last_business_day_of_year_close";
+inline constexpr std::string_view same_day_open = "same_day_open";
+inline constexpr std::string_view cut_it_is_built_on = "cut_it_is_built_on";
+inline constexpr std::string_view run_instant = "run_instant";
+inline constexpr std::string_view the_cut_named = "the_cut_named";
+}
+
+/**
  * @brief What a report selects: a kind of cut, or a kind and one specific body.
  *
- * The pair is one fact. A definition that names a kind says *value this scope
- * against the close of its day*; a definition that also names a cut says *price
- * from this body*. The second is how a report reaches an occasion no rule
- * resolves, such as a flash cut.
+ * A definition that names a kind says *value this scope against the close of its
+ * day*; a definition that also names a cut says *price from this body*, which is
+ * how a report reaches an occasion no rule resolves.
  */
 struct cut_selection {
     std::string kind_code;
@@ -48,9 +69,8 @@ struct cut_selection {
 /**
  * @brief The four inputs the assembly fixed, for a body the run mints itself.
  *
- * Empty members state parts the assembly could not fill. They are what a LIVE
- * run's refusal names, because a LIVE result that could not be reproduced would
- * be a number with a claim it cannot meet.
+ * An empty member states a part the assembly could not fill, which is what a
+ * LIVE run's refusal names.
  */
 struct cut_body {
     std::optional<boost::uuids::uuid> market_data_snapshot_id;
@@ -63,10 +83,8 @@ struct cut_body {
 /**
  * @brief The facts the resolution reads besides the selection and the store.
  *
- * The covered date is the date the report covers and not the cut's: it comes
- * from the run settings, and it says which cut to look for. The scope and the
- * centre come from the report, and the run instant is the clock of the run that
- * asks, which is what a LIVE selection fixes its body at.
+ * The covered date is the report's and not the cut's: it says which cut to look
+ * for, where the cut states its own instant.
  */
 struct cut_resolution_context {
     /** @brief The date the report covers, as midnight UTC of that date. */
@@ -84,28 +102,21 @@ struct cut_resolution_context {
     /** @brief The instant the run starts, for a kind whose body the run mints. */
     std::chrono::system_clock::time_point run_instant;
 
-    /**
-     * @brief The account the run acts as, written on a body it mints.
-     *
-     * Nobody presses *Take a cut* for a LIVE selection, so the taking identity
-     * is the run's account and the cut's page names a system account.
-     */
+    /** @brief The account the run acts as, written on a body it mints. */
     std::string taken_by;
 
     /**
      * @brief What the assembly fixed, for a body the run mints.
      *
-     * Absent on a preview, which mints nothing, and present on a run, which
-     * must state every part or be refused with the parts it could not fill.
+     * Absent on a preview, which mints nothing.
      */
     std::optional<cut_body> body;
 
     /**
      * @brief Whether this resolution answers a preview rather than a run.
      *
-     * A preview mints no body and refuses no part: it says what the selection
-     * would resolve to right now, so a person sees a stale choice before a run
-     * discovers it. A run requires the body a mint needs.
+     * A preview answers what the selection would resolve to right now, mints
+     * nothing and refuses no part. A run requires the body a mint needs.
      */
     bool preview = false;
 };
@@ -113,9 +124,7 @@ struct cut_resolution_context {
 /**
  * @brief What a selection resolved to: a body, a body to mint, or a refusal.
  *
- * Exactly one of the three holds. A mint is not a cut yet: the caller writes the
- * row from @ref cut_take_plan, which is where the kind's retention is copied
- * onto the body.
+ * Exactly one of the three holds.
  */
 struct cut_resolution {
     /** @brief The body the selection resolved to, where the store holds it. */
@@ -123,6 +132,29 @@ struct cut_resolution {
 
     /** @brief The body the caller must mint, for a kind whose instant it supplies. */
     std::optional<cut_take_plan> mint;
+
+    /**
+     * @brief The kind @ref mint was resolved against.
+     *
+     * Carried here so the caller mints from the kind the rules read, rather than
+     * looking it up a second time and minting from a different row.
+     */
+    std::optional<domain::cut_kind> mint_kind;
+
+    /** @brief The label a person quotes for the resolved cut, where one resolved. */
+    std::optional<std::string> label;
+
+    /** @brief Whether a result priced from the resolved body carries the indicative mark. */
+    bool output_is_indicative = false;
+
+    /**
+     * @brief The state the resolved body is in, derived with supersession applied.
+     *
+     * The design asks one operation to answer the cut, its state and the sentence
+     * that would refuse it, so the state travels with the answer rather than
+     * being derived a second time by whatever draws it.
+     */
+    std::optional<cut_state> state;
 
     /**
      * @brief One sentence saying why nothing resolved, empty when something did.
@@ -140,8 +172,7 @@ struct cut_resolution {
  * @brief The last Monday-to-Friday day of a month.
  *
  * Holiday calendars are not consulted, as the valuation date of a run does not
- * consult them: the design fixes the occasion's instant, and a centre's holiday
- * calendar is a later refinement of it.
+ * consult them: the centre's calendar is a later refinement of the occasion.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::chrono::year_month_day
 last_business_day_of_month(std::chrono::year_month month);
@@ -155,22 +186,11 @@ last_business_day_of_year(std::chrono::year year);
 /**
  * @brief Resolves a report's cut selection to one body.
  *
- * The rule is the kind's, read live at the moment of the resolution, because a
- * report resolving today must follow today's rule and not the rule in force when
- * the report was defined. The rules are:
- *
- * | Rule | Resolves to |
- * |------+-------------|
- * | =same_day_close= | the end of day family's cut of the covered date, the year end or month end cut where that date is one and the plain close otherwise |
- * | =last_business_day_of_month_close= | the month end cut of the covered month |
- * | =last_business_day_of_year_close= | the year end cut of the covered year |
- * | =same_day_open= | the start of day cut of the covered date |
- * | =cut_it_is_built_on= | the verification cut of the covered date |
- * | =run_instant= | a body the caller mints at the run's instant |
- * | =the_cut_named= | the cut the selection pins, and nothing else |
- *
- * Candidate kinds are matched by the rule they name and not by their code, so a
- * firm that seeds its own month end kind needs no change here.
+ * The rule is the kind's, read live at the moment of the resolution: a report
+ * resolving today must follow today's rule and not the rule in force when the
+ * report was defined. Candidate kinds are matched by the rule they name and not
+ * by their code, so a firm that seeds its own month end kind needs no change
+ * here.
  *
  * A candidate offers a body only where its state is usable: a cut that waits on
  * an authorisation, or one that was refused, is not a body a run may price from,

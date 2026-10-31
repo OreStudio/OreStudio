@@ -48,6 +48,7 @@ domain::cut plan_take(const cut_take_plan& plan,
     cut.taken_at = plan.taken_at;
 
     cut.requires_authorisation = kind.approval_kind_code.has_value();
+    cut.output_is_indicative = kind.output_is_indicative;
 
     cut.retention_months = kind.retention_months;
     cut.retention_destination_code = kind.retention_destination_code;

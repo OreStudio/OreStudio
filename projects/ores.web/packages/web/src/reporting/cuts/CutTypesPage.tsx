@@ -48,9 +48,6 @@ import { cutTypePath } from '../../shell/paths.js';
 import { IndicativeTag } from './shared.js';
 import { CUT_KIND_RESOURCE, cutKindStore } from './cutKindStore.js';
 
-/** The key the types are cached under, which a save and the filters read again. */
-export const CUT_TYPES_QUERY_KEY = ['cuts', 'types'] as const;
-
 /**
  * The kinds, one page at a time, searched and ordered on the server.
  *

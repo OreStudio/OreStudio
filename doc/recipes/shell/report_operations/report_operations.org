@@ -390,3 +390,45 @@ It is addressed at =reporting.v1.ops.resolve_cut=.
 report_operations resolve-cut 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__
 #+end_src
 
+** =list-cut-rows=
+:PROPERTIES:
+:ID: FEA241E3-D4EC-50D5-8A94-94E375BB3D3A
+:END:
+
+Sends =list_cut_rows_request= and prints =list_cut_rows_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations list-cut-rows [--kind_code <v>] [--month <v>] [--search <v>] [--state <v>] [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =reporting.v1.ops.list_cut_rows=.
+
+#+name: report_operations-list-cut-rows
+#+begin_src ores-shell :tangle report_operations-list-cut-rows.ores :exports none
+report_operations list-cut-rows
+#+end_src
+
+** =get-cut-record=
+:PROPERTIES:
+:ID: CCA0F1E8-C8FA-531E-BF08-F8D9A58277D8
+:END:
+
+Sends =get_cut_record_request= and prints =get_cut_record_response=, so the shape is the protocol's and the meaning is the service's. It reads =cut_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations get-cut-record <cut_id>
+#+end_example
+
+It is addressed at =reporting.v1.ops.get_cut_record=.
+
+#+name: report_operations-get-cut-record
+#+begin_src ores-shell :tangle report_operations-get-cut-record.ores :exports none
+report_operations get-cut-record 00000000-0000-0000-0000-000000000000
+#+end_src
+

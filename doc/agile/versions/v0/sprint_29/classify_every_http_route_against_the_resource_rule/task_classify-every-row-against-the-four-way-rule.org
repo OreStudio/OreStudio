@@ -27,11 +27,11 @@ routes that should not survive are named.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
 | Now          | All 408 rows are decided, and the area map and the composed views' obligations are emitted beside them. |
-| Waiting on   | Review of the judgements, not of the plumbing. |
-| Next         | Close after review, then the port works from this table. |
+| Waiting on   | Nothing. |
+| Next         | Nothing: the port works from this table. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -108,6 +108,13 @@ in that family inherits it instead of failing the gate for a decision already ta
   rule set is what lets a new route in a known family inherit a decision.
 
 * Result
+
+Every route either server answers states what it is, with the evidence a reviewer needs to
+argue with the verdict. The port has a contract to port, the area map is the published
+namespace the manifest will read, and the gate refuses a row that states no kind, names
+an unpublished area, carries no note, or calls itself a composed view without an owner,
+a computation and a cache policy.
+
 
 The inventory is a decision record. Every route states a kind, an area where it
 publishes one, and the evidence for the decision, and the gate refuses a row without

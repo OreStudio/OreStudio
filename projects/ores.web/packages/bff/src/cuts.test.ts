@@ -22,6 +22,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { cutKindChoicesSchema } from '@ores/wire-protocol/browser';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
@@ -347,6 +348,49 @@ describe('GET /api/reporting/cut-kinds', () => {
         });
         const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds');
         expect(answer.statusCode).toBe(200);
+    });
+});
+
+describe('GET /api/reporting/cut-kind-choices', () => {
+    it('answers every lookup a type names, including the destinations the store holds', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kind-choices');
+        expect(answer.statusCode).toBe(200);
+        // The client parses this with the wire schema the type form reads, so a
+        // missing member would empty the form's selects.
+        const choices = cutKindChoicesSchema.parse(answer.json());
+        expect(choices.families).toEqual([
+            { code: 'end_of_day', name: 'End of day' },
+            { code: 'intraday', name: 'Intraday' },
+        ]);
+        expect(choices.resolutionRules).toEqual([
+            { code: 'same_day_close', name: 'The close of the day the report covers' },
+        ]);
+        expect(choices.approvalKinds).toEqual([
+            { code: 'reporting.eod_cut_authorisation', name: 'End of day cut authorisation' },
+        ]);
+        // The kinds both keep their cuts cold, so the store knows one tier.
+        expect(choices.retentionDestinations).toEqual(['cold']);
+    });
+
+    it('names every tier the kinds hold, once each and in order', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...BASIS,
+            'reporting.v1.cut_kinds.list': {
+                result: ok,
+                kinds: [
+                    { ...THE_KIND, code: 'EOD', retention_destination_code: 'warm' },
+                    { ...THE_KIND, code: 'EOM', retention_destination_code: 'cold' },
+                    { ...THE_KIND, code: 'EOY', retention_destination_code: 'cold' },
+                ],
+                total: 3,
+            },
+        });
+        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kind-choices');
+        expect(cutKindChoicesSchema.parse(answer.json()).retentionDestinations).toEqual([
+            'cold',
+            'warm',
+        ]);
     });
 });
 

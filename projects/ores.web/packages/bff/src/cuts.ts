@@ -564,8 +564,13 @@ export function registerCutRoutes(
 
     /*
      * The lookups a type names, so the form offers what a save will accept: the
-     * families, the resolution rules and the inbox's approval kinds. The
-     * retention destinations are absent because no lookup states them yet.
+     * families, the resolution rules, the inbox's approval kinds and the
+     * retention destinations.
+     *
+     * No lookup states the tiers, so the destinations are the codes the kinds
+     * themselves hold: the answer names the tiers the store knows and invents
+     * none, and a form shows the destination its kind keeps rather than asking
+     * a person to type one.
      */
     server.get('/api/reporting/cut-kind-choices', async (request) => {
         const session = requireSession(request);
@@ -574,16 +579,30 @@ export function registerCutRoutes(
                 code: text(entry['code']),
                 name: text(entry['name']),
             }));
+        const [families, rules, approvals, kinds] = await Promise.all([
+            codes(cutFamilySubjects.list_cut_families_request, 'families'),
+            codes(resolutionRuleSubjects.list_cut_resolution_rules_request, 'rules'),
+            approvalKinds(session),
+            readAll(session, cutKindSubjects.list_cut_kinds_request, 'kinds', {
+                filter: null,
+                as_of: null,
+            }),
+        ]);
+        const destinations = new Set<string>();
+        for (const kind of kinds) {
+            const destination = text(kind['retention_destination_code']);
+            if (destination !== '') {
+                destinations.add(destination);
+            }
+        }
         return {
-            families: await codes(cutFamilySubjects.list_cut_families_request, 'families'),
-            resolutionRules: await codes(
-                resolutionRuleSubjects.list_cut_resolution_rules_request,
-                'rules',
-            ),
-            approvalKinds: [...(await approvalKinds(session)).values()].map((kind) => ({
+            families,
+            resolutionRules: rules,
+            approvalKinds: [...approvals.values()].map((kind) => ({
                 code: kind.code,
                 name: kind.name,
             })),
+            retentionDestinations: [...destinations].sort(),
         };
     });
 

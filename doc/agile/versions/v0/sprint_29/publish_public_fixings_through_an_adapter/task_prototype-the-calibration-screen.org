@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/prototype-the-calibration-screen
-#+pr:
+#+pr: 4281
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4281][#4281]] | [docs] Prototype the calibration screen |
 
 * Review
 

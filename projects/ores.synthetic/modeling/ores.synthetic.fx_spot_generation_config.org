@@ -150,6 +150,22 @@ to a past day names that day in the item's policy.
 std::string("fixed")
 #+end_src
 
+** calibration_window_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Optional per-feed override of the class calibration window, in days. Empty
+means the feed follows its asset class's policy, or the 90-day default when
+there is no policy. It is the one per-feed exception that has nowhere else to
+live: a pinned item or an explicit item list is an =fx_spot_fixing_item=.
+
+#+begin_src cpp :name generator
+faker::number::integer(30, 180)
+#+end_src
+
 ** gmm_initial_price
 :PROPERTIES:
 :type:          double precision
@@ -483,6 +499,7 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')   |
 | "price_source" in ('fixed', 'fixing')                 |
 | "gmm_initial_price" > 0                                |
+| "calibration_window_days" is null or "calibration_window_days" between 2 and 180 |
 
 * Foreign keys
 

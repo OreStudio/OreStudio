@@ -47,6 +47,7 @@ struct fx_spot_generation_config_write {
     std::string source_name;
     std::string oresmd_uri;
     std::string price_source;
+    std::optional<int> calibration_window_days;
     double gmm_initial_price;
     int ticks_per_hour;
     std::string process_type;

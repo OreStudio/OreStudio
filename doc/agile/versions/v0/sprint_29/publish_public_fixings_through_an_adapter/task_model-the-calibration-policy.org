@@ -121,6 +121,30 @@ page reads the same resolution for one feed.
   start records. Recommended: its own small table, so a class run has an
   identity and an actor.
 
+* Notes
+
+** What has landed
+
+- =calibration_fallback= (simple lookup, system rows) with the two answers.
+- =calibration_policy= (one row per asset class; window, inverse, fallback) and
+  =calibration_provider_order= (provider and rank), both system-owned and
+  readable by tenants.
+- =fx_spot_generation_config.calibration_window_days=, nullable, as the one
+  per-feed exception.
+- The generated SQL, C++ domain, repository, TS and cmake, and the fallback
+  seed rows =keep_fixed= and =refuse=.
+- The synthetic api, core and service libraries build, and the targeted checks
+  pass (model-drift, sql-hygiene, format, cmake-sources).
+
+** What remains
+
+- The service reads: policy lookup with defaults, candidate derivation, the
+  window override, and the calibration run.
+- The BFF reads and the calibrate call.
+- The three screens from the signed-off prototype.
+- The database has not been recreated for this environment, so the tables are
+  not applied here yet.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

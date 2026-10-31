@@ -42,6 +42,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "source_name" text not null,
     "oresmd_uri" text not null,
     "price_source" text not null,
+    "calibration_window_days" integer null,
     "gmm_initial_price" double precision not null default 0.0,
     "ticks_per_hour" integer not null,
     "process_type" text not null,
@@ -76,7 +77,8 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     check ("ticks_per_hour" > 0),
     check ("process_type" in ('geometric', 'arithmetic', 'ornstein_uhlenbeck')),
     check ("price_source" in ('fixed', 'fixing')),
-    check ("gmm_initial_price" > 0)
+    check ("gmm_initial_price" > 0),
+    check ("calibration_window_days" is null or "calibration_window_days" between 2 and 180)
 );
 
 -- Composite natural key: unique combination for active records

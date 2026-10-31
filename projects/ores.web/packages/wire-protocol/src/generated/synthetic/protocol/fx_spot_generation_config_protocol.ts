@@ -40,6 +40,7 @@ export interface FxSpotGenerationConfigWrite {
     source_name: string;
     oresmd_uri: string;
     price_source: string;
+    calibration_window_days: number | null;
     gmm_initial_price: number;
     ticks_per_hour: number;
     process_type: string;

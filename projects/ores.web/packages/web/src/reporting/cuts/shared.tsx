@@ -24,7 +24,6 @@ import type { CutRow, CutStateWord } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../../i18n/Provider.js';
 import { useBadge } from '../../ui/AccountLockBadge.js';
 import { Label } from '../../ui/Label.js';
-import { Tag } from '../../ui/Primitives.js';
 
 /**
  * The parts the cut screens share: the state as the catalogue paints it, the
@@ -202,18 +201,4 @@ export function byMonth(rows: readonly CutRow[]): readonly {
             month,
             rows: [...group].sort((left, right) => right.timepoint.localeCompare(left.timepoint)),
         }));
-}
-
-/** The words one cut is quoted by, for a control that names a cut rather than opening it. */
-export function CutName({ row }: { readonly row: CutRow }): ReactNode {
-    const { t } = useTranslation();
-    if (row.label === '') {
-        return <span className="text-ink-muted">{t('cuts.labelMissing')}</span>;
-    }
-    return <span className="font-mono text-xs">{row.label}</span>;
-}
-
-/** A small marker for a fact the screen states in words rather than in a badge. */
-export function Quiet({ children }: { readonly children: ReactNode }): ReactNode {
-    return <Tag tone="muted" small>{children}</Tag>;
 }

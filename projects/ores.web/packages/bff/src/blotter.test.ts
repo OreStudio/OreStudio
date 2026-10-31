@@ -68,6 +68,7 @@ const subjects = {
     tradeIdentifiers: 'trading.v1.trade_identifiers.list',
     tradeTypes: 'trading.v1.trade_types.list',
     instrumentCodes: 'refdata.v1.instrument_codes.list',
+    assetClassCodes: 'refdata.v1.asset_class_codes.list',
     summaries: 'trading.v1.trade_summaries.list',
 };
 
@@ -245,6 +246,11 @@ function replies(): Readonly<Record<string, unknown>> {
                     asset_class: 'interest_rates',
                 },
             ],
+            total: 1,
+        },
+        [subjects.assetClassCodes]: {
+            result: ok,
+            asset_classes: [{ code: 'interest_rates', name: 'Interest Rate' }],
             total: 1,
         },
         [subjects.summaries]: { result: ok, trade_summaries: rows(), total: rows().length },
@@ -430,7 +436,7 @@ describe('the blotter read', () => {
         );
         // The fixture's structures are packages, which are no class at all, and its
         // trades are swaps: one class, and the party states the rows inside one.
-        expect(rail.map((node) => [node.label, node.count])).toEqual([['Rates', 2]]);
+        expect(rail.map((node) => [node.label, node.count])).toEqual([['Interest Rate', 2]]);
         const narrowed = (
             await get(
                 server,

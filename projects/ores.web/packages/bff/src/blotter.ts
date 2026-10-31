@@ -26,6 +26,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as assetClassSubjects } from '@ores/wire-protocol/generated/refdata/protocol/asset_class_code_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
@@ -57,26 +58,6 @@ const IDENTIFIER_ORDER = ['Internal', 'UTI', 'USI', 'ORE'] as const;
 function rankOf(idType: string): number {
     const index = IDENTIFIER_ORDER.findIndex((known) => known === idType);
     return index === -1 ? IDENTIFIER_ORDER.length : index;
-}
-
-/** The name a desk gives an asset class, from the code the catalogue states. */
-function labelOfClass(code: string): string {
-    switch (code) {
-        case 'interest_rates':
-            return 'Rates';
-        case 'fx':
-            return 'FX';
-        case 'credit':
-            return 'Credit';
-        case 'equity':
-            return 'Equity';
-        case 'commodity':
-            return 'Commodity';
-        case 'bond':
-            return 'Bond';
-        default:
-            return humanise(code);
-    }
 }
 
 /** A code made readable: the words the camel case hides, with the spaces put back. */
@@ -316,49 +297,53 @@ export function registerBlotterRoutes(
         const query = input(blotterQuerySchema, request.query);
         const order = { field: query.sort, descending: query.descending };
 
-        const [books, portfolios, structures, members, counterparties, types, instruments] =
-            await Promise.all([
-                readAll(session, bookSubjects.list_books_request, 'books', {
-                    filter: {
-                        parent_portfolio_id: null,
-                        id_one_of: null,
-                        parent_portfolio_id_one_of: null,
-                    },
-                    as_of: null,
-                }),
-                readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
-                    filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(session, structureSubjects.list_structures_request, 'structures', {
-                    filter: { id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(session, memberSubjects.list_structure_members_request, 'members', {
-                    filter: { trade_id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(
-                    session,
-                    counterpartySubjects.list_counterparties_request,
-                    'counterparties',
-                    {
-                        filter: null,
-                        as_of: null,
-                    },
-                ),
-                readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
-                    filter: { code_one_of: null },
-                }),
-                readAll(
-                    session,
-                    instrumentCodeSubjects.list_instrument_codes_request,
-                    'instruments',
-                    {
-                        filter: { code_one_of: null },
-                    },
-                ),
-            ]);
+        const [
+            books,
+            portfolios,
+            structures,
+            members,
+            counterparties,
+            types,
+            instruments,
+            assetClasses,
+        ] = await Promise.all([
+            readAll(session, bookSubjects.list_books_request, 'books', {
+                filter: {
+                    parent_portfolio_id: null,
+                    id_one_of: null,
+                    parent_portfolio_id_one_of: null,
+                },
+                as_of: null,
+            }),
+            readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
+                filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, structureSubjects.list_structures_request, 'structures', {
+                filter: { id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, memberSubjects.list_structure_members_request, 'members', {
+                filter: { trade_id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+                filter: { code_one_of: null },
+            }),
+            readAll(session, instrumentCodeSubjects.list_instrument_codes_request, 'instruments', {
+                filter: { code_one_of: null },
+            }),
+            readAll(
+                session,
+                assetClassSubjects.list_asset_class_codes_request,
+                'asset_classes',
+                { filter: { code_one_of: null } },
+            ),
+        ]);
 
         /*
          * The name a type is known by, so the list states the instrument a desk
@@ -382,6 +367,12 @@ export function registerBlotterRoutes(
         const productCodeOf = new Map<string, string>();
         const productNameOf = new Map<string, string>();
         const assetClassOf = new Map<string, string>();
+        const classNameOf = new Map(
+            assetClasses.map(
+                (row) =>
+                    [text(row['code']), text(row['name']) || humanise(text(row['code']))] as const,
+            ),
+        );
         for (const row of instruments) {
             const tradeType = text(row['ore_trade_type']);
             if (tradeType === '') {
@@ -696,15 +687,20 @@ export function registerBlotterRoutes(
                     label: session.party?.name ?? '',
                     kind: 'party',
                     parent: '',
-                    count: topRows.length,
+                    // A structure is a package, not an instrument class, so this
+                    // rail counts the rows that have one and says so by its own
+                    // total rather than the party's.
+                    count: [...counts.values()].reduce((sum, count) => sum + count, 0),
                 },
                 ...[...counts.entries()]
                     .sort(([left], [right]) =>
-                        labelOfClass(left).localeCompare(labelOfClass(right)),
+                        (classNameOf.get(left) ?? left).localeCompare(
+                            classNameOf.get(right) ?? right,
+                        ),
                     )
                     .map(([code, count]) => ({
                         id: instrumentNodeId(code),
-                        label: labelOfClass(code),
+                        label: classNameOf.get(code) ?? humanise(code),
                         kind: 'instrument' as const,
                         parent: '',
                         count,

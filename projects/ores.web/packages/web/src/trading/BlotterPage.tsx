@@ -25,10 +25,11 @@ import { Link, useNavigate } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { blotter, type BlotterNode, type BlotterRow, type BlotterView } from '../api/blotter.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
-import { Button, Select, Tag } from '../ui/Primitives.js';
+import { Button, cx, Select, Tag } from '../ui/Primitives.js';
 import { Tooltip } from '../ui/Tooltip.js';
 import { bookPath, counterpartyPath, PATHS, tradePath } from '../shell/paths.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
+import { assetClassColour } from '../marketdata/assetClassColour.js';
 
 /** The sorts the read answers, in the order the table offers them. */
 const SORTS = ['trade_date', 'instrument_type', 'status', 'row_kind'] as const;
@@ -77,7 +78,18 @@ function RailNode({
             }
             style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}
         >
-            <span className="truncate text-sm">{node.label}</span>
+            <span className="flex min-w-0 items-center gap-2">
+                {node.kind === 'instrument' ? (
+                    <span
+                        aria-hidden="true"
+                        className={cx(
+                            'size-2 shrink-0 rounded-sm',
+                            assetClassColour(node.id.replace('instrument:', '')).dot,
+                        )}
+                    />
+                ) : null}
+                <span className="truncate text-sm">{node.label}</span>
+            </span>
             <span className="shrink-0 text-xs tabular-nums text-ink-muted">{node.count}</span>
         </button>
     );

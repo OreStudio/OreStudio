@@ -31,6 +31,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/domain/party_codec.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.core/service/party_contact_information_service.hpp"
 #include "ores.refdata.core/service/party_identifier_service.hpp"
@@ -39,6 +40,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -280,7 +283,7 @@ public:
                                         step_id,
                                         inst_id,
                                         ores::workflow::messaging::step_outcome::completed,
-                                        rfl::json::write(resp),
+                                        ores::utility::codec::json::write(resp),
                                         "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_handler_lg(), error)

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3F2552AA-9B6A-4231-836F-F0FFE8E2BCC1
 :END:
 #+title: ores.refdata.curve_volatility_curve

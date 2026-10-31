@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5A9F3C71-8D24-4E6B-B0F7-13C8E6A2D954
 :END:
 #+title: ores.refdata.inflation_cap_floor_volatility_strikes

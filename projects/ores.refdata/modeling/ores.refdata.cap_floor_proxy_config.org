@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3C0B9E52-6D1A-4F7B-9E34-8A2D5C61F0B7
 :END:
 #+title: ores.refdata.cap_floor_proxy_config

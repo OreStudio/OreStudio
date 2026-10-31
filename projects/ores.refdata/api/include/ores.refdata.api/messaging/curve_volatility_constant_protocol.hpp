@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_CURVE_VOLATILITY_CONSTANT_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -276,7 +282,811 @@ inline constexpr std::string_view created = "refdata.v1.curve_volatility_constan
 inline constexpr std::string_view updated = "refdata.v1.curve_volatility_constants_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.curve_volatility_constants_events.deleted";
 }
+/**
+ * @brief The members of curve_volatility_constant_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &curve_volatility_constant_key::id},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &curve_volatility_constant_write::id},
+        utility::codec::field{"curve_volatility_kind_id",
+                              &curve_volatility_constant_write::curve_volatility_kind_id},
+        utility::codec::field{"quote", &curve_volatility_constant_write::quote},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &curve_volatility_constant_change::write},
+        utility::codec::field{"precondition", &curve_volatility_constant_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &curve_volatility_constant_removal::key},
+        utility::codec::field{"precondition", &curve_volatility_constant_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &curve_volatility_constant_lookup::key},
+        utility::codec::field{"curve_volatility_constant",
+                              &curve_volatility_constant_lookup::curve_volatility_constant},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constants_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constants_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &curve_volatility_constants_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &curve_volatility_constant_event::event_id},
+        utility::codec::field{"key", &curve_volatility_constant_event::key},
+        utility::codec::field{"action", &curve_volatility_constant_event::action},
+        utility::codec::field{"version", &curve_volatility_constant_event::version},
+        utility::codec::field{"occurred_at", &curve_volatility_constant_event::occurred_at},
+        utility::codec::field{"correlation_id", &curve_volatility_constant_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_version_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_version_key&) {
+    return std::tuple{
+        utility::codec::field{"curve_volatility_constant",
+                              &curve_volatility_constant_version_key::curve_volatility_constant},
+        utility::codec::field{"version", &curve_volatility_constant_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of curve_volatility_constant_versions_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const curve_volatility_constant_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &curve_volatility_constant_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &curve_volatility_constant_versions_filter::from_version},
+        utility::codec::field{"to_version", &curve_volatility_constant_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_curve_volatility_constants_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_constants_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_curve_volatility_constants_request::offset},
+        utility::codec::field{"limit", &list_curve_volatility_constants_request::limit},
+        utility::codec::field{"order", &list_curve_volatility_constants_request::order},
+        utility::codec::field{"filter", &list_curve_volatility_constants_request::filter},
+        utility::codec::field{"as_of", &list_curve_volatility_constants_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_curve_volatility_constants_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_constants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_curve_volatility_constants_response::result},
+        utility::codec::field{
+            "curve_volatility_constants",
+            &list_curve_volatility_constants_response::curve_volatility_constants},
+        utility::codec::field{"total", &list_curve_volatility_constants_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_volatility_constant_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_constant_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_volatility_constant_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_volatility_constant_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_constant_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_curve_volatility_constant_response::result},
+        utility::codec::field{"curve_volatility_constant",
+                              &get_curve_volatility_constant_response::curve_volatility_constant},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_volatility_constants_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_curve_volatility_constants_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_curve_volatility_constants_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_curve_volatility_constants_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_curve_volatility_constants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_curve_volatility_constants_response::result},
+        utility::codec::field{"entries", &get_many_curve_volatility_constants_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_curve_volatility_constant_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_curve_volatility_constant_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_curve_volatility_constant_request::change},
+        utility::codec::field{"intent", &put_curve_volatility_constant_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_curve_volatility_constant_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_curve_volatility_constant_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_curve_volatility_constant_response::result},
+        utility::codec::field{"curve_volatility_constant",
+                              &put_curve_volatility_constant_response::curve_volatility_constant},
+    };
+}
+
+/**
+ * @brief The members of put_many_curve_volatility_constants_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_curve_volatility_constants_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_curve_volatility_constants_request::changes},
+        utility::codec::field{"intent", &put_many_curve_volatility_constants_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_curve_volatility_constants_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_curve_volatility_constants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_curve_volatility_constants_response::result},
+        utility::codec::field{
+            "curve_volatility_constants",
+            &put_many_curve_volatility_constants_response::curve_volatility_constants},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_volatility_constant_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_curve_volatility_constant_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_curve_volatility_constant_request::removal},
+        utility::codec::field{"intent", &delete_curve_volatility_constant_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_curve_volatility_constant_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_curve_volatility_constant_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_curve_volatility_constant_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_curve_volatility_constants_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_volatility_constants_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_curve_volatility_constants_request::removals},
+        utility::codec::field{"intent", &delete_many_curve_volatility_constants_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_curve_volatility_constants_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_volatility_constants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_curve_volatility_constants_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_curve_volatility_constant_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_constant_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_curve_volatility_constant_versions_request::key},
+        utility::codec::field{"offset", &list_curve_volatility_constant_versions_request::offset},
+        utility::codec::field{"limit", &list_curve_volatility_constant_versions_request::limit},
+        utility::codec::field{"order", &list_curve_volatility_constant_versions_request::order},
+        utility::codec::field{"filter", &list_curve_volatility_constant_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_curve_volatility_constant_versions_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_constant_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_curve_volatility_constant_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_curve_volatility_constant_versions_response::versions},
+        utility::codec::field{"total", &list_curve_volatility_constant_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_curve_volatility_constant_version_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_constant_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_curve_volatility_constant_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_curve_volatility_constant_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_constant_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_curve_volatility_constant_version_response::result},
+        utility::codec::field{"version", &get_curve_volatility_constant_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::curve_volatility_constant_key& v);
+    static ores::refdata::messaging::curve_volatility_constant_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_key& v);
+    static ores::refdata::messaging::curve_volatility_constant_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_write& v);
+    static ores::refdata::messaging::curve_volatility_constant_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_write& v);
+    static ores::refdata::messaging::curve_volatility_constant_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_change& v);
+    static ores::refdata::messaging::curve_volatility_constant_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_change& v);
+    static ores::refdata::messaging::curve_volatility_constant_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_removal& v);
+    static ores::refdata::messaging::curve_volatility_constant_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_removal& v);
+    static ores::refdata::messaging::curve_volatility_constant_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_lookup& v);
+    static ores::refdata::messaging::curve_volatility_constant_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_lookup& v);
+    static ores::refdata::messaging::curve_volatility_constant_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constants_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constants_filter& v);
+    static ores::refdata::messaging::curve_volatility_constants_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constants_filter& v);
+    static ores::refdata::messaging::curve_volatility_constants_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_event& v);
+    static ores::refdata::messaging::curve_volatility_constant_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_event& v);
+    static ores::refdata::messaging::curve_volatility_constant_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_version_key& v);
+    static ores::refdata::messaging::curve_volatility_constant_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_version_key& v);
+    static ores::refdata::messaging::curve_volatility_constant_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::curve_volatility_constant_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::curve_volatility_constant_versions_filter& v);
+    static ores::refdata::messaging::curve_volatility_constant_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::curve_volatility_constant_versions_filter& v);
+    static ores::refdata::messaging::curve_volatility_constant_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_volatility_constants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::list_curve_volatility_constants_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::list_curve_volatility_constants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_volatility_constants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::list_curve_volatility_constants_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::list_curve_volatility_constants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_volatility_constant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_volatility_constant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_curve_volatility_constants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::get_many_curve_volatility_constants_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::get_many_curve_volatility_constants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_curve_volatility_constants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::get_many_curve_volatility_constants_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::get_many_curve_volatility_constants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_curve_volatility_constant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::put_curve_volatility_constant_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::put_curve_volatility_constant_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_curve_volatility_constant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::put_curve_volatility_constant_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::put_curve_volatility_constant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_curve_volatility_constants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::put_many_curve_volatility_constants_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::put_many_curve_volatility_constants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_curve_volatility_constants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::put_many_curve_volatility_constants_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::put_many_curve_volatility_constants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_volatility_constant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::delete_curve_volatility_constant_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_curve_volatility_constant_request& v);
+    static ores::refdata::messaging::delete_curve_volatility_constant_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_curve_volatility_constant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::delete_curve_volatility_constant_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_curve_volatility_constant_response& v);
+    static ores::refdata::messaging::delete_curve_volatility_constant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_curve_volatility_constants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::delete_many_curve_volatility_constants_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_curve_volatility_constants_request& v);
+    static ores::refdata::messaging::delete_many_curve_volatility_constants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_curve_volatility_constants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::delete_many_curve_volatility_constants_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::delete_many_curve_volatility_constants_response& v);
+    static ores::refdata::messaging::delete_many_curve_volatility_constants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_volatility_constant_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_volatility_constant_versions_request& v);
+    static ores::refdata::messaging::list_curve_volatility_constant_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_volatility_constant_versions_request& v);
+    static ores::refdata::messaging::list_curve_volatility_constant_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_curve_volatility_constant_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_curve_volatility_constant_versions_response& v);
+    static ores::refdata::messaging::list_curve_volatility_constant_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::list_curve_volatility_constant_versions_response& v);
+    static ores::refdata::messaging::list_curve_volatility_constant_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_volatility_constant_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_volatility_constant_version_request& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_curve_volatility_constant_version_request& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_curve_volatility_constant_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_curve_volatility_constant_version_response& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::get_curve_volatility_constant_version_response& v);
+    static ores::refdata::messaging::get_curve_volatility_constant_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

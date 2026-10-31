@@ -155,6 +155,12 @@ TYPE_OVERRIDE = {
     ("SettlementDays", None): "integer",
     ("FixingDays", None): "integer",
     ("CommodityForward", "SpotDays"): "integer",
+    # ORE stores these three as strings and never parses them, so a typo in one
+    # is silent in the engine. The field means the same vocabulary the other
+    # twenty conventions state, and the catalogue refuses the typo.
+    ("IborIndex", "DayCounter"): "day_counter",
+    ("IborIndex", "BusinessDayConvention"): "business_day_convention",
+    ("OvernightIndex", "DayCounter"): "day_counter",
 }
 
 

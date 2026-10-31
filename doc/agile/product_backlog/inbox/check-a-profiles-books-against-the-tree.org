@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 60E60385-97EE-4C23-B6B0-5B1722BC6C41
+:END:
+#+title: A seed profile's generate_trades config names a book by name…
+#+description: A seed profile's generate_trades config names a book by name, and nothing checks that name against the tree the same dataset seeds. The ACME tree review removed the equity and commodity desks while the acme_demo profile still named 'GBP Equity Derivatives' and 'USD Commodity Derivatives', so every provisioning run stopped at the first config whose book no entity held — and it stopped after the data was published, which makes the failure look like the population's fault. The northwind profile names two books of its own, 'GBP Bonds Book' and 'USD Bonds Book', and the same absence would stop it silently. Check the profile's book names against the dataset's books before the step runs, and refuse with the config's name rather than the book's.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

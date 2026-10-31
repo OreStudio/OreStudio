@@ -65,7 +65,7 @@ whose *Session store* and *CSRF* sections state the rules.
 |------+-------+-------+-----+-------------|
 | [[id:20CB2B3E-5F2C-4049-B426-5CAB8278DC4D][Store the session server side]] | STARTED | 2026-10-31 | | Keep an opaque identifier in the cookie and the bearer token in memory, keyed by the identifier's SHA-256, with a sliding expiry the server owns. |
 | [[id:897125F5-8B0C-45FB-943F-438E62B2E6E4][Carry the session in a cookie]] | BACKLOG | | | Set the cookie on sign in and resolve a request from it, with HttpOnly, SameSite, Secure over TLS and the per-environment name. |
-| [[id:C72957A3-2954-489C-BFA3-9986CE20A512][Make sign in and out resources]] | BACKLOG | | | POST and DELETE on /api/v1/auth/sessions, and a me alias that answers who the caller is without handing the token back. |
+| [[id:C72957A3-2954-489C-BFA3-9986CE20A512][Make sign in and out resources]] | DONE | | 2026-10-31 | POST and DELETE on /api/v1/auth/sessions, and a me alias that answers who the caller is without handing the token back. |
 | [[id:53943BC2-F8E5-45FB-9598-741B29897352][Guard the unsafe methods]] | STARTED | 2026-10-31 | | A cookie is not proof of intent: an unsafe method on a session request must carry the deployment's Origin and a custom header a cross-site form cannot set. |
 
 * Decisions
@@ -80,6 +80,10 @@ whose *Session store* and *CSRF* sections state the rules.
   it too, and a bearer token keeps working beside it.
 - CSRF is refused by the gateway, before any handler: an unsafe method on a session
   request must prove intent, and a route should not have to remember to ask.
+- The session resource reports the account alone, with the tenant beside it, because
+  that is what the token states. The qualified principal the sign-in form sends is
+  how a caller names its tenant, not how the session reports itself back; a client
+  that wants the form's shape composes it.
 * Out of scope
 
 - Delegated NATS calls per session. The port needs them, and they are their own

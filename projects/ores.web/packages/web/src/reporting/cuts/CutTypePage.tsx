@@ -28,11 +28,11 @@
  * authorisation is a foreign key, so the words under it are the approval kind's
  * own and never a phrase stored on the type.
  *
- * The cuts are grouped by the period one step above the type's frequency: the
- * group is the month of the instant for a kind taken every day, the year for one
- * taken every month, and the day for one whose instant answers to no schedule.
- * The period is read from the family the kind belongs to, and the grouping is
- * this screen's.
+ * The cuts are grouped by the month of the instant, which is the period one step
+ * above a kind taken every day. Every kind a firm seeds today is taken daily or
+ * intraday, so one group is one month's bodies. A kind taken every month would
+ * read by year, and the screen does not ask the kind's frequency yet.
+ * The grouping is this screen's: the read answers the cuts.
  */
 
 import { useState, type ReactNode } from 'react';
@@ -288,11 +288,10 @@ function CutLine({ row }: { readonly row: CutRow }): ReactNode {
 }
 
 /**
- * The cuts of one kind, under the period above the kind's frequency.
+ * The cuts of one kind, under the month every one of them was taken in.
  *
- * The screen reads the family the kind belongs to for the period: a kind taken
- * every day is read by month, one taken every month by year, and one whose
- * instant answers to no schedule by day.
+ * The group is the month of the instant: a daily kind's own reading, and the
+ * period the fixture's six kinds share.
  */
 function CutsTab({
     cuts,

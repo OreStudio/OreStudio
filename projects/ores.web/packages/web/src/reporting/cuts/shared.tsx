@@ -180,7 +180,14 @@ export function monthOf(row: CutRow): string {
     return row.timepoint.slice(0, 7);
 }
 
-/** The rows of one month, newest month first and newest instant first inside it. */
+/**
+ * The rows grouped by the month of their instants, newest month first and newest
+ * instant first inside it.
+ *
+ * The month is the period above a kind taken every day, which is what every kind
+ * a firm seeds today is. A kind taken every month would read by year, and no read
+ * states a kind's frequency yet, so the screen groups by the month.
+ */
 export function byMonth(rows: readonly CutRow[]): readonly {
     readonly month: string;
     readonly rows: readonly CutRow[];

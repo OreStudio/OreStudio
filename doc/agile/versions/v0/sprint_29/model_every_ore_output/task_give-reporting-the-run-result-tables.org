@@ -2,7 +2,7 @@
 :ID: 2184297D-94E4-4D68-9DD0-9072E88F6075
 :END:
 #+title: Task: Give reporting the run-result tables
-#+description: Reporting stores what a run produced, so the result tables are reporting's. Give each family a table modelled on the shape its reader returns, generated from ores.reporting/modeling. The post-processor then downloads the run's output archive, calls the ores.ore readers for every family the run wrote, and maps the read rows onto its tables in one write for each family. This gives reporting a core link to ores.ore.core, the edge marketdata already holds, so the core-link baseline records it. The node stops projecting npv.csv into canonical rows: the archive it already uploads is what the post-processor reads.
+#+description: Reporting owns what a run produced, so the result tables are reporting's, and there are three shapes rather than one per family: a metric table for the families whose row is figures, a cashflow table for the three child-row families, and a view that serves the run, level and compare reads the screens make so no screen learns a family. The post-processor downloads the run's archive, calls the readers and writes each family in one bulk insert, which gives reporting the core link to ores.ore that marketdata already holds.
 #+type: task
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-10-31
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,33 +20,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every run-result table is owned by reporting and fed by the post-processor through the ores.ore readers.
-
-* Status
+Every table that holds a run's output is reporting's, is shaped by the readers
+and is fed by the post-processor in bulk, and the screens read one shape whatever
+family a figure came from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-30                               |
+| Now          | Not yet started. |
+| Waiting on   | The metric and child-row readers, and the column roles. |
+| Next         | Model the three shapes and the view, then move the post-processor onto the readers. |
+| Last touched | 2026-10-31 |
 
 * Acceptance
 
-- Each results family has a table in ores.reporting/modeling with the key its reader states, and its generated layers are committed.
-- The post-processor calls the readers and writes one table per family, and nothing parses an ORE file in reporting.
-- reporting.core links ores.ore.core and the edge is recorded in the core-link baseline.
-- The node no longer marshals npv.csv into canonical rows.
+- =result_metric= is a hypertable on the observation date, holding the run, the party, the family, the subject, the measure, the currency, the qualifiers, the value and the source of each figure.
+- =result_cashflow= holds the child-row families with their typed keys, and no figure of theirs is flattened into a metric.
+- A view serves the run, level and compare reads the screens make today, so no screen learns a family and the rollups are written once.
+- The post-processor downloads the run's archive, calls the readers for the families the run wrote, and writes one bulk insert for each family.
+- Nothing in reporting parses an ORE file, and =reporting.core= links =ores.ore.core= with the edge recorded in the core-link baseline.
+- The node stops marshalling =npv.csv= into canonical rows.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The metric table takes the families the metric reader serves, with the family
+code as a column rather than a table of its own: sixty tables would be forty
+identical shapes and a UNION for every cross-family read. The qualifiers the
+corpus uses most — currency, scenario, factor, shift and the par flag — are
+typed columns so they are indexed; the rest travel in one JSON object beside
+them. The view over the metric table keeps the columns =report_result_row=
+serves today, so the screen code does not change with the storage.
 
-* Measurements
+The post-processor reads the archive the node already uploads, runs the reader
+for each family the run wrote, and writes each family in one insert. The node's
+projection of =npv.csv= is deleted.
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,

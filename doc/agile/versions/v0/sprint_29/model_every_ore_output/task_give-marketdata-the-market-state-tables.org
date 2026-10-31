@@ -2,7 +2,7 @@
 :ID: 17A302B7-A65A-4A63-9E64-9F17D15C293D
 :END:
 #+title: Task: Give marketdata the market-state tables
-#+description: The scenario cubes and today's market are market states, not run results, so ores.marketdata stores them: stress_scenarios (789 columns), scenario, scenario_fullSurface, scenariostatistics, todaysmarketcalibration and its cashflows, marketdata, fixings and dividends. The ingest calls the ores.ore readers, as it already does for the formats it reads today, and writes the families the market data store already shapes as curve points and fixings. The 789-column cube is not exploded into relational rows: it is kept as one compressed payload with an index that says what it holds, because a run's cube can hold millions of values.
+#+description: The scenario cubes and today's market are market states, not run results, so ores.marketdata stores them: stress_scenarios (789 columns), scenario, scenario_fullSurface, scenariostatistics, todaysmarketcalibration and its cashflows, marketdata, fixings and dividends. The ingest calls the ores.ore readers, as it already does for the formats it reads today, and writes the families the market data store already shapes as curve points and fixings. The 789-column cube is not exploded into relational rows: it is kept as one compressed payload with an index of the dates, scenarios and factors it holds, because a run's cube can hold millions of values and a read that needs one factor must not unpack all of them.
 #+type: task
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-10-31
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -37,7 +37,7 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 
 - Each market-state family has a table or a stored payload in ores.marketdata/modeling, with its generated layers committed.
 - marketdata's ingest calls the ores.ore readers and writes the families it reads.
-- A scenario cube is stored as a compressed payload with an index of what it holds, not as one row per value.
+- A scenario cube is stored as a compressed payload whose index names the dates, scenarios and factors it holds, not as one row per value.
 
 * Plan
 

@@ -35,8 +35,9 @@ bool holds(const std::vector<std::string>& values, const std::string& value) {
 
 }
 
-payload_index
-index_payload(std::string_view csv, const output_family& family, std::vector<std::string>& refusals) {
+payload_index index_payload(std::string_view csv,
+                            const output_family& family,
+                            std::vector<std::string>& refusals) {
     payload_index index;
 
     if (csv.substr(0, 3) == "\xEF\xBB\xBF")

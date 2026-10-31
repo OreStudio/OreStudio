@@ -86,16 +86,14 @@ struct payload_index {
  * @param refusals the reasons the file could not be indexed.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT payload_index index_payload(std::string_view csv,
-                                                              const output_family& family,
-                                                              std::vector<std::string>& refusals);
+                                                               const output_family& family,
+                                                               std::vector<std::string>& refusals);
 
 /**
  * @brief Indexes a file by its name, asking the catalogue which family it is.
  */
-[[nodiscard]] ORES_ORE_CORE_EXPORT payload_index
-index_payload_for_file(std::string_view csv,
-                       std::string_view file_name,
-                       std::vector<std::string>& refusals);
+[[nodiscard]] ORES_ORE_CORE_EXPORT payload_index index_payload_for_file(
+    std::string_view csv, std::string_view file_name, std::vector<std::string>& refusals);
 
 }
 

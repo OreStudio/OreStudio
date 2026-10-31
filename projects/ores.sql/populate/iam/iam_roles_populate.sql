@@ -408,6 +408,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_series:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::market_data_providers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:read');
+    -- A member reads the market state of its own tenant's runs, which is what a
+    -- run priced against and what the report screens explain a figure with.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'marketdata::market_state_payloads:read');
     -- *Adjust a curve or surface by hand*: the trader is the maker, and the
     -- correction is the write the journey makes.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:write');

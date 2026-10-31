@@ -33,14 +33,19 @@
 #include "ores.reporting.core/messaging/configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_family_handler.hpp"
+#include "ores.reporting.core/messaging/cut_family_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_family_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_gap_handler.hpp"
+#include "ores.reporting.core/messaging/cut_gap_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_gap_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_handler.hpp"
+#include "ores.reporting.core/messaging/cut_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_kind_handler.hpp"
+#include "ores.reporting.core/messaging/cut_kind_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_kind_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_resolution_rule_handler.hpp"
+#include "ores.reporting.core/messaging/cut_resolution_rule_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_resolution_rule_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_building_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_change_registrar.hpp"
@@ -76,6 +81,8 @@
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.core/messaging/run_result_registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <iterator>
@@ -88,6 +95,14 @@ namespace ores::reporting::messaging {
 
 namespace {
 constexpr std::string_view queue_group = "ores.reporting.service";
+
+// Function-local static: must outlive the history.v1.get subscription
+// (see ores::history::messaging::register_history_handlers's doc), and
+// register_handlers is only ever called once per service process.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
 }
 
 std::vector<ores::nats::service::subscription>
@@ -730,6 +745,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(std::move(sub));
     for (auto& sub : register_run_result_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
+
+    // ----------------------------------------------------------------
+    // Generic history.v1.get subject, dispatched on the entity type the
+    // caller names. The registrar resolves each request into a scoped
+    // context exactly like every other subject (make_request_context), so
+    // a provider sees the same tenant, party and roles visibility, and the
+    // permission the provider was registered with is checked before it runs.
+    // ----------------------------------------------------------------
+    {
+        auto& hist_registry = history_registry();
+
+        register_cut_family_history_provider(hist_registry);
+        register_cut_resolution_rule_history_provider(hist_registry);
+        register_cut_kind_history_provider(hist_registry);
+        register_cut_history_provider(hist_registry);
+        register_cut_gap_history_provider(hist_registry);
+
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "reporting", group, ctx, verifier));
+    }
 
     return subs;
 }

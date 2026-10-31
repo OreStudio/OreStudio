@@ -49,6 +49,7 @@ struct trade_write {
     ores::trading::domain::origin origin;
     std::string origin_reference;
     int external_version;
+    std::string draft_reason_code;
     std::string economic_digest;
 };
 

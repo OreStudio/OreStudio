@@ -53,6 +53,7 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.origin = ores::trading::domain::origin::api;
     r.origin_reference = std::string(faker::string::numeric(10));
     r.external_version = 0;
+    r.draft_reason_code = std::string("structure_incomplete");
     r.economic_digest = std::string("");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

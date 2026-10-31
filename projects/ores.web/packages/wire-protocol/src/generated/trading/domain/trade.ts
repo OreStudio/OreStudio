@@ -43,6 +43,7 @@ export interface Trade {
     origin: string;
     origin_reference: string;
     external_version: number;
+    draft_reason_code: string;
     economic_digest: string;
     modified_by: string;
     performed_by: string;

@@ -65,6 +65,7 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     r.origin = rfl::string_to_enum<ores::trading::domain::origin>(v.origin).value();
     r.origin_reference = v.origin_reference.value_or("");
     r.external_version = v.external_version;
+    r.draft_reason_code = v.draft_reason_code.value_or("");
     r.economic_digest = v.economic_digest.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -93,6 +94,8 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.origin_reference =
         v.origin_reference.empty() ? std::nullopt : std::optional(v.origin_reference);
     r.external_version = v.external_version;
+    r.draft_reason_code =
+        v.draft_reason_code.empty() ? std::nullopt : std::optional(v.draft_reason_code);
     r.economic_digest = v.economic_digest.empty() ? std::nullopt : std::optional(v.economic_digest);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

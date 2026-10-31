@@ -53,6 +53,7 @@ create table if not exists "ores_trading_trades_tbl" (
     "origin" text not null,
     "origin_reference" text null,
     "external_version" integer not null,
+    "draft_reason_code" text null,
     "economic_digest" text null,
     "modified_by" text not null,
     "performed_by" text not null,

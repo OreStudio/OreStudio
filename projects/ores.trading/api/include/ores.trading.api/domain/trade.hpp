@@ -133,6 +133,13 @@ struct trade final {
     int external_version = 0;
 
     /**
+     * @brief Why a draft is not live, when the trade is a draft: a code from
+     * [[id:8F2C41B7-9D3E-4A58-B1C0-5E7D2A6F9B43][ores.trading.draft_reason]]. It is null for a
+     * trade that went live when it was booked, because a concluded deal waits on nothing.
+     */
+    std::string draft_reason_code;
+
+    /**
      * @brief The SHA-256 of the economics the trade holds, folded from its own economic fields and
      * from every component's, in hex. Stored rather than recomputed on read, so a change is one
      * comparison rather than a walk of the whole shape.

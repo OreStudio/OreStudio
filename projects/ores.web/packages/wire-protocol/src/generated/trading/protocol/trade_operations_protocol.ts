@@ -63,6 +63,11 @@ export interface BookTradeRequest {
      */
     activity_type_code: string;
     /**
+     * @brief Why the trade is a draft, when the activity books one. Empty for a
+     * booking that goes live, because a concluded deal waits on nothing.
+     */
+    draft_reason_code: string;
+    /**
      * @brief The trade's identifiers. The service states the trade id and the
      * activity id on each one, so the caller states the scheme and the value.
      */

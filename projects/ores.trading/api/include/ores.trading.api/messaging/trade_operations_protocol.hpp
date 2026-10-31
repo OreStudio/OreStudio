@@ -81,6 +81,11 @@ struct book_trade_request {
      */
     std::string activity_type_code;
     /**
+     * @brief Why the trade is a draft, when the activity books one. Empty for a
+     * booking that goes live, because a concluded deal waits on nothing.
+     */
+    std::string draft_reason_code;
+    /**
      * @brief The trade's identifiers. The service states the trade id and the
      * activity id on each one, so the caller states the scheme and the value.
      */

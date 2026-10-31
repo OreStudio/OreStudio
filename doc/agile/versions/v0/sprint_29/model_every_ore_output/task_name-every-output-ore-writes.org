@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/name-every-output-ore-writes
+#+pr: 4189
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -26,24 +26,42 @@ One table names every output family ORE writes, so a reader, a table and a test 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- The catalogue names every family whose files appear under external/ore/examples/*/ExpectedOutput, and every output parameter our file_type seed declares.
+- The catalogue names every family whose files appear under external/ore/examples/*/ExpectedOutput.
+- Every output parameter the seed declares whose file the samples ship is one family's parameter, and the parameters the samples do not ship are named below rather than dropped.
 - A family states the file parameter, its key dimensions, its columns and the header variants the samples show.
 - A test fails when a checked-in expected output maps to no family, or a family has no file in the samples.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The corpus is the authority for shape. =generate_output_catalogue.py= walks
+every CSV under =external/ore/examples/*/ExpectedOutput=, groups the file names
+into families, and states for each family the file pattern, the columns the
+samples show, the keys among them and how many header variants there are. A
+name the engine builds from the trade or the curve it belongs to
+(=exposure_trade_*=) is a pattern, not a name.
+
+The seed is the authority for the parameter. =reporting_file_types_populate.sql=
+states the 55 output parameters and the file name each gives, so a family whose
+pattern the seed states takes its parameter and analytic from there. The
+generator's own table names the analytic of the families no parameter names,
+which is most of them.
+
+Column kinds are inferred from the values, dropping the engine's null string
+first. A key column stays text unless its values are all dates or all times,
+because a key identifies a record and is never summed.
+
+The data is written into =output_catalogue_data.{hpp,cpp}= and parsed once by
+=output_catalogue.cpp=. The generator's =--check= mode fails when the corpus and
+the data disagree, and the local check =ore-output-catalogue= runs it.
 
 * Measurements
 
@@ -57,9 +75,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families the catalogue names | 60 | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 49893215aa |
+| Checked-in expected outputs it maps | 473, and the test walks every one | =ores.ore.core.tests "[output_catalogue]"= | 49893215aa |
+| Columns it states | 1 584: 1 250 decimal, 280 text, 36 date, 18 integer | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 49893215aa |
+| Families a parameter names | 17 of 60; the other 43 are engine conventions | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 49893215aa |
+| Header variants across the families | 76 | =ores.ore.core.tests "[output_catalogue]"= | 49893215aa |
 
 * Notes
+
+- The seed declares 55 output parameters and the samples ship the file of 17 of
+  them. The other 38 name files the checked-in corpus does not carry: jacobi,
+  jacobi_inverse and crossgamma, productclass_mapping, calibration with its pca
+  and meanReversion outputs, creditcurves, crif, marketObjects and riskFactors,
+  the scenario dumps and cubes of scenarioGeneration and simulation,
+  timeaveragedexposure, dim_evolution, dim_regression, additionalResults and
+  sacva's net sensitivity file. A family with no sample cannot state a shape
+  from the corpus, so it is not in the catalogue, and the gap is filed as
+  [[id:FC23D85D-2830-4D33-9239-7D268900A4DD][Read the outputs the samples do not ship]].
+- The catalogue's authority is the sample, not the writer. The writers state
+  their columns in C++ string literals, and a second authority would eventually
+  disagree with the corpus a reader must accept. The writers were read for the
+  one thing the corpus cannot say: which analytic writes a family no parameter
+  names.
+- A family's columns are a union over its header variants, because shape follows
+  the configuration: =curves.csv= states one column for each curve the run built,
+  in four variants. =header_variants= says how many there are, so a reader can
+  tell one shape from several.
+- A column whose samples are all the engine's null string reads as text. Nothing
+  shows what it holds, so a reader carrying it as text is honest.
+- The generator is the lever: regenerate to widen the catalogue, or =--check= to
+  fail when the corpus and the data disagree. The local check
+  =ore-output-catalogue= runs it.
 
 * Test Scenarios
 
@@ -76,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4189][#4189]] | [ore] Name every output ORE writes |
 
 * Review
 
@@ -85,3 +131,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The catalogue exists: 60 families, 1 584 columns, generated from the 473
+expected outputs the repository ships. A family states its file pattern, the
+parameter that names it where the seed gives one, the analytics that write it,
+its keys, its header variants, a sample file and every column with a kind.
+
+The measurement that matters is that every checked-in sample maps to a family,
+and the suite walks all 473 to prove it. The second is that the data cannot
+drift from the corpus: =--check= regenerates in memory and compares, and the
+local check =ore-output-catalogue= runs it on every change to the corpus, the
+generator or the data.
+
+The catalogue states what the samples show, which is not every output ORE can
+write. The seed declares 55 output parameters and the samples ship 17 of their
+files; the other 38 are filed as a capture so the gap is visible.

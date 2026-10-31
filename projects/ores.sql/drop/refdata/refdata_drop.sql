@@ -108,6 +108,10 @@
 \ir ./refdata_curve_volatility_curves_drop.sql
 \ir ./refdata_curve_volatility_constants_notify_trigger_drop.sql
 \ir ./refdata_curve_volatility_constants_drop.sql
+\ir ./refdata_curve_volatility_smile_parameters_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_smile_parameters_drop.sql
+\ir ./refdata_curve_volatility_smiles_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_smiles_drop.sql
 \ir ./refdata_curve_volatility_kinds_notify_trigger_drop.sql
 \ir ./refdata_curve_volatility_kinds_drop.sql
 \ir ./refdata_curve_volatility_configs_drop.sql

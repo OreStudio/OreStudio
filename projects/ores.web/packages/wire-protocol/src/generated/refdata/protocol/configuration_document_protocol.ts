@@ -52,6 +52,8 @@ import type { CurveVolatilityCurve } from '../domain/curve_volatility_curve.js';
 import type { CurveVolatilityDeltaSurface } from '../domain/curve_volatility_delta_surface.js';
 import type { CurveVolatilityKind } from '../domain/curve_volatility_kind.js';
 import type { CurveVolatilityProxySurface } from '../domain/curve_volatility_proxy_surface.js';
+import type { CurveVolatilitySmile } from '../domain/curve_volatility_smile.js';
+import type { CurveVolatilitySmileParameter } from '../domain/curve_volatility_smile_parameter.js';
 import type { CurveVolatilityStrikeSurface } from '../domain/curve_volatility_strike_surface.js';
 import type { DefaultCurveConfig } from '../domain/default_curve_config.js';
 import type { DefaultCurveConfiguration } from '../domain/default_curve_configuration.js';
@@ -111,6 +113,8 @@ export interface CurveConfigurationDocument {
     volatility_strike_surfaces: CurveVolatilityStrikeSurface[];
     volatility_delta_surfaces: CurveVolatilityDeltaSurface[];
     volatility_proxy_surfaces: CurveVolatilityProxySurface[];
+    volatility_smiles: CurveVolatilitySmile[];
+    volatility_smile_parameters: CurveVolatilitySmileParameter[];
     inflation_cap_floor_volatilities: InflationCapFloorVolatilityConfig[];
     inflation_volatility_strikes: InflationCapFloorVolatilityStrikes[];
     swaption_volatilities: SwaptionVolatilityConfig[];

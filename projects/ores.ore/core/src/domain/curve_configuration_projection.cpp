@@ -1179,6 +1179,9 @@ struct volatility_kind_export {
     const refdata::domain::curve_volatility_strike_surface* strike_surface = nullptr;
     const refdata::domain::curve_volatility_delta_surface* delta_surface = nullptr;
     const refdata::domain::curve_volatility_proxy_surface* proxy_surface = nullptr;
+    const refdata::domain::curve_volatility_smile* parametric_smile = nullptr;
+    std::vector<const refdata::domain::curve_volatility_smile_parameter*>
+        smile_parameters;
 };
 
 // The kinds one entry holds, in the order the document listed them, and whether
@@ -1271,13 +1274,47 @@ void import_volatility_curve(ores::refdata::messaging::curve_configuration_docum
                                 *quotes);
 }
 
+void import_volatility_parametric_smile(
+    ores::refdata::messaging::curve_configuration_document& out,
+    const boost::uuids::uuid& kind_id,
+    const record_reader& v) {
+    const auto smile = v.child("ParametricSmileConfiguration");
+    if (!smile)
+        return;
+    refdata::domain::curve_volatility_smile r;
+    r.id = curve_configuration_projection_new_uuid();
+    r.curve_volatility_kind_id = kind_id;
+    if (const auto calibration = smile->child("Calibration"); calibration) {
+        r.max_calibration_attempts = required_int(*calibration, "MaxCalibrationAttempts");
+        r.exit_early_error_threshold = required_real(*calibration, "ExitEarlyErrorThreshold");
+        r.max_acceptable_error = required_real(*calibration, "MaxAcceptableError");
+    }
+    if (const auto correction = smile->child("ResidualCorrection"); correction)
+        r.residual_correction_dimension = correction->spelling("Dimension");
+    curve_configuration_projection_set_audit(r);
+    const auto smile_id = r.id;
+    out.volatility_smiles.push_back(std::move(r));
+
+    int parameter_position = 0;
+    if (const auto parameters = smile->child("Parameters"); parameters)
+        for (const auto& p : parameters->children("Parameter")) {
+            refdata::domain::curve_volatility_smile_parameter parameter;
+            parameter.id = curve_configuration_projection_new_uuid();
+            parameter.curve_volatility_smile_id = smile_id;
+            parameter.name = required_text(p, "Name");
+            parameter.initial_value = p.text("InitialValue");
+            parameter.calibration = required_spelling(p, "Calibration");
+            parameter.position = parameter_position++;
+            curve_configuration_projection_set_audit(parameter);
+            out.volatility_smile_parameters.push_back(std::move(parameter));
+        }
+}
+
 void import_strike_surface(ores::refdata::messaging::curve_configuration_document& out,
                            const boost::uuids::uuid& entry_id,
                            const record_reader& v) {
-    if (v.has("ParametricSmileConfiguration"))
-        throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
-                      "modelled yet");
     out.volatility_kinds.push_back(new_volatility_kind(entry_id, strike_surface_kind, v));
+    import_volatility_parametric_smile(out, out.volatility_kinds.back().id, v);
     refdata::domain::curve_volatility_strike_surface p;
     p.id = curve_configuration_projection_new_uuid();
     p.curve_volatility_kind_id = out.volatility_kinds.back().id;
@@ -1296,10 +1333,8 @@ void import_strike_surface(ores::refdata::messaging::curve_configuration_documen
 void import_delta_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& entry_id,
                           const record_reader& v) {
-    if (v.has("ParametricSmileConfiguration"))
-        throw refusal("a delta surface writes a ParametricSmileConfiguration, which is not "
-                      "modelled yet");
     out.volatility_kinds.push_back(new_volatility_kind(entry_id, delta_surface_kind, v));
+    import_volatility_parametric_smile(out, out.volatility_kinds.back().id, v);
     refdata::domain::curve_volatility_delta_surface p;
     p.id = curve_configuration_projection_new_uuid();
     p.curve_volatility_kind_id = out.volatility_kinds.back().id;
@@ -1460,6 +1495,30 @@ void import_volatility_configs(ores::refdata::messaging::curve_configuration_doc
 }
 
 // Writes one kind back into the holder it came from.
+void export_volatility_parametric_smile(record_writer v, const volatility_kind_export& k) {
+    if (!k.parametric_smile)
+        return;
+    auto smile = v.child("ParametricSmileConfiguration");
+    auto parameters = smile.child("Parameters");
+    for (const auto* p : k.smile_parameters) {
+        auto parameter = parameters.append("Parameter");
+        parameter.set_text("Name", p->name);
+        parameter.set_optional_text("InitialValue", p->initial_value);
+        parameter.set_spelling("Calibration", p->calibration, "parameter calibration");
+    }
+    auto calibration = smile.child("Calibration");
+    calibration.set_integer("MaxCalibrationAttempts", k.parametric_smile->max_calibration_attempts);
+    calibration.set_real("ExitEarlyErrorThreshold",
+                         k.parametric_smile->exit_early_error_threshold);
+    calibration.set_real("MaxAcceptableError", k.parametric_smile->max_acceptable_error);
+    if (k.parametric_smile->residual_correction_dimension) {
+        auto correction = smile.child("ResidualCorrection");
+        correction.set_spelling("Dimension",
+                                *k.parametric_smile->residual_correction_dimension,
+                                "residual correction dimension");
+    }
+}
+
 void export_volatility_kind(record_writer h,
                             const volatility_kind_export& k,
                             const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
@@ -1467,7 +1526,9 @@ void export_volatility_kind(record_writer h,
                             const std::string& curve_id) {
     const std::string& kind = k.kind->kind_code;
     if (kind == strike_surface_kind) {
-        export_strike_surface(h.child("StrikeSurface"), k);
+        auto surface = h.child("StrikeSurface");
+        export_strike_surface(surface, k);
+        export_volatility_parametric_smile(surface, k);
         return;
     }
     if (h.declares("Constant") && kind == constant_kind) {
@@ -1479,7 +1540,9 @@ void export_volatility_kind(record_writer h,
         return;
     }
     if (h.declares("DeltaSurface") && kind == delta_surface_kind) {
-        export_delta_surface(h.child("DeltaSurface"), k);
+        auto surface = h.child("DeltaSurface");
+        export_delta_surface(surface, k);
+        export_volatility_parametric_smile(surface, k);
         return;
     }
     if (h.declares("ProxySurface") && kind == proxy_surface_kind) {
@@ -1553,6 +1616,16 @@ build_volatility_exports(const ores::refdata::messaging::curve_configuration_doc
     const auto strike_surfaces = parts_by_kind(v.volatility_strike_surfaces);
     const auto delta_surfaces = parts_by_kind(v.volatility_delta_surfaces);
     const auto proxy_surfaces = parts_by_kind(v.volatility_proxy_surfaces);
+    const auto parametric_smiles = parts_by_kind(v.volatility_smiles);
+    std::map<boost::uuids::uuid,
+             std::vector<const refdata::domain::curve_volatility_smile_parameter*>>
+        smile_parameters;
+    for (const auto& p : v.volatility_smile_parameters)
+        smile_parameters[p.curve_volatility_smile_id].push_back(&p);
+    for (auto& [smile_id, parameters] : smile_parameters)
+        std::sort(parameters.begin(), parameters.end(), [](const auto* l, const auto* r) {
+            return l->position < r->position;
+        });
     std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_volatility_kind*>> kinds;
     for (const auto& k : v.volatility_kinds)
         kinds[k.curve_volatility_config_id].push_back(&k);
@@ -1578,6 +1651,9 @@ build_volatility_exports(const ores::refdata::messaging::curve_configuration_doc
                 ke.strike_surface = part_of(strike_surfaces, k->id);
                 ke.delta_surface = part_of(delta_surfaces, k->id);
                 ke.proxy_surface = part_of(proxy_surfaces, k->id);
+                ke.parametric_smile = part_of(parametric_smiles, k->id);
+                if (ke.parametric_smile)
+                    ke.smile_parameters = smile_parameters[ke.parametric_smile->id];
                 entry.kinds.push_back(ke);
             }
         }

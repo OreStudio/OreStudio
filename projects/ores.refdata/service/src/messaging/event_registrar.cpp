@@ -122,6 +122,8 @@
 #include "ores.refdata.service/messaging/curve_volatility_curve_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_delta_surface_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_kind_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_volatility_smile_event_registrar.hpp"
+#include "ores.refdata.service/messaging/curve_volatility_smile_parameter_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_proxy_surface_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_strike_surface_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
@@ -361,6 +363,10 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_curve_volatility_delta_surface_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_volatility_kind_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_volatility_smile_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_curve_volatility_smile_parameter_event_mapping(
+        event_source, event_bus, nats));
     subs.push_back(
         register_curve_volatility_proxy_surface_event_mapping(event_source, event_bus, nats));
     subs.push_back(

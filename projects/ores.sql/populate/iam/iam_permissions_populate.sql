@@ -605,6 +605,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:read',   'View curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:write',  'Create and modify curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:delete', 'Delete curve volatility proxy surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:read',   'View curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:write',  'Create and modify curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:delete', 'Delete curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:read',   'View curve volatility parametric smile parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:write',  'Create and modify curve volatility parametric smile parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:delete', 'Delete curve volatility parametric smile parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:read', 'View inflation cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:write', 'Create and modify inflation cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:delete', 'Delete inflation cap floor volatilities');

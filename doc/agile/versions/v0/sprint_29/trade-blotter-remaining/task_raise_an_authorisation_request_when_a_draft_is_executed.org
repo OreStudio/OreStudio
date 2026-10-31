@@ -26,11 +26,11 @@ A trade can go live without passing through book_trade: Execute takes a draft to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the execution operation and the one-request rule. |
+| Now          | Closed: the six cases pass on the restored tree. |
 | Waiting on   | Nothing.                               |
-| Next         | The local suite is blocked by a break on main; CI is the proof. |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -128,11 +128,13 @@ raises nothing, because only the execution touches the live status.
 
 * What was not proved
 
-The suite did not run. =origin/main= does not compile: =cb28cc941d= calls
-=ores::synthetic::service::routed_code_count=, which no header declares, and
-=trade_population_planner.cpp= does not build against the instrument batch it is
-handed. Both are other environments' work, so the local binary could not be
-linked and the cases below are compiled but not executed.
+Nothing is left unrun: the six cases pass, on a tree repaired twice. The suite
+first did not run because =origin/main= did not compile (=cb28cc941d= called a
+synthetic function no header declared). Then the commit that repaired main,
+=1398383538=, took whole files from before a merge and swept this work away with
+them, which is why the operation was restored in #4298.
+
+=./publish/bin/ores.trading.core.tests=: 230 cases, 1450 assertions.
 
 The generic state write is still a way to take a draft live with no request. The
 fix is a hook in the generated service, which the codegen owns.

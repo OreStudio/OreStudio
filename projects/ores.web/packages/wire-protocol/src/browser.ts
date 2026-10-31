@@ -399,7 +399,6 @@ export {
     cutKindsPageSchema,
     cutRecordSchema,
     cutRowSchema,
-    cutStateToneSchema,
     cutStateWordSchema,
     cutsPageSchema,
 } from './cuts.js';
@@ -413,7 +412,6 @@ export type {
     CutKindsPage,
     CutRecord,
     CutRow,
-    CutStateTone,
     CutStateWord,
     CutsPage,
 } from './cuts.js';

@@ -54,11 +54,6 @@ export const cutStateWordSchema = z.enum(CUT_STATE_WORDS);
 
 export type CutStateWord = z.infer<typeof cutStateWordSchema>;
 
-/** The tones a state takes: the UX language's inactive, pending, in order and failed. */
-export const cutStateToneSchema = z.enum(['neutral', 'pending', 'good', 'bad']);
-
-export type CutStateTone = z.infer<typeof cutStateToneSchema>;
-
 /**
  * One row of the cuts list: a body, its derived state and label, the acts that
  * made it and how many runs priced from it.

@@ -117,8 +117,8 @@ TEST_CASE("a_fra_states_its_notional_index_and_direction", "[domain]") {
 TEST_CASE("a_cap_states_a_strike_and_refuses_a_zero_one", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    const auto sut = construct_rate_cap_floor(
-        rate_cap_floor_terms{make_rate_common(), rate_money("0.035")});
+    const auto sut =
+        construct_rate_cap_floor(rate_cap_floor_terms{make_rate_common(), rate_money("0.035")});
     BOOST_LOG_SEV(lg, info) << "Strike rows: " << sut.strikes.size();
 
     REQUIRE(sut.strikes.size() == 1);
@@ -126,18 +126,17 @@ TEST_CASE("a_cap_states_a_strike_and_refuses_a_zero_one", "[domain]") {
     CHECK(sut.strikes[0].bare_currency == "USD");
     CHECK(std::holds_alternative<cap_floor_instrument>(sut.fact));
 
-    CHECK_THROWS_AS(
-        construct_rate_cap_floor(rate_cap_floor_terms{make_rate_common(), decimal{}}),
-        rate_product_error);
+    CHECK_THROWS_AS(construct_rate_cap_floor(rate_cap_floor_terms{make_rate_common(), decimal{}}),
+                    rate_product_error);
 }
 
 TEST_CASE("a_swaption_requires_an_expiry", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    CHECK_THROWS_AS(construct_rate_swaption(rate_swaption_terms{make_rate_common(),
-                                                                std::chrono::year_month_day{},
-                                                                "Long", "European", "Cash"}),
-                    rate_product_error);
+    CHECK_THROWS_AS(
+        construct_rate_swaption(rate_swaption_terms{
+            make_rate_common(), std::chrono::year_month_day{}, "Long", "European", "Cash"}),
+        rate_product_error);
 
     const auto sut = construct_rate_swaption(
         rate_swaption_terms{make_rate_common(), a_rate_date(), "Long", "European", "Cash"});
@@ -148,7 +147,8 @@ TEST_CASE("a_swaption_requires_an_expiry", "[domain]") {
 TEST_CASE("the_simple_fact_products_state_their_own_row", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    const auto callable = construct_rate_callable_swap(rate_callable_swap_terms{make_rate_common()});
+    const auto callable =
+        construct_rate_callable_swap(rate_callable_swap_terms{make_rate_common()});
     const auto knock_out = construct_rate_knock_out_swap(
         rate_knock_out_swap_terms{make_rate_common(), a_rate_date(), "UpAndOut"});
     const auto flexi =
@@ -168,10 +168,9 @@ TEST_CASE("a_knock_out_swap_refuses_a_barrier_type_outside_the_closed_set", "[do
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Refusing a knock out swap with an unknown barrier type";
-    CHECK_THROWS_AS(
-        construct_rate_knock_out_swap(
-            rate_knock_out_swap_terms{make_rate_common(), a_rate_date(), "Sideways"}),
-        rate_product_error);
+    CHECK_THROWS_AS(construct_rate_knock_out_swap(
+                        rate_knock_out_swap_terms{make_rate_common(), a_rate_date(), "Sideways"}),
+                    rate_product_error);
 }
 
 TEST_CASE("a_rate_product_refuses_a_leg_without_a_currency", "[domain]") {

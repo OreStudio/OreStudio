@@ -127,8 +127,8 @@ ir_curve_feed::ir_curve_feed(
             throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
                                         e.point_id + " has no item: " + uri.error());
         datum_uris_.push_back(*uri);
-        auto series =
-            ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*made));
+        auto series = ores::marketdata::datum::oresmd_uri_codec::write(
+            ores::marketdata::datum::series_of(*made));
         if (!series)
             throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
                                         e.point_id + " has no series: " + series.error());
@@ -220,9 +220,8 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         // what a person reads to find out where the feed's ticks are, so it names the family the
         // ticks actually travelled on.
         BOOST_LOG_SEV(ir_curve_feed_lg(), info)
-            << "SYNTHETIC CURVE PUBLISH: source='" << source_name_
-            << "' batch=" << n << " points=" << entries_.size()
-            << " subject='" << published_subject() << "'";
+            << "SYNTHETIC CURVE PUBLISH: source='" << source_name_ << "' batch=" << n
+            << " points=" << entries_.size() << " subject='" << published_subject() << "'";
     }
     return std::to_string(entries_.size());
 }

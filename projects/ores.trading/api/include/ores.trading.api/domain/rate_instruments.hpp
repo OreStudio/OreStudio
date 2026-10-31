@@ -77,13 +77,21 @@ inline constexpr auto leg_types = std::to_array<std::string_view>({"Fixed", "Flo
 
 inline constexpr auto directions = std::to_array<std::string_view>({"Long", "Short"});
 
-inline constexpr auto exercise_types = std::to_array<std::string_view>({"European", "Bermudan", "American"});
+inline constexpr auto exercise_types =
+    std::to_array<std::string_view>({"European", "Bermudan", "American"});
 
 inline constexpr auto settlement_types = std::to_array<std::string_view>({"Cash", "Physical"});
 
-inline constexpr auto barrier_types = std::to_array<std::string_view>(
-    {"UpAndOut", "UpAndIn", "DownAndOut", "DownAndIn", "KnockIn", "KnockOut",
-     "CumulatedProfitCap", "CumulatedProfitCapPoints", "FixingCap", "FixingFloor"});
+inline constexpr auto barrier_types = std::to_array<std::string_view>({"UpAndOut",
+                                                                       "UpAndIn",
+                                                                       "DownAndOut",
+                                                                       "DownAndIn",
+                                                                       "KnockIn",
+                                                                       "KnockOut",
+                                                                       "CumulatedProfitCap",
+                                                                       "CumulatedProfitCapPoints",
+                                                                       "FixingCap",
+                                                                       "FixingFloor"});
 
 [[nodiscard]] inline bool states_one_of(std::string_view value,
                                         std::span<const std::string_view> allowed) {
@@ -98,19 +106,22 @@ inline constexpr auto barrier_types = std::to_array<std::string_view>(
     throw rate_product_error("A " + std::string(product) + " states " + std::string(fact) + ".");
 }
 
-inline void require_text(std::string_view product, std::string_view fact,
-                         const std::string& value) {
+inline void
+require_text(std::string_view product, std::string_view fact, const std::string& value) {
     if (value.empty())
         refuse(product, fact);
 }
 
-inline void require_one_of(std::string_view product, std::string_view fact,
-                           const std::string& value, std::span<const std::string_view> allowed) {
+inline void require_one_of(std::string_view product,
+                           std::string_view fact,
+                           const std::string& value,
+                           std::span<const std::string_view> allowed) {
     if (!states_one_of(value, allowed))
         refuse(product, fact);
 }
 
-inline void require_date(std::string_view product, std::string_view fact,
+inline void require_date(std::string_view product,
+                         std::string_view fact,
                          const std::optional<std::chrono::year_month_day>& value) {
     if (!value.has_value() || *value == std::chrono::year_month_day{})
         refuse(product, fact);
@@ -121,8 +132,8 @@ inline void require_amount(std::string_view product, std::string_view fact, cons
         refuse(product, fact);
 }
 
-inline void require_not_negative(std::string_view product, std::string_view fact,
-                                 const decimal& value) {
+inline void
+require_not_negative(std::string_view product, std::string_view fact, const decimal& value) {
     if (value < decimal{})
         refuse(product, fact);
 }
@@ -230,9 +241,13 @@ struct rate_balance_guaranteed_swap_terms final {
 /**
  * @brief The one fact row that says which rate product this is.
  */
-using rate_fact = std::variant<vanilla_swap_instrument, fra_instrument, cap_floor_instrument,
-                               swaption_instrument, callable_swap_instrument,
-                               knock_out_swap_instrument, flexi_swap_instrument,
+using rate_fact = std::variant<vanilla_swap_instrument,
+                               fra_instrument,
+                               cap_floor_instrument,
+                               swaption_instrument,
+                               callable_swap_instrument,
+                               knock_out_swap_instrument,
+                               flexi_swap_instrument,
                                balance_guaranteed_swap_instrument>;
 
 /**
@@ -269,16 +284,15 @@ inline rate_product common_product(std::string_view product, const rate_common_t
     const auto add_leg = [&](int number, const rate_leg_terms& leg) {
         require_one_of(product, "a Fixed or Floating leg type", leg.leg_type_code, leg_types);
         require_text(product, "a day count fraction on each leg", leg.day_count_fraction_code);
-        require_text(product, "a business day convention on each leg",
-                     leg.business_day_convention_code);
+        require_text(
+            product, "a business day convention on each leg", leg.business_day_convention_code);
         require_text(product, "a payment frequency on each leg", leg.payment_frequency_code);
         require_text(product, "a currency on each leg", leg.currency);
         require_text(product, "a rate role on each leg", leg.rate_role);
         require_amount(product, "a positive notional on each leg", leg.notional);
         require_not_negative(product, "a non-negative rate on each leg", leg.value);
         if (leg.leg_type_code == "Floating")
-            require_text(product, "a floating index on its floating leg",
-                         leg.floating_index_code);
+            require_text(product, "a floating index on its floating leg", leg.floating_index_code);
 
         swap_leg row;
         row.identity.leg_number = number;
@@ -325,8 +339,7 @@ inline rate_product common_product(std::string_view product, const rate_common_t
     return built;
 }
 
-[[nodiscard]] inline rate_product
-construct_rate_cross_currency_swap(const rate_swap_terms& terms) {
+[[nodiscard]] inline rate_product construct_rate_cross_currency_swap(const rate_swap_terms& terms) {
     using namespace rate_terms;
     auto built = rate_builders::common_product("cross currency swap", terms.common);
     if (terms.settlement_lag < 0)
@@ -342,8 +355,8 @@ construct_rate_cross_currency_swap(const rate_swap_terms& terms) {
 [[nodiscard]] inline rate_product construct_rate_fra(const rate_fra_terms& terms) {
     using namespace rate_terms;
     auto built = rate_builders::common_product("forward rate agreement", terms.common);
-    require_one_of("forward rate agreement", "a Long or Short direction", terms.long_short,
-                   directions);
+    require_one_of(
+        "forward rate agreement", "a Long or Short direction", terms.long_short, directions);
     fra_instrument fact;
     fact.currency = terms.common.fixed.currency;
     fact.rate_index = terms.common.floating.floating_index_code;
@@ -373,10 +386,12 @@ construct_rate_cross_currency_swap(const rate_swap_terms& terms) {
     if (terms.expiry_date == std::chrono::year_month_day{})
         refuse("swaption", "an expiry date");
     require_one_of("swaption", "a Long or Short direction", terms.long_short, directions);
-    require_one_of("swaption", "a European, Bermudan or American exercise type",
-                   terms.exercise_type, exercise_types);
-    require_one_of("swaption", "a Cash or Physical settlement type", terms.settlement_type,
-                   settlement_types);
+    require_one_of("swaption",
+                   "a European, Bermudan or American exercise type",
+                   terms.exercise_type,
+                   exercise_types);
+    require_one_of(
+        "swaption", "a Cash or Physical settlement type", terms.settlement_type, settlement_types);
     swaption_instrument fact;
     fact.expiry_date = terms.expiry_date;
     fact.exercise_type = terms.exercise_type;
@@ -386,7 +401,8 @@ construct_rate_cross_currency_swap(const rate_swap_terms& terms) {
     return built;
 }
 
-[[nodiscard]] inline rate_product construct_rate_callable_swap(const rate_callable_swap_terms& terms) {
+[[nodiscard]] inline rate_product
+construct_rate_callable_swap(const rate_callable_swap_terms& terms) {
     auto built = rate_builders::common_product("callable swap", terms.common);
     built.fact = callable_swap_instrument{};
     return built;
@@ -398,8 +414,8 @@ construct_rate_knock_out_swap(const rate_knock_out_swap_terms& terms) {
     auto built = rate_builders::common_product("knock out swap", terms.common);
     if (terms.barrier_start_date == std::chrono::year_month_day{})
         refuse("knock out swap", "the date its barrier starts");
-    require_one_of("knock out swap", "a barrier type from ORE's set", terms.barrier_type,
-                   barrier_types);
+    require_one_of(
+        "knock out swap", "a barrier type from ORE's set", terms.barrier_type, barrier_types);
     knock_out_swap_instrument fact;
     fact.barrier_start_date = terms.barrier_start_date;
     fact.barrier_type = terms.barrier_type;
@@ -410,8 +426,7 @@ construct_rate_knock_out_swap(const rate_knock_out_swap_terms& terms) {
 [[nodiscard]] inline rate_product construct_rate_flexi_swap(const rate_flexi_swap_terms& terms) {
     using namespace rate_terms;
     auto built = rate_builders::common_product("flexi swap", terms.common);
-    require_one_of("flexi swap", "a Long or Short direction", terms.option_long_short,
-                   directions);
+    require_one_of("flexi swap", "a Long or Short direction", terms.option_long_short, directions);
     flexi_swap_instrument fact;
     fact.option_long_short = terms.option_long_short;
     built.fact = fact;

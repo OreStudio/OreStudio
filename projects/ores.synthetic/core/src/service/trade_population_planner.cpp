@@ -417,7 +417,9 @@ construct_bond_product(const domain::bond_terms& terms,
                        const domain::trade_generation_scope& scope,
                        double notional) {
     namespace tdom = ores::trading::domain;
-    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
 
     tdom::bond_common_terms common;
     common.issue_id = terms.issue_id;
@@ -557,8 +559,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
         domain::bond_terms terms;
         terms.tenor_years = std::clamp(drawn, min_years, max_years);
-        terms.security_id = security_id_for(
-            scope, terms.tenor_years, bond_types[slot % bond_type_count]);
+        terms.security_id =
+            security_id_for(scope, terms.tenor_years, bond_types[slot % bond_type_count]);
         terms.issue_id = issue_id_for_security(terms.security_id);
         terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
         terms.reference_curve_id = scope.reference_curve_id;
@@ -581,8 +583,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * decides which constructor runs, and what a code cannot state it does
          * not fill.
          */
-        auto product = construct_bond_product(
-            terms, entry.trade_type_code, name, slot, scope, entry.notional);
+        auto product =
+            construct_bond_product(terms, entry.trade_type_code, name, slot, scope, entry.notional);
         state_bond_security(terms, entry.currency, entry, product);
         append(entry.instruments, std::move(product));
 

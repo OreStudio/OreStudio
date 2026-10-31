@@ -216,7 +216,9 @@ public:
      * out of it. The bootstrap flow needs the narrower question, because it runs
      * against a system nobody has signed in to yet.
      */
-    [[nodiscard]] bool has_user_login() const noexcept { return auth_.has_value(); }
+    [[nodiscard]] bool has_user_login() const noexcept {
+        return auth_.has_value();
+    }
 
     /**
      * @brief Unauthenticated synchronous request.

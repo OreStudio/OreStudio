@@ -214,8 +214,8 @@ TEST_CASE("a_callable_bond_states_at_least_one_call_date", "[bond]") {
 TEST_CASE("a_convertible_bond_states_what_it_may_convert_into", "[bond]") {
     convertible_bond_terms terms;
     terms.common = common_terms();
-    terms.targets = {{.underlying_id = boost::uuids::to_string(an_underlying()),
-                      .conversion_ratio = 12.5}};
+    terms.targets = {
+        {.underlying_id = boost::uuids::to_string(an_underlying()), .conversion_ratio = 12.5}};
 
     const auto product = construct_convertible_bond(terms);
     REQUIRE(product.conversion_targets.size() == 1u);

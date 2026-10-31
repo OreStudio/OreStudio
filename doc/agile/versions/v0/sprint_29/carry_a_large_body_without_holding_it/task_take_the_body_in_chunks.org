@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch: feature/take-the-body-in-chunks
 #+pr: 4137
-#+blocked_on: review
-#+blocked_since: 2026-10-30 20:30
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -29,11 +27,11 @@ needs a read loop that hands the chunks on instead of collecting them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | The session reads bodies in chunks and hands them to the route's sink. |
+| Now          | Nothing; #4137 is merged. |
 | Waiting on   | The review of #4137.                   |
-| Next         | Review, then the storage routes move onto the sink. |
+| Next         | The storage routes took it over in the next task. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

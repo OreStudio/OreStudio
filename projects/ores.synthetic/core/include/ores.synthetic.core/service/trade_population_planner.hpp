@@ -135,6 +135,26 @@ public:
 };
 
 /**
+ * @brief The planner for an inflation population.
+ *
+ * The catalogue routes one code, @c InflationSwap, to the rates family's table,
+ * and that code names a published index rather than a benchmark: the fixed
+ * side is a rate and the other side accrues the index. The planner draws an
+ * index from the curves the tenant holds, so the name a trade states is the
+ * name a curve resolves, and states the swap's fixed side and its CPI side.
+ *
+ * It refuses when the tenant holds no inflation curve, because a trade that
+ * named an index nothing resolves would book and then fail to price.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT inflation_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner for a foreign exchange population.
  *
  * The routing table sends sixteen trade types to seven tables, and those tables

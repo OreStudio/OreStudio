@@ -212,7 +212,8 @@ OFFICE_TREE = {
         "currency": "GBP",
         "desks": {
             "ir_swaps": [
-                ("gbp_rates", "GBP Rates", "GBP", "GBLO", ["GBP Vanilla Swaps", "GBP Rates Options"]),
+                ("gbp_rates", "GBP Rates", "GBP", "GBLO",
+                 ["GBP Vanilla Swaps", "GBP Rates Options", "GBP Inflation Swaps"]),
                 ("eur_rates", "EUR Rates", "EUR", "FRPA", ["EUR Vanilla Swaps", "EUR Exotic Rates"]),
                 ("usd_rates", "USD Rates", "USD", "USNY", ["USD Vanilla Swaps", "USD Rates Options"]),
                 ("chf_rates", "CHF Rates", "CHF", "CHZU", ["CHF Vanilla Swaps"]),

@@ -166,6 +166,17 @@ struct trade_generation_scope final {
      * constituent it writes resolves against the catalogue that holds it.
      */
     std::vector<equity_underlying_reference> equity_underlyings;
+    /**
+     * @brief The inflation indices the tenant holds a curve for.
+     *
+     * An inflation swap names the index it observes, and the tenant resolves
+     * that name through its curve configuration: the curve whose id is the
+     * index. So the list is the tenant's own reference data rather than this
+     * configuration's, and a population whose list is empty cannot state an
+     * inflation trade at all. The planner refuses rather than naming an index
+     * no curve resolves.
+     */
+    std::vector<std::string> inflation_index_codes;
     /// The LEIs the credit family draws its reference entities from.
     std::vector<std::string> credit_reference_entities;
     std::vector<boost::uuids::uuid> book_ids;
@@ -245,6 +256,24 @@ struct equity_range_bound final {
     std::optional<double> range_from;
     std::optional<double> range_to;
     std::optional<double> leverage;
+};
+
+/**
+ * @brief The facts an inflation trade states.
+ *
+ * An inflation swap is a fixed rate against a published index. The index is the
+ * tenant's own curve name, so a trade resolves to the curve the seed published;
+ * the base is the index level the trade is struck from, and the rate and the
+ * notional are the swap's own.
+ */
+struct inflation_terms final {
+    std::string currency;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+    double notional = 0.0;
+    double fixed_rate = 0.0;
+    std::string inflation_index_code;
+    double base_cpi = 0.0;
 };
 
 /**

@@ -28,10 +28,10 @@ Step 6 of 7, one component. ores.refdata encodes and decodes without reflect-cpp
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | The carriers a refdata row needs are complete; its field-group types are the blocker. |
+| Now          | Every refdata model states its shape and every entity has its codec pair; the component's hand-written JSON is the remaining rfl use. |
 | Waiting on   | Nothing.                               |
-| Next         | Opt a first model in and let the component's suites say what the move changed. |
-| Last touched | 2026-10-30                               |
+| Next         | Move the component's hand-written JSON off reflect-cpp, starting with the per-entity json_io units. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -149,6 +149,65 @@ keeping:
 - A group is a member and never a message, so it needs the shape and not a codec
   specialisation. The dq suite compares one group's bytes with the reflector's,
   which proves the recursion a convention will rely on.
+
+** The whole component, on the generated path (2026-10-31)
+
+All 178 models opted in: 159 entities, 10 junctions, 9 field groups. That is 501
+new files -- a codec header and two codec units per entity, and the protocol
+codecs -- plus the component's file list, which is generated from the tree and
+had to be regenerated or the new units would not compile at all.
+
+The sweep stopped five times before the component built, and every stop was the
+same rule learned once more: the include that makes a member's shape visible.
+The last two stops were worth the trip:
+
+- The junction root was spelled without the product prefix. The templates write
+  =ores.{{component_include}}/...= and the helpers did not, so the compiler was
+  sent to =refdata.api/domain/book_change_codec.hpp=.
+- A member named qualified resolved to its plain header while the same member
+  named bare resolved to its codec header. Only one of the two spellings carried
+  the shape, so a composite request holding =std::vector<domain::csa>= compiled
+  as a type with no shape at all.
+
+Both live in one function now, with a test: the two callers had drifted because
+they were copies. The name classification reads the model's =#+type:= line
+rather than its filename, because a junction called
+=ores.refdata.calendar_date.org= has no suffix to go by.
+
+Verified, in this order: =ores.refdata.api.lib= builds with no errors, then
+=ores.refdata.api.tests= 83 cases / 598 assertions, then the component's four
+suites through ctest, with a database rebuilt for this checkout.
+
+One suite is red and it is not this branch's: =ores.refdata.core='s
+curve-configuration round trip loses a =BusinessDayConvention= spelling. The same
+case fails on origin/main-based worktrees that hold none of these changes
+(prime_origin fails the same two; festive_dijkstra one; merry_newton none), so
+the witness is the estate, not an argument.
+
+** The curve-configuration round trip, investigated (2026-10-31)
+
+=ores.refdata.core='s round trip is red on this branch, and it is not this
+branch's. The investigation found two defects in the test's own expectation,
+both carried in with =bc083d5498= ("Keep one code for a business day convention in
+the store"), and neither of them involves a codec.
+
+- =as_stored= assigns the canonicalising helper's =std::string= result into an
+  =std::optional<std::string>= member. For a row that states no convention the
+  helper answers ="",= so the expectation gains an empty convention where the
+  document states none, and the store rightly returns none: "BusinessDayConvention
+  was lost". Proved by rebuilding the test with the empty optional preserved --
+  the Example_63 case passes and the suite drops to one failure.
+- The expectation canonicalises a spelling the store never canonicalises. The
+  document says =MF=; =as_stored= maps it to =ModifiedFollowing=; the database
+  held =MF=. The defect is in production, not the test:
+  =stored_business_day_convention= has exactly one caller in the tree, and it is
+  the test. The invariant its own comment states -- "the mapping layer converts
+  the stated spelling to the code before a row is written" -- is not implemented,
+  and the SQL value guard only refuses a value, it never rewrites one.
+
+So the test asserts behaviour that nothing implements. The remedy belongs to the
+story that introduced it: either the mapping layer canonicalises, which is what
+its commit says it does, or the test stops expecting it.
 
 * Test Scenarios
 

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 26C7679C-09DD-5C62-B94F-ADD5167F3C50
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the inflation_cap_floor_volatility_strikes commands from the shell?
+#+description: Every command the inflation_cap_floor_volatility_strikes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:inflation_cap_floor_volatility_strikes:
+
+This file documents the inflation_cap_floor_volatility_strikes resource at the shell, one section per command. Every command is a subcommand of =inflation_cap_floor_volatility_strikes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4F568790-4EBB-5B7C-B546-464433F621BA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.list=.
+
+#+name: inflation_cap_floor_volatility_strikes-list
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-list.ores :exports none
+inflation_cap_floor_volatility_strikes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 88B9BEAA-5021-5503-88ED-5E08643C8B04
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes get <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.get=.
+
+#+name: inflation_cap_floor_volatility_strikes-get
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-get.ores :exports none
+inflation_cap_floor_volatility_strikes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A4BBE04B-6EE4-58B3-9339-97A00C7B5E6D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.get_many=.
+
+#+name: inflation_cap_floor_volatility_strikes-get-many
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-get-many.ores :exports none
+inflation_cap_floor_volatility_strikes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5BEE0305-C78A-58BF-8295-556D77ED4EA8
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes add <inflation_cap_floor_volatility_config_id> <axis> <strikes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.put=.
+
+#+name: inflation_cap_floor_volatility_strikes-add
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-add.ores :exports none
+inflation_cap_floor_volatility_strikes add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C0F5D931-BB38-5372-9DF8-7C3859A8865F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes set <id> <inflation_cap_floor_volatility_config_id> <axis> <strikes> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.put=.
+
+#+name: inflation_cap_floor_volatility_strikes-set
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-set.ores :exports none
+inflation_cap_floor_volatility_strikes set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D9CEAE1D-8D7F-583A-AF93-9C59508C0B46
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes put-many --count <n> <id> <inflation_cap_floor_volatility_config_id> <axis> <strikes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.put_many=.
+
+#+name: inflation_cap_floor_volatility_strikes-put-many
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-put-many.ores :exports none
+inflation_cap_floor_volatility_strikes put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 77AABB11-9AD8-5C13-9B36-902C642A638F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.delete=.
+
+#+name: inflation_cap_floor_volatility_strikes-delete
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-delete.ores :exports none
+inflation_cap_floor_volatility_strikes delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0D183B11-390E-5AC6-BE50-0E3C8C2DD5DE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes.delete_many=.
+
+#+name: inflation_cap_floor_volatility_strikes-delete-many
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-delete-many.ores :exports none
+inflation_cap_floor_volatility_strikes delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EC79C70E-C001-5408-B599-6F873A29257D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes_versions.list=.
+
+#+name: inflation_cap_floor_volatility_strikes-versions
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-versions.ores :exports none
+inflation_cap_floor_volatility_strikes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 911C5276-3B52-51F9-B904-D107DC2F58E0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_cap_floor_volatility_strikes version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_cap_floor_volatility_strikes_versions.get=.
+
+#+name: inflation_cap_floor_volatility_strikes-version
+#+begin_src ores-shell :tangle inflation_cap_floor_volatility_strikes-version.ores :exports none
+inflation_cap_floor_volatility_strikes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

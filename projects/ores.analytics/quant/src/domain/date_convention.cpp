@@ -39,7 +39,7 @@ constexpr std::array<convention_entry, 7> conventions{{
     {"ModifiedFollowing", business_day_convention::modified_following},
     {"Preceding", business_day_convention::preceding},
     {"ModifiedPreceding", business_day_convention::modified_preceding},
-    {"Nearest", business_day_convention::nearest},
+    {"NEAREST", business_day_convention::nearest},
     {"HalfMonthModifiedFollowing", business_day_convention::half_month_modified_following},
 }};
 

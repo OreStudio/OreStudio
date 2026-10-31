@@ -3060,6 +3060,12 @@ def _convention_family_row(entry):
         'is_party': entry.write_mode == 'party',
         'is_by_id': entry.write_mode == 'by_id',
         'is_world': entry.write_mode == 'world',
+        # A family whose model states the wire codec carries its payload
+        # through the generated codec rather than the reflector, the same
+        # rule every generated domain type follows.
+        'has_wire_codec': entry.has_wire_codec,
+        'codec_include': (f"ores.{entry.component}.api/domain/{entry.entity}_codec.hpp"
+                          if entry.has_wire_codec else ""),
     }
 
 

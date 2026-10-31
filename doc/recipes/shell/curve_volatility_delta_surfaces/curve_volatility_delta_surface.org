@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3AFBA966-D227-5A13-886B-CA8BD2FC3655
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_volatility_delta_surfaces commands from the shell?
+#+description: Every command the curve_volatility_delta_surfaces submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_volatility_delta_surfaces:
+
+This file documents the curve_volatility_delta_surfaces resource at the shell, one section per command. Every command is a subcommand of =curve_volatility_delta_surfaces=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 30A58A99-76AC-5D55-B2A5-3178305BB5D4
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.list=.
+
+#+name: curve_volatility_delta_surfaces-list
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-list.ores :exports none
+curve_volatility_delta_surfaces list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D1EE7D96-39BE-5029-B9D8-0959C627D26A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.get=.
+
+#+name: curve_volatility_delta_surfaces-get
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-get.ores :exports none
+curve_volatility_delta_surfaces get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E80AACE6-4EF5-5D96-ABD2-2689C915D030
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.get_many=.
+
+#+name: curve_volatility_delta_surfaces-get-many
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-get-many.ores :exports none
+curve_volatility_delta_surfaces get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5964226E-5FBE-5EED-85CD-55C910B1CC63
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces add <curve_volatility_kind_id> <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.put=.
+
+#+name: curve_volatility_delta_surfaces-add
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-add.ores :exports none
+curve_volatility_delta_surfaces add 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 81DEB945-6BEE-59FC-9E45-EE68407931BE
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces set <id> <curve_volatility_kind_id> <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.put=.
+
+#+name: curve_volatility_delta_surfaces-set
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-set.ores :exports none
+curve_volatility_delta_surfaces set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4297ED64-2561-5352-9B13-CF62B63DBEC0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces put-many --count <n> <id> <curve_volatility_kind_id> <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.put_many=.
+
+#+name: curve_volatility_delta_surfaces-put-many
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-put-many.ores :exports none
+curve_volatility_delta_surfaces put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D27EB192-712A-5D08-A717-171A9028128F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.delete=.
+
+#+name: curve_volatility_delta_surfaces-delete
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-delete.ores :exports none
+curve_volatility_delta_surfaces delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 164B7EFF-3298-53E3-B80E-E3DF78F4CC73
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces.delete_many=.
+
+#+name: curve_volatility_delta_surfaces-delete-many
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-delete-many.ores :exports none
+curve_volatility_delta_surfaces delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: CE7AF5D2-4986-538A-84B8-88F09ABDD5E4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces_versions.list=.
+
+#+name: curve_volatility_delta_surfaces-versions
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-versions.ores :exports none
+curve_volatility_delta_surfaces versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 3492D72A-B2C0-5CD5-9EE8-6830C72B01A8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_delta_surfaces version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_delta_surfaces_versions.get=.
+
+#+name: curve_volatility_delta_surfaces-version
+#+begin_src ores-shell :tangle curve_volatility_delta_surfaces-version.ores :exports none
+curve_volatility_delta_surfaces version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

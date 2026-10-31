@@ -181,6 +181,13 @@ and the code state one thing while both exist. The file reads two sources becaus
 each answers a question the other cannot: the reader's table says which renderings
 mean one fact, and the parser map says which renderings a document may write.
 
+The form a configuration holds is one of those renderings, so a document may write
+it. That is an invariant the generator enforces, and it is why the export needs no
+second mapping: a form no document could write would be a second table, and would
+state the fact twice. Four forms were the exception — =ACT/360 (incl. last)=,
+=ACT/365 (Canadian Bond)=, =ACT/365 (JGB)= and =Nearest= — and each took the
+spelling the schema states instead.
+
 Two mismatches between those sources are defects the reader cannot see, and the
 check named both while the sets were built: a rendering the parser accepts and the
 reader's table omits is a document the engine reads and this store refuses, and a

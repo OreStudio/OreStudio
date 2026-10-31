@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: BC522AF4-85E0-5243-B0F5-22499D205ECB
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cap_floor_proxy_configs commands from the shell?
+#+description: Every command the cap_floor_proxy_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cap_floor_proxy_configs:
+
+This file documents the cap_floor_proxy_configs resource at the shell, one section per command. Every command is a subcommand of =cap_floor_proxy_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DFAF9BE4-A6A3-52AF-AC2A-5122CAEBC3F8
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.list=.
+
+#+name: cap_floor_proxy_configs-list
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-list.ores :exports none
+cap_floor_proxy_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 1E0DB246-FFD8-5B2A-9A74-C32FC20F2A34
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.get=.
+
+#+name: cap_floor_proxy_configs-get
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-get.ores :exports none
+cap_floor_proxy_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 2BC8C3E1-C967-5635-BFF6-34AE5D19612D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.get_many=.
+
+#+name: cap_floor_proxy_configs-get-many
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-get-many.ores :exports none
+cap_floor_proxy_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6644557B-475A-5B49-B3C1-F92C0E7F886A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs add <cap_floor_volatility_config_id> <source_curve_id> <source_index> <source_rate_computation_period> <target_index> <target_rate_computation_period> <target_on_cap_settlement_days> <scaling_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.put=.
+
+#+name: cap_floor_proxy_configs-add
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-add.ores :exports none
+cap_floor_proxy_configs add 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1B7652D6-45C6-5C86-BC60-DBABEB4810DD
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs set <id> <cap_floor_volatility_config_id> <source_curve_id> <source_index> <source_rate_computation_period> <target_index> <target_rate_computation_period> <target_on_cap_settlement_days> <scaling_factor> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.put=.
+
+#+name: cap_floor_proxy_configs-set
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-set.ores :exports none
+cap_floor_proxy_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D72A52D3-B7FF-5AC5-B20D-9876FD0C2666
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs put-many --count <n> <id> <cap_floor_volatility_config_id> <source_curve_id> <source_index> <source_rate_computation_period> <target_index> <target_rate_computation_period> <target_on_cap_settlement_days> <scaling_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.put_many=.
+
+#+name: cap_floor_proxy_configs-put-many
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-put-many.ores :exports none
+cap_floor_proxy_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B67223F5-28C1-5C96-9E14-394FBF8B57EE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.delete=.
+
+#+name: cap_floor_proxy_configs-delete
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-delete.ores :exports none
+cap_floor_proxy_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8E8938D5-6039-5C8E-A948-FB21C416CDE9
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs.delete_many=.
+
+#+name: cap_floor_proxy_configs-delete-many
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-delete-many.ores :exports none
+cap_floor_proxy_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0180AD44-3418-5C3E-B58C-8D05F2F8EB58
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs_versions.list=.
+
+#+name: cap_floor_proxy_configs-versions
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-versions.ores :exports none
+cap_floor_proxy_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 3C888D03-65F3-5701-8A9F-FC4D13849FB1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cap_floor_proxy_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cap_floor_proxy_configs_versions.get=.
+
+#+name: cap_floor_proxy_configs-version
+#+begin_src ores-shell :tangle cap_floor_proxy_configs-version.ores :exports none
+cap_floor_proxy_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

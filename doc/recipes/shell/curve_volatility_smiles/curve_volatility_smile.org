@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3CE140C6-0EF6-5D2A-8C86-A86C91B99DF9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_volatility_smiles commands from the shell?
+#+description: Every command the curve_volatility_smiles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_volatility_smiles:
+
+This file documents the curve_volatility_smiles resource at the shell, one section per command. Every command is a subcommand of =curve_volatility_smiles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BA95CFE3-65E6-5367-8DEB-A7179070DE66
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.list=.
+
+#+name: curve_volatility_smiles-list
+#+begin_src ores-shell :tangle curve_volatility_smiles-list.ores :exports none
+curve_volatility_smiles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D1F5F61A-0EC4-53B2-810F-B8EE41B06E38
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.get=.
+
+#+name: curve_volatility_smiles-get
+#+begin_src ores-shell :tangle curve_volatility_smiles-get.ores :exports none
+curve_volatility_smiles get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 211B696B-AA84-5D6A-A2A3-D70E3A445101
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.get_many=.
+
+#+name: curve_volatility_smiles-get-many
+#+begin_src ores-shell :tangle curve_volatility_smiles-get-many.ores :exports none
+curve_volatility_smiles get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: C3FA5545-17E6-5CC7-AB1B-FF88D775B2A3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles add <curve_volatility_kind_id> <max_calibration_attempts> <exit_early_error_threshold> <max_acceptable_error> <residual_correction_dimension> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.put=.
+
+#+name: curve_volatility_smiles-add
+#+begin_src ores-shell :tangle curve_volatility_smiles-add.ores :exports none
+curve_volatility_smiles add 00000000-0000-0000-0000-000000000000 0 0 0 - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B75AD1D1-D3A0-5A2A-B1BD-999FDDBAC8BF
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles set <id> <curve_volatility_kind_id> <max_calibration_attempts> <exit_early_error_threshold> <max_acceptable_error> <residual_correction_dimension> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.put=.
+
+#+name: curve_volatility_smiles-set
+#+begin_src ores-shell :tangle curve_volatility_smiles-set.ores :exports none
+curve_volatility_smiles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0BC8CA42-B301-5163-926A-97E933786A4B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles put-many --count <n> <id> <curve_volatility_kind_id> <max_calibration_attempts> <exit_early_error_threshold> <max_acceptable_error> <residual_correction_dimension> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.put_many=.
+
+#+name: curve_volatility_smiles-put-many
+#+begin_src ores-shell :tangle curve_volatility_smiles-put-many.ores :exports none
+curve_volatility_smiles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 0 - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 20E6BEE2-155C-5CB8-9C86-807395F50A9E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.delete=.
+
+#+name: curve_volatility_smiles-delete
+#+begin_src ores-shell :tangle curve_volatility_smiles-delete.ores :exports none
+curve_volatility_smiles delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1FB27DA0-4226-54AE-BC5E-268F3F2DC2FB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles.delete_many=.
+
+#+name: curve_volatility_smiles-delete-many
+#+begin_src ores-shell :tangle curve_volatility_smiles-delete-many.ores :exports none
+curve_volatility_smiles delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 779AAE19-4304-5F5E-8924-164ABF628D58
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles_versions.list=.
+
+#+name: curve_volatility_smiles-versions
+#+begin_src ores-shell :tangle curve_volatility_smiles-versions.ores :exports none
+curve_volatility_smiles versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C829BA2C-2E2D-577B-801D-6C279D70E8E3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_smiles version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_smiles_versions.get=.
+
+#+name: curve_volatility_smiles-version
+#+begin_src ores-shell :tangle curve_volatility_smiles-version.ores :exports none
+curve_volatility_smiles version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

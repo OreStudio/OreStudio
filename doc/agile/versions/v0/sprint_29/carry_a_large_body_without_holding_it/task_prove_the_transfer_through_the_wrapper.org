@@ -64,6 +64,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- Two gaps the case list did not cover are closed: a streamed body reaches the
+  session byte counter, and a refusal outside a capability leaves no part file once
+  the session has finished discarding, which the case waits for rather than assumes.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -324,6 +324,127 @@ std::optional<std::size_t> resident_kb() {
 }
 
 /**
+ * @brief A sink that counts what the base class tells it to do.
+ */
+class streamed_counting_states final : public body_sink {
+public:
+    int consumed = 0;
+    int finished = 0;
+    int published = 0;
+    int discarded = 0;
+
+protected:
+    bool consume_chunk(std::string_view) override {
+        ++consumed;
+        return true;
+    }
+
+    bool finish_body() override {
+        ++finished;
+        return true;
+    }
+
+    bool publish_chunk() override {
+        ++published;
+        return true;
+    }
+
+    void discard() noexcept override {
+        ++discarded;
+    }
+};
+
+/**
+ * @brief Sends two streamed requests one after the other on one connection.
+ */
+std::vector<unsigned> post_twice_on_one_connection(std::uint16_t port,
+                                                   const std::string& target,
+                                                   const std::string& body,
+                                                   std::chrono::milliseconds budget) {
+    std::vector<unsigned> statuses;
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(budget);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return statuses;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return statuses;
+
+    for (auto round = 0; round < 2; ++round) {
+        http::request<http::string_body> req{http::verb::post, target, 11};
+        req.set(http::field::host, "127.0.0.1");
+        req.keep_alive(true);
+        req.body() = body;
+        req.prepare_payload();
+        http::write(stream, req, ec);
+        if (ec)
+            return statuses;
+
+        beast::flat_buffer buffer;
+        http::response<http::string_body> res;
+        http::read(stream, buffer, res, ec);
+        if (ec)
+            return statuses;
+        statuses.push_back(res.result_int());
+    }
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return statuses;
+}
+
+/**
+ * @brief Asks to send a body, waits for the interim answer, then sends it.
+ */
+std::optional<http::response<http::string_body>>
+post_after_continue(std::uint16_t port,
+                    const std::string& target,
+                    const std::string& body,
+                    std::chrono::milliseconds budget) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(budget);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    const auto head = "POST " + target + " HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: " +
+                      std::to_string(body.size()) + "\r\nExpect: 100-continue\r\n\r\n";
+    asio::write(stream, asio::buffer(head), ec);
+    if (ec)
+        return std::nullopt;
+
+    auto interim = std::string(64, '\0');
+    const auto read = stream.read_some(asio::buffer(interim), ec);
+    if (ec)
+        return std::nullopt;
+    interim.resize(read);
+    if (interim.rfind("HTTP/1.1 100 Continue", 0) != 0)
+        return std::nullopt;
+
+    asio::write(stream, asio::buffer(body), ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
+/**
  * @brief Watches this process's resident memory while something runs.
  */
 class resident_watch final {
@@ -710,6 +831,105 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
      */
     INFO("resident memory: before " << *baseline_kb << " kB, peak " << peak_kb << " kB");
     REQUIRE(peak_kb < *baseline_kb + 1024);
+}
+
+TEST_CASE("a_sink_publishes_only_a_body_it_has_finished", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the sink's own order: consume, finish, publish";
+
+    streamed_counting_states sink;
+
+    // Nothing may be kept before the whole body has arrived.
+    REQUIRE(!sink.publish());
+    REQUIRE(sink.consume("the first chunk"));
+    REQUIRE(!sink.publish());
+    REQUIRE(sink.finish());
+    REQUIRE(sink.publish());
+
+    // Publishing twice keeps the bytes once.
+    REQUIRE(sink.publish());
+    REQUIRE(sink.published == 1);
+    REQUIRE(sink.finished == 1);
+    REQUIRE(sink.consumed == 1);
+
+    // A published sink takes nothing more, and an abort cannot undo it.
+    REQUIRE(!sink.consume("too late"));
+    sink.abort();
+    REQUIRE(sink.discarded == 0);
+}
+
+TEST_CASE("a_sink_that_is_never_published_is_discarded", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an abandoned sink throws its bytes away";
+
+    streamed_counting_states sink;
+    REQUIRE(sink.consume("bytes nobody keeps"));
+    REQUIRE(sink.finish());
+    sink.abort();
+    sink.abort();
+
+    REQUIRE(sink.discarded == 1);
+    REQUIRE(sink.published == 0);
+}
+
+TEST_CASE("two_streamed_requests_are_answered_on_one_connection", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the stream leaves the connection usable";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    auto record = std::make_shared<streamed_sink_record>();
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
+
+    const auto statuses = post_twice_on_one_connection(
+        fixture.port(), "/stream", std::string(2048, 'x'), std::chrono::seconds(5));
+
+    REQUIRE(statuses.size() == 2);
+    REQUIRE(statuses[0] == 200);
+    REQUIRE(statuses[1] == 200);
+}
+
+TEST_CASE("a_streamed_route_answers_expect_continue_before_the_body", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a sink route still invites a body it will take";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    auto record = std::make_shared<streamed_sink_record>();
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
+
+    const auto answered = post_after_continue(
+        fixture.port(), "/stream", std::string(4096, 'x'), std::chrono::seconds(5));
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(record->bytes.size() == 4096);
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

@@ -78,6 +78,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- The sink's own order (a body is kept only once it has finished arriving, a
+  published sink takes nothing more, and a discarded one is discarded once) is
+  covered by its own cases, added after the task closed. Two streamed requests on
+  one connection and =Expect: 100-continue= on a sink route are covered too.
+
 - One parser loop serves every route. It branches once, on whether a sink exists:
   the streamed route hands the chunk on, the buffered route appends it to a string.
 - A body declared past the limit is refused before a sink exists, so nothing is

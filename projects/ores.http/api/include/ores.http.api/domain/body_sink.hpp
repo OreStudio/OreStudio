@@ -55,7 +55,7 @@ public:
      * with a 500 rather than reading a body that has nowhere to go.
      */
     bool consume(std::string_view chunk) {
-        if (published_)
+        if (published_ || discarded_)
             return false;
         return consume_chunk(chunk);
     }
@@ -66,7 +66,7 @@ public:
      * @returns false when the bytes taken so far cannot be completed.
      */
     bool finish() {
-        if (published_)
+        if (published_ || discarded_)
             return false;
         finished_ = finish_body();
         return finished_;
@@ -83,7 +83,7 @@ public:
     bool publish() {
         if (published_)
             return true;
-        if (!finished_)
+        if (discarded_ || !finished_)
             return false;
         published_ = publish_chunk();
         return published_;
@@ -92,12 +92,14 @@ public:
     /**
      * @brief Discards what was written.
      *
-     * Safe to call more than once, and safe after publish(), where it does
-     * nothing because the bytes are already kept.
+     * The bytes are discarded once and no more, and a published sink is left
+     * alone, so a caller may abort on every path without counting them.
      */
     void abort() noexcept {
-        if (!published_)
-            discard();
+        if (published_ || discarded_)
+            return;
+        discarded_ = true;
+        discard();
     }
 
     /**
@@ -120,12 +122,13 @@ protected:
     /// Keeps the bytes.
     virtual bool publish_chunk() = 0;
 
-    /// Discards the bytes. Called once, by abort() unless the bytes were kept.
+    /// Discards the bytes. Called at most once, by abort(), unless they were kept.
     virtual void discard() noexcept = 0;
 
 private:
     bool finished_ = false;
     bool published_ = false;
+    bool discarded_ = false;
 };
 
 }

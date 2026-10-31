@@ -70,6 +70,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- The session's byte counter now has a test that a streamed body's bytes reach it:
+  a capability token carries a session, the gateway records what it reports, and
+  the count is asserted against a 2 MiB upload. Counting the request body instead
+  reports zero there, which the case catches.
+
 - The measurement is the test process's own =VmRSS=, read from =/proc/self/status=
   every 5 ms while the upload runs, and the peak is kept. A peak file counter
   (=VmHWM=) would also count everything the process did before the test.

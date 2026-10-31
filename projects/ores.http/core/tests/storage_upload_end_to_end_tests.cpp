@@ -132,6 +132,21 @@ public:
         return "http://127.0.0.1:" + std::to_string(port_);
     }
 
+    /// Records what the gateway reports for a session's traffic.
+    void record_bytes(std::shared_ptr<std::atomic<std::uint64_t>> sent,
+                      std::shared_ptr<std::atomic<std::uint64_t>> received,
+                      std::shared_ptr<std::atomic<int>> calls) {
+        server_->set_session_bytes_callback(
+            [sent, received, calls](const std::string&,
+                                    std::chrono::system_clock::time_point,
+                                    std::size_t bytes_sent,
+                                    std::size_t bytes_received) {
+                *sent += bytes_sent;
+                *received += bytes_received;
+                ++(*calls);
+            });
+    }
+
     static constexpr std::string_view issuer = "ores.test";
     static constexpr std::string_view audience = "ores.test";
 
@@ -143,6 +158,7 @@ private:
         options.worker_threads = 2;
         options.default_max_body_size = 1024 * 1024;
         options.max_body_size = 64ull * 1024 * 1024;
+        options.bytes_flush_interval = std::chrono::seconds(1);
         return options;
     }
 
@@ -162,6 +178,9 @@ std::string capability_token(std::string_view bucket, std::string_view prefix) {
     claims.subject = "00000000-0000-0000-0000-000000000001";
     claims.issuer = std::string(storage_gateway::issuer);
     claims.audience = std::string(storage_gateway::audience);
+
+    claims.session_id = "00000000-0000-0000-0000-000000000002";
+    claims.session_start_time = std::chrono::system_clock::now();
 
     for (const auto* op : {"get", "put", "delete", "list"})
         claims.storage_grants.push_back(ores::security::jwt::storage_grant{
@@ -203,6 +222,32 @@ public:
 private:
     fs::path path_;
 };
+
+/**
+ * @brief How many part files are waiting under a root.
+ */
+std::size_t count_waiting_parts(const fs::path& root) {
+    auto parts = std::size_t{0};
+    if (!fs::exists(root))
+        return parts;
+    for (const auto& entry : fs::recursive_directory_iterator(root))
+        if (entry.path().extension() == ".part")
+            ++parts;
+    return parts;
+}
+
+/**
+ * @brief Waits for the gateway to finish discarding, then counts part files.
+ *
+ * The client sees the answer before the session has torn its sink down, so a
+ * refusal's part file can outlive the response by a moment.
+ */
+std::size_t parts_after_the_answer(const fs::path& root, std::chrono::milliseconds budget) {
+    const auto deadline = std::chrono::steady_clock::now() + budget;
+    while (count_waiting_parts(root) != 0 && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    return count_waiting_parts(root);
+}
 
 /**
  * @brief Writes a file of the given size without holding it.
@@ -249,11 +294,35 @@ TEST_CASE("an_upload_through_the_gateway_round_trips", "[storage_upload][end_to_
     REQUIRE(answer.find(expected_digest) != std::string::npos);
 
     // No part file is left behind.
-    auto parts = std::size_t{0};
-    for (const auto& entry : fs::recursive_directory_iterator(objects.path()))
-        if (entry.path().extension() == ".part")
-            ++parts;
-    REQUIRE(parts == 0);
+    REQUIRE(parts_after_the_answer(objects.path(), std::chrono::seconds(5)) == 0);
+}
+
+TEST_CASE("a_streamed_body_reaches_the_session_counter", "[storage_upload][end_to_end]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a streamed body is counted for its session";
+
+    scratch_dir objects("ores-e2e-objects-");
+    scratch_dir files("ores-e2e-files-");
+
+    const auto size = 2ull * 1024 * 1024;
+    const auto source = write_file(files.path() / "package.tar.gz", size, 'w');
+
+    storage_gateway gateway(objects.path().string(), 64ull * 1024 * 1024);
+    auto sent = std::make_shared<std::atomic<std::uint64_t>>(0);
+    auto received = std::make_shared<std::atomic<std::uint64_t>>(0);
+    auto calls = std::make_shared<std::atomic<int>>(0);
+    gateway.record_bytes(sent, received, calls);
+
+    ores::storage::net::storage_transfer client(gateway.url(), capability_token("ores", ""));
+    client.upload("ores", "compute/packages/counted.tar.gz", source);
+
+    // The totals are flushed from a timer, so the report arrives after the answer.
+    for (auto waited = 0; waited < 2000 && received->load() == 0; ++waited)
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+    REQUIRE(calls->load() > 0);
+    REQUIRE(received->load() == size);
+    REQUIRE(sent->load() > 0);
 }
 
 TEST_CASE("a_download_through_the_gateway_returns_the_stored_bytes",
@@ -299,10 +368,5 @@ TEST_CASE("an_upload_outside_the_capability_is_refused_and_leaves_nothing",
     const local_store store(objects.path());
     REQUIRE(!store.exists("ores", "compute/packages/package.tar.gz"));
 
-    auto parts = std::size_t{0};
-    if (fs::exists(objects.path()))
-        for (const auto& entry : fs::recursive_directory_iterator(objects.path()))
-            if (entry.path().extension() == ".part")
-                ++parts;
-    REQUIRE(parts == 0);
+    REQUIRE(parts_after_the_answer(objects.path(), std::chrono::seconds(5)) == 0);
 }

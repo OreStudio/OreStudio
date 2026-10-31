@@ -1140,6 +1140,13 @@ belong in the contract.
 | =GET /api/refdata/:resource= | not an API: a router that hides the schema | dies; the generated collection per resource already exists |
 | a payload carrying =displayColour=, =isButtonVisible=, =formattedLabel= | a rendering concern, not an API | the client |
 
+Three paths in the row above are targets and not what answers today. The views behind them
+are =GET /api/overview=, =GET /api/blotter= and =GET /api/requests=, which a screen calls
+now; the inventory at =doc/knowledge/architecture/http_route_inventory.org= names every
+view, the route it answers on, and the client module that calls it. So the port moves a
+working view behind the same request, and the published namespace arrives as a versioned
+change after the cutover rather than as part of it.
+
 *A composed view is legitimate only when it satisfies all four of these.* Without
 them it is the old BFF again, whatever it is called.
 

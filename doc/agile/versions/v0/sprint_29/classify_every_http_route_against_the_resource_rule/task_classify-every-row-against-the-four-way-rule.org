@@ -70,10 +70,13 @@ in that family inherits it instead of failing the gate for a decision already ta
 
 * Notes
 
-- The design's own example views do not exist in this tree. There is no
-  =/api/v1/tenancy/estate=, no =/api/v1/trading/blotter= and no
-  =/api/v1/workflow/inbox=. Every composed view the table names is a BFF route today,
-  so the port invents these views in ores.http rather than moving them.
+- The three view paths the design names as examples, =/api/v1/tenancy/estate=,
+  =/api/v1/trading/blotter= and =/api/v1/workflow/inbox=, are targets and not what
+  answers today. The views behind them are real routes a screen calls now,
+  =GET /api/overview=, =GET /api/blotter= and =GET /api/requests=, and the composed views
+  table names the client module that calls each one. The port therefore moves working
+  views into ores.http with the same request, rather than inventing them, and the
+  published namespace is a versioned change after the cutover.
 - The 28 routes called not-an-API cluster in three files: =records.ts= and
   =synthetic.ts= (a generic router whose payload shape changes with a string in the
   URL) and =classifications.ts= (label codes, display order and column widths). The

@@ -55,6 +55,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
   answer are a view.
 - The area list is the published namespace, and the owner column names the component that
   must answer each view after the port, which is not always the module answering it today.
+- A view keeps the route a screen calls until the cutover, so the test for it is the same
+  request against either server. Moving it to the published namespace is a versioned change
+  of its own, and doing it in the port would force every like-for-like test to compare two
+  different URLs.
 - The gate counts the registrations each server declares and compares them with the table,
   because a scanner that reads one line at a time silently dropped six routes on its first
   run and the gate could not see them either.

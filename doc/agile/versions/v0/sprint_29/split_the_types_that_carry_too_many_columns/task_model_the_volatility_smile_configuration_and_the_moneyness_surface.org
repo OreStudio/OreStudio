@@ -33,9 +33,9 @@ gives the ten parts the shell address the last split left out.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | All three items are done and the database round trips prove each. |
 | Waiting on   | Nothing.                               |
-| Next         | Model the parametric smile as a part keyed by the kind row. |
+| Next         | Open the pull request.                 |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -93,19 +93,68 @@ the permissions are seeded, and the shell commands and recipes are generated.
 Each of the ten parts, and the three this task adds, gets a generated shell
 command with its recipe, so the seeded permissions have a caller.
 
-* Measurements
+* Result
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+All three items are done.
+
+** The parametric smile
+
+=curve_volatility_smile= holds the calibration and the optional residual
+correction dimension, keyed by the kind. =curve_volatility_smile_parameter=
+holds the named parameters with their place in the list, keyed by the smile. The
+projection reads the element wherever a strike, delta or moneyness surface states
+it and writes it back under the same element, and a database round trip of a
+strike surface that states one proves the path.
+
+The name is =curve_volatility_smile= and not =curve_volatility_parametric_smile=
+for two reasons: the curve entity of that name already exists with a different
+owner, and the longer name overflowed the identifier length the store keeps, so
+PostgreSQL truncated the parameter table's name while the generated repository
+asked for the full one.
+
+** The moneyness surface
+
+=curve_volatility_moneyness_surface= is the strike surface's grid with moneyness
+in place of strikes, keyed by the kind. =MoneynessSurface= now imports, round
+trips through the store and exports, and the projection no longer refuses it.
+=ApoFutureSurface= is still refused, and is not part of this task.
+
+** The shell addresses
+
+Thirteen generated command units with their recipes: the ten parts the split
+left, the two new smile parts and the moneyness part. The seeded permissions now
+have a caller, and the refdata menu registers all thirteen.
+
+** A guard the tests found
+
+The value guard trimmed only spaces, so the corpus's three-line =SwapTenors=
+failed the set it is held to: the item arrived with a tab and a newline in front
+of it. It now trims every whitespace character the layout may leave. That
+failure belongs to the guard and not to this branch: it appeared when the store
+began enforcing the value sets.
+
+** What is still red, and whose it is
+
+=check_component_drift --component refdata= names twenty-six
+=convention_family_*.cpp= files that =main= hand-edited to carry the generated
+codec. Regenerating them would undo that edit, so this branch leaves them alone
+and the gate stays red until the generator renders what those files hold. It
+names nothing this branch produced.
+
+Verified: =./compass.sh build= exits 0; the refdata, ore and shell refdata suites
+pass, including two new database round trips; the codegen suite passes 1793
+tests; =compass db recreate= applies the schema and the seeds; the ER diagrams,
+=compass lint= and the ER check pass.
+
+* Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Members the smile part carries | 7 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="curve_volatility_smile"'` | `4d7c3c01d2` |
+| Members the smile parameter part carries | 7 | same, for `curve_volatility_smile_parameter` | `4d7c3c01d2` |
+| Members the moneyness part carries | 13 | same, for `curve_volatility_moneyness_surface` | `e5e8787a4e` |
+| Generated shell command units the parts add | 13 | `projects/ores.codegen/scripts/check_shell_command_composition.py` | `99c56f839a` |
+| Refdata files the drift gate names, all of them =main='s convention family hand edits | 26 | `projects/ores.codegen/scripts/check_component_drift.py --component refdata --dry-run` | `99c56f839a` |
 
 * Notes
 

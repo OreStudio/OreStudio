@@ -56,6 +56,7 @@ second path derives them and the list and the record cannot disagree.
 
 #+begin_src cpp :name includes
 #include "ores.reporting.api/domain/cut.hpp"
+#include "ores.reporting.api/domain/cut_approval_detail.hpp"
 #include "ores.reporting.api/domain/cut_gap.hpp"
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.utility/domain/protocol.hpp"

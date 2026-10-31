@@ -26,6 +26,7 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/cut.hpp"
+#include "ores.reporting.api/domain/cut_approval_detail.hpp"
 #include "ores.reporting.api/domain/cut_gap.hpp"
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.utility/domain/protocol.hpp"

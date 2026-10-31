@@ -30,7 +30,7 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | The map states the rule each leaf's parser gives it, a set says how many values a document writes, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The 7 leaves no ORE source read names: three are built from a variable and four the extractor cannot reach. |
+| Next         | The 5 leaves no ORE source read names and the schema does not type: three are built from a variable and two the extractor cannot reach. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -440,6 +440,43 @@ a subtype or the curve screens read the map by address.
 numbers is in =curve.number_list=, an item that is not a number is not, an empty
 item is not, a list of periods is in =curve.period_list=, a value that is not a
 period is not, and =curve.period=, which is one value, refuses a comma.
+
+* The ORE schema is the second authority
+
+The parser says what the engine accepts; it is not the only authority. Where the
+parser reads a leaf as a plain string, the schema still declares a type, and a
+leaf declared =xs:integer= is not free text: a document that writes =two= there is
+one the engine cannot parse, even though the parser hands the string on.
+
+=ore_schema_types.py= walks the schema from the document's root element to the
+leaf, following a named complex type and an inline one, and states the leaf's type
+when that type is narrower than =xs:string=. A type the schema enumerates is left
+alone for now, because the values are the schema's and the set needs labels of its
+own.
+
+The schema speaks in two places. A leaf the parser reads and states no more of
+takes the schema's type, after the parser's own answer. A leaf the extractor
+cannot reach at all takes the schema's type too, because nothing else speaks, and
+the row says so. The parser stays first in both, so a leaf the parser reads as a
+number keeps the number rule even where the schema is looser.
+
+=evidence/schema_types.py= prints the two authorities side by side. Before this
+slice 16 leaves stated text where the schema declared a narrower type: six
+=xs:integer=, four =xs:nonNegativeInteger=, five =bool= and one =xs:double=. Now
+none does.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 253 | 273 |
+| text, and the ORE source says why | 227 | 207 |
+| text, because no ORE source read names the leaf | 7 | 5 |
+| leaves where the schema is narrower than the map | 16 | 0 |
+| leaves whose schema type the reader resolves | 462 | 467 |
+
+The 5 that remain are the three tenor leaves a variable names, =DefaultCurve/Type=
+and =Qualifier=. The schema types none of the five, so text is the honest answer
+rather than a gap. The 13 leaves whose schema type the reader does not resolve are
+listed by the evidence report; they all state a rule from another authority.
 
 * Plan
 

@@ -1,0 +1,92 @@
+the ORE schema's type for each mapped leaf
+  leaves                                  480
+  the schema resolves a type              467
+  the schema does not                      13
+
+what the two authorities say, by schema type and set
+   147  xs:string                          text
+    40  bool (boolean)                     flag
+    28  xs:integer (integer)               convention.integer
+    24  businessDayConvention              convention.business_day_convention
+    24  bool (boolean)                     curve.flag
+    16  dayCounter                         curve.day_counter
+    15  xs:string                          curve.list
+    14  dayCounter                         convention.day_counter
+    14  xs:string                          convention.period
+    13  frequencyType                      convention.frequency
+    13  calendar                           text
+     9  xs:nonNegativeInteger (integer)    convention.integer
+     6  businessDayConvention              curve.business_day_convention
+     6  currencyCode                       curve.currency
+     5  period (period)                    convention.period
+     5  extrapolationType                  text
+     5  volatilityType                     text
+     5  xs:string                          curve.number_list
+     5  dimensionType                      text
+     4  weekdayType                        text
+     4  currencyCode                       convention.currency
+     4  xs:nonNegativeInteger (integer)    curve.integer
+     3  xs:float (number)                  curve.number
+     2  xs:float (number)                  number
+     2  dateRule                           convention.date_generation_rule
+     2  dayOfMonth                         text
+     2  weekdayType                        convention.weekday
+     2  xs:string                          convention.atm_type
+     2  xs:string                          convention.delta_type
+     2  subPeriodsCouponType               convention.sub_periods_coupon_type
+     2  positiveDecimal (number)           curve.number
+     2  indexNameType                      text
+     2  xs:string                          curve.period
+     2  extendedCurrencyCode               curve.currency
+     2  inflationType                      text
+     2  xs:double (number)                 curve.number
+     1  xs:string                          convention.compounding
+     1  xs:string                          convention.bond_price_type
+     1  xs:decimal (number)                number
+     1  averagingDataPeriodType            convention.averaging_data_period
+     1  monthType                          convention.month
+     1  xs:unsignedLong (integer)          convention.integer
+     1  futureDateGenerationRule           text
+     1  overnightIndexFutureNettingType    text
+     1  xs:string                          convention.option_type
+     1  publicationRoll                    convention.inflation_swap_publication_roll
+     1  xs:string                          convention.integer
+     1  compounding                        convention.compounding
+     1  xs:string                          curve.currency
+     1  xs:string                          curve.number
+     1  dateRule                           text
+     1  xs:float (number)                  curve.integer
+     1  date                               text
+     1  xs:integer (integer)               curve.integer
+     1  commodityInterpolationType         text
+     1  xs:string                          curve.integer
+     1  commVolQuoteSuffix                 text
+     1  correlationType                    text
+     1  correlationQuoteType               text
+     1  defaultCurveType                   text
+     1  exerciseStyle                      text
+     1  equityType                         text
+     1  fxVolInterpolation                 text
+     1  smileType                          text
+     1  xs:string                          curve.fx_volatility_time_interpolation
+     1  frequencyType                      curve.frequency
+     1  interpolationMethodType            curve.yield_curve_interpolation_method
+     1  interpolationVariableType          curve.yield_curve_interpolation_variable
+
+the map states text where the schema is narrower
+  0 of the 480 leaves
+
+the schema does not resolve a type for these leaves
+  conventions.xsd|/Conventions/BMABasisSwap/OvernightLockouDays
+  conventions.xsd|/Conventions/CommodityFuture/AnchorDay/NthWeekday/Nth
+  conventions.xsd|/Conventions/CommodityFuture/OffPeakPowerIndexData/OffPeakHours
+  conventions.xsd|/Conventions/CommodityFuture/OptionNthWeekday/Nth
+  conventions.xsd|/Conventions/IntradayPowerLoad/Id
+  curveconfig.xsd|/CurveConfiguration/BondFutureVolatilities/BondFutureVolatility/UseOnlyPutCall
+  curveconfig.xsd|/CurveConfiguration/CDSVolatilities/CDSVolatility/Expiries
+  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/InputType
+  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/InterpolateOn
+  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/InterpolationMethod
+  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/StrikeInterpolation
+  curveconfig.xsd|/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/TimeInterpolation
+  curveconfig.xsd|/CurveConfiguration/YieldCurves/YieldCurve/ExtrapolationMethod

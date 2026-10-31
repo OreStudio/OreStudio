@@ -38,6 +38,7 @@ import generate_convention_kind_terms as terms  # noqa: E402
 import generate_value_sets as value_sets  # noqa: E402
 import convention_value_sets as convention_sets  # noqa: E402
 import curve_value_sets as curve_sets  # noqa: E402
+import ore_schema_types as schema_types  # noqa: E402
 
 MAP_JSON = os.path.join(ROOT, "projects", "ores.sql", "utility",
                         "ore_parameter_vocabularies.json")
@@ -56,7 +57,7 @@ ELEMENT = re.compile(r"/([^/\[]+)(?:\[[^\]]*\])?$")
 # may only fall. It falls when extract_curve_terms.py learns a form of read it
 # does not know yet; it rises when a projection column adds a leaf the extractor
 # cannot read, which is a rule stated as nothing.
-UNREAD_ALLOWED = 7
+UNREAD_ALLOWED = 5
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -154,7 +155,7 @@ def leaf_rules(addresses):
         if address not in addresses:
             continue
         code = curve_sets.set_of_leaf(term, section)
-        found.setdefault(address, describe(code, sets[code], term))
+        found.setdefault(address, describe(code, sets[code], term, address))
     for element, convention in terms_extracted()["conventions"].items():
         for term in convention["terms"]:
             leaf = term["name"]
@@ -165,7 +166,8 @@ def leaf_rules(addresses):
                 continue
             code = convention_sets.set_of_leaf(term, element)
             _, overridden = convention_sets.override_of(element, term)
-            found.setdefault(address, describe(code, sets[code], term, overridden))
+            found.setdefault(address,
+                             describe(code, sets[code], term, address, overridden))
     return found
 
 
@@ -182,15 +184,37 @@ ITEM_WORDS = {
 }
 
 
-def describe(code, entry, term, overridden=None):
+SCHEMA_WORDS = {
+    "integer": "a whole number",
+    "number": "a number",
+    "boolean": "true or false",
+    "period": "a period",
+}
+
+# What a person reads as the name of the set a schema type takes.
+SCHEMA_NAMES = {
+    "integer": "Whole number",
+    "number": "Number",
+    "boolean": "Flag",
+    "period": "Period",
+}
+
+
+def describe(code, entry, term, address, overridden=None):
     """Why one leaf takes one set, in the words a reviewer can check."""
     kind, parser = entry["source_kind"], term.get("parser")
     element, spelling = term["name"], term.get("type")
     cardinality = entry.get("cardinality", "one")
+    schema = schema_types.rule(*address)
+    source, source_ref = "ore_code", term.get("source_ref", "")
     if overridden:
         reason = overridden
     elif spelling == "list" and curve_sets.LIST_ITEM.get(element):
         reason = curve_sets.LIST_ITEM[element][1]
+    elif spelling == "text" and schema:
+        reason = (f"The ORE parser reads {element} as a string and the ORE schema "
+                  f"declares it {schema[1]}, so the value is {SCHEMA_WORDS[schema[0]]}.")
+        source, source_ref = "ore_schema", f"external/ore/xsd/{address[0]}"
     elif cardinality == "many":
         item = ITEM_WORDS.get(kind)
         reason = (f"ORE reads {element} into one vector, so the leaf holds a comma "
@@ -218,8 +242,33 @@ def describe(code, entry, term, overridden=None):
     else:
         reason = (f"ORE reads {element} as {spelling or kind}, and the set states the "
                   f"values that kind admits.")
-    return {"set": code, "name": entry["name"], "source": "ore_code",
-            "source_ref": term.get("source_ref", ""), "reason": reason}
+    return {"set": code, "name": entry["name"], "source": source,
+            "source_ref": source_ref, "reason": reason}
+
+
+def schema_only_rule(row, sets):
+    """The rule the ORE schema states for a leaf no ORE source read names.
+
+    A leaf the extractor cannot reach still has a schema type, and a leaf the
+    schema declares =bool= is not free text. The schema is the authority here
+    because it is the only one that speaks: nothing in the ORE code reads the
+    leaf in a form the extractor knows.
+    """
+    if row["schema"] != "curveconfig.xsd":
+        return None
+    found = schema_types.rule(row["schema"], row["xpath"])
+    if not found:
+        return None
+    code = curve_sets.TYPE_SETS[curve_sets.SCHEMA_TYPE_SETS[found[0]]]
+    return {
+        "set": code,
+        "name": SCHEMA_NAMES[found[0]],
+        "source": "ore_schema",
+        "source_ref": f"external/ore/xsd/{row['schema']}",
+        "reason": (f"No ORE source read names {row['element']} in a form the "
+                   f"extractor knows, and the ORE schema declares it {found[1]}, "
+                   f"so the value is {SCHEMA_WORDS[found[0]]}."),
+    }
 
 
 def unread_reason(row):
@@ -317,7 +366,7 @@ def map_rows(columns):
                 "ruled": True,
             }
             continue
-        rule = sets.get((row["schema"], row["xpath"]))
+        rule = sets.get((row["schema"], row["xpath"])) or schema_only_rule(row, sets)
         out[code] = {
             "code": code,
             "schema": row["schema"],

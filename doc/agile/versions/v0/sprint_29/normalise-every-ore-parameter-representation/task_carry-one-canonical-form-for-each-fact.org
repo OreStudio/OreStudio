@@ -397,6 +397,30 @@ Three eventing cases in =ores.refdata.core.tests= fail on a synthetic day counte
 code (=A365-0=) that the guard refuses. The generator invents the code, and the
 guard states the set; they fail on main too and are not this task's work.
 
+** What making the set the only statement cost, and found
+
+Three things came out of getting main green after these slices.
+
+A test that seeds a register row and then names it in a config relied on the set
+being the register's live rows: it invented the day counter code =A365-0=, and
+the catalogue view showed it because the view holds every tenant's rows. The set
+now states the spellings, so the fixture states one (=A365=). That is the
+behaviour the story asked for, and the three eventing cases are the only place
+that relied on the old one.
+
+Eight settings whose document value is a comma separated list were stated as one
+value, so the guard refused a good list. Their sets now state =cardinality =
+many=: =CalibrationMoneyness=, =BucketTimesDeltaGamma=, =BucketTimesVega=,
+=Bootstrap.CalibrationGrid=, =ReferenceCalibrationGrid=, =GridCoarsening=,
+=calibrationIndexTerms=, =recoveryRateProbabilities=, =QuantoCurrencyPairs= and
+=Pricing.ConversionRatioDiscretisationGrid=. The list rule already trims the
+whitespace around an item, which a multi-line element carries.
+
+=Heston.FixedValues= is the tenth, and it needs a set of its own: it is five
+flags, and it links to the shared =flag= set, which cannot become many without
+turning every boolean parameter into a list. That is curation work, not a schema
+change, and it is recorded here rather than guessed at.
+
 ** What the next slice needs
 
 Slice 2 adds =ores_reporting_canonical_value_fn(set_code, value)= and calls it

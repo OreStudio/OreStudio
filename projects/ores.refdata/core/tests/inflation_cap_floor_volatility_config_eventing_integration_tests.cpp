@@ -208,6 +208,13 @@ TEST_CASE("write_inflation_cap_floor_volatility_config_publishes_an_event",
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto day_counter_parent = ores::refdata::generators::generate_synthetic_day_counter(ctx);
+    /*
+     * The parent is what the config's soft key points at, and the value set states
+     * which spellings a day counter may be written as. A generated code is no
+     * spelling, so the parent is given one the set states; the guard then stores
+     * the form a configuration holds.
+     */
+    day_counter_parent.code = std::string("A365");
     ores::refdata::repository::day_counter_repository day_counter_repo;
     day_counter_repo.write(party_ctx, day_counter_parent);
     v.day_counter = day_counter_parent.code;

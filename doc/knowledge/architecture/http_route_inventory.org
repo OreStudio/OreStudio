@@ -1,0 +1,454 @@
+\
+#+title: The HTTP route inventory
+#+description: Every route the BFF and ores.http answer today, read from the code that registers them, with the design's classification beside each one.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:http:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+Every HTTP route either server answers, read from its own registration rather than
+typed by hand. The inventory exists so the classification has a complete list to
+work from: the design's four-way rule (a resource, a composed view, a transport
+capability, or a rendering concern that is not an API) is decided route by route in
+the columns to the right, and a route without a =Kind= is one nobody has decided.
+
+* How to regenerate
+
+#+begin_src sh :results verbatim
+python3 build/scripts/route_inventory.py --write
+#+end_src
+
+The tool keeps every =Kind=, =Area= and =Note= cell it finds and leaves a new
+route's cells empty, so a regeneration never overwrites a decision.
+
+* How it is enforced
+
+=python3 build/scripts/route_inventory.py --check= fails when a route is answered
+but absent from this table, and when the table names a route neither server
+answers. The gate runs it as the =route-inventory= check.
+
+* What it reads, and what it cannot
+
+The BFF declares every route with a literal path beginning =/api/=, so a route is a
+call whose first argument is that literal. A path built from a template literal in
+these sources is a =Map= lookup and not a route; none registers a route that way
+today.
+
+ores.http declares its routes with =router->get/post/put/patch/delete_/head=, and
+five of them state a path the code composes from a prefix constant; those rows name
+the variable and the line that declares it.
+
+What neither shape covers is a route registered some other way — a generated route
+table (K1), or a loop that registers a family. When such a route appears, the answer
+is to teach this tool that shape, not to add a row by hand: the row would not be
+verified.
+
+* The inventory
+
+402 routes: 288 answered by the BFF and 114 by ores.http.
+
+| Kind | Area | Method | Path | Server | Where | Note |
+|------+------+--------+------+--------+-------+------|
+|  |  | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:92 |  |
+|  |  | post | =/api/account/password= | bff | projects/ores.web/packages/bff/src/server.ts:1115 |  |
+|  |  | get | =/api/accounts= | bff | projects/ores.web/packages/bff/src/server.ts:1157 |  |
+|  |  | get | =/api/accounts/:accountId/access= | bff | projects/ores.web/packages/bff/src/server.ts:1286 |  |
+|  |  | get | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1709 |  |
+|  |  | put | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1731 |  |
+|  |  | post | =/api/accounts/:accountId/lock= | bff | projects/ores.web/packages/bff/src/server.ts:1588 |  |
+|  |  | get | =/api/accounts/:accountId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1397 |  |
+|  |  | put | =/api/accounts/:accountId/reporting-line= | bff | projects/ores.web/packages/bff/src/server.ts:1263 |  |
+|  |  | post | =/api/accounts/:accountId/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1417 |  |
+|  |  | delete | =/api/accounts/:accountId/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1432 |  |
+|  |  | post | =/api/accounts/:accountId/unlock= | bff | projects/ores.web/packages/bff/src/server.ts:1606 |  |
+|  |  | get | =/api/accounts/:username= | bff | projects/ores.web/packages/bff/src/server.ts:1570 |  |
+|  |  | get | =/api/accounts/:username/picture= | bff | projects/ores.web/packages/bff/src/server.ts:1182 |  |
+|  |  | put | =/api/accounts/:username/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1686 |  |
+|  |  | get | =/api/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:1550 |  |
+|  |  | get | =/api/agile/backlog= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:129 |  |
+|  |  | get | =/api/agile/board= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:101 |  |
+|  |  | get | =/api/agile/charts= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:113 |  |
+|  |  | get | =/api/agile/docs/:id= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:134 |  |
+|  |  | get | =/api/agile/sprints= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:96 |  |
+|  |  | get | =/api/agile/trees= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:124 |  |
+|  |  | get | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:325 |  |
+|  |  | post | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:376 |  |
+|  |  | delete | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:452 |  |
+|  |  | get | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:359 |  |
+|  |  | put | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:414 |  |
+|  |  | get | =/api/analytics/sensitivity-templates/:code/history= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:366 |  |
+|  |  | get | =/api/analytics/sensitivity-templates/choices= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:354 |  |
+|  |  | get | =/api/auth-events= | bff | projects/ores.web/packages/bff/src/audit.ts:114 |  |
+|  |  | get | =/api/blotter= | bff | projects/ores.web/packages/bff/src/blotter.ts:295 |  |
+|  |  | post | =/api/book-changes= | bff | projects/ores.web/packages/bff/src/book-changes.ts:89 |  |
+|  |  | post | =/api/book-changes/preview= | bff | projects/ores.web/packages/bff/src/book-changes.ts:76 |  |
+|  |  | get | =/api/books/:id= | bff | projects/ores.web/packages/bff/src/books.ts:150 |  |
+|  |  | put | =/api/books/books= | bff | projects/ores.web/packages/bff/src/books.ts:219 |  |
+|  |  | get | =/api/books/pick-lists= | bff | projects/ores.web/packages/bff/src/books.ts:175 |  |
+|  |  | put | =/api/books/portfolios= | bff | projects/ores.web/packages/bff/src/books.ts:231 |  |
+|  |  | get | =/api/books/portfolios/:id/rights= | bff | projects/ores.web/packages/bff/src/books.ts:202 |  |
+|  |  | get | =/api/books/tree= | bff | projects/ores.web/packages/bff/src/books.ts:125 |  |
+|  |  | get | =/api/bootstrap= | bff | projects/ores.web/packages/bff/src/server.ts:706 |  |
+|  |  | post | =/api/bootstrap/administrator= | bff | projects/ores.web/packages/bff/src/server.ts:737 |  |
+|  |  | post | =/api/bootstrap/complete= | bff | projects/ores.web/packages/bff/src/server.ts:777 |  |
+|  |  | get | =/api/change-reasons= | bff | projects/ores.web/packages/bff/src/server.ts:2729 |  |
+|  |  | get | =/api/classifications= | bff | projects/ores.web/packages/bff/src/classifications.ts:211 |  |
+|  |  | get | =/api/classifications/:list= | bff | projects/ores.web/packages/bff/src/classifications.ts:239 |  |
+|  |  | put | =/api/classifications/:list/order= | bff | projects/ores.web/packages/bff/src/classifications.ts:333 |  |
+|  |  | post | =/api/classifications/:list/rows= | bff | projects/ores.web/packages/bff/src/classifications.ts:292 |  |
+|  |  | delete | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:351 |  |
+|  |  | put | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:312 |  |
+|  |  | put | =/api/classifications/:list/rows/:code/label= | bff | projects/ores.web/packages/bff/src/classifications.ts:265 |  |
+|  |  | post | =/api/client-log= | bff | projects/ores.web/packages/bff/src/server.ts:3013 |  |
+|  |  | get | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:676 |  |
+|  |  | put | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:820 |  |
+|  |  | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:618 |  |
+|  |  | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:756 |  |
+|  |  | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:550 |  |
+|  |  | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:659 |  |
+|  |  | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 |  |
+|  |  | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 |  |
+|  |  | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 |  |
+|  |  | get | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:327 |  |
+|  |  | put | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:340 |  |
+|  |  | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 |  |
+|  |  | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 |  |
+|  |  | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 |  |
+|  |  | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:306 |  |
+|  |  | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:372 |  |
+|  |  | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:347 |  |
+|  |  | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:354 |  |
+|  |  | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:388 |  |
+|  |  | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:396 |  |
+|  |  | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:404 |  |
+|  |  | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:252 |  |
+|  |  | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:262 |  |
+|  |  | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:340 |  |
+|  |  | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:366 |  |
+|  |  | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:360 |  |
+|  |  | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2928 |  |
+|  |  | post | =/api/events/watch= | bff | projects/ores.web/packages/bff/src/server.ts:2970 |  |
+|  |  | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 |  |
+|  |  | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:681 |  |
+|  |  | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:364 |  |
+|  |  | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:460 |  |
+|  |  | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2813 |  |
+|  |  | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2802 |  |
+|  |  | get | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2824 |  |
+|  |  | post | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2787 |  |
+|  |  | get | =/api/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2845 |  |
+|  |  | get | =/api/labels= | bff | projects/ores.web/packages/bff/src/classifications.ts:255 |  |
+|  |  | get | =/api/lei-entities= | bff | projects/ores.web/packages/bff/src/server.ts:2527 |  |
+|  |  | get | =/api/login-info= | bff | projects/ores.web/packages/bff/src/server.ts:1762 |  |
+|  |  | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1782 |  |
+|  |  | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:87 |  |
+|  |  | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:171 |  |
+|  |  | get | =/api/marketdata/official= | bff | projects/ores.web/packages/bff/src/official.ts:95 |  |
+|  |  | post | =/api/marketdata/official/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/official.ts:206 |  |
+|  |  | get | =/api/marketdata/official/fixings= | bff | projects/ores.web/packages/bff/src/official.ts:170 |  |
+|  |  | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:157 |  |
+|  |  | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:242 |  |
+|  |  | delete | =/api/marketdata/routes/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:265 |  |
+|  |  | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:145 |  |
+|  |  | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:192 |  |
+|  |  | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:220 |  |
+|  |  | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1202 |  |
+|  |  | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1655 |  |
+|  |  | put | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1667 |  |
+|  |  | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1246 |  |
+|  |  | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:479 |  |
+|  |  | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:521 |  |
+|  |  | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:504 |  |
+|  |  | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:493 |  |
+|  |  | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1237 |  |
+|  |  | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1304 |  |
+|  |  | put | =/api/me/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1635 |  |
+|  |  | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:308 |  |
+|  |  | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:315 |  |
+|  |  | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:331 |  |
+|  |  | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1838 |  |
+|  |  | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1212 |  |
+|  |  | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 |  |
+|  |  | get | =/api/operations/grid= | bff | projects/ores.web/packages/bff/src/operations.ts:419 |  |
+|  |  | get | =/api/operations/grid/app-versions/:id= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:99 |  |
+|  |  | put | =/api/operations/grid/app-versions/:id/release-note= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:115 |  |
+|  |  | get | =/api/operations/grid/jobs/batches= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:189 |  |
+|  |  | get | =/api/operations/grid/jobs/batches/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:201 |  |
+|  |  | get | =/api/operations/grid/jobs/batches/:id/workunits= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:212 |  |
+|  |  | get | =/api/operations/grid/jobs/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:254 |  |
+|  |  | get | =/api/operations/grid/jobs/results/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:275 |  |
+|  |  | get | =/api/operations/grid/jobs/results/:id/output= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:281 |  |
+|  |  | get | =/api/operations/grid/jobs/workunits/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:227 |  |
+|  |  | get | =/api/operations/grid/jobs/workunits/:id/input= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:270 |  |
+|  |  | get | =/api/operations/grid/jobs/workunits/:id/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:238 |  |
+|  |  | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 |  |
+|  |  | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 |  |
+|  |  | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 |  |
+|  |  | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 |  |
+|  |  | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 |  |
+|  |  | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 |  |
+|  |  | post | =/api/oresmd/parse-many= | bff | projects/ores.web/packages/bff/src/oresmd.ts:121 |  |
+|  |  | get | =/api/oresmd/schema= | bff | projects/ores.web/packages/bff/src/oresmd.ts:86 |  |
+|  |  | get | =/api/overview= | bff | projects/ores.web/packages/bff/src/server.ts:1978 |  |
+|  |  | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2451 |  |
+|  |  | get | =/api/password-policy= | bff | projects/ores.web/packages/bff/src/server.ts:1139 |  |
+|  |  | get | =/api/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1452 |  |
+|  |  | post | =/api/provision-party= | bff | projects/ores.web/packages/bff/src/server.ts:2571 |  |
+|  |  | post | =/api/provision-tenant= | bff | projects/ores.web/packages/bff/src/server.ts:2623 |  |
+|  |  | get | =/api/qa/docs/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:163 |  |
+|  |  | get | =/api/qa/scenarios= | bff | projects/ores.web/packages/bff/src/qa.ts:151 |  |
+|  |  | get | =/api/qa/scenarios/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:156 |  |
+|  |  | get | =/api/qa/scenarios/:id/files/:name= | bff | projects/ores.web/packages/bff/src/qa.ts:227 |  |
+|  |  | put | =/api/qa/scenarios/:id/run= | bff | projects/ores.web/packages/bff/src/qa.ts:172 |  |
+|  |  | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 |  |
+|  |  | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 |  |
+|  |  | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 |  |
+|  |  | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 |  |
+|  |  | get | =/api/refdata/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/records.ts:565 |  |
+|  |  | get | =/api/refdata/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/records.ts:547 |  |
+|  |  | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:579 |  |
+|  |  | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:638 |  |
+|  |  | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:597 |  |
+|  |  | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:619 |  |
+|  |  | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:606 |  |
+|  |  | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:699 |  |
+|  |  | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:742 |  |
+|  |  | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:863 |  |
+|  |  | get | =/api/registration-policy= | bff | projects/ores.web/packages/bff/src/server.ts:811 |  |
+|  |  | get | =/api/reporting-tree= | bff | projects/ores.web/packages/bff/src/server.ts:1279 |  |
+|  |  | get | =/api/reporting/choices= | bff | projects/ores.web/packages/bff/src/reporting.ts:1044 |  |
+|  |  | get | =/api/reporting/configurations/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1100 |  |
+|  |  | get | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:743 |  |
+|  |  | post | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:841 |  |
+|  |  | delete | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:950 |  |
+|  |  | get | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:787 |  |
+|  |  | put | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:868 |  |
+|  |  | put | =/api/reporting/engine-settings/:id/groups/:group= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:898 |  |
+|  |  | get | =/api/reporting/engine-settings/:id/history= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:793 |  |
+|  |  | get | =/api/reporting/engine-settings/documentation= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:782 |  |
+|  |  | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 |  |
+|  |  | post | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1026 |  |
+|  |  | delete | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1144 |  |
+|  |  | get | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:974 |  |
+|  |  | put | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1045 |  |
+|  |  | get | =/api/reporting/pricing-engines/:id/history= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:986 |  |
+|  |  | get | =/api/reporting/pricing-engines/:id/ore-document= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1002 |  |
+|  |  | get | =/api/reporting/pricing-engines/vocabulary= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:970 |  |
+|  |  | get | =/api/reporting/report-health= | bff | projects/ores.web/packages/bff/src/reporting.ts:1110 |  |
+|  |  | get | =/api/reporting/reports= | bff | projects/ores.web/packages/bff/src/reporting.ts:1014 |  |
+|  |  | put | =/api/reporting/reports/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1174 |  |
+|  |  | get | =/api/reporting/reports/:id/configurations= | bff | projects/ores.web/packages/bff/src/reporting.ts:1074 |  |
+|  |  | post | =/api/reporting/reports/:id/run= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:295 |  |
+|  |  | get | =/api/reporting/reports/:segment= | bff | projects/ores.web/packages/bff/src/reporting.ts:1157 |  |
+|  |  | get | =/api/reporting/reports/by-name/:name= | bff | projects/ores.web/packages/bff/src/reporting.ts:1131 |  |
+|  |  | get | =/api/reporting/runs/:id= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:869 |  |
+|  |  | get | =/api/reporting/runs/:id/output= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:959 |  |
+|  |  | get | =/api/reporting/runs/:id/results= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:897 |  |
+|  |  | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:352 |  |
+|  |  | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:372 |  |
+|  |  | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:402 |  |
+|  |  | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:422 |  |
+|  |  | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:433 |  |
+|  |  | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:389 |  |
+|  |  | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1446 |  |
+|  |  | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1475 |  |
+|  |  | delete | =/api/roles/:name= | bff | projects/ores.web/packages/bff/src/server.ts:1535 |  |
+|  |  | put | =/api/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1496 |  |
+|  |  | get | =/api/roles/:roleId/holders= | bff | projects/ores.web/packages/bff/src/server.ts:1362 |  |
+|  |  | get | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1342 |  |
+|  |  | put | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1517 |  |
+|  |  | post | =/api/roles/:roleId/permissions/changes= | bff | projects/ores.web/packages/bff/src/server.ts:1378 |  |
+|  |  | get | =/api/roles/page= | bff | projects/ores.web/packages/bff/src/server.ts:1314 |  |
+|  |  | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2508 |  |
+|  |  | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 |  |
+|  |  | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1014 |  |
+|  |  | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1006 |  |
+|  |  | post | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:933 |  |
+|  |  | get | =/api/session-statistics= | bff | projects/ores.web/packages/bff/src/audit.ts:139 |  |
+|  |  | post | =/api/session/party= | bff | projects/ores.web/packages/bff/src/server.ts:1023 |  |
+|  |  | post | =/api/session/switch-party= | bff | projects/ores.web/packages/bff/src/server.ts:1067 |  |
+|  |  | get | =/api/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1808 |  |
+|  |  | post | =/api/sessions/:sessionId/end= | bff | projects/ores.web/packages/bff/src/audit.ts:183 |  |
+|  |  | get | =/api/sessions/active= | bff | projects/ores.web/packages/bff/src/server.ts:1827 |  |
+|  |  | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:849 |  |
+|  |  | get | =/api/site= | bff | projects/ores.web/packages/bff/src/server.ts:891 |  |
+|  |  | get | =/api/site/deployment= | bff | projects/ores.web/packages/bff/src/server.ts:914 |  |
+|  |  | get | =/api/structure-kinds= | bff | projects/ores.web/packages/bff/src/structures.ts:495 |  |
+|  |  | get | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:656 |  |
+|  |  | post | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:516 |  |
+|  |  | get | =/api/structures/:key= | bff | projects/ores.web/packages/bff/src/structures.ts:803 |  |
+|  |  | get | =/api/structures/:key/leg-candidates= | bff | projects/ores.web/packages/bff/src/structures.ts:972 |  |
+|  |  | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1018 |  |
+|  |  | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:924 |  |
+|  |  | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:928 |  |
+|  |  | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1247 |  |
+|  |  | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1108 |  |
+|  |  | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1201 |  |
+|  |  | get | =/api/synthetic/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1159 |  |
+|  |  | get | =/api/synthetic/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1179 |  |
+|  |  | post | =/api/synthetic/convert/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1376 |  |
+|  |  | post | =/api/synthetic/convert/fx-simple= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1395 |  |
+|  |  | post | =/api/synthetic/convert/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1412 |  |
+|  |  | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:954 |  |
+|  |  | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 |  |
+|  |  | post | =/api/synthetic/feed-selection/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1045 |  |
+|  |  | post | =/api/synthetic/feed-selection/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1066 |  |
+|  |  | post | =/api/synthetic/feeds/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1294 |  |
+|  |  | post | =/api/synthetic/feeds/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1305 |  |
+|  |  | get | =/api/synthetic/feeds/:id/ticks= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1085 |  |
+|  |  | get | =/api/synthetic/folder-feeds= | bff | projects/ores.web/packages/bff/src/synthetic.ts:989 |  |
+|  |  | post | =/api/synthetic/folders/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1321 |  |
+|  |  | post | =/api/synthetic/folders/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1346 |  |
+|  |  | get | =/api/synthetic/market-history= | bff | projects/ores.web/packages/bff/src/market-regime.ts:342 |  |
+|  |  | get | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:273 |  |
+|  |  | post | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:386 |  |
+|  |  | put | =/api/synthetic/market-regime/settings= | bff | projects/ores.web/packages/bff/src/market-regime.ts:402 |  |
+|  |  | get | =/api/synthetic/market-trace= | bff | projects/ores.web/packages/bff/src/market-regime.ts:283 |  |
+|  |  | post | =/api/synthetic/preview/ir-shape= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1449 |  |
+|  |  | post | =/api/synthetic/simulate/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1361 |  |
+|  |  | post | =/api/synthetic/simulate/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1437 |  |
+|  |  | get | =/api/tenant-setup= | bff | projects/ores.web/packages/bff/src/server.ts:792 |  |
+|  |  | get | =/api/tenant-statuses= | bff | projects/ores.web/packages/bff/src/server.ts:2479 |  |
+|  |  | get | =/api/tenant-types= | bff | projects/ores.web/packages/bff/src/server.ts:2492 |  |
+|  |  | get | =/api/tenants= | bff | projects/ores.web/packages/bff/src/server.ts:1868 |  |
+|  |  | delete | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2144 |  |
+|  |  | get | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2187 |  |
+|  |  | get | =/api/tenants/:code/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:2361 |  |
+|  |  | get | =/api/tenants/:code/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2385 |  |
+|  |  | get | =/api/tenants/:code/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2289 |  |
+|  |  | get | =/api/tenants/:code/people= | bff | projects/ores.web/packages/bff/src/server.ts:2316 |  |
+|  |  | get | =/api/tenors/catalogue= | bff | projects/ores.web/packages/bff/src/tenors.ts:198 |  |
+|  |  | put | =/api/tenors/conventions= | bff | projects/ores.web/packages/bff/src/tenors.ts:323 |  |
+|  |  | get | =/api/tenors/conventions/:code/resolutions= | bff | projects/ores.web/packages/bff/src/tenors.ts:296 |  |
+|  |  | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 |  |
+|  |  | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 |  |
+|  |  | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 |  |
+|  |  | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 |  |
+|  |  | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 |  |
+|  |  | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 |  |
+|  |  | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 |  |
+|  |  | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 |  |
+|  |  | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:245 |  |
+|  |  | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 |  |
+|  |  | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:325 |  |
+|  |  | get | =/api/trades/:id= | bff | projects/ores.web/packages/bff/src/trades.ts:308 |  |
+|  |  | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:269 |  |
+|  |  | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 |  |
+|  |  | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:169 |  |
+|  |  | get | =/api/ungrouped-trades= | bff | projects/ores.web/packages/bff/src/structures.ts:511 |  |
+|  |  | get | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:313 |  |
+|  |  | post | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:354 |  |
+|  |  | put | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:367 |  |
+|  |  | get | =/api/v1/assets/image_tags/by-image-id/{image_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:423 |  |
+|  |  | post | =/api/v1/assets/image_tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:409 |  |
+|  |  | post | =/api/v1/assets/image_tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:341 |  |
+|  |  | post | =/api/v1/assets/image_tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:381 |  |
+|  |  | delete | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:394 |  |
+|  |  | get | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:329 |  |
+|  |  | get | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:313 |  |
+|  |  | post | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:354 |  |
+|  |  | put | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:367 |  |
+|  |  | post | =/api/v1/assets/images/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:409 |  |
+|  |  | post | =/api/v1/assets/images/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:341 |  |
+|  |  | post | =/api/v1/assets/images/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:381 |  |
+|  |  | delete | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:394 |  |
+|  |  | get | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:329 |  |
+|  |  | get | =/api/v1/assets/images/{code}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:423 |  |
+|  |  | get | =/api/v1/assets/images/{code}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:439 |  |
+|  |  | get | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:313 |  |
+|  |  | post | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:354 |  |
+|  |  | put | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:367 |  |
+|  |  | post | =/api/v1/assets/tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:409 |  |
+|  |  | post | =/api/v1/assets/tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:341 |  |
+|  |  | post | =/api/v1/assets/tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:381 |  |
+|  |  | delete | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:394 |  |
+|  |  | get | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:329 |  |
+|  |  | get | =/api/v1/assets/tags/{name}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:423 |  |
+|  |  | get | =/api/v1/assets/tags/{name}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:439 |  |
+|  |  | delete | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:93 |  |
+|  |  | post | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:83 |  |
+| resource | auth | get | =/api/v1/auth/sessions/me= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:104 |  |
+|  |  | get | =/api/v1/iam/account_credentials= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:245 |  |
+|  |  | get | =/api/v1/iam/account_credentials/by-account-id/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:286 |  |
+|  |  | post | =/api/v1/iam/account_credentials/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:273 |  |
+|  |  | get | =/api/v1/iam/account_credentials/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:261 |  |
+|  |  | get | =/api/v1/iam/account_credentials/{id}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:304 |  |
+|  |  | get | =/api/v1/iam/account_credentials/{id}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:320 |  |
+|  |  | get | =/api/v1/iam/accounts= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:227 |  |
+|  |  | post | =/api/v1/iam/accounts/delete= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:251 |  |
+|  |  | post | =/api/v1/iam/accounts/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:255 |  |
+|  |  | post | =/api/v1/iam/accounts/put= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:221 |  |
+|  |  | get | =/api/v1/iam/accounts/{username}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:243 |  |
+|  |  | get | =/api/v1/iam/accounts/{username}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:268 |  |
+|  |  | get | =/api/v1/iam/accounts/{username}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:284 |  |
+|  |  | post | =/api/v1/iam/auth_events/list= | ores.http | projects/ores.http/iam/src/routes/iam/auth_event_operations_routes.cpp:125 |  |
+|  |  | get | =/api/v1/iam/login_info= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:198 |  |
+|  |  | post | =/api/v1/iam/login_info/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:226 |  |
+|  |  | get | =/api/v1/iam/login_info/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:214 |  |
+|  |  | post | =/api/v1/iam/ops/assign_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:179 |  |
+|  |  | post | =/api/v1/iam/ops/bootstrap_status= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:134 |  |
+|  |  | post | =/api/v1/iam/ops/change_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:325 |  |
+|  |  | post | =/api/v1/iam/ops/create_initial_admin= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:149 |  |
+|  |  | post | =/api/v1/iam/ops/end_session= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:149 |  |
+|  |  | post | =/api/v1/iam/ops/get_account_roles= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:208 |  |
+|  |  | post | =/api/v1/iam/ops/get_active_sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:135 |  |
+|  |  | post | =/api/v1/iam/ops/get_role_permissions= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:223 |  |
+|  |  | post | =/api/v1/iam/ops/get_session_statistics= | ores.http | projects/ores.http/iam/src/routes/iam/session_statistics_operations_routes.cpp:126 |  |
+|  |  | post | =/api/v1/iam/ops/lock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:265 |  |
+|  |  | post | =/api/v1/iam/ops/login= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:133 |  |
+|  |  | post | =/api/v1/iam/ops/logout= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:146 |  |
+|  |  | post | =/api/v1/iam/ops/lookup_country= | ores.http | projects/ores.http/iam/src/routes/iam/geo_operations_routes.cpp:124 |  |
+|  |  | post | =/api/v1/iam/ops/reset_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:295 |  |
+|  |  | post | =/api/v1/iam/ops/revoke_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:193 |  |
+|  |  | post | =/api/v1/iam/ops/signup= | ores.http | projects/ores.http/iam/src/routes/iam/signup_routes.cpp:124 |  |
+|  |  | post | =/api/v1/iam/ops/unlock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:280 |  |
+|  |  | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:236 |  |
+|  |  | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:310 |  |
+|  |  | get | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:290 |  |
+|  |  | post | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:331 |  |
+|  |  | put | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:344 |  |
+|  |  | post | =/api/v1/iam/permissions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:386 |  |
+|  |  | post | =/api/v1/iam/permissions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:318 |  |
+|  |  | post | =/api/v1/iam/permissions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:358 |  |
+|  |  | delete | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:371 |  |
+|  |  | get | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:306 |  |
+|  |  | get | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:313 |  |
+|  |  | post | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:354 |  |
+|  |  | put | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:367 |  |
+|  |  | post | =/api/v1/iam/roles/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:408 |  |
+|  |  | post | =/api/v1/iam/roles/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:341 |  |
+|  |  | post | =/api/v1/iam/roles/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:381 |  |
+|  |  | delete | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:394 |  |
+|  |  | get | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:329 |  |
+|  |  | get | =/api/v1/iam/roles/{name}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:423 |  |
+|  |  | get | =/api/v1/iam/roles/{name}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:439 |  |
+|  |  | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:238 |  |
+|  |  | get | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:288 |  |
+|  |  | post | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:329 |  |
+|  |  | put | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:342 |  |
+|  |  | post | =/api/v1/iam/sessions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:384 |  |
+|  |  | post | =/api/v1/iam/sessions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:316 |  |
+|  |  | post | =/api/v1/iam/sessions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:356 |  |
+|  |  | delete | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:369 |  |
+|  |  | get | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:304 |  |
+|  |  | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:147 |  |
+|  |  | get | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:320 |  |
+|  |  | post | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:361 |  |
+|  |  | put | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:374 |  |
+|  |  | post | =/api/v1/refdata/currencies/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:416 |  |
+|  |  | post | =/api/v1/refdata/currencies/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:348 |  |
+|  |  | post | =/api/v1/refdata/currencies/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:388 |  |
+|  |  | delete | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:401 |  |
+|  |  | get | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:336 |  |
+|  |  | get | =/api/v1/refdata/currencies/{iso_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:430 |  |
+|  |  | get | =/api/v1/refdata/currencies/{iso_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:446 |  |
+|  |  | get | =/api/v1/system-settings= | ores.http | projects/ores.http/core/src/routes/variability_routes.cpp:48 |  |
+|  |  | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2647 |  |
+|  |  | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2661 |  |
+|  |  | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 |  |
+|  |  | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:212 | path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) |
+|  |  | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:203 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:186 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | head | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:194 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+|  |  | put | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:169 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |

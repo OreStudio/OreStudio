@@ -20,11 +20,12 @@ of them. The curve configuration corpus writes nine distinct spellings, and five
 of them have no row in =day_count_fraction_type=, whose codes are canonical
 names rather than ORE's text.
 
-A curve keeps the spelling its document used, so the export writes it back
-unchanged, and refers to this table by it, so an unknown spelling is refused.
-The set is the schema's =dayCounter= enumeration in =ore_types.xsd=. Which
-canonical day count fraction each spelling means is not recorded here: nothing
-reads it yet, and a wrong mapping would be worse than none.
+The table is reference data: a list of the day counters ORE's schema names, for
+a person reading a curve configuration. It states no rule. Which spellings a
+column accepts is the value set's, =convention.day_counter=, which also states
+the form a configuration holds for each; no column is validated against this
+table, because a list of spellings and a rule over one form are two authorities
+and only one of them can be right.
 
 * Flags
 :PROPERTIES:

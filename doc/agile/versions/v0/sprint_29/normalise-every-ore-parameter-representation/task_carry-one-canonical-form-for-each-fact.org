@@ -421,6 +421,23 @@ flags, and it links to the shared =flag= set, which cannot become many without
 turning every boolean parameter into a list. That is curation work, not a schema
 change, and it is recorded here rather than guessed at.
 
+** One authority over a day counter column
+
+A curve's =day_counter= was ruled by two things at once: the value set, which
+states the renderings and the form a configuration holds, and the entity's soft
+foreign key to =ores_refdata_day_counters_tbl=, which states the spellings a
+register happens to hold. A generated code such as =A365-0= was the visible
+symptom: the register admitted it and the set refused it, so which authority
+spoke depended on the trigger order. The register also left a hole the tests
+hid: the guard stores =ACT/365.FIXED=, which a tenant's own register may not
+hold, so a later update of that row could fail a check the write had passed.
+
+The sixteen entities that named the register as a foreign key no longer do, so a
+day counter column has one authority. The table stays as reference data -- the
+list of day counters ORE's schema names, which a person may read -- and states no
+rule. Which spellings a column accepts, and which form a configuration holds, is
+the value set's.
+
 ** What the next slice needs
 
 Slice 2 adds =ores_reporting_canonical_value_fn(set_code, value)= and calls it

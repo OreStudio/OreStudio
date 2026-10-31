@@ -108,19 +108,6 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate day_counter (optional soft FK to ores_refdata_day_counters_tbl)
-    if NEW.day_counter is not null then
-        if not exists (
-            select 1 from ores_refdata_day_counters_tbl
-            where tenant_id = NEW.tenant_id
-              and code = NEW.day_counter
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid day_counter: %. No active day counter found with this spelling.', NEW.day_counter
-                using errcode = '23503';
-        end if;
-    end if;
-
     -- Validate conventions (optional field -- skip validation when null)
     if NEW.conventions is not null then
         NEW.conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.conventions);

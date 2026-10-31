@@ -108,6 +108,11 @@ const HISTORY_TYPES = new Set([
     // The central convention entity, which the conventions screen edits. Its
     // versions are the ones its terms hang off, so its record page reads them.
     'ores.refdata.convention',
+    // A cut is reporting's own record, and its page reads the acts that made it
+    // as its versions. The kind is the lookup that record names, so a type's
+    // page reads its own versions here too.
+    'ores.reporting.cut',
+    'ores.reporting.cut_kind',
     // A sensitivity template is analytics' own record too, and its history tab reads it here.
     'ores.analytics.sensitivity_template',
     // The publish record is market data's own: its versions are served by the

@@ -4030,6 +4030,9 @@ const pt: SourceCatalogue = {
                 calendars: 'Calendários de feriados',
                 tenors: 'Resolver um prazo',
                 tenorsBody: 'Que data um prazo dá num calendário, sob uma convenção.',
+                cutTypes: 'Tipos de corte',
+                cutTypesBody:
+                    'Os tipos de corte que um relatório pode escolher, com quem assina um e durante quanto tempo os seus cortes são guardados.',
                 calendarsBody: 'Regras, exceções e eventos, e os dias úteis que produzem.',
             },
         },
@@ -4319,6 +4322,9 @@ const pt: SourceCatalogue = {
                 pillars: 'Pilares',
                 check: 'Verificação',
                 sets: 'Conjuntos publicados',
+                body: 'O corpo',
+                authorisation: 'Autorização',
+                cuts: 'Cortes',
             },
         },
         fields: {
@@ -6484,6 +6490,167 @@ const pt: SourceCatalogue = {
         true: 'verdadeiro',
         false: 'falso',
     },
+    cuts: {
+        title: 'Cortes',
+        lead: 'Os corpos sobre os quais um run calcula: a população de negócios, os dados de mercado, os dados de referência e o motor, fixados num instante.',
+        readerNote:
+            'Um corte lê-se aqui. Tomar um corte à mão ainda não é oferecido neste ecrã: o percurso de tomada, a autorização que levanta e o corte LIVE são trabalho posterior.',
+        partialPage:
+            'Esta é a página mais recente dos cortes que os filtros retêm. Restrinja por mês ou por tipo para ler o resto.',
+        labelMissing: 'O tipo deste corte não está no armazém',
+        indicative: 'Indicativo',
+        monthHeading: '{month}',
+        cutCount: '{count} cortes',
+        columns: {
+            cut: 'Corte',
+            type: 'Tipo',
+            name: 'Nome',
+            family: 'Família',
+            signed: 'Assinado',
+            indicative: 'Valores',
+            retention: 'Retenção',
+            cutsHeld: 'Cortes',
+            month: 'Mês',
+            kind: 'Tipo',
+            timepoint: 'Instante',
+            state: 'Estado',
+            taker: 'Tomador',
+            authoriser: 'Autorizador',
+            runs: 'Runs',
+            scope: 'Âmbito',
+            centre: 'Centro',
+        },
+        filter: {
+            allKinds: 'Todos os tipos',
+            allStates: 'Todos os estados',
+            allMonths: 'Todos os meses',
+        },
+        states: {
+            draft: 'Rascunho',
+            incomplete: 'Incompleto',
+            taken: 'Tomado',
+            in_use: 'Em uso',
+            authorised: 'Autorizado',
+            refused: 'Recusado',
+            superseded: 'Substituído',
+        },
+        basis: {
+            draft: 'A tentativa está guardada e nenhuma tomada se verifica ainda.',
+            incomplete:
+                'O corpo não pôde ser montado; as lacunas dizem o que o fecharia.',
+            taken: 'O corpo está fixado e aguarda uma pessoa.',
+            inUse: 'O seu tipo não exige autorização, pelo que era utilizável na tomada.',
+            authorised: 'A autorização está registada.',
+            authorisedBy: 'Autorizado por {who}.',
+            refused: 'A autorização foi recusada, o que é terminal para este corpo.',
+            superseded: 'Um corte posterior do mesmo tipo e âmbito ocupa o seu lugar.',
+        },
+        notice: {
+            blocked:
+                '{count} cortes deste âmbito não podem servir um run, e os seus estados são: {states}.',
+            noSignature:
+                '{count} cortes estão em uso sem assinatura, porque o seu tipo não exige nenhuma.',
+        },
+        types: {
+            title: 'Tipos de corte',
+            lead: 'Os tipos de corte que um relatório pode escolher, com quem assina um, se os seus valores são indicativos, a regra que o resolve e durante quanto tempo os seus cortes são guardados.',
+            readerNote:
+                'Um tipo lê-se aqui. Criar um novo ainda não é oferecido: o seu destino de retenção é um nível que o armazém conhece por uma restrição, e nenhuma lista nomeia os níveis.',
+            partialCounts:
+                'As contagens são dos cortes mais recentes que a lista conseguiu ler, pelo que um tipo pode deter mais do que indica.',
+            unsigned: 'Sem assinatura',
+            official: 'Oficial',
+            months: '{count} meses',
+            destination: 'para {destination}',
+            rules: 'As suas regras',
+            approvalsRequired: 'Aprovações necessárias',
+            resolutionRule: 'Regra de resolução',
+            legalHold: 'Bloqueio legal',
+            held: 'Bloqueado na tomada',
+            notHeld: 'Não bloqueado',
+            order: 'Ordem de apresentação',
+            description: 'Para que serve',
+            indicativeValues: 'Os seus valores são indicativos',
+            retentionMonths: 'Retenção em meses',
+            legalHoldOnTake: 'Um corte deste tipo começa sob bloqueio legal',
+            destinationNote:
+                'O destino de retenção mantém o nível que o tipo já detém: nenhuma lista nomeia os níveis, pelo que este formulário não oferece nenhum.',
+            copyNote:
+                'Um corte copia a autorização e a retenção do seu tipo na tomada, pelo que uma alteração posterior do tipo não move o corpo já fixado.',
+            editTitle: 'Alterar o tipo de corte {code}',
+            removeTitle: 'Remover o tipo de corte {code}',
+            removeWarning:
+                'Um tipo sob o qual um corte foi tomado não pode ser removido enquanto esse corte existir, porque a etiqueta do corte lê a família do tipo.',
+            noCuts: 'Nenhum corte deste tipo foi tomado nesta parte.',
+        },
+        body: {
+            identity: 'A identidade',
+            identityLead:
+                'A etiqueta que uma pessoa cita deriva do tipo, do âmbito e do instante, e nunca é escrita.',
+            label: 'Etiqueta',
+            takeOrdinal: 'Tomada',
+            cutTime: 'Hora de corte nomeada',
+            retention: 'Retenção',
+            retentionValue: '{months} meses, para {destination}',
+            legalHold: 'Bloqueio legal',
+            held: 'Bloqueado',
+            notHeld: 'Não bloqueado',
+            deals: 'Os negócios',
+            dealsLead:
+                'A população é uma cópia do que o armazém de negócios detinha no instante, pelo que uma reexecução a reproduz em vez de consultar o armazém de novo.',
+            population: 'População de negócios',
+            dealCount: 'Negócios detidos',
+            dealCountGap:
+                'Nenhuma leitura devolve ainda os negócios de uma população, pelo que a página enuncia a referência que o corte registra.',
+            marketData: 'Os dados de mercado',
+            marketDataLead:
+                'O instantâneo fixado que resolveu cada papel de mercado no instante, com os conjuntos publicados que nomeia.',
+            snapshot: 'Instantâneo',
+            sets: 'Conjuntos publicados',
+            setsGap:
+                'Nenhuma leitura devolve ainda os conjuntos que um instantâneo fixa, pelo que a página enuncia a referência que o corte registra.',
+            referenceData: 'Os dados de referência',
+            referenceDataLead:
+                'As versões das convenções, dos calendários, das definições e das configurações de curva que a valorização leu.',
+            version: 'Versão',
+            engine: 'O motor e o código',
+            engineLead:
+                'O que calculou o resultado, para que uma reprodução seja a comparação de um só corpo.',
+            engineVersion: 'Versão do motor',
+            codeVersion: 'Versão do código',
+            record: 'O registo',
+            recordLead: 'Quem escreveu a linha, quando, e sob que motivo de alteração.',
+            modifiedBy: 'Modificado por',
+            performedBy: 'Executado por',
+            recordedAt: 'Registado',
+            notFixed: 'Não fixado neste corpo',
+        },
+        gaps: {
+            title: 'As lacunas ({count})',
+            lead: 'Cada parte que a montagem não pôde preencher. Um corpo com uma lacuna está incompleto e não mais pequeno, e a tomada não levanta nenhum pedido enquanto uma lacuna se verificar.',
+            part: 'Parte',
+            item: 'Item',
+            reason: 'Porque se verifica',
+        },
+        auth: {
+            required: 'Um corte {kind} é assinado antes de um run poder calcular a partir dele.',
+            notRequired:
+                '{kind} não exige autorização: o fundamento é um facto do tipo, e não uma ausência a explicar.',
+            acts: 'Os atos',
+            taken: 'Tomado',
+            decision: 'Decisão',
+            refusedAt: 'Recusado em {when}',
+            pending: 'A aguardar uma pessoa',
+            request: 'Pedido de aprovação',
+            decider: 'Quem decide',
+            refusal:
+                'A recusa diz: {reason}. Uma recusa é terminal para este corpo, pelo que o remédio é uma nova tomada.',
+            fourEyes:
+                'Os quatro olhos são a regra da caixa de entrada: uma decisão de quem pediu é recusada, e uma pessoa conta uma só vez.',
+            inboxGap:
+                'Levantar e decidir uma autorização a partir deste ecrã ainda não é oferecido. O pedido vive na caixa de entrada, e é na sua própria página que um decisor lhe responde.',
+        },
+    },
     reporting: {
         run: {
             start: 'Executar',
@@ -6608,6 +6775,9 @@ const pt: SourceCatalogue = {
                 reports: 'Relatórios',
                 reportsBody:
                     'As definições que as partes onde trabalha executam, e o estado da última execução de cada uma.',
+                cuts: 'Cortes',
+                cutsBody:
+                    'Os corpos sobre os quais um run calcula, com o estado de cada um e os runs que o usaram.',
             },
         },
         title: 'Relatórios',
@@ -6842,6 +7012,10 @@ const pt: SourceCatalogue = {
         sensitivityTemplatesRead: 'ver os modelos de sensibilidade',
         sensitivityTemplatesWrite: 'alterar os modelos de sensibilidade',
         sensitivityTemplatesDelete: 'remover os modelos de sensibilidade',
+        cutsRead: 'ver os cortes das suas partes, e o corte sobre o qual um run calculou',
+        cutKindsRead: 'ver os tipos de corte que um relatório pode escolher',
+        cutKindsWrite: 'alterar os tipos de corte',
+        cutKindsDelete: 'remover tipos de corte',
     },
 
     unavailable: {
@@ -6895,6 +7069,7 @@ const pt: SourceCatalogue = {
         continue: 'Continuar',
         retry: 'Tentar novamente',
         cancel: 'Cancelar',
+        save: 'Guardar',
     },
     curveConfiguration: {
         title: 'Configurações de curvas',

@@ -69,6 +69,8 @@ export const PATHS = {
     engineSettings: '/reporting/engine-settings',
     curveConfigurations: '/reporting/curve-configurations',
     sensitivityTemplates: '/reporting/sensitivity-templates',
+    cuts: '/reporting/cuts',
+    cutTypes: '/refdata/cut-types',
 } as const;
 
 /** The address of the documents of one convention kind. */
@@ -207,6 +209,16 @@ export function pricingEnginePath(id: string): string {
 /** The address of one engine settings configuration's page. */
 export function engineSettingsPath(id: string): string {
     return `${PATHS.engineSettings}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one cut's record page. */
+export function cutPath(id: string): string {
+    return `${PATHS.cuts}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one kind of cut's page, by its code. */
+export function cutTypePath(code: string): string {
+    return `${PATHS.cutTypes}/${encodeURIComponent(code)}`;
 }
 
 /** The address of one curve configuration's page, by the report configuration it fills. */

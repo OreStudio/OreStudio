@@ -25,6 +25,9 @@
 #ifndef ORES_REPORTING_API_MESSAGING_REPORT_OPERATIONS_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_REPORT_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.reporting.api/domain/cut.hpp"
+#include "ores.reporting.api/domain/cut_gap.hpp"
+#include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -622,6 +625,74 @@ struct resolve_cut_response {
     std::string cut_state;
     bool output_is_indicative = false;
     std::string refusal;
+};
+
+struct list_cut_rows_request {
+    using response_type = struct list_cut_rows_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.list_cut_rows";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string kind_code = "";
+    std::string month = "";
+    std::string search = "";
+    std::string state = "";
+};
+
+struct cut_row {
+    std::string cut_id;
+    std::string label;
+    std::string state;
+    std::string kind_code;
+    std::string kind_name;
+    std::string timepoint;
+    std::string timepoint_timezone;
+    std::string scope_code;
+    std::string business_centre_code;
+    std::string taken_by;
+    std::string taken_at = "";
+    std::string approved_by = "";
+    std::string approved_at = "";
+    std::string refused_at = "";
+    bool requires_authorisation = false;
+    bool output_is_indicative = false;
+    int take_ordinal = 0;
+    int run_count = 0;
+    std::string superseded_by_id = "";
+};
+
+struct list_cut_rows_response {
+    ores::utility::domain::result result;
+    std::vector<cut_row> rows;
+    int total = 0;
+};
+
+struct get_cut_record_request {
+    using response_type = struct get_cut_record_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_cut_record";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid cut_id;
+};
+
+struct get_cut_record_response {
+    ores::utility::domain::result result;
+    ores::reporting::domain::cut cut;
+    ores::reporting::domain::cut_kind kind;
+    std::string label;
+    std::string state;
+    std::string superseded_by_id = "";
+    std::vector<ores::reporting::domain::cut_gap> gaps;
+    int run_count = 0;
 };
 
 }

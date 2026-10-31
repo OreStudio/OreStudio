@@ -438,7 +438,47 @@ with each type's cuts grouped by the period above its frequency. It also signs o
 the retirement of the market bindings, which the binding decision now records as
 superseded in part.
 
-** What it does not settle
+** What the build settled
+
+Two screens of the eleven are built: Reference data > Cut types, with the list
+and one type's record, and Reporting > Cuts, with the list and one cut's record.
+The first unit reads them and draws them; the take flow, the authorisation, the
+report's selection and the LIVE mint are the units that follow.
+
+Five things the build settled, each read from the prototype and recorded here
+because the page above argued them.
+
+** The signed-or-not is the approval kind's, and the screen reads its target.
+The type list and the type record draw the approval kind's name and the
+permission its decider needs, and a dash where the type names no kind. The
+build reads that target through the inbox's own approval kinds, so a firm that
+gives the close to another function changes one approval kind and no type.
+
+** The state and the label are the service's, and the screens derive neither.
+Both are functions of the facts a cut records, and one operation answers both so
+the list, the record and the resolution cannot disagree. The one rule the
+screens hold is the sentence under a state, which says which fact admitted the
+body.
+
+** The states paint from the shared badge catalogue. Draft is the catalogue's
+draft badge, Incomplete and Refused its failed badge, Taken its pending badge,
+In use and Authorised its active badge, and Superseded its inactive badge. The
+indicative mark is a separate chip, which is a proposal the catalogue has no
+word for yet: no badge definition holds *indicative*.
+
+** The body's cards state the reference the cut records, and the page says what
+no read answers. No operation returns the deals a population holds or the sets a
+snapshot fixed, so the deals card and the market data card name the reference and
+state the gap in the app's own words rather than leaving the card empty.
+
+** The type's cuts are grouped by the period above the type's frequency, and the
+grouping is the screen's. A daily kind reads by month, and the operation answers
+the cuts of a month. Creating a type is not offered: its retention destination is
+a tier the store knows by a check and no lookup names the tiers, so a form that
+created one would invent the store's vocabulary. Changing and removing a type
+are offered, and the write keeps the destination the type holds.
+
+* What it does not settle
 
 *The gap table as a standard.* The prototype defines a shape — part, item, why it
 stands, what closes it — and no rule covers it. Whether it joins the record screen

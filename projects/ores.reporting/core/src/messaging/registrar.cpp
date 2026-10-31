@@ -58,6 +58,7 @@
 #include "ores.reporting.core/messaging/ore_parameter_value_set_value_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
+#include "ores.reporting.core/messaging/report_cut_read_handler.hpp"
 #include "ores.reporting.core/messaging/report_cut_resolution_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
@@ -399,6 +400,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             resolve_cut_request::nats_subject, group, [rch](ores::nats::message msg) {
                 rch->resolve_cut(std::move(msg));
+            }));
+    }
+
+    // ----------------------------------------------------------------
+    // The reads the cut screens draw (hand-crafted handler)
+    // ----------------------------------------------------------------
+    {
+        auto crh = std::make_shared<report_cut_read_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            list_cut_rows_request::nats_subject, group, [crh](ores::nats::message msg) {
+                crh->list_cut_rows(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            get_cut_record_request::nats_subject, group, [crh](ores::nats::message msg) {
+                crh->get_cut_record(std::move(msg));
             }));
     }
 

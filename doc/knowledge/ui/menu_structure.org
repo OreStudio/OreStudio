@@ -183,7 +183,7 @@ The test for a screen is one question: which topic would a person look in?
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
-| Reporting | Reports, the definitions a party runs | =reporting::report_definitions:read= |
+| Reporting | Reports, the definitions a party runs, and the cuts they price from | Any one of those screens |
 | Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
 | Tenants | The tenants, their parties and people, and onboarding | The read of the deployment |
 
@@ -275,6 +275,13 @@ the configuration screens, one per kind a person creates and changes, each named
 as the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]
 names it. Today those are Pricing engine configurations and Engine run settings.
 
+It also holds Cuts: the bodies a run prices from, with the state each one is in,
+the runs that priced from it and one cut's own page. A cut exists for one
+purpose, the valuation a run computes, so a person who asks what a number was
+computed from looks where the reports are. The kinds of cut sit in Reference
+data, because they are a lookup that changes by the month and both the take and
+the resolution read them.
+
 A report is produced by a schedule the party set, so a person who asks what the
 party ran and whether the run worked looks here and not in Operations, which says
 how the installation is running.
@@ -313,6 +320,8 @@ the first step of every trail.
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
 | Market data feeds | Operations | It reads the adapter state of every feed the market data service runs, which is how the installation is running and not what a party takes |
 | Reports | Reporting | A report definition is owned by the party that runs it, and Reporting is the topic a person looks in for what the party ran and how each run went |
+| Cuts | Reporting | A cut is the body a report's run prices from, and a person who asks what a number was computed from looks where the reports are |
+| Cut types | Reference data | A kind of cut is a lookup a person maintains: its rules the take, the resolution and the archive read, and it changes by the month as the currencies and calendars do |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
@@ -348,6 +357,10 @@ the same thing. A screen has one address.
 | A report definition's page | =/reporting/reports/:id= |
 | Pricing engine configurations | =/reporting/pricing-engines= |
 | Engine run settings | =/reporting/engine-settings= |
+| Cuts | =/reporting/cuts= |
+| A cut's page | =/reporting/cuts/:id= |
+| Cut types | =/refdata/cut-types= |
+| A kind of cut's page | =/refdata/cut-types/:code= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |
 | A test scenario | =/development/tests/:id= |
 | A document | =/development/docs/:id= |

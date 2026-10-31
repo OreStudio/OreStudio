@@ -185,6 +185,19 @@ import {
     type ReportHealthTally,
     type ReportNameChoice,
     type ReportsPage,
+    cutKindsPageSchema,
+    cutKindRecordSchema,
+    cutKindChoicesSchema,
+    cutKindRowSchema,
+    cutsPageSchema,
+    cutRecordSchema,
+    type CutKindRow,
+    type CutKindRecord,
+    type CutKindChoices,
+    type CutKindWrite,
+    type CutKindsPage,
+    type CutRecord,
+    type CutsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
 
@@ -3936,6 +3949,118 @@ export const api = {
     async imageUploadPolicy(): Promise<ImageUploadPolicy> {
         return imageUploadPolicyViewSchema.parse(
             await request('/api/image-upload-policy', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The kinds of cut a person maintains, each with its family's name, the
+     * approval kind that signs it and the cuts the party holds of it.
+     *
+     * The server derives the signed-or-not from the approval kind the type
+     * points at, so this side draws the word and derives nothing.
+     */
+    async cutKinds(): Promise<CutKindsPage> {
+        return cutKindsPageSchema.parse(await request('/api/reporting/cut-kinds', { method: 'GET' }));
+    },
+
+    /** One kind of cut and the cuts the party holds of it. */
+    async cutKind(code: string): Promise<CutKindRecord> {
+        return cutKindRecordSchema.parse(
+            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, { method: 'GET' }),
+        );
+    },
+
+    /** The families, resolution rules and approval kinds a form may name. */
+    async cutKindChoices(): Promise<CutKindChoices> {
+        return cutKindChoicesSchema.parse(
+            await request('/api/reporting/cut-kind-choices', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Writes the naming and the rules of a kind, and nothing else.
+     *
+     * The BFF rebuilds the row from the read it makes at write time, so a field
+     * the form does not offer keeps its stored value whatever is sent.
+     */
+    async saveCutKind(
+        code: string,
+        edit: {
+            readonly version: number;
+            readonly change: CutKindWrite;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<CutKindRow> {
+        return cutKindRowSchema.parse(
+            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    version: edit.version,
+                    change: edit.change,
+                    intent: { reason_code: edit.reasonCode, commentary: edit.commentary },
+                }),
+            }),
+        );
+    },
+
+    /** Removes a kind no cut was taken under. */
+    async removeCutKind(
+        code: string,
+        removal: {
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                version: removal.version,
+                intent: { reason_code: removal.reasonCode, commentary: removal.commentary },
+            }),
+        });
+    },
+
+    /**
+     * The cuts the session's party holds, narrowed by a kind, a month, a text in
+     * the label and a state.
+     *
+     * The state and the label arrive derived from the server: both are functions
+     * of the facts a cut records, so a screen that derived either would state the
+     * rule a second time.
+     */
+    async cuts(narrow: {
+        readonly kindCode: string;
+        /** The month to read, as `YYYY-MM`, or empty for every month. */
+        readonly month: string;
+        readonly search: string;
+        readonly state: string;
+    }): Promise<CutsPage> {
+        const query = new URLSearchParams();
+        if (narrow.kindCode !== '') {
+            query.set('kind_code', narrow.kindCode);
+        }
+        if (narrow.month !== '') {
+            query.set('month', narrow.month);
+        }
+        if (narrow.search !== '') {
+            query.set('search', narrow.search);
+        }
+        if (narrow.state !== '') {
+            query.set('state', narrow.state);
+        }
+        return cutsPageSchema.parse(
+            await request(`/api/reporting/cuts?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /** One cut's record: the body, the acts, the gaps and the derived state. */
+    async cut(id: string): Promise<CutRecord> {
+        return cutRecordSchema.parse(
+            await request(`/api/reporting/cuts/${encodeURIComponent(id)}`, { method: 'GET' }),
         );
     },
 };

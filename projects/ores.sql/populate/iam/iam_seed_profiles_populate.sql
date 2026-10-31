@@ -209,7 +209,9 @@ cross join (values
     -- codes past that point. So bonds book ten, rates nine and foreign
     -- exchange sixteen per config. The inflation family routes one code, so its
     -- six slots are six swaps and the class states its share without a code
-    -- being left out. The book count and the population size are
+    -- being left out. The scripted family books three codes of the four it
+    -- routes, because the projection writes no data element for the
+    -- autocallable, so its six slots state each of the three twice. The book count and the population size are
     -- the config's, so a tenant that wants a thinner book changes a row and not
     -- the generator, and gives up the codes past its slot count by doing so.
     -- The counterparties are the entity's own tradeable links, which is why the
@@ -242,6 +244,11 @@ cross join (values
          "asset_class_code": "inflation", "book": "GBP Inflation Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "1000000", "max_notional": "50000000", "seed": 62, "trades_per_book": 6, "structures_per_book": 1},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK scripted",
+         "description": "The scripted trades the UK entity books, in its cross asset solutions book.",
+         "asset_class_code": "scripted", "book": "Cross Asset Solutions",
+         "min_tenor_code": "1Y", "max_tenor_code": "5Y",
+         "min_notional": "1000000", "max_notional": "25000000", "seed": 63, "trades_per_book": 6, "structures_per_book": 1},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK equity",
          "description": "The equity trades the UK entity books, in its equity derivatives book.",
          "asset_class_code": "equity", "book": "GBP Equity Derivatives",

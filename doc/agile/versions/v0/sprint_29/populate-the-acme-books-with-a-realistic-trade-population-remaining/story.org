@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment: jolly_knuth
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -69,7 +69,7 @@ The investigation this story commissioned is
 | [[id:46D280C9-965B-437E-9818-5A18CDD91836][Populate the FX family]] | DONE | 2026-10-25 | 2026-10-26 | Book the sixteen FX trade types the catalogue routes, in the 25% share the weights page sets. |
 | [[id:8D7AF6BC-28B8-4887-BD6A-58F329A0B038][Populate the equity family]] | DONE | 2026-10-26 | 2026-10-28 | Book the nineteen equity trade types the catalogue routes, in the 12% share the weights page sets. |
 | [[id:A5DA1085-F781-4467-92AE-6D4A8769FE79][Populate the inflation family]] | DONE | 2026-10-31 | 2026-10-31 | Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument. |
-| [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | BACKLOG | | | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
+| [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | DONE | 2026-10-31 | 2026-10-31 | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | ABANDONED | | | Replaced by one task per asset class, because a family cannot land as a single verifiable unit. |
 | [[id:8EBC26FE-5004-4EC5-90F7-745C9E2B1AB4][Factor out the shared planner loop]] | DONE | | 2026-10-25 | The bond, commodity and interest rate planners each carry a verbatim copy of the slot loop: the book, counterparty and trader lookups, the identifiers, the trade date and the netting set scan. A fourth family would copy it again. Extract the envelope every family shares, so a planner states only what its family adds. |
 | [[id:CC245AAE-A01F-46A5-A5C3-92AE29BD159B][Publish the commodity catalogue]] | DONE | 2026-10-28 | 2026-10-28 | The commodity catalogue is seeded and never published: it has no artefact type, no publish operation and no bundle membership, so a tenant that draws a commodity holds none. The equity catalogue had the same three gaps and is now fixed; this is the same shape for the commodity vocabulary. |
@@ -165,6 +165,19 @@ The investigation this story commissioned is
 - The product's index is not the leg's index. The leg column references the
   benchmark catalogue, so an inflation index there is refused; the product's own
   fact row states it, and the export reads it from the fact.
+- A payoff the taxonomy has no class for gets one, in the catalogue, and not a
+  class that stands for something else. The taxonomy is the list a config may
+  name and the store's validator is generated from it, so a family that files
+  itself under another class both lies about the trade and puts two planners on
+  one class.
+- A family books the codes its export can carry, and names the rest out of
+  scope. The scripted family books three of its four routed codes because the
+  projection writes no element for the autocallable's data; booking it would
+  produce a trade that reports as its type and exports as nothing.
+- A generated row's parameters are the document's own members. The projection
+  writes an unrecognised key as an element the schema does not hold, so the
+  population states the document's names and a round-trip case holds it to
+  them.
 
 * Out of scope
 

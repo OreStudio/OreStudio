@@ -135,6 +135,31 @@ public:
 };
 
 /**
+ * @brief The planner for a scripted population.
+ *
+ * The four scripted codes route to the scripted table, and a scripted trade's
+ * economics are a script's name, the underlyings it observes and the
+ * parameters it is given. The planner draws a code per slot, states the script
+ * the ORE projection writes that code's element from, and names underlyings the
+ * tenant's own catalogue holds.
+ *
+ * One code is out of scope and named so rather than booked: the projection has
+ * no writer for the autocallable's data element, so a trade of it would book
+ * and then fail to export. The gap is recorded where the code is listed.
+ *
+ * The class answers to =scripted=, the refdata taxonomy's name for a payoff
+ * stated as a script rather than as a named product, and the planner refuses
+ * when the tenant's equity catalogue names nothing to observe.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT scripted_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner for an inflation population.
  *
  * The catalogue routes one code, @c InflationSwap, to the rates family's table,

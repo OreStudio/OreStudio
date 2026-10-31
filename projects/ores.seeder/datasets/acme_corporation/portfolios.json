@@ -201,6 +201,26 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "0075f78b-c4d6-594a-8b2c-ad568a86053d",
+    "name": "Cross Asset Solutions London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets.trading_book",
+    "portfolio_code": "acme_uk.scripted_derivatives.portfolio",
+    "owner_unit_code": "acme_uk.scripted_derivatives",
+    "aggregation_ccy": "GBP",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "8129146e-9f00-5b32-b169-e31c6089a804",
+    "name": "Cross Asset Solutions Portfolio",
+    "parent_portfolio_code": "acme_uk.scripted_derivatives.portfolio",
+    "portfolio_code": "acme_uk.scripted_derivatives.portfolio.gbp_cross_asset",
+    "owner_unit_code": "acme_uk.scripted_derivatives",
+    "aggregation_ccy": "GBP",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
     "id": "b0f505f1-decf-59c1-b95b-45bf45ec84af",
     "name": "XVA London Portfolio",
     "parent_portfolio_code": "acme_uk.global_markets.trading_book",

@@ -68,7 +68,7 @@ The investigation this story commissioned is
 | [[id:480C95DD-64C1-4EAD-A59B-D8303E5E4336][Populate the interest rates family]] | DONE | 2026-10-25 | 2026-10-25 | Book the ten interest rate trade types the catalogue routes to rate_instrument, in the 42% share the weights page sets. |
 | [[id:46D280C9-965B-437E-9818-5A18CDD91836][Populate the FX family]] | DONE | 2026-10-25 | 2026-10-26 | Book the sixteen FX trade types the catalogue routes, in the 25% share the weights page sets. |
 | [[id:8D7AF6BC-28B8-4887-BD6A-58F329A0B038][Populate the equity family]] | DONE | 2026-10-26 | 2026-10-28 | Book the nineteen equity trade types the catalogue routes, in the 12% share the weights page sets. |
-| [[id:A5DA1085-F781-4467-92AE-6D4A8769FE79][Populate the inflation family]] | STARTED | 2026-10-31 | | Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument. |
+| [[id:A5DA1085-F781-4467-92AE-6D4A8769FE79][Populate the inflation family]] | DONE | 2026-10-31 | 2026-10-31 | Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument. |
 | [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | BACKLOG | | | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | ABANDONED | | | Replaced by one task per asset class, because a family cannot land as a single verifiable unit. |
 | [[id:8EBC26FE-5004-4EC5-90F7-745C9E2B1AB4][Factor out the shared planner loop]] | DONE | | 2026-10-25 | The bond, commodity and interest rate planners each carry a verbatim copy of the slot loop: the book, counterparty and trader lookups, the identifiers, the trade date and the netting set scan. A fourth family would copy it again. Extract the envelope every family shares, so a planner states only what its family adds. |
@@ -151,6 +151,19 @@ The investigation this story commissioned is
   seasonality factors are what the engine prices from, and the family's task
   states that it books without them. Recorded as the capture *The seeded
   inflation curve states its index, its conventions and no fixings*.
+- A family that routes to another family's table is planned by its own planner
+  and states that family's header. Inflation is the case: the catalogue sends
+  =InflationSwap= to the rates table, so the trade is a rates header, and the
+  asset class is still the key the registry answers a planner by, because the
+  population a class asks for is a fact about the class and not about the table
+  it lands in.
+- A trade names an index the tenant resolves, and the resolution is the curve's
+  own name. The population draws the ids of the tenant's =InflationCurves=
+  definitions rather than a list of its own, so a trade can only name a curve
+  that exists and a tenant that holds none books none.
+- The product's index is not the leg's index. The leg column references the
+  benchmark catalogue, so an inflation index there is refused; the product's own
+  fact row states it, and the export reads it from the fact.
 
 * Out of scope
 

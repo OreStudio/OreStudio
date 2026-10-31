@@ -9131,6 +9131,44 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:103",
+     "guide_text": "Underlying Swap term in period form",
+     "mandatory": false,
+     "member": null,
+     "name": "SwapTenors",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "SwapTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:259",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:110",
+     "guide_text": "Underlying Swap term, in period form, where smile section data is to be taken into account",
+     "mandatory": false,
+     "member": null,
+     "name": "SmileSwapTenors",
+     "parser": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "SmileSwapTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:278",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "Calibration",
      "guide_optional": null,
      "guide_ref": "",
@@ -12827,6 +12865,63 @@
       "QuoteTag"
      ],
      "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:290",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "BondTenors",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "BondTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:259",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "SmileBondTenors",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "SmileBondTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:278",
+     "type": "list"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "Qualifier",
+     "parser": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Qualifier"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:284",
      "type": "text"
     },
     {

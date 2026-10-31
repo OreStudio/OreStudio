@@ -128,7 +128,7 @@ select is(
        from ores_reporting_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/OIS/SpotLag'
         and valid_to = ores_utility_infinity_timestamp_fn()),
-    'convention.integer ore_schema',
+    'convention.integer ore_xsd',
     'a leaf the parser reads as a string takes the type the schema declares');
 
 select is(
@@ -136,7 +136,7 @@ select is(
        from ores_reporting_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/TenorBasisSwap/SpreadOnShort'
         and valid_to = ores_utility_infinity_timestamp_fn()),
-    'flag ore_schema',
+    'flag ore_xsd',
     'a leaf the parser reads as a string takes the flag the schema declares');
 
 select ok(

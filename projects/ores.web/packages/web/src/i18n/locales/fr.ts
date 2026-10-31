@@ -5162,8 +5162,7 @@ const fr: SourceCatalogue = {
             cancel: 'Annuler',
             newRecord:
                 'La nouvelle ligne est écrite avec le motif system.new_record. Aucun autre motif ne s’applique à un nouvel enregistrement.',
-            feedHint:
-                'Une partie a une route par fournisseur. La route nomme le flux qui la sert.',
+            feedHint: 'Une partie a une route par fournisseur. La route nomme le flux qui la sert.',
             right: {
                 display: 'affichage',
                 displayMeans: 'Une personne de la partie peut montrer ces données sur un écran.',

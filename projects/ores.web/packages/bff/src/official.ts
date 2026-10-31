@@ -150,7 +150,8 @@ export function registerOfficialRatesRoutes(
         // publisher names cannot arrive; the catalogue that holds one is said here.
         for (const row of parsedSeries) {
             const read = parsedFeeds.some(
-                (feed) => feed.publisher_code === row.provider_code && feed.provider_key === row.source,
+                (feed) =>
+                    feed.publisher_code === row.provider_code && feed.provider_key === row.source,
             );
             if (!read) {
                 request.log.warn(

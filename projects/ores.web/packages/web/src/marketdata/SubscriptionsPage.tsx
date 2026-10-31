@@ -550,10 +550,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
                             label={t('marketdata.subscriptions.columns.feed')}
                             hint={t('marketdata.subscriptions.feedHint')}
                         >
-                            <Select
-                                value={feed}
-                                onChange={(event) => setFeed(event.target.value)}
-                            >
+                            <Select value={feed} onChange={(event) => setFeed(event.target.value)}>
                                 {feedsForPublisher(catalogue.data, provider).map((choice) => (
                                     <option key={choice.id} value={choice.id}>
                                         {choice.name}

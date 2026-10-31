@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-the-child-row-outputs
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The three child-row families are read into typed rows that keep the key that giv
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing; it does not depend on the column roles. |
-| Next         | Write the typed rows and their readers against the checked-in samples. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31 |
 
 * Acceptance
@@ -42,7 +42,17 @@ The three child-row families are read into typed rows that keep the key that giv
 
 * Plan
 
-A cashflow row is a relation, not a bag: =LegNo= and =CashflowNo= together name the flow, =PayDate= dates it, and the figures describe it. Flattening it to metrics would keep the figures and lose the flow. The stressed family triples every figure, so its row states three values beside each other and the reader checks that they agree in count.
+Three families, three typed rows, three readers, because their meaning is the
+relation between columns rather than a bag of figures. Each reader asks for the
+columns that make the row a row — trade, leg, cashflow number and pay date — and
+refuses a row that omits one. A figure the engine states as its null string
+stays empty, so a flow with no fixing is not a flow with a zero fixing.
+
+Two cases the corpus does not ship are stated as fixtures beside the suite: a
+flow row without its pay date, and a stressed flow that states a base without a
+scenario. The reader's rules came from the corpus first: the volatility figures
+are stated with a base and a scenario and no difference, so a difference is
+optional and only the base and the scenario are required.
 
 * Measurements
 
@@ -56,9 +66,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Test cases and assertions | 7 cases, 42 assertions | =ores.ore.core.tests "[child_row_reader]"= | MEASURED |
+| The whole ore core suite | 453 cases, 483 504 assertions | =ores.ore.core.tests= | MEASURED |
+| Synthetic fixtures | 3 files: a missing pay date, a figure that is not a number, a stressed flow with no scenario | =ls projects/ores.ore/core/tests/fixtures= | MEASURED |
 
 * Notes
+
+* Notes
+
+- The corpus states the floor and cap volatilities with a base and a scenario
+  and no difference, so a stressed figure requires two parts and carries a third
+  when it exists. The fixture states the refusal case: a base with no scenario.
+- A flow without its pay date is a fixture rather than a corpus case, because
+  every checked-in flow states one. The reader refuses it rather than guessing a
+  date.
+- The three families are read by three functions rather than one generic one
+  because the row types differ: a flow, a stressed flow and a calibration flow
+  share almost no columns.
 
 * Test Scenarios
 
@@ -84,3 +108,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three typed readers, one for each child-row family, and 42 assertions over 7
+cases. A flow keeps its trade, leg, cashflow number, pay date, flow type and
+currency, and carries each figure as an optional, so a null fixing is absent
+rather than zero. A stressed flow carries its base, scenario and difference per
+figure, with the difference optional because the corpus omits it for the
+volatilities. A calibration flow keeps the market object, pillar and rate helper
+that made the flow.
+
+The suite reads the checked-in sample of each family and three synthetic
+fixtures for what the corpus does not show.
+
+Open at close: the light gate's =curve-sections-wiring= check fails on this
+branch, and the generated file it names is not one this branch touches: main is
+inconsistent there and another environment owns it.

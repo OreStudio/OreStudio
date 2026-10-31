@@ -42,6 +42,7 @@ create table if not exists "ores_reporting_ore_parameter_vocabularies_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "schema_name" text not null,
+    "xpath" text not null,
     "element_name" text not null,
     "value_set_code" text not null,
     "name" text not null,

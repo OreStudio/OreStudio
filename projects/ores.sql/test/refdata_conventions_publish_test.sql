@@ -35,6 +35,15 @@ select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
+-- A convention names its currencies, and a currency term is checked against the
+-- currency catalogue. A fresh database has published nothing, so the test
+-- publishes the ISO codes the conventions are about to name.
+select * from ores_refdata_publish_currencies_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'iso.currencies'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
+
 -- A party of the test's own. The corpus is published into the tenant on
 -- provisioning, so publishing it for the system party would race that
 -- publication; a fresh party is the test's alone.

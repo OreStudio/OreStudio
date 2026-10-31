@@ -27,11 +27,11 @@ that model agrees with the new path.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] |
-| Now          | The currency routes answer on =/api/v1/reference-data/currencies= and every generated artefact follows. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then move the next component's entities. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

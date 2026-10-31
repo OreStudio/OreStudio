@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 49B84896-53D9-4C37-B578-E9302A90E6E4
+:END:
+#+title: Task: A generated date is a real date
+#+description: The population draws dates that do not exist, and the wire turns each one into the absent date. A generated month is not a month: adding months to the 31st of a month keeps day 31, so an anchor of 2026-10-31 draws 2026-09-31 for the slot that sits one month back. The number is not a date, and the whole population is drawn from an anchor of today.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/a-generated-date-is-a-real-date
+#+pr: 4206
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the trade population draw only dates that exist, so that a date the planner keeps is a date the store keeps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The planner's month and year arithmetic states the last day of the target month when the anchor's day does not exist in it.
+- A date that is not a real date is refused where it is written rather than travelling as the absent date.
+- The fx family's variance swap books a real window in a provisioned tenant, and no date column in that tenant holds the sentinel date.
+
+* Plan
+
+Proven by the run that died on the fx family. The first booking it refused was
+the variance swap, because that is the first instrument whose two dates the
+store compares: =check1= states =end_date > start_date=, and the row carried
+the absent date at both ends.
+
+The chain, each link measured rather than reasoned:
+
+1. The planner anchors the population on the day it runs, and draws each slot's
+   start as =add_months(as_of_date, -(slot % 6))=. On 2026-10-31, slots 1 and 4
+   state =2026-09-31= and =2026-06-31=. Both are =!ok()=: =year_month_day +
+   months= keeps the day of the month and does not clamp it, so the arithmetic
+   invents a day the month does not have.
+2. The wire's =year_month_day= reflector writes the empty string for any date
+   that is =!ok()=, because the default date is also =!ok()= and the empty
+   string is the sentinel the domain uses for absent. An invented date therefore
+   arrives as the absent date, and the run loses it without a word.
+3. The store encodes a =year_month_day= as whole days since 2000 through
+   =sys_days=, and the default value lands on =0002-11-30 BC=. That is a real
+   Postgres date, so the row was accepted and stored.
+4. The variance swap compares its two ends and refuses, which is why the run
+   stops where it does and not one table earlier. The =FxSwap= row already
+   stored in the tenant states its =value_date= as =0002-11-30 BC=: the same
+   fault, silent because no check compares that date to anything.
+
+So the fix is three layers, and each layer is a guard that would have caught
+the one beneath it:
+
+- *The arithmetic.* =add_months= and =add_years= state the last day of the
+  target month when the anchor's day does not exist in it. A month added to the
+  31st of May is the 30th of June; a year taken from the 29th of February is
+  the 28th.
+- *The boundary.* The reflector refuses a date that is neither real nor the
+  default sentinel, so an invented date fails where it is written instead of
+  travelling as an absent one. The default keeps travelling as the empty
+  string, because absent is a value the domain states on purpose.
+- *The domain.* A product constructor refuses a date that is not a real date.
+  =require_date= states that a date is present; it must also state that the
+  date exists, because a caller can hand it =2026-09-31=.
+
+Measured evidence:
+
+- =/tmp/ymd_probe= printed the six anchor offsets for 2026-10-31:
+  =back=1 start=2026-9-31 ok=0= and =back=4 start=2026-6-31 ok=0=, with the
+  other four real dates.
+- =select value_date from ores_trading_fx_forward_instruments_tbl= states
+  =0002-11-30 BC= for the =FxSwap= row and =2028-10-31= for the =FxForward=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The dates the old arithmetic drew from an anchor of 2026-10-31 | slot 1 = 2026-9-31 (ok false), slot 4 = 2026-6-31 (ok false); slot 0, 2, 3, 5 real | =/tmp/ymd_probe=, which repeats =year_month_day + months= and prints =ok()= and the day count | main at 9bf4b17991 |
+| The window the provisioned tenant states | =start_date 2026-09-30=, =end_date 2028-09-30=, one variance swap over GBP/USD | =select start_date, end_date, underlying_code from ores_trading_fx_variance_swap_instruments_tbl order by start_date= | branch head, fresh tenant |
+| Date columns holding the sentinel =0002-11-30 BC= | 0, over every date column in the public schema | a =do= block that counts each date column at the sentinel | branch head, fresh tenant |
+| Suites that state a date | all green: utility 828/182, trading.api 618/162, synthetic.core 2086/83, nats 170/56, trading.core 1423/223, iam.core 1079/308, iam.service 32/13, marketdata.core 21735/339, ore.core 478415/425, refdata.core 5723/488 | =set -a && . ./.env && set +a && publish/bin/<suite>= | branch head |
+| Where the provisioning run stops now | the bond family: =Bond issue 6fc76aae… is stored with other terms=, which the security-naming fix on =chore/seed-an-inflation-curve= answers and this branch does not carry | the provisioning script, run 3e68f6be | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4206][#4206]] | [synthetic,utility] Let a generated date be a real date |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The population now draws dates that exist, and a date that does not exist cannot
+travel: it is refused at the reflector instead of arriving as the absent date.
+
+What that bought, on a fresh tenant:
+
+- The fx family booked all sixteen trades, the variance swap among them, and the
+  swap states =2026-09-30= to =2028-09-30=. The slot that drew it is the one
+  whose anchor month holds no 31st, so the day it asked for was held to the
+  month's last.
+- No date column in the tenant holds the sentinel =0002-11-30 BC= any more. The
+  =FxSwap= row that carried it now states a real value date.
+- The run no longer stops in fx. It stops in the bond family on =Bond issue
+  … is stored with other terms=, which is the security-naming defect and not
+  this one: a callable bond and a plain bond were named by the same security id
+  because the id left the product out. The fix for that is written on
+  =chore/seed-an-inflation-curve= and lands as its own change, so a full
+  provisioning run writes the whole population there.
+
+Two decisions worth keeping:
+
+- The arithmetic clamps the day rather than shifting the date: the 31st of May
+  less a month is the 30th of April, not the 1st of May. A window that ends a
+  day later than the product means would be a silent change of terms.
+- The reflector keeps writing the empty string for the default date. Absent is
+  a value the domain states on purpose, and the wire needs one spelling for it;
+  the guard is only against a date that is neither absent nor real.

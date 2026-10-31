@@ -130,12 +130,25 @@ std::string format_date(const year_month_day& date) {
                        static_cast<unsigned>(date.day()));
 }
 
+/*
+ * The date a year, a month and a day state, with a day the month does not have
+ * held to the month's last. Calendar arithmetic that keeps the day of the month
+ * invents days: a month taken from the 31st of October is the 31st of
+ * September, which is not a date, and a year added to the 29th of February is
+ * the 29th of a year that has none.
+ */
+year_month_day state_day(year y, month m, day d) {
+    const auto last = year_month_day_last{y, month_day_last{m}};
+    return year_month_day{y, m, d > last.day() ? last.day() : d};
+}
+
 year_month_day add_years(const year_month_day& date, int years) {
-    return date + std::chrono::years{years};
+    return state_day(year{static_cast<int>(date.year()) + years}, date.month(), date.day());
 }
 
 year_month_day add_months(const year_month_day& date, int months) {
-    return date + std::chrono::months{months};
+    const auto shifted = year_month{date.year(), date.month()} + std::chrono::months{months};
+    return state_day(shifted.year(), shifted.month(), date.day());
 }
 
 /*

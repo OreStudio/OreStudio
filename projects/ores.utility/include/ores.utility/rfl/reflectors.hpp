@@ -30,6 +30,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <cstdint>
+#include <format>
 #include <optional>
 #include <rfl.hpp>
 #include <sstream>
@@ -110,6 +111,14 @@ struct Reflector<std::optional<boost::uuids::uuid>> {
  * unengaged date -- the default-constructed value the domain uses as
  * its absent sentinel -- is the empty string, which reads back as that
  * same default, so a default-constructed entity survives a round trip.
+ *
+ * A date that is neither absent nor real is refused rather than written.
+ * The wire spells absent and unrepresentable the same way and only absent
+ * has a reader: an invented date would arrive as the absent one, and the
+ * two ends of a window that both invent a day would arrive equal and be
+ * stored as the same absent date. So a caller that states the 31st of
+ * September is told so here, at the first hop, and not by a row that
+ * quietly lost its date.
  */
 template <>
 struct Reflector<std::chrono::year_month_day> {
@@ -132,7 +141,15 @@ struct Reflector<std::chrono::year_month_day> {
     }
 
     static ReflType from(const std::chrono::year_month_day& v) {
-        return v.ok() ? std::format("{:%Y-%m-%d}", v) : std::string{};
+        if (v == std::chrono::year_month_day{})
+            return {};
+        if (!v.ok())
+            throw std::runtime_error(
+                std::format("A date that is not a date: year {}, month {}, day {}",
+                            static_cast<int>(v.year()),
+                            static_cast<unsigned>(v.month()),
+                            static_cast<unsigned>(v.day())));
+        return std::format("{:%Y-%m-%d}", v);
     }
 };
 

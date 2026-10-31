@@ -102,13 +102,15 @@ the time received, the inversion, the daily and hourly spread, the factor
 applied to the mixture and the fallback or refusal reason. The page has no
 vintage control, and it states that vintage is retired.
 
-The mock data is six FX feeds and eleven items across four providers at a
-clock of 2026-10-31. The policy orders ECB, IMF and BoC and allows inverses:
-EUR/USD resolves from the ECB, GBP/USD only as an inverse of the IMF's
-USD/GBP, and AUD/USD keeps its level because no source covers it. Turning the
-inverse off sends GBP/USD to its fixed level; the refuse fallback blocks
-AUD/USD. The resolver mirrors the runner's tests and the state panel prints
-the policy and every feed's start.
+The mock data is six FX feeds and twelve items across four providers at a
+clock of 2026-10-30. The defaults order ECB, IMF and BoC and allow inverses:
+EUR/USD resolves from the ECB's 30 October fixing, GBP/USD only as an inverse
+of the IMF's USD/GBP, and AUD/USD keeps its level because no source covers it.
+Moving the clock to 31 October takes the newer ECB fixing; adding a feed from
+its pair, recalculating and naming a feed's items explicitly all work on the
+page. Turning the inverse off sends GBP/USD to its fixed level; the refuse
+fallback blocks AUD/USD. The state panel prints the policy, the recalculation
+count and every start.
 
 The design note is
 [[file:../../../../../prototypes/market_data/calibrate-a-generator.org][calibrate-a-generator.org]]. The decision taken here belongs in

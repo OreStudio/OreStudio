@@ -407,3 +407,5 @@ table.list .acts { white-space: nowrap; text-align: right; }
   border: 1px solid var(--line-subtle); border-radius: var(--radius-chip);
   font-size: .76rem; color: var(--ink-muted);
 }
+
+input[type="checkbox"] { accent-color: var(--accent); }

@@ -10,6 +10,7 @@ const PROVIDERS = {
 
 const ITEMS = [
   { id: 'ecb-eurusd', provider: 'ecb', pair: 'EUR/USD', value: '1.1523', date: '2026-10-30', received: '2026-10-30T16:00:00Z', amplitude: 0.0042, phase: 3 },
+  { id: 'ecb-eurusd-31', provider: 'ecb', pair: 'EUR/USD', value: '1.1560', date: '2026-10-31', received: '2026-10-31T16:00:00Z', amplitude: 0.0042, phase: 3 },
   { id: 'ecb-usdeur', provider: 'ecb', pair: 'USD/EUR', value: '0.8678', date: '2026-10-30', received: '2026-10-30T16:00:00Z', amplitude: 0.0038, phase: 21 },
   { id: 'imf-eurusd', provider: 'imf', pair: 'EUR/USD', value: '1.1498', date: '2026-10-24', received: '2026-10-24T12:00:00Z', amplitude: 0.0051, phase: 11 },
   { id: 'boc-eurusd', provider: 'boc', pair: 'EUR/USD', value: '1.1511', date: '2026-10-30', received: '2026-10-30T20:00:00Z', amplitude: 0.0046, phase: 31 },
@@ -29,6 +30,11 @@ const FEEDS = [
   { name: 'synthetic-eur-gbp', pair: 'EUR/GBP', fixedLevel: 0.87, process: 'Ornstein–Uhlenbeck', ticks: 6 },
   { name: 'synthetic-eur-chf', pair: 'EUR/CHF', fixedLevel: 0.94, process: 'Ornstein–Uhlenbeck', ticks: 6 },
   { name: 'synthetic-aud-usd', pair: 'AUD/USD', fixedLevel: 0.66, process: 'Ornstein–Uhlenbeck', ticks: 4 },
+];
+
+const EXTRA_FEEDS = [
+  { name: 'synthetic-nzd-usd', pair: 'NZD/USD', fixedLevel: 0.59, process: 'Ornstein–Uhlenbeck', ticks: 4 },
+  { name: 'synthetic-usd-cad', pair: 'USD/CAD', fixedLevel: 1.36, process: 'Ornstein–Uhlenbeck', ticks: 4 },
 ];
 
 const BASELINE_HOURLY = 0.00045;
@@ -61,9 +67,10 @@ const CATALOGUE = ITEMS.map((item) => ({ ...item, returns: returnsFor(item.ampli
 let state = {
   variant: 'a',
   policyMode: 'automatic',
-  clock: '2026-10-31',
+  clock: '2026-10-30',
   policy: { ...DEFAULT_POLICY, providerOrder: [...DEFAULT_POLICY.providerOrder] },
-  feeds: FEEDS.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null })),
+  feeds: FEEDS.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null, explicit: null })),
+  recalc: [...RECALCULATIONS],
   feedName: 'synthetic-eur-usd',
   selectedCandidate: null,
 };
@@ -105,7 +112,11 @@ function candidatesFor(feed) {
     return { ...item, providerInfo: provider, direct, inverse, usable, order: rank < 0 ? 99 : rank };
   })
     .filter(Boolean)
-    .sort((a, b) => (a.order !== b.order ? a.order - b.order : a.direct === b.direct ? 0 : a.direct ? -1 : 1));
+    .sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      if (a.direct !== b.direct) return a.direct ? -1 : 1;
+      return b.date.localeCompare(a.date);
+    });
 }
 
 function skipReason(candidate) {
@@ -117,7 +128,8 @@ function skipReason(candidate) {
 /** Resolve one feed: the pinned item first, then the policy order. */
 function resolveFeed(feed) {
   const candidates = candidatesFor(feed);
-  const ordered = [...candidates];
+  const inScope = (candidate) => feed.explicit === null || feed.explicit.includes(candidate.id);
+  const ordered = candidates.filter(inScope);
   if (feed.overrideItem) {
     const pinned = ordered.findIndex((candidate) => candidate.id === feed.overrideItem);
     if (pinned > 0) ordered.unshift(ordered.splice(pinned, 1)[0]);
@@ -304,18 +316,23 @@ function feedTable(results) {
 }
 
 function candidateTable(result) {
+  const feed = result.feed;
+  const explicit = feed.explicit !== null;
   const rows = result.candidates
     .map((candidate, index) => {
       const chosen = result.candidate && result.candidate.id === candidate.id;
+      const inScope = !explicit || feed.explicit.includes(candidate.id);
       const stateBadge = chosen
         ? badge('ok', 'starts here')
-        : !candidate.usable
-          ? badge(candidate.providerInfo.terms !== 'accepted' ? 'bad' : 'warn', candidate.providerInfo.terms !== 'accepted' ? 'terms not accepted' : 'after the clock')
-          : badge('off', 'not reached');
+        : !inScope
+          ? badge('off', 'not in the list')
+          : !candidate.usable
+            ? badge(candidate.providerInfo.terms !== 'accepted' ? 'bad' : 'warn', candidate.providerInfo.terms !== 'accepted' ? 'terms not accepted' : 'after the clock')
+            : badge('off', 'not reached');
       const direction = candidate.direct ? 'direct' : candidate.inverse ? '1/x' : '—';
       return `<tr class="${chosen ? 'on' : 'quiet'}">
-        <td class="num">${index + 1}</td>
-        <td><b>${esc(candidate.providerInfo.name)}</b><span class="uri wrap mono">${esc(uriOf(candidate))}</span><div class="why">${esc(chosen ? 'chosen first' : skipReason(candidate))}</div></td>
+        ${explicit ? `<td><input type="checkbox" data-act="include" data-id="${candidate.id}" ${inScope ? 'checked' : ''} aria-label="Include ${esc(candidate.id)}"></td>` : '<td class="num">' + (index + 1) + '</td>'}
+        <td><b>${esc(candidate.providerInfo.name)}</b><span class="uri wrap mono">${esc(uriOf(candidate))}</span><div class="why">${esc(chosen ? 'chosen first' : !explicit || feed.explicit.includes(candidate.id) ? skipReason(candidate) : 'excluded by the feed\'s explicit list')}</div></td>
         <td>${direction}</td>
         <td class="num">${fmt(candidate.value, candidate.value.includes('.') ? 4 : 2)}</td>
         <td class="num">${esc(candidate.date)}</td>
@@ -324,15 +341,17 @@ function candidateTable(result) {
     })
     .join('');
   return `<table class="list">
-    <thead><tr><th>#</th><th>Derived candidate</th><th>Read as</th><th>Fixing</th><th>Date</th><th>State</th></tr></thead>
+    <thead><tr>${explicit ? '<th>In</th>' : '<th>#</th>'}<th>${explicit ? 'Candidate' : 'Derived candidate'}</th><th>Read as</th><th>Fixing</th><th>Date</th><th>State</th></tr></thead>
     <tbody>${rows}</tbody>
-  </table>`;
+  </table>
+  ${explicit ? '<p class="note" style="margin-top:8px">This feed names its items. The resolver keeps this order and reads only the checked ones. Clear the list to return to the derived candidates.</p>' : ''}`;
 }
 
 function feedControls(result) {
   const feed = result.feed;
   const automatic = state.policyMode === 'automatic';
-  const overridden = Boolean(feed.overrideItem || feed.overrideWindow);
+  const explicit = feed.explicit !== null;
+  const overridden = Boolean(feed.overrideItem || feed.overrideWindow || explicit);
   const options = [`<option value="">Pin an item (optional)</option>`]
     .concat(candidatesFor(feed).map((candidate) => `<option value="${candidate.id}" ${feed.overrideItem === candidate.id ? 'selected' : ''}>${esc(candidate.provider)} · ${esc(candidate.pair)}</option>`))
     .join('');
@@ -342,7 +361,9 @@ function feedControls(result) {
   const kind = overridden ? 'warn' : 'off';
   const label = overridden ? 'override' : automatic ? 'automatic' : 'inherits';
   const text = overridden
-    ? 'This feed overrides the class calibration.'
+    ? explicit
+      ? 'This feed names its items explicitly.'
+      : 'This feed overrides the class calibration.'
     : automatic
       ? 'Calibrated automatically from the catalogue. Nothing was configured for this feed.'
       : `Inherits the class policy: ${state.policy.providerOrder.map((code) => PROVIDERS[code].name).join(' → ')}, window ${state.policy.windowDays} days.`;
@@ -352,6 +373,7 @@ function feedControls(result) {
     <span class="inline-actions">
       <select id="pinItem">${options}</select>
       <select id="pinWindow">${windows}</select>
+      <button class="act" data-act="toggle-explicit">${explicit ? 'Use the derived list' : 'Choose items explicitly'}</button>
     </span>
   </div>`;
 }
@@ -360,7 +382,13 @@ function feedControls(result) {
 
 function renderA(results) {
   const sample = results.find((result) => result.feed.name === state.feedName) ?? results[0];
-  const body = card({ title: 'Feed coverage', sub: 'resolved from the policy, or the defaults, at the market clock', body: `${metrics(results)}${feedTable(results)}` });
+  const addable = EXTRA_FEEDS.some((candidate) => !state.feeds.some((feed) => feed.pair === candidate.pair));
+  const body = card({
+    title: 'Feed coverage',
+    sub: 'resolved from the policy, or the defaults, at the market clock',
+    aside: `<button class="act" data-act="add-feed" ${addable ? '' : 'disabled'}>Add a feed</button>`,
+    body: `${metrics(results)}${feedTable(results)}<p class="note" style="margin-top:10px">A new feed enters with its pair only; the policy or the defaults calibrate it on the next start.</p>`,
+  });
   return `
   <p class="thesis"><b>A · Policy first.</b> A person may set the market's calibration once; with nothing set, the defaults calibrate every feed.</p>
   <div class="grid-a">
@@ -415,7 +443,7 @@ function renderC(results) {
       <span class="n">${candidate.order + 1}</span><span>${esc(candidate.provider)} · ${esc(candidate.pair)}</span><span class="badge ${candidate.usable ? 'ok' : 'off'}">${candidate.usable ? 'usable' : 'no'}</span>
     </div>`)
     .join('');
-  const history = RECALCULATIONS.map(
+  const history = state.recalc.map(
     (run) => `<tr><td class="num">${esc(run.at)}</td><td>${esc(run.scope)}</td><td>${esc(run.resolved)}</td><td>${esc(run.fallback)}</td><td class="note">${esc(run.actor)}</td></tr>`,
   ).join('');
   return `
@@ -473,6 +501,33 @@ function act(kind, target) {
   if (kind === 'order-up') reorderProvider(target, -1);
   if (kind === 'order-down') reorderProvider(target, 1);
   if (kind === 'open-feed') setScope(target);
+  if (kind === 'add-feed') {
+    const next = EXTRA_FEEDS.find((candidate) => !state.feeds.some((feed) => feed.pair === candidate.pair));
+    if (next) {
+      state.feeds.push({ ...next, overrideItem: null, overrideWindow: null, explicit: null });
+      state.feedName = next.name;
+    }
+    render();
+  }
+  if (kind === 'recalculate') {
+    const results = resolveAll();
+    const fromFixing = results.filter((result) => result.fromFixing).length;
+    const kept = results.filter((result) => !result.fromFixing && !result.blocked).length;
+    const blocked = results.filter((result) => result.blocked).length;
+    state.recalc.unshift({
+      at: '2026-10-30 12:00',
+      scope: 'all FX feeds',
+      resolved: `${fromFixing} from a fixing`,
+      fallback: `${kept} kept a level${blocked ? `, ${blocked} blocked` : ''}`,
+      actor: 'you',
+    });
+    render();
+  }
+  if (kind === 'toggle-explicit') {
+    const feed = feedOf(state.feedName);
+    feed.explicit = feed.explicit === null ? candidatesFor(feed).map((candidate) => candidate.id) : null;
+    render();
+  }
   if (kind === 'customise') {
     state.policyMode = 'custom';
     render();
@@ -480,7 +535,7 @@ function act(kind, target) {
   if (kind === 'reset-policy') {
     state.policyMode = 'automatic';
     state.policy = { ...DEFAULT_POLICY, providerOrder: [...DEFAULT_POLICY.providerOrder] };
-    state.feeds = state.feeds.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null }));
+    state.feeds = state.feeds.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null, explicit: null }));
     render();
   }
 }
@@ -514,12 +569,13 @@ function render() {
       policyMode: state.policyMode,
       clock: state.clock,
       policy: state.policy,
+      recalculationCount: state.recalc.length,
       feeds: state.feeds.map((feed) => {
         const result = results.find((entry) => entry.feed.name === feed.name);
         return {
           name: feed.name,
           pair: feed.pair,
-          override: { item: feed.overrideItem, window: feed.overrideWindow },
+          override: { item: feed.overrideItem, window: feed.overrideWindow, explicit: feed.explicit },
           start: {
             fromFixing: result.fromFixing,
             blocked: result.blocked,
@@ -554,7 +610,18 @@ function onClick(event) {
   if (!button) return;
   const kind = button.dataset.act;
   const target = button.dataset.provider ?? button.dataset.feed;
-  if (kind === 'order-up' || kind === 'order-down' || kind === 'open-feed' || kind === 'customise' || kind === 'reset-policy') {
+  if (kind === 'include') {
+    const feed = feedOf(state.feedName);
+    if (feed.explicit !== null) {
+      const id = button.dataset.id;
+      feed.explicit = button.checked
+        ? [...new Set([...feed.explicit, id])]
+        : feed.explicit.filter((entry) => entry !== id);
+      render();
+    }
+    return;
+  }
+  if (['order-up', 'order-down', 'open-feed', 'customise', 'reset-policy', 'add-feed', 'recalculate', 'toggle-explicit'].includes(kind)) {
     act(kind, target);
   }
 }
@@ -565,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (['a', 'b', 'c'].includes(variant)) state.variant = variant;
   document.body.addEventListener('click', onClick);
   document.body.addEventListener('change', onChange);
-  document.getElementById('resolve').addEventListener('click', render);
+  document.getElementById('resolve').addEventListener('click', () => act('recalculate'));
   document.querySelectorAll('.proto-switch button').forEach((button) => {
     button.addEventListener('click', () => setVariant(button.dataset.variant));
   });

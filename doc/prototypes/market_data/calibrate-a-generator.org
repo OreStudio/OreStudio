@@ -75,9 +75,16 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 - **Candidates are derived, not authored.** The pair and the provider order
   produce the list; direct quotes come before inverses, and a provider whose
   terms are not accepted never starts a feed.
-- **An exception is optional and reversible.** A feed pins one item or one
-  window; the banner says it overrides, and clearing the pin returns it to the
-  policy or the defaults.
+- **An exception is optional and reversible.** A feed pins one item, states
+  one window, or names its items explicitly; the banner says it overrides, and
+  returning to the derived list clears it.
+- **A new feed costs a pair.** *Add a feed* creates one from a pair only; the
+  defaults calibrate it on the next start, and the coverage count moves.
+- **A published fixing is taken without a person.** Moving the clock past the
+  ECB's 31 October fixing changes the start from 1.1523 to 1.1560; the older
+  value is the one a run on 30 October took.
+- **A recalculation leaves a record.** The button appends a row with the
+  policy's scope, how many feeds resolved and how many kept a level.
 - **Coverage is the point of the policy screen.** How many feeds resolve, keep
   a level or are blocked is the number a person governs, and a recalculation
   records every start.
@@ -96,21 +103,27 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 - Where the policy lives in the product: a market data settings page, the feed
   class page, or the feed screen itself. The prototype draws it as a class
   screen.
-- The exception's granularity beyond one pinned item and one window.
-- Whether a provider's rejection removes its items from the list or greys them.
-  The prototype keeps them visible with their reason, so a person sees why a
-  pair lost its best source.
+- The explicit list keeps the derived order: a person includes and excludes
+  items but does not reorder them. The product may or may not need the extra
+  freedom.
+- Terms acceptance is shown, not edited: the Bank of Canada's items stay
+  visible with their reason, and the prototype does not offer the accept or
+  withdraw action.
+- Who may edit the policy or add a feed, and whether a policy change needs
+  approval; the prototype has no roles.
 
 * The mock data
 
-Six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD) and eleven
+Six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD) and twelve
 items across the ECB, the IMF, the Bank of Canada and the TCMB, at a market
-clock of 2026-10-31. The policy orders ECB, IMF, BoC and allows inverses.
-EUR/USD resolves from the ECB, GBP/USD only as an inverse of the IMF's USD/GBP,
-and AUD/USD has no covering source, so it keeps its level. Turning the inverse
-off sends GBP/USD to its fixed level; setting the fallback to refuse blocks
-AUD/USD and counts it. The state panel prints the policy and each feed's start
-after every action.
+clock of 2026-10-30. The defaults order ECB, IMF, BoC and allow inverses.
+EUR/USD resolves from the ECB's 30 October fixing; moving the clock to
+31 October takes the newer 1.1560. GBP/USD resolves only as an inverse of the
+IMF's USD/GBP, and AUD/USD has no covering source, so it keeps its level.
+Turning the inverse off sends GBP/USD to its fixed level; the refuse fallback
+blocks AUD/USD and counts it. Two extra pairs can be added as feeds, and the
+state panel prints the policy, the recalculation count and each start after
+every action.
 
 * See also
 

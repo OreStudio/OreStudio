@@ -234,7 +234,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_list_cut_rows(std::ref(out), std::ref(session), std::move(args));
         },
-        "list-cut-rows [--kind_code <v>] [--month <v>] [--search <v>] [--state <v>]");
+        "list-cut-rows [--kind_code <v>] [--month <v>] [--search <v>] [--state <v>] [--offset <v>] "
+        "[--limit <v>]");
 
     menu->Insert(
         "get-cut-record",
@@ -1330,6 +1331,8 @@ void report_operations_operations_commands::process_list_cut_rows(
         {.name = "month", .requires_value = true, .default_value = ""},
         {.name = "search", .requires_value = true, .default_value = ""},
         {.name = "state", .requires_value = true, .default_value = ""},
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -1357,6 +1360,12 @@ void report_operations_operations_commands::process_list_cut_rows(
         }
         if (const auto& raw_state = parsed->flag("state"); !raw_state.empty()) {
             req.state = raw_state;
+        }
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<std::uint32_t>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<std::uint32_t>(raw_limit, "limit");
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

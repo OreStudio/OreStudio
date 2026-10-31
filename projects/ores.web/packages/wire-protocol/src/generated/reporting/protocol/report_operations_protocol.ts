@@ -409,6 +409,8 @@ export interface ListCutRowsRequest {
     month: string;
     search: string;
     state: string;
+    offset: number;
+    limit: number;
 }
 
 export interface CutRow {

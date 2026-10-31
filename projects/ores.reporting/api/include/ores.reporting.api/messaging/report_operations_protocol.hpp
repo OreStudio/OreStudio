@@ -641,16 +641,7 @@ struct list_cut_rows_request {
     std::string month = "";
     std::string search = "";
     std::string state = "";
-    /**
-     * @brief Which of the rows the query matched to pass over.
-     */
     std::uint32_t offset = 0;
-    /**
-     * @brief How many rows to answer, up to the read's own paging cap.
-     *
-     * The count the reply states is of every row the query matched, so a caller
-     * reads that the page is not the whole of it.
-     */
     std::uint32_t limit = 0;
 };
 

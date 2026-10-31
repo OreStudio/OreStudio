@@ -39,8 +39,8 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | STARTED | 2026-10-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | BACKLOG | | | Initial task for: Let the area come from the model |
+| [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | STARTED | 2026-10-31 | | Initial task for: Let the area come from the model |
 
 * Decisions
 

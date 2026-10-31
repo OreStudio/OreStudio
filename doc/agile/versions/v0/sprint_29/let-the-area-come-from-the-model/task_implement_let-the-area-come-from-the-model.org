@@ -7,82 +7,67 @@
 #+level: s1
 #+filetags: :let-the-area-come-from-the-model:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-let-the-area-come-from-the-model
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-An entity's HTTP area is a declaration on its model, resolved in one place, so a URL can outlive a component rename.
+An entity's HTTP area is a declaration on its model, resolved in one place, so a URL can
+outlive a component rename.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] |
-| Now          | Not yet started.                       |
+| Now          | A model may declare its area and the routes render under it; nothing declares one yet, so no URL has moved. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then move the first component's entities onto their published areas. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- An entity that declares #+http_area: renders its routes under that area.
-- An entity that declares no area renders under its component, so no existing URL moves.
-- A declared area that is not in the published list fails a check.
-- A codegen test covers both cases.
+- [X] An entity that declares =#+http_area:= renders its routes under that area.
+- [X] An entity that declares no area renders under its component, so no existing URL moves.
+- [X] A declared area that is not in the published list fails a check.
+- [X] A codegen test covers both cases.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The declaration is a frontmatter scalar, read the way =#+entity_plural:= is read, and
+resolved in =entity_http_route_plan= where the path base is built. The default is the
+component, which is what every route answers on today, so this task changes no URL and a
+reader can see the mechanism without a migration in the same diff.
+
+The published list is the one the inventory is classified against, so the tree keeps one
+list of areas instead of two.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Codegen route cases | 22, all passing (3 new) | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_http_routes.py -q= | this branch |
+| End to end | a model declaring =reference-data= renders =router->get("/api/v1/reference-data/currencies")= | =./projects/ores.codegen/codegen.sh generate --model projects/ores.refdata/modeling/ores.refdata.currency.org --address ores.cpp.http-route= | this branch |
+| Declared areas today | 0, so no URL moved | =python3 build/scripts/check_http_areas.py= | this branch |
 
 * Notes
 
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+- The end-to-end proof moved the currency routes and was reverted in the same pass, because
+  moving a URL belongs to the task that also updates the client and the tests. What this
+  task proves is that the mechanism resolves and renders, not that a route moved.
+- The gate refuses a declared area that is not published, and prints the published list, so
+  a model author never has to find the list.
 
 * Result
+
+A model states its area once and the routes render under it. No URL changed, and the next
+task can move one component at a time under a gate that already knows what an area is.

@@ -481,6 +481,20 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
             "or delete the test that names an unused one.",
     ),
+    # A published area is part of a URL, so a declared area that belongs to no
+    # area at all is a URL nobody can name. One list of areas serves both the
+    # inventory's classification and this check.
+    Check(
+        id="http-areas",
+        title="Every declared HTTP area is published",
+        argv=("python3", "build/scripts/check_http_areas.py"),
+        classes=("modeling", "codegen"),
+        paths=("projects/*/modeling/*",
+               "build/scripts/route_classification.py",
+               "build/scripts/check_http_areas.py"),
+        fix="Declare the area in build/scripts/route_classification.py AREAS, or use "
+            "one that is already published.",
+    ),
     # The classification work needs a list that cannot be short. This reads the
     # routes from the code that registers them, on both surfaces, and fails when
     # one is answered but absent from the inventory, when the inventory names a

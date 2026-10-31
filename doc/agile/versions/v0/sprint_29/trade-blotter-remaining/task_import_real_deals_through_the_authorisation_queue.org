@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/import-real-deals-through-the-authorisation-queue
-#+pr: 4298
+#+pr: 4299
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -26,11 +26,11 @@ Close the open part of the May import plan. A real import books into a real book
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the gate holds and the plan is named by the document. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -102,6 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4299][#4299]] | [agile] Close the import task |
 | [[https://github.com/OreStudio/OreStudio/pull/4298][#4298]] | [ore] Name an imported trade by what it is, so a second run books nothing |
 
 * Review

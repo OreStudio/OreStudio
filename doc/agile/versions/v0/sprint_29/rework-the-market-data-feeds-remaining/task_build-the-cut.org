@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-cut
-#+pr:
+#+pr: 4212
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4212][#4212]] | [reporting] Build the cut data model |
 
 * Review
 

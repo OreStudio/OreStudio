@@ -26,11 +26,11 @@ The change stream carries what the stores announce. One subscription hears every
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | Code and tests are done. The live proof of the HTTP end is blocked. |
+| Now          | Nothing. |
 | Waiting on   | [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]] |
-| Next         | Fix the session door, then open a stream and read a frame. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -64,10 +64,12 @@ shape changes here rather than being carried into the feed.
 - =change_feed= takes an =ores::nats::message= and records it, so a case
   builds a message and asserts the frame that a drain produces, with no
   broker in the test.
-- The server subscribes to =*.v1.*_events.>= through the same registrar that
-  already returns the subscriptions the service runner keeps alive, and
-  runs the ticker from the runner's start hook. Both ends now exist, so the
-  stream is no longer empty.
+- The server subscribes through the same registrar that already returns the
+  subscriptions the service runner keeps alive, and runs the ticker from the
+  runner's start hook. Both ends now exist, so the stream is no longer empty.
+- The pattern is =*.v1.>=. A NATS wildcard is a whole token, so the
+  collection's =_events= suffix cannot be matched in the subscription and is
+  filtered in the parse instead.
 
 * Measurements
 
@@ -81,16 +83,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Core suite cases | 44 | =ores.http.core.tests= | =436cc48716= |
-| Core suite assertions | 183 | =ores.http.core.tests= | =436cc48716= |
+| Core suite cases | 45 | =ores.http.core.tests= | =f32ce6b39f= |
+| Core suite assertions | 187 | =ores.http.core.tests= | =f32ce6b39f= |
 | Core suite cases before this task | 36 | =ores.http.core.tests= on =5be7a9469f= | =5be7a9469f= |
-| Live subscription line | =Hearing entity events on *.v1.*_events.>= | =compass services logs ores.http.server= on the restarted deployment | =436cc48716= |
+| Live subscription line | =Hearing entity events on *.v1.>= | =compass services logs ores.http.server= | =f32ce6b39f= |
+| Live frames in one stream, 2 seconds | 8, from 3 components | =curl -N -b <cookie> /api/v1/changes= | =f32ce6b39f= |
+| Files main lost when #4293 merged | 174 | =git diff --diff-filter=D --name-only 9e500a223f^1 9e500a223f \| wc -l= | =9e500a223f= |
 
 * Notes
 
-*The live HTTP proof is blocked, and the blocker is named.* The check is: open
-=/api/v1/changes= as a signed-in browser, write a row, read a frame. The first
-step fails on a running deployment:
+*The live proof found what the cases could not.* The check is: sign a browser in,
+open =/api/v1/changes=, write something, read a frame. Three things blocked it in
+turn, and each was a real defect rather than a test gap.
+
+*First, nobody could sign in.* Signing in answered =Authentication is not
+configured= although the log showed =Fetched JWKS public key from IAM= at startup:
+the door was built with =server.verifier()= before the runner installed the
+verifier. Fixed by [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]].
 
 #+begin_src text
 $ curl -s -X POST http://127.0.0.1:21601/api/v1/auth/sessions \
@@ -99,25 +108,31 @@ $ curl -s -X POST http://127.0.0.1:21601/api/v1/auth/sessions \
 {"error":"Authentication is not configured"}
 #+end_src
 
-The server log states why: =Signing in failed: no verifier is configured=,
-although the same log shows =Fetched JWKS public key from IAM= and
-=JWT authenticator configured with RS256 verifier= at startup. The door is
-constructed with =server.verifier()= before the service runner installs the
-verifier, so it holds an empty one forever. No browser can sign in, so no
-browser can open a stream: the change stream has no client until that is fixed.
-Fixed by [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]].
+*Second, the pattern heard nothing.* With the door fixed, the stream opened and
+delivered no frame at all, and the pump logged nothing, so nothing arrived from the
+broker. The subscription was =*.v1.*_events.>=: a NATS wildcard is a whole token,
+so =*_events= is a literal, and the server accepts the subscription and delivers
+nothing to it. The pattern is now =*.v1.>= with the collection filtered in the
+parse, and a case walks the pattern token by token so the spelling cannot regress
+quietly. Captured as
+[[id:6AA25394-9066-42C6-ADAE-FDAD2E78E45F][An events collection cannot be wildcarded]].
 
-What is proven without a browser:
+*Third, main had lost the work twice over.* The build could not link because
+=ores.iam.core= called =ores::synthetic::service::routed_code_count=, which did
+not exist; main was fixed while I waited. Then the merged increments turned out to
+be gone from main entirely: merging #4293 deleted 174 files, including
+=change_feed=, the collection-shaped change and the door's verifier. Captured as
+[[id:560D4814-B8AB-4136-A9C8-48B87FC3488B][A merge took an old tree over two merged increments]],
+and restored by =hotfix/restore-the-feed-and-the-door=.
 
-- The mapping from a NATS message to a change, and from a change to a frame,
-  by =projects/ores.http/core/tests/change_feed_tests.cpp= (7 cases) and the
-  coalescer, pump and ticker cases.
-- The HTTP end of a stream, by the existing stream cases, which run a real
-  socket against =http_server=.
-- That the deployment subscribes, by the startup line above.
+*What the frames prove.* A session opened as =tenant_admin@acme_corporation=, then
+a second sign-in. One stream carried three components' stores without the client
+asking anything: =iam.login_info= and =iam.sessions= from the sign-in, and
+=marketdata.delivery_counts= from the feed path. Every frame named its tenant and
+its component, and the party was empty for the tenant-wide ones.
 
-What is not proven: that a frame written by this deployment reaches a browser.
-The pieces are proven apart and the composition at the HTTP end is not.
+What is still not proven: nothing in this task. The unit cases cover the mapping
+and the frame, and the deployment covers the composition.
 
 * Test Scenarios
 
@@ -159,11 +174,33 @@ event: iam.tenant_types
 data: {"tenant":"acme","party":"ops","component":"iam","entity":"tenant_types"}
 #+end_src
 
-The server subscribes once to =*.v1.*_events.>= in the same registrar that
-already returns the handles the runner keeps alive, and runs the ticker from the
-runner's start hook, so the hub is no longer empty. The window is 150 ms, the
-constant the design states.
+The server subscribes once, in the same registrar that already returns the handles
+the runner keeps alive, and runs the ticker from the runner's start hook, so the
+hub is no longer empty. The window is 150 ms, the constant the design states.
 
-Not closed: the HTTP end is proven apart from the feed, because the session door
-holds no verifier and no browser can sign in. See =* Notes=.
+The pattern the subscription uses is =*.v1.>=, not =*.v1.*_events.>=. A NATS
+wildcard is a whole token, so the second spelling is a literal that matches
+nothing; the server accepts it and delivers nothing, and the stream stayed silent
+with no error to read. The live run below is what found it, after the unit cases
+had passed the parser and the frames a hundred times. The feed rejects what is not
+an event in the parse instead, and the design states the cost of that.
+
+Proven on a running deployment, once the session door could sign a browser in and
+the pattern could match: a signed-in caller opens =/api/v1/changes=, signs in a
+second time, and reads
+
+#+begin_src text
+event: iam.login_info
+data: {"tenant":"55ae77e3-e255-4bde-8dc6-22ee2250fabb","party":"","component":"iam","entity":"login_info"}
+
+event: iam.sessions
+data: {"tenant":"55ae77e3-e255-4bde-8dc6-22ee2250fabb","party":"","component":"iam","entity":"sessions"}
+
+event: marketdata.delivery_counts
+data: {"tenant":"55ae77e3-e255-4bde-8dc6-22ee2250fabb","party":"3956198f-2b62-4bad-9047-5bfd2bfd0793","component":"marketdata","entity":"delivery_counts"}
+#+end_src
+
+followed by the keep-alive comment. Three components' stores reached one open
+stream without the client asking for anything.
+
 

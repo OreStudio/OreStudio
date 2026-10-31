@@ -26,11 +26,11 @@ A door that is opened before the lock is fitted still works once the lock is in 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | The door asks for the verifier at each sign-in. Both suites pass. |
+| Now          | Nothing. |
 | Waiting on   | The build on main: see =* Notes=. |
-| Next         | Sign in against the deployment once main builds, and close this. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -65,14 +65,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| IAM suite assertions | 300 | =ores.http.iam.tests= | the commit that carries this task |
-| IAM suite cases | 35 | =ores.http.iam.tests= | the commit that carries this task |
-| Live sign-in assertions | 10 | =ores.http.iam.tests "[live]"= | the commit that carries this task |
+| IAM suite assertions | 300 | =ores.http.iam.tests= | =f32ce6b39f= |
+| IAM suite cases | 35 | =ores.http.iam.tests= | =f32ce6b39f= |
+| Live sign-in assertions | 10 | =ores.http.iam.tests "[live]"= | =f32ce6b39f= |
 
 * Notes
 
-*The deployment cannot be rebuilt on main, and that is what blocks the last
-acceptance bullet.* =ores.iam.core= fails to compile against the tree at
+*History: the deployment could not be rebuilt on main at first.* =ores.iam.core= fails to compile against the tree at
 =19ba10eb8a=:
 
 #+begin_src text
@@ -129,6 +128,17 @@ The check also moved ahead of the request to IAM. A gateway that cannot check a
 token no longer spends a round trip to fetch one, and a misconfigured deployment
 answers the same refusal whether or not IAM is up.
 
-Not closed: the deployment proof. Main does not compile, so there is no server to
-sign in to. See =* Notes=.
+Proven on the deployment once main compiled again: a sign-in over HTTP answers
+=200= with the principal and a session cookie, where it answered
+=Authentication is not configured= before.
+
+#+begin_src text
+$ curl -s -c tmp/ck.txt -X POST http://127.0.0.1:21601/api/v1/auth/sessions \
+    -H 'Content-Type: application/json' \
+    -d '{"principal":"tenant_admin@acme_corporation","password":"…"}'
+{"subject":"01a18ff5-167d-778a-b5d6-3b8c8b0ba0ce","tenant":"55ae77e3-…",…}
+#+end_src
+
+The same cookie then opened =/api/v1/changes=, which is the client the defect was
+blocking.
 

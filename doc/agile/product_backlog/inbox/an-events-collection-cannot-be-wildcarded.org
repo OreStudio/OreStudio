@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6AA25394-9066-42C6-ADAE-FDAD2E78E45F
+:END:
+#+title: An events collection cannot be wildcarded
+#+description: A NATS wildcard is a whole token, so a subscription to *.v1.*_events.> is a literal that matches nothing and the server accepts it and delivers nothing. The events namespace should be its own token, <component>.v1.events.<collection>.<action>, so one subscription can hear every event without also hearing every request.
+#+type: capture
+#+level: cross
+#+filetags: :nats: :eventing: :http:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+An entity event is published on =<component>.v1.<collection>_events.<action>=, for
+example =iam.v1.roles_events.created=. A subscriber that wants every event of every
+component cannot say so: a NATS wildcard is a whole token, so =*_events= is the
+literal token =*_events= and matches nothing.
+
+#+begin_src text
+$ # subscribed, accepted, and heard nothing
+SUB ores.dev.example.*.v1.*_events.> 1
++OK
+$ # a literal, matching one subject that will never exist
+PUB ores.dev.example.iam.v1.roles_events.created
+# delivered to nobody
+#+end_src
+
+The first version of the change feed subscribed with that pattern. The server
+accepts it and delivers nothing, so the stream was silent with no error anywhere,
+and only a live run found it.
+
+The feed now subscribes =*.v1.>= and filters the collection in the parse. That is
+correct and costs a copy of every versioned request in the system, which no one
+chose deliberately.
+
+* Why
+
+The events namespace is not addressable as a namespace. Two candidate spellings
+make it so:
+
+- =<component>.v1.events.<collection>.<action>=, an explicit token. One
+  subscription =*.v1.events.>= hears every event and no request, the wildcard is
+  a whole token, and the collection is a token of its own rather than a suffix.
+- =events.<component>.<collection>.<action>=, a namespace in front. Same effect,
+  and it puts the events outside a component's versioning, which may be wrong.
+
+Either way every =entity_event_traits<>::subject_prefix= changes, which is the
+generated-or-hand-written span to measure first: =subject_prefix= appears in
+=projects/ores.<component>/api/include/ores.<component>.api/eventing/*.hpp=, and
+the =subject-conformance= check holds the shape.
+
+* References
+
+- =projects/ores.http/core/include/ores.http.core/stream/change_feed.hpp=, where
+  the pattern and the reason sit beside each other.
+- [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]], whose feed found this.
+
+* See also
+
+- [[id:560D4814-B8AB-4136-A9C8-48B87FC3488B][A merge took an old tree over two merged increments]], which deleted the feed
+  before the live run could have found this.

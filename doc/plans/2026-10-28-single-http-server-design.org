@@ -648,6 +648,18 @@ administrator hears every party of its tenant. Party filtering changes the
 payload (the key list), which is why serialisation is per party bucket and not
 per entity.
 
+*The events collection is not addressable, and the port pays for it.* An entity
+event is published on =<component>.v1.<collection>_events.<action>=. A NATS
+wildcard is a whole token, so =*.v1.*_events.>= is a literal token that matches
+nothing: the server accepts the subscription, delivers nothing to it, and the
+stream is silent with no error anywhere. The feed therefore subscribes =*.v1.>=
+and rejects what is not an event in the parse. That is correct, and it copies
+every versioned request in the system into the gateway as well, which nothing
+asked for. Giving the events a token of their own (=<component>.v1.events.
+<collection>.<action>=, heard by =*.v1.events.>=) removes the copy and every
+=subject_prefix= in the tree changes to do it. Until then this is the cost of the
+stream, stated rather than discovered.
+
 *The constants, carried over exactly.* =BATCH_WINDOW_MS = 150=, =MAX_KEYS = 20=,
 a watch declaration of at most 50 entries, and both names validated against
 =^[a-z][a-z0-9_]*$= so a browser cannot widen a watch with a wildcard. The window

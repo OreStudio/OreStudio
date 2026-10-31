@@ -23,9 +23,9 @@ A client can follow the changes over one long response, and a quiet market does 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The path from a store's event to an open stream is built and tested. |
-| Waiting on    | [[id:7550D48A-AD0F-49C8-90FE-38B351DAD237][The session door holds no verifier]] |
-| Next          | Fix the door, then read a frame in a browser. |
+| Now           | A signed-in browser reads three components' changes on one open stream. |
+| Waiting on    | Nothing. |
+| Next          | Party filtering, conflation and resume, from the design's B3. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ A client can follow the changes over one long response, and a quiet market does 
 | [[id:DD5C4D99-9E30-4D0F-ACEB-57200AA95285][Coalesce a burst into one frame]] | DONE | 2026-10-31 | 2026-10-31 | A bulk import writes thousands of rows and a stream that sends one frame per row is useless to a screen that redraws a list. Accumulate the changes into a dirty set per tenant, party and entity, and emit at most one frame per entity per tick, listing what changed. |
 | [[id:A8E3F1EE-165F-4671-AF87-5AF4AA65532D][Put the coalesced frames on the stream]] | DONE | 2026-10-31 | 2026-10-31 | The coalescer gathers a burst and the hub fans text to the streams, and nothing joins them. Format a coalesced frame as one event-stream message and pump what a window gathered into every open stream, so an event recorded anywhere reaches a client as one frame per entity. |
 | [[id:D6E14D99-CFD3-4E0C-AA6A-216D226296C4][Tick the window]] | DONE | 2026-10-31 | 2026-10-31 | The pump gives a window to every stream when something calls it, and nothing does. Run a timer that ticks it on an interval, stop cleanly when the server drains, and prove that a change recorded between ticks reaches a subscriber on the next one. |
-| [[id:9C7E162B-87CD-4B68-90E3-A7CE2461379D][Hear the events that move the rows]] | STARTED | 2026-10-31 | | Every store writes an entity event on a subject that names its collection, action and tenancy, and the change stream hears none of them. Subscribe once to every entity event, turn each into a change for the coalescer, and run the feed beside the ticker so a written row reaches an open stream. |
+| [[id:9C7E162B-87CD-4B68-90E3-A7CE2461379D][Hear the events that move the rows]] | DONE | 2026-10-31 | 2026-10-31 | Every store writes an entity event on a subject that names its collection, action and tenancy, and the change stream hears none of them. Subscribe once to every entity event, turn each into a change for the coalescer, and run the feed beside the ticker so a written row reaches an open stream. |
 
 * Decisions
 
@@ -68,8 +68,14 @@ oldest frames rather than the server's memory, a quiet stream is kept alive with
 a closed subscription ends the body, and an entity event from any component becomes one frame
 per collection per window.
 
-Not proven end to end in a browser: the session door holds no verifier, so no one
-can sign in to open a stream. See the task's notes.
+Proven end to end on the deployment: a signed-in caller opened =/api/v1/changes=
+and read frames from =iam.login_info=, =iam.sessions= and
+=marketdata.delivery_counts=, each naming its tenant and component, with the
+keep-alive on the quiet stretch.
+
+The live run also found two things the cases could not: the session door held no
+verifier, so no one could sign in, and the subscription's wildcard could never
+match, so the stream heard nothing. Both are fixed and both are captured.
 
 * Out of scope
 

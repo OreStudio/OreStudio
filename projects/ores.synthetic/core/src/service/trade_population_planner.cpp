@@ -216,7 +216,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 
 std::vector<std::string_view> planned_asset_classes() {
     static const std::vector<std::string_view> codes{
-        "bond", "commodity", "credit", "equity", "fx", "interest_rates"};
+        "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates"};
     return codes;
 }
 
@@ -227,11 +227,13 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const fx_trade_planner fx;
     static const credit_trade_planner credit;
     static const equity_trade_planner equity;
+    static const inflation_trade_planner inflation;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
                                                                       {"commodity", &commodity},
                                                                       {"credit", &credit},
                                                                       {"equity", &equity},
                                                                       {"fx", &fx},
+                                                                      {"inflation", &inflation},
                                                                       {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
@@ -524,11 +526,26 @@ construct_bond_product(const domain::bond_terms& terms,
             throw trade_population_error(
                 "A convertible bond states the share it may convert into, and the tenant holds no "
                 "equity underlying. Publish the equity catalogue first.");
+        /*
+         * The target belongs to the security and not to the trade: two trades of
+         * one convertible convert into the same share at the same ratio, and the
+         * store compares the targets it holds when a second write reaches the
+         * issue. So both draws come from the security's own name rather than
+         * from the slot, which would let two trades of one security disagree.
+         */
+        const auto target_draw = draw(terms.security_id, 10);
+        const auto position =
+            static_cast<std::size_t>(target_draw *
+                                     static_cast<double>(scope.equity_underlyings.size()));
         tdom::convertible_bond_terms convertible;
         convertible.common = common;
         convertible.targets.push_back(
-            {.underlying_id = scope.equity_underlyings[slot % scope.equity_underlyings.size()].code,
-             .conversion_ratio = std::round((5.0 + 10.0 * draw(name, 10)) * 100.0) / 100.0});
+            {.underlying_id =
+                 scope.equity_underlyings[std::min(position,
+                                                   scope.equity_underlyings.size() - 1)]
+                     .code,
+             .conversion_ratio =
+                 std::round((5.0 + 10.0 * draw(terms.security_id, 11)) * 100.0) / 100.0});
         return tdom::construct_convertible_bond(convertible);
     }
 
@@ -1254,6 +1271,8 @@ construct_rate_batch(const domain::rate_terms& drawn,
                 batch.knock_out_swap_instruments.push_back(fact);
             else if constexpr (std::is_same_v<fact_type, tdom::flexi_swap_instrument>)
                 batch.flexi_swap_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::inflation_swap_instrument>)
+                batch.inflation_swap_instruments.push_back(fact);
             else
                 batch.balance_guaranteed_swap_instruments.push_back(fact);
         },
@@ -1797,6 +1816,140 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          */
         entry.instruments.credit_instruments.push_back(
             construct_credit_row(terms, entry.trade_type_code));
+
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
+
+namespace {
+
+/*
+ * The one code the routing table sends to an inflation product. It is stated
+ * rather than read from the table, because a planner is pure and has no
+ * database, and the list has one member because the catalogue has one.
+ */
+constexpr std::string_view inflation_types[] = {"InflationSwap"};
+
+/*
+ * The observation lag every slot states. A published index reaches the trade
+ * behind its publication by a few months, and three is the lag the ONS and
+ * Eurostat series the seed names are quoted at.
+ */
+constexpr std::string_view inflation_observation_lag = "3M";
+
+/*
+ * The base level the trade is struck from. The index is a level rather than a
+ * rate, so the draw sits inside the band the seeded indices live in rather
+ * than inside the notional band.
+ */
+double base_cpi_from(const std::string& name) {
+    return std::round((100.0 + 60.0 * draw(name, 5)) * 100.0) / 100.0;
+}
+
+/*
+ * The inflation family states its rows here, where it draws them: a rates
+ * header because the catalogue routes the code to the rates family's table, the
+ * fixed side and the CPI side as legs, and the product's own fact row with the
+ * index it observes.
+ */
+ores::trading::domain::instrument_batch
+construct_inflation_batch(const domain::inflation_terms& drawn) {
+    namespace tdom = ores::trading::domain;
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
+
+    tdom::rate_common_terms common;
+    common.start_date = drawn.start_date;
+    common.maturity_date = drawn.maturity_date;
+    common.fixed.leg_type_code = "Fixed";
+    common.fixed.day_count_fraction_code = "ActAct(ISDA)";
+    common.fixed.business_day_convention_code = "ModifiedFollowing";
+    common.fixed.payment_frequency_code = "Annual";
+    common.fixed.currency = drawn.currency;
+    common.fixed.rate_role = "fixed";
+    common.fixed.value = money(drawn.fixed_rate);
+    common.fixed.notional = money(drawn.notional);
+    common.fixed.payer = true;
+    common.floating.leg_type_code = "CPI";
+    common.floating.day_count_fraction_code = "ActAct(ISDA)";
+    common.floating.business_day_convention_code = "ModifiedFollowing";
+    common.floating.payment_frequency_code = "Annual";
+    common.floating.currency = drawn.currency;
+    common.floating.notional = money(drawn.notional);
+    common.floating.payer = false;
+
+    const auto product = tdom::construct_rate_inflation_swap(
+        tdom::rate_inflation_swap_terms{common,
+                                        drawn.inflation_index_code,
+                                        drawn.base_cpi,
+                                        std::string(inflation_observation_lag)});
+
+    tdom::instrument_batch batch;
+    batch.rate_instruments.push_back(product.row);
+    for (const auto& leg : product.legs)
+        batch.swap_legs.push_back(leg);
+    for (const auto& amount : product.amounts)
+        batch.swap_leg_amounts.push_back(amount);
+    for (const auto& leg_rate : product.rates)
+        batch.swap_leg_rates.push_back(leg_rate);
+    batch.inflation_swap_instruments.push_back(
+        std::get<tdom::inflation_swap_instrument>(product.fact));
+    return batch;
+}
+
+}
+
+std::string_view inflation_trade_planner::asset_class_code() const {
+    return "inflation";
+}
+
+domain::trade_population_plan
+inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.inflation_index_codes.empty())
+        throw trade_population_error(
+            "The tenant holds no inflation curve, so no inflation swap can name an index. Publish "
+            "the inflation curve configuration first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+
+        domain::inflation_terms terms;
+        terms.currency = scope.currency_code;
+        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        terms.maturity_date =
+            add_years(terms.start_date,
+                      static_cast<int>(std::clamp(drawn, min_years, max_years)));
+        terms.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        terms.fixed_rate = std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0;
+        /*
+         * The index cycles the tenant's curves rather than being drawn, so a
+         * population longer than the list states every index the tenant holds.
+         */
+        terms.inflation_index_code = scope.inflation_index_codes[slot % scope.inflation_index_codes.size()];
+        terms.base_cpi = base_cpi_from(name);
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(inflation_types[slot % std::size(inflation_types)]);
+        entry.notional = terms.notional;
+        entry.instruments = construct_inflation_batch(terms);
 
         plan.slots.push_back(std::move(entry));
     }

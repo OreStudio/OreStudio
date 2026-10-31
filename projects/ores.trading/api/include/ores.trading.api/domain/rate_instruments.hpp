@@ -25,6 +25,7 @@
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
@@ -37,6 +38,7 @@
 #include <array>
 #include <chrono>
 #include <initializer_list>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -75,6 +77,14 @@ namespace rate_terms {
 
 inline constexpr auto leg_types = std::to_array<std::string_view>({"Fixed", "Floating"});
 
+/*
+ * The legs an inflation swap states: the fixed side every rates product has,
+ * and the CPI side whose type names the index family the ORE document reads
+ * the product's own fields from. A CPI leg is not a floating leg: it observes
+ * a published index rather than a benchmark that resets on a schedule.
+ */
+inline constexpr auto inflation_leg_types = std::to_array<std::string_view>({"Fixed", "CPI"});
+
 inline constexpr auto directions = std::to_array<std::string_view>({"Long", "Short"});
 
 inline constexpr auto exercise_types =
@@ -103,7 +113,13 @@ inline constexpr auto barrier_types = std::to_array<std::string_view>({"UpAndOut
 }
 
 [[noreturn]] inline void refuse(std::string_view product, std::string_view fact) {
-    throw rate_product_error("A " + std::string(product) + " states " + std::string(fact) + ".");
+    /*
+     * The product is named by its phrase rather than by an article: a family
+     * holds products whose names begin with a vowel and products whose names do
+     * not, and "The" is right for both.
+     */
+    throw rate_product_error("The " + std::string(product) + " states " + std::string(fact) +
+                             ".");
 }
 
 inline void
@@ -239,9 +255,31 @@ struct rate_balance_guaranteed_swap_terms final {
 };
 
 /**
+ * @brief An inflation swap's own facts.
+ *
+ * A zero coupon inflation swap pays a fixed rate against the change in an
+ * inflation index over the trade's life. The nominal side is the family's
+ * fixed leg; the CPI side is the leg that observes the index. The index, the
+ * level it is compared from and the lag it is published at are the product's
+ * own facts, and the ORE document states them on the CPI leg rather than on
+ * the swap.
+ */
+struct rate_inflation_swap_terms final {
+    rate_common_terms common;
+    /// The published index the trade observes, as the tenant's curve is named.
+    std::string inflation_index_code;
+    /// The index level the trade is struck from. Absent when the document
+    /// leaves it to the engine's own fixing.
+    std::optional<double> base_cpi;
+    /// The publication lag the index is observed at, e.g. =3M=.
+    std::string lag_convention;
+};
+
+/**
  * @brief The one fact row that says which rate product this is.
  */
 using rate_fact = std::variant<vanilla_swap_instrument,
+                               inflation_swap_instrument,
                                fra_instrument,
                                cap_floor_instrument,
                                swaption_instrument,
@@ -429,6 +467,96 @@ construct_rate_knock_out_swap(const rate_knock_out_swap_terms& terms) {
     require_one_of("flexi swap", "a Long or Short direction", terms.option_long_short, directions);
     flexi_swap_instrument fact;
     fact.option_long_short = terms.option_long_short;
+    built.fact = fact;
+    return built;
+}
+
+[[nodiscard]] inline rate_product
+construct_rate_inflation_swap(const rate_inflation_swap_terms& terms) {
+    using namespace rate_terms;
+    require_date("inflation swap", "a start date", terms.common.start_date);
+    require_date("inflation swap", "a maturity date", terms.common.maturity_date);
+    if (!(terms.common.maturity_date > terms.common.start_date))
+        refuse("inflation swap", "a maturity date after its start date");
+    require_text("inflation swap", "an inflation index", terms.inflation_index_code);
+    require_text("inflation swap", "an observation lag", terms.lag_convention);
+    if (terms.base_cpi.has_value() && !(*terms.base_cpi > 0.0))
+        refuse("inflation swap", "a positive base CPI");
+
+    /*
+     * The swap is one fixed rate against the index. Both sides are stated as
+     * legs so the store owns the notional and the document can carry the
+     * cashflows, and the fixed side states the rate the trade pays.
+     */
+    const auto& fixed = terms.common.fixed;
+    const auto& cpi = terms.common.floating;
+    require_text("inflation swap", "a currency on its fixed leg", fixed.currency);
+    require_text("inflation swap", "a day count fraction on its fixed leg",
+                 fixed.day_count_fraction_code);
+    require_text("inflation swap", "a payment frequency on its fixed leg",
+                 fixed.payment_frequency_code);
+    require_amount("inflation swap", "a positive notional on its fixed leg", fixed.notional);
+    require_not_negative("inflation swap", "a non-negative fixed rate", fixed.value);
+    require_text("inflation swap", "a currency on its CPI leg", cpi.currency);
+    require_text("inflation swap", "a day count fraction on its CPI leg",
+                 cpi.day_count_fraction_code);
+    require_text("inflation swap", "a payment frequency on its CPI leg",
+                 cpi.payment_frequency_code);
+    require_amount("inflation swap", "a positive notional on its CPI leg", cpi.notional);
+
+    rate_product built;
+    built.row.start_date = terms.common.start_date;
+    built.row.maturity_date = terms.common.maturity_date;
+    built.row.description = "Generated inflation swap.";
+
+    const auto add_leg = [&](int number, const rate_leg_terms& leg) {
+        require_one_of(
+            "inflation swap", "a Fixed or CPI leg type", leg.leg_type_code, inflation_leg_types);
+        swap_leg row;
+        row.identity.leg_number = number;
+        row.payer = leg.payer;
+        row.leg_type_code = leg.leg_type_code;
+        row.day_count_fraction_code = leg.day_count_fraction_code;
+        row.business_day_convention_code = leg.business_day_convention_code;
+        row.payment_frequency_code = leg.payment_frequency_code;
+        row.currency = leg.currency;
+        /*
+         * Neither leg states a benchmark index, and the CPI leg cannot: the leg
+         * column is the soft reference to the benchmark catalogue every
+         * floating leg names, and an inflation index is not a member of it. The
+         * index the trade observes is the product's own fact, which is what the
+         * document reads the CPI leg's fields from.
+         */
+        built.legs.push_back(std::move(row));
+
+        swap_leg_amount amount;
+        amount.leg_number = number;
+        amount.sequence_number = 1;
+        amount.start_date = terms.common.start_date;
+        amount.amount = leg.notional;
+        built.amounts.push_back(std::move(amount));
+
+        /*
+         * Only the fixed side pays a rate. The CPI side is the index's own
+         * accrual and the store has no rate row for it, so it states none.
+         */
+        if (leg.leg_type_code != "Fixed")
+            return;
+        swap_leg_rate leg_rate;
+        leg_rate.leg_number = number;
+        leg_rate.rate_role = leg.rate_role;
+        leg_rate.sequence_number = 1;
+        leg_rate.start_date = terms.common.start_date;
+        leg_rate.value = leg.value;
+        built.rates.push_back(std::move(leg_rate));
+    };
+    add_leg(1, terms.common.fixed);
+    add_leg(2, terms.common.floating);
+
+    inflation_swap_instrument fact;
+    fact.inflation_index_code = terms.inflation_index_code;
+    fact.base_cpi = terms.base_cpi;
+    fact.lag_convention = terms.lag_convention;
     built.fact = fact;
     return built;
 }

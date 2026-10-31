@@ -26,6 +26,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
@@ -270,6 +271,18 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
              */
             .kind = "equity",
             .currency = underlying.currency_code});
+
+    /*
+     * An inflation trade names the index it observes, and the tenant resolves
+     * that name through its curve configuration: the curve whose id is the
+     * index. The curves are the tenant's own reference data, so the population
+     * reads them where they live rather than inventing an index name.
+     */
+    ores::refdata::messaging::list_curve_definitions_request curve_req;
+    curve_req.limit = page;
+    for (const auto& curve : read(curve_req).curves)
+        if (curve.section_code == "InflationCurves" && !curve.curve_id.empty())
+            scope.inflation_index_codes.push_back(curve.curve_id);
 
     /*
      * A credit trade references a legal entity by its LEI. The entities belong
@@ -605,6 +618,8 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
                      book_req.instruments.flexi_swap_instruments);
         append_facts(slot.instruments.balance_guaranteed_swap_instruments,
                      book_req.instruments.balance_guaranteed_swap_instruments);
+        append_facts(slot.instruments.inflation_swap_instruments,
+                     book_req.instruments.inflation_swap_instruments);
     } else if (!slot.instruments.fx_forward_instruments.empty() ||
                !slot.instruments.fx_barrier_option_instruments.empty() ||
                !slot.instruments.fx_digital_option_instruments.empty() ||

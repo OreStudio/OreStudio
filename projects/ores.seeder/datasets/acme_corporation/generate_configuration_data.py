@@ -537,9 +537,10 @@ def inflation_curve_configuration():
             configs.append(row(
                 company, id=new_uuid(f"inflation_curve_configuration:{company}:{index}:config"),
                 curve_definition_id=definition_id, nominal_term_structure=f"{currency}1D",
-                # The convention the curve's swaps are priced with, by the id the
-                # inflation swap conventions state for this index.
-                inflation_type="ZeroInflation",
+                # The curve's type, by the code the ORE curve document states and
+                # the tenant's own curve.inflation_type value set holds: ZC is a
+                # zero coupon curve and YY a year on year one.
+                inflation_type="ZC",
                 conventions=f"{index}_INFLATIONSWAP",
                 # No extrapolation: the guard refuses every value because the
                 # curve.flag value set arrives empty, and a curve that states none

@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include "test_suite.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -61,6 +62,33 @@ rate_common_terms make_rate_common() {
     common.floating.payer = false;
     return common;
 }
+
+/*
+ * An inflation swap's two sides. The family's own helper states a floating leg,
+ * which is a benchmark that resets; an inflation swap's other side observes a
+ * published index instead, and that is the leg type the document reads from.
+ */
+rate_common_terms make_inflation_common() {
+    auto common = make_rate_common();
+    // A swap matures after it starts, so the fixed level's date cannot be its
+    // own start date.
+    common.maturity_date = std::chrono::year{2032} / std::chrono::month{3} /
+                           std::chrono::day{15};
+    common.floating.leg_type_code = "CPI";
+    common.floating.floating_index_code = "UKRPIX";
+    common.floating.payment_frequency_code = "Annual";
+    return common;
+}
+
+rate_inflation_swap_terms make_inflation_swap() {
+    rate_inflation_swap_terms terms;
+    terms.common = make_inflation_common();
+    terms.inflation_index_code = "UKRPIX";
+    terms.base_cpi = 132.5;
+    terms.lag_convention = "3M";
+    return terms;
+}
+
 
 }
 
@@ -181,4 +209,65 @@ TEST_CASE("a_rate_product_refuses_a_leg_without_a_currency", "[domain]") {
     BOOST_LOG_SEV(lg, info) << "Refusing a swap whose floating leg states no currency";
 
     CHECK_THROWS_AS(construct_rate_swap(rate_swap_terms{common, 2}), rate_product_error);
+}
+
+TEST_CASE("an_inflation_swap_states_its_index_on_a_cpi_leg", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    const auto built = construct_rate_inflation_swap(make_inflation_swap());
+
+    REQUIRE(built.legs.size() == 2u);
+    const auto cpi = std::ranges::find_if(built.legs, [](const auto& leg) {
+        return leg.leg_type_code == "CPI";
+    });
+    REQUIRE(cpi != built.legs.end());
+    /*
+     * The leg states no benchmark index: the column references the floating
+     * index catalogue, and the index this trade observes is the product's own
+     * fact. A CPI leg that named it would be refused by the store.
+     */
+    CHECK(cpi->floating_index_code.empty());
+    /*
+     * The CPI side is the side the party receives, so the leg says who pays
+     * rather than leaving the field absent.
+     */
+    REQUIRE(cpi->payer.has_value());
+    CHECK_FALSE(*cpi->payer);
+
+    // The fixed side pays a rate; the index side accrues and states none.
+    REQUIRE(built.rates.size() == 1u);
+    CHECK(built.rates.front().leg_number == 1);
+    CHECK(built.rates.front().rate_role == "fixed");
+
+    const auto& fact = std::get<inflation_swap_instrument>(built.fact);
+    CHECK(fact.inflation_index_code == "UKRPIX");
+    REQUIRE(fact.base_cpi.has_value());
+    CHECK(*fact.base_cpi == 132.5);
+    CHECK(fact.lag_convention == "3M");
+}
+
+TEST_CASE("an_inflation_swap_refuses_a_trade_it_cannot_state", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    auto no_index = make_inflation_swap();
+    no_index.inflation_index_code.clear();
+    CHECK_THROWS_AS(construct_rate_inflation_swap(no_index), rate_product_error);
+
+    auto no_lag = make_inflation_swap();
+    no_lag.lag_convention.clear();
+    CHECK_THROWS_AS(construct_rate_inflation_swap(no_lag), rate_product_error);
+
+    auto zero_base = make_inflation_swap();
+    zero_base.base_cpi = 0.0;
+    CHECK_THROWS_AS(construct_rate_inflation_swap(zero_base), rate_product_error);
+
+    auto inverted = make_inflation_swap();
+    inverted.common.start_date = a_rate_date();
+    inverted.common.maturity_date = std::chrono::year_month_day{
+        std::chrono::sys_days{a_rate_date()} - std::chrono::days{1}};
+    CHECK_THROWS_AS(construct_rate_inflation_swap(inverted), rate_product_error);
+
+    auto floating_leg = make_inflation_swap();
+    floating_leg.common.floating.leg_type_code = "Floating";
+    CHECK_THROWS_AS(construct_rate_inflation_swap(floating_leg), rate_product_error);
 }

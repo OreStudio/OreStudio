@@ -207,7 +207,9 @@ cross join (values
     -- cycles, because the planner draws the codes by the slot's position: a
     -- config shorter than the list states a prefix of it and never reaches the
     -- codes past that point. So bonds book ten, rates nine and foreign
-    -- exchange sixteen per config. The book count and the population size are
+    -- exchange sixteen per config. The inflation family routes one code, so its
+    -- six slots are six swaps and the class states its share without a code
+    -- being left out. The book count and the population size are
     -- the config's, so a tenant that wants a thinner book changes a row and not
     -- the generator, and gives up the codes past its slot count by doing so.
     -- The counterparties are the entity's own tradeable links, which is why the
@@ -235,6 +237,11 @@ cross join (values
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "1000000", "max_notional": "50000000", "seed": 46, "trades_per_book": 9, "structures_per_book": 2},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK inflation",
+         "description": "The inflation swaps the UK entity books, in its sterling inflation book.",
+         "asset_class_code": "inflation", "book": "GBP Inflation Swaps",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 62, "trades_per_book": 6, "structures_per_book": 1},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK equity",
          "description": "The equity trades the UK entity books, in its equity derivatives book.",
          "asset_class_code": "equity", "book": "GBP Equity Derivatives",

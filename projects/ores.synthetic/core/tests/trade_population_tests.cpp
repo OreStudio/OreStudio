@@ -150,6 +150,18 @@ domain::trade_generation_scope rate_scope() {
 }
 
 /*
+ * A scope of the inflation family. The tenant holds three curves, one per
+ * currency its catalogue carries an index for, so a population of more than
+ * three slots states an index more than once.
+ */
+domain::trade_generation_scope inflation_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "inflation";
+    scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
+    return scope;
+}
+
+/*
  * A scope of the FX family. The ten routed types are sixteen here, and the
  * catalogue carries one pair of the book's currency and one that names neither
  * side of it, so the preference is testable.
@@ -920,6 +932,70 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
+TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_population]") {
+    const auto scope = inflation_scope();
+    const auto plan = plan_of(scope);
+
+    std::set<std::string> indices;
+    for (const auto& slot : plan.slots) {
+        CHECK(slot.trade_type_code == "InflationSwap");
+        /*
+         * The code routes to the rates family's table, so the population states
+         * that family's header and the product's own fact row beside it.
+         */
+        REQUIRE(slot.instruments.rate_instruments.size() == 1u);
+        const auto& header = slot.instruments.rate_instruments.front();
+        REQUIRE(header.start_date.has_value());
+        REQUIRE(header.maturity_date.has_value());
+        CHECK(header.maturity_date > header.start_date);
+
+        REQUIRE(slot.instruments.inflation_swap_instruments.size() == 1u);
+        const auto& fact = slot.instruments.inflation_swap_instruments.front();
+        CHECK_FALSE(fact.inflation_index_code.empty());
+        CHECK(fact.lag_convention == "3M");
+        REQUIRE(fact.base_cpi.has_value());
+        CHECK(*fact.base_cpi > 0.0);
+        // The index a trade states is one the tenant's own curves resolve.
+        CHECK(std::ranges::find(scope.inflation_index_codes, fact.inflation_index_code) !=
+              scope.inflation_index_codes.end());
+        indices.insert(fact.inflation_index_code);
+
+        /*
+         * The document reads the index, its base level and the lag off a CPI
+         * leg, so the population states one and its fixed counterpart.
+         */
+        REQUIRE(slot.instruments.swap_legs.size() == 2u);
+        const auto cpi = std::ranges::find_if(slot.instruments.swap_legs, [](const auto& leg) {
+            return leg.leg_type_code == "CPI";
+        });
+        REQUIRE(cpi != slot.instruments.swap_legs.end());
+        /*
+         * The leg states the index family rather than the index: the leg's own
+         * index column references the benchmark catalogue, and an inflation
+         * index is not a member of it.
+         */
+        CHECK(cpi->floating_index_code.empty());
+        CHECK_FALSE(cpi->currency.empty());
+    }
+
+    // The index cycles the tenant's curves, so every one it holds appears.
+    CHECK(indices.size() == scope.inflation_index_codes.size());
+}
+
+TEST_CASE("an_inflation_population_that_names_no_curve_is_refused", "[trade_population]") {
+    auto scope = inflation_scope();
+    scope.inflation_index_codes.clear();
+
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("the_inflation_family_is_planned_by_name", "[trade_population]") {
+    CHECK(planner_for("inflation").asset_class_code() == "inflation");
+
+    const auto classes = planned_asset_classes();
+    CHECK(std::ranges::find(classes, std::string_view("inflation")) != classes.end());
+}
+
 TEST_CASE("the_notional_of_every_slot_sits_in_the_band", "[trade_population]") {
     const auto scope = bond_scope();
     const auto plan = plan_of(scope);
@@ -985,6 +1061,35 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", "[trade_pop
 
     REQUIRE(terms.size() > 1);
     REQUIRE(term_of.size() >= terms.size());
+}
+
+TEST_CASE("a_securitys_own_rows_do_not_depend_on_the_slot_that_wrote_them",
+          "[trade_population]") {
+    /*
+     * Two trades of one security state one issue, so the security's own rows are
+     * a function of the security and not of the slot. A band of one term over
+     * two books puts two convertibles on one security: their targets must agree,
+     * or the second write reaches an issue that already states other terms and
+     * the store refuses it.
+     */
+    auto scope = bond_scope();
+    scope.min_tenor_code = "1Y";
+    scope.max_tenor_code = "1Y";
+    scope.trades_per_book = 20;
+
+    const auto plan = plan_of(scope);
+    std::map<std::string, std::set<std::string>> targets_of;
+    for (const auto& slot : plan.slots) {
+        if (!slot.bond_issue.has_value())
+            continue;
+        for (const auto& target : slot.bond_issue_conversion_targets)
+            targets_of[slot.bond_issue->security_id].insert(
+                std::format("{}:{:.2f}", target.underlying_id, target.conversion_ratio));
+    }
+
+    REQUIRE_FALSE(targets_of.empty());
+    for (const auto& [security, targets] : targets_of)
+        CHECK(targets.size() == 1u);
 }
 
 TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {

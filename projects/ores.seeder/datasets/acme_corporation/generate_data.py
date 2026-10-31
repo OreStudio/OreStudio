@@ -193,6 +193,11 @@ DESKS = [
     {"code": "ir_swaps", "name": "IR Swaps", "head_count": 1, "trader_count": 2},
     {"code": "credit_trading", "name": "Credit Trading", "head_count": 1, "trader_count": 2},
     {"code": "fx_rates", "name": "FX Rates", "head_count": 1, "trader_count": 2},
+    # The equity desk holds the structure and no staff of its own: the equity
+    # population books through the entity's own traders, and adding a desk of
+    # people would rename every account the earlier demonstrations know.
+    {"code": "equity_derivatives", "name": "Equity Derivatives", "head_count": 0, "trader_count": 0},
+    {"code": "commodity_derivatives", "name": "Commodity Derivatives", "head_count": 0, "trader_count": 0},
 ]
 
 # The portfolio tree of each trading entity. Every entity has one global root
@@ -212,7 +217,8 @@ OFFICE_TREE = {
         "currency": "GBP",
         "desks": {
             "ir_swaps": [
-                ("gbp_rates", "GBP Rates", "GBP", "GBLO", ["GBP Vanilla Swaps", "GBP Rates Options"]),
+                ("gbp_rates", "GBP Rates", "GBP", "GBLO",
+                 ["GBP Vanilla Swaps", "GBP Rates Options", "GBP Inflation Swaps"]),
                 ("eur_rates", "EUR Rates", "EUR", "FRPA", ["EUR Vanilla Swaps", "EUR Exotic Rates"]),
                 ("usd_rates", "USD Rates", "USD", "USNY", ["USD Vanilla Swaps", "USD Rates Options"]),
                 ("chf_rates", "CHF Rates", "CHF", "CHZU", ["CHF Vanilla Swaps"]),
@@ -220,6 +226,14 @@ OFFICE_TREE = {
             "credit_trading": [
                 ("ig_credit_emea", "IG Credit EMEA", "EUR", "GBLO", ["IG CDS EMEA"]),
                 ("hy_credit_emea", "HY Credit EMEA", "EUR", "GBLO", ["HY CDS EMEA"]),
+            ],
+            "equity_derivatives": [
+                ("gbp_equity", "GBP Equity Derivatives", "GBP", "GBLO",
+                 ["GBP Equity Derivatives"]),
+            ],
+            "commodity_derivatives": [
+                ("usd_commodity", "USD Commodity Derivatives", "USD", "GBLO",
+                 ["USD Commodity Derivatives"]),
             ],
             "fx_rates": [
                 ("cable", "Cable and Sterling", "GBP", "GBLO", ["Cable Spot Forward", "Cable Options"]),
@@ -246,6 +260,8 @@ OFFICE_TREE = {
             "credit_trading": [
                 ("ig_credit_americas", "IG Credit Americas", "USD", "USNY", ["IG CDS Americas"]),
             ],
+            "equity_derivatives": [],
+            "commodity_derivatives": [],
             "fx_rates": [
                 ("g10_americas", "G10 FX Americas", "USD", "USNY", ["G10 Americas Spot Forward"]),
                 ("latam_fx", "LatAm FX", "USD", "USNY", ["LatAm Spot Forward", "LatAm NDF"]),
@@ -268,6 +284,8 @@ OFFICE_TREE = {
             "credit_trading": [
                 ("ig_credit_apac", "IG Credit APAC", "USD", "HKHK", ["IG CDS APAC"]),
             ],
+            "equity_derivatives": [],
+            "commodity_derivatives": [],
             "fx_rates": [
                 ("g10_apac", "G10 FX APAC", "USD", "HKHK", ["G10 APAC Spot Forward"]),
                 ("asia_em_fx", "Asia EM FX", "USD", "HKHK", ["Asia EM Spot Forward", "Asia EM NDF"]),
@@ -774,6 +792,10 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
     portfolio(trading_code, "Trading Book", root_code, root_code, functional_ccy, True)
 
     for desk in DESKS:
+        # An entity that keeps no leaf under a desk keeps no desk: the structure
+        # follows the business, so an empty group states nothing.
+        if not tree["desks"][desk["code"]]:
+            continue
         desk_code = f"{company_code}.{desk['code']}"
         unit(desk_code, f"{desk['name']} {office['city']}", root_code, "DESK")
 
@@ -781,7 +803,11 @@ def build_tree_org(office, business_units, portfolios, books, add_account,
         portfolio(desk_portfolio_code, f"{desk['name']} {office['city']} Portfolio",
                   trading_code, desk_code, functional_ccy, True)
 
-        area = {"ir_swaps": "RATES", "credit_trading": "CREDIT", "fx_rates": "FX"}[desk["code"]]
+        area = {"ir_swaps": "RATES",
+                "credit_trading": "CREDIT",
+                "fx_rates": "FX",
+                "equity_derivatives": "EQUITY",
+                "commodity_derivatives": "COMMODITY"}[desk["code"]]
         for suffix, label, ccy, rates_centre, names in tree["desks"][desk["code"]]:
             leaf_code = f"{desk_portfolio_code}.{suffix}"
             portfolio(leaf_code, f"{label} Portfolio", desk_portfolio_code, desk_code, ccy, False)

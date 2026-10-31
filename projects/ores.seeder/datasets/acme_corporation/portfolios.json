@@ -161,6 +161,46 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "e39549f1-4fd0-5b60-8988-69edc9900649",
+    "name": "Equity Derivatives London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets.trading_book",
+    "portfolio_code": "acme_uk.equity_derivatives.portfolio",
+    "owner_unit_code": "acme_uk.equity_derivatives",
+    "aggregation_ccy": "GBP",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ce816e3d-197b-5405-96a6-ffa77f81b3c2",
+    "name": "GBP Equity Derivatives Portfolio",
+    "parent_portfolio_code": "acme_uk.equity_derivatives.portfolio",
+    "portfolio_code": "acme_uk.equity_derivatives.portfolio.gbp_equity",
+    "owner_unit_code": "acme_uk.equity_derivatives",
+    "aggregation_ccy": "GBP",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "dfbf3ce8-10dc-5ff9-9fe1-80e0bab8a246",
+    "name": "Commodity Derivatives London Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets.trading_book",
+    "portfolio_code": "acme_uk.commodity_derivatives.portfolio",
+    "owner_unit_code": "acme_uk.commodity_derivatives",
+    "aggregation_ccy": "GBP",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "77691cdb-cddd-52d5-a531-52e385207235",
+    "name": "USD Commodity Derivatives Portfolio",
+    "parent_portfolio_code": "acme_uk.commodity_derivatives.portfolio",
+    "portfolio_code": "acme_uk.commodity_derivatives.portfolio.usd_commodity",
+    "owner_unit_code": "acme_uk.commodity_derivatives",
+    "aggregation_ccy": "USD",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
     "id": "b0f505f1-decf-59c1-b95b-45bf45ec84af",
     "name": "XVA London Portfolio",
     "parent_portfolio_code": "acme_uk.global_markets.trading_book",

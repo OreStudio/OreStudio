@@ -200,5 +200,5 @@ begin
         dataset_id, tenant_id, version, party_id, id, curve_definition_id, nominal_term_structure, inflation_type, conventions, has_quotes, calendar, day_counter, lag, frequency, base_rate, tolerance, has_seasonality, use_last_fixing_date, interpolation_variable, interpolation_method
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '42e5a9df-433c-5051-9b78-edf6c9402216', 'bf9ccda0-ddc7-51d5-9908-f05bb9d61a8f', 'USD1D', 'ZeroInflation', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '42e5a9df-433c-5051-9b78-edf6c9402216', 'bf9ccda0-ddc7-51d5-9908-f05bb9d61a8f', 'USD1D', 'ZC', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear');
 end $$;

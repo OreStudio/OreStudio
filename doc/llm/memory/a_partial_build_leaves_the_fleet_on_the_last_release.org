@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7ED2D0CF-F84B-4995-80E3-13015525CAC3
+:END:
+#+title: A partial build leaves the fleet on the last release
+#+description: Building one component after a pull leaves the rest of the fleet on the previous release's libraries. A failure that names a subject, symbol or message no source produces is that skew, not a defect.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+Building one component after a pull leaves every other service running the previous release's libraries. A failure that names a subject, symbol or message no source in the tree produces is that version skew, not a defect.
+
+*Why:* On 2026-10-31 a scoped build of ores.synthetic left the fleet on libraries from before a market-data refactor. Provisioning then failed with 'no service is handling subject marketdata.v1.market_data_sources.list', and a capture was raised against the market-data work. The string appears in no source file and in no library of the current release; it lived in the previous release's ores.iam.core. A full build passed the step.
+
+*How to apply:* When a service fails after a pull, or a failure names something you cannot find with grep, run a full compass build and restart the fleet before diagnosing further. Grep the current release's libraries under publish/lib to tell a live defect from a stale one.

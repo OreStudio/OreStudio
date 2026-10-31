@@ -6605,12 +6605,9 @@ const fr: SourceCatalogue = {
             inUse: 'Son type n’exige aucune autorisation, elle était donc utilisable dès la prise.',
             authorised: 'L’autorisation est enregistrée.',
             authorisedBy: 'Autorisée par {who}.',
-            refused:
-                'L’autorisation a été refusée, ce qui est définitif pour ce corps.',
-            supersededAuthorised:
-                'Autorisée avant qu’une coupure ultérieure ne la remplace.',
-            supersededInUse:
-                'En usage jusqu’à ce qu’une coupure ultérieure la remplace.',
+            refused: 'L’autorisation a été refusée, ce qui est définitif pour ce corps.',
+            supersededAuthorised: 'Autorisée avant qu’une coupure ultérieure ne la remplace.',
+            supersededInUse: 'En usage jusqu’à ce qu’une coupure ultérieure la remplace.',
             replacedBy: 'Remplacée par {label}.',
         },
         notice: {
@@ -6640,8 +6637,7 @@ const fr: SourceCatalogue = {
             description: 'À quoi elle sert',
             indicativeValues: 'Ses valeurs sont indicatives',
             retentionMonths: 'Conservation en mois',
-            legalHoldOnTake:
-                'Une coupure de ce type commence sous blocage juridique',
+            legalHoldOnTake: 'Une coupure de ce type commence sous blocage juridique',
             destinationNote:
                 'La destination de conservation garde le palier que le type détient déjà : aucune liste ne nomme les paliers, ce formulaire n’en propose donc aucun.',
             copyNote:

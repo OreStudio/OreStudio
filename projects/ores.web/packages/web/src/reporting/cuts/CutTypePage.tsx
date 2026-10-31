@@ -37,7 +37,12 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router';
-import type { CutKindChoices, CutKindRecord, CutKindRow, CutRow } from '@ores/wire-protocol/browser';
+import type {
+    CutKindChoices,
+    CutKindRecord,
+    CutKindRow,
+    CutRow,
+} from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../../api/client.js';
 import { useHeld } from '../../access/holds.js';
 import { PERMISSION } from '../../access/permissions.js';
@@ -144,9 +149,16 @@ function CutTypeBody({
             />
             {bar}
             {tab === 'details' && (
-                <DetailsTab kind={kind.kind} frequency={frequency} mayWrite={mayWrite} onEdit={() => setEditing(true)} />
+                <DetailsTab
+                    kind={kind.kind}
+                    frequency={frequency}
+                    mayWrite={mayWrite}
+                    onEdit={() => setEditing(true)}
+                />
             )}
-            {tab === 'cuts' && <CutsTab cuts={kind.cuts} partial={kind.partial} frequency={frequency} />}
+            {tab === 'cuts' && (
+                <CutsTab cuts={kind.cuts} partial={kind.partial} frequency={frequency} />
+            )}
             {tab === 'history' && (
                 <RecordTimeline entityType={CUT_KIND_ENTITY_TYPE} entityId={kind.kind.code} />
             )}
@@ -225,13 +237,18 @@ function DetailsTab({
                 </div>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <Rule label={t('cuts.columns.family')} value={kind.familyName} />
-                    <Rule label={t('cuts.types.repeats')} value={t(`cuts.frequency.${frequency}`)} />
+                    <Rule
+                        label={t('cuts.types.repeats')}
+                        value={t(`cuts.frequency.${frequency}`)}
+                    />
                     <Rule
                         label={t('cuts.columns.signed')}
                         value={
                             kind.signed ? (
                                 <span className="flex flex-col gap-0.5">
-                                    <span>{kind.approvalKindName ?? kind.approvalKindCode ?? ''}</span>
+                                    <span>
+                                        {kind.approvalKindName ?? kind.approvalKindCode ?? ''}
+                                    </span>
                                     {kind.decidePermissionCode !== null &&
                                         kind.decidePermissionCode !== '' && (
                                             <span className="font-mono text-xs text-ink-faint">
@@ -246,7 +263,9 @@ function DetailsTab({
                     />
                     <Rule
                         label={t('cuts.columns.indicative')}
-                        value={kind.outputIsIndicative ? <IndicativeTag /> : t('cuts.types.official')}
+                        value={
+                            kind.outputIsIndicative ? <IndicativeTag /> : t('cuts.types.official')
+                        }
                     />
                     <Rule
                         label={t('cuts.types.resolutionRule')}
@@ -264,7 +283,9 @@ function DetailsTab({
                     />
                     <Rule
                         label={t('cuts.types.legalHold')}
-                        value={kind.legalHoldDefault ? t('cuts.types.held') : t('cuts.types.notHeld')}
+                        value={
+                            kind.legalHoldDefault ? t('cuts.types.held') : t('cuts.types.notHeld')
+                        }
                     />
                     <Rule label={t('cuts.types.order')} value={String(kind.displayOrder)} mono />
                 </dl>
@@ -291,7 +312,11 @@ function CutLine({ row }: { readonly row: CutRow }): ReactNode {
                         {row.outputIsIndicative && <IndicativeTag />}
                     </span>
                     <StateBasis
-                        facts={{ state: row.state, approvedBy: row.approvedBy, supersededByLabel: null }}
+                        facts={{
+                            state: row.state,
+                            approvedBy: row.approvedBy,
+                            supersededByLabel: null,
+                        }}
                     />
                 </span>
             </td>
@@ -495,7 +520,10 @@ function EditKindDialog({
     readonly onSaved: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const choices = useQuery({ queryKey: ['cuts', 'choices'], queryFn: () => api.cutKindChoices() });
+    const choices = useQuery({
+        queryKey: ['cuts', 'choices'],
+        queryFn: () => api.cutKindChoices(),
+    });
     const specs = useMemo(
         () => (choices.data === undefined ? [] : specsOf(choices.data)),
         [choices.data],
@@ -527,7 +555,9 @@ function EditKindDialog({
             onSaved={onSaved}
             note={() => (
                 <p className="text-xs text-ink-muted">
-                    {t('cuts.types.destinationNote', { destination: kind.retentionDestinationCode })}
+                    {t('cuts.types.destinationNote', {
+                        destination: kind.retentionDestinationCode,
+                    })}
                 </p>
             )}
         />

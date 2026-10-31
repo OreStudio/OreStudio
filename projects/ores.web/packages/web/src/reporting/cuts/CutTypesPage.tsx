@@ -41,7 +41,12 @@ import type { ReactNode } from 'react';
 import type { CutKindRow } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
-import { RecordList, type ListColumn, type ListPage, type ListSource } from '../../refdata/RecordList.js';
+import {
+    RecordList,
+    type ListColumn,
+    type ListPage,
+    type ListSource,
+} from '../../refdata/RecordList.js';
 import { RecordStoreProvider } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { cutTypePath } from '../../shell/paths.js';

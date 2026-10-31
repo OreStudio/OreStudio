@@ -66,7 +66,8 @@ export const cutKindStore: RecordStore = {
                 description: String(write['description'] ?? ''),
                 familyCode: String(write['family_code'] ?? ''),
                 approvalKindCode:
-                    write['approval_kind_code'] === null || write['approval_kind_code'] === undefined
+                    write['approval_kind_code'] === null ||
+                    write['approval_kind_code'] === undefined
                         ? null
                         : String(write['approval_kind_code']),
                 outputIsIndicative: write['output_is_indicative'] === true,

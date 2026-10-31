@@ -4068,6 +4068,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.ops.list_cut_rows': {
+        asOf: false,
+        filter: [],
+        rows: ['rows'],
+    },
     'reporting.v1.ore_parameter_setting_value_sets.list': {
         asOf: true,
         filter: ['code_one_of'],

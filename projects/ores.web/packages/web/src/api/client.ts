@@ -3994,7 +3994,9 @@ export const api = {
     /** One kind of cut and the cuts the party holds of it. */
     async cutKind(code: string): Promise<CutKindRecord> {
         return cutKindRecordSchema.parse(
-            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, { method: 'GET' }),
+            await request(`/api/reporting/cut-kinds/${encodeURIComponent(code)}`, {
+                method: 'GET',
+            }),
         );
     },
 

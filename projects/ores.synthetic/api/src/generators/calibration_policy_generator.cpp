@@ -49,7 +49,7 @@ generate_synthetic_calibration_policy(utility::generation::generation_context& c
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.asset_class_code = std::string("fx") + "-" + std::to_string(idx);
     r.window_days = faker::number::integer(30, 180);
-    r.allow_inverse = faker::boolean::boolean();
+    r.allow_inverse = faker::number::integer(0, 1) == 1;
     r.fallback_code = std::string("keep_fixed");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

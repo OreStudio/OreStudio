@@ -87,7 +87,7 @@ Whether a pair may be read from an item that quotes it the other way round,
 as =1/x=.
 
 #+begin_src cpp :name generator
-faker::boolean::boolean()
+faker::number::integer(0, 1) == 1
 #+end_src
 
 ** fallback_code

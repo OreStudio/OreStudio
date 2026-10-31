@@ -18,8 +18,10 @@
  *
  */
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
+#include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <optional>
 #include <regex>
 
 namespace ores::synthetic::feed {
@@ -95,6 +97,70 @@ std::expected<std::vector<double>, std::string> scaled_stdevs(
     for (const auto& c : components)
         out.push_back(c.stdev * k);
     return out;
+}
+
+
+namespace {
+
+/// The rank of @p provider in @p order, or nothing when a stated order leaves it out.
+std::optional<int> provider_rank(const std::vector<std::string>& order,
+                                 const std::string& provider) {
+    if (order.empty())
+        return 0;
+    for (std::size_t i = 0; i < order.size(); ++i)
+        if (order[i] == provider)
+            return static_cast<int>(i);
+    return std::nullopt;
+}
+
+}
+
+std::vector<ores::synthetic::domain::fx_spot_fixing_item>
+derive_fixing_items(const calibration_policy& policy,
+                    const std::string& base,
+                    const std::string& quote,
+                    const std::vector<calibration_candidate>& candidates) {
+    struct ranked final {
+        int provider = 0;
+        int direction = 0;
+        std::string item;
+        std::string provider_code;
+    };
+    std::vector<ranked> kept;
+    for (const auto& candidate : candidates) {
+        const bool direct = candidate.base_currency == base && candidate.quote_currency == quote;
+        const bool inverted = candidate.base_currency == quote && candidate.quote_currency == base;
+        if (!direct && !(inverted && policy.allow_inverse))
+            continue;
+        const auto rank = provider_rank(policy.provider_order, candidate.provider_code);
+        if (!rank)
+            continue;
+        kept.push_back({.provider = *rank,
+                        .direction = direct ? 0 : 1,
+                        .item = candidate.item,
+                        .provider_code = candidate.provider_code});
+    }
+    std::ranges::sort(kept, [](const ranked& a, const ranked& b) {
+        if (a.provider != b.provider)
+            return a.provider < b.provider;
+        if (a.direction != b.direction)
+            return a.direction < b.direction;
+        return a.item < b.item;
+    });
+
+    std::vector<ores::synthetic::domain::fx_spot_fixing_item> items;
+    items.reserve(kept.size());
+    int rank = 0;
+    for (const auto& entry : kept) {
+        ores::synthetic::domain::fx_spot_fixing_item item;
+        item.rank = ++rank;
+        item.item = entry.item;
+        item.provider_code = entry.provider_code;
+        item.policy = "latest_on_or_before_clock";
+        item.window_days = policy.window_days;
+        items.push_back(std::move(item));
+    }
+    return items;
 }
 
 }

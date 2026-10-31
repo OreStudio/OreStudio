@@ -135,6 +135,11 @@ page reads the same resolution for one feed.
   seed rows =keep_fixed= and =refuse=.
 - The synthetic api, core and service libraries build, and the targeted checks
   pass (model-drift, sql-hygiene, format, cmake-sources).
+- =derive_fixing_items= in =feeds/fixing_calibration.hpp=: from a policy and
+  the series that cover a pair, it derives the ordered fixing items (provider
+  order, direct before inverted, the policy window), ready for the existing
+  resolver. Four cases cover the order, the empty order, the inverse rule and a
+  pair that no candidate covers; =ores.synthetic.api.tests= passes.
 
 ** What remains
 

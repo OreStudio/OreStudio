@@ -51,6 +51,15 @@ struct output_column {
 };
 
 /**
+ * @brief The job a column does in a family's row.
+ *
+ * A key identifies the row, a qualifier states the context of a figure without
+ * being one, and a measure is a figure. Every column states exactly one, which
+ * is what lets one reader serve families whose shapes differ.
+ */
+enum class output_column_role { key, qualifier, measure, none };
+
+/**
  * @brief One family of output ORE writes.
  *
  * A family is the set of files that state one shape: =npv.csv=, or the
@@ -84,6 +93,26 @@ struct output_family {
      * @brief The columns that identify a row rather than measure it.
      */
     std::vector<std::string> key_columns;
+    /**
+     * @brief The columns every header variant of the family states.
+     */
+    std::vector<std::string> required_columns;
+    /**
+     * @brief The columns that state the context of a figure without being one.
+     */
+    std::vector<std::string> qualifier_columns;
+    /**
+     * @brief The columns that are figures, one metric for each.
+     */
+    std::vector<std::string> measure_columns;
+    /**
+     * @brief Whether the family gains measure columns from the configuration.
+     *
+     * A configuration-driven family adds a column for every curve, factor or
+     * quantile the run asked for, so its measure set is a sample of a larger
+     * space and a reader must accept one it has not seen.
+     */
+    bool measures_open = false;
     /**
      * @brief How many header variants the samples show for this family.
      */
@@ -124,6 +153,13 @@ struct output_family {
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT const output_column* column_named(const output_family& family,
                                                                      std::string_view name);
+
+/**
+ * @brief The job a column does in a family, or none when the family does not
+ * state the column.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT output_column_role role_of(const output_family& family,
+                                                              std::string_view name);
 
 /**
  * @brief The name a column kind is written by in the catalogue.

@@ -41,6 +41,15 @@ std::vector<std::string> split(std::string_view text, char separator) {
     return fields;
 }
 
+std::vector<std::string> split_list(std::string_view text) {
+    std::vector<std::string> names;
+    for (auto&& name : split(text, ',')) {
+        if (!name.empty())
+            names.push_back(std::move(name));
+    }
+    return names;
+}
+
 output_column_kind kind_named(std::string_view kind) {
     if (kind == "integer")
         return output_column_kind::integer;
@@ -58,20 +67,24 @@ output_column_kind kind_named(std::string_view kind) {
 
 output_family parse(std::string_view line) {
     const auto fields = split(line, '\t');
-    if (fields.size() != 8)
+    if (fields.size() != 12)
         throw std::invalid_argument("a catalogue line states " + std::to_string(fields.size()) +
-                                    " fields, not eight: '" + std::string(line) + "'.");
+                                    " fields, not twelve: '" + std::string(line) + "'.");
 
     output_family family;
     family.code = fields[0];
     family.file_pattern = fields[1];
     family.file_parameter = fields[2];
-    family.analytic_codes = split(fields[3], ',');
-    family.key_columns = split(fields[4], ',');
-    family.header_variants = std::stoi(fields[5]);
-    family.sample_file = fields[6];
+    family.analytic_codes = split_list(fields[3]);
+    family.key_columns = split_list(fields[4]);
+    family.required_columns = split_list(fields[5]);
+    family.qualifier_columns = split_list(fields[6]);
+    family.measure_columns = split_list(fields[7]);
+    family.measures_open = fields[8] == "1";
+    family.header_variants = std::stoi(fields[9]);
+    family.sample_file = fields[10];
 
-    for (const auto& text : split(fields[7], ',')) {
+    for (const auto& text : split(fields[11], ',')) {
         if (text.empty())
             continue;
         const auto colon = text.rfind(':');
@@ -136,6 +149,19 @@ const output_column* column_named(const output_family& family, std::string_view 
     const auto it = std::ranges::find_if(
         family.columns, [name](const output_column& column) { return column.name == name; });
     return it == family.columns.end() ? nullptr : &*it;
+}
+
+output_column_role role_of(const output_family& family, std::string_view name) {
+    const auto holds = [name](const std::vector<std::string>& names) {
+        return std::ranges::find(names, name) != names.end();
+    };
+    if (holds(family.key_columns))
+        return output_column_role::key;
+    if (holds(family.qualifier_columns))
+        return output_column_role::qualifier;
+    if (holds(family.measure_columns))
+        return output_column_role::measure;
+    return output_column_role::none;
 }
 
 std::string_view to_string(output_column_kind kind) {

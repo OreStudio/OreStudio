@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-authorisation-queue-screen
-#+pr: 4251
+#+pr: 4279
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -26,11 +26,11 @@ Build the queue screen that the Operational authorisation queue page specifies: 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built, and the review's first three passes are closed. |
-| Waiting on   | Marco's look at the UI.                               |
-| Next         | Merge when he says so.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -84,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4279][#4279]] | [agile] Close the authorisation queue task |
 | [[https://github.com/OreStudio/OreStudio/pull/4251][#4251]] | [web] Work the authorisation queue on the Operations screen |
 | [[https://github.com/OreStudio/OreStudio/pull/4245][#4245]] | [prototype] Draw the authorisation queue two ways |
 

@@ -32,7 +32,7 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { PATHS, publicRatesPublisherPath } from '../shell/paths.js';
+import { publicRatesPublisherPath } from '../shell/paths.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { SERIES_COLOURS } from './LineChart.js';

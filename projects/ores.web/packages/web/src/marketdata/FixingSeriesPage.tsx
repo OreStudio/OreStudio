@@ -30,7 +30,6 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { marketDataSourcePath } from '../shell/paths.js';
 import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 

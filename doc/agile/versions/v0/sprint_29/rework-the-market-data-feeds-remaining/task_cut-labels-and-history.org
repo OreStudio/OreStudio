@@ -85,3 +85,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both defects are fixed and verified live.
+
+- History: the reporting component composed none of its history providers, so
+  the History tab answered "Cannot reach the message bus" for every reporting
+  entity, the cuts and the report definitions alike. The core registrar now
+  builds the dispatch registry, registers all 34 generated providers and the
+  generic history subject; ores.reporting joins the composition gate, which
+  passes. Live: /api/history answers version 1 for ores.reporting.cut_kind EOD
+  and for a report definition by its key.
+- Labels: the families and values are DQ system labels. Three code domains
+  (cut_family, cut_values, cut_authorisation), eight badge definitions and eight
+  mappings in the system and artefact seeds, published to the Acme tenant; the
+  screens paint the Family and Values columns and the authorisation word through
+  the shared label catalogue (the interface translates by the same code; the
+  catalogue owns the paint and the tooltip). The live patch was additive.
+- Checks: the web build; BFF 88 files/1188 tests; web 191 files/2385 tests; the
+  composition gate; compass lint.
+- Not verified: the cut provider (no cut exists), fr/pt in a browser, the
+  pre-existing schema fingerprint drift.
+- Housekeeping found: build/cj.txt is committed and holds a live curl session
+  cookie; it should be removed and the session revoked.

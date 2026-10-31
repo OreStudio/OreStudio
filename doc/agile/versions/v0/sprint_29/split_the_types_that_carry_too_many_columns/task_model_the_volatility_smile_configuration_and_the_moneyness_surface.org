@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/model-the-volatility-smile-configuration-and-the-moneyness-surface
-#+pr:
+#+pr: 4270
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -173,7 +173,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4270][#4270]] | [refdata] Model the volatility smile configuration and the moneyness surface |
 
 * Review
 

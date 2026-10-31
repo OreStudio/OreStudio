@@ -76,14 +76,19 @@ The cut whose body could not be filled.
 
 ** part_code
 :PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:nullable:    false
-:natural_key: true
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:natural_key:         true
+:no_generator_suffix: true
 :END:
 
 The part of the body the gap belongs to: =market_data=, =deal_population=,
 =reference_data= or =engine_code=.
+
+A closed set and not a word, so a synthetic value takes no uniqueness suffix:
+the row is made unique by the cut it hangs off, and a suffixed part would
+name a part the body does not have.
 
 #+begin_src cpp :name generator
 std::string("market_data")

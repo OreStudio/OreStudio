@@ -73,6 +73,9 @@ struct cut_gap final {
     /**
      * @brief The part of the body the gap belongs to: market_data, deal_population, reference_data
      * or engine_code.
+     *
+     * A closed set and not a word, so a synthetic value takes no uniqueness suffix: the row is made
+     * unique by the cut it hangs off, and a suffixed part would name a part the body does not have.
      */
     std::string part_code;
 

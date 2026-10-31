@@ -188,22 +188,6 @@ TEST_CASE("write_cut_gap_publishes_an_event", "[eventing][integration]") {
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     cut_id_parent.party_id = *party_ctx.party_id();
-    // cut's own mandatory party_id FK (session-set in
-    // production) needs an active party too: seed one, attached under the
-    // tenant's root party like the direct-party branch below.
-    auto cut_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
-    cut_id_party.change_reason_code = "system.test";
-    auto cut_id_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : cut_id_party_existing) {
-        if (e.tenant_id == cut_id_party.tenant_id) {
-            cut_id_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository cut_id_party_repo;
-    cut_id_party_repo.write(party_ctx, cut_id_party);
-    cut_id_parent.party_id = cut_id_party.id;
     auto cut_id_parent_cut_kind_parent_cut_family_parent =
         ores::reporting::generators::generate_synthetic_cut_family(ctx);
     auto cut_id_parent_cut_kind_parent_cut_resolution_rule_parent =

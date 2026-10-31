@@ -47,7 +47,7 @@ domain::cut_gap generate_synthetic_cut_gap(utility::generation::generation_conte
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.cut_id = ctx.generate_uuid();
-    r.part_code = std::string("market_data") + "-" + std::to_string(idx);
+    r.part_code = std::string("market_data");
     r.item = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.party_id = ctx.generate_uuid();
     r.reason = std::string(faker::lorem::sentence());

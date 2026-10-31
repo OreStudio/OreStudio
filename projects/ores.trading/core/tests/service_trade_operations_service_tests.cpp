@@ -55,7 +55,7 @@
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
@@ -462,13 +462,6 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", "[service]
 
 namespace {
 
-/** The logger the store calls of this file share. */
-ores::logging::logger_t& lg() {
-    static auto instance =
-        ores::logging::make_logger("service_trade_operations_service_tests");
-    return instance;
-}
-
 /** Books an actual trade as a draft, which is where an execution starts. */
 ores::trading::messaging::book_trade_request draft(fixture& f) {
     auto req = f.request();
@@ -551,12 +544,12 @@ TEST_CASE("an_amendment_raises_its_own_request_after_the_last_was_answered", "[s
 
     // A decider answers the request, so the trade no longer waits on it.
     const auto answered = requests_for(f.ctx, req.anchor.id).front();
-    ores::database::repository::execute_parameterized_string_query(
-        f.ctx,
-        "update ores_inbox_approval_requests_tbl set state_code = 'approved' where id = $1::uuid",
-        {boost::uuids::to_string(answered.request_id)},
-        lg(),
-        "Answering the request");
+    const auto stored = ores::inbox::repository::approval_request_repository().read_latest(
+        f.ctx, boost::uuids::to_string(answered.request_id));
+    REQUIRE(stored.size() == 1);
+    auto approved = stored.front();
+    approved.state_code = "approved";
+    ores::inbox::repository::approval_request_repository().write(f.ctx, approved);
 
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
     REQUIRE(authorisation.raise_if_awaiting(req.anchor.id).has_value());

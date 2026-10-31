@@ -25,8 +25,12 @@
 #include "ores.refdata.api/domain/book_status_constants.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
-#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/name_generator_sha1.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <cstddef>
+#include <filesystem>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -38,6 +42,68 @@ namespace book_status_constants = ores::refdata::domain::book_status_constants;
 namespace regulatory_book_type_constants = ores::refdata::domain::regulatory_book_type_constants;
 
 namespace {
+
+/**
+ * The id an imported thing takes, derived rather than drawn.
+ *
+ * A second run of the same import must name the same portfolios, books and
+ * trades, or the run books every trade again, into a new tree of books, under a
+ * new id. So every id the plan mints is a name-based UUID over what names the
+ * thing within the import: the party, the sandbox when there is one, and the
+ * thing itself.
+ *
+ * The sandbox is part of the name because an import into a sandbox and one into
+ * the real books are two different imports of the same document.
+ */
+boost::uuids::uuid imported_id(const boost::uuids::uuid& party_id,
+                               const std::optional<boost::uuids::uuid>& sandbox_id,
+                               const std::string& name) {
+    static const auto name_space =
+        boost::uuids::string_generator()("6f1c1f34-0d5e-4f7a-9a3c-2b8e4d1a7c90");
+    const auto full = boost::uuids::to_string(party_id) + "/" +
+                      (sandbox_id ? boost::uuids::to_string(*sandbox_id) : std::string("official")) +
+                      "/" + name;
+    const boost::uuids::name_generator_sha1 generate(name_space);
+    return generate(full.c_str(), full.size());
+}
+
+/**
+ * The name of a node, as the directory tree spells it.
+ *
+ * A node is named by its own name and its parents', so two books of the same
+ * name under different portfolios are two nodes.
+ */
+std::string node_name(const std::vector<hierarchy::import_node>& nodes, std::size_t index) {
+    std::string name;
+    for (auto at = std::optional<std::size_t>{index}; at; at = nodes[*at].parent_index) {
+        name = nodes[*at].name + "/" + name;
+    }
+    return name;
+}
+
+/**
+ * The name an imported trade is known by: its file, and its own id there.
+ *
+ * An ORE document need not state an id, so a trade without one takes the
+ * position it holds in its file.
+ */
+std::string traded_name(const std::string& source_file,
+                        std::size_t index,
+                        const std::string& ore_id) {
+    return source_file + "/" + (ore_id.empty() ? "#" + std::to_string(index) : ore_id);
+}
+
+/**
+ * The name a trade's file is known by.
+ *
+ * The import unpacks into a directory of its own, so the path it is read from
+ * differs between runs of the same document set. The path relative to the
+ * import's root does not, and that is what the trade's id is derived from.
+ */
+std::string imported_file_name(const std::filesystem::path& root,
+                               const std::filesystem::path& file) {
+    return std::filesystem::relative(file, root).generic_string();
+}
 
 /**
  * Gives an imported trade its id and places it: the party, the book, and the
@@ -74,7 +140,6 @@ ore_import_planner::ore_import_planner(scanner::scan_result scan_result,
 
 ore_import_plan ore_import_planner::plan() {
     ore_import_plan result;
-    boost::uuids::random_generator uuid_gen;
 
     // =========================================================================
     // Step 1: Currencies
@@ -124,8 +189,13 @@ ore_import_plan ore_import_planner::plan() {
                 continue;
             for (const auto& source_file : node.source_files) {
                 auto items = xml::importer::import_portfolio_with_context(source_file);
+                const auto named = imported_file_name(scan_result_.root, source_file);
+                std::size_t index = 0;
                 for (auto& item : items) {
-                    place_trade(item, uuid_gen(), choices_.party_id, target_book_id, defs);
+                    const auto trade_id = imported_id(
+                        choices_.party_id, choices_.sandbox_id,
+                        traded_name(named, index++, item.ore_id));
+                    place_trade(item, trade_id, choices_.party_id, target_book_id, defs);
                     result.trades.push_back(std::move(item));
                 }
             }
@@ -137,10 +207,12 @@ ore_import_plan ore_import_planner::plan() {
         return result;
     }
 
-    // Node index → assigned UUID (covers both portfolios and books)
+    // Node index → assigned UUID (covers both portfolios and books). A node is
+    // named by its place in the tree, so a second run of the import mints the
+    // same ids and finds its own tree rather than building another.
     std::vector<boost::uuids::uuid> node_uuids(nodes.size());
-    for (auto& id : node_uuids) {
-        id = uuid_gen();
+    for (std::size_t i = 0; i < nodes.size(); ++i) {
+        node_uuids[i] = imported_id(choices_.party_id, choices_.sandbox_id, node_name(nodes, i));
     }
 
     // Determine the parent portfolio UUID for all imported top-level nodes.
@@ -150,7 +222,8 @@ ore_import_plan ore_import_planner::plan() {
         // Use a pre-existing portfolio — no new portfolio is created.
         parent_portfolio_id = choices_.existing_parent_portfolio_id;
     } else if (choices_.create_parent_portfolio && !choices_.parent_portfolio_name.empty()) {
-        const auto parent_uuid = uuid_gen();
+        const auto parent_uuid = imported_id(choices_.party_id, choices_.sandbox_id,
+                                             choices_.parent_portfolio_name);
         parent_portfolio_id = parent_uuid;
 
         refdata::domain::portfolio parent_p;
@@ -242,9 +315,14 @@ ore_import_plan ore_import_planner::plan() {
         const auto& defs = choices_.defaults;
         for (const auto& source_file : node.source_files) {
             auto items = xml::importer::import_portfolio_with_context(source_file);
+            const auto named = imported_file_name(scan_result_.root, source_file);
 
+            std::size_t index = 0;
             for (auto& item : items) {
-                place_trade(item, uuid_gen(), choices_.party_id, b.id, defs);
+                const auto trade_id =
+                    imported_id(choices_.party_id, choices_.sandbox_id,
+                                traded_name(named, index++, item.ore_id));
+                place_trade(item, trade_id, choices_.party_id, b.id, defs);
                 result.trades.push_back(std::move(item));
             }
         }

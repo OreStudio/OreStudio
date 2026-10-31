@@ -473,8 +473,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     // Add server header
     response.set_header("Server", options_.server_identifier);
 
-    auto beast_resp = convert_response(response, version, keep_alive);
-    co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+    co_await write_response(
+        response, version, keep_alive, domain_req.method != domain::http_method::head);
 
     // Update session bytes if we have an authenticated user with session info
     if (bytes_callback_ && domain_req.authenticated_user &&
@@ -536,6 +536,72 @@ http::response<http::string_body> http_session::convert_response(const domain::h
     }
 
     return result;
+}
+
+asio::awaitable<void> http_session::write_response(const domain::http_response& resp,
+                                                   unsigned version,
+                                                   bool keep_alive,
+                                                   bool send_body) {
+    if (resp.body_stream == nullptr) {
+        auto beast_resp = convert_response(resp, version, keep_alive);
+        co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+        co_return;
+    }
+
+    /*
+     * The headers go out first and the body follows from the source, so a file is
+     * never held and a stream can be written while it is still being produced. A
+     * source that states its length gets Content-Length; one that does not gets
+     * chunked framing, which is how the client knows where the body ends.
+     */
+    http::response<http::buffer_body> head;
+    head.version(version);
+    head.result(static_cast<http::status>(static_cast<unsigned>(resp.status)));
+    head.set(http::field::content_type, resp.content_type);
+    head.keep_alive(keep_alive);
+    for (const auto& [name, value] : resp.headers)
+        head.set(name, value);
+
+    const auto declared = resp.body_stream->size();
+    if (declared.has_value())
+        head.content_length(*declared);
+    else
+        head.chunked(true);
+
+    http::response_serializer<http::buffer_body> serializer{head};
+    co_await http::async_write_header(stream_, serializer, asio::use_awaitable);
+
+    if (!send_body)
+        co_return;
+
+    auto buffer = std::vector<char>(options_.response_chunk_size);
+    for (;;) {
+        const auto taken = resp.body_stream->read(std::span(buffer.data(), buffer.size()));
+        // The serializer reads the message it was given, so the body is set there.
+        auto& body = head.body();
+        body.data = buffer.data();
+        body.size = taken;
+        body.more = taken != 0;
+
+        /*
+         * A source that fails here cannot become a status: the headers are already
+         * on the wire. The exception leaves the session, which closes the
+         * connection, so the client sees a body shorter than its length rather than
+         * waiting for one that will never arrive.
+         */
+        try {
+            co_await http::async_write(stream_, serializer, asio::use_awaitable);
+        } catch (const boost::system::system_error& e) {
+            /*
+             * A buffer body has no more to give when it has given what it holds,
+             * which Beast reports as need_buffer and not as a failure.
+             */
+            if (e.code() != http::error::need_buffer)
+                throw;
+        }
+        if (taken == 0)
+            break;
+    }
 }
 
 domain::http_method http_session::convert_method(http::verb verb) {

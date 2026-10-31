@@ -20,8 +20,10 @@
 #ifndef ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 #define ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 
+#include "ores.http.api/domain/body_source.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -43,8 +45,19 @@ struct ORES_HTTP_API_EXPORT http_response final {
 
     /**
      * @brief Response body.
+     *
+     * Empty on a response that names a =body_stream=, because that body is read as
+     * it is written.
      */
     std::string body;
+
+    /**
+     * @brief The body read as it is written, when the response has one.
+     *
+     * A shared pointer because the response outlives the handler that made it, and
+     * because a source may be shared with whatever produced it.
+     */
+    std::shared_ptr<body_source> body_stream;
 
     /**
      * @brief Content type header value.

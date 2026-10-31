@@ -33,6 +33,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_sink.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_source.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_method.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_request.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_response.hpp"

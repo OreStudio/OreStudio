@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/answer-from-a-body-source
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ can be sent until it does. A response needs a body it can read from in pieces.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Not yet started.                       |
+| Now          | A response reads its body from a source, and the storage download uses it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the bundle is served the same way. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -71,9 +71,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Response-source cases | 3 cases, 10 assertions, all passing | =./ores.http.api.tests "[http_response_stream]"= | branch head |
+| =ores.http.api= test cases | 104 cases, 330 assertions, all passing | =./ores.http.api.tests= | branch head |
+| The storage download | 3 MiB through the file source, byte for byte | =./ores.http.core.tests "[end_to_end]"= | branch head |
 
 * Notes
+
+- Beast reports an exhausted =buffer_body= as =error::need_buffer=, which is progress
+  and not a failure: the write loop treats it as such and only a real error leaves.
+- A HEAD request is answered with the headers that body would have carried and no
+  body, but nothing tests it: a client cannot read a HEAD response without telling
+  its parser the request method, and the test client is a plain =http::read=. That
+  is a test harness gap, not a code gap.
 
 * Test Scenarios
 

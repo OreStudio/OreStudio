@@ -20,6 +20,7 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.core/routes/storage_file_source.hpp"
 #include "ores.http.core/routes/storage_upload_sink.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
@@ -318,14 +319,21 @@ asio::awaitable<http_response> storage_routes::handle_get(const http_request& re
 
     BOOST_LOG_SEV(lg(), debug) << "GET " << bucket << "/" << key;
 
+    const auto path = store_.resolve(bucket, key);
+    if (!path || !store_.exists(bucket, key))
+        co_return http_response::not_found(bucket + "/" + key);
+
+    /*
+     * The object is read as the socket asks for it, so a large one costs a buffer
+     * and not itself. The file's own length rides out as Content-Length, which is
+     * what lets the caller show progress.
+     */
     try {
         http_response resp;
         resp.status = http_status::ok;
         resp.content_type = "application/octet-stream";
-        resp.body = store_.get(bucket, key);
+        resp.body_stream = std::make_shared<storage_file_source>(*path);
         co_return resp;
-    } catch (const object_not_found&) {
-        co_return http_response::not_found(bucket + "/" + key);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "GET error: " << e.what();
         co_return http_response::internal_error(e.what());

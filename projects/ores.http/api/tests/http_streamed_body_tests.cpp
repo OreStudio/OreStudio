@@ -445,6 +445,91 @@ post_after_continue(std::uint16_t port,
 }
 
 /**
+ * @brief A response body held in memory, read back a piece at a time.
+ */
+class streamed_buffer_source final : public body_source {
+public:
+    streamed_buffer_source(std::string bytes, bool states_length)
+        : bytes_(std::move(bytes))
+        , states_length_(states_length) {}
+
+    [[nodiscard]] std::optional<std::uint64_t> size() const override {
+        if (!states_length_)
+            return std::nullopt;
+        return bytes_.size();
+    }
+
+    std::size_t read(std::span<char> into) override {
+        if (offset_ >= bytes_.size())
+            return 0;
+        const auto take = std::min(into.size(), bytes_.size() - offset_);
+        std::copy_n(bytes_.data() + offset_, take, into.data());
+        offset_ += take;
+        return take;
+    }
+
+private:
+    std::string bytes_;
+    bool states_length_;
+    std::size_t offset_ = 0;
+};
+
+/**
+ * @brief A source that gives some bytes and then cannot give the rest.
+ */
+class streamed_failing_source final : public body_source {
+public:
+    [[nodiscard]] std::optional<std::uint64_t> size() const override {
+        return 1024 * 1024;
+    }
+
+    std::size_t read(std::span<char> into) override {
+        if (served_)
+            throw std::runtime_error("the source cannot produce what it promised");
+        served_ = true;
+        const auto take = std::min<std::size_t>(into.size(), 1024);
+        std::fill_n(into.data(), take, 'x');
+        return take;
+    }
+
+private:
+    bool served_ = false;
+};
+
+/**
+ * @brief Fetches a path and returns the answer, or nothing when none arrived.
+ */
+std::optional<http::response<http::string_body>>
+fetch_streamed(std::uint16_t port, const std::string& target, std::chrono::milliseconds budget) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(budget);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    http::request<http::string_body> req{http::verb::get, target, 11};
+    req.set(http::field::host, "127.0.0.1");
+    http::write(stream, req, ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
+/**
  * @brief Watches this process's resident memory while something runs.
  */
 class resident_watch final {
@@ -930,6 +1015,106 @@ TEST_CASE("a_streamed_route_answers_expect_continue_before_the_body", "[http_str
     REQUIRE(answered.has_value());
     REQUIRE(answered->result_int() == 200);
     REQUIRE(record->bytes.size() == 4096);
+}
+
+TEST_CASE("a_response_reads_its_body_from_a_source", "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a response body is written from a source";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    const auto payload = std::string(300 * 1024, 'p');
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/file")
+            .summary("Answer from a file")
+            .auth_optional()
+            .handler([payload](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "application/octet-stream";
+                resp.body_stream = std::make_shared<streamed_buffer_source>(payload, true);
+                co_return resp;
+            })
+            .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/file", std::chrono::seconds(5));
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    // A source that knows its length is answered with the length, not chunked.
+    REQUIRE(answered->body().size() == payload.size());
+    REQUIRE(!answered->chunked());
+    REQUIRE((*answered)[http::field::content_length] == std::to_string(payload.size()));
+}
+
+TEST_CASE("a_response_with_no_length_is_written_in_chunks", "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a source without a length is chunked";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    const auto payload = std::string(200 * 1024, 'q');
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->get("/stream")
+            .summary("Answer from a stream")
+            .auth_optional()
+            .handler([payload](const http_request&) -> asio::awaitable<http_response> {
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "text/event-stream";
+                resp.body_stream = std::make_shared<streamed_buffer_source>(payload, false);
+                co_return resp;
+            })
+            .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/stream", std::chrono::seconds(5));
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(answered->chunked());
+    REQUIRE(answered->body() == payload);
+}
+
+TEST_CASE("a_source_that_fails_mid_body_closes_the_connection", "[http_response_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a body shorter than its length is not a hang";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/broken")
+                          .summary("Answer from a source that fails")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              http_response resp;
+                              resp.status = http_status::ok;
+                              resp.content_type = "application/octet-stream";
+                              resp.body_stream = std::make_shared<streamed_failing_source>();
+                              co_return resp;
+                          })
+                          .build());
+
+    const auto answered = fetch_streamed(fixture.port(), "/broken", std::chrono::seconds(5));
+
+    // The status was already on the wire, so the client sees a short read and not
+    // a whole answer to a request the server could not satisfy.
+    REQUIRE(!answered.has_value());
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

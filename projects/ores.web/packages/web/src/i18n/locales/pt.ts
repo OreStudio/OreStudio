@@ -3891,6 +3891,8 @@ const pt: SourceCatalogue = {
             sequence: 'Ordem',
             addLeg: 'Adicionar uma perna',
             addLegLead: 'Uma transação é perna de um só negócio, e nele assume um papel.',
+            reason: 'Motivo',
+            reasonPlaceholder: 'Porque é que o negócio está composto assim?',
             addLegSubmit: 'Adicionar a perna',
             tree: 'A árvore',
             treeLabel: 'A árvore da estrutura',

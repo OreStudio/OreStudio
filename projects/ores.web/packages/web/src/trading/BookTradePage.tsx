@@ -71,7 +71,14 @@ export function BookTradePage(): ReactNode {
             const id = await trades.book(request);
             setBooked(id);
             if (structureKey !== '') {
-                await structures.addLeg(structureKey, id, legRole === '' ? 'leg' : legRole);
+                await structures.addLeg(
+                    structureKey,
+                    id,
+                    legRole === '' ? 'leg' : legRole,
+                    // The trade is booked as a leg of the deal the form names,
+                    // which is the reason this record states.
+                    'Booked as a leg of the deal from its page.',
+                );
             }
             return id;
         },

@@ -3861,6 +3861,8 @@ export const en: SourceCatalogue = {
             sequence: 'Order',
             addLeg: 'Add a leg',
             addLegLead: 'A trade is a leg of one structure at a time, and takes a role on it.',
+            reason: 'Reason',
+            reasonPlaceholder: 'Why is the deal composed this way?',
             addLegSubmit: 'Add the leg',
             tree: 'The tree',
             treeLabel: 'The structure tree',

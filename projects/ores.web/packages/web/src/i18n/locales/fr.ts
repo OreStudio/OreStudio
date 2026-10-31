@@ -3908,6 +3908,8 @@ const fr: SourceCatalogue = {
             sequence: 'Ordre',
             addLeg: 'Ajouter une jambe',
             addLegLead: "Une transaction est la jambe d'une seule opération, et y prend un rôle.",
+            reason: 'Motif',
+            reasonPlaceholder: 'Pourquoi l’opération est-elle composée ainsi ?',
             addLegSubmit: 'Ajouter la jambe',
             tree: "L'arbre",
             treeLabel: "L'arborescence de la structure",

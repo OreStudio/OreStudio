@@ -68,9 +68,16 @@ const listQuerySchema = z.object({
 
 const unlinkParamsSchema = z.object({ tradeId: z.uuid() });
 
+/** A leg's own role, and why the person is putting it in the structure. */
 const legBodySchema = z.object({
     tradeId: z.uuid(),
     role: z.string().trim().min(1).max(64),
+    commentary: z.string().trim().min(1).max(500),
+});
+
+/** Why the person is taking a leg out. */
+const unlinkBodySchema = z.object({
+    commentary: z.string().trim().min(1).max(500),
 });
 
 /** The intent every leg this screen writes carries. */
@@ -79,6 +86,28 @@ function intent(): { readonly reason_code: string; readonly commentary: string }
         reason_code: 'system.new_record',
         commentary: 'Added to the structure from its page.',
     };
+}
+
+/**
+ * Why a leg was put into a structure.
+ *
+ * The person states the reason, because a leg is the record of the deal's
+ * composition: the next reader needs to know what the deal is for, and the
+ * store's reason codes say what kind of act it was, not why it was taken.
+ */
+function legAdded(commentary: string): {
+    readonly reason_code: string;
+    readonly commentary: string;
+} {
+    return { reason_code: 'system.new_record', commentary };
+}
+
+/** Why a leg was taken out of a structure. */
+function legRemoved(commentary: string): {
+    readonly reason_code: string;
+    readonly commentary: string;
+} {
+    return { reason_code: 'system.amend_record', commentary };
 }
 
 /** The precondition that refuses a write over a row that already exists. */
@@ -925,6 +954,9 @@ export function registerStructureRoutes(
         const session = requireSession(request);
         const { key } = input(structureKeySchema, request.params);
         const { tradeId } = input(unlinkParamsSchema, request.params);
+        // The reason is asked for before anything is read: a caller that cannot
+        // say why is refused for that, not for the state of the structure.
+        const why = input(unlinkBodySchema, request.body).commentary;
         const structure = await resolveStructure(session, key);
         const structureId = text(structure['id']);
 
@@ -955,10 +987,7 @@ export function registerStructureRoutes(
                     key: { trade_id: tradeId },
                     precondition: { kind: 'any', version: null },
                 },
-                intent: {
-                    reason_code: 'system.amend_record',
-                    commentary: 'Taken out of the structure from its page.',
-                },
+                intent: legRemoved(why),
             },
             z.looseObject({ result: resultSchema }),
         );
@@ -1070,7 +1099,7 @@ export function registerStructureRoutes(
                     },
                     precondition: mustNotExist(),
                 },
-                intent: intent(),
+                intent: legAdded(body.commentary),
             },
             z.looseObject({ result: resultSchema }),
         );

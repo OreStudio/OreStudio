@@ -44,6 +44,7 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
 import { subjects as tradeSummarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
+import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { invalidRequest, notFound } from './errors.js';
@@ -356,7 +357,7 @@ async function dealtWithByRequests(
     const facts = new Map<string, Record<string, unknown>>();
     if (tradeIds.length === 0) return facts;
 
-    const [trades, summaries, books, counterparties] = await Promise.all([
+    const [trades, summaries, books, counterparties, types] = await Promise.all([
         readAll(session, tradeSubjects.list_trades_request, 'trades', {
             filter: { id_one_of: [...tradeIds], counterparty_id_one_of: null },
             as_of: null,
@@ -377,6 +378,9 @@ async function dealtWithByRequests(
             filter: null,
             as_of: null,
         }),
+        readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+            filter: { code_one_of: null },
+        }),
     ]);
 
     const bookNameOf = new Map(books.map((row) => [text(row['id']), text(row['name'])]));
@@ -384,6 +388,9 @@ async function dealtWithByRequests(
         counterparties.map((row) => [text(row['id']), text(row['full_name'])]),
     );
     const summaryOf = new Map(summaries.map((row) => [text(row['id']), row]));
+    const typeNameOf = new Map(
+        types.map((row) => [text(row['code']), text(row['description'])] as const),
+    );
 
     for (const trade of trades) {
         const id = text(trade['id']);
@@ -394,6 +401,7 @@ async function dealtWithByRequests(
         const tradeType = text(trade['trade_type']);
         facts.set(id, {
             tradeType,
+            tradeTypeName: typeNameOf.get(tradeType) ?? '',
             classCode: classOf(tradeType),
             tradeVersion: Number(trade['version'] ?? 0),
             bookId,
@@ -512,6 +520,7 @@ async function queueRows(
                 bookId: String(fact?.['bookId'] ?? ''),
                 counterpartyId: String(fact?.['counterpartyId'] ?? ''),
                 tradeType: String(fact?.['tradeType'] ?? ''),
+                tradeTypeName: String(fact?.['tradeTypeName'] ?? ''),
                 book: String(fact?.['book'] ?? ''),
                 counterparty: String(fact?.['counterparty'] ?? ''),
                 tradeDate: String(fact?.['tradeDate'] ?? ''),

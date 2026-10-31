@@ -33,13 +33,14 @@ import {
 } from '../api/queue.js';
 import { api, type HoldReason } from '../api/client.js';
 import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { AccountPicture } from '../ui/Images.js';
 import {
     localSource,
     RecordList,
     type ListColumn,
 } from '../refdata/RecordList.js';
 import { AreaTrail, useAreaRoot } from '../shell/AreaTrail.js';
-import { PersonRef } from '../access/PersonRef.js';
+import { PersonRef, usePeopleDirectory } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
 import {
     authorisationRequestPath,
@@ -164,6 +165,20 @@ function stateWord(row: QueueRow): string {
     }
 }
 
+/** A person as the house draws one: the picture, the name and their record. */
+function PersonLine({ who }: { readonly who: string }): ReactNode {
+    const directory = usePeopleDirectory();
+    const person = directory.find(who);
+    return (
+        <span className="flex items-center gap-2">
+            {person !== undefined && (
+                <AccountPicture username={person.username} name={person.fullName} size="sm" />
+            )}
+            <PersonRef who={who} />
+        </span>
+    );
+}
+
 /** A link that is drawn as the house draws one. */
 function EntityLink({ to, children }: { readonly to: string; readonly children: ReactNode }) {
     return (
@@ -220,7 +235,7 @@ export function AuthorisationQueuePage(): ReactNode {
             header: 'Instrument',
             cell: (row) => (
                 <>
-                    {row.tradeType}
+                    {row.tradeTypeName === '' ? row.tradeType : row.tradeTypeName}
                     <div className="text-xs text-ink-faint">
                         {row.classCode === 'flow' ? 'flow' : 'non-flow'}
                     </div>
@@ -413,7 +428,7 @@ export function AuthorisationRequestPage(): ReactNode {
                 <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
                 <PageHeader
                     title={`Authorisation · ${row.reference}`}
-                    description={`${row.tradeType}, raised by the operations queue`}
+                    description={`${row.tradeTypeName === '' ? row.tradeType : row.tradeTypeName}, raised by the operations queue`}
                     actions={
                         <Link to={PATHS.authorisationQueue} className="text-sm underline">
                             Back to the queue
@@ -441,7 +456,21 @@ export function AuthorisationRequestPage(): ReactNode {
                             value={<EntityLink to={tradePath(row.tradeId)}>{row.reference}</EntityLink>}
                             mono
                         />
-                        <Detail label="Type" value={row.tradeType} />
+                        <Detail
+                            label="Type"
+                            value={
+                                row.tradeTypeName === '' ? (
+                                    row.tradeType
+                                ) : (
+                                    <>
+                                        {row.tradeTypeName}
+                                        <span className="ml-2 text-xs text-ink-faint">
+                                            {row.tradeType}
+                                        </span>
+                                    </>
+                                )
+                            }
+                        />
                         <Detail
                             label="Counterparty"
                             value={
@@ -487,7 +516,7 @@ export function AuthorisationRequestPage(): ReactNode {
                                 </Tag>
                             }
                         />
-                        <Detail label="Raised by" value={<PersonRef who={row.requestedBy} />} />
+                        <Detail label="Raised by" value={<PersonLine who={row.requestedBy} />} />
                         <Detail label="Raised at" value={row.requestedAt} mono />
                         <Detail label="Reason" value={row.reason} />
                     </dl>

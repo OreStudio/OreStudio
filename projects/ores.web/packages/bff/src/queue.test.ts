@@ -9,6 +9,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
+import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -157,6 +158,14 @@ function replies(): Readonly<Record<string, unknown>> {
             ],
             total: 2,
         },
+        [tradeTypeSubjects.list_trade_types_request]: {
+            result: ok,
+            types: [
+                { code: 'Swap', description: 'Interest rate swap' },
+                { code: 'Package', description: 'Package of deals' },
+            ],
+            total: 2,
+        },
         [counterpartySubjects.list_counterparties_request]: {
             result: ok,
             counterparties: [
@@ -266,6 +275,16 @@ describe('the Operations queue', () => {
             [RATES_BOOK, BANK],
             [EQUITY_BOOK, FUND],
         ]);
+    });
+
+    it('names the type a desk reads rather than its code', async () => {
+        const { server, sessionId } = buildTestServer();
+        const rows = (
+            (await get(server, sessionId, '/api/queue/authorisations')).json() as {
+                items: (Row & { tradeTypeName: string })[];
+            }
+        ).items;
+        expect(rows.map((row) => row.tradeTypeName)).toEqual(['Interest rate swap', 'Package of deals']);
     });
 
     it('divides the queue by how much work the deal is, not by its asset class', async () => {

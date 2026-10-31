@@ -57,6 +57,8 @@ export interface QueueRow {
     readonly bookId: string;
     readonly counterpartyId: string;
     readonly tradeType: string;
+    /** The type's own name, as the catalogue states it. */
+    readonly tradeTypeName: string;
     readonly book: string;
     readonly counterparty: string;
     readonly tradeDate: string;
@@ -81,6 +83,7 @@ const rowSchema = z.object({
     bookId: z.string().default(''),
     counterpartyId: z.string().default(''),
     tradeType: z.string().default(''),
+    tradeTypeName: z.string().default(''),
     book: z.string().default(''),
     counterparty: z.string().default(''),
     tradeDate: z.string().default(''),

@@ -1741,6 +1741,363 @@ a complete body, which is the state a body waiting on a signature is in.
 
 How many report runs priced from the body.
 
+*** detail
+:PROPERTIES:
+:cpp_type: std::optional<ores::reporting::domain::cut_approval_detail>
+:END:
+
+The subject of the approval request the take raised, read from the detail row
+keyed by the request, or absent where the kind required none. The decider reads
+the counts of the body's parts here, and the cut's own page states them, so the
+two records of one act are read from one place.
+
+** take_cut_request
+:PROPERTIES:
+:subject: reporting.v1.ops.take_cut
+:response: take_cut_response
+:END:
+
+Assembles the body of a cut by hand, answers every part and every gap, and, when
+the caller presses the take, writes the body and raises its authorisation.
+
+One operation serves the flow's assembly step and its press, for the reason the
+resolution serves the preview and the run: an assembly computed by a second path
+is a preview of that path. A call with =preview= set answers the same parts and
+gaps and writes nothing, so the person who reviews a body reads the body the
+press would fix.
+
+The assembly reads the parts the store can answer at the instant -- the deal
+population, the published sets in use, the versions of the reference data and the
+engine -- and records every part it could not fill as a gap. A gap does not fail
+the call: the person reads what stands and what closes it. A take that carries a
+gap writes the attempt as an incomplete body and raises no approval request,
+because a decider would be asked to sign a body that does not meet the
+definition.
+
+A take of a kind that names an approval kind raises the request in the same act
+that freezes the body, with the cut's detail row keyed by the request, so what a
+decider reads is what was frozen. A kind that names none records that no
+authorisation was required and raises nothing.
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The occasion the body is fixed for, read from the cut kind lookup. The kind's
+retention and its approval kind are the kind's to state, so the caller names the
+kind and never its rules.
+
+*** scope_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The book population the cut fixes, as the contract that names it states the code.
+
+*** business_centre_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rates centre whose market data the scope's books revalue against. A scope
+that names no centre denotes whichever centre answered first, so the centre is
+part of the scope and not a detail of the assembly.
+
+*** timepoint
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The instant the body is fixed at, in ISO-8601 UTC. A body fixed at an instant is
+not fixed until the instant is stated with its clock, so the timezone travels
+beside it.
+
+*** timepoint_timezone
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The IANA clock the instant is stated in, such as =Europe/London=.
+
+*** cut_time_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The named cut time the instant came from, or empty where the kind's own rule
+fixed it.
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the body is being fixed, in the taker's words. The approval request carries
+it as the reason the decider reads, so a take of a kind that requires an
+authorisation needs it and a take of a kind that requires none does not.
+
+*** preview
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether this call answers the assembly and writes nothing.
+
+** cut_body_part
+:PROPERTIES:
+:END:
+
+One part of the body the assembly answered, with the state it reached and, where
+it could not be closed, the item, the reason and the remedy the person reads.
+
+*** part_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The part, from the closed set the gaps name: =kind=, =deal_population=,
+=market_data=, =reference_data= or =engine_code=.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+=closed= where the part was answered and =gapped= where it was not, so a screen
+draws every part with its own state rather than inferring one from the gaps.
+
+*** summary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+What the assembly resolved, in the words the person reads: the deal count, the
+sets in use, the versions in force.
+
+*** reference
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reference the body records for the part -- a snapshot, a population, a
+version -- or empty where the store can answer the part and materialise no
+reference for it.
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The item inside the part that could not be filled, or empty for a closed part.
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+Why the part could not be filled, or empty for a closed part.
+
+*** remedy
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+What closes the gap, in the words the person chases it with, or empty.
+
+*** snapshot_note
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+What the store cannot state about the part, where it can answer the part and
+record no reference for it. The flow draws it beside the part, so a person reads
+that the body is answered from a live read rather than from a copy.
+
+** take_cut_response
+:PROPERTIES:
+:END:
+
+The body the assembly answered, the take it wrote and the authorisation it
+raised.
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation. An assembly that answers gaps is a successful call: the
+gaps are the answer, and the sentence that refuses a take is in =refusal=.
+
+*** cut_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The cut the take wrote, in the text form of its id, or empty where the call
+previewed.
+
+*** cut_label
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The label a person quotes for the body, derived from the kind, the scope and the
+instant and never typed.
+
+*** cut_state
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The state the written body is in: =taken= where it waits on a signature,
+=in_use= where its kind requires none, and =incomplete= where a gap stood and
+the attempt was kept as a draft. Empty where the call previewed.
+
+*** requires_authorisation
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the kind requires an authorisation, read from the kind's approval kind
+and copied onto the cut at the take.
+
+*** output_is_indicative
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether a result priced from the body carries the indicative mark, copied from
+the kind at the take.
+
+*** retention_months
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How long the body is kept, copied from its kind at the take.
+
+*** retention_destination_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+Where the body goes when it leaves the warm tier, copied from its kind.
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The approval request the take raised, in the text form of its id, or empty where
+the kind requires none or a gap stopped the take.
+
+*** approval_kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The inbox kind the request was raised of, as the cut kind's =approval_kind_code=
+names it, or empty.
+
+*** approval_kind_name
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The approval kind's name, so the press's sentence says who waits for the body.
+
+*** decide_permission_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The permission a decider of the kind needs, read from the approval kind the type
+points at and never from the type.
+
+*** parts
+:PROPERTIES:
+:cpp_type: std::vector<cut_body_part>
+:END:
+
+Every part of the body with the state it reached, in the order the body is read.
+
+*** gaps
+:PROPERTIES:
+:cpp_type: std::vector<ores::reporting::domain::cut_gap>
+:END:
+
+Every part the assembly could not fill, with the item and the reason. Empty for a
+body the take may fix.
+
+*** deal_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many deals the population held at the instant, or zero where the assembly
+could not count them.
+
+*** market_data_set_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many published sets were in use at the instant, or zero where the assembly
+could not read them.
+
+*** reference_data_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The version of the reference data in force at the instant, or empty.
+
+*** engine_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The engine version the body was assembled for, or empty.
+
+*** code_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The code revision the body records, or empty where nothing records the service
+build.
+
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+One sentence saying why the take was refused, or empty. A refused take writes
+nothing, and the sentence names the reason the person acts on.
 
 * See also
 

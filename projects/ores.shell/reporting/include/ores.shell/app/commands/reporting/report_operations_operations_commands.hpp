@@ -211,6 +211,14 @@ public:
     static void process_get_cut_record(std::ostream& out,
                                        ores::nats::service::nats_client& session,
                                        const std::vector<std::string>& args);
+
+    /**
+     * @brief take-cut <kind_code> <scope_code> <business_centre_code> <timepoint>
+     * <timepoint_timezone> <reason> [--cut_time_code <v>] [--preview <v>]
+     */
+    static void process_take_cut(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
 };
 
 }

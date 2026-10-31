@@ -695,6 +695,61 @@ struct get_cut_record_response {
     std::string superseded_by_id = "";
     std::vector<ores::reporting::domain::cut_gap> gaps;
     int run_count = 0;
+    std::optional<ores::reporting::domain::cut_approval_detail> detail;
+};
+
+struct take_cut_request {
+    using response_type = struct take_cut_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.take_cut";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string kind_code;
+    std::string scope_code;
+    std::string business_centre_code;
+    std::string timepoint;
+    std::string timepoint_timezone;
+    std::string cut_time_code = "";
+    std::string reason;
+    bool preview = false;
+};
+
+struct cut_body_part {
+    std::string part_code;
+    std::string state;
+    std::string summary;
+    std::string reference;
+    std::string item = "";
+    std::string reason = "";
+    std::string remedy = "";
+    std::string snapshot_note = "";
+};
+
+struct take_cut_response {
+    ores::utility::domain::result result;
+    std::string cut_id = "";
+    std::string cut_label = "";
+    std::string cut_state = "";
+    bool requires_authorisation = false;
+    bool output_is_indicative = false;
+    int retention_months = 0;
+    std::string retention_destination_code = "";
+    std::string approval_request_id = "";
+    std::string approval_kind_code = "";
+    std::string approval_kind_name = "";
+    std::string decide_permission_code = "";
+    std::vector<cut_body_part> parts;
+    std::vector<ores::reporting::domain::cut_gap> gaps;
+    int deal_count = 0;
+    int market_data_set_count = 0;
+    std::string reference_data_version = "";
+    std::string engine_version = "";
+    std::string code_version = "";
+    std::string refusal = "";
 };
 
 }

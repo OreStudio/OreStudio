@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { Cut } from '../domain/cut.js';
+import type { CutApprovalDetail } from '../domain/cut_approval_detail.js';
 import type { CutGap } from '../domain/cut_gap.js';
 import type { CutKind } from '../domain/cut_kind.js';
 import type { Result } from '../../../utility/protocol.js';
@@ -454,6 +455,52 @@ export interface GetCutRecordResponse {
     superseded_by_id: string;
     gaps: CutGap[];
     run_count: number;
+    detail: CutApprovalDetail | null;
+}
+
+export interface TakeCutRequest {
+    kind_code: string;
+    scope_code: string;
+    business_centre_code: string;
+    timepoint: string;
+    timepoint_timezone: string;
+    cut_time_code: string;
+    reason: string;
+    preview: boolean;
+}
+
+export interface CutBodyPart {
+    part_code: string;
+    state: string;
+    summary: string;
+    reference: string;
+    item: string;
+    reason: string;
+    remedy: string;
+    snapshot_note: string;
+}
+
+export interface TakeCutResponse {
+    result: Result;
+    cut_id: string;
+    cut_label: string;
+    cut_state: string;
+    requires_authorisation: boolean;
+    output_is_indicative: boolean;
+    retention_months: number;
+    retention_destination_code: string;
+    approval_request_id: string;
+    approval_kind_code: string;
+    approval_kind_name: string;
+    decide_permission_code: string;
+    parts: CutBodyPart[];
+    gaps: CutGap[];
+    deal_count: number;
+    market_data_set_count: number;
+    reference_data_version: string;
+    engine_version: string;
+    code_version: string;
+    refusal: string;
 }
 
 export const subjects = {
@@ -485,6 +532,7 @@ export const subjects = {
     resolve_cut_request: 'reporting.v1.ops.resolve_cut',
     list_cut_rows_request: 'reporting.v1.ops.list_cut_rows',
     get_cut_record_request: 'reporting.v1.ops.get_cut_record',
+    take_cut_request: 'reporting.v1.ops.take_cut',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -517,4 +565,5 @@ export const requiresSession = {
     resolve_cut_request: true,
     list_cut_rows_request: true,
     get_cut_record_request: true,
+    take_cut_request: true,
 } as const;

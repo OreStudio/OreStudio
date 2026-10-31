@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/cut.hpp"
+#include "ores.reporting.api/domain/cut_approval_detail.hpp"
 #include "ores.reporting.api/domain/cut_gap.hpp"
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.reporting.core/export.hpp"
@@ -114,6 +115,15 @@ struct cut_record_view {
     std::optional<boost::uuids::uuid> superseded_by;
     std::vector<domain::cut_gap> gaps;
     int run_count = 0;
+
+    /**
+     * @brief The subject of the approval request the take raised, or nothing
+     * where the kind required none.
+     *
+     * The counts of the body's parts are the detail row's, so the page that
+     * states them reads one record rather than counting the parts again.
+     */
+    std::optional<domain::cut_approval_detail> detail;
 };
 
 /**

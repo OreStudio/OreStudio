@@ -220,6 +220,7 @@ public:
                 response.superseded_by_id = boost::uuids::to_string(*record->superseded_by);
             response.gaps = record->gaps;
             response.run_count = record->run_count;
+            response.detail = record->detail;
             BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {

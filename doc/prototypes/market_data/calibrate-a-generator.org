@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 6CB06DFB-E84E-48EB-AB82-0D89EE166D16
 :END:
-#+title: Calibrate a generator prototype
-#+description: The calibration screen before it is built: three variants of the ranked fixing items, the resolved start, the measured volatility and the fallback, on a throwaway page
+#+title: Calibrate the market prototype
+#+description: The calibration screen before it is built: one market-wide policy, the candidates it derives for every feed, the resolved start and the per-feed exceptions, on a throwaway page
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:calibration:
@@ -17,98 +17,102 @@
 
 * Summary
 
-A synthetic feed takes its first value from a ranked public fixing, and the
-size of its moves from the spread of that fixing's returns. The prototype
-argues what a person sees and edits about that decision: the ranked items, the
-item and provider the resolver takes, the value and time taken, the measured
-volatility, and the fixed level as a stated fallback. It carries three
-variants of one screen on a static page. Vintage is retired and the screen
-says so; there is no vintage control to judge.
+A synthetic feed takes its first value from a public fixing, and the size of
+its moves from the spread of that fixing's returns. The prototype argues how a
+person sets that for a market: one policy per asset class, the candidates it
+derives for each feed, the resolved start, and the per-feed exceptions. It
+exists because the first draft gave every feed its own ranked list, and that
+does not scale: with a hundred feeds, a person would author a hundred lists
+and still not see the market's coverage. The page carries three variants of
+the same policy-first screen. Vintage is retired and the screen says so.
 
 * The question
 
-The runner already resolves the start: it walks the ranked items, skips an item
-whose provider's terms are not accepted or whose fixing is missing or after
-the clock, takes the first usable one, reads it as =1/x= when the item quotes
-the pair the other way round, and scales the mixture by the measured spread. A
-person authoring the generator cannot see any of that. Which of those facts
-belongs on the screen, and in what shape, is the question.
+The runner resolves a feed at start: it walks the candidates, skips one whose
+provider's terms are not accepted or whose fixing is missing or after the
+clock, takes the first usable one, reads it as =1/x= when the item quotes the
+pair the other way round, and scales the mixture by the measured spread. The
+question is where the ranking comes from. A list on every feed is exact and
+unmaintainable. A policy on the class is one decision, but it must still let a
+person fix an exception and see what the policy does to every feed.
 
 * The variants
 
-** A — Resolution first
+** A — Policy first
 
-The start card sits at the top: the level a run will take, the item and
-provider behind it, the time received, the inversion, the measured volatility
-and the scale. Under it is the ranked table with policy, window and reorder
-controls. The resolution trail and the fixed-level card sit beside it. This
-variant argues that the resolved start is the answer a person came for, and the
-items are its working.
+The policy card sets the window, whether an inverse is allowed, the provider
+order and the fallback. Under it, the coverage table resolves every feed of
+the class and counts what came from a fixing, what kept a level and what is
+blocked. One worked resolution sits beside them. This variant argues that the
+market's calibration is a single decision, and the feed list is its evidence.
 
-** B — Ladder
+** B — Feed inherits
 
-One card per item in rank order, each with its own state and reason: chosen,
-terms not accepted, no fixing, after the clock, or a higher rank took it. The
-resolution trail is under the ladder and the start card is beside it. This
-variant argues that a person reads the *why* of an unused item locally, beside
-the item, not in a separate trail.
+The feed page opens on the inherited policy, the resolved start and the
+derived candidate list, each candidate with its reason. Two selects pin an
+item or a window for this feed only, and the banner turns from inherited to
+override. This variant argues that authoring a feed is reading what the policy
+did, and the exception is the rare act.
 
 ** C — Flow
 
-The items as chips, an arrow into the resolver, an arrow into the process and
-feed. An inspector edits the selected item, and the last runs say which item
-each start took. This variant argues that the start is a pipeline whose parts
-are inspected one at a time, and that the run's own record is the evidence.
+The policy, the candidates for one pair, the resolver and the feed as one
+path, over the recalculation record and the class coverage. This variant
+argues that the policy is a pipeline a person can trace, and every
+recalculation is the proof that it ran.
 
 Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 =a=).
 
 * What it settles
 
-- **The fixed level is a fallback card, never a source.** Every variant states
-  when it is used, and why no item applies. No variant offers a second kind of
-  source beside the fixings.
-- **The resolver's trail is first-class.** A skipped item carries its reason
-  where a person edits it. A run that fell through to the fixed level can say
-  which item failed which test.
-- **The inversion is stated where the value is.** The value is read as =1/x=
-  and the screen says so; the source value is not changed, and its credit stays
-  with the value.
-- **The volatility is a measured number, not a hidden parameter.** The screen
-  shows the daily spread, the hourly it implies, the window it was measured over
-  and the factor applied to the configured mixture.
-- **Vintage is absent.** The screen has no vintage control, field or wording
-  that offers one. A fixed level is the only alternative, and it is a fallback.
-- **The provider's credit travels with the value**, because the ECB's terms ask
-  for citation and a computed cross is itself a change to the source.
+- **Calibration is a policy, not a list per feed.** One decision per asset
+  class, inherited by every feed of that class.
+- **Candidates are derived, not authored.** The pair and the provider order
+  produce the list; direct quotes come before inverses, and a provider whose
+  terms are not accepted never starts a feed.
+- **An exception is visible and reversible.** A feed pins one item or one
+  window; the banner says it overrides, and clearing the pin returns it.
+- **Coverage is the point of the policy screen.** How many feeds resolve, keep
+  a level or are blocked is the number a person governs, and a recalculation
+  records every start.
+- **The fallback is a policy choice.** Keep the fixed level or refuse to start;
+  the screen states which, and no feed invents a second source.
+- **The volatility is measured.** The daily spread, the hourly it implies, the
+  window and the factor are shown with the start.
+- **Vintage is absent.** No vintage control, field or wording offers one.
 
 * What it does not settle
 
-- Where the calibration lives in the product: a tab of the feed record, a step
-  of the feed editor, or a screen of its own. The prototype draws it as a
-  screen beside the generator; [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] puts it on the
-  feed page.
-- Whether the volatility window is per item or per generator. The prototype
-  keeps it per item, because the model does.
-- The exact scale formula beyond the daily log returns over the window and the
-  hourly conversion shown. The build reads the runner's own formula.
+- Who may edit the policy, and whether a change needs approval. The prototype
+  edits it in place.
+- When a recalculation runs: on a config save, on every start, daily, or only
+  when a person asks. The prototype offers the button and shows the record.
+- Where the policy lives in the product: a market data settings page, the feed
+  class page, or the feed screen itself. The prototype draws it as a class
+  screen.
+- The exception's granularity beyond one pinned item and one window.
+- Whether a provider's rejection removes its items from the list or greys them.
+  The prototype keeps them visible with their reason, so a person sees why a
+  pair lost its best source.
 
 * The mock data
 
-One synthetic EUR/USD generator, five ranked items, and a market clock of
-2026-10-31: the ECB EUR/USD item with a fixing on 30 October, an IMF item whose
-fixing is a week old, an ECB USD/EUR item that must be read as =1/x=, a Bank of
-Canada item whose terms are not accepted, and a TCMB item with no fixing. Two
-catalogue items wait behind *Add from the catalogue*. The resolver mirrors the
-runner's order and tests; the volatility comes from a deterministic return
-series, so the same edits always give the same numbers. The state panel prints
-the whole state after every action.
+Six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD) and eleven
+items across the ECB, the IMF, the Bank of Canada and the TCMB, at a market
+clock of 2026-10-31. The policy orders ECB, IMF, BoC and allows inverses.
+EUR/USD resolves from the ECB, GBP/USD only as an inverse of the IMF's USD/GBP,
+and AUD/USD has no covering source, so it keeps its level. Turning the inverse
+off sends GBP/USD to its fixed level; setting the fallback to refuse blocks
+AUD/USD and counts it. The state panel prints the policy and each feed's start
+after every action.
 
 * See also
 
 - [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] — the story.
 - [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] — the task that built the resolver.
 - [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] — the task this page answers.
+- [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] — the data the policy needs.
 - [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] — the task that carries the decision.
 - [[file:../../knowledge/domain/synthetic_calibration_sources.org][Synthetic prices are calibrated from free public sources]] — which sources, and what their terms say.
 - [[file:../../knowledge/domain/fx_spot_generation_config.org][The FX spot generation config]] — the config and its items.

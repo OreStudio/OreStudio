@@ -31,20 +31,22 @@ volatility it measured.
 | State        | BACKLOG                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Not yet started.                       |
-| Waiting on   | [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] decides the shape. |
+| Waiting on   | [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] decides the shape, and [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] carries the data. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- The feed page shows the ranked fixing items, and a person adds, removes and
-  reorders them, and states each one's policy and window.
-- It shows the resolution as of the market clock: the item chosen, its provider,
-  the value, the fixing date, the time received, whether it was read as =1/x=,
-  and the provider's credit.
-- It shows the measured volatility and the factor it applies to the mixture.
-- It shows a fixed level only where no item has a fixing, with the reason, and
-  it carries no vintage control or field.
+- The class screen states the policy once: window, inverse allowed, provider
+  order and the fallback, and shows the coverage across every feed of the
+  class.
+- The feed page shows the start derived from that policy, the candidate list
+  with each candidate's reason, and the measured volatility and its factor.
+- A person pins an item or a window on one feed as an exception; the page says
+  that the feed overrides the policy, and offers the way back to the policy.
+- A recalculation records each feed's start and the policy it used.
+- The screens carry no vintage control or field, and a feed with no usable
+  candidate shows the policy's fallback or refusal.
 
 * Plan
 

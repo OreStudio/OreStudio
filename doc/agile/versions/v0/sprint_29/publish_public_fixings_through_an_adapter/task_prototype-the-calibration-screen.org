@@ -38,29 +38,32 @@ fixed level.
 
 * Acceptance
 
-- Three variants of one screen sit on a static page under
+- The screen is market-wide first: one FX policy states the window, whether
+  an inverse is allowed, the provider order and the fallback.
+- Every feed derives its candidates from its pair and that policy. No feed
+  carries a handwritten list; a feed pins an item or a window only as an
+  exception.
+- The coverage is visible: how many feeds resolve from a fixing, keep a level
+  or are blocked, and a recalculation records every feed's start.
+- Three variants sit on one static page under
   =doc/prototypes/market_data/calibrate-a-generator/=, switchable by =?variant=
-  and by a bottom bar, with no build and no session.
-- Each variant carries the ranked items with rank, item URI, provider, policy
-  and window; the resolved start with the value, the fixing date, the time
-  received, whether it was inverted and the provider's credit; the measured
-  volatility and the scale it applies; and the fallback reason where none
-  applies.
+  and a bottom bar, with no build and no session.
 - It carries no vintage control, and it states that vintage is retired.
 - The group index lists it with review none, and the design note sits beside
   the page.
 
 * Plan
 
-- Mock one synthetic EUR/USD config, five ranked items (ECB direct, IMF stale,
-  ECB inverted, a provider whose terms are not accepted, an item with no
-  fixing), and a market clock of 2026-10-31. The resolver mirrors the runner:
-  rank order, =latest_on_or_before_clock= or =exact:<date>=, the window, the
-  inversion and the measured spread.
-- Variant A is resolution first: the start card, then the ranked table, then
-  the fallback. Variant B is a ladder: one card per item with its own reason,
-  and a resolution trail under it. Variant C is a flow: items into a resolver
-  into the process, with an inspector and the last runs.
+- Mock six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD)
+  and eleven accepted or rejected items across four providers, at a market
+  clock of 2026-10-31. GBP/USD resolves only as an inverse, AUD/USD has no
+  covering source, and turning the inverse off sends GBP/USD to its fixed
+  level.
+- Variant A is policy first: the policy, the coverage across every feed, and
+  one worked resolution. Variant B is a feed: the inherited policy, the
+  resolved start, the derived candidates, and the pin and window exceptions.
+  Variant C is a flow: policy, candidates, resolver, and the recalculation
+  record.
 - The decision taken here is distilled into [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
 
 * Measurements
@@ -83,25 +86,30 @@ The page is at
 [[file:../../../../../prototypes/market_data/calibrate-a-generator/index.html][calibrate-a-generator]]. It carries three variants of the calibration screen,
 switchable by =?variant= or the bottom bar:
 
-- *A, resolution first* — the start card, then the ranked table, then the trail
-  and the fixed level beside it.
-- *B, ladder* — one card per item with its own reason, and the trail under it.
-- *C, flow* — the items as chips into a resolver and the process, with an
-  inspector and the last runs.
+- *A, policy first* — the FX policy (window, inverse rule, provider order and
+  fallback), the coverage of every feed, and one worked resolution.
+- *B, feed inherits* — the inherited policy, the resolved start, the derived
+  candidates with their reasons, and the two exception selects.
+- *C, flow* — the policy into the candidates into the resolver, over the class
+  coverage and the recalculation record.
 
 Every variant shows the level a run takes, the item and provider behind it,
 the time received, the inversion, the daily and hourly spread, the factor
-applied to the mixture and the fallback reason. There is no vintage control,
-and the page states that vintage is retired.
+applied to the mixture and the fallback or refusal reason. The page has no
+vintage control, and it states that vintage is retired.
 
-The mock data is one synthetic EUR/USD generator, five ranked items and a
-clock of 2026-10-31: ECB direct, IMF a week old, ECB inverted, BoC with terms
-not accepted, and TCMB with no fixing. The resolver mirrors the runner's tests
-and prints the whole state after each action.
+The mock data is six FX feeds and eleven items across four providers at a
+clock of 2026-10-31. The policy orders ECB, IMF and BoC and allows inverses:
+EUR/USD resolves from the ECB, GBP/USD only as an inverse of the IMF's
+USD/GBP, and AUD/USD keeps its level because no source covers it. Turning the
+inverse off sends GBP/USD to its fixed level; the refuse fallback blocks
+AUD/USD. The resolver mirrors the runner's tests and the state panel prints
+the policy and every feed's start.
 
-The variants are judged against the question in
-[[file:../../../../../prototypes/market_data/calibrate-a-generator.org][the design note]]. The decision taken here belongs in
-[[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] before it starts.
+The design note is
+[[file:../../../../../prototypes/market_data/calibrate-a-generator.org][calibrate-a-generator.org]]. The decision taken here belongs in
+[[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]], and the data it reads in
+[[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]], before either starts.
 
 * Test Scenarios
 

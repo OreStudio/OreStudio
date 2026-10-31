@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calibrate a generator — where the first value comes from</title>
+<title>Calibrate the market — where every feed takes its first value</title>
 <link rel="stylesheet" href="prototype.css">
 </head>
 <body>
@@ -14,43 +14,34 @@
 </div>
 
 <header class="page">
-  <div class="crumbs"><a href="#">Market data</a> / <a href="#">Synthetic</a> / Calibrate a generator</div>
+  <div class="crumbs"><a href="#">Market data</a> / <a href="#">Synthetic</a> / Calibration</div>
   <div class="title-row">
-    <h1>Calibrate a generator</h1>
-    <span class="lead">where a synthetic feed takes its first value and the size of its moves</span>
-    <span class="actions">
-      <button class="act" id="resolve">Resolve as of the clock</button>
-    </span>
+    <h1>Calibrate the market</h1>
+    <span class="lead">one policy for every synthetic feed, resolved from the public fixings</span>
+    <span class="actions"><button class="act primary" id="resolve">Recalculate all feeds</button></span>
   </div>
   <div class="ident">
-    <span class="pair">EUR/USD</span>
-    <span class="mono">synthetic-eur-usd</span>
+    <span class="pair">FX</span>
     <span class="dot">·</span>
-    <span>Ornstein–Uhlenbeck</span>
+    <span>market-wide calibration policy</span>
     <span class="dot">·</span>
-    <span>12 ticks an hour</span>
+    <span id="feedCount">6 feeds</span>
     <span class="dot">·</span>
-    <span class="mono">oresmd://fx/EUR?type=fixing&amp;index=fx&amp;source=SYNTHETIC&amp;ccy=USD</span>
+    <span class="mono">public fixings, no vintage</span>
   </div>
-  <div class="strip">
-    <span class="pill ok">Public fixings</span>
-    <span class="strip-text">This generator starts from a ranked public fixing. A fixed level is a stated fallback, never a source. <b>Vintage is retired:</b> there is no vintage control on this screen.</span>
+  <div class="notice">
+    <span class="badge ok">Policy</span>
+    <span>Every feed resolves from this policy and the fixing catalogue. A feed pins a provider or a window only as an exception. <b>Vintage is retired:</b> it is not a source anywhere.</span>
   </div>
 </header>
 
 <main>
   <section class="controls">
+    <label id="feedPick">Feed
+      <select id="feed"></select>
+    </label>
     <label>Market clock
       <input type="date" id="clock" value="2026-10-31">
-    </label>
-    <label>Price source
-      <select id="priceSource">
-        <option value="fixing">Ranked public fixings</option>
-        <option value="fixed">Fixed level (fallback only)</option>
-      </select>
-    </label>
-    <label>Fixed level, if no item has one
-      <input type="number" id="fixedLevel" step="0.0001" value="1.1000">
     </label>
     <span class="control-note" id="controlNote"></span>
   </section>
@@ -67,8 +58,8 @@
 
 <div class="proto-switch" role="tablist" aria-label="Variants">
   <span class="proto-switch-label">Variant</span>
-  <button role="tab" data-variant="a">A · Resolution first</button>
-  <button role="tab" data-variant="b">B · Ladder</button>
+  <button role="tab" data-variant="a">A · Policy first</button>
+  <button role="tab" data-variant="b">B · Feed inherits</button>
   <button role="tab" data-variant="c">C · Flow</button>
 </div>
 

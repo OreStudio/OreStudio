@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 3A15911E-4EA6-40A6-BC45-E8AEBE49AC54
+:END:
+#+title: Task: Prototype the calibration screen
+#+description: Three variants of the calibration screen on a throwaway page: the ranked fixing items, the item and provider chosen, the value and time taken, the measured volatility and the fallback reason, before any of it is built.
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch: feature/prototype-the-calibration-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle what the calibration screen shows before any of it is built: how a
+person reads the ranked fixing items, the item and provider a generator will
+start from, the volatility measured over the window, and why a run keeps its
+fixed level.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Building the three variants under =doc/prototypes/market_data/calibrate-a-generator/=. |
+| Waiting on   | Nothing.                               |
+| Next         | Review the page with the owner, pick a variant, then hand the decision to the build task. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- Three variants of one screen sit on a static page under
+  =doc/prototypes/market_data/calibrate-a-generator/=, switchable by =?variant=
+  and by a bottom bar, with no build and no session.
+- Each variant carries the ranked items with rank, item URI, provider, policy
+  and window; the resolved start with the value, the fixing date, the time
+  received, whether it was inverted and the provider's credit; the measured
+  volatility and the scale it applies; and the fallback reason where none
+  applies.
+- It carries no vintage control, and it states that vintage is retired.
+- The group index lists it with review none, and the design note sits beside
+  the page.
+
+* Plan
+
+- Mock one synthetic EUR/USD config, five ranked items (ECB direct, IMF stale,
+  ECB inverted, a provider whose terms are not accepted, an item with no
+  fixing), and a market clock of 2026-10-31. The resolver mirrors the runner:
+  rank order, =latest_on_or_before_clock= or =exact:<date>=, the window, the
+  inversion and the measured spread.
+- Variant A is resolution first: the start card, then the ranked table, then
+  the fallback. Variant B is a ladder: one card per item with its own reason,
+  and a resolution trail under it. Variant C is a flow: items into a resolver
+  into the process, with an inspector and the last runs.
+- The decision taken here is distilled into [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The page is at
+[[file:../../../../../prototypes/market_data/calibrate-a-generator/index.html][calibrate-a-generator]]. It carries three variants of the calibration screen,
+switchable by =?variant= or the bottom bar:
+
+- *A, resolution first* — the start card, then the ranked table, then the trail
+  and the fixed level beside it.
+- *B, ladder* — one card per item with its own reason, and the trail under it.
+- *C, flow* — the items as chips into a resolver and the process, with an
+  inspector and the last runs.
+
+Every variant shows the level a run takes, the item and provider behind it,
+the time received, the inversion, the daily and hourly spread, the factor
+applied to the mixture and the fallback reason. There is no vintage control,
+and the page states that vintage is retired.
+
+The mock data is one synthetic EUR/USD generator, five ranked items and a
+clock of 2026-10-31: ECB direct, IMF a week old, ECB inverted, BoC with terms
+not accepted, and TCMB with no fixing. The resolver mirrors the runner's tests
+and prints the whole state after each action.
+
+The variants are judged against the question in
+[[file:../../../../../prototypes/market_data/calibrate-a-generator.org][the design note]]. The decision taken here belongs in
+[[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] before it starts.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

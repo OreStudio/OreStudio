@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 6CB06DFB-E84E-48EB-AB82-0D89EE166D16
+:END:
+#+title: Calibrate a generator prototype
+#+description: The calibration screen before it is built: three variants of the ranked fixing items, the resolved start, the measured volatility and the fallback, on a throwaway page
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:calibration:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+| Item      | Where                                       |
+|-----------+---------------------------------------------|
+| Prototype | [[file:calibrate-a-generator/][the prototype]] |
+| Review    | none                                        |
+| Group     | [[file:index.org][Market data prototypes]]       |
+
+* Summary
+
+A synthetic feed takes its first value from a ranked public fixing, and the
+size of its moves from the spread of that fixing's returns. The prototype
+argues what a person sees and edits about that decision: the ranked items, the
+item and provider the resolver takes, the value and time taken, the measured
+volatility, and the fixed level as a stated fallback. It carries three
+variants of one screen on a static page. Vintage is retired and the screen
+says so; there is no vintage control to judge.
+
+* The question
+
+The runner already resolves the start: it walks the ranked items, skips an item
+whose provider's terms are not accepted or whose fixing is missing or after
+the clock, takes the first usable one, reads it as =1/x= when the item quotes
+the pair the other way round, and scales the mixture by the measured spread. A
+person authoring the generator cannot see any of that. Which of those facts
+belongs on the screen, and in what shape, is the question.
+
+* The variants
+
+** A — Resolution first
+
+The start card sits at the top: the level a run will take, the item and
+provider behind it, the time received, the inversion, the measured volatility
+and the scale. Under it is the ranked table with policy, window and reorder
+controls. The resolution trail and the fixed-level card sit beside it. This
+variant argues that the resolved start is the answer a person came for, and the
+items are its working.
+
+** B — Ladder
+
+One card per item in rank order, each with its own state and reason: chosen,
+terms not accepted, no fixing, after the clock, or a higher rank took it. The
+resolution trail is under the ladder and the start card is beside it. This
+variant argues that a person reads the *why* of an unused item locally, beside
+the item, not in a separate trail.
+
+** C — Flow
+
+The items as chips, an arrow into the resolver, an arrow into the process and
+feed. An inspector edits the selected item, and the last runs say which item
+each start took. This variant argues that the start is a pipeline whose parts
+are inspected one at a time, and that the run's own record is the evidence.
+
+Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
+=a=).
+
+* What it settles
+
+- **The fixed level is a fallback card, never a source.** Every variant states
+  when it is used, and why no item applies. No variant offers a second kind of
+  source beside the fixings.
+- **The resolver's trail is first-class.** A skipped item carries its reason
+  where a person edits it. A run that fell through to the fixed level can say
+  which item failed which test.
+- **The inversion is stated where the value is.** The value is read as =1/x=
+  and the screen says so; the source value is not changed, and its credit stays
+  with the value.
+- **The volatility is a measured number, not a hidden parameter.** The screen
+  shows the daily spread, the hourly it implies, the window it was measured over
+  and the factor applied to the configured mixture.
+- **Vintage is absent.** The screen has no vintage control, field or wording
+  that offers one. A fixed level is the only alternative, and it is a fallback.
+- **The provider's credit travels with the value**, because the ECB's terms ask
+  for citation and a computed cross is itself a change to the source.
+
+* What it does not settle
+
+- Where the calibration lives in the product: a tab of the feed record, a step
+  of the feed editor, or a screen of its own. The prototype draws it as a
+  screen beside the generator; [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] puts it on the
+  feed page.
+- Whether the volatility window is per item or per generator. The prototype
+  keeps it per item, because the model does.
+- The exact scale formula beyond the daily log returns over the window and the
+  hourly conversion shown. The build reads the runner's own formula.
+
+* The mock data
+
+One synthetic EUR/USD generator, five ranked items, and a market clock of
+2026-10-31: the ECB EUR/USD item with a fixing on 30 October, an IMF item whose
+fixing is a week old, an ECB USD/EUR item that must be read as =1/x=, a Bank of
+Canada item whose terms are not accepted, and a TCMB item with no fixing. Two
+catalogue items wait behind *Add from the catalogue*. The resolver mirrors the
+runner's order and tests; the volatility comes from a deterministic return
+series, so the same edits always give the same numbers. The state panel prints
+the whole state after every action.
+
+* See also
+
+- [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] — the story.
+- [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] — the task that built the resolver.
+- [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] — the task this page answers.
+- [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] — the task that carries the decision.
+- [[file:../../knowledge/domain/synthetic_calibration_sources.org][Synthetic prices are calibrated from free public sources]] — which sources, and what their terms say.
+- [[file:../../knowledge/domain/fx_spot_generation_config.org][The FX spot generation config]] — the config and its items.

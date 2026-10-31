@@ -221,7 +221,12 @@ TEST_CASE("an_inflation_swap_states_its_index_on_a_cpi_leg", "[domain]") {
         return leg.leg_type_code == "CPI";
     });
     REQUIRE(cpi != built.legs.end());
-    CHECK(cpi->floating_index_code == "UKRPIX");
+    /*
+     * The leg states no benchmark index: the column references the floating
+     * index catalogue, and the index this trade observes is the product's own
+     * fact. A CPI leg that named it would be refused by the store.
+     */
+    CHECK(cpi->floating_index_code.empty());
     /*
      * The CPI side is the side the party receives, so the leg says who pays
      * rather than leaving the field absent.

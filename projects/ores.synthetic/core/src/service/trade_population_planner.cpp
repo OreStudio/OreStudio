@@ -526,11 +526,26 @@ construct_bond_product(const domain::bond_terms& terms,
             throw trade_population_error(
                 "A convertible bond states the share it may convert into, and the tenant holds no "
                 "equity underlying. Publish the equity catalogue first.");
+        /*
+         * The target belongs to the security and not to the trade: two trades of
+         * one convertible convert into the same share at the same ratio, and the
+         * store compares the targets it holds when a second write reaches the
+         * issue. So both draws come from the security's own name rather than
+         * from the slot, which would let two trades of one security disagree.
+         */
+        const auto target_draw = draw(terms.security_id, 10);
+        const auto position =
+            static_cast<std::size_t>(target_draw *
+                                     static_cast<double>(scope.equity_underlyings.size()));
         tdom::convertible_bond_terms convertible;
         convertible.common = common;
         convertible.targets.push_back(
-            {.underlying_id = scope.equity_underlyings[slot % scope.equity_underlyings.size()].code,
-             .conversion_ratio = std::round((5.0 + 10.0 * draw(name, 10)) * 100.0) / 100.0});
+            {.underlying_id =
+                 scope.equity_underlyings[std::min(position,
+                                                   scope.equity_underlyings.size() - 1)]
+                     .code,
+             .conversion_ratio =
+                 std::round((5.0 + 10.0 * draw(terms.security_id, 11)) * 100.0) / 100.0});
         return tdom::construct_convertible_bond(convertible);
     }
 

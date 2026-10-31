@@ -46,6 +46,15 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "869c76c6-2352-5271-9fb7-4a2fe078a3c6",
+    "unit_name": "Equity Derivatives London",
+    "unit_code": "acme_uk.equity_derivatives",
+    "parent_business_unit_code": "acme_uk.global_markets",
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DESK"
+  },
+  {
+    "company_code": "acme_uk",
     "id": "085c07ce-c725-576f-bf3a-2d62bd2d806f",
     "unit_name": "XVA London",
     "unit_code": "acme_uk.xva",

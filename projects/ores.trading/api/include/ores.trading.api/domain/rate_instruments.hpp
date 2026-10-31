@@ -521,12 +521,12 @@ construct_rate_inflation_swap(const rate_inflation_swap_terms& terms) {
         row.payment_frequency_code = leg.payment_frequency_code;
         row.currency = leg.currency;
         /*
-         * The CPI leg observes the product's index and the fixed leg observes
-         * none. The index is stated on the leg as well as on the fact row
-         * because the leg is what an exporter reads to find the index family.
+         * Neither leg states a benchmark index, and the CPI leg cannot: the leg
+         * column is the soft reference to the benchmark catalogue every
+         * floating leg names, and an inflation index is not a member of it. The
+         * index the trade observes is the product's own fact, which is what the
+         * document reads the CPI leg's fields from.
          */
-        if (leg.leg_type_code == "CPI")
-            row.floating_index_code = terms.inflation_index_code;
         built.legs.push_back(std::move(row));
 
         swap_leg_amount amount;

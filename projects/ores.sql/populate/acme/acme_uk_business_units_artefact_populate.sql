@@ -60,6 +60,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e719eee-612e-5927-8e71-4107008a1590', 0, 'IR Swaps London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.ir_swaps', 'GBLO', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'aeb8a9e6-86a6-5382-b5eb-54c1b9577c32', 0, 'Credit Trading London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.credit_trading', 'GBLO', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c3264d1e-2c3a-538c-b598-915a8b354dec', 0, 'FX Rates London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.fx_rates', 'GBLO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '869c76c6-2352-5271-9fb7-4a2fe078a3c6', 0, 'Equity Derivatives London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.equity_derivatives', 'GBLO', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '085c07ce-c725-576f-bf3a-2d62bd2d806f', 0, 'XVA London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.xva', 'GBLO', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 0, 'Treasury London', null, 'acme_uk.treasury', 'GBLO', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a3c5e2ae-d25f-5f39-b334-e59d76ceff31', 0, 'Middle Office London', null, 'acme_uk.middle_office', 'GBLO', 'COST_CENTRE'),

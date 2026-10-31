@@ -969,7 +969,12 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
             return leg.leg_type_code == "CPI";
         });
         REQUIRE(cpi != slot.instruments.swap_legs.end());
-        CHECK(cpi->floating_index_code == fact.inflation_index_code);
+        /*
+         * The leg states the index family rather than the index: the leg's own
+         * index column references the benchmark catalogue, and an inflation
+         * index is not a member of it.
+         */
+        CHECK(cpi->floating_index_code.empty());
         CHECK_FALSE(cpi->currency.empty());
     }
 
@@ -1056,6 +1061,35 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", "[trade_pop
 
     REQUIRE(terms.size() > 1);
     REQUIRE(term_of.size() >= terms.size());
+}
+
+TEST_CASE("a_securitys_own_rows_do_not_depend_on_the_slot_that_wrote_them",
+          "[trade_population]") {
+    /*
+     * Two trades of one security state one issue, so the security's own rows are
+     * a function of the security and not of the slot. A band of one term over
+     * two books puts two convertibles on one security: their targets must agree,
+     * or the second write reaches an issue that already states other terms and
+     * the store refuses it.
+     */
+    auto scope = bond_scope();
+    scope.min_tenor_code = "1Y";
+    scope.max_tenor_code = "1Y";
+    scope.trades_per_book = 20;
+
+    const auto plan = plan_of(scope);
+    std::map<std::string, std::set<std::string>> targets_of;
+    for (const auto& slot : plan.slots) {
+        if (!slot.bond_issue.has_value())
+            continue;
+        for (const auto& target : slot.bond_issue_conversion_targets)
+            targets_of[slot.bond_issue->security_id].insert(
+                std::format("{}:{:.2f}", target.underlying_id, target.conversion_ratio));
+    }
+
+    REQUIRE_FALSE(targets_of.empty());
+    for (const auto& [security, targets] : targets_of)
+        CHECK(targets.size() == 1u);
 }
 
 TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {

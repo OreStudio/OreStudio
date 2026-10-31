@@ -265,6 +265,20 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "ae58864d-307f-55be-9843-ba60f6dd2081",
+    "name": "GBP Equity Derivatives",
+    "portfolio_code": "acme_uk.equity_derivatives.portfolio.gbp_equity",
+    "functional_currency": "GBP",
+    "gl_account_ref": "GL-EQUITY-001",
+    "cost_center": "CC-UK-EQUITY",
+    "book_status": "Active",
+    "regulatory_book_type": "Trading",
+    "is_sweepable": false,
+    "rates_centre_code": "GBLO",
+    "book_purpose_type": "Trading"
+  },
+  {
+    "company_code": "acme_uk",
     "id": "ab864ed2-21a8-5d70-93d8-167d04f0dd1e",
     "name": "CVA Hedge Book",
     "portfolio_code": "acme_uk.xva.portfolio.cva_hedges",

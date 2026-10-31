@@ -64,10 +64,15 @@ task and name that file in the Command column.
 - =me= and signing out are proven without IAM, because neither needs it: =me= reads
   the claims the session already resolved, and signing out closes a session the test
   opened. Both are cases in =ores.http.iam.tests=.
-- Signing in has a case of its own, and it has not run: it signs in against the
-  running fleet with the demo account the checkout's =.env= names, and the fleet is
-  stopped. With no fleet it skips rather than passes or fails, so the suite is honest
-  either way and the round trip stays the outstanding item the state row names.
+- Signing in has a case of its own and it now runs against the fleet. It found a real
+  defect on its first run: the sign-in asked for an *authenticated* NATS call with no
+  token, and the client refused it before the request left the process. A sign-in
+  cannot present a session, so it sends an ordinary request, and it is answered.
+- What it still cannot prove is a *success*, because the recreated database holds no
+  accounts: =select username from ores_iam_accounts_tbl= returns none, so IAM answers
+  =invalid_credentials= and the case says so. The door is exercised end to end —
+  request, IAM, decode, refusal mapping — and provisioning an account is what is
+  missing, not the door.
 - To run it: =compass services start= (which asks for =db recreate= when the schema
   moved), then =./ores.http.iam.tests "[live]"= from the preset's =publish/bin= with
   the environment file loaded.

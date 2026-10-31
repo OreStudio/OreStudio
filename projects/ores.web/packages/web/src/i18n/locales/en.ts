@@ -68,6 +68,10 @@ export const en: SourceCatalogue = {
     },
 
     shell: {
+        theme: {
+            toLight: 'Switch to the light palette',
+            toDark: 'Switch to the dark palette',
+        },
         mode: {
             'system-administration': 'System administration',
             'tenant-administration': 'Tenant administration',
@@ -92,7 +96,6 @@ export const en: SourceCatalogue = {
             refdata: 'Reference data',
             access: 'My access',
             whereIWork: 'Where I work',
-            language: 'Language',
             changeParty: 'Change party',
             changePartyFailed: 'The party could not be changed.',
             changePartyHint: 'Choose the party to act for.',

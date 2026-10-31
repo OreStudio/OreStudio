@@ -958,6 +958,9 @@ Text validation, spell check, language processing.
 | History              | history_20                       | Default | Active |
 | Scheduler/Jobs       | calendar_clock_20                | Default | Active |
 | Job Definitions List | tasks_app_20                     | Default | Active |
+| Light palette        | brightness_high_20               | Default | Active |
+| Dark palette         | dark_theme_20                    | Default | Active |
+| Language             | globe_20                         | Default | Active |
 
 * Adding New Icons
 

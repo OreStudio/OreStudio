@@ -1,0 +1,49 @@
+business_day_conventions (projects/ores.ore/core/src/domain/conventions_fields.cpp:27)
+   26 spellings over   7 canonical forms
+      5 spellings name HalfMonthModifiedFollowing
+      5 spellings name ModifiedFollowing
+      5 spellings name Unadjusted
+      4 spellings name ModifiedPreceding
+      3 spellings name Following
+      3 spellings name Preceding
+
+day_counters (projects/ores.ore/core/src/domain/conventions_fields.cpp:56)
+   71 spellings over  23 canonical forms
+      8 spellings name ACT/ACT.ISDA
+      8 spellings name ACT/ACT.ISMA
+      7 spellings name 30/360
+      7 spellings name ACT/365.FIXED
+      6 spellings name 30E/360
+      4 spellings name ACT/360
+      4 spellings name ACT/364
+      3 spellings name ACT/360 (incl. last)
+      3 spellings name ACT/ACT.AFB
+      3 spellings name NL/365
+      2 spellings name 30/360 (German)
+      2 spellings name 30/360 (Italian)
+      2 spellings name 30E/360.ISDA
+      2 spellings name ACT/365L
+      2 spellings name BUS/252
+
+frequencies (projects/ores.ore/core/src/domain/conventions_fields.cpp:130)
+   18 spellings over   9 canonical forms
+      2 spellings name Annual
+      2 spellings name Bimonthly
+      2 spellings name Daily
+      2 spellings name Lunarmonth
+      2 spellings name Monthly
+      2 spellings name Once
+      2 spellings name Quarterly
+      2 spellings name Semiannual
+      2 spellings name Weekly
+
+compoundings (projects/ores.ore/core/src/domain/conventions_fields.cpp:151)
+    4 spellings over   4 canonical forms
+
+date_rules (projects/ores.ore/core/src/domain/conventions_fields.cpp:158)
+   15 spellings over  15 canonical forms
+
+day_counter_spellings (projects/ores.ore/core/src/domain/conventions_fields.cpp:179)
+   11 spellings over  11 canonical forms
+
+145 spellings over 69 canonical forms in 6 tables

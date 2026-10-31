@@ -82,6 +82,29 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The choices contract omits retentionDestinations, so the form's selects are empty | bff/src/cuts.ts | Fixed | The route answers the destinations the store's kinds hold; the form states the value its kind keeps and offers no other |
+| 2 | Both lists page in the browser | web/src/reporting/cuts/*.tsx | Fixed | One page each from the server with the shared Pager; the cuts read states offset and limit, the kinds are paged in the BFF |
+| 3 | The type edit is a hand-built dialog | CutTypePage.tsx | Fixed | The kind is a record of a reporting store, and the edit is the shared RecordDialog over a field table |
+| 4 | The tabs and the version line | CutPage.tsx, CutTypePage.tsx | Fixed | Details, Cuts, History and The body, Authorisation, Runs, History; both lead lines read the record's key and version |
+| 5 | Raw permission strings, unused constants | shell/cards.ts, shell/areas.ts | Fixed | PERMISSION.cutsRead and PERMISSION.cutKindsRead name the reads; the unused Identity helper is gone |
+| 6 | The cut read tests carry no logger | service_cut_read_tests.cpp | Fixed | Each case makes the suite's logger, as its sibling does |
+| 7 | cut_window_of throws for caller input | cut_read_service.hpp | Fixed | The window and the list answer std::expected, and the handler maps the refusal to the invalid range the BFF states as a 400 |
+| 8 | The read window's comment is stale | cut_read_service.cpp | Fixed | It states the day before the body and the day past now the code reads |
+| 9 | The Runs tab is missing, and the gap that says nothing reads runs by cut | bff/src/cuts.ts, CutPage.tsx | Fixed | New GET /api/reporting/cuts/:id/runs reads the runs by the cut column, and the tab draws them with their state |
+| 10 | cuts.readerNote must state the report-selection gap | i18n/locales/*.ts | Fixed | It names the take flow, the authorisation, the report's selection and the LIVE mint |
+| 11 | The indicative mark is missing from a type's cuts table | CutTypePage.tsx | Fixed | The table draws the state cell, mark and all |
+| 12 | The approval request is a bare id | CutPage.tsx | Fixed | The authorisation tab links the inbox's request page |
+| 13 | The CLI trigger-report-instance's resolution flags | ores.shell/reporting | Left | The command is generated from trigger_report_instance_request, which main already declares with those three fields and whose handler reads them; removing the surface is a contract change the selection work owns |
+| 14 | Approvals required on the type record | CutTypePage.tsx | Fixed | The row is gone: the inbox kind owns the fact, and no route here reads its record |
+| 15 | Retention destinations and the month filter | CutTypePage.tsx, CutsPage.tsx | Fixed | The destination is read-only and carried over by the write; the month filter is removed, because the task and the prototype name only kind and search |
+| 16 | The grouping is always by month | shared.tsx | Fixed | The frequency is derived from the resolution rule; daily by month, monthly by year, yearly as one group, on-demand by day; the heading names the period |
+| 17 | The superseded basis is not the prototype's | shared.tsx, CutPage.tsx | Fixed | Authorised before, or in use until, a later cut replaced it, and the record names the replacing label |
+| 18 | The not-consumable notice counts a draft | CutsPage.tsx | Fixed | The set is taken, incomplete and refused: a draft is not a cut yet |
+| 19 | A cut whose kind is gone says the body is unfixed | CutPage.tsx | Fixed | The page says the kind, and with it the label, is missing |
+| S1 | replacement_of restates the supersession predicate | cut_state.hpp | Fixed | One predicate, stands_in_the_place_of, serves both readers |
+| S2 | A twenty-field CutRow is rebuilt for two fields | shared.tsx | Fixed | StateBasis reads a StateFacts: the state, the authoriser and the replacing label |
+| S3 | A local stateWord and a duplicated markup | CutsPage.tsx, shared.tsx | Fixed | The shared useStateName, Absent and Reference are used |
+| S4 | The record read reads every kind and every cut, and a run count per row | cuts.ts, cut_read_service.cpp | Fixed | The record reads the kind the cut names; a page's runs are counted in one read |
+| S5 | The magic 1000 | cut_read_service.cpp | Fixed | paging_cap, with page_bounds stating the page |
 
 * Result

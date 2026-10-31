@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/expose-the-populations-size-and-mix-to-the-operator
-#+pr: 4265
+#+pr: 4274
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -105,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4274][#4274]] | [iam] Let a run state the population's size and mix |
 | [[https://github.com/OreStudio/OreStudio/pull/4265][#4265]] | [agile] Point the population knobs at the surface that starts a run |
 
 * Review

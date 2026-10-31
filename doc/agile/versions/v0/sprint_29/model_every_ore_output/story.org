@@ -23,10 +23,10 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Scoped. The catalogue, the readers, the two stores and the corpus gate are seven tasks, all BACKLOG. |
+| Now           | The catalogue is in place: 60 families, 1 584 columns, generated from the samples and proved against them in #4189. Six tasks remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with the catalogue, because the readers, the tables and the gate are all measured against it. |
-| Last touched  | 2026-10-30                               |
+| Next          | Read the figure outputs, the largest group, against the families the catalogue now names. |
+| Last touched  | 2026-10-31                               |
 
 * Acceptance
 

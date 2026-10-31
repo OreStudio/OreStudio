@@ -23,7 +23,7 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as providerSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_protocol';
-import { subjects as sourceSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_data_source_protocol';
+import { subjects as feedSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
 import { subjects as subscriptionSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/subscription_protocol';
 import { subjects as routeSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/route_protocol';
 import { invalidRequest } from './errors.js';
@@ -85,12 +85,18 @@ const providerSchema = z.looseObject({
     display_order: z.number().default(0),
 });
 
-/** One source of the catalogue, with the provider it belongs to and its kind. */
-const sourceSchema = z.looseObject({
+/**
+ * One feed of the catalogue, with the publisher it belongs to.
+ *
+ * The catalogue renamed its source rows to feeds, so the row carries the publisher as
+ * =publisher_code= and the service it runs as =service=. The screen still says source, and
+ * this route still answers a =sources= array: the row a person picks there is the feed.
+ */
+const feedSchema = z.looseObject({
     id: z.string(),
     name: z.string(),
-    provider_code: z.string(),
-    kind: z.string().default(''),
+    publisher_code: z.string(),
+    service: z.string().default(''),
     is_default: z.boolean().default(false),
     description: z.string().default(''),
 });
@@ -175,7 +181,7 @@ export function registerSubscriptionRoutes(
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, sourceSubjects.list_market_data_sources_request, 'sources', {
+            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
                 filter: null,
                 as_of: null,
             }),
@@ -184,7 +190,10 @@ export function registerSubscriptionRoutes(
             providers: providers
                 .map((row) => providerSchema.parse(row))
                 .sort((left, right) => left.code.localeCompare(right.code)),
-            sources: sources.map((row) => sourceSchema.parse(row)),
+            sources: sources.map((row) => {
+                const feed = feedSchema.parse(row);
+                return { ...feed, provider_code: feed.publisher_code, kind: feed.service };
+            }),
         };
     });
 

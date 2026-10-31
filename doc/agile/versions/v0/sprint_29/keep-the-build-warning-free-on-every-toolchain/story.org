@@ -21,7 +21,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | STARTED                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -37,22 +37,13 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:53628EFD-225D-4C9F-BBD7-EC0FCC601186][Name the two types gcc refuses in a unity build]] | DONE | 2026-10-31 | 2026-10-31 | gcc's -Wsubobject-linkage rejects a subobject whose type has no linkage. The nats client holds a latch from its anonymous namespace and the jwks coroutine holds a lambda from its own function scope, so the gcc nightly fails on ores.nats.lib and nothing in a clang build says so. |
+| [[id:AEBC33C4-F6D5-4DB7-98CF-E42F0449CD76][Point the web reads at the feed catalogue]] | DONE | 2026-10-31 | 2026-10-31 | The source entity became the feed, and the generated market_data_source protocol module went with it. The BFF still imported that module, so the web target stopped building on every platform. |
 
 * Decisions
 
 * Out of scope
 
 The same nightly reports two more failures, and neither belongs to this story.
-
-- *The web build reads a module the rename deleted.* =bff/src/official.ts= and
-  =bff/src/subscriptions.ts= import
-  =@ores/wire-protocol/generated/marketdata/protocol/market_data_source_protocol=,
-  which the source-to-feed rename (=84605bcf70=, 2026-10-30) removed. The
-  hand-written web surface still names sources: the imports in those two files,
-  their two test files' subject strings, and the Official rates read that takes
-  a =sources= field from the reply. Until the web follows the rename, the web
-  target fails to build on every platform, which is why the nightly stops before
-  the tests.
 
 - *The MSVC unity build runs out of template context.* =tenor_basis_swap_pay_receive_entity.hpp='s
   =columns()= spells its 23 bindings as a =|=-chained expression, and

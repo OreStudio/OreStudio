@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: AEBC33C4-F6D5-4DB7-98CF-E42F0449CD76
+:END:
+#+title: Task: Point the web reads at the feed catalogue
+#+description: The source entity became the feed, and the generated market_data_source protocol module went with it. The BFF still imported that module, so the web target stopped building on every platform.
+#+type: task
+#+level: s1
+#+filetags: :keep-the-build-warning-free-on-every-toolchain:sprint_29:v0:
+#+owner: marco
+#+branch: feature/follow-the-source-to-feed-rename
+#+pr: 4220
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web target builds and its catalogue reads answer from the feed catalogue.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The official rates and subscriptions routes read feeds and answer the shape their screens already take
+- The web target builds, typechecks and passes its tests
+
+* Plan
+
+Only the two BFF routes import the deleted module; the rest of the web surface
+reaches the catalogue through them, so the change stays inside the BFF and its
+two tests.
+
+The renamed row is not a rename of a field: the feed carries =publisher_code=
+in place of =provider_code=, and a =service= where the source carried a =kind=.
+The reply keeps the shape each screen already takes, so the screens do not move,
+and the mapping is stated where it happens: a source's kind is now the feed's
+service, which is the only fact of that shape the feed has.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| web build | succeeds | =npm run build= in projects/ores.web | branch head |
+| web typecheck | succeeds | =npm run typecheck= | branch head |
+| the two BFF test files | 21 tests pass | =npx vitest run packages/bff/src/official.test.ts packages/bff/src/subscriptions.test.ts= | branch head |
+| local checks | 11 of 11 pass | =compass check --exclude-heavy= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4220][#4220]] | [web] Read the feed catalogue the BFF still called sources |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The web target builds again: the two BFF routes read the feed catalogue, the
+Official rates and subscriptions screens answer from it unchanged, and the suite
+passes. The route inventory main carries is regenerated in the same commit,
+because ten routes it answers were missing from the table.

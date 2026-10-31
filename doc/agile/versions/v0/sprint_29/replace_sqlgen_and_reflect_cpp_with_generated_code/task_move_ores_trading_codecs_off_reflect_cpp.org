@@ -28,10 +28,10 @@ Step 6 of 7, one component. ores.trading encodes and decodes without reflect-cpp
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | The component's generated codecs carry its rows. Seven production files still name reflect-cpp, each for a stated reason. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Answer review on PR #4278.             |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -58,9 +58,65 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Production files in ores.trading naming reflect-cpp, tests excluded | 7 | =git grep -lE '\brfl::\vert{}#include <rfl\vert{}ores\.utility/rfl' HEAD -- 'projects/ores.trading/**'= then =grep -v /tests/ \vert{} wc -l= | 3db590e93a |
+| The same at the merge base | 254 | the same command, at =418fe076d0= | 418fe076d0 |
+| Models in ores.trading stating =:ores.cpp.wire-codec.enabled:= | 148 | =grep -rl 'wire-codec.enabled: true' projects/ores.trading/modeling/*.org \vert{} wc -l= | 3db590e93a |
+| .cpp files estate-wide calling =rfl::enum_to_string= or =rfl::string_to_enum= | 0 | =grep -rl 'rfl::enum_to_string\vert{}rfl::string_to_enum' --include=*.cpp projects/ \vert{} wc -l= | 661231beb3 |
+| Operation models estate-wide stating the wire codec | 0 of 73 | =grep -l '#+type: ores.codegen.operation' projects/*/modeling/*.org \vert{} wc -l= | 3db590e93a |
 
 * Notes
+
+**The sweep, and the facet it forgot.** 148 models were opted in and the
+wire-codec, protocol, nats-eventing and domain facets regenerated, which took the
+component's production files naming reflect-cpp from 254 to 8. The eighth error
+then named =text_form<instrument_identity>= though the type had a shape, because
+a field group states its shape under its own facet, and that facet was never
+regenerated. Regenerating =ores.cpp.field-group= wrote all 26 of them from the
+template, and the three shapes that had been hand-written were deleted: the
+generator states them, so a hand copy is drift.
+
+**An enumerator was spelled in two places.** The codec's =text_form= names an
+enum through =magic_enum=, and the repository mapper and the presentation history
+mapper named it again through =rfl::enums=. Both templates use the codec now, so
+one statement remains, and no =cpp= file in the tree calls =rfl::enum_to_string=
+or =rfl::string_to_enum=. Six generated units move estate-wide: four in this
+component and two in ores.inbox. A shared template cannot honour one component
+per task, so the boundary is stated rather than hidden, and the estate build is
+the evidence it is safe.
+
+Where a type states its own text form the mapper's spelling can differ from
+rfl's. =product_type= spells =unknown= as the empty string, which is what its own
+header documents and what the wire already wrote; the mapper was the odd one out.
+=codec_product_type_tests.cpp= compares the codec against =rfl::json::write= for
+every enumerator, so the two agree by test and not by argument.
+
+**Eight refdata mappers the regeneration surfaces.** Regenerating the repository
+facet is what the enum change requires, and it rewrote eight refdata mappers
+because their models state =:store_transform:= and the tree had stopped applying
+it: =[marketdata] Finish the connectivity and public rates screens (#4262)=
+removed the calls without removing the property. The model is authoritative in
+this story, so the tree follows it. It is another component's unit and is stated
+here rather than buried.
+
+**What is left, and why each one stays.**
+- =economic_digest.hpp= walks a value's members to hash the ones its model marks
+  economic. It decides with =if constexpr=, so the member's name has to be a
+  constant expression, and a wire shape carries it as a =std::string_view=. The
+  fix is a field type whose name is a template argument, which changes the shape
+  the generator writes; it belongs to the digest, not to this task.
+- =trade_operations_service.cpp= walks a bond row the same way to name the parts
+  it cannot write yet. Same obstacle.
+- =product_type.hpp= carries a legacy =rfl::Reflector= that the codec tests still
+  compare against by construction. It goes with reflect-cpp itself, in step 7.
+- =bus_book_status.cpp= and =application.cpp= include the reflectors header with
+  =IWYU pragma: keep= and never name a reflector.
+- =trade_operations_handler.hpp= stores an export blob with =rfl::msgpack=. Its
+  messages have no generated codec because no operation model states the
+  wire-codec facet: 0 of 73 do. Regenerating one is a generator feature, not a
+  component's work.
+- =options.cpp= prints the service's configuration, which holds a logging, a
+  NATS and a database options type. Those three state no shape and are owned by
+  other components, which is the same wall the refdata task stopped at.
 
 * Test Scenarios
 
@@ -77,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4278][#4278]] | [wip] Carry an enumerator as its name, and start the trading sweep |
+| [[https://github.com/OreStudio/OreStudio/pull/4278][#4278]] | [trading] Move the component's codecs onto the generated ones |
 |    |       |
 
 * Review

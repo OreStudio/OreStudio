@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/a-generated-date-is-a-real-date
-#+pr:
+#+pr: 4206
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4206][#4206]] | [synthetic,utility] Let a generated date be a real date |
 
 * Review
 

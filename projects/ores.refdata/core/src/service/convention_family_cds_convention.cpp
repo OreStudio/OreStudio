@@ -26,7 +26,8 @@
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <rfl/json.hpp>
+#include "ores.refdata.api/domain/cds_convention_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -36,7 +37,7 @@ namespace ores::refdata::service::convention_family {
 void apply_cds(const ores::database::context& ctx,
                const std::string& payload,
                [[maybe_unused]] conventions_apply_result& result) {
-    const auto decoded = rfl::json::read<ores::refdata::domain::cds_convention>(payload);
+    const auto decoded = ores::utility::codec::json::try_read<ores::refdata::domain::cds_convention>(payload);
     if (!decoded)
         throw std::runtime_error("Staged conventions payload for family "
                                  "\"cds\" does not decode.");
@@ -51,7 +52,7 @@ void apply_cds(const ores::database::context& ctx,
 std::vector<std::string> read_cds_payloads(const ores::database::context& ctx) {
     std::vector<std::string> payloads;
     for (const auto& row : ores::refdata::repository::cds_convention_repository().read_latest(ctx))
-        payloads.push_back(rfl::json::write(row));
+        payloads.push_back(ores::utility::codec::json::write(row));
     return payloads;
 }
 

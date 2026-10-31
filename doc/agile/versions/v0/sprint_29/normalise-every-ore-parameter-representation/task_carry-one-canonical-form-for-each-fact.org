@@ -180,8 +180,8 @@ and the guard not converting yet would let a spelling reach a row unwatched. So:
    once for the first time. **Done, PR #4244.**
 2. Teach the guards to convert, and keep the mappers converting: the guard's
    conversion is then exercised by a test that writes a spelling straight to a
-   table, and the import path still converts first, so no row changes. **This
-   slice.**
+   table, and the import path still converts first, so no row changes. **Done,
+   PR #4248.**
 3. Stop the mappers converting, in one commit, so the spelling reaches the guard
    for the first time. The round-trip suites prove nothing was lost, and a check
    that no table holds a non-canonical value proves the guard converted.
@@ -256,6 +256,7 @@ via its "Verifies task" field.
 |-------+-------|
 | #4244 | [reporting] Carry one canonical form for each ORE value |
 | #4248 | [sql] Store the form a value set names, in the guard |
+| #4252 | [sql] Name every row that holds a rendering |
 
 * Review
 
@@ -336,6 +337,48 @@ through the mappers. After it, the same publish leaves =ACT/365.FIXED= in all 45
 | a convention term | =Z=, =MODFOLLOWING=, =A360= | =Once=, =ModifiedFollowing=, =ACT/360= |
 | a product parameter | =NONE= | =Alternating= |
 | a run setting | =NONE= | =None= |
+
+** Slice 3, part one: the check
+
+=ores_reporting_canonical_value_violations_fn()= names every live row in a guarded
+column whose value is not the form its set names, with the table, the column and
+the set. It reads the element map, so a column that gains a guard gains the check
+with it, and it reads only the live version of a row: a value written before the
+rule existed is history, not a defect.
+
+On the database whose conventions were published after slice 2 it answers nothing.
+Run it with:
+
+#+begin_src sh
+./compass.sh sql -- -c "select * from ores_reporting_canonical_value_violations_fn()"
+#+end_src
+
+** Slice 3, part two is a decision, not a patch
+
+Stopping the mappers converting was tried, and the measurement stopped it. The
+reader was changed to check a spelling against its table and hand the spelling on,
+which is the shape the task describes; =ores.ore.core.tests= then failed on 72
+pinned exports of the ORE corpus, because that suite models the row path *without*
+a database, and the canonicalisation it used to perform in memory now happens in
+the guard.
+
+The suite's pinned bytes therefore describe a pipeline that has a canonicaliser.
+Reverting the readers leaves them describing the one that exists; keeping the
+change means re-pinning 72 documents whose only difference is that they keep the
+spelling the document wrote, and accepting that the suite then measures the codec
+rather than the store.
+
+Two ends are honest and this tree can have either, not both:
+
+| End | The reader | The export |
+|-----+------------+------------|
+| the store canonicalises, and the codec states the renderings too | converts, as it does now, and the tables stay | writes a spelling the schema allows |
+| the store canonicalises alone | passes the spelling on | writes the stored form, so a form the schema cannot write needs a spelling from data first |
+
+The second end is where the story points, and it needs the export spelling stated
+as data before the codec can stop. That is the next slice: a column on the value
+row for the form an export writes, or a writer that reads the set. Until then the
+compiled tables have a reason to exist, and slice 4 waits on it.
 
 ** What the next slice needs
 

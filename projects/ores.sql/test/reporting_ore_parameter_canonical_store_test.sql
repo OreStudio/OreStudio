@@ -32,13 +32,14 @@
  * - A setting whose value is a rendering stores the canonical form
  * - A run setting whose value is a rendering stores the canonical form
  * - A run setting whose value is the canonical form stores it unchanged
+ * - No guarded column of the store holds a rendering of the fact it states
  *
  * Run with: pg_prove -d <database> test/reporting_ore_parameter_canonical_store_test.sql
  */
 
 begin;
 
-select plan(6);
+select plan(7);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -166,6 +167,11 @@ select is(
       where id = 'a0000000-0000-0000-0000-00000000c0f5'::uuid),
     'None',
     'a run setting whose value is the canonical form stores it unchanged');
+
+select is_empty(
+    $$select table_name, column_name, value_set_code, value
+        from ores_reporting_canonical_value_violations_fn()$$,
+    'no guarded column of the store holds a rendering of the fact it states');
 
 select * from finish();
 

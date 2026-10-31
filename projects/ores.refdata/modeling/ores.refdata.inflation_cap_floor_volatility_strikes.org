@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 5A9F3C71-8D24-4E6B-B0F7-13C8E6A2D954
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.inflation_cap_floor_volatility_strikes
 #+description: Codegen entity model for the refdata =inflation_cap_floor_volatility_strikes= part: the strike list an ORE inflation cap and floor volatility states for one axis.

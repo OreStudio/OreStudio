@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 7E4C1D92-6B08-4F3A-9C51-2D8B7A0E5F14
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.fx_volatility_smile
 #+description: Codegen entity model for the refdata =fx_volatility_smile= part: the smile a two dimensional ORE FX volatility states.

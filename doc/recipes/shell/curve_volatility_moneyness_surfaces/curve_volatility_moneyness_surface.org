@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: BCEE15E4-96AD-5385-B350-81DB7C72575C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_volatility_moneyness_surfaces commands from the shell?
+#+description: Every command the curve_volatility_moneyness_surfaces submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_volatility_moneyness_surfaces:
+
+This file documents the curve_volatility_moneyness_surfaces resource at the shell, one section per command. Every command is a subcommand of =curve_volatility_moneyness_surfaces=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2C75CC03-3237-585C-9DBA-B998EF09DE90
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.list=.
+
+#+name: curve_volatility_moneyness_surfaces-list
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-list.ores :exports none
+curve_volatility_moneyness_surfaces list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9A349B2A-2B62-5FCE-BF87-AB3F712D79E6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.get=.
+
+#+name: curve_volatility_moneyness_surfaces-get
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-get.ores :exports none
+curve_volatility_moneyness_surfaces get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BFECC8EF-7799-5B22-99BB-D9D05E57E120
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.get_many=.
+
+#+name: curve_volatility_moneyness_surfaces-get-many
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-get-many.ores :exports none
+curve_volatility_moneyness_surfaces get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1464F1D8-8045-5B40-B517-F7536DC4F9B7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces add <curve_volatility_kind_id> <moneyness_type> <moneyness_levels> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.put=.
+
+#+name: curve_volatility_moneyness_surfaces-add
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-add.ores :exports none
+curve_volatility_moneyness_surfaces add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9A7F9C63-5681-59F5-8D6D-A594FCDBE055
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces set <id> <curve_volatility_kind_id> <moneyness_type> <moneyness_levels> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.put=.
+
+#+name: curve_volatility_moneyness_surfaces-set
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-set.ores :exports none
+curve_volatility_moneyness_surfaces set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6D996F86-5855-51E0-B743-7BBEE5A2DA3E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces put-many --count <n> <id> <curve_volatility_kind_id> <moneyness_type> <moneyness_levels> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <future_price_correction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.put_many=.
+
+#+name: curve_volatility_moneyness_surfaces-put-many
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-put-many.ores :exports none
+curve_volatility_moneyness_surfaces put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ - __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B12D0926-2EF9-5E4C-8DD1-085CCCFF3DF7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.delete=.
+
+#+name: curve_volatility_moneyness_surfaces-delete
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-delete.ores :exports none
+curve_volatility_moneyness_surfaces delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1C650B49-8DAD-545F-A8AC-AA66BEBEA1D7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces.delete_many=.
+
+#+name: curve_volatility_moneyness_surfaces-delete-many
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-delete-many.ores :exports none
+curve_volatility_moneyness_surfaces delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 701C4927-6D5A-5011-818F-2A714946C395
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces_versions.list=.
+
+#+name: curve_volatility_moneyness_surfaces-versions
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-versions.ores :exports none
+curve_volatility_moneyness_surfaces versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6E10FF7E-AB32-5C32-8128-B598845240B3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_moneyness_surfaces version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_moneyness_surfaces_versions.get=.
+
+#+name: curve_volatility_moneyness_surfaces-version
+#+begin_src ores-shell :tangle curve_volatility_moneyness_surfaces-version.ores :exports none
+curve_volatility_moneyness_surfaces version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

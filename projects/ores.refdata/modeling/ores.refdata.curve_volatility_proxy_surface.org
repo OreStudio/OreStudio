@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: C8B36137-03AD-4127-BBB3-3F82EB3A9929
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_proxy_surface
 #+description: Codegen entity model for the refdata =curve_volatility_proxy_surface= part: the fields ORE's ProxySurface states.

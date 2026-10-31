@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7E008046-9167-47C4-94EF-D52864AAD0FA
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_smile_parameter
 #+description: Codegen entity model for the refdata curve_volatility_smile_parameter part: one parameter of a volatility kind's parametric smile.

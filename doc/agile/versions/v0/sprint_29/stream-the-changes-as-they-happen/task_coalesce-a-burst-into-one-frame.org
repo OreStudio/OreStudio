@@ -26,11 +26,11 @@ A burst of changes reaches a client as one frame per entity, not one per row.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | A burst is gathered into a dirty set per tenant, party and entity, and a drain emits one frame each. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then the feed that records the change events and ticks this. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

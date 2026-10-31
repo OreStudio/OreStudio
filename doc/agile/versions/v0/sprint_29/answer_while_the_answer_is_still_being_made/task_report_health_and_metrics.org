@@ -8,8 +8,9 @@
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
 #+branch: feature/report-health-and-metrics
-#+pr:
-#+blocked_on:
+#+pr: 4178
+#+blocked_on: review
+#+blocked_since: 2026-10-31 02:05
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -64,8 +65,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Metrics cases | 3 cases, 16 assertions, all passing | =./ores.http.api.tests "[http_metrics]"= | branch head |
-| =ores.http.api= test cases | 107 cases, 346 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Metrics cases | 3 cases, 16 assertions, all passing | =./ores.http.api.tests "[http_metrics]"= | =#4178= |
+| =ores.http.api= test cases | 107 cases, 346 assertions, all passing | =./ores.http.api.tests= | =#4178= |
 
 * Notes
 
@@ -91,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4178](https://github.com/OreStudio/OreStudio/pull/4178) | [http] Report the server's own health and metrics |
 
 * Review
 

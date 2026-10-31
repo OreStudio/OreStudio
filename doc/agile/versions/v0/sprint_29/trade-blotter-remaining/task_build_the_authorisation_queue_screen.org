@@ -26,11 +26,11 @@ Build the queue screen that the Operational authorisation queue page specifies: 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Prototype drawn, awaiting sign-off.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Settle the variant, then build it.     |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -92,6 +92,15 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The queue's read | 4 cases: one row per authorisation request, the other kinds dropped; book and counterparty named; class from the trade type; a deal that moved marked changed | =npm test --workspace @ores/bff= (src/queue.test.ts) | this branch |
+| The queue's grouping | 4 cases: state to group, a changed deal drawn as a change, the figures per class, and the narrowing newest first | =npx vitest run packages/web/src/operations/authorisationQueue.test.ts= | this branch |
+| The route over HTTP | =GET /api/queue/authorisations= answers a request raised against a live trade with its reference, book, counterparty, class =non-flow= and versions 8/8 | curl against 127.0.0.1:20802 with a tenant_admin session | this branch |
+| A decision | =POST /api/requests/:id/decision= answers 204 and the row moves to the answered tail as =approved=, request version 2 | curl, same session | this branch |
+
 * Result
 
 The prototype is drawn and the task is not closed: this unit was the drawing,
@@ -107,6 +116,45 @@ amendment marks the fields that changed and carries the operational error flag,
 a new version is announced without locking the row, and a denied deal offers
 only its undo.
 
-What it does not settle, and what the build waits for: which variant, whether
-the queue is its own screen or a tab of Operations, and the two reports the
-knowledge page names.
+The screen is built from the rail variant, which is the one that keeps both
+divisions in view at once.
+
+* The screen
+
+[[proj:projects/ores.web/packages/web/src/operations/AuthorisationQueuePage.tsx][AuthorisationQueuePage]]
+sits at =/operations/authorisation-queue= and is offered as a card in the
+Operations area. The rail carries the class and the state, with a figure on each
+node; the table states the deal's reference, type and class, counterparty, book,
+trade date and the state its authorisation is in; the panel beside it states the
+deal and takes the decision.
+
+The read behind it,
+=GET /api/queue/authorisations=, joins each request the person may decide to the
+trade it names and states the book, the counterparty, the deal's status and the
+version it is at now. The class is derived from the trade type rather than the
+asset class, because the queue divides by how much work a deal is: a plain swap
+is flow and a package is not.
+
+A decision carries a comment, which the panel requires before any button is
+enabled, and a hold additionally names a reason from the lookup. A deal that
+moved after its request was raised is drawn in its own group and says so in the
+panel, and the row stays open: nothing takes a lease on a deal.
+
+* What the walk proved, and what it did not
+
+A request raised against a live bond trade was read through the route and
+decided through the same panel's call: the row arrived with the deal's own
+reference, book and counterparty, and after =approve= it left the open queue and
+appeared in the answered tail as =approved=.
+
+No browser was available to this session, so the screen was not drawn on a
+screen: the read, the decision and the grouping are proved, the pixels are not.
+The screen has no page-level render test for the same reason the inbox screens
+have one; the grouping it depends on is tested as a function.
+
+* What is not offered yet
+
+Undoing a decision. The design calls for an un-authorise carrying a reason, and
+the inbox's four decisions do not include it, so an authorised or denied row
+says so rather than drawing a button that would fail. The two reports the
+knowledge page names -- time held, and what stayed overnight -- are absent.

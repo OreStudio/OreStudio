@@ -1609,6 +1609,9 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'Fila de autorização operacional',
+        },
         sources: {
             title: 'Fontes de dados de mercado',
             description:
@@ -1725,6 +1728,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'Fila de autorização operacional',
+            authorisationQueueBody:
+                'As operações que aguardam as operações de mercado, segundo o trabalho que dão e o estado da sua autorização.',
             sources: 'Fontes de dados de mercado',
             sourcesBody:
                 'Cada fonte que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',

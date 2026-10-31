@@ -1617,6 +1617,9 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'File d’autorisation opérationnelle',
+        },
         sources: {
             title: 'Sources de données de marché',
             description:
@@ -1733,6 +1736,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'File d’autorisation opérationnelle',
+            authorisationQueueBody:
+                'Les opérations en attente des opérations de marché, selon la charge de travail et l’état de leur autorisation.',
             sources: 'Sources de données de marché',
             sourcesBody:
                 'Chaque source que le service de données de marché exécute, l’état de son adaptateur, et ce qu’elle sert et refuse.',

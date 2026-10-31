@@ -283,6 +283,7 @@ describe('the Operations queue', () => {
             tradeVersion: 3,
             changed: true,
             stateCode: 'waiting',
+            requestVersion: 1,
         });
         // Unchanged deals are drawn the same way, changed is a fact and not a filter.
         expect(rows[1]).toMatchObject({ requestTradeVersion: 1, tradeVersion: 1, changed: false });

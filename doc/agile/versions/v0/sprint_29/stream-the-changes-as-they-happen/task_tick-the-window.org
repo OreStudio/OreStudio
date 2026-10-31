@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: D6E14D99-CFD3-4E0C-AA6A-216D226296C4
+:END:
+#+title: Task: Tick the window
+#+description: The pump gives a window to every stream when something calls it, and nothing does. Run a timer that ticks it on an interval, stop cleanly when the server drains, and prove that a change recorded between ticks reaches a subscriber on the next one.
+#+type: task
+#+level: s1
+#+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/tick-the-window
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A change recorded in the coalescer reaches a stream without anyone calling the pump.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- [X] A change recorded between ticks reaches an open stream on the next tick.
+- [X] A stopped ticker publishes nothing further.
+- [X] The ticker does not hold the thread between ticks.
+
+* Plan
+
+One coroutine loop, one timer, re-armed per tick. A quiet system pays a timer per interval and no
+thread, which is the same argument the keep-alive makes: the stream is idle by design and idle must
+be free.
+
+The loop checks the stop flag after every wait, so a drain ends on the tick in progress rather than
+in the middle of publishing a window.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ticker cases | 3 cases, 7 assertions, all passing | =./ores.http.core.tests "[change_ticker]"= | this branch |
+| Whole =ores.http.core= suite | 36 cases, 157 assertions, all passing | =./ores.http.core.tests= | this branch |
+
+* Notes
+
+- The stopped case restarts the io_context and records a change afterwards, because a ticker that
+  merely stopped re-arming would pass a weaker case: this one proves it writes nothing at all.
+- The ticker is not wired into the server yet. It belongs beside the feed that records the events,
+  because a ticker over an empty coalescer is an interval that does nothing and a reader would have
+  to hunt for the missing half.
+
+* Result
+
+The window closes itself. Combined with the coalescer and the pump, the path from a recorded change
+to a client needs no caller: record, tick, drain, format, fan out.

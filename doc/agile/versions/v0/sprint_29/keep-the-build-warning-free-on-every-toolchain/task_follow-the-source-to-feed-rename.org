@@ -8,7 +8,7 @@
 #+filetags: :keep-the-build-warning-free-on-every-toolchain:sprint_29:v0:
 #+owner: marco
 #+branch: feature/follow-the-source-to-feed-rename
-#+pr:
+#+pr: 4220
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4220][#4220]] | [web] Read the feed catalogue the BFF still called sources |
 
 * Review
 

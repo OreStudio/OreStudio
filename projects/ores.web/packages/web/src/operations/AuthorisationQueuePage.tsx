@@ -118,6 +118,16 @@ const GROUPS: readonly {
         edge: '#c25e63',
         ink: '#e0a0a3',
     },
+    {
+        /* A request that ended without the deal being authorised or denied: taken
+         * back, expired, or approved and not applied. Grey, because the deal is
+         * neither waiting on anybody nor refused. */
+        key: 'closed',
+        label: 'Closed',
+        wash: 'rgba(138, 145, 153, 0.08)',
+        edge: '#8a9199',
+        ink: '#b8bfc6',
+    },
 ];
 
 const EVERY_STATE: readonly QueueGroup[] = GROUPS.map((entry) => entry.key);
@@ -138,10 +148,13 @@ function stateTone(row: QueueRow): 'neutral' | 'accent' | 'up' | 'down' | 'warn'
         case 'approved':
             return 'up';
         case 'refused':
-        case 'cancelled':
             return 'down';
         case 'held':
             return 'warn';
+        case 'apply_failed':
+        case 'withdrawn':
+        case 'expired':
+            return 'neutral';
         default:
             return row.changed ? 'warn' : 'accent';
     }
@@ -156,10 +169,14 @@ function stateWord(row: QueueRow): string {
             return 'Held over';
         case 'approved':
             return 'Authorised';
+        case 'apply_failed':
+            return 'Approved, not applied';
         case 'refused':
             return 'Denied';
-        case 'cancelled':
-            return 'Cancelled';
+        case 'withdrawn':
+            return 'Withdrawn';
+        case 'expired':
+            return 'Expired';
         default:
             return row.stateCode === '' ? 'Awaiting' : row.stateCode;
     }
@@ -375,11 +392,11 @@ export function AuthorisationRequestPage(): ReactNode {
 
     const all = [...(queue.data?.items ?? []), ...(queue.data?.answered ?? [])];
     const row = all.find((one) => one.requestId === requestId);
+    /* A request in a final state takes no further decision here. The three
+     * endings that applied to nobody's yes are final too. */
     const decided =
         row !== undefined &&
-        (row.stateCode === 'approved' ||
-            row.stateCode === 'refused' ||
-            row.stateCode === 'cancelled');
+        ['approved', 'apply_failed', 'refused', 'withdrawn', 'expired'].includes(row.stateCode);
     const canComment = comment.trim().length > 0;
 
     const decide = async (decisionCode: 'approve' | 'refuse' | 'hold') => {
@@ -421,6 +438,15 @@ export function AuthorisationRequestPage(): ReactNode {
             </section>
         );
     }
+
+    /*
+     * Whether this kind of request may be held at all is stated by the kind, not
+     * by the screen. A kind that refuses a hold is answered yes or no, and the
+     * panel must not offer what the server will refuse. A kind the rules say
+     * nothing about keeps the button, because the server is the authority and
+     * hiding it would stop an operator parking a deal nobody can decide.
+     */
+    const holdAllowed = reasons.data?.allowsHoldByKind[row.kindCode] !== false;
 
     return (
         <section className="flex flex-col gap-4">
@@ -544,7 +570,7 @@ export function AuthorisationRequestPage(): ReactNode {
                             />
                         </label>
 
-                        {row.stateCode !== 'held' && (
+                        {row.stateCode !== 'held' && holdAllowed && (
                             <label className="flex max-w-sm flex-col gap-1">
                                 <span className="text-xs uppercase tracking-wide text-ink-faint">
                                     Hold reason, required to hold over
@@ -571,7 +597,7 @@ export function AuthorisationRequestPage(): ReactNode {
                             >
                                 Authorise
                             </Button>
-                            {row.stateCode !== 'held' && (
+                            {row.stateCode !== 'held' && holdAllowed && (
                                 <Button
                                     disabled={!canComment || !holdReason || busy}
                                     onClick={() => void decide('hold')}

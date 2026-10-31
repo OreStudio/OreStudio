@@ -502,6 +502,10 @@ async function queueRows(
             rows.push({
                 requestId: request.id,
                 requestVersion: request.version,
+                /* The kind stays on the row because the rules the screen reads
+                 * are stated by kind: whether this kind of request may be held
+                 * is a property of the kind, not of the screen. */
+                kindCode: request.kindCode,
                 stateCode: request.stateCode,
                 requestedBy: request.requestedBy,
                 requestedAt: request.requestedAt,

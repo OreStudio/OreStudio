@@ -240,6 +240,7 @@ async function get(
 
 interface Row {
     readonly requestId: string;
+    readonly kindCode: string;
     readonly reference: string;
     readonly classCode: string;
     readonly bookId: string;
@@ -260,6 +261,12 @@ describe('the Operations queue', () => {
         const rows = body.items as Row[];
         expect(rows.map((row) => row.requestId)).toEqual([REQUEST_ONE, REQUEST_TWO]);
         expect(rows.map((row) => row.reference)).toEqual(['POP-1A2B-000001', 'PKG-1A2B-000002']);
+        // The kind travels with the row, because the rules a screen reads about
+        // a request are stated by kind.
+        expect(rows.map((row) => row.kindCode)).toEqual([
+            'trading.operational_authorisation',
+            'trading.operational_authorisation',
+        ]);
     });
 
     it('names the book and the counterparty from the catalogues', async () => {

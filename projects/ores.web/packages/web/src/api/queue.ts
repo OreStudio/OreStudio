@@ -45,6 +45,8 @@ export type QueueClass = 'flow' | 'non-flow';
 export interface QueueRow {
     readonly requestId: string;
     readonly requestVersion: number;
+    /** The kind of request, which is what its rules are stated by. */
+    readonly kindCode: string;
     readonly stateCode: string;
     readonly requestedBy: string;
     readonly requestedAt: string;
@@ -73,6 +75,7 @@ export interface QueueRow {
 const rowSchema = z.object({
     requestId: z.string().default(''),
     requestVersion: z.int().nonnegative().default(0),
+    kindCode: z.string().default(''),
     stateCode: z.string().default(''),
     requestedBy: z.string().default(''),
     requestedAt: z.string().default(''),
@@ -100,15 +103,38 @@ const pageSchema = z.object({
 });
 
 /** The states the queue groups by, in the order a person works them. */
-export const QUEUE_GROUPS = ['awaiting', 'held', 'changed', 'authorised', 'denied'] as const;
+export const QUEUE_GROUPS = [
+    'awaiting',
+    'changed',
+    'held',
+    'authorised',
+    'denied',
+    'closed',
+] as const;
 export type QueueGroup = (typeof QUEUE_GROUPS)[number] | 'all';
 
+/**
+ * Every request state the inbox holds, read into the group a person works it in.
+ *
+ * The states are the ones `ores_inbox_approval_request_states_tbl` carries, and
+ * the list is exhaustive on purpose: a state nobody has named reads as awaiting,
+ * which is the direction that keeps a deal in front of a person rather than
+ * quietly filing it.
+ *
+ * `closed` is where a request ends without the deal being authorised or denied:
+ * the asker took it back, nobody decided before it expired, or it was approved
+ * and the owning component could not apply it. None of the three is a denial,
+ * and drawing one as a denial would put a deal in the queue's history that
+ * nobody refused.
+ */
 const GROUP_OF_STATE: Readonly<Record<string, QueueGroup>> = {
     waiting: 'awaiting',
     held: 'held',
     approved: 'authorised',
+    apply_failed: 'closed',
     refused: 'denied',
-    cancelled: 'denied',
+    withdrawn: 'closed',
+    expired: 'closed',
 };
 
 /**
@@ -148,10 +174,15 @@ export function countsOf(
     rows: readonly QueueRow[],
     klass: QueueClass | 'all',
 ): Readonly<Record<QueueGroup, number>> {
-    const counts = { awaiting: 0, held: 0, changed: 0, authorised: 0, denied: 0, all: 0 } as Record<
-        QueueGroup,
-        number
-    >;
+    const counts = {
+        awaiting: 0,
+        held: 0,
+        changed: 0,
+        authorised: 0,
+        denied: 0,
+        closed: 0,
+        all: 0,
+    } as Record<QueueGroup, number>;
     for (const row of rows) {
         if (klass !== 'all' && row.classCode !== klass) continue;
         counts.all += 1;

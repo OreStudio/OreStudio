@@ -41,7 +41,10 @@ function row(overrides: Partial<QueueRow> = {}): QueueRow {
         tradeId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         reference: 'POP-1A2B-000001',
         classCode: 'flow',
+        bookId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+        counterpartyId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
         tradeType: 'Swap',
+        tradeTypeName: 'Interest Rate Swap',
         book: 'GBP Vanilla Swaps',
         counterparty: 'Deutsche Bank AG',
         tradeDate: '2026-10-31',
@@ -59,6 +62,20 @@ describe('the authorisation queue', () => {
         expect(groupOf(row({ stateCode: 'approved' }))).toBe('authorised');
         expect(groupOf(row({ stateCode: 'refused' }))).toBe('denied');
         expect(groupOf(row({ stateCode: 'held' }))).toBe('held');
+    });
+
+    it('files the endings that are neither a yes nor a no as closed', () => {
+        // The asker took it back, nobody decided before it expired, or it was
+        // approved and the owning component could not apply it. Drawing any of
+        // them as a denial would record a refusal nobody gave.
+        for (const stateCode of ['withdrawn', 'expired', 'apply_failed']) {
+            expect(groupOf(row({ stateCode }))).toBe('closed');
+        }
+    });
+
+    it('reads a state the inbox does not hold as awaiting, not as closed', () => {
+        // A state nobody has named keeps the deal in front of a person.
+        expect(groupOf(row({ stateCode: 'escalated' }))).toBe('awaiting');
     });
 
     it('draws a deal that moved after its request as a change, whatever its state', () => {

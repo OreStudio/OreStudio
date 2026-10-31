@@ -8,7 +8,7 @@
 #+filetags: :switch-the-interface-between-light-and-dark:sprint_29:v0:
 #+owner: marco
 #+branch: feature/put-the-theme-and-the-language-in-the-header
-#+pr:
+#+pr: 4241
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4241][#4241]] | [web] Switch the palette and the language from the header |
 
 * Review
 

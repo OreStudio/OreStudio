@@ -127,6 +127,50 @@ public:
     }
 
     /**
+     * @brief Serves trading.v1.ops.execute_trade.
+     */
+    void execute_trade(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trades:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<execute_trade_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_operations_service svc(req_ctx, books_);
+        try {
+            reply(nats_, msg, svc.execute_trade(*req));
+        } catch (const std::exception& e) {
+            // A transition the store refuses is the exception here: the machine
+            // checks the activity against the state it finds.
+            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            execute_trade_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
      * @brief Serves trading.v1.ops.put_bond_issue_composite.
      */
     void put_bond_issue_composite(ores::nats::message msg) {

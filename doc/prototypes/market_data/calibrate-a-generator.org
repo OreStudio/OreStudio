@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 6CB06DFB-E84E-48EB-AB82-0D89EE166D16
+:END:
+#+title: Calibrate the market prototype
+#+description: The calibration screen before it is built: one market-wide policy, the candidates it derives for every feed, the resolved start and the per-feed exceptions, on a throwaway page
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:calibration:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+| Item      | Where                                       |
+|-----------+---------------------------------------------|
+| Prototype | [[file:calibrate-a-generator/][the prototype]] |
+| Review    | none                                        |
+| Group     | [[file:index.org][Market data prototypes]]       |
+
+* Summary
+
+A synthetic feed takes its first value from a public fixing, and the size of
+its moves from the spread of that fixing's returns. The prototype argues how
+that works with no configuration: the defaults calibrate every feed, and a
+class policy, a pin on one feed or an explicit list are optional refinements.
+It exists because the first draft gave every feed its own ranked list, and
+that does not scale: with a hundred feeds, a person would author a hundred
+lists and still not see the market's coverage. The page opens in automatic
+mode and offers three variants of the same screen. Vintage is retired and the
+screen says so.
+
+* The question
+
+The runner resolves a feed at start: it walks the candidates, skips one whose
+provider's terms are not accepted or whose fixing is missing or after the
+clock, takes the first usable one, reads it as =1/x= when the item quotes the
+pair the other way round, and scales the mixture by the measured spread. The
+question is where the ranking comes from. A list on every feed is exact and
+unmaintainable. A policy on the class is one decision, but it must still let a
+person fix an exception and see what the policy does to every feed.
+
+* The variants
+
+** A — Class list
+
+The screen a person lands on: the policy in automatic or custom mode, and
+every feed of the class with its start, its source and its state. The filters
+split all, needs attention and overridden. This screen argues that calibration
+is a state to read, not a queue of feeds to visit.
+
+** B — Feed record
+
+Opened from a row of the class list, and back to it with one action. It shows
+the resolved start, the derived candidates with their reasons, the measures
+behind them, and the three exceptions: a pin, a window, or an explicit list.
+This screen argues that a feed is read, not calibrated by hand.
+
+** C — Resolution flow
+
+The policy, the candidates for one pair, the resolver and the feed as one
+path, over the calibration record and the class coverage. This is a
+diagnostic view, not a daily screen: it argues that a person can trace how a
+value was chosen, and that every calibration is the proof that it ran.
+
+Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
+=a=). A and B are two screens of the product; C is the explanation beside
+them.
+
+* What it settles
+
+- **Calibration is automatic.** With no policy, the provider catalogue order
+  and a default window calibrate every feed; a person configures nothing.
+- **A policy is optional.** A class may state its window, inverse rule, order
+  and fallback; returning to automatic is one action.
+- **Candidates are derived, not authored.** The pair and the provider order
+  produce the list; direct quotes come before inverses, and a provider whose
+  terms are not accepted never starts a feed.
+- **An exception is optional and reversible.** A feed pins one item, states
+  one window, or names its items explicitly; the banner says it overrides, and
+  returning to the derived list clears it.
+- **A new feed costs a pair.** *Add a feed* creates one from a pair only; the
+  defaults calibrate it on the next start, and the coverage count moves.
+- **A published fixing is taken without a person.** Moving the clock past the
+  ECB's 31 October fixing changes the start from 1.1523 to 1.1560; the older
+  value is the one a run on 30 October took.
+- **A calibration leaves a record.** The button appends a row with the
+  policy's scope, how many feeds resolved and how many kept a level.
+- **The list is the landing, and it is exhaustive.** Every feed appears with
+  its state; nothing is chosen for calibration. Calibration is class-wide;
+  a feed's own record may calibrate it alone. The list carries no policy
+  form, only a line and a link.
+- **The feed detail has two tabs.** *Feed record* carries the calibration of
+  one feed; *Flow* explains how it resolved.
+- **The policy is its own class screen.** It is shared, so it does not live in
+  a feed tab.
+- **Calibration is per asset class.** One policy and one list per class, with
+  a class switch on the list.
+- **Coverage is the point of the class screen.** How many feeds resolve, keep
+  a level or are blocked is the number a person governs, and a calibration
+  records every start.
+- **The fallback is a policy choice.** Keep the fixed level or refuse to start;
+  the screen states which, and no feed invents a second source.
+- **The volatility is measured.** The daily spread, the hourly it implies, the
+  window and the factor are shown with the start.
+- **Vintage is absent.** No vintage control, field or wording offers one.
+
+* Three screens: list, feed detail, policy
+
+** The list
+
+The list is the landing and it is deliberately plain: the class switch, the
+policy in one line, the counts, the filters, and the feeds. It lists **every
+feed of the class**, not a subset chosen for calibration: every feed is
+calibrated on start and on calibration, and the list is how a person sees
+where each one landed. The filters (all, needs attention, overridden) narrow
+the list; they do not choose what to calibrate. The policy is a link, not a
+form on this screen.
+
+** The feed detail
+
+Opened from a row and closed with *All FX feeds*. It has two tabs:
+
+- *Feed record* — the resolved start, the derived candidates, the measures, and
+  the three exceptions (pin, window, explicit list).
+- *Flow* — how this feed resolved: the policy or defaults into the candidates
+  into the resolver, the trail, and the recent calibrations. It is read-only.
+
+** The policy
+
+A class-level screen, reached from the list's policy line and from the flow
+tab. It carries the policy, its coverage and the calibration record. It is
+not a tab of a feed: the policy is shared, and putting it beside a feed's
+exceptions would suggest that editing it changes only that feed, or that every
+feed needs one.
+
+** Why per asset class
+
+Each class has its own sources, instruments and measurements: FX reads daily
+fixings and reads a pair as =1/x=; interest rates read a par curve and a set of
+overnight rates and bootstrap a curve; the others differ again. One policy per
+class keeps the provider order and the fallback meaningful, and one list per
+class keeps the numbers comparable. The screen carries a class switch rather
+than a top-level menu item per class, so the journey stays one place.
+
+** What this rules out
+
+- A policy card on the list: it buries the list and implies a step.
+- A policy tab on a feed: it misplaces a class decision inside a feed.
+- A flow that edits: the flow explains, the policy and the exceptions act.
+
+* The measures
+
+Each start carries the measures of the series behind it, and the screen shows
+them beside the value:
+
+- **Realised volatility** over the window, daily and hourly. This is the one
+  measure that changes the calibration today: it scales the mixture.
+- **Drift**, annualised from the same daily returns.
+- **Daily range** and the number of samples against the window.
+- **Freshness**: how old the fixing is against the market clock.
+- **Jumps** above three deviations, as a count.
+- **Provider dispersion**, in basis points against another accepted provider
+  of the same pair.
+
+Every measure carries a badge: *used today*, for the volatility, or *future
+input* for the rest. The card says that only the volatility changes the
+calibration now, and that the rest are recorded for a later policy. A measure
+never blocks a start; a pair with no series says it has nothing to measure.
+
+* What it does not settle
+
+- Who may edit the policy, and whether a change needs approval. The prototype
+  edits it in place.
+- When a calibration runs: on a config save, on every start, daily, or only
+  when a person asks. The prototype offers the button and shows the record.
+- Where the policy lives in the product: a market data settings page, the feed
+  class page, or the feed screen itself. The prototype draws it on the class
+  screen.
+- Whether the class switch stays on the list or the policy moves to a market
+  data settings area; the prototype keeps both on the class screen.
+- Whether a cross-class view is needed, such as "all classes needing
+  attention". The prototype has none: one class at a time.
+- Whether the filters need more than all, attention and overridden.
+- The explicit list keeps the derived order: a person includes and excludes
+  items but does not reorder them. The product may or may not need the extra
+  freedom.
+- Which measures become inputs, and how: whether drift tilts the process mean,
+  whether dispersion penalises a provider, whether jumps set a separate
+  intensity, and whether a policy window is chosen from coverage rather than
+  stated. The prototype records them; it does not fit them.
+- Terms acceptance is shown, not edited: the Bank of Canada's items stay
+  visible with their reason, and the prototype does not offer the accept or
+  withdraw action.
+- Who may edit the policy or add a feed, and whether a policy change needs
+  approval; the prototype has no roles.
+
+* The mock data
+
+Six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD) and twelve
+items across the ECB, the IMF, the Bank of Canada and the TCMB, at a market
+clock of 2026-10-30. The defaults order ECB, IMF, BoC and allow inverses.
+EUR/USD resolves from the ECB's 30 October fixing; moving the clock to
+31 October takes the newer 1.1560. GBP/USD resolves only as an inverse of the
+IMF's USD/GBP, and AUD/USD has no covering source, so it keeps its level.
+Turning the inverse off sends GBP/USD to its fixed level; the refuse fallback
+blocks AUD/USD and counts it. Two extra pairs can be added as feeds, and the
+state panel prints the policy, the calibration count and each start after
+every action.
+
+* See also
+
+- [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] — the story.
+- [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] — the task that built the resolver.
+- [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] — the task this page answers.
+- [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] — the data the policy needs.
+- [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] — the task that carries the decision.
+- [[file:../../knowledge/domain/synthetic_calibration_sources.org][Synthetic prices are calibrated from free public sources]] — which sources, and what their terms say.
+- [[file:../../knowledge/domain/fx_spot_generation_config.org][The FX spot generation config]] — the config and its items.

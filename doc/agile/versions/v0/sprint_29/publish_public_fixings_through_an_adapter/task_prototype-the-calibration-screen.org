@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 3A15911E-4EA6-40A6-BC45-E8AEBE49AC54
+:END:
+#+title: Task: Prototype the calibration screen
+#+description: Three variants of the calibration screen on a throwaway page: the ranked fixing items, the item and provider chosen, the value and time taken, the measured volatility and the fallback reason, before any of it is built.
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch: feature/prototype-the-calibration-screen
+#+pr: 4281
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle what the calibration screen shows before any of it is built: how a
+person reads the ranked fixing items, the item and provider a generator will
+start from, the volatility measured over the window, and why a run keeps its
+fixed level.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Building the three variants under =doc/prototypes/market_data/calibrate-a-generator/=. |
+| Waiting on   | Nothing.                               |
+| Next         | Signed off; the decisions are handed to the policy model and the build. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The screen opens in automatic mode: the defaults calibrate every feed, and
+  nothing is required of a person.
+- A person may customise the class policy: the window, whether an inverse is
+  allowed, the provider order and the fallback. The page returns to automatic.
+- Every feed derives its candidates from its pair and that policy. No feed
+  carries a handwritten list; a feed pins an item or a window only as an
+  exception.
+- The coverage is visible: how many feeds resolve from a fixing, keep a level
+  or are blocked, and a calibration records every feed's start.
+- A feed may pin an item or a window, and the page says it overrides; the
+  pin is optional and reversible.
+- Three variants sit on one static page under
+  =doc/prototypes/market_data/calibrate-a-generator/=, switchable by =?variant=
+  and a bottom bar, with no build and no session.
+- It carries no vintage control, and it states that vintage is retired.
+- The group index lists it with review none, and the design note sits beside
+  the page.
+
+* Plan
+
+- Mock six FX feeds (EUR/USD, GBP/USD, USD/JPY, EUR/GBP, EUR/CHF, AUD/USD)
+  and eleven accepted or rejected items across four providers, at a market
+  clock of 2026-10-31. GBP/USD resolves only as an inverse, AUD/USD has no
+  covering source, and turning the inverse off sends GBP/USD to its fixed
+  level.
+- Variant A is policy first: the policy, the coverage across every feed, and
+  one worked resolution. Variant B is a feed: the inherited policy, the
+  resolved start, the derived candidates, and the pin and window exceptions.
+  Variant C is a flow: policy, candidates, resolver, and the calibration
+  record.
+- The decision taken here is distilled into [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The page is at
+[[file:../../../../../prototypes/market_data/calibrate-a-generator/index.html][calibrate-a-generator]]. It carries three variants of the calibration screen,
+switchable by =?variant= or the bottom bar:
+
+- *List* — the class switch, the policy in one line, the counts, the filters
+  and every feed with its start and state. No policy form.
+- *Feed detail* — two tabs. *Feed record* carries the resolved start, the
+  derived candidates with their reasons, the measures and the three
+  exceptions. *Flow* explains the path from policy to process and lists the
+  recent calibrations.
+- *Policy* — the class-level policy screen, with its coverage and the
+  calibration record.
+
+Every variant shows the level a run takes, the item and provider behind it,
+the time received, the inversion, the daily and hourly spread, the factor
+applied to the mixture and the fallback or refusal reason. The page has no
+vintage control, and it states that vintage is retired.
+
+The mock data is six FX feeds and twelve items across four providers at a
+clock of 2026-10-30. The defaults order ECB, IMF and BoC and allow inverses:
+EUR/USD resolves from the ECB's 30 October fixing, GBP/USD only as an inverse
+of the IMF's USD/GBP, and AUD/USD keeps its level because no source covers it.
+Moving the clock to 31 October takes the newer ECB fixing; adding a feed from
+its pair, calibrating and naming a feed's items explicitly all work on the
+page. Turning the inverse off sends GBP/USD to its fixed level; the refuse
+fallback blocks AUD/USD. The state panel prints the policy, the calibration
+count and every start.
+
+The measures card reports the realised volatility over the window, the
+annualised drift, the daily range, the samples and freshness, the jump count
+and the dispersion against another provider. Only the volatility is marked as
+used today; the rest are marked as future inputs.
+
+The design note is
+[[file:../../../../../prototypes/market_data/calibrate-a-generator.org][calibrate-a-generator.org]]. The decision taken here belongs in
+[[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]], and the data it reads in
+[[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]], before either starts.
+
+* Result
+
+Signed off on 2026-10-31. The prototype settled:
+
+- The list is the landing and is just a list: a class switch, a one-line
+  policy summary with a link, the counts, the filters and every feed. Rows open
+  their detail; there is no Open button.
+- Calibration is per asset class, with one policy and one list per class behind
+  the class switch.
+- A feed's detail has two tabs: *Feed record* (start, candidates, measures,
+  exceptions) and *Flow* (how it resolved, read-only).
+- The policy is its own class-level screen, not a feed tab.
+- Automatic by default: no policy is needed, and a custom class policy, a feed
+  pin or an explicit list are optional and reversible.
+- The measures are shown with every start; only the realised volatility
+  calibrates today, the rest are recorded for later.
+- The action is *Calibrate all*, and it leaves a calibration record.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4281][#4281]] | [docs] Prototype the calibration screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

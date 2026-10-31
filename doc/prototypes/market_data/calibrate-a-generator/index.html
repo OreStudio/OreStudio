@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibrate the market — where every feed takes its first value</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, no server</span>
+  <a href="../calibrate-a-generator.org">the design note</a>
+  <a href="../index.org">market data prototypes</a>
+</div>
+
+<header class="page">
+  <div class="crumbs"><a href="#">Market data</a> / <a href="#">Synthetic</a> / Calibration</div>
+  <div class="title-row">
+    <h1>Calibrate the market</h1>
+    <span class="lead">every synthetic feed calibrated from the public fixings, with or without a policy</span>
+    <span class="actions"><button class="act primary" id="resolve">Calibrate all</button></span>
+  </div>
+  <div class="ident">
+    <span class="pair">FX</span>
+    <span class="dot">·</span>
+    <span>market-wide calibration policy</span>
+    <span class="dot">·</span>
+    <span id="feedCount">6 feeds</span>
+    <span class="dot">·</span>
+    <span class="mono">public fixings, no vintage</span>
+  </div>
+  <div class="class-switch">
+    <span class="label">Asset class</span>
+    <button class="act primary" aria-pressed="true">FX</button>
+    <button class="act" disabled title="Its own sources and measurements; not in this prototype">IR · coming</button>
+    <span class="note">Each asset class has its own sources, its own policy and its own list.</span>
+  </div>
+  <div class="notice">
+    <span class="badge ok">Automatic</span>
+    <span>Every feed resolves from the fixing catalogue with or without a policy. A class policy and a feed's pin are optional refinements. <b>Vintage is retired:</b> it is not a source anywhere.</span>
+  </div>
+</header>
+
+<main>
+  <section class="controls">
+    <label id="feedPick">Feed
+      <select id="feed"></select>
+    </label>
+    <label>Market clock
+      <input type="date" id="clock" value="2026-10-30">
+    </label>
+    <span class="control-note" id="controlNote"></span>
+  </section>
+
+  <section class="screen" id="screen-list" aria-live="polite"></section>
+  <section class="screen" id="screen-feed" aria-live="polite"></section>
+  <section class="screen" id="screen-policy" aria-live="polite"></section>
+
+  <details class="state" id="state">
+    <summary>State after the last action</summary>
+    <pre id="stateBody"></pre>
+  </details>
+</main>
+
+<div class="proto-switch" role="tablist" aria-label="Screens">
+  <span class="proto-switch-label">Screens</span>
+  <button role="tab" data-screen="list">List</button>
+  <button role="tab" data-screen="feed">Feed detail</button>
+  <button role="tab" data-screen="policy">Policy</button>
+</div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

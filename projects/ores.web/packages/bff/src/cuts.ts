@@ -27,7 +27,8 @@ import { subjects as resolutionRuleSubjects } from '@ores/wire-protocol/generate
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { subjects as approvalKindSubjects } from '@ores/wire-protocol/generated/inbox/protocol/approval_kind_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
-import { reportHealthWordSchema } from '@ores/wire-protocol/browser';
+import { recordResource } from '@ores/wire-protocol';
+import { cutTakeRequestSchema, reportHealthWordSchema } from '@ores/wire-protocol/browser';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import {
     NO_ORDER,
@@ -500,6 +501,124 @@ async function kindPage(
     };
 }
 
+/**
+ * The subject one cut's approval request names, as the take wrote it.
+ *
+ * The counts are the body's own, taken when it was frozen, so a decider reads
+ * the size of the population the take fixed and never today's store.
+ */
+function approvalDetailOf(detail: Read): Record<string, unknown> {
+    return {
+        id: text(detail['id']),
+        requestId: text(detail['request_id']),
+        cutId: text(detail['cut_id']),
+        dealCount: count(detail['deal_count']),
+        marketDataSetCount: count(detail['market_data_set_count']),
+        gapCount: count(detail['gap_count']),
+        appliedBy: text(detail['applied_by']),
+        appliedAt: nullable(detail['applied_at']),
+    };
+}
+
+/**
+ * The parts of one body the assembly answered, as the take flow reads them.
+ *
+ * A part states whether the read answered it. The remedy is the take's sentence
+ * and not a column of the stored gap: a gap that was written named the part, the
+ * item and the reason, and the remedy is what the screen offers to close it.
+ */
+function bodyPartOf(part: Read): Record<string, unknown> {
+    return {
+        partCode: text(part['part_code']),
+        state: text(part['state']) === 'gapped' ? 'gapped' : 'closed',
+        summary: text(part['summary']),
+        reference: text(part['reference']),
+        item: text(part['item']),
+        reason: text(part['reason']),
+        remedy: text(part['remedy']),
+        snapshotNote: text(part['snapshot_note']),
+    };
+}
+
+/** The shape `take_cut` answers, as this module reads it. */
+const takeCutReplySchema = z.looseObject({
+    result: resultSchema,
+    cut_id: z.string().default(''),
+    cut_label: z.string().default(''),
+    cut_state: z.string().default(''),
+    requires_authorisation: z.boolean().default(false),
+    output_is_indicative: z.boolean().default(false),
+    retention_months: z.int().nonnegative().default(0),
+    retention_destination_code: z.string().default(''),
+    approval_request_id: z.string().default(''),
+    approval_kind_code: z.string().default(''),
+    approval_kind_name: z.string().default(''),
+    decide_permission_code: z.string().default(''),
+    parts: z.array(row).default([]),
+    gaps: z.array(row).default([]),
+    deal_count: z.int().nonnegative().default(0),
+    market_data_set_count: z.int().nonnegative().default(0),
+    reference_data_version: z.string().default(''),
+    engine_version: z.string().default(''),
+    code_version: z.string().default(''),
+    refusal: z.string().default(''),
+});
+
+/**
+ * The body one assembly answered, and the take it wrote.
+ *
+ * The gaps are the answer and not a refusal: a call that answers them succeeded,
+ * and the sentence that refuses a take arrives in `refusal`.
+ */
+async function takeCutReply(
+    session: LiveSession,
+    request: z.infer<typeof takeCutRequestSchema>,
+): Promise<Record<string, unknown>> {
+    const reply = await session.client.callAuthenticated(
+        operationSubjects.take_cut_request,
+        {
+            kind_code: request.kindCode,
+            scope_code: request.scopeCode,
+            business_centre_code: request.businessCentreCode,
+            timepoint: request.timepoint,
+            timepoint_timezone: request.timepointTimezone,
+            cut_time_code: request.cutTimeCode,
+            reason: request.reason,
+            preview: request.preview,
+        },
+        takeCutReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    return {
+        cutId: reply.cut_id,
+        cutLabel: reply.cut_label,
+        cutState: reply.cut_state,
+        requiresAuthorisation: reply.requires_authorisation,
+        outputIsIndicative: reply.output_is_indicative,
+        retentionMonths: reply.retention_months,
+        retentionDestinationCode: reply.retention_destination_code,
+        approvalRequestId: reply.approval_request_id,
+        approvalKindCode: reply.approval_kind_code,
+        approvalKindName: reply.approval_kind_name,
+        decidePermissionCode: reply.decide_permission_code,
+        parts: reply.parts.map(bodyPartOf),
+        gaps: reply.gaps.map((gap) => ({
+            id: text(gap['id']),
+            partCode: text(gap['part_code']),
+            item: text(gap['item']),
+            reason: text(gap['reason']),
+        })),
+        dealCount: reply.deal_count,
+        marketDataSetCount: reply.market_data_set_count,
+        referenceDataVersion: reply.reference_data_version,
+        engineVersion: reply.engine_version,
+        codeVersion: reply.code_version,
+        refusal: reply.refusal,
+    };
+}
+
 /** One cut's record, as `get_cut_record` answers it. */
 const cutRecordReplySchema = z.looseObject({
     result: resultSchema,
@@ -510,6 +629,7 @@ const cutRecordReplySchema = z.looseObject({
     superseded_by_id: z.string().default(''),
     gaps: z.array(row).default([]),
     run_count: z.int().nonnegative().default(0),
+    detail: row.nullable().default(null),
 });
 
 /**
@@ -600,6 +720,7 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
             reason: text(gap['reason']),
         })),
         runCount: reply.run_count,
+        detail: reply.detail === null ? null : approvalDetailOf(reply.detail),
     };
 }
 
@@ -836,13 +957,21 @@ export function registerCutRoutes(
                 code: text(entry['code']),
                 name: text(entry['name']),
             }));
-        const [families, rules, approvals, kinds] = await Promise.all([
+        const centres = recordResource('business-centres');
+        if (centres === undefined) {
+            throw invalidRequest('The business centres list is not registered.');
+        }
+        const [families, rules, approvals, kinds, centreRows] = await Promise.all([
             codes(cutFamilySubjects.list_cut_families_request, 'families'),
             codes(resolutionRuleSubjects.list_cut_resolution_rules_request, 'rules'),
             approvalKinds(session),
             readAll(session, cutKindSubjects.list_cut_kinds_request, 'kinds', {
                 filter: null,
                 as_of: null,
+            }),
+            readAll(session, centres.subjects.list, centres.rows, {
+                filter: null,
+                ...(centres.asOf ? { as_of: null } : {}),
             }),
         ]);
         const destinations = new Set<string>();
@@ -860,6 +989,10 @@ export function registerCutRoutes(
                 name: kind.name,
             })),
             retentionDestinations: [...destinations].sort(),
+            businessCentres: centreRows.map((entry) => ({
+                code: text(entry['code']),
+                name: text(entry['name']),
+            })),
         };
     });
 
@@ -992,6 +1125,22 @@ export function registerCutRoutes(
         const session = requireSession(request);
         const id = cutIdOf(request);
         return { runs: await runsOfCut(session, id) };
+    });
+
+    /*
+     * The hand take: the body assembled part by part, and, when the caller
+     * presses, the cut it wrote and the authorisation it raised.
+     *
+     * One route serves the floor's assembly and its press, because an assembly
+     * computed by a second path is a preview of that path: the request states
+     * `preview` and the server answers the same parts and gaps either way. A
+     * gap is the answer and not a failure, so a call that answers gaps is a
+     * success and the sentence that refuses a take arrives in `refusal`.
+     */
+    server.post('/api/reporting/cuts/take', async (request) => {
+        const session = requireSession(request);
+        const body = input(cutTakeRequestSchema, request.body);
+        return takeCutReply(session, body);
     });
 
     /* One cut's record: the body, the acts, the gaps and the derived state. */

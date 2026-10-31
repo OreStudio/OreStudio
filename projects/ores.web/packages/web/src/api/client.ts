@@ -191,6 +191,8 @@ import {
     cutKindRowSchema,
     cutsPageSchema,
     cutRecordSchema,
+    cutTakeRequestSchema,
+    cutTakeSchema,
     cutRunsSchema,
     type CutKindRow,
     type CutKindRecord,
@@ -199,6 +201,8 @@ import {
     type CutKindsPage,
     type CutRecord,
     type CutRuns,
+    type CutTake,
+    type CutTakeRequest,
     type CutsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request, requestFile, type ServedFile } from './transport.js';
@@ -4326,6 +4330,25 @@ export const api = {
     async cut(id: string): Promise<CutRecord> {
         return cutRecordSchema.parse(
             await request(`/api/reporting/cuts/${encodeURIComponent(id)}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Assembles the body of a cut, and, unless the call previews, takes it.
+     *
+     * One call serves the take flow's assembly step and its press, because an
+     * assembly computed by a second path is a preview of that path. A body that
+     * answers gaps is a successful call: the gaps are what the person reads, and
+     * the sentence that refuses a take arrives in `refusal`.
+     */
+    async takeCut(request: CutTakeRequest): Promise<CutTake> {
+        const body = cutTakeRequestSchema.parse(request);
+        return cutTakeSchema.parse(
+            await request('/api/reporting/cuts/take', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(body),
+            }),
         );
     },
 };

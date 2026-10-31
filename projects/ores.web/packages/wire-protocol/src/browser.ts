@@ -397,15 +397,21 @@ export {
     cutKindRowSchema,
     cutKindWriteSchema,
     cutKindsPageSchema,
+    cutApprovalDetailSchema,
+    cutBodyPartSchema,
     cutRecordSchema,
     cutRowSchema,
     cutRunsSchema,
     cutRunSchema,
     cutStateWordSchema,
+    cutTakeRequestSchema,
+    cutTakeSchema,
     cutsPageSchema,
 } from './cuts.js';
 export type {
+    CutApprovalDetail,
     CutBody,
+    CutBodyPart,
     CutGap,
     CutKindChoices,
     CutKindRecord,
@@ -417,6 +423,8 @@ export type {
     CutRuns,
     CutRun,
     CutStateWord,
+    CutTake,
+    CutTakeRequest,
     CutsPage,
 } from './cuts.js';
 

@@ -56,9 +56,6 @@ domain::inflation_cap_floor_volatility_config inflation_cap_floor_volatility_con
     r.extrapolation = v.extrapolation;
     r.tenors = v.tenors;
     r.settlement_days = v.settlement_days;
-    r.cap_strikes = v.cap_strikes;
-    r.floor_strikes = v.floor_strikes;
-    r.strikes = v.strikes;
     r.calendar = v.calendar;
     r.day_counter = v.day_counter;
     r.business_day_convention = v.business_day_convention;
@@ -95,9 +92,6 @@ inflation_cap_floor_volatility_config_entity inflation_cap_floor_volatility_conf
     r.extrapolation = v.extrapolation;
     r.tenors = v.tenors;
     r.settlement_days = v.settlement_days;
-    r.cap_strikes = v.cap_strikes;
-    r.floor_strikes = v.floor_strikes;
-    r.strikes = v.strikes;
     r.calendar = v.calendar;
     r.day_counter = v.day_counter;
     r.business_day_convention = stored_business_day_convention(v.business_day_convention);

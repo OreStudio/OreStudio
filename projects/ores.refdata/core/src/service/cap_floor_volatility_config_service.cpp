@@ -133,14 +133,6 @@ cap_floor_volatility_config_to_domain(const messaging::cap_floor_volatility_conf
     v.flat_first_period = write.flat_first_period;
     v.use_effecive_volatility = write.use_effecive_volatility;
     v.use_effective_volatility = write.use_effective_volatility;
-    v.has_proxy_config = write.has_proxy_config;
-    v.proxy_source_curve_id = write.proxy_source_curve_id;
-    v.proxy_source_index = write.proxy_source_index;
-    v.proxy_source_rate_computation_period = write.proxy_source_rate_computation_period;
-    v.proxy_target_index = write.proxy_target_index;
-    v.proxy_target_rate_computation_period = write.proxy_target_rate_computation_period;
-    v.proxy_target_on_cap_settlement_days = write.proxy_target_on_cap_settlement_days;
-    v.proxy_scaling_factor = write.proxy_scaling_factor;
     return v;
 }
 

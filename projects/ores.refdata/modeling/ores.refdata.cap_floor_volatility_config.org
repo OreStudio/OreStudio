@@ -13,7 +13,7 @@
 #+entity_plural: cap_floor_volatility_configs
 #+entity_title: Cap Floor Volatility Config
 #+created: 2026-10-03
-#+updated: 2026-10-03
+#+updated: 2026-10-30
 
 The settings of one =CapFloorVolatility= entry of a =curveconfig.xml=, one row
 per =curve_definition= in the =CapFloorVolatilities= section: the cap and floor
@@ -23,10 +23,10 @@ its =BootstrapConfig= a row of =curve_bootstrap_config= and its
 =ParametricSmileConfiguration= a row of =curve_parametric_smile=.
 
 A =ProxyConfig= builds the surface from another one; it is one per entry, so
-its fields are the =proxy_= columns, and =has_proxy_config= says whether the
-entry wrote it. The schema allows both =UseEffeciveVolatility=, a misspelling
-kept for old documents, and =UseEffectiveVolatility=; each has its own column so
-either round trips.
+it is a row of =cap_floor_proxy_config= and the entry holds none of its fields.
+The schema allows both =UseEffeciveVolatility=, a misspelling kept for old
+documents, and =UseEffectiveVolatility=; each has its own column so either round
+trips.
 
 * Flags
 :PROPERTIES:
@@ -441,110 +441,6 @@ std::nullopt
 :END:
 
 Whether effective volatilities are used, as the ORE boolean the document wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** has_proxy_config
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =ProxyConfig= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** proxy_source_curve_id
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The cap and floor volatility a proxy surface is built from.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_source_index
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The index of the proxy's source.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_source_rate_computation_period
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The rate computation period of the proxy's source.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_target_index
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The index of the proxy's target.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_target_rate_computation_period
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The rate computation period of the proxy's target.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_target_on_cap_settlement_days
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-The overnight cap settlement days of the proxy's target.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_scaling_factor
-:PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
-:nullable: true
-:END:
-
-The factor the proxy's volatilities are scaled by.
 
 #+begin_src cpp :name generator
 std::nullopt

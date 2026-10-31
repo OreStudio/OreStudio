@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-inflation_cap_floor_volatility_configs add <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
+inflation_cap_floor_volatility_configs add <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.inflation_cap_floor_volatility_configs.put=.
 
 #+name: inflation_cap_floor_volatility_configs-add
 #+begin_src ores-shell :tangle inflation_cap_floor_volatility_configs-add.ores :exports none
-inflation_cap_floor_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - - - - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
+inflation_cap_floor_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-inflation_cap_floor_volatility_configs set <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary> [--version <n>]
+inflation_cap_floor_volatility_configs set <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.inflation_cap_floor_volatility_configs.put=.
 
 #+name: inflation_cap_floor_volatility_configs-set
 #+begin_src ores-shell :tangle inflation_cap_floor_volatility_configs-set.ores :exports none
-inflation_cap_floor_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - - - - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
+inflation_cap_floor_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-inflation_cap_floor_volatility_configs put-many --count <n> <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
+inflation_cap_floor_volatility_configs put-many --count <n> <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.inflation_cap_floor_volatility_configs.put_many=.
 
 #+name: inflation_cap_floor_volatility_configs-put-many
 #+begin_src ores-shell :tangle inflation_cap_floor_volatility_configs-put-many.ores :exports none
-inflation_cap_floor_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - - - - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
+inflation_cap_floor_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ - __none__ __none__ __none__ __none__ __none__ - __none__ __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

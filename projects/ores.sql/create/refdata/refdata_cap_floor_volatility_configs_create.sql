@@ -32,10 +32,10 @@
  * ParametricSmileConfiguration a row of curve_parametric_smile.
  *
  * A ProxyConfig builds the surface from another one; it is one per entry, so
- * its fields are the proxy_ columns, and has_proxy_config says whether the
- * entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling
- * kept for old documents, and UseEffectiveVolatility; each has its own column so
- * either round trips.
+ * it is a row of cap_floor_proxy_config and the entry holds none of its fields.
+ * The schema allows both UseEffeciveVolatility, a misspelling kept for old
+ * documents, and UseEffectiveVolatility; each has its own column so either round
+ * trips.
  */
 
 create table if not exists "ores_refdata_cap_floor_volatility_configs_tbl" (
@@ -72,14 +72,6 @@ create table if not exists "ores_refdata_cap_floor_volatility_configs_tbl" (
     "flat_first_period" text null,
     "use_effecive_volatility" text null,
     "use_effective_volatility" text null,
-    "has_proxy_config" boolean not null,
-    "proxy_source_curve_id" text null,
-    "proxy_source_index" text null,
-    "proxy_source_rate_computation_period" text null,
-    "proxy_target_index" text null,
-    "proxy_target_rate_computation_period" text null,
-    "proxy_target_on_cap_settlement_days" integer null,
-    "proxy_scaling_factor" double precision null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

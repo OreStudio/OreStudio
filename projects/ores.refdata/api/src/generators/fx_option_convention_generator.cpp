@@ -53,7 +53,7 @@ generate_synthetic_fx_option_convention(utility::generation::generation_context&
     r.delta_type = std::string("Spot");
     r.switch_tenor = std::string("1Y");
     r.long_term_atm_type = std::string("AtmDeltaNeutral");
-    r.long_term_delta_type = std::string("Forward");
+    r.long_term_delta_type = std::string("Fwd");
     r.risk_reversal_in_favor_of = std::string("Call");
     r.butterfly_style = std::string("Broker");
     r.oresmd_uri = std::nullopt;

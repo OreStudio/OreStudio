@@ -123,12 +123,6 @@ swaption_volatility_config_to_domain(const messaging::swaption_volatility_config
     v.smile_swap_tenors = write.smile_swap_tenors;
     v.smile_spreads = write.smile_spreads;
     v.quote_tag = write.quote_tag;
-    v.has_proxy_config = write.has_proxy_config;
-    v.proxy_source_curve_id = write.proxy_source_curve_id;
-    v.proxy_source_short_swap_index_base = write.proxy_source_short_swap_index_base;
-    v.proxy_source_swap_index_base = write.proxy_source_swap_index_base;
-    v.proxy_target_short_swap_index_base = write.proxy_target_short_swap_index_base;
-    v.proxy_target_swap_index_base = write.proxy_target_swap_index_base;
     return v;
 }
 

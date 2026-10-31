@@ -29,27 +29,24 @@
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
-#include <string>
 #include <string_view>
 
 namespace ores::refdata::domain {
 
 /**
- * @brief One surface a volatility entry may be built as, with its priority.
+ * @brief The holder of a volatility entry's kinds, and whether they sit in a VolatilityConfig
+ * element.
  *
- * One way a volatility entry's surface may be built. CDS, equity and commodity
- * volatilities each name one or more volatility configurations, each with an
- * optional priority; ORE builds the first that succeeds. kind names the
- * element the document wrote, and the columns that kind uses are set. An entry
- * writes a kind either directly or inside a VolatilityConfig element, which
- * holds at most one of each kind; is_wrapped says which.
+ * The volatility block of one ORE curve entry: the holder its kinds are listed in.
+ * ORE writes either one bare kind element on the entry, or a VolatilityConfig
+ * element holding up to one of each kind in an xs:all; is_wrapped says which
+ * form this block was written in. The kinds themselves are rows of
+ * curve_volatility_kind, and each kind's own fields are the row of that kind's
+ * part.
  *
- * The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
- * DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
- * curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
- * MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
- * appear in no corpus document, and the mapper refuses them.
+ * The row carries no kind and no field of any kind. Every one of those facts
+ * belongs to a kind or to a kind's part, and a row that carried them as well would
+ * state each one twice.
  */
 struct curve_volatility_config final {
     /**
@@ -79,151 +76,11 @@ struct curve_volatility_config final {
     boost::uuids::uuid curve_definition_id;
 
     /**
-     * @brief The element the document wrote, such as StrikeSurface.
-     */
-    std::string kind;
-
-    /**
-     * @brief Whether the configuration is written inside a VolatilityConfig element.
+     * @brief Whether the entry writes its kinds inside a VolatilityConfig element. The entry states
+     * this once, for all the kinds it holds, because ORE's xs:choice lets a holder write either
+     * that element or bare kinds, never both.
      */
     bool is_wrapped = false;
-
-    /**
-     * @brief The configuration's priority attribute, when it has one.
-     */
-    std::optional<int> priority;
-
-    /**
-     * @brief What the quotes are, such as ImpliedVolatility or Premium.
-     */
-    std::optional<std::string> quote_type;
-
-    /**
-     * @brief Whether the volatility is normal, lognormal or shifted lognormal.
-     */
-    std::optional<std::string> volatility_type;
-
-    /**
-     * @brief The exercise type of quoted premiums.
-     */
-    std::optional<std::string> exercise_type;
-
-    /**
-     * @brief The strikes of a strike surface, as ORE's comma separated text or *.
-     */
-    std::optional<std::string> strikes;
-
-    /**
-     * @brief The expiries of a surface, as ORE's comma separated text or *.
-     */
-    std::optional<std::string> expiries;
-
-    /**
-     * @brief How the surface interpolates in time.
-     */
-    std::optional<std::string> time_interpolation;
-
-    /**
-     * @brief How the surface interpolates in strike.
-     */
-    std::optional<std::string> strike_interpolation;
-
-    /**
-     * @brief How the configuration extrapolates: for a surface, whether it extrapolates as the ORE
-     * boolean the document wrote; for a curve, the extrapolation type.
-     */
-    std::optional<std::string> extrapolation;
-
-    /**
-     * @brief How the surface extrapolates in time.
-     */
-    std::optional<std::string> time_extrapolation;
-
-    /**
-     * @brief Whether time extrapolation is in variance, as the ORE boolean the document wrote.
-     */
-    std::optional<std::string> time_extrapolation_variance;
-
-    /**
-     * @brief How the surface extrapolates in strike.
-     */
-    std::optional<std::string> strike_extrapolation;
-
-    /**
-     * @brief The configuration's calendar, as the document spells it.
-     */
-    std::optional<std::string> calendar;
-
-    /**
-     * @brief The quote of a constant volatility.
-     */
-    std::optional<std::string> quote;
-
-    /**
-     * @brief How a volatility curve interpolates.
-     */
-    std::optional<std::string> interpolation;
-
-    /**
-     * @brief Whether a volatility curve enforces monotone variance.
-     */
-    std::optional<bool> enforce_monotone_variance;
-
-    /**
-     * @brief The delta type of a delta surface.
-     */
-    std::optional<std::string> delta_type;
-
-    /**
-     * @brief The ATM type of a delta surface.
-     */
-    std::optional<std::string> atm_type;
-
-    /**
-     * @brief The delta type of a delta surface's ATM strike.
-     */
-    std::optional<std::string> atm_delta_type;
-
-    /**
-     * @brief The put deltas of a delta surface, as ORE's comma separated text.
-     */
-    std::optional<std::string> put_deltas;
-
-    /**
-     * @brief The call deltas of a delta surface, as ORE's comma separated text.
-     */
-    std::optional<std::string> call_deltas;
-
-    /**
-     * @brief Whether a delta surface corrects for the future price, as the ORE boolean the document
-     * wrote.
-     */
-    std::optional<std::string> future_price_correction;
-
-    /**
-     * @brief The volatility a proxy surface is built from.
-     */
-    std::optional<std::string> proxy_volatility_curve;
-
-    /**
-     * @brief The FX volatility a proxy surface converts with.
-     */
-    std::optional<std::string> fx_volatility_curve;
-
-    /**
-     * @brief The correlation a proxy surface converts with.
-     */
-    std::optional<std::string> correlation_curve;
-
-    /**
-     * @brief The CDS volatility a proxy surface is built from.
-     */
-    std::optional<std::string> cds_volatility_curve;
-
-    /**
-     * @brief The configuration's place among the entry's configurations, which the export restores.
-     */
-    int position = 0;
 
     /**
      * @brief Username of the person who last modified this curve volatility config.

@@ -143,6 +143,25 @@ and its parts]] states.
 | 20 | 20 | 10 | group | =inflation_curve_config= (refdata) | One curve configuration, but the seasonality and quote blocks are read on their own. |
 | 20 | 20 | 15 | split | =bond_issue_leg_schedule= (trading) | The same rule-block-or-date-list choice as =instrument_schedule=. |
 
+** Corrected after reading the ORE schema
+
+The ratio of nullable columns that ranked the two is not a verdict by itself, and
+the schema settles each case:
+
+- =curve_volatility_config= keeps its =split= verdict, and the split is larger
+  than the table suggested: =VolatilityConfig= is an =xs:all= of up to seven
+  kinds, each its own type with its own priority.
+- =fx_volatility_config= is one =xs:all= with a mandatory =Dimension=, so
+  dimension is a value of one component. The schema cannot say that the smile
+  block only exists for two dimensions, so the model says it: the entry keeps the
+  surface and =fx_volatility_smile= becomes a part that exists for a 2D entry.
+- =inflation_cap_floor_volatility_config= is one =xs:all= with three alternative
+  strike lists, which are one field group, and a mandatory =Type= whose effect on
+  the conventions is the reading that decides keep against split.
+
+See [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][the task]] for the shapes and the
+reasoning.
+
 * Recommendations
 
 The split task takes the 17 types the table marks =split=, worst

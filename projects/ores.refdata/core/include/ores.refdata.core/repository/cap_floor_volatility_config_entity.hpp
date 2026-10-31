@@ -83,14 +83,6 @@ struct cap_floor_volatility_config_entity {
     std::optional<std::string> flat_first_period;
     std::optional<std::string> use_effecive_volatility;
     std::optional<std::string> use_effective_volatility;
-    bool has_proxy_config = false;
-    std::optional<std::string> proxy_source_curve_id;
-    std::optional<std::string> proxy_source_index;
-    std::optional<std::string> proxy_source_rate_computation_period;
-    std::optional<std::string> proxy_target_index;
-    std::optional<std::string> proxy_target_rate_computation_period;
-    std::optional<int> proxy_target_on_cap_settlement_days;
-    std::optional<double> proxy_scaling_factor;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -137,17 +129,6 @@ struct cap_floor_volatility_config_entity {
                query_builder::bind("flat_first_period", &e::flat_first_period) |
                query_builder::bind("use_effecive_volatility", &e::use_effecive_volatility) |
                query_builder::bind("use_effective_volatility", &e::use_effective_volatility) |
-               query_builder::bind("has_proxy_config", &e::has_proxy_config) |
-               query_builder::bind("proxy_source_curve_id", &e::proxy_source_curve_id) |
-               query_builder::bind("proxy_source_index", &e::proxy_source_index) |
-               query_builder::bind("proxy_source_rate_computation_period",
-                                   &e::proxy_source_rate_computation_period) |
-               query_builder::bind("proxy_target_index", &e::proxy_target_index) |
-               query_builder::bind("proxy_target_rate_computation_period",
-                                   &e::proxy_target_rate_computation_period) |
-               query_builder::bind("proxy_target_on_cap_settlement_days",
-                                   &e::proxy_target_on_cap_settlement_days) |
-               query_builder::bind("proxy_scaling_factor", &e::proxy_scaling_factor) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

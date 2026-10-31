@@ -16,9 +16,14 @@
 #+updated: 2026-10-03
 
 The settings of one =FXVolatility= entry of a =curveconfig.xml=, one row per
-=curve_definition= in the =FXVolatilities= section: the surface's dimension and
-smile, the deltas and expiries it is quoted on, and the curves and spot it is
-built with. Its =Report= is a row of =curve_report_configuration=.
+=curve_definition= in the =FXVolatilities= section: the surface's dimension, the
+deltas and expiries it is quoted on, and the curves and spot it is built with.
+Its =Report= is a row of =curve_report_configuration=.
+
+The smile is not here. ORE makes every smile element optional, so a flat row
+cannot say that a smile surface has a smile and an ATM one does not; that
+condition is the presence of a =fx_volatility_smile= row. =dimension= stays,
+because it also decides how =deltas= is read.
 
 The schema also allows a =ParametricSmileConfiguration=, which no corpus
 document writes; the mapper refuses an entry that has one rather than lose it.
@@ -88,32 +93,6 @@ Whether the surface is =ATM= only or has a =Smile=.
 std::string("ATM")
 #+end_src
 
-** smile_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the smile is quoted.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** smile_interpolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the smile interpolates.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 ** deltas
 :PROPERTIES:
 :type:     text
@@ -122,19 +101,6 @@ std::nullopt
 :END:
 
 The deltas the smile is quoted at, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** smile_delta
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The delta convention of the smile.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -270,58 +236,6 @@ The second volatility a triangulated surface is built from.
 std::nullopt
 #+end_src
 
-** smile_extrapolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the smile extrapolates.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** time_interpolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the surface interpolates in time.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** time_weighting
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The time weighting the surface's time interpolation uses.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** butterfly_error_tolerance
-:PROPERTIES:
-:type:     double precision
-:cpp_type: std::optional<double>
-:nullable: true
-:END:
-
-The tolerance a smile's butterfly arbitrage check allows.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 * Foreign keys
 
 ** curve_definition_id
@@ -398,4 +312,5 @@ std::nullopt
 * See also
 
 - [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:7E4C1D92-6B08-4F3A-9C51-2D8B7A0E5F14][ores.refdata.fx_volatility_smile]] — the smile a two dimensional surface states.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

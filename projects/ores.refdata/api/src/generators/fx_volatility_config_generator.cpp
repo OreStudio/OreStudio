@@ -48,10 +48,7 @@ generate_synthetic_fx_volatility_config(utility::generation::generation_context&
     r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.dimension = std::string("ATM");
-    r.smile_type = std::nullopt;
-    r.smile_interpolation = std::nullopt;
     r.deltas = std::nullopt;
-    r.smile_delta = std::nullopt;
     r.conventions = std::nullopt;
     r.expiries = std::nullopt;
     r.fx_spot_id = std::nullopt;
@@ -62,10 +59,6 @@ generate_synthetic_fx_volatility_config(utility::generation::generation_context&
     r.fx_index_tag = std::nullopt;
     r.base_volatility_1 = std::nullopt;
     r.base_volatility_2 = std::nullopt;
-    r.smile_extrapolation = std::nullopt;
-    r.time_interpolation = std::nullopt;
-    r.time_weighting = std::nullopt;
-    r.butterfly_error_tolerance = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

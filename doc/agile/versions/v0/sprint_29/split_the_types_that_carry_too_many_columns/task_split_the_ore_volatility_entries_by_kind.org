@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-ore-volatility-entries-by-kind
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
-#+environment:
+#+updated: 2026-10-31
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,20 +26,160 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | All five entries are split end to end; the branch is green apart from gates that name other environments' stale renders. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Next         | Prove a smile entry through the database, which needs its conventions and calendars. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
 - Every one of the five types ends with at most one block per entry, and no column is meaningful only for a value another column selects.
-- The proxy block is one part type that cap floor and swaption both carry, not two copies.
+- The proxy block of each entry is one part of its own, and no part carries a column another entry's kind cannot use.
 - The ORE export and import of a volatility entry writes one typed array per part, and the bytes the reader sees stay what the ORE file states.
 - No compiler flag, unity exclusion or field-group reshuffle is added.
 - The split is argued by the invariant each part holds, not by the entry's member count, and the argument is in the task's Result.
+
+* What the split is, measured
+
+The cap and floor entry's =ProxyConfig= was seven nullable columns. It is now a
+row of =cap_floor_proxy_config=, and the presence of the row is the flag the
+flat shape spelled =has_proxy_config=.
+
+The task was accepted as "the proxy block is one part type that cap floor and
+swaption both carry". Reading the two blocks in the ORE schema shows that is
+false, and the acceptance is corrected:
+
+| Entry | ProxyConfig source | ProxyConfig target |
+|-------+--------------------+--------------------|
+| cap floor | =CurveId=, =Index=, =RateComputationPeriod= | =Index=, =RateComputationPeriod=, =ONCapSettlementDays= |
+| swaption | =CurveId=, =ShortSwapIndexBase=, =SwapIndexBase= | =ShortSwapIndexBase=, =SwapIndexBase= |
+
+The two share a shape, not a type. One part carrying both blocks would be a
+union with nullable columns again, which is the shape this story exists to
+remove. Each entry gets its own part.
+
+* What a split costs beyond the model
+
+Recorded because the next four entries pay the same price:
+
+- the document model gains a vector, so the protocol and its TypeScript twin
+  change;
+- the document service writes, reads and removes the part beside its entry,
+  and the read predicate is over the entries' ids because the part is keyed by
+  its entry and not by the curve definition;
+- the ORE projection builds the part on import and looks it up by the entry's
+  id on export;
+- a new entity generates its whole family -- repository, service, protocol,
+  history provider, shell recipe, ER diagram -- and three of those are
+  hand-wired: the two =component_files.cmake= lists, and the create and drop
+  aggregators.
+
+* What the ORE schema says, and where we improve on it
+
+Read from =external/ore/xsd/curveconfig.xsd= before moving another column. It is
+the first evidence for what a document holds, and it decides one of the three
+remaining entries outright and improves the model for the other two. Where its
+answer is a limit of the XSD rather than a statement about the data, the task
+says so and models the condition instead.
+
+** =curve_volatility_config=: one entry, several kinds, each with a priority
+
+A volatility entry writes either one bare kind element, or a =VolatilityConfig=
+element holding up to one of each of seven kinds in an =xs:all=. Each kind is its
+own complex type with its own fields and a =priority= attribute:
+
+| Kind | Its own fields |
+|------+----------------|
+| =Constant= | =Quote= |
+| =Curve= | =Quotes=, =Interpolation=, =Extrapolation=, =EnforceMontoneVariance= |
+| =StrikeSurface= | =Strikes=, =Expiries=, the interpolation block, =Extrapolation=, =TimeExtrapolation=, =TimeExtrapolationVariance=, =StrikeExtrapolation=, =ParametricSmileConfiguration= |
+| =DeltaSurface= | =DeltaType=, =AtmType=, =AtmDeltaType=, =PutDeltas=, =CallDeltas=, =Expiries=, the interpolation block, =FuturePriceCorrection= |
+| =MoneynessSurface= | =MoneynessType=, =MoneynessLevels=, otherwise the delta surface's shape |
+| =ApoFutureSurface= | not modelled yet |
+| =ProxySurface= | =ProxyVolatilityCurve=, =FXVolatilityCurve=, =CorrelationCurve=, =CDSVolatilityCurve= |
+
+Every one of the seven repeats the same four fields -- =QuoteType=,
+=VolatilityType=, =ExerciseType= and =Calendar= -- because the XSD has no way to
+factor them out. That repetition is a limit of the schema, not a fact about the
+data, so the model factors it:
+
+- =curve_volatility_config= is the entry: =id=, =party_id=,
+  =curve_definition_id=, =position=, =is_wrapped=;
+- =curve_volatility_kind= is the kind: the entry's key, =kind_code=, =priority=
+  and one =volatility_quote_terms= field group carrying the four fields every
+  kind shares. This is the central row of the atomised shape, and it is where
+  "the same entry holds several alternatives in priority order" becomes explicit
+  instead of implied by an =xs:all=;
+- one part per kind -- =curve_volatility_strike_surface=,
+  =curve_volatility_delta_surface=, =curve_volatility_curve=,
+  =curve_volatility_constant=, =curve_volatility_proxy_surface=,
+  =curve_volatility_moneyness_surface= -- each keyed by the kind, carrying the
+  kind's own fields and nothing else.
+
+That is one level more than the schema states, and it is justified by what the
+schema cannot say: an =xs:all= of seven optional kinds is a list of alternatives
+with an order, which is a row and its parts, not a row with 30 nullable columns.
+The two kinds not modelled yet -- =ApoFutureSurface= and =MoneynessSurface= for
+the surfaces the projection refuses -- arrive as parts when they are modelled,
+without touching the entry.
+
+** =fx_volatility_config=: the schema cannot state the smile's condition, so we do
+
+=fxVolatility= is one =xs:all=: a mandatory =Dimension=, then optional
+=SmileType=, =SmileInterpolation=, =Deltas=, =SmileDelta=, =SmileExtrapolation=,
+=ButterflyErrorTolerance=, =TimeInterpolation= and =TimeWeighting=. There is no
+element per dimension, so the schema says "these fields are optional", and only a
+reader knows that the smile ones are meaningless in one dimension.
+
+That is the deficiency worth improving on: the smile block exists for a two
+dimensional surface and not for a one dimensional one. The model states it:
+
+- =fx_volatility_config= keeps the entry: the curves, the spot, =dimension=,
+  =deltas=, =expiries=, the conventions and the calendar;
+- =fx_volatility_smile= is a part holding =smile_type=, =smile_interpolation=,
+  =smile_delta=, =smile_extrapolation=, =butterfly_error_tolerance=,
+  =time_interpolation= and =time_weighting=, and a row exists only for a two
+  dimensional entry.
+
+=dimension= stays on the entry because it does not only gate the smile: it
+decides how =deltas= is read. That is a value of the component, and the smile's
+presence is the conditional.
+
+** =inflation_cap_floor_volatility_config=: the strike axis is a group, and =Type= needs reading
+
+=inflationCapFloorVolatility= is one =xs:all= with a mandatory =Type=,
+=QuoteType=, =Tenors=, =Calendar=, =DayCounter=, =BusinessDayConvention=,
+=Index=, =IndexCurve=, =ObservationLag= and =YieldTermStructure=, and with
+=CapStrikes=, =FloorStrikes= and =Strikes= as three optional lists. The three are
+alternatives -- a cap quote is struck on caps, a floor quote on floors, and a
+surface on both -- so they are one =strike_axis= field group carrying the mode and
+the lists, not three columns of a union.
+
+=Type= has now been read, and it is not a discriminator. =inflationType= in
+=ore_types.xsd= is two values, =ZC= and =YY=, and both types state every other
+element the same way: the same lists, the same optionality, the same strike
+lists. So =Type= selects nothing about the columns; it names which surface the
+entry is, and it stays a column.
+
+What is a union is the strike axis. =CapStrikes=, =FloorStrikes= and =Strikes=
+are three alternatives, and which one a document writes follows its =QuoteType=
+-- a cap quote is struck on caps, a floor quote on floors, and a surface on
+both. Three nullable lists in one row is the shape this story removes.
+
+The field group the plan named is the wrong instrument for it: a field group
+embeds its columns in the host row, so the three lists stay three nullable
+columns of one row. The shape is one row per list the entry states instead:
+
+- =inflation_cap_floor_volatility_strikes= is keyed by =(entry, axis)=, where
+  =axis= is =Cap=, =Floor= or =Both=, and carries one =strikes= text;
+- an entry with caps and floors holds two rows, a surface holds one, and an
+  entry that states no list holds none;
+- an illegal state cannot be stored: a row names the axis it belongs to and the
+  list that axis uses, so nothing can state a cap list under a floor axis.
+
+That supersedes the =strike_axis= field group named earlier in this section.
 
 * Plan
 
@@ -109,7 +249,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Cap and floor entry members, before and after the split | 39 and 31 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="cap_floor_volatility_config"'` | `57070a08ad` |
+| Members the new part carries, of which the moved proxy fields | 10, of which 7 | same, for `cap_floor_proxy_config` | `57070a08ad` |
+| Swaption entry members, before and after the split | 27 and 21 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="swaption_volatility_config"'` | `547a51ea1e` |
+| Members the swaption part carries, of which the moved fields | 8, of which 5 | same, for `swaption_proxy_config` | `547a51ea1e` |
+| Curve volatility entry members, before and after the split | 32 and 4 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="curve_volatility_config"'` | `b4fc185da2` |
+| Members the kind row carries | 9 | same, for `curve_volatility_kind` | `b4fc185da2` |
+| Members the five kind parts carry | 4, 6, 11, 16 and 7 | same, for `curve_volatility_constant`, `..._curve`, `..._strike_surface`, `..._delta_surface` and `..._proxy_surface` | `b4fc185da2` |
+| FX entry members, before and after the split | 22 and 15 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="fx_volatility_config"'` | `3e353c1d4e` |
+| Members the FX smile part carries | 10 | same, for `fx_volatility_smile` | `3e353c1d4e` |
+| Inflation entry members, before and after the split | 22 and 19 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="inflation_cap_floor_volatility_config"'` | `5504038223` |
+| Members the strike part carries | 5 | same, for `inflation_cap_floor_volatility_strikes` | `5504038223` |
+| Tables the schema states | 655 | `python3 projects/ores.codegen/src/plantuml_er_parse_sql.py --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop --output build/output/codegen/plantuml_er_model.json --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict` | `d6f963d868` |
 
 * Notes
 
@@ -137,3 +288,123 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five entries are split. Four things the schema states are not modelled yet,
+and they are listed at the end of this result rather than left to be found.
+
+Cap and floor and swaption are done: their proxy blocks are parts, the entries
+lost the columns, and the document, service and projection carry the parts.
+
+=fx_volatility_config= is done too, and it is the one entry where the split
+improves on the schema instead of following it. =fxVolatility= is a single
+=xs:all= with a mandatory =Dimension= and every smile element optional, so the
+schema can only say the smile fields may be absent. It cannot say that an ATM
+surface has no smile and a smile surface has one. That condition is now the
+presence of an =fx_volatility_smile= row: the entry falls from 22 members to 15
+and the part holds seven, of which =Dimension= stays on the entry because it
+also decides how the =deltas= are read.
+
+=curve_volatility_config= is done in one change, because its five kinds share
+four terms and a half-wired kind would have stated each of them twice. The
+entry is the holder alone. Its kinds are rows of =curve_volatility_kind=, and
+each kind's own fields are the row of that kind's part.
+
+| Entity | Members | What it is |
+|--------+---------+------------|
+| =curve_volatility_config= | 4 | the holder: its curve definition and whether the document wrapped the kinds in a =VolatilityConfig= element |
+| =curve_volatility_kind= | 9 | the kind's code, ORE's =priority=, the party, and the four terms five of the seven kinds repeat |
+| =curve_volatility_constant= | 4 | the one quote a =Constant= states |
+| =curve_volatility_curve= | 6 | how a =Curve= interpolates and extrapolates |
+| =curve_volatility_strike_surface= | 11 | the strike and expiry grid |
+| =curve_volatility_delta_surface= | 16 | the delta grid, its types, and the future price correction |
+| =curve_volatility_proxy_surface= | 7 | the curves a =ProxySurface= is built from |
+
+The entry was 32 members of which 26 are now zero. The four terms are the kind
+row's because the row is what makes them appear once: seven kinds sharing four
+columns is a group, seven kinds each having their own four is a union again.
+The kind's own fields live in the kind's part, so a part mirrors one ORE
+complex type and the seven columns =DeltaSurface= shares with =StrikeSurface=
+are stated in both: a column shared with a sibling type is not a fact held
+twice, because neither row can stand for the other.
+
+=position= left the entry with the kinds. The order an entry's kinds are
+written in is ORE's own =priority= and, where none is stated, ORE's own kind
+order, so no column restores it and none can drift from it.
+
+The two facts the schema cannot state are now stated by the model instead of
+by a comment: a =ProxySurface= states none of the four terms, so the terms are
+read only where the holder's type declares them, and the ORE booleans
+(=Extrapolation= and its relatives) are enumerations, so they are read and
+written as spellings.
+
+=inflation_cap_floor_volatility_config= is done, and it is the one entry where
+the plan named the wrong instrument. The plan called for a =strike_axis= field
+group; a field group embeds its columns in the host row, so the three strike
+lists would have stayed three nullable columns of one row. The shape is a part
+instead: =inflation_cap_floor_volatility_strikes= is keyed by =(entry, axis)=,
+where =axis= is =Cap=, =Floor= or =Both=, and states whether the document wrote
+the list at all -- an entry whose caps are stated and empty is a row with an
+empty list, not an absent row. The entry falls from 22 members to 19.
+
+=Type= was read before the split and it is not a discriminator: =inflationType=
+is =ZC= or =YY=, and both state every other element the same way. It stays a
+column.
+
+One more finding, from the database round trip. The store keeps one code per
+business day convention -- twenty-seven spellings, seven conventions -- and the
+conversion lived as a hand edit in eleven generated mappers. Regenerating a
+mapper dropped it, silently, because the row still compiled; the round trip
+caught it as ='ModifiedFollowing' became 'MF'= on the inflation entry. A hand
+edit to a generated file is not a place to keep a rule, and the rule now lives
+in the models and the mapper template: a column declares =:store_transform:=,
+the template renders the conversion on the write side, and the header it needs
+is declared beside it with =:store_transform_include:=. That work landed on
+=main= while this branch was open, so the rebase dropped this branch's own
+version of it.
+
+Verified after the rebase onto =origin/main= at =2e3f9975ee=: the refdata and
+ore suites pass, =compass db recreate= applies the schema and the seeds, the
+drift check names no =refdata= file, and the ER diagram and =compass lint=
+checks pass.
+
+The rebase also surfaced a failure that is =main='s and not this branch's: the
+synthetic =fx_option_convention= wrote =Forward= for its long term delta type,
+and the value set the store now enforces holds =Fwd=. The model's generator
+block states =Fwd= and the entry still round trips; without it the refdata
+suite does not run to the end.
+
+The branch was 166 commits behind =origin/main=, and rebasing it first is part
+of this result: the tree it started from was missing main's inflation cap and
+floor write, which the round trip test caught and this work restored.
+
+What the FX split does not yet prove through the database: the round trip of a
+document that *states* a smile. Both DB fixtures are at the money, so the tests
+assert the part's absence and the smile path is walked in memory over the corpus
+by the projection's own round trip, which covers 89 documents including the
+smile surfaces. A database case needs the FX option conventions and the joined
+calendars a smile entry names, which is the next step.
+
+What is not modelled yet, all four found by reading the schema and the diff a
+second time rather than by a failing test:
+
+- =volatilityMoneynessSurfaceConfig= has no part. The plan lists
+  =curve_volatility_moneyness_surface= and the projection refuses the element,
+  so a document that states one does not import. It was deferred on the plan and
+  stays deferred here.
+- =ParametricSmileConfiguration= is an optional element of both
+  =volatilityStrikeSurfaceConfig= and =volatilityDeltaSurfaceConfig=, and neither
+  part carries it. This one is a gap in a part that claims to be each kind's own
+  fields, not a deferred kind.
+- The ten parts have no shell address. Their permissions are seeded and no
+  command can use them; the proxy and kind arguments left the existing commands
+  when the parts arrived.
+- The export orders an entry's kinds by =priority= and then by ORE's kind order.
+  A document that lists kinds in another order and states no priority is
+  re-exported in the model's order. The corpus never does this, and nothing
+  checks that it does not.
+
+Still to do:
+
+- a part for the moneyness surface, and one for =ParametricSmileConfiguration=;
+- a shell address for each of the ten parts;
+- a database case for a smile surface, with its conventions and calendars.

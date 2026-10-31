@@ -46,10 +46,10 @@ namespace ores::refdata::domain {
  * ParametricSmileConfiguration a row of curve_parametric_smile.
  *
  * A ProxyConfig builds the surface from another one; it is one per entry, so
- * its fields are the proxy_ columns, and has_proxy_config says whether the
- * entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling
- * kept for old documents, and UseEffectiveVolatility; each has its own column so
- * either round trips.
+ * it is a row of cap_floor_proxy_config and the entry holds none of its fields.
+ * The schema allows both UseEffeciveVolatility, a misspelling kept for old
+ * documents, and UseEffectiveVolatility; each has its own column so either round
+ * trips.
  */
 struct cap_floor_volatility_config final {
     /**
@@ -218,46 +218,6 @@ struct cap_floor_volatility_config final {
      * @brief Whether effective volatilities are used, as the ORE boolean the document wrote.
      */
     std::optional<std::string> use_effective_volatility;
-
-    /**
-     * @brief Whether the entry writes a ProxyConfig element.
-     */
-    bool has_proxy_config = false;
-
-    /**
-     * @brief The cap and floor volatility a proxy surface is built from.
-     */
-    std::optional<std::string> proxy_source_curve_id;
-
-    /**
-     * @brief The index of the proxy's source.
-     */
-    std::optional<std::string> proxy_source_index;
-
-    /**
-     * @brief The rate computation period of the proxy's source.
-     */
-    std::optional<std::string> proxy_source_rate_computation_period;
-
-    /**
-     * @brief The index of the proxy's target.
-     */
-    std::optional<std::string> proxy_target_index;
-
-    /**
-     * @brief The rate computation period of the proxy's target.
-     */
-    std::optional<std::string> proxy_target_rate_computation_period;
-
-    /**
-     * @brief The overnight cap settlement days of the proxy's target.
-     */
-    std::optional<int> proxy_target_on_cap_settlement_days;
-
-    /**
-     * @brief The factor the proxy's volatilities are scaled by.
-     */
-    std::optional<double> proxy_scaling_factor;
 
     /**
      * @brief Username of the person who last modified this cap floor volatility config.

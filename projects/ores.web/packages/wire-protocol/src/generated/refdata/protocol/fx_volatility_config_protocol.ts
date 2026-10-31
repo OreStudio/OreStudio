@@ -36,10 +36,7 @@ export interface FxVolatilityConfigWrite {
     id: string;
     curve_definition_id: string;
     dimension: string;
-    smile_type: string | null;
-    smile_interpolation: string | null;
     deltas: string | null;
-    smile_delta: string | null;
     conventions: string | null;
     expiries: string | null;
     fx_spot_id: string | null;
@@ -50,10 +47,6 @@ export interface FxVolatilityConfigWrite {
     fx_index_tag: string | null;
     base_volatility_1: string | null;
     base_volatility_2: string | null;
-    smile_extrapolation: string | null;
-    time_interpolation: string | null;
-    time_weighting: string | null;
-    butterfly_error_tolerance: number | null;
 }
 
 export interface FxVolatilityConfigChange {

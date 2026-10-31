@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 170
+Tables: 180
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -983,6 +983,62 @@ package "refdata" #FFF3E0 {
     than a nullable country reference, since no single country owns them.
     end note
 
+    entity ores_refdata_cap_floor_proxy_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * cap_floor_volatility_config_id : uuid <<FK>>
+          source_curve_id : text <<FK>>
+          source_index : text
+          source_rate_computation_period : text
+          target_index : text
+          target_rate_computation_period : text
+          target_on_cap_settlement_days : integer
+          scaling_factor : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cap_floor_proxy_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cap Floor Proxy Config Table
+    +#+updated: 2026-10-30
+    A cap and floor volatility entry may name a proxy surface instead of its own
+    quotes, and ORE states it as a ProxyConfig element inside the entry's
+    CapFloorVolatility:
+    #+begin_example
+    <ProxyConfig>
+    <Source>
+    <CurveId>...</CurveId>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+    </Source>
+    <Target>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+    <ONCapSettlementDays>...</ONCapSettlementDays>
+    </Target>
+    <ScalingFactor>...</ScalingFactor>
+    </ProxyConfig>
+    #+end_example
+    That block was seven nullable columns of the entry, meaningful only when the
+    entry named a proxy. A row of this part holds it, and a row exists only when the
+    entry names one, so the presence of the part is the flag and no has_proxy_config
+    column is needed.
+    The swaption entry's proxy block is a different element: its source and target
+    carry ShortSwapIndexBase and SwapIndexBase where this one carries an index
+    and a rate computation period. It is its own part, swaption_proxy_config, for
+    that reason: the two share a shape, not a type.
+    end note
+
     entity ores_refdata_cap_floor_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1018,14 +1074,6 @@ package "refdata" #FFF3E0 {
           flat_first_period : text
           use_effecive_volatility : text
           use_effective_volatility : text
-        * has_proxy_config : boolean
-          proxy_source_curve_id : text <<FK>>
-          proxy_source_index : text
-          proxy_source_rate_computation_period : text
-          proxy_target_index : text
-          proxy_target_rate_computation_period : text
-          proxy_target_on_cap_settlement_days : integer
-          proxy_scaling_factor : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1046,10 +1094,10 @@ package "refdata" #FFF3E0 {
     its BootstrapConfig a row of curve_bootstrap_config and its
     ParametricSmileConfiguration a row of curve_parametric_smile.
     A ProxyConfig builds the surface from another one; it is one per entry, so
-    its fields are the proxy_ columns, and has_proxy_config says whether the
-    entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling
-    kept for old documents, and UseEffectiveVolatility; each has its own column so
-    either round trips.
+    it is a row of cap_floor_proxy_config and the entry holds none of its fields.
+    The schema allows both UseEffeciveVolatility, a misspelling kept for old
+    documents, and UseEffectiveVolatility; each has its own column so either round
+    trips.
     end note
 
     entity ores_refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
@@ -3092,35 +3140,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
-        * kind : text
         * is_wrapped : boolean
-          priority : integer
-          quote_type : text
-          volatility_type : text
-          exercise_type : text
-          strikes : text
-          expiries : text
-          time_interpolation : text
-          strike_interpolation : text
-          extrapolation : text
-          time_extrapolation : text
-          time_extrapolation_variance : text
-          strike_extrapolation : text
-          calendar : text
-          quote : text
-          interpolation : text
-          enforce_monotone_variance : boolean
-          delta_type : text
-          atm_type : text
-          atm_delta_type : text
-          put_deltas : text
-          call_deltas : text
-          future_price_correction : text
-          proxy_volatility_curve : text
-          fx_volatility_curve : text
-          correlation_curve : text
-          cds_volatility_curve : text
-        * position : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3134,17 +3154,232 @@ package "refdata" #FFF3E0 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Curve Volatility Config Table
-    One way a volatility entry's surface may be built. CDS, equity and commodity
-    volatilities each name one or more volatility configurations, each with an
-    optional priority; ORE builds the first that succeeds. kind names the
-    element the document wrote, and the columns that kind uses are set. An entry
-    writes a kind either directly or inside a VolatilityConfig element, which
-    holds at most one of each kind; is_wrapped says which.
-    The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
-    DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
-    curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
-    MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
-    appear in no corpus document, and the mapper refuses them.
+    The volatility block of one ORE curve entry: the holder its kinds are listed in.
+    ORE writes either one bare kind element on the entry, or a VolatilityConfig
+    element holding up to one of each kind in an xs:all; is_wrapped says which
+    form this block was written in. The kinds themselves are rows of
+    curve_volatility_kind, and each kind's own fields are the row of that kind's
+    part.
+    The row carries no kind and no field of any kind. Every one of those facts
+    belongs to a kind or to a kind's part, and a row that carried them as well would
+    state each one twice.
+    end note
+
+    entity ores_refdata_curve_volatility_constants_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * quote : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_constants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Constant Table
+    ORE's constantVolatilityConfig states a single quote, and nothing else of its
+    own. That quote is the kind's own field: the four terms every kind may state and
+    the priority are on curve_volatility_kind, and a row of this part exists only
+    when the entry holds a kind of this type.
+    end note
+
+    entity ores_refdata_curve_volatility_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * interpolation : text
+        * extrapolation : text
+          enforce_monotone_variance : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Curve Table
+    ORE's volatilityCurveConfig states its quotes in a Quotes list, and states how
+    those quotes are interpolated and extrapolated. The quotes are rows of
+    curve_quote on the entry, because a quote is a market data row and not a
+    property of the kind. What is the kind's own is the shape it reads them in:
+    those three columns are this part, and a row of it exists only when the entry
+    holds a kind of this type.
+    end note
+
+    entity ores_refdata_curve_volatility_delta_surfaces_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * delta_type : text
+        * atm_type : text
+          atm_delta_type : text
+        * put_deltas : text
+        * call_deltas : text
+        * expiries : text
+        * time_interpolation : text
+        * strike_interpolation : text
+        * extrapolation : boolean
+        * time_extrapolation : text
+          time_extrapolation_variance : boolean
+        * strike_extrapolation : text
+          future_price_correction : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_delta_surfaces_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Delta Surface Table
+    ORE's volatilityDeltaSurfaceConfig states a grid of deltas against expiries: the
+    delta type, the ATM type and the ATM delta type that name what the grid's points
+    mean, the put and call deltas, and how the grid interpolates and extrapolates.
+    Those are the kind's own fields; the four terms every kind may state and the
+    priority are on curve_volatility_kind, and a row of this part exists only when
+    the entry holds a kind of this type.
+    Seven of this part's columns name the same things curve_volatility_strike_surface
+    names: the expiries and the six ways the grid interpolates and extrapolates. They
+    are stated in both because a part mirrors one ORE complex type, and each type
+    states its own grid. A column shared with a sibling type is not a fact held twice:
+    neither row can stand for the other, and a surface that could read its grid from
+    either would make the pair interchangeable, which the schema does not say.
+    end note
+
+    entity ores_refdata_curve_volatility_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_config_id : uuid <<FK>>
+        * kind_code : text
+          priority : integer
+          quote_type : text
+          volatility_type : text
+          exercise_type : text
+          calendar : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Kind Table
+    An ORE volatility entry writes either one bare kind element, or a
+    VolatilityConfig element holding up to one of each of seven kinds in an
+    xs:all. Each kind is its own complex type, and each carries a priority
+    attribute, because an entry may hold several alternatives and ORE builds the
+    first that succeeds.
+    Five of the seven kinds repeat the same four terms: QuoteType,
+    VolatilityType, ExerciseType and Calendar. ApoFutureSurface states the
+    first two and no calendar, and ProxySurface states none of the four. The four
+    are columns of this row rather than of each kind's part, because the row is what
+    makes them appear once: seven kinds sharing four columns is a group, seven kinds
+    each having their own four is a union again. A kind that states none of them
+    leaves them null, and the mapper reads them only where the holder's type
+    declares them.
+    This row is that kind: which kind it is, where ORE's priority puts it, and
+    the terms it states. The kind's own fields live in the kind's part, one table
+    each, as curve_volatility_strike_surface does for StrikeSurface.
+    The kind is the discriminator, and it is a row rather than a column because an
+    entry holds several of them.
+    end note
+
+    entity ores_refdata_curve_volatility_proxy_surfaces_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * proxy_volatility_curve : text
+          fx_volatility_curve : text
+          correlation_curve : text
+          cds_volatility_curve : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_proxy_surfaces_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Proxy Surface Table
+    ORE's proxySurface builds one surface from other curves: the volatility it is
+    quoted from, and the FX and correlation curves it converts with. Those columns
+    are the kind's own. This is the one kind that states none of the four terms, so
+    its curve_volatility_kind row carries a kind_code and a priority and nothing
+    else.
+    end note
+
+    entity ores_refdata_curve_volatility_strike_surfaces_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * strikes : text
+        * expiries : text
+        * time_interpolation : text
+        * strike_interpolation : text
+        * extrapolation : boolean
+        * time_extrapolation : text
+          time_extrapolation_variance : boolean
+        * strike_extrapolation : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_strike_surfaces_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Strike Surface Table
+    ORE's volatilityStrikeSurfaceConfig states a grid of strikes against expiries,
+    how it interpolates each way, and how it extrapolates past the grid. Those are
+    the kind's own fields: the four terms every kind states and the priority are on
+    curve_volatility_kind, and a row of this part exists only when the entry holds
+    a kind of this type.
     end note
 
     entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
@@ -3686,10 +3921,7 @@ package "refdata" #FFF3E0 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
         * dimension : text
-          smile_type : text
-          smile_interpolation : text
           deltas : text
-          smile_delta : text
           conventions : text
           expiries : text
           fx_spot_id : text <<FK>>
@@ -3700,10 +3932,6 @@ package "refdata" #FFF3E0 {
           fx_index_tag : text
           base_volatility_1 : text
           base_volatility_2 : text
-          smile_extrapolation : text
-          time_interpolation : text
-          time_weighting : text
-          butterfly_error_tolerance : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3718,11 +3946,54 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     FX Volatility Config Table
     The settings of one FXVolatility entry of a curveconfig.xml, one row per
-    curve_definition in the FXVolatilities section: the surface's dimension and
-    smile, the deltas and expiries it is quoted on, and the curves and spot it is
-    built with. Its Report is a row of curve_report_configuration.
+    curve_definition in the FXVolatilities section: the surface's dimension, the
+    deltas and expiries it is quoted on, and the curves and spot it is built with.
+    Its Report is a row of curve_report_configuration.
+    The smile is not here. ORE makes every smile element optional, so a flat row
+    cannot say that a smile surface has a smile and an ATM one does not; that
+    condition is the presence of a fx_volatility_smile row. dimension stays,
+    because it also decides how deltas is read.
     The schema also allows a ParametricSmileConfiguration, which no corpus
     document writes; the mapper refuses an entry that has one rather than lose it.
+    end note
+
+    entity ores_refdata_fx_volatility_smiles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * fx_volatility_config_id : uuid <<FK>>
+          smile_type : text
+          smile_interpolation : text
+          smile_delta : text
+          smile_extrapolation : text
+          time_interpolation : text
+          time_weighting : text
+          butterfly_error_tolerance : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_volatility_smiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Smile Table
+    ORE's fxVolatility is one xs:all with a mandatory Dimension and every
+    smile element optional, so the schema says only that the smile fields may be
+    absent. It cannot say that they are meaningless in one dimension: an ATM surface
+    has no smile, and a smile surface has one. That is the deficiency this part
+    corrects, because a part row exists only where the surface has a smile.
+    The part holds SmileType, SmileInterpolation, SmileDelta,
+    SmileExtrapolation, TimeInterpolation, TimeWeighting and
+    ButterflyErrorTolerance. Dimension stays on the entry, because it does not
+    only decide whether a smile exists: it also decides how the entry's Deltas are
+    read.
     end note
 
     entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
@@ -3767,9 +4038,6 @@ package "refdata" #FFF3E0 {
         * extrapolation : text
         * tenors : text
           settlement_days : integer
-          cap_strikes : text
-          floor_strikes : text
-          strikes : text
         * calendar : text
         * day_counter : text <<FK>>
         * business_day_convention : text
@@ -3795,10 +4063,47 @@ package "refdata" #FFF3E0 {
     Inflation Cap Floor Volatility Config Table
     The settings of one InflationCapFloorVolatility entry of a curveconfig.xml,
     one row per curve_definition in the InflationCapFloorVolatilities section:
-    a zero coupon or year on year inflation cap and floor surface over tenors and
-    strikes, with the index and curves it is built from. Its Report is a row of
+    a zero coupon or year on year inflation cap and floor surface over tenors, with
+    the index and curves it is built from.
+    The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes
+    and Strikes -- as alternatives, so they are rows of
+    inflation_cap_floor_volatility_strikes, one per axis the entry states, rather
+    than three nullable columns that leave the reader to work out which one a row
+    meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of
     curve_report_configuration and its BootstrapConfig a row of
     curve_bootstrap_config, both keyed to the entry.
+    end note
+
+    entity ores_refdata_inflation_cap_floor_volatility_strikes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * inflation_cap_floor_volatility_config_id : uuid <<FK>>
+        * axis : text
+        * strikes : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_cap_floor_volatility_strikes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Cap Floor Volatility Strikes Table
+    ORE's inflationCapFloorVolatility states three strike lists: CapStrikes,
+    FloorStrikes and Strikes. They are alternatives, not three facts: a cap quote
+    is struck on caps, a floor quote on floors, and a surface on both sides at once.
+    Three optional columns in one row would let a row state a cap list and a floor
+    list and leave the reader to work out which it meant.
+    The part is a row per axis the entry states, so the choice is structural. An
+    entry with caps and floors holds two rows, a surface holds one, and an entry that
+    states no list holds none.
     end note
 
     entity ores_refdata_inflation_curve_configs_tbl <<temporal>> #C6F0D8 {
@@ -5435,6 +5740,57 @@ package "refdata" #FFF3E0 {
     (ORE <Id> element).
     end note
 
+    entity ores_refdata_swaption_proxy_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * swaption_volatility_config_id : uuid <<FK>>
+          source_curve_id : text <<FK>>
+          source_short_swap_index_base : text
+          source_swap_index_base : text
+          target_short_swap_index_base : text
+          target_swap_index_base : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swaption_proxy_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swaption Proxy Config Table
+    A swaption volatility entry may name a proxy surface instead of its own
+    quotes, and ORE states it as a ProxyConfig element inside the entry's
+    SwaptionVolatility:
+    #+begin_example
+    <ProxyConfig>
+    <Source>
+    <CurveId>...</CurveId>
+    <ShortSwapIndexBase>...</ShortSwapIndexBase>
+    <SwapIndexBase>...</SwapIndexBase>
+    </Source>
+    <Target>
+    <ShortSwapIndexBase>...</ShortSwapIndexBase>
+    <SwapIndexBase>...</SwapIndexBase>
+    </Target>
+    </ProxyConfig>
+    #+end_example
+    That block was six nullable columns of the entry, meaningful only when the entry
+    named a proxy. A row of this part holds it, and a row exists only when the entry
+    names one, so the presence of the part is the flag and no has_proxy_config
+    column is needed.
+    The cap and floor entry's proxy is a different element: its source and target
+    carry Index and RateComputationPeriod where this one carries the two swap
+    index bases. That one is cap_floor_proxy_config, and this part is its sibling
+    rather than its type: the two share a shape, not a type.
+    end note
+
     entity ores_refdata_swaption_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -5460,12 +5816,6 @@ package "refdata" #FFF3E0 {
           smile_swap_tenors : text
           smile_spreads : text
           quote_tag : text
-        * has_proxy_config : boolean
-          proxy_source_curve_id : text <<FK>>
-          proxy_source_short_swap_index_base : text
-          proxy_source_swap_index_base : text
-          proxy_target_short_swap_index_base : text
-          proxy_target_swap_index_base : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5486,8 +5836,7 @@ package "refdata" #FFF3E0 {
     curve_report_configuration and its ParametricSmileConfiguration a row of
     curve_parametric_smile.
     A ProxyConfig builds the surface from another one; it is one per entry, so
-    its fields are the proxy_ columns, and has_proxy_config says whether the
-    entry wrote it.
+    it is a row of swaption_proxy_config and the entry holds none of its fields.
     end note
 
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {
@@ -6094,6 +6443,7 @@ ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_diary_entry_types_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_exceptions_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_rules_tbl : "has"
+ores_refdata_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_cap_floor_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"
@@ -6137,6 +6487,12 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_segments_tbl : "has
 ores_refdata_curve_segment_types_tbl ||--o{ ores_refdata_curve_segments_tbl : "has"
 ores_refdata_floating_index_types_tbl ||--o{ ores_refdata_curve_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_volatility_configs_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_constants_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_curves_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_delta_surfaces_tbl : "has"
+ores_refdata_curve_volatility_configs_tbl ||--o{ ores_refdata_curve_volatility_kinds_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_proxy_surfaces_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_strike_surfaces_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configurations_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_default_curve_configurations_tbl : "has"
@@ -6146,8 +6502,10 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
+ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
+ores_refdata_inflation_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_strikes_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_seasonality_factors_tbl : "has"
@@ -6169,6 +6527,7 @@ ores_refdata_business_units_tbl ||--o{ ores_refdata_portfolios_tbl : "has"
 ores_refdata_sandboxes_tbl ||--o{ ores_refdata_portfolios_tbl : "has"
 ores_refdata_sandboxes_tbl ||--o{ ores_refdata_sandbox_members_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_sandboxes_tbl : "has"
+ores_refdata_swaption_volatility_configs_tbl ||--o{ ores_refdata_swaption_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_swaption_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_swaption_volatility_configs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_tenor_basis_swap_long_shorts_tbl : "has"

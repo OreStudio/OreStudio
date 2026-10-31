@@ -97,7 +97,7 @@ std::string("AtmDeltaNeutral")
 :nullable:    false
 :END:
 
-How the delta is measured, in ORE's own spelling (e.g. 'Spot', 'Forward', 'PaSpot').
+How the delta is measured, in ORE's own spelling (e.g. 'Spot', 'Fwd', 'PaSpot').
 
 #+begin_src cpp :name generator
 std::string("Spot")
@@ -139,7 +139,7 @@ std::string("AtmDeltaNeutral")
 Delta type used beyond the switch tenor.
 
 #+begin_src cpp :name generator
-std::string("Forward")
+std::string("Fwd")
 #+end_src
 
 ** risk_reversal_in_favor_of
@@ -260,7 +260,7 @@ std::nullopt
 | delta type | Delta Type | deltaTypeEdit | line_edit |  | true | e.g. Spot |
 | switch tenor | Switch Tenor | switchTenorEdit | line_edit |  |  | e.g. 1Y |
 | long term atm type | Long Term ATM | longTermAtmTypeEdit | line_edit |  |  | e.g. AtmDeltaNeutral |
-| long term delta type | Long Term Delta | longTermDeltaTypeEdit | line_edit |  |  | e.g. Forward |
+| long term delta type | Long Term Delta | longTermDeltaTypeEdit | line_edit |  |  | e.g. Fwd |
 | risk reversal in favor of | RR In Favour Of | riskReversalInFavorOfEdit | line_edit |  |  | e.g. Call |
 | butterfly style | Butterfly Style | butterflyStyleEdit | line_edit |  |  | e.g. Broker |
 

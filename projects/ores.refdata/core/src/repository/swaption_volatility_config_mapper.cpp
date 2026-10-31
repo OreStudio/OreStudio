@@ -68,12 +68,6 @@ swaption_volatility_config_mapper::map(const swaption_volatility_config_entity& 
     r.smile_swap_tenors = v.smile_swap_tenors;
     r.smile_spreads = v.smile_spreads;
     r.quote_tag = v.quote_tag;
-    r.has_proxy_config = v.has_proxy_config;
-    r.proxy_source_curve_id = v.proxy_source_curve_id;
-    r.proxy_source_short_swap_index_base = v.proxy_source_short_swap_index_base;
-    r.proxy_source_swap_index_base = v.proxy_source_swap_index_base;
-    r.proxy_target_short_swap_index_base = v.proxy_target_short_swap_index_base;
-    r.proxy_target_swap_index_base = v.proxy_target_swap_index_base;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -115,12 +109,6 @@ swaption_volatility_config_mapper::map(const domain::swaption_volatility_config&
     r.smile_swap_tenors = v.smile_swap_tenors;
     r.smile_spreads = v.smile_spreads;
     r.quote_tag = v.quote_tag;
-    r.has_proxy_config = v.has_proxy_config;
-    r.proxy_source_curve_id = v.proxy_source_curve_id;
-    r.proxy_source_short_swap_index_base = v.proxy_source_short_swap_index_base;
-    r.proxy_source_swap_index_base = v.proxy_source_swap_index_base;
-    r.proxy_target_short_swap_index_base = v.proxy_target_short_swap_index_base;
-    r.proxy_target_swap_index_base = v.proxy_target_swap_index_base;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

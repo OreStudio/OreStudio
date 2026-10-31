@@ -17,8 +17,14 @@
 
 The settings of one =InflationCapFloorVolatility= entry of a =curveconfig.xml=,
 one row per =curve_definition= in the =InflationCapFloorVolatilities= section:
-a zero coupon or year on year inflation cap and floor surface over tenors and
-strikes, with the index and curves it is built from. Its =Report= is a row of
+a zero coupon or year on year inflation cap and floor surface over tenors, with
+the index and curves it is built from.
+
+The strikes are not here. ORE states three lists -- =CapStrikes=, =FloorStrikes=
+and =Strikes= -- as alternatives, so they are rows of
+=inflation_cap_floor_volatility_strikes=, one per axis the entry states, rather
+than three nullable columns that leave the reader to work out which one a row
+meant. =Type= stays: it is =ZC= or =YY= and selects nothing about the columns. Its =Report= is a row of
 =curve_report_configuration= and its =BootstrapConfig= a row of
 =curve_bootstrap_config=, both keyed to the entry.
 
@@ -147,45 +153,6 @@ std::string("1Y")
 :END:
 
 The number of settlement days.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** cap_strikes
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The cap strikes, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** floor_strikes
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The floor strikes, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** strikes
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The strikes of a volatility quoted surface, as ORE's comma separated text.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -400,4 +367,5 @@ std::nullopt
 * See also
 
 - [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:5A9F3C71-8D24-4E6B-B0F7-13C8E6A2D954][ores.refdata.inflation_cap_floor_volatility_strikes]] — the strike lists an entry states, one row per axis.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

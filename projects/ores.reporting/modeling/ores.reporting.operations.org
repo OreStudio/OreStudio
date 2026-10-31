@@ -12,7 +12,7 @@
 #+brief: The reporting component's domain operations.
 #+filetags: :model:operation:reporting:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-10-31
 
 The reporting component's domain operations, as the
 [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Domain operations" defines for
@@ -39,6 +39,12 @@ carries the dates it can price; when the two differ the step prices at the
 data's last date, and the run records both the date it used and why it moved.
 The fact belongs on the run, so a screen that shows the run does not read it
 out of an error message.
+
+=resolve_cut= answers the cut a report's selection resolves to, for the preview
+on the report's page and for the run, which resolves the selection before it
+gathers anything and records the cut it resolved. Both callers read one
+operation, because a preview computed by a second path is a preview of that
+path and not of the run.
 
 * Includes
 
@@ -1161,6 +1167,172 @@ scopes the answer is the session's, and never a field of this request.
 
 One entry per definition this session can read, and no entry for a definition it
 cannot.
+
+** resolve_cut_request
+:PROPERTIES:
+:subject: reporting.v1.ops.resolve_cut
+:response: resolve_cut_response
+:END:
+
+Answers the cut a report's selection resolves to, its state and the sentence that
+would refuse it.
+
+One operation serves the preview and the run. A preview computed by a second code
+path is a preview of that path and not of the run, so the report's *Definition*
+tab asks this same operation with =preview= set and reads what a run would find.
+The covered date is the report's, read from the run settings, because the covered
+date says which cut to look for while the cut states its own instant.
+
+A selection of a kind whose instant the run supplies resolves to a body the run
+mints, and a run states the four parts of the body it assembled. A part it could
+not assemble refuses the run and names the part, so no partial body is minted. A
+preview states no body and mints nothing.
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The definition whose selection is resolved, so the handler reads the selection
+from the definition rather than from the caller: a caller that stated the
+selection could state one the report does not hold.
+
+*** covered_date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the report covers, as an ISO 8601 date. It comes from the run settings
+and not from the cut, which is why a weekly report prices from the daily cut of
+the day it covers.
+
+*** scope_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The book population the cut fixes, as the report's scope names it.
+
+*** business_centre_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rates centre whose market data the scope's books revalue against. A report
+whose books span two centres is refused rather than composed, so the caller
+states the one centre the books share.
+
+*** preview
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether this call answers a preview. A preview writes nothing.
+
+*** market_data_snapshot_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The market data snapshot the assembly fixed, in the text form of its id, or empty
+where the assembly could not fix one. Read only by a call that mints a body.
+
+*** deal_population_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The copy of the deal population the assembly fixed, in the text form of its id,
+or empty.
+
+*** reference_data_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The version of the reference data in force at the instant, or empty.
+
+*** engine_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The version of the risk engine the body was assembled for, or empty.
+
+*** code_version
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The revision of the code that computed the result, or empty.
+
+** resolve_cut_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation. A selection that resolves to nothing is a successful
+call that refuses the run, so the sentence arrives in =refusal= and not in the
+result: nothing went wrong with the call.
+
+*** cut_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The cut the selection resolved to, in the text form of its id, or empty where it
+resolved to nothing.
+
+*** cut_label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The label a person quotes for the resolved cut, or empty. Derived from the cut
+and its kind, never typed.
+
+*** cut_kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The kind of the resolved cut, so a caller filters a run by the occasion it priced
+at without reading the cut.
+
+*** cut_timepoint
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The instant of the resolved cut, in ISO-8601 UTC, or empty.
+
+*** cut_state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The state the resolved cut is in, as the design words it: =draft=, =incomplete=,
+=taken=, =in_use=, =authorised=, =refused= or =superseded=. Empty where nothing
+resolved. The state is derived from the cut's own facts and stored nowhere.
+
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+One sentence saying why nothing resolved, or empty where something did. The
+preview's sentence, the report page's sentence and the run's output message are
+this sentence, so a scheduled run nobody watched still says why it did not price.
 
 
 * See also

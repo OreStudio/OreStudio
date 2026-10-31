@@ -58,6 +58,7 @@
 #include "ores.reporting.core/messaging/ore_parameter_value_set_value_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
+#include "ores.reporting.core/messaging/report_cut_resolution_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_error_event_handler.hpp"
@@ -403,6 +404,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_report_definition_version_request::nats_subject, group, [rdh](ores::nats::message msg) {
             rdh->get_report_definition_version(std::move(msg));
         }));
+
+    // ----------------------------------------------------------------
+    // The cut a report's selection resolves to (hand-crafted handler)
+    // ----------------------------------------------------------------
+    {
+        auto rch = std::make_shared<report_cut_resolution_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            resolve_cut_request::nats_subject, group, [rch](ores::nats::message msg) {
+                rch->resolve_cut(std::move(msg));
+            }));
+    }
 
     // ----------------------------------------------------------------
     // Report definition scheduling (hand-crafted handler — not codegen)

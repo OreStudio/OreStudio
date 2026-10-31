@@ -588,6 +588,38 @@ struct get_next_fire_response {
     std::vector<definition_next_fire> schedules;
 };
 
+struct resolve_cut_request {
+    using response_type = struct resolve_cut_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.resolve_cut";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid report_definition_id;
+    std::string covered_date;
+    std::string scope_code;
+    std::string business_centre_code;
+    bool preview = false;
+    std::string market_data_snapshot_id = "";
+    std::string deal_population_id = "";
+    std::string reference_data_version = "";
+    std::string engine_version = "";
+    std::string code_version = "";
+};
+
+struct resolve_cut_response {
+    ores::utility::domain::result result;
+    std::string cut_id;
+    std::string cut_label;
+    std::string cut_kind_code;
+    std::string cut_timepoint;
+    std::string cut_state;
+    std::string refusal;
+};
+
 }
 
 #endif

@@ -68,6 +68,7 @@ set(files
     "run_document_service_tests.cpp"
     "service_count_report_definitions_by_health_tests.cpp"
     "service_cut_resolution_tests.cpp"
+    "service_cut_state_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_get_run_health_tests.cpp"
     "service_next_fire_tests.cpp"

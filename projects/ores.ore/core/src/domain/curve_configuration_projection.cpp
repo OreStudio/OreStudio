@@ -1778,20 +1778,24 @@ void import_inflation_cap_floor_volatility(
 
     // The three lists are alternatives, so each one the entry states is a row of
     // its own axis rather than a column that leaves the reader to pick.
-    const auto add_strikes = [&](std::string_view axis, const std::optional<std::string>& list) {
-        if (!list || list->empty())
+    // A list the document states is a row, even where it is empty: the document
+    // wrote the element and the export writes it back, so presence is the fact.
+    const auto add_strikes = [&](std::string_view axis,
+                                 std::string_view element,
+                                 const std::optional<std::string>& list) {
+        if (!v.has(std::string(element)))
             return;
         refdata::domain::inflation_cap_floor_volatility_strikes row;
         row.id = curve_configuration_projection_new_uuid();
         row.inflation_cap_floor_volatility_config_id = entry_id;
         row.axis = std::string(axis);
-        row.strikes = *list;
+        row.strikes = list.value_or("");
         curve_configuration_projection_set_audit(row);
         out.inflation_volatility_strikes.push_back(std::move(row));
     };
-    add_strikes("Cap", v.text("CapStrikes"));
-    add_strikes("Floor", v.text("FloorStrikes"));
-    add_strikes("Both", v.text("Strikes"));
+    add_strikes("Cap", "CapStrikes", v.text("CapStrikes"));
+    add_strikes("Floor", "FloorStrikes", v.text("FloorStrikes"));
+    add_strikes("Both", "Strikes", v.text("Strikes"));
     if (const auto report = v.child("Report"); report)
         import_report(out, d.id, *report);
     if (const auto bootstrap = v.child("BootstrapConfig"); bootstrap)

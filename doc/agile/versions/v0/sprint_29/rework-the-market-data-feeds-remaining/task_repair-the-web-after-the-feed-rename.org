@@ -86,3 +86,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The web and the BFF speak of feeds, and the rename's runtime defects are fixed.
+
+- The BFF reads the feeds (the feed protocol), answers them with the feed fields,
+  and groups the official providers from their feeds; a series matches a feed by
+  publisher_code and provider_key, and a series no feed names is logged rather
+  than dropped.
+- The routes read and write publisher_code and feed_id; the delete key is
+  publisher_code.
+- The web page, API module, paths, card, related journeys, routes and the
+  en/fr/pt catalogues say feed; /operations/market-data-feeds replaces
+  /operations/market-data-sources.
+- Two defects in the earlier patch are fixed: the feed list was read as
+  running_feeds (synthetic's member; marketdata answers feeds), and the route
+  delete sent provider_code where the key is publisher_code. The feeds card
+  asked for a permission no role holds; it now asks marketdata::feeds:read.
+- Checks: the BFF tsc, the web tsc+vite, the BFF vitest (84 files, 1152 tests),
+  the web vitest (186 files, 2333 tests), compass lint, the route inventory and
+  prettier all pass.
+
+Left open: the route key carries only publisher_code while the natural key
+includes asset_class; a feed has no kind; provider_key may be empty or shared,
+so the series match is not unique; the feeds journey doc still uses the old
+source language, which belongs to the suppliers, sessions and feeds story.

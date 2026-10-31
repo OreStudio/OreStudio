@@ -602,6 +602,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:read',   'View curve volatility delta surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:write',  'Create and modify curve volatility delta surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:delete', 'Delete curve volatility delta surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:read',   'View curve volatility moneyness surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:write',  'Create and modify curve volatility moneyness surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:delete', 'Delete curve volatility moneyness surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:read',   'View curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:write',  'Create and modify curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:delete', 'Delete curve volatility proxy surfaces');

@@ -525,6 +525,55 @@ TEST_CASE("a parametric smile on a strike surface round trips through the databa
     CHECK(difference.empty());
 }
 
+TEST_CASE("a moneyness surface round trips through the database",
+          "[curveconfig][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "a moneyness surface round trips through the database";
+    ores::testing::scoped_database_helper h;
+    write_input_conventions(h.context());
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <EquityVolatilities>
+    <EquityVolatility>
+      <CurveId>SP6</CurveId>
+      <CurveDescription>A moneyness surface</CurveDescription>
+      <Currency>USD</Currency>
+      <VolatilityConfig>
+        <MoneynessSurface>
+          <QuoteType>ImpliedVolatility</QuoteType>
+          <VolatilityType>Normal</VolatilityType>
+          <ExerciseType>European</ExerciseType>
+          <MoneynessType>Fwd</MoneynessType>
+          <MoneynessLevels>0.8,1.0,1.2</MoneynessLevels>
+          <Expiries>1Y,2Y</Expiries>
+          <TimeInterpolation>Linear</TimeInterpolation>
+          <StrikeInterpolation>Cubic</StrikeInterpolation>
+          <Extrapolation>true</Extrapolation>
+          <TimeExtrapolation>Linear</TimeExtrapolation>
+          <StrikeExtrapolation>Flat</StrikeExtrapolation>
+          <FuturePriceCorrection>false</FuturePriceCorrection>
+        </MoneynessSurface>
+      </VolatilityConfig>
+    </EquityVolatility>
+  </EquityVolatilities>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
+    REQUIRE(mapped.volatility_kinds.size() == 1);
+    CHECK(mapped.volatility_kinds.front().kind_code == "MoneynessSurface");
+    REQUIRE(mapped.volatility_moneyness_surfaces.size() == 1);
+    CHECK(mapped.volatility_moneyness_surfaces.front().moneyness_type == "Fwd");
+
+    write(h.context(), mapped);
+    const auto back = read_back(h.context(), mapped);
+    CHECK(back.volatility_moneyness_surfaces.size() == 1);
+
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, "moneyness surface");
+    INFO(difference);
+    CHECK(difference.empty());
+}
+
 TEST_CASE("a holder writing two kinds keeps both and the priority it gave each",
           "[curveconfig][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));

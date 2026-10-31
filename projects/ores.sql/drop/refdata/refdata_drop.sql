@@ -102,6 +102,8 @@
 \ir ./refdata_curve_volatility_strike_surfaces_drop.sql
 \ir ./refdata_curve_volatility_proxy_surfaces_notify_trigger_drop.sql
 \ir ./refdata_curve_volatility_proxy_surfaces_drop.sql
+\ir ./refdata_curve_volatility_moneyness_surfaces_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_moneyness_surfaces_drop.sql
 \ir ./refdata_curve_volatility_delta_surfaces_notify_trigger_drop.sql
 \ir ./refdata_curve_volatility_delta_surfaces_drop.sql
 \ir ./refdata_curve_volatility_curves_notify_trigger_drop.sql

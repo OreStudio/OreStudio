@@ -53,6 +53,7 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_moneyness_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_kind.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
@@ -230,6 +231,11 @@ message, and no family of conventions has a type here.
 *** volatility_delta_surfaces
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::curve_volatility_delta_surface>
+:END:
+
+*** volatility_moneyness_surfaces
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_moneyness_surface>
 :END:
 
 *** volatility_proxy_surfaces

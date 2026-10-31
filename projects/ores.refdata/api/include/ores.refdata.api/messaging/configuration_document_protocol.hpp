@@ -54,6 +54,7 @@
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_kind.hpp"
+#include "ores.refdata.api/domain/curve_volatility_moneyness_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_proxy_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
@@ -120,6 +121,8 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_volatility_curve> volatility_curves;
     std::vector<ores::refdata::domain::curve_volatility_strike_surface> volatility_strike_surfaces;
     std::vector<ores::refdata::domain::curve_volatility_delta_surface> volatility_delta_surfaces;
+    std::vector<ores::refdata::domain::curve_volatility_moneyness_surface>
+        volatility_moneyness_surfaces;
     std::vector<ores::refdata::domain::curve_volatility_proxy_surface> volatility_proxy_surfaces;
     std::vector<ores::refdata::domain::curve_volatility_smile> volatility_smiles;
     std::vector<ores::refdata::domain::curve_volatility_smile_parameter>

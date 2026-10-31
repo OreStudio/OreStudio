@@ -47,6 +47,7 @@
 #include "ores.refdata.core/repository/curve_volatility_kind_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_smile_repository.hpp"
+#include "ores.refdata.core/repository/curve_volatility_moneyness_surface_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_proxy_surface_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_strike_surface_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_config_repository.hpp"
@@ -184,6 +185,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
     write_amendment(ctx_,
                     curve_volatility_delta_surface_repository(),
                     std::move(v.volatility_delta_surfaces),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_volatility_moneyness_surface_repository(),
+                    std::move(v.volatility_moneyness_surfaces),
                     reason,
                     commentary);
     write_amendment(ctx_,
@@ -328,6 +334,8 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         read_where(ctx_, curve_volatility_strike_surface_repository(), of_volatility_kind);
     r.volatility_delta_surfaces =
         read_where(ctx_, curve_volatility_delta_surface_repository(), of_volatility_kind);
+    r.volatility_moneyness_surfaces =
+        read_where(ctx_, curve_volatility_moneyness_surface_repository(), of_volatility_kind);
     r.volatility_proxy_surfaces =
         read_where(ctx_, curve_volatility_proxy_surface_repository(), of_volatility_kind);
     r.volatility_smiles =
@@ -430,6 +438,9 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
     if (!d.volatility_smiles.empty())
         curve_volatility_smile_repository().remove(
             ctx_, ids_of(d.volatility_smiles));
+    if (!d.volatility_moneyness_surfaces.empty())
+        curve_volatility_moneyness_surface_repository().remove(
+            ctx_, ids_of(d.volatility_moneyness_surfaces));
     if (!d.volatility_proxy_surfaces.empty())
         curve_volatility_proxy_surface_repository().remove(ctx_, ids_of(d.volatility_proxy_surfaces));
     if (!d.volatility_delta_surfaces.empty())

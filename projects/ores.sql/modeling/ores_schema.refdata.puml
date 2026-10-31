@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 182
+Tables: 183
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3317,6 +3317,44 @@ package "refdata" #FFF3E0 {
     entry holds several of them.
     end note
 
+    entity ores_refdata_curve_volatility_moneyness_surfaces_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * curve_volatility_kind_id : uuid <<FK>>
+        * moneyness_type : text
+        * moneyness_levels : text
+        * expiries : text
+        * time_interpolation : text
+        * strike_interpolation : text
+        * extrapolation : boolean
+        * time_extrapolation : text
+          time_extrapolation_variance : boolean
+        * strike_extrapolation : text
+          future_price_correction : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_moneyness_surfaces_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Moneyness Surface Table
+    ORE's volatilityMoneynessSurfaceConfig states a grid of moneyness levels
+    against expiries, how it interpolates each way and how it extrapolates past the
+    grid, exactly as the strike and delta surfaces do with their own axes. Those are
+    the kind's own fields: the four terms every kind states and the priority are on
+    curve_volatility_kind, and a row of this part exists only when the entry holds
+    a kind of this type.
+    end note
+
     entity ores_refdata_curve_volatility_proxy_surfaces_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -6558,6 +6596,7 @@ ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_con
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_curves_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_delta_surfaces_tbl : "has"
 ores_refdata_curve_volatility_configs_tbl ||--o{ ores_refdata_curve_volatility_kinds_tbl : "has"
+ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_moneyness_surfaces_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_proxy_surfaces_tbl : "has"
 ores_refdata_curve_volatility_smiles_tbl ||--o{ ores_refdata_curve_volatility_smile_parameters_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_smiles_tbl : "has"

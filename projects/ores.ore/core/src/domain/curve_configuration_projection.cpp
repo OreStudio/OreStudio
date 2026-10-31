@@ -102,6 +102,7 @@ constexpr std::string_view bond_future_volatilities_section = "BondFutureVolatil
 constexpr std::string_view constant_kind = "Constant";
 constexpr std::string_view curve_kind = "Curve";
 constexpr std::string_view delta_surface_kind = "DeltaSurface";
+constexpr std::string_view moneyness_surface_kind = "MoneynessSurface";
 constexpr std::string_view proxy_surface_kind = "ProxySurface";
 constexpr std::string_view curve_quotes_list = "Curve";
 constexpr std::string_view wrapped_curve_quotes_list = "VolatilityConfig/Curve";
@@ -1179,6 +1180,7 @@ struct volatility_kind_export {
     const refdata::domain::curve_volatility_strike_surface* strike_surface = nullptr;
     const refdata::domain::curve_volatility_delta_surface* delta_surface = nullptr;
     const refdata::domain::curve_volatility_proxy_surface* proxy_surface = nullptr;
+    const refdata::domain::curve_volatility_moneyness_surface* moneyness_surface = nullptr;
     const refdata::domain::curve_volatility_smile* parametric_smile = nullptr;
     std::vector<const refdata::domain::curve_volatility_smile_parameter*>
         smile_parameters;
@@ -1355,6 +1357,28 @@ void import_delta_surface(ores::refdata::messaging::curve_configuration_document
     out.volatility_delta_surfaces.push_back(std::move(p));
 }
 
+void import_moneyness_surface(ores::refdata::messaging::curve_configuration_document& out,
+                              const boost::uuids::uuid& entry_id,
+                              const record_reader& v) {
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, moneyness_surface_kind, v));
+    import_volatility_parametric_smile(out, out.volatility_kinds.back().id, v);
+    refdata::domain::curve_volatility_moneyness_surface p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.moneyness_type = required_spelling(v, "MoneynessType");
+    p.moneyness_levels = required_text(v, "MoneynessLevels");
+    p.expiries = required_text(v, "Expiries");
+    p.time_interpolation = required_text(v, "TimeInterpolation");
+    p.strike_interpolation = required_text(v, "StrikeInterpolation");
+    p.extrapolation = boolean_spelling(v, "Extrapolation");
+    p.time_extrapolation = required_spelling(v, "TimeExtrapolation");
+    p.time_extrapolation_variance = optional_boolean_spelling(v, "TimeExtrapolationVariance");
+    p.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
+    p.future_price_correction = optional_boolean_spelling(v, "FuturePriceCorrection");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_moneyness_surfaces.push_back(std::move(p));
+}
+
 void import_proxy_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& entry_id,
                           const record_reader& v) {
@@ -1444,6 +1468,27 @@ void export_delta_surface(record_writer v, const volatility_kind_export& k) {
     v.set_optional_text("Calendar", k.kind->calendar);
 }
 
+void export_moneyness_surface(record_writer v, const volatility_kind_export& k) {
+    const auto& c = *k.moneyness_surface;
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_optional_text("QuoteType", k.kind->quote_type);
+    v.set_optional_text("VolatilityType", k.kind->volatility_type);
+    v.set_optional_text("ExerciseType", k.kind->exercise_type);
+    v.set_spelling("MoneynessType", c.moneyness_type, "moneyness type");
+    v.set_text("MoneynessLevels", c.moneyness_levels);
+    v.set_text("Expiries", c.expiries);
+    v.set_text("TimeInterpolation", c.time_interpolation);
+    v.set_text("StrikeInterpolation", c.strike_interpolation);
+    v.set_spelling("Extrapolation", c.extrapolation ? "true" : "false", "ORE boolean");
+    v.set_spelling("TimeExtrapolation", c.time_extrapolation, "extrapolation");
+    v.set_optional_spelling(
+        "TimeExtrapolationVariance", spelling_of(c.time_extrapolation_variance), "ORE boolean");
+    v.set_spelling("StrikeExtrapolation", c.strike_extrapolation, "extrapolation");
+    v.set_optional_spelling(
+        "FuturePriceCorrection", spelling_of(c.future_price_correction), "ORE boolean");
+    v.set_optional_text("Calendar", k.kind->calendar);
+}
+
 void export_proxy_surface(record_writer v, const volatility_kind_export& k) {
     const auto& c = *k.proxy_surface;
     set_integer_text(v, "priority", k.kind->priority);
@@ -1461,9 +1506,6 @@ void import_volatility_configs(ores::refdata::messaging::curve_configuration_doc
                                const std::string& curve_id,
                                const record_reader& v,
                                bool wrapped) {
-    if (v.declares("MoneynessSurface") && v.has("MoneynessSurface"))
-        throw refusal("volatility " + curve_id +
-                      " writes a MoneynessSurface, which is not modelled yet");
     if (v.declares("ApoFutureSurface") && v.has("ApoFutureSurface"))
         throw refusal("volatility " + curve_id +
                       " writes an ApoFutureSurface, which is not modelled yet");
@@ -1472,6 +1514,7 @@ void import_volatility_configs(ores::refdata::messaging::curve_configuration_doc
                                (v.declares("Curve") && v.has("Curve")) ||
                                (v.declares("StrikeSurface") && v.has("StrikeSurface")) ||
                                (v.declares("DeltaSurface") && v.has("DeltaSurface")) ||
+                               (v.declares("MoneynessSurface") && v.has("MoneynessSurface")) ||
                                (v.declares("ProxySurface") && v.has("ProxySurface"));
     if (!writes_a_kind)
         return;
@@ -1489,6 +1532,9 @@ void import_volatility_configs(ores::refdata::messaging::curve_configuration_doc
     if (v.declares("DeltaSurface"))
         if (const auto c = v.child("DeltaSurface"); c)
             import_delta_surface(out, entry_id, *c);
+    if (v.declares("MoneynessSurface"))
+        if (const auto c = v.child("MoneynessSurface"); c)
+            import_moneyness_surface(out, entry_id, *c);
     if (v.declares("ProxySurface"))
         if (const auto c = v.child("ProxySurface"); c)
             import_proxy_surface(out, entry_id, *c);
@@ -1542,6 +1588,12 @@ void export_volatility_kind(record_writer h,
     if (h.declares("DeltaSurface") && kind == delta_surface_kind) {
         auto surface = h.child("DeltaSurface");
         export_delta_surface(surface, k);
+        export_volatility_parametric_smile(surface, k);
+        return;
+    }
+    if (h.declares("MoneynessSurface") && kind == moneyness_surface_kind) {
+        auto surface = h.child("MoneynessSurface");
+        export_moneyness_surface(surface, k);
         export_volatility_parametric_smile(surface, k);
         return;
     }
@@ -1616,6 +1668,7 @@ build_volatility_exports(const ores::refdata::messaging::curve_configuration_doc
     const auto strike_surfaces = parts_by_kind(v.volatility_strike_surfaces);
     const auto delta_surfaces = parts_by_kind(v.volatility_delta_surfaces);
     const auto proxy_surfaces = parts_by_kind(v.volatility_proxy_surfaces);
+    const auto moneyness_surfaces = parts_by_kind(v.volatility_moneyness_surfaces);
     const auto parametric_smiles = parts_by_kind(v.volatility_smiles);
     std::map<boost::uuids::uuid,
              std::vector<const refdata::domain::curve_volatility_smile_parameter*>>
@@ -1651,6 +1704,7 @@ build_volatility_exports(const ores::refdata::messaging::curve_configuration_doc
                 ke.strike_surface = part_of(strike_surfaces, k->id);
                 ke.delta_surface = part_of(delta_surfaces, k->id);
                 ke.proxy_surface = part_of(proxy_surfaces, k->id);
+                ke.moneyness_surface = part_of(moneyness_surfaces, k->id);
                 ke.parametric_smile = part_of(parametric_smiles, k->id);
                 if (ke.parametric_smile)
                     ke.smile_parameters = smile_parameters[ke.parametric_smile->id];

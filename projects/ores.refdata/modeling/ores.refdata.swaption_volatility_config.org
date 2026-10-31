@@ -324,14 +324,6 @@ std::nullopt
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
 :END:
 
-** day_counter
-:PROPERTIES:
-:table:         ores_refdata_day_counters_tbl
-:target_column: code
-:nullable:      true
-:error_message: Invalid day_counter: %. No active day counter found with this spelling.
-:END:
-
 * Insert trigger
 ** Validations
 

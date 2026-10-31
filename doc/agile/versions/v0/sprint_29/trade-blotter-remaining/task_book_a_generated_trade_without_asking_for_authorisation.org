@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/book-a-generated-trade-without-asking-for-authorisation
-#+pr:
+#+pr: 4192
 #+blocked_on: 792166AA-5E00-443C-B236-C42B06FF440A
 #+blocked_since:
 #+created: 2026-10-31
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4192][#4192]] | [synthetic] Book a generated trade so it asks nobody for authorisation |
 
 * Review
 

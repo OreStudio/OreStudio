@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: BFF00B79-57EC-4382-86BB-C6233BD7EFA3
+:END:
+#+title: Task: Hold what allows a product type
+#+description: Add the junctions that say what allows a product type: the books a tenant enables for it, and the permission a person needs to book one. Settle the difference between all types allowed and none.
+#+type: task
+#+level: s1
+#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The page can answer which books allow a type and who may book one. Both answers come from a junction against the catalogue, and neither is a list in code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A book lists the product types it allows, and a role lists the product types it permits.
+- An unrestricted book and a deliberately empty one are distinguishable, and the rule is stated.
+- The booking path refuses a type the book does not allow, and says which rule refused it.
+- The ACME seed covers all 121 types for the books and roles it creates.
+- Both junctions reference the product type table and carry a test.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

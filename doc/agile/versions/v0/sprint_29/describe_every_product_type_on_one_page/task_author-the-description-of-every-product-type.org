@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: E2704422-9165-4D5C-9C29-A4C0B6E2B14A
+:END:
+#+title: Task: Author the description of every product type
+#+description: Write the description of all 121 product types: what the product is, what it pays and when a desk uses it. Each row names the ORE User Guide file it comes from, and the 13 types with no description anywhere are written.
+#+type: task
+#+level: s1
+#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every product type states what it is in prose a person can read before booking it, and every statement names its source. The catalogue holds the one description, and no note or screen restates it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- All 121 rows carry a description and a source reference.
+- The 13 types with no description anywhere are written: the four ForwardVolatilityAgreement codes, the commodity digital and average-price types, the commodity spread option, IntradayPowerForward, BondFutureOption, CreditDefaultSwapOption, SwaptionStraddle, CrossCurrencySwap and FxAverageForward.
+- No description names a model, an engine or a pair.
+- The six names that disagree today state one name each: CBO, Ascot, CapFloor, EuropeanOptionBarrier, Autocallable_01 and ForwardBond.
+- A check fails when a row has no description or no source reference.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -81,10 +81,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Core suite cases | 44 | =ores.http.core.tests= | the commit that carries this task |
-| Core suite assertions | 183 | =ores.http.core.tests= | the commit that carries this task |
+| Core suite cases | 44 | =ores.http.core.tests= | =436cc48716= |
+| Core suite assertions | 183 | =ores.http.core.tests= | =436cc48716= |
 | Core suite cases before this task | 36 | =ores.http.core.tests= on =5be7a9469f= | =5be7a9469f= |
-| Live subscription line | =Hearing entity events on *.v1.*_events.>= | =compass services logs ores.http.server= on the restarted deployment | the commit that carries this task |
+| Live subscription line | =Hearing entity events on *.v1.*_events.>= | =compass services logs ores.http.server= on the restarted deployment | =436cc48716= |
 
 * Notes
 

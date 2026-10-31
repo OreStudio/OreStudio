@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-authorisation-queue-screen
-#+pr: 4251
+#+pr: 4279
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -84,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4279][#4279]] | [agile] Close the authorisation queue task |
 | [[https://github.com/OreStudio/OreStudio/pull/4251][#4251]] | [web] Work the authorisation queue on the Operations screen |
 | [[https://github.com/OreStudio/OreStudio/pull/4245][#4245]] | [prototype] Draw the authorisation queue two ways |
 

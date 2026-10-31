@@ -31,11 +31,11 @@ gives the ten parts the shell address the last split left out.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | All three items are done and the database round trips prove each. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the pull request.                 |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

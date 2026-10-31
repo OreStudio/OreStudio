@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-refdata-hand-written-json-off-reflect-cpp
-#+pr: 4259
+#+pr: 4273
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27

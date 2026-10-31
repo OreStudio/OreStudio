@@ -57,12 +57,6 @@ class FamilyEntry:
     subject_stem: str
     party_scoped: bool
     write_mode: str
-    # The registry header states the four fields above and nothing else, so
-    # these two are defaulted: a header read back is as true as the model for
-    # what it states, and a reader that only compares the table does not need
-    # to know which facet switches the model carries.
-    component: str = ""
-    has_wire_codec: bool = False
 
 
 def _frontmatter(path: Path) -> dict[str, str]:
@@ -75,23 +69,6 @@ def _frontmatter(path: Path) -> dict[str, str]:
         if match:
             values[match.group(1).lower()] = match.group(2)
     return values
-
-
-def _drawer_property(path: Path, name: str) -> str:
-    """A property the file's drawer states before the first heading.
-
-    The drawer holds the model's facet switches, so a family that states the
-    wire codec reads it there and not from the frontmatter, which carries the
-    ``#+key: value`` lines alone.
-    """
-    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if line.startswith("*"):
-            break
-        stripped = line.strip()
-        if not stripped.startswith(":" + name + ":"):
-            continue
-        return stripped.split(":", 2)[2].strip()
-    return ""
 
 
 def _column_names(path: Path) -> set[str]:
@@ -145,9 +122,6 @@ def _entry_for(path: Path, key: str) -> FamilyEntry:
         subject_stem=f"{component}.v1.{plural}",
         party_scoped=party_scoped,
         write_mode=_write_mode(frontmatter, party_scoped, path),
-        component=component,
-        has_wire_codec=_drawer_property(path, "ores.cpp.wire-codec.enabled").lower()
-        == "true",
     )
 
 

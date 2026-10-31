@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/trade_operations_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
@@ -293,119 +292,6 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Trade " << anchor.id
                                       << " was booked but its deciders were not told: " << e.what();
-        }
-    }
-
-    response.activity_id = activity.id;
-    return response;
-}
-
-messaging::execute_trade_response
-trade_operations_service::execute_trade(const messaging::execute_trade_request& request) {
-    using ores::database::repository::unit_of_work;
-    using ores::service::messaging::stamp;
-    using ores::utility::domain::outcome;
-    using ores::utility::domain::precondition;
-    using ores::utility::domain::precondition_kind;
-
-    messaging::execute_trade_response response;
-    const auto id = boost::uuids::to_string(request.trade_id);
-    BOOST_LOG_SEV(lg(), debug) << "Executing trade " << id;
-
-    // The activity, the state and the request are one decision, so they are one
-    // transaction: a trade that goes live without its request is exactly the
-    // hole this operation closes.
-    unit_of_work uow(ctx_);
-    const auto& ctx = uow.ctx();
-
-    repository::trade_repository trades;
-    const auto found = trades.read_latest(ctx, id);
-    if (found.empty()) {
-        response.result.outcome = outcome::missing;
-        response.result.code = "not_found";
-        response.result.message = "Trade " + id + " is not booked.";
-        return response;
-    }
-    const auto& trade = found.front();
-    if (trade.version != request.expected_version) {
-        response.result.outcome = outcome::conflict;
-        response.result.code = "version_conflict";
-        response.result.message = "Trade " + id + " is at version " +
-                                  std::to_string(trade.version) + ", not " +
-                                  std::to_string(request.expected_version) + ".";
-        return response;
-    }
-    if (trade.booking_nature != domain::booking_nature::actual) {
-        response.result.outcome = outcome::conflict;
-        response.result.code = "not_actual";
-        response.result.message = "Trade " + id + " is not an actual trade, so it executes nothing.";
-        return response;
-    }
-
-    // Only a draft executes, and the state says which one it is: the transition
-    // the activity names is checked by the store, so a trade that is not a draft
-    // is refused here before anything is written.
-    repository::trade_state_repository states;
-    const auto held = states.read_latest(ctx, id);
-    if (held.empty()) {
-        response.result.outcome = outcome::missing;
-        response.result.code = "not_found";
-        response.result.message = "Trade " + id + " has no state to execute.";
-        return response;
-    }
-    const auto draft = ores::database::repository::execute_parameterized_string_query(
-        ctx,
-        "select ores_trading_status_is_draft_fn($1::uuid)::text",
-        {boost::uuids::to_string(held.front().status_id)},
-        lg(),
-        "Checking whether a trade state is a draft");
-    if (draft.empty() || draft.front() != "true") {
-        response.result.outcome = outcome::conflict;
-        response.result.code = "not_draft";
-        response.result.message = "Trade " + id + " is not a draft, so it cannot be executed.";
-        return response;
-    }
-
-    domain::trade_activity activity;
-    activity.id = boost::uuids::random_generator()();
-    activity.activity_type_code = "execution";
-    activity.actor = ctx_.actor();
-    activity.occurred_at = request.occurred_at.value_or(std::chrono::system_clock::now());
-    activity.comment = request.change_commentary;
-    stamp(activity, ctx);
-    activity.party_id = trade.party_id;
-
-    const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};
-    repository::trade_activity_repository{}.write(ctx, activity, must_not_exist);
-
-    /*
-     * The state's status is the transition's, not the caller's: the store reads
-     * the activity's type and moves the machine. The write claims the version of
-     * the state it replaces, which is the draft the caller executed, so a state
-     * that moved under them is refused rather than overwritten.
-     */
-    domain::trade_state state;
-    state.trade_id = request.trade_id;
-    state.trade_activity_id = activity.id;
-    state.status_id = boost::uuids::uuid{};
-    state.change_reason_code = request.change_reason_code;
-    state.change_commentary = request.change_commentary;
-    stamp(state, ctx);
-    repository::trade_state_repository{}.write(ctx, state);
-
-    // A trade live in a real book awaits Operations, and an execution does not
-    // escape that: the request joins this transaction.
-    operational_authorisation_service authorisation(ctx);
-    const auto raised = authorisation.raise_if_awaiting(request.trade_id);
-
-    uow.commit();
-
-    if (raised) {
-        try {
-            operational_authorisation_service(ctx_).announce(*raised);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Trade " << id << " was executed but its deciders were not told: " << e.what();
         }
     }
 

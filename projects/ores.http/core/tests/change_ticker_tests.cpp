@@ -39,8 +39,9 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
-    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
-    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); },
+                          boost::asio::detached);
+    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = "b1"});
 
     io.run_for(std::chrono::milliseconds(100));
     ticker.stop();
@@ -49,8 +50,8 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
     REQUIRE(stream->size() == 1);
     const auto frame = stream->try_pop();
     REQUIRE(frame.has_value());
-    REQUIRE(frame->find("event: iam.book") != std::string::npos);
-    REQUIRE(frame->find("\"tenant\":\"acme\"") != std::string::npos);
+    REQUIRE(frame->find("event: book") != std::string::npos);
+    REQUIRE(frame->find("\"b1\"") != std::string::npos);
 }
 
 TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
@@ -63,13 +64,14 @@ TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
-    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); },
+                          boost::asio::detached);
     io.run_for(std::chrono::milliseconds(40));
     ticker.stop();
     io.run();
     REQUIRE(!ticker.running());
 
-    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = "b1"});
     io.restart();
     io.run_for(std::chrono::milliseconds(40));
 
@@ -86,7 +88,8 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
-    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); },
+                          boost::asio::detached);
     io.run_for(std::chrono::milliseconds(40));
     ticker.stop();
     io.run();

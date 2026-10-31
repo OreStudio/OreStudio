@@ -556,53 +556,20 @@ std::map<std::string, std::string> read_digests(const std::filesystem::path& pat
 
 }
 
-/**
- * @brief Records the digest of every export, for a change to the export itself.
- *
- * A change to what the codec writes changes every line, and computing the
- * digests by hand is not work a person should do. The case writes the file when
- * the environment sets ORES_REGEN_CONVENTIONS_DIGESTS, so the diff of the
- * evidence file is the record of what the change did, and a run without the
- * variable still compares.
- */
-void write_digests(const std::filesystem::path& path,
-                   const std::map<std::string, std::string>& digests) {
-    std::ofstream out(path, std::ios::binary);
-    out << "# The digest of the bytes the conventions export writes for each corpus file.\n"
-           "# Paths are relative to external/ore/examples. A line that changes is a change\n"
-           "# to the export. The codec writes the document with its own serialiser.\n";
-    for (const auto& [key, digest] : digests)
-        out << digest << ' ' << key << '\n';
-}
-
 TEST_CASE("the exported conventions corpus matches its recorded digests",
           "[ore][xml][roundtrip][conventions]") {
     const auto root = xml_roundtrip_conventions_corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());
-    const bool regenerate = std::getenv("ORES_REGEN_CONVENTIONS_DIGESTS") != nullptr;
-    std::map<std::string, std::string> computed;
 
     int compared = 0;
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", root)) {
         const auto key = std::filesystem::relative(path, root).generic_string();
         INFO("file: " << key);
-        const auto digest = ores::utility::crypto::sha256::hex_digest(exported_bytes(path));
-        if (regenerate) {
-            computed[key] = digest;
-            ++compared;
-            continue;
-        }
         const auto found = recorded.find(key);
         REQUIRE(found != recorded.end());
-        CHECK(digest == found->second);
+        CHECK(ores::utility::crypto::sha256::hex_digest(exported_bytes(path)) == found->second);
         ++compared;
-    }
-
-    if (regenerate) {
-        write_digests(digests_path(), computed);
-        WARN("recorded " << computed.size() << " digests in " << digests_path().string());
-        return;
     }
 
     // The corpus is pinned at seventy-two files, so a file the expectations do

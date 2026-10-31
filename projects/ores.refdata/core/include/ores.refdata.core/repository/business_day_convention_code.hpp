@@ -28,11 +28,11 @@ namespace ores::refdata::repository {
 /**
  * @brief The code the store keeps for the business day convention a caller states.
  *
- * ORE's parser accepts twenty-six spellings for seven conventions, so two
+ * ORE's parser accepts twenty-seven spellings for seven conventions, so two
  * callers that say =F= and =Following= mean the same adjustment. The mapping
  * layer converts the stated spelling to the code before a row is written, so
  * the table holds one representation and a query that groups by the column
- * answers seven rows and not twenty-six.
+ * answers seven rows and not twenty-seven.
  *
  * A spelling the map does not know is returned as it stands: the value set
  * refuses it with a sentence that names the set, which is a better answer than
@@ -65,7 +65,8 @@ inline std::string stored_business_day_convention(const std::string& stated) {
         {"Half Month Modified Following", "HalfMonthModifiedFollowing"},
         {"HALFMONTHMF", "HalfMonthModifiedFollowing"},
         {"HalfMonthMF", "HalfMonthModifiedFollowing"},
-        {"NEAREST", "NEAREST"},
+        {"NEAREST", "Nearest"},
+        {"Nearest", "Nearest"},
     };
     const auto known = conventions.find(stated);
     return known == conventions.end() ? stated : known->second;

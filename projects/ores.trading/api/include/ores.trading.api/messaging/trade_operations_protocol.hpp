@@ -110,61 +110,6 @@ struct book_trade_response {
 };
 
 /**
- * @brief Takes a draft trade live: the activity that executes it, and the
- * state that activity moves it to.
- *
- * The activity, the state and the authorisation request join one
- * transaction, so an actual trade is never live without a request.
- */
-struct execute_trade_request {
-    using response_type = struct execute_trade_response;
-    static constexpr std::string_view nats_subject = "trading.v1.ops.execute_trade";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    /**
-     * @brief The draft to execute.
-     */
-    boost::uuids::uuid trade_id;
-    /**
-     * @brief The version the caller read. A draft that moved since is refused
-     * rather than executed on terms nobody read.
-     */
-    int expected_version;
-    /**
-     * @brief When the deal executed; the clock when absent.
-     */
-    std::optional<std::chrono::system_clock::time_point> occurred_at;
-    /**
-     * @brief Why the draft was executed.
-     */
-    std::string change_reason_code;
-    /**
-     * @brief The note that goes with the reason.
-     */
-    std::string change_commentary;
-};
-
-/**
- * @brief The outcome of executing a draft.
- */
-struct execute_trade_response {
-    /**
-     * @brief Outcome of the operation: conflict when the trade is not a draft or
-     * has moved since the caller read it, not found when no such trade exists.
-     */
-    ores::utility::domain::result result;
-    /**
-     * @brief The activity that executed the trade; absent when it was refused.
-     */
-    std::optional<boost::uuids::uuid> activity_id;
-};
-
-/**
  * @brief Creates a bond issue with its legs, in one transaction.
  *
  * The issue is the security master. It is whole or absent: a refused child

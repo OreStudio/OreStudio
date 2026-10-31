@@ -620,27 +620,6 @@ NATS event  ──▶ mark dirty (entity, tenant, at)  ──▶ 150 ms tick
 built from a dirty list, so the cost per tick is proportional to what changed,
 not to what is watched.
 
-*What a frame names, measured against the stores.* =MAX_KEYS= assumes a
-subscription can read a row's key out of an event payload. The first ported
-version cannot: the subject names the collection and the action, the headers
-name the tenant and the party, and the key inside the payload is that entity's
-own key record, encoded by that entity's codec. One wildcard subscription
-therefore cannot decode the key of every entity in the system, and the frame
-names the component and the collection and nothing finer:
-
-#+begin_src text
-event: iam.tenant_types
-data: {"tenant":"…","party":"…","component":"iam","entity":"tenant_types"}
-#+end_src
-
-A client that hears a frame refetches the collection it draws. That is what a
-poll does, once per burst instead of once per screen per second, and it is
-correct without knowing what the event was about. Keys return to the frame as
-an optimisation when a per-entity key decoder exists; the event names do not
-change when they do. The window is a fixed period in this version rather than
-one armed by the first event; arming belongs with conflation, where a burst is
-also one frame rather than one per period.
-
 *Filtering.* The subject is the same for every tenant, so every event reaches
 the hub and each carries its tenant in the envelope. A session hears its own
 tenant and the system tenant; a member hears only the parties it works in; an

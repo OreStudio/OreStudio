@@ -22,6 +22,7 @@
 
 #include "ores.http.core/export.hpp"
 #include <cstddef>
+#include <map>
 #include <mutex>
 #include <set>
 #include <string>
@@ -31,45 +32,39 @@
 namespace ores::http::stream {
 
 /**
- * @brief One change, as a store announces it.
+ * @brief One change, as a service announces it.
  *
- * A change names the tenant and party whose data moved, the component that owns it and
- * the collection it belongs to. The party is optional because some entities belong to
- * the tenant rather than to one of its parties.
- *
- * A change stops at the collection. A row's key is the entity's own record, encoded by
- * that entity's codec, so one subscription cannot decode the key of every entity. A
- * client that hears a frame refetches the collection it draws and finds the rows
- * itself.
+ * A change names the tenant and party whose row moved, the entity it belongs to and
+ * the row itself. The party is optional because some entities belong to the tenant
+ * rather than to one of its parties.
  */
 struct change_event final {
     std::string tenant;
     std::string party;
-    std::string component;
     std::string entity;
+    std::string id;
 };
 
 /**
- * @brief What one tick has to say about one collection.
+ * @brief What one tick has to say about one entity.
  *
- * A frame states that a collection moved for one tenant and party. It is the coarsest
- * statement true of every change behind it, and two ticks over the same changes
- * produce the same frame.
+ * The identifiers are sorted and unique, so two ticks over the same changes produce
+ * the same frame and a client can compare them.
  */
 struct coalesced_frame final {
     std::string tenant;
     std::string party;
-    std::string component;
     std::string entity;
+    std::vector<std::string> ids;
 };
 
 /**
- * @brief Gathers changes into one frame per collection per tick.
+ * @brief Gathers changes into one frame per entity per tick.
  *
- * A bulk import writes thousands of rows, and a stream that sends one frame per row is
- * one a screen cannot use: it redraws a list per row and falls behind the writer. The
- * coalescer keeps a dirty set per tenant, party, component and collection, and a tick
- * drains it into one frame per collection.
+ * A bulk import writes thousands of rows, and a stream that sends one frame per row
+ * is one a screen cannot use: it redraws a list per row and falls behind the writer.
+ * The coalescer keeps a dirty set per tenant, party and entity, and a tick drains it
+ * into one frame that says what changed rather than how often.
  *
  * A change that arrives for another tenant or party is a different frame, because a
  * frame is addressed at one party's data and never at a mixture.
@@ -79,17 +74,17 @@ public:
     /// Records one change in the window that is open.
     void record(const change_event& event);
 
-    /// Takes everything recorded since the last drain, one frame per collection.
+    /// Takes everything recorded since the last drain, one frame per entity.
     std::vector<coalesced_frame> drain();
 
-    /// How many collections wait, so a caller can decide against draining.
+    /// How many rows are waiting, so a caller can decide against draining.
     [[nodiscard]] std::size_t pending() const;
 
 private:
-    using key = std::tuple<std::string, std::string, std::string, std::string>;
+    using key = std::tuple<std::string, std::string, std::string>;
 
     mutable std::mutex mu_;
-    std::set<key> dirty_;
+    std::map<key, std::set<std::string>> dirty_;
 };
 
 }

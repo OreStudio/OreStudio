@@ -164,6 +164,3 @@ projects/ores.web/tmp/
 build/cdp-timeline.mjs
 build/proto-shots/
 skills-lock.json
-
-# A curl cookie jar must never be committed: it holds a live session token.
-/build/cj.txt

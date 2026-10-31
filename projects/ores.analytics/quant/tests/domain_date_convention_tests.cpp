@@ -57,7 +57,7 @@ TEST_CASE("every business day convention code the database holds parses", "[date
     CHECK(parse_business_day_convention_code("Preceding") == business_day_convention::preceding);
     CHECK(parse_business_day_convention_code("ModifiedPreceding") ==
           business_day_convention::modified_preceding);
-    CHECK(parse_business_day_convention_code("NEAREST") == business_day_convention::nearest);
+    CHECK(parse_business_day_convention_code("Nearest") == business_day_convention::nearest);
     CHECK(parse_business_day_convention_code("HalfMonthModifiedFollowing") ==
           business_day_convention::half_month_modified_following);
 }

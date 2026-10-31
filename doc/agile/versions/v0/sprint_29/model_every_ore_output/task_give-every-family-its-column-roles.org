@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-every-family-its-column-roles
-#+pr:
+#+pr: 4203
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4203][#4203]] | [ore] Give every output column a role |
 
 * Review
 

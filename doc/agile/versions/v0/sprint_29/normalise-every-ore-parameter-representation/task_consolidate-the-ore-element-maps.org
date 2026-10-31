@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One table states which ORE element a leaf column is and which value set states i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | Not yet started. It runs first in the story. |
 | Waiting on   | Nothing.                               |
@@ -35,7 +35,68 @@ One table states which ORE element a leaf column is and which value set states i
 
 * Acceptance
 
--
+- One table keys a leaf by =(schema_name, element_name)=, and it is the only
+  statement of which value set governs a leaf.
+- Every projection column that carries a leaf is attached to that map, so both
+  guards read the map and the parameter contract is no longer a prerequisite of
+  enforcement.
+- Every row of the three tables is represented in the new map, and a test counts
+  the leaves and the columns before and after.
+- Both guards' pgTAP suites pass unchanged.
+- The leaves the maps name and the contract does not describe are listed by the
+  map, each with a decision: a value set, or =text=.
+
+* Discovery
+
+Measured from the seed scripts rather than from a database, so the numbers do not
+depend on which schema a checkout's database holds:
+=evidence/leaf_maps_overlap.py=, with its output in =leaf_maps_overlap.txt=
+beside it.
+
+| Source | Rows | Leaves | Schema |
+|--------+------+--------+--------|
+| curve configuration columns | 212 | 123 | curveconfig.xsd |
+| convention kind terms | 270 | 176 | conventions.xsd |
+| vocabularies | 4 | 4 | curveconfig.xsd |
+| the parameter contract | 2339 | 293 | both, and ore.xsd |
+| setting links to a value set | 760 | | |
+
+** The three maps do not overlap
+
+The curve columns name only =curveconfig.xsd= leaves and the convention terms
+only =conventions.xsd= ones, so their intersection is empty. The vocabularies
+table names four =curveconfig.xsd= leaves, and for each of the four the contract
+path resolves the same set to the same code:
+
+| Leaf | Set, both ways |
+|------+----------------|
+| =BusinessDayConvention= | =curve.business_day_convention= |
+| =Currency= | =curve.currency= |
+| =DayCounter= | =curve.day_counter= |
+| =YieldCurveDayCounter= | =curve.day_counter= |
+
+So the tree holds two column maps, one per schema, and a four-row duplicate of
+what the contract already states. It does not hold three statements of one leaf.
+
+** The real gap is coverage
+
+Of the 299 distinct leaves the two guards check, 245 resolve to a value set and
+54 resolve to none, because the contract holds no row for them at all. A leaf the
+map names and the contract does not is silently unguarded: the guard's join finds
+nothing and admits every value. The 54 are mostly lists (=AtmTenors=,
+=CapStrikes=, =DetachmentPoints=, =Index1=, =OptionTenors=, =SwapTenors=, and
+others) plus a few leaves whose spelling differs from the contract's
+(=Accuracy=, =Guess=, =Qualifier=).
+
+Both findings are in =leaf_maps_overlap.txt=, leaf by leaf.
+
+** What that changes
+
+The consolidation is not the de-duplication of three equal statements. It is one
+map keyed by the ORE element that absorbs the two column maps, absorbs or removes
+the four-row duplicate, and shows the 54 leaves that no set governs. Enforcement
+then reads the map, so a tenant that has not published the parameter contract
+still meets the guard; today it meets nothing.
 
 * Plan
 
@@ -47,6 +108,7 @@ column to an entity, a table and an =xpath=.
 schema and an =xpath=. =ores_reporting_ore_parameter_vocabularies_tbl= (4) maps
 a schema and an element to a value set. The first two carry the element
 implicitly in the =xpath=, the third names it, and only the third names a set.
+The Discovery section above holds what each one actually names.
 
 Only the first two are read at runtime. Both guards resolve a set by joining
 the map to the parameter contract on =(schema_name, xpath)= and the contract to

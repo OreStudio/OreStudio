@@ -1,22 +1,35 @@
 @startuml
 actor "Workflow engine" as wf
-participant "Compute wrapper" as wrapper
+participant "Compute node" as node
 participant "Object storage" as store
+participant "ores.ore" as ore
 participant "Reporting service" as reporting
+participant "Market data service" as marketdata
 database "Result tables" as results
+database "Market state table" as state
 
-wf -> reporting : collect_compute_results(run)
-reporting -> store : fetch the run's archive
-store --> reporting : the archive
-reporting --> wf : the output location, and what the run said
-note right of reporting : the archive is kept as provenance
+== The engine prices, and the node leaves its output behind ==
+node -> node : run the engine
+node -> store : upload the output archive
+note right of node : the whole output directory, as the run's audit blob
 
-wrapper -> wrapper : marshal each analytic's file into canonical rows
-wrapper -> store : upload the rows to results_uri
-wrapper -> store : upload the archive to output_uri
+== Post-processing reads it ==
 wf -> reporting : post_process_results(run)
-reporting -> store : fetch results_uri
-store --> reporting : the canonical rows
-reporting -> results : COPY, one transaction
-reporting -> wf : the run's result summary
+reporting -> store : fetch each result's output archive
+store --> reporting : the archive
+reporting -> reporting : unpack it, and list the files
+reporting -> ore : read_metrics, read_cashflows, by family
+ore --> reporting : the run's figures
+reporting -> results : one bulk insert for each family, in one transaction
+reporting -> marketdata : store_market_state(run, archive locations, run token)
+marketdata -> store : fetch the archive
+marketdata -> ore : index_payload, by family
+ore --> marketdata : the headings, the row count, the key values
+marketdata -> state : one row for each market-state file
+reporting --> wf : the run's result summary
+
+== What a screen reads ==
+actor "Screen" as screen
+screen -> results : the run result view
+note right of results : the view names each engine heading once
 @enduml

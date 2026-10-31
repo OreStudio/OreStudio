@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: C6E58C64-D5A7-4077-9553-9D72D3AB8DDE
+:END:
+#+title: Task: Fan a run's output out at the node
+#+description: The node uploads each output file the engine wrote as its own compressed object, with a manifest, so reporting and marketdata each fetch the few files they model. Today both download the whole output archive and unpack it, twice per run, which does not hold at grid volumes.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run's output reaches the components that store it one file at a time, not one
+archive at a time.
+
+The node finishes a run with the engine's output directory on its own disk. It
+uploads each output file as its own compressed object, and a manifest that names
+them. Reporting fetches the result files, marketdata fetches the market-state
+files, and neither downloads or unpacks an archive. The archive stays as the
+run's audit blob and is not the path a reader takes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The node uploads one object per output file, under a key that names the result
+  and the file, and a manifest that lists them with their families and sizes.
+- The output archive is still uploaded, unchanged, as the run's audit blob.
+- Reporting's post-processor fetches the result files it models, by name, and
+  never unpacks an archive.
+- Marketdata fetches the market-state files it models, by name, and never
+  unpacks an archive.
+- A file a run wrote that no family covers is named in the manifest and logged,
+  not silently dropped.
+- A run whose files are uploaded individually loads in bulk, and the step's cost
+  is proportional to the bytes it reads and not to the size of an archive.
+
+* Plan
+
+The node already has the output directory. It walks it once, compresses each
+file, and uploads it, then writes the manifest last so a manifest that exists is
+a manifest whose files exist.
+
+The post-processor and marketdata change from "one archive, unpack it" to "a
+list of files, fetch each". The keys are compute's, under
+=compute/output/<result_id>/<file_name>.gz=, so no other component invents a
+layout.
+
+This removes the two downloads and the two unpacks a run costs today, and it is
+what makes the store hold up when a grid finishes many runs at once.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

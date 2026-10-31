@@ -55,9 +55,30 @@ The steps are what a definition's run configuration actually selects.
 #+ATTR_HTML: :class hug-leading
 | Run configuration | Steps that run |
 |-------------------+----------------|
-| =pre_processing= executes, =post_processing= executes | =gather_trades=, =gather_market_data=, =assemble_bundle=, =prepare_ore_package=, =submit_compute=, =collect_compute_results=, =finalise= |
-| =pre_processing= substituted | =resolve_prepared_input=, =submit_compute=, =collect_compute_results=, =finalise= |
-| =post_processing= ignored | As above, with =ignore_compute_results= in place of =collect_compute_results=. |
+| =pre_processing= executes, =post_processing= executes | =gather_trades=, =gather_market_data=, =assemble_bundle=, =prepare_ore_package=, =submit_compute=, =collect_compute_results=, =post_process_results=, =finalise= |
+| =pre_processing= substituted | =resolve_prepared_input=, =submit_compute=, =collect_compute_results=, =post_process_results=, =finalise= |
+| =post_processing= ignored | As above, with =ignore_compute_results= in place of =collect_compute_results= and =post_process_results=. |
+
+** What each step hands the next
+
+No step calls another and no step hands on contents: each is invoked by the
+workflow and is given the identifier or the location of what came before it.
+
+| Step | Does | Hands on |
+|------+------+----------|
+| =gather_trades= | reads the trades the definition binds, as ORE XML | the trades object |
+| =gather_market_data= | exports the tenant's series and fixings for the valuation date | the market data and fixings objects |
+| =assemble_bundle= | records which objects this run reads | the bundle id |
+| =prepare_ore_package= | builds the archive the engine reads, with the run document | the input archive |
+| =submit_compute= | turns the archive into a batch and its workunits | the batch id |
+| =collect_compute_results= | waits for the batch and records the run's log | the result ids and their output locations |
+| =post_process_results= | reads the output and stores what it says | rows in the result stores |
+| =finalise= | closes the run | the instance in a terminal state |
+
+Post-processing is the one step whose work is proportional to the size of the
+result rather than to the size of the input, and it is the step that decides
+throughput. What it writes, and why the stores are shaped as they are, is stated
+in [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]].
 
 The chain is a pure function of the run configuration, because the engine
 rebuilds it on every dispatch and again when it recovers an interrupted run.

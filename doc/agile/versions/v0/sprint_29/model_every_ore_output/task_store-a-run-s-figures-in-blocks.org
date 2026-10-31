@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 2B253ED2-E629-4A58-82BC-EEDEE3F0077F
+:END:
+#+title: Task: Store a run's figures in blocks
+#+description: The post-processor reads a family whole and inserts it in one statement, so a large run holds every figure in memory before the first row is written. Read a block of rows, write it, read the next, so memory per run is bounded whatever the family states.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The post-processor's memory does not grow with the size of a run's output.
+
+Today it reads a whole family into memory, builds every row, and inserts them in
+one statement. A large run holds millions of rows before the first is written.
+It should read a block of rows, write the block, and read the next.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The readers hand back rows a block at a time, or the post-processor asks for a
+  block and gets one.
+- Each block is inserted with one statement, so the round trips stay proportional
+  to blocks and not to rows.
+- Peak memory for a run is bounded by the block size and not by the family's row
+  count, and the bound is stated.
+- A refusal still stops the run before any block is written, or the write is one
+  transaction so a partial load cannot be seen.
+- The measured peak memory and the wall clock of a large synthetic run are
+  recorded on the task.
+
+* Plan
+
+The unit is a block of rows, stated once, and both readers and writers use it.
+The insert stays one statement per block, which is the same shape as today's one
+statement per family but with a ceiling.
+
+The run's figures are written in one transaction, so a refusal part way through
+leaves nothing behind: a partial load reads as a complete one, which is the rule
+this story already keeps everywhere else.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

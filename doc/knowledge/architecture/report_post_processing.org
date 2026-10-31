@@ -2,202 +2,151 @@
 :ID: D697A04C-387C-451E-AC90-1989FCDFCAB9
 :END:
 #+title: Report post-processing
-#+description: Ingesting the engine's results: unpacking the output archive, parsing the tabular result files, and loading them into a queryable result store.
+#+description: What post-processing makes of the engine's output: which reader reads which file, which table takes which family, who owns which format, what a refusal does, and what the whole thing costs.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:postprocessing:results:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-31
 
 * Summary
 
-Post-processing reads the archive the engine produced and records what it
-contains. The output is a set of delimited files, one per analytic: net present
-values, cashflows, curve points and whatever else the run's configuration asked
-for. Post-processing parses them and loads them into tables shaped for the
-queries that will read them.
+Post-processing reads what the engine wrote and stores what it says. The output is
+a set of delimited files, one per analytic: net present values, cashflows, curve
+points, the market state the run read. The files are of three kinds, and each kind
+goes to the store that owns it.
 
-It is the phase whose cost is proportional to the size of the result, and the
-one where throughput is decided. Like pre-processing it has a documented
-substitute: a run configured to ignore results records where the output is and
-stops, so the pipeline and the workflow can be exercised without ingestion
-working.
+It is the phase whose cost is proportional to the size of the result, and the one
+where throughput is decided. Like pre-processing it has a documented substitute: a
+run configured to ignore results records where the output is and stops.
+
+The formats are stated in
+[[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]], and the phases
+in [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]].
 
 * Detail
 
-** The steps
+** What the step is handed
+
+The run's compute results: one per workunit, each naming where its output archive
+is. It also holds the run's own token, which is the authority to read them. It is
+handed locations, never contents.
+
+** What it does
 
 | Step | Reads | Produces |
 |------+-------+----------|
-| Fetch | object storage, by the recorded output location | the output archive |
-| Unpack | the archive | one delimited file per analytic |
-| Parse | each file | typed rows, in batches |
-| Load | the rows | rows in the result store |
+| Fetch | object storage, by each result's output location | the output archives |
+| Unpack | each archive | the files the engine wrote |
+| Route | each file's name, through the catalogue | the family, and its shape |
+| Read | each file, through the reader its shape names | the run's figures |
+| Load | the figures, one bulk statement for each family, in one transaction | rows in the store |
+| Hand over | the archive locations and the run's token | the market state in the market data store |
 | Record | the counts | the run's result summary |
 
-Fetch and unpack are the same for every analytic. Parse and load are per
-analytic family, because the columns differ.
+Nothing in reporting parses an ORE file: the readers belong to =ores.ore= and
+reporting calls them.
 
-** The result store
+** How a file is routed
 
-The results are tabular and homogeneous, and the queries against them are
-columnar: one analytic, many keys, one run. Three properties follow.
+The catalogue says which family a file name belongs to, and the family's columns
+say which shape its row is. One rule decides, and it is stated once in =ores.ore=:
 
-- *One narrow table per analytic family.* The columns are the analytic's own
-  keys and measures. A single table keyed by analytic name and row key would be
-  an entity-attribute-value layout and would cost a join for every read.
-- *Provenance is separated from measures.* The run identifier, the engine
-  version and the timestamps are written once per file and read rarely; keeping
-  them out of the measure rows keeps the scanned relation narrow.
-- *Loaded in bulk.* The ingestion path is a bulk load of a parsed file, not a
-  sequence of row writes through an entity interface. The volume makes the
-  difference between the two decisive.
+| The row is | The family is | The store is |
+|------------+---------------+--------------|
+| keys, qualifiers and figures | a metric family | =ores_reporting_report_metrics_tbl= |
+| a payment with a leg and a number | a cashflow family | =ores_reporting_report_cashflows_tbl= |
+| the market state of the run, one column for each curve and tenor | a market state | the market data store |
+| anything else | no family | left alone, and named in the log |
 
-Ownership of the store is the open question on this page. The results are the
-output of a run, and reporting owns the run, so a result store in reporting is
-the shortest path and has one writer. The alternative is that each analytic's
-results belong to the domain that owns the underlying data — valuations to
-trading, curves to market data — with =ores.ore= still supplying the parser,
-because the engine's output formats are its subject. That distributes one file
-across several writers.
+A file no family covers is counted and logged rather than refused: a run may write
+a file this version does not model, and the archive still holds it.
 
-The cost of the shortest path should be stated rather than discovered: results
-landing in reporting's database make them a reporting asset, so moving them to a
-domain later is a migration.
+** The readers
 
-** The canonical row
+=ores.ore= declares each family's columns and their roles — key, qualifier,
+measure — and derives its readers from that declaration rather than writing one
+for each family:
 
-Every file the engine writes is marshalled into rows of one shape before anything
-loads them. The shape is the contract between the grid, the store and the screens:
+- =read_metrics= turns each measure column into one figure named by its heading.
+  A curve, a risk factor and a quantile therefore need no reader of their own, and
+  a family that gains a column for each curve costs nothing.
+- =read_cashflows= reads a family whose row is a payment. The stressed families
+  state each figure three times; the reader turns =Amount_Base=, =Amount_Scen= and
+  =Amount_Diff= into one figure named =Amount= with the part beside it, so a
+  comparison needs no knowledge of the suffix.
+- =index_payload= reads a market-state file without reading its figures: the
+  headings, the row count and the distinct values of each key.
 
-| Column | Read from | Notes |
-|--------+-----------+-------|
-| =subject_type= | the marshal, from the file | =trade= |
-| =subject_id= | =TradeId= | the engine's own identifier |
-| =measure= | the file's heading | =npv=, =npv_base=, =notional=, =delta=, =gamma= |
-| =currency= | =NpvCurrency=, =NotionalCurrency= | empty when the measure has none |
-| =value= | the figure's column | a decimal, never formatted |
-| =source= | the marshal | the file and the row it came from |
+** The stores
 
-The run, its definition, its party and tenant, and =as_of= are not in the file:
-they belong to the run, and the load fills them.
+=reporting= writes the run's figures.
 
-A file stating one measure in one row projects one row. A file stating several
-measures in one row, as the sensitivity output does, widens to one row per measure.
-That rule is stated per analytic in the marshal and nowhere else.
+- A metric row is the run, the party, the family, the subject, the observation
+  date, the measure, the currency, the scenario, the risk factor, every other
+  qualifier as one JSON object, and the figure. It is a hypertable on the
+  observation date, and the family is a column rather than a table: sixty tables
+  would be forty identical shapes and a union for every cross-family read.
+- A cashflow row is the payment's trade or market object, its scenario, its leg,
+  its number, its pay date, its flow type and its currency, one figure named by
+  its heading, and the part of a stressed comparison it states. A payment is not a
+  metric: its meaning is the relation between its keys, and those keys have no
+  place in a metric row.
 
-A marshal refuses rather than guesses: a file whose headings it does not know,
-naming the headings it found; a row with no subject id; a figure it cannot read as
-a decimal; a measure whose currency it cannot state when the measure has one. A
-refusal is a run error naming the file and the heading, and it fails the
-post-processing rather than writing part of a result.
+Both are written once per run and never edited; a correction is a new run.
 
-The screens rely on one row per subject, measure and currency per run — a repeated
-row is a fault the store's key refuses — on =value= being a decimal whose
-formatting is theirs, on =measure= being open so a new analytic adds a value rather
-than a column, and on a run's rows arriving together.
+The market data store writes the state.
+=ores_marketdata_market_state_payloads_tbl= keeps the file the engine wrote,
+compressed, with an index beside it: a row for each value would be millions of rows
+for one run, and a read that wants one factor would unpack all of them.
 
-This refines *The result store* above: the families stay apart, and a family whose
-files state several measures carries the measure as a dimension. Each is a
-time-series table keyed and chunked on the run's priced date, in the form the
-[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][tick ingest pipeline]] gives its
-hypertables.
+** Why the store is shaped this way
 
-** Where the work happens
+- *One table for the metric families, not one for each.* The columns of fifty
+  families fall into three jobs, and once the roles are known the shapes are one
+  shape.
+- *A separate table for the payments.* A cashflow's keys are what make it a
+  cashflow, and flattening one into a metric loses them.
+- *The engine's headings are stored, not translated.* A family's measure is the
+  engine's own word, so nothing in the store has to be listed when ORE adds a
+  column.
+- *Loaded in bulk, in one transaction.* A partial load reads as a complete one, so
+  a refusal leaves nothing behind.
 
-The expensive half is reading what the engine wrote, and it belongs where the
-engine is: the compute wrapper, on the worker beside it. The wrapper is the only
-component that knows which analytics the package ran and what files they wrote, so
-it marshals them into the canonical rows before it uploads, for the same reason the
-package is prepared where the engine reads it. The reporting service's step is to
-fetch, validate and load.
+** What a screen reads
 
-That split is what keeps the service scalable: a run's rows are written by a single
-=COPY= inside one transaction, so many runs finishing together are many short
-inserts rather than many parsers, and the work grows with the grid rather than with
-the reporting service's replicas. The queue group spreads the load and the run
-grant admits it.
+A screen does not read a family. =ores.reporting.run_result= is a read model: a view
+over the metric table that names each engine heading once — =NPV= is =npv= — and
+reads the counterparty out of the qualifiers. The screen's shape therefore does not
+change when a run states a new family, and no screen states a rollup twice.
 
-The diagram draws the two calls: retrieval answers where the output is, the wrapper
-marshals the engine's files into canonical rows beside the engine, and
-post-processing answers what the run says.
+** What a refusal does
 
-#+caption: Report post-processing: the workflow asks for retrieval, which fetches the run's archive and keeps it as provenance; the wrapper marshals each analytic's file into canonical rows, uploads them to the results location the claim gave it, and uploads the archive beside them; the workflow asks for post-processing, which fetches the rows, copies them into the result tables in one transaction and answers with the run's summary.
+A refusal stops the run and records the reason on the instance. The step refuses
+when a family's row cannot be read whole, when a figure is not a number, when a date
+cannot be read, and when a market-state file states no heading. It does not refuse a
+file no family covers, and it does not treat the engine's null string as a zero: a
+figure that was not stated is not stored at all.
+
+** What the node leaves behind
+
+The compute wrapper runs the engine with the output directory on local disk and
+uploads that directory as one archive, which is the run's audit blob: whatever the
+engine wrote is in it, modelled or not. The node projects nothing. It knows which
+files it wrote but not what they mean, and everything a reader would call judgement
+— which run this is, which party owns it, what date it priced at, whether the rows
+load at all — belongs to the component that holds the run.
+
+The node's reach is unchanged: the job directory, object storage over HTTP with the
+token of the claim it was given, and =compute.v1.ops= to take work and say what
+happened. It holds no user's authority and reaches no database.
+
+#+caption: Post-processing: the node leaves its output behind, reporting reads the archives through the readers the catalogue declares and writes the figures, and hands the archives to the market data store, which keeps the state. A screen reads the view over the metric table.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/report_post_processing_interaction.png]]
 
 Source: [[proj:doc/knowledge/architecture/report_post_processing_interaction.puml][=report_post_processing_interaction.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/report_post_processing_interaction.puml=.
-
-** How the rows reach the results table
-
-The node does not post to the reporting service, and nothing writes the results
-table but the reporting service. The rows travel over the channel the node already
-has — object storage, over HTTP, with the token of the claim it holds — and the
-service fetches them in its own step.
-
-| Step | Who | Where the rows are |
-+------+-----+--------------------+
-| Marshal | the wrapper, after the engine exits | in the job directory |
-| Upload | the wrapper, with the claim's token | object storage, at =results_uri= |
-| Upload | the wrapper, with the claim's token | object storage, at =output_uri=, the archive as provenance |
-| Load | the reporting service, on =post_process_results= | copied into the result table, in one transaction |
-
-The claim therefore carries two locations, not one: =output_uri= for the archive
-the grid already uploads, and =results_uri= for the canonical rows. The node
-composes neither key and names neither bucket; it writes to the two locations the
-claim gave it, which is what keeps a node's authority to exactly what it was
-granted for that job.
-
-A reporting endpoint that accepted rows from a node would add a write surface into
-reporting's data for a caller that holds no user's authority, and it would not
-save the validation the service has to do anyway: the rows still have to be read,
-checked against the contract, and written in one transaction by the component that
-owns the run. Storage is where a node is allowed to put things it produced; the
-service is what turns them into results.
-
-** What a node may reach
-
-The marshal fits because a node already holds everything it needs, and nothing
-more. [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][The job lifecycle]] has the detail;
-in short, when a node claims a job it is given a work directory, an
-=output_uri=, a =storage_token= and the storage HTTP base URL, and it talks to the
-rest of the system over the trusted machine channel of =compute.v1.ops=:
-
-| Reach | Why |
-+-------+-----+
-| the job directory | the package is extracted there and the engine writes =Output/= there |
-| object storage, over HTTP with the claim's token | to upload the archive and the canonical rows |
-| =compute.v1.ops= claim, heartbeat and submit | to take work and to say what happened |
-| the database | not at all |
-| a user session, or a user's token | not at all |
-
-So the marshal reads and writes inside the job directory, and the canonical rows
-travel in the same archive the node uploads with the same token. It adds no
-access, no credential and no round trip, and it keeps the rule that a node holds
-no user's authority.
-
-** What the node does not decide
-
-The marshal projects; it does not interpret. It knows the headings of the files the
-package's analytics write, and it refuses a file it does not know rather than guess
-at one. Everything a reader would call judgement -- which run this is, which party
-owns it, what date it priced at, whether the rows load at all -- is decided by the
-reporting service on the other side, which holds the run.
-
-Retrieval and post-processing are two calls from the workflow because they answer
-two questions: *where the output is*, and *what it says*. A transport failure and a
-contract failure read differently, and the errors a person sees say which. The
-pipeline keeps its six phases; [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][the
-reporting note]] states the workflow's steps.
-
-** What is not bound to ORE
-
-The result files are delimited tables, not an ORE document. Their shape — a
-header, then rows of keys and measures — is the same shape any analytic engine
-produces. Binding the store to ORE's schema would tie a reporting concern to one
-engine's output format for no benefit, and the parser is the only part that
-needs to know the format at all.
 
 ** The substitute: ignoring results
 
@@ -205,28 +154,41 @@ When the run's configuration selects the substitute, the phase is not executed.
 The workflow dispatches a step that records the output location on the run and
 completes. Nothing is fetched, parsed or loaded.
 
-This is what allows a run to complete while the result store is unwritten, and
-it is deliberately the weakest of the substitutes: it proves that a run can
-reach a terminal state and that its output exists, and it proves nothing about
-the contents. Three conditions hold, as for pre-processing:
+This is what allows a run to complete while the result store is unwritten, and it
+is deliberately the weakest of the substitutes: it proves that a run can reach a
+terminal state and that its output exists, and it proves nothing about the
+contents. Three conditions hold, as for pre-processing:
 
 - *The output must still be recorded.* A run that ignores its results must still
   name where they are, or the work is lost the moment the archive expires.
-- *The parallel phase must be indistinguishable.* Finalisation knows that the
-  run completed and where the output is; it is not told whether the results were
-  read.
+- *The parallel phase must be indistinguishable.* Finalisation knows that the run
+  completed and where the output is; it is not told whether the results were read.
 - *The substitution must be recorded on the run.* A completed instance whose
   results were never ingested must not be mistaken for one whose results are
   queryable.
 
-** What does not exist today
+** What this costs, and what changes
 
-- No parsing of the engine's output at all. The archive is uploaded and
-  archived; nothing reads it.
-- No result store, and no model for one.
-- The phase that was meant to do this is a stub that records completion without
-  fetching anything, and its own comment says the work is deferred.
+A grid finishes many runs at once, so the cost of one run matters, and three
+changes are in flight because of it.
+
+- *The archive is fetched and unpacked twice for each run* — once by reporting for
+  the figures, once by the market data store for the state. The fix is to fan the
+  output out at the node, one object for each file, so each component fetches only
+  what it models. See
+  [[id:C6E58C64-D5A7-4077-9553-9D72D3AB8DDE][Fan a run's output out at the node]].
+- *A family is read whole and written in one statement*, so peak memory grows with
+  the family's size. The fix is blocks of rows, with the same one-transaction
+  guarantee. See
+  [[id:2B253ED2-E629-4A58-82BC-EEDEE3F0077F][Store a run's figures in blocks]].
+- *The market state is held as base64 text in a row*, a third larger than the
+  compressed file and in the database, which is the wrong place for it. The fix is
+  the object store, with the index and the key in the row. See
+  [[id:1D326204-29A2-4467-8DC7-779BD0C3CFAB][Keep the market state in the object
+  store]].
 
 * See also
 
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]] — the formats, the null string and the corpus.
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] — the story these decisions were taken in.

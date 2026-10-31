@@ -34,11 +34,7 @@ import {
 import { api, type HoldReason } from '../api/client.js';
 import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { AccountPicture } from '../ui/Images.js';
-import {
-    localSource,
-    RecordList,
-    type ListColumn,
-} from '../refdata/RecordList.js';
+import { localSource, RecordList, type ListColumn } from '../refdata/RecordList.js';
 import { AreaTrail, useAreaRoot } from '../shell/AreaTrail.js';
 import { PersonRef, usePeopleDirectory } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -78,42 +74,43 @@ import {
  */
 const GROUPS: readonly {
     readonly key: QueueGroup;
-    readonly label: string;
+    /** The translation key of the group's name. */
+    readonly labelKey: string;
     readonly wash: string;
     readonly edge: string;
     readonly ink: string;
 }[] = [
     {
         key: 'awaiting',
-        label: 'Awaiting authorisation',
+        labelKey: 'operations.authorisationQueue.groups.awaiting',
         wash: 'rgba(216, 162, 74, 0.08)',
         edge: '#d8a24a',
         ink: '#e6c48e',
     },
     {
         key: 'changed',
-        label: 'Changed since requested',
+        labelKey: 'operations.authorisationQueue.groups.changed',
         wash: 'rgba(154, 138, 214, 0.08)',
         edge: '#9a8ad6',
         ink: '#c3b8ee',
     },
     {
         key: 'held',
-        label: 'Held over',
+        labelKey: 'operations.authorisationQueue.groups.held',
         wash: 'rgba(111, 159, 196, 0.08)',
         edge: '#6f9fc4',
         ink: '#a8c8e0',
     },
     {
         key: 'authorised',
-        label: 'Authorised',
+        labelKey: 'operations.authorisationQueue.groups.authorised',
         wash: 'rgba(95, 168, 127, 0.08)',
         edge: '#5fa87f',
         ink: '#9bccb2',
     },
     {
         key: 'denied',
-        label: 'Denied',
+        labelKey: 'operations.authorisationQueue.groups.denied',
         wash: 'rgba(194, 94, 99, 0.08)',
         edge: '#c25e63',
         ink: '#e0a0a3',
@@ -123,7 +120,7 @@ const GROUPS: readonly {
          * back, expired, or approved and not applied. Grey, because the deal is
          * neither waiting on anybody nor refused. */
         key: 'closed',
-        label: 'Closed',
+        labelKey: 'operations.authorisationQueue.groups.closed',
         wash: 'rgba(138, 145, 153, 0.08)',
         edge: '#8a9199',
         ink: '#b8bfc6',
@@ -137,11 +134,13 @@ function paletteOf(row: QueueRow) {
     return GROUPS.find((entry) => entry.key === groupOf(row)) ?? GROUPS[0]!;
 }
 
-const CLASSES: readonly { readonly key: QueueClass | 'all'; readonly label: string }[] = [
-    { key: 'all', label: 'All deals' },
-    { key: 'flow', label: 'Flow' },
-    { key: 'non-flow', label: 'Non-flow' },
+const CLASSES: readonly { readonly key: QueueClass | 'all'; readonly labelKey: string }[] = [
+    { key: 'all', labelKey: 'operations.authorisationQueue.classes.all' },
+    { key: 'flow', labelKey: 'operations.authorisationQueue.classes.flow' },
+    { key: 'non-flow', labelKey: 'operations.authorisationQueue.classes.nonFlow' },
 ];
+
+const STATE_KEY = 'operations.authorisationQueue.state';
 
 function stateTone(row: QueueRow): 'neutral' | 'accent' | 'up' | 'down' | 'warn' {
     switch (row.stateCode) {
@@ -160,25 +159,26 @@ function stateTone(row: QueueRow): 'neutral' | 'accent' | 'up' | 'down' | 'warn'
     }
 }
 
-function stateWord(row: QueueRow): string {
-    if (row.changed) return 'Changed';
+/** The state's name, as a translation key; an unknown state is shown as it came. */
+function stateKey(row: QueueRow): string {
+    if (row.changed) return `${STATE_KEY}.changed`;
     switch (row.stateCode) {
         case 'waiting':
-            return 'Awaiting';
+            return `${STATE_KEY}.awaiting`;
         case 'held':
-            return 'Held over';
+            return `${STATE_KEY}.held`;
         case 'approved':
-            return 'Authorised';
+            return `${STATE_KEY}.authorised`;
         case 'apply_failed':
-            return 'Approved, not applied';
+            return `${STATE_KEY}.applyFailed`;
         case 'refused':
-            return 'Denied';
+            return `${STATE_KEY}.denied`;
         case 'withdrawn':
-            return 'Withdrawn';
+            return `${STATE_KEY}.withdrawn`;
         case 'expired':
-            return 'Expired';
+            return `${STATE_KEY}.expired`;
         default:
-            return row.stateCode === '' ? 'Awaiting' : row.stateCode;
+            return row.stateCode === '' ? `${STATE_KEY}.unknown` : row.stateCode;
     }
 }
 
@@ -241,29 +241,43 @@ export function AuthorisationQueuePage(): ReactNode {
     const columns: readonly ListColumn<QueueRow>[] = [
         {
             id: 'deal',
-            header: 'Deal',
+            header: t('operations.authorisationQueue.columns.deal'),
             mono: true,
             cell: (row) => (
-                <EntityLink to={authorisationRequestPath(row.requestId)}>{row.reference}</EntityLink>
+                <EntityLink to={authorisationRequestPath(row.requestId)}>
+                    {row.reference}
+                </EntityLink>
             ),
         },
         {
             id: 'type',
-            header: 'Instrument',
+            header: t('operations.authorisationQueue.columns.instrument'),
             cell: (row) => (
                 <>
                     {row.tradeTypeName === '' ? row.tradeType : row.tradeTypeName}
                     <div className="text-xs text-ink-faint">
-                        {row.classCode === 'flow' ? 'flow' : 'non-flow'}
+                        {t(
+                            row.classCode === 'flow'
+                                ? 'operations.authorisationQueue.classes.flow'
+                                : 'operations.authorisationQueue.classes.nonFlow',
+                        )}
                     </div>
                 </>
             ),
         },
-        { id: 'counterparty', header: 'Counterparty', cell: (row) => row.counterparty },
-        { id: 'book', header: 'Book', cell: (row) => row.book },
+        {
+            id: 'counterparty',
+            header: t('operations.authorisationQueue.columns.counterparty'),
+            cell: (row) => row.counterparty,
+        },
+        {
+            id: 'book',
+            header: t('operations.authorisationQueue.columns.book'),
+            cell: (row) => row.book,
+        },
         {
             id: 'tradeDate',
-            header: 'Trade date',
+            header: t('operations.authorisationQueue.columns.tradeDate'),
             mono: true,
             cell: (row) => row.tradeDate,
         },
@@ -271,7 +285,7 @@ export function AuthorisationQueuePage(): ReactNode {
             /* The queue is worked newest first, so the time a deal arrived is on
              * the row rather than in a tooltip: it is the order the list is in. */
             id: 'raisedAt',
-            header: 'Raised',
+            header: t('operations.authorisationQueue.columns.raised'),
             mono: true,
             cell: (row) => row.requestedAt.replace('T', ' ').slice(0, 16),
         },
@@ -319,7 +333,7 @@ export function AuthorisationQueuePage(): ReactNode {
                                 : 'border-line text-ink-dim hover:text-ink',
                         )}
                     >
-                        All states
+                        {t('operations.authorisationQueue.allStates')}
                         <span className="ml-1.5 tabular-nums text-xs text-ink-faint">
                             {counts.all}
                         </span>
@@ -340,7 +354,7 @@ export function AuthorisationQueuePage(): ReactNode {
                                     opacity: on ? 1 : 0.6,
                                 }}
                             >
-                                {entry.label}
+                                {t(entry.labelKey)}
                                 <span className="ml-1.5 tabular-nums text-xs">
                                     {counts[entry.key]}
                                 </span>
@@ -361,7 +375,7 @@ export function AuthorisationQueuePage(): ReactNode {
                                     : 'text-ink-dim hover:text-ink',
                             )}
                         >
-                            {entry.label}
+                            {t(entry.labelKey)}
                         </button>
                     ))}
                 </div>
@@ -421,7 +435,9 @@ export function AuthorisationRequestPage(): ReactNode {
     };
 
     if (queue.isPending) {
-        return <p className="text-sm text-ink-faint">Reading the request…</p>;
+        return (
+            <p className="text-sm text-ink-faint">{t('operations.authorisationQueue.reading')}</p>
+        );
     }
 
     if (row === undefined) {
@@ -429,11 +445,10 @@ export function AuthorisationRequestPage(): ReactNode {
             <section className="flex flex-col gap-4">
                 <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
                 <Notice tone="warn">
-                    No request {requestId} waits in this queue. It may have been decided and aged
-                    out of the answered tail.
+                    {t('operations.authorisationQueue.notFound', { requestId })}
                 </Notice>
                 <Link to={PATHS.authorisationQueue} className="text-sm underline">
-                    Back to the queue
+                    {t('operations.authorisationQueue.backToQueue')}
                 </Link>
             </section>
         );
@@ -453,11 +468,15 @@ export function AuthorisationRequestPage(): ReactNode {
             <div>
                 <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
                 <PageHeader
-                    title={`Authorisation · ${row.reference}`}
-                    description={`${row.tradeTypeName === '' ? row.tradeType : row.tradeTypeName}, raised by the operations queue`}
+                    title={t('operations.authorisationQueue.pageTitle', {
+                        reference: row.reference,
+                    })}
+                    description={t('operations.authorisationQueue.pageDescription', {
+                        type: row.tradeTypeName === '' ? row.tradeType : row.tradeTypeName,
+                    })}
                     actions={
                         <Link to={PATHS.authorisationQueue} className="text-sm underline">
-                            Back to the queue
+                            {t('operations.authorisationQueue.backToQueue')}
                         </Link>
                     }
                 />
@@ -465,9 +484,10 @@ export function AuthorisationRequestPage(): ReactNode {
 
             {row.changed && (
                 <Notice tone="warn">
-                    The deal moved after this request was raised: version {row.tradeVersion} now,
-                    against {row.requestTradeVersion} when it arrived. The row is not locked, and a
-                    decision on the version you have read is the decision recorded.
+                    {t('operations.authorisationQueue.changedNotice', {
+                        tradeVersion: row.tradeVersion,
+                        requestTradeVersion: row.requestTradeVersion,
+                    })}
                 </Notice>
             )}
 
@@ -475,15 +495,19 @@ export function AuthorisationRequestPage(): ReactNode {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <div className="card space-y-4 p-6">
-                    <h2 className="text-lg font-medium">The deal</h2>
+                    <h2 className="text-lg font-medium">
+                        {t('operations.authorisationQueue.deal.title')}
+                    </h2>
                     <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Detail
-                            label="Deal"
-                            value={<EntityLink to={tradePath(row.tradeId)}>{row.reference}</EntityLink>}
+                            label={t('operations.authorisationQueue.deal.reference')}
+                            value={
+                                <EntityLink to={tradePath(row.tradeId)}>{row.reference}</EntityLink>
+                            }
                             mono
                         />
                         <Detail
-                            label="Type"
+                            label={t('operations.authorisationQueue.deal.type')}
                             value={
                                 row.tradeTypeName === '' ? (
                                     row.tradeType
@@ -498,7 +522,7 @@ export function AuthorisationRequestPage(): ReactNode {
                             }
                         />
                         <Detail
-                            label="Counterparty"
+                            label={t('operations.authorisationQueue.deal.counterparty')}
                             value={
                                 row.counterpartyId === '' ? (
                                     row.counterparty
@@ -510,7 +534,7 @@ export function AuthorisationRequestPage(): ReactNode {
                             }
                         />
                         <Detail
-                            label="Book"
+                            label={t('operations.authorisationQueue.deal.book')}
                             value={
                                 row.bookId === '' ? (
                                     row.book
@@ -519,12 +543,18 @@ export function AuthorisationRequestPage(): ReactNode {
                                 )
                             }
                         />
-                        <Detail label="Trade date" value={row.tradeDate} mono />
                         <Detail
-                            label="Status"
+                            label={t('operations.authorisationQueue.deal.tradeDate')}
+                            value={row.tradeDate}
+                            mono
+                        />
+                        <Detail
+                            label={t('operations.authorisationQueue.deal.status')}
                             value={
                                 <Tag small tone="muted">
-                                    {row.status === '' ? 'unknown' : row.status}
+                                    {row.status === ''
+                                        ? t('operations.authorisationQueue.deal.statusUnknown')
+                                        : row.status}
                                 </Tag>
                             }
                         />
@@ -532,55 +562,73 @@ export function AuthorisationRequestPage(): ReactNode {
                 </div>
 
                 <div className="card space-y-4 p-6">
-                    <h2 className="text-lg font-medium">The request</h2>
+                    <h2 className="text-lg font-medium">
+                        {t('operations.authorisationQueue.request.title')}
+                    </h2>
                     <dl className="space-y-4">
                         <Detail
-                            label="State"
+                            label={t('operations.authorisationQueue.request.state')}
                             value={
                                 <Tag small tone={stateTone(row)}>
-                                    {stateWord(row)}
+                                    {t(stateKey(row))}
                                 </Tag>
                             }
                         />
-                        <Detail label="Raised by" value={<PersonLine who={row.requestedBy} />} />
-                        <Detail label="Raised at" value={row.requestedAt} mono />
-                        <Detail label="Reason" value={row.reason} />
+                        <Detail
+                            label={t('operations.authorisationQueue.request.raisedBy')}
+                            value={<PersonLine who={row.requestedBy} />}
+                        />
+                        <Detail
+                            label={t('operations.authorisationQueue.request.raisedAt')}
+                            value={row.requestedAt}
+                            mono
+                        />
+                        <Detail
+                            label={t('operations.authorisationQueue.request.reason')}
+                            value={row.reason}
+                        />
                     </dl>
                 </div>
             </div>
 
             <div className="card space-y-4 p-6">
-                <h2 className="text-lg font-medium">The decision</h2>
+                <h2 className="text-lg font-medium">
+                    {t('operations.authorisationQueue.decision.title')}
+                </h2>
                 {decided ? (
                     <Notice tone="info">
-                        This deal is decided. Undoing a decision is not offered here yet.
+                        {t('operations.authorisationQueue.decision.decided')}
                     </Notice>
                 ) : (
                     <>
                         <label className="flex flex-col gap-1">
                             <span className="text-xs uppercase tracking-wide text-ink-faint">
-                                Comment, required
+                                {t('operations.authorisationQueue.decision.comment')}
                             </span>
                             <textarea
                                 value={comment}
                                 onChange={(event) => setComment(event.target.value)}
                                 rows={3}
                                 className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
-                                placeholder="What did you check, and what did you find?"
+                                placeholder={t(
+                                    'operations.authorisationQueue.decision.commentPlaceholder',
+                                )}
                             />
                         </label>
 
                         {row.stateCode !== 'held' && holdAllowed && (
                             <label className="flex max-w-sm flex-col gap-1">
                                 <span className="text-xs uppercase tracking-wide text-ink-faint">
-                                    Hold reason, required to hold over
+                                    {t('operations.authorisationQueue.decision.holdReason')}
                                 </span>
                                 <select
                                     value={holdReason}
                                     onChange={(event) => setHoldReason(event.target.value)}
                                     className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
                                 >
-                                    <option value="">Choose a reason</option>
+                                    <option value="">
+                                        {t('operations.authorisationQueue.decision.chooseReason')}
+                                    </option>
                                     {(reasons.data?.reasons ?? []).map((reason: HoldReason) => (
                                         <option key={reason.code} value={reason.code}>
                                             {reason.name}
@@ -595,18 +643,21 @@ export function AuthorisationRequestPage(): ReactNode {
                                 disabled={!canComment || busy}
                                 onClick={() => void decide('approve')}
                             >
-                                Authorise
+                                {t('operations.authorisationQueue.decision.authorise')}
                             </Button>
                             {row.stateCode !== 'held' && holdAllowed && (
                                 <Button
                                     disabled={!canComment || !holdReason || busy}
                                     onClick={() => void decide('hold')}
                                 >
-                                    Hold over
+                                    {t('operations.authorisationQueue.decision.hold')}
                                 </Button>
                             )}
-                            <Button disabled={!canComment || busy} onClick={() => void decide('refuse')}>
-                                Deny
+                            <Button
+                                disabled={!canComment || busy}
+                                onClick={() => void decide('refuse')}
+                            >
+                                {t('operations.authorisationQueue.decision.deny')}
                             </Button>
                         </div>
                     </>

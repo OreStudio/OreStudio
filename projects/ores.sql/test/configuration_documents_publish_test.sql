@@ -36,6 +36,16 @@ begin;
 select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A curve configuration names its currencies, and a currency column is checked
+-- against the currency catalogue. A fresh database has published nothing, so the
+-- test publishes the ISO codes it is about to write.
+select * from ores_refdata_publish_currencies_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'iso.currencies'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 

@@ -24,6 +24,7 @@
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/http_session.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/session_bytes_accumulator.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
@@ -47,6 +48,11 @@ public:
     /**
      * @brief Returns the router for registering endpoints.
      */
+    /// What the server knows about its own traffic, for a metrics route.
+    [[nodiscard]] const server_counters& counters() const {
+        return counters_;
+    }
+
     std::shared_ptr<router> get_router() {
         return router_;
     }
@@ -142,6 +148,7 @@ private:
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};
     std::atomic<std::uint32_t> active_connections_{0};
+    server_counters counters_;
     session_bytes_callback bytes_callback_;
 };
 

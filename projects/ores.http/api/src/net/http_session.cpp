@@ -52,13 +52,15 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
                            std::shared_ptr<worker_pool> workers,
                            const http_server_options& options,
-                           session_bytes_callback bytes_callback)
+                           session_bytes_callback bytes_callback,
+                           server_counters* counters)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
     , workers_(std::move(workers))
     , options_(options)
-    , bytes_callback_(std::move(bytes_callback)) {
+    , bytes_callback_(std::move(bytes_callback))
+    , counters_(counters) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     remote_address_ = endpoint.address().to_string();
@@ -128,11 +130,13 @@ asio::awaitable<void> http_session::run() {
                                           std::string_view note) -> asio::awaitable<void> {
                 BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
                 auto response = domain::http_response::error(status, std::string(reason));
-                auto beast_resp = convert_response(response, version, false);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                co_await write_response(response, version, false, true);
             };
 
-            const auto refuse_too_large = [&refuse](std::uint64_t size) -> asio::awaitable<void> {
+            const auto refuse_too_large = [this,
+                                           &refuse](std::uint64_t size) -> asio::awaitable<void> {
+                if (counters_ != nullptr)
+                    counters_->refused_too_large.fetch_add(1, std::memory_order_relaxed);
                 co_await refuse(domain::http_status::payload_too_large,
                                 "The request body is larger than this route accepts.",
                                 "a body of " + std::to_string(size) + " bytes is past the limit");
@@ -229,6 +233,10 @@ asio::awaitable<void> http_session::run() {
 
             domain_req.body = std::move(content);
             domain_req.body_bytes = byte_count;
+            if (counters_ != nullptr) {
+                counters_->requests.fetch_add(1, std::memory_order_relaxed);
+                counters_->request_bytes.fetch_add(byte_count, std::memory_order_relaxed);
+            }
             co_await handle_request(std::move(domain_req), std::move(route), keep_alive);
             if (sink != nullptr && !sink->published())
                 BOOST_LOG_SEV(lg(), warn)
@@ -343,8 +351,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         cors_resp.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
         cors_resp.set_header("Access-Control-Max-Age", "86400");
 
-        auto beast_resp = convert_response(cors_resp, version, keep_alive);
-        co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+        co_await write_response(cors_resp, version, keep_alive, true);
         co_return;
     }
 
@@ -355,8 +362,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
-        auto beast_resp = convert_response(not_found, version, keep_alive);
-        co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+        co_await write_response(not_found, version, keep_alive, true);
         co_return;
     }
 
@@ -370,8 +376,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                                       << " from " << remote_address_;
             auto unauthorized = domain::http_response::unauthorized(
                 "Authorization header with Bearer token required");
-            auto beast_resp = convert_response(unauthorized, version, keep_alive);
-            co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            co_await write_response(unauthorized, version, keep_alive, true);
             co_return;
         }
 
@@ -386,8 +391,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 << "configured; refusing " << matched->pattern << " from " << remote_address_;
             auto unauthorized = domain::http_response::unauthorized(
                 "Authentication is not configured on this server");
-            auto beast_resp = convert_response(unauthorized, version, keep_alive);
-            co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            co_await write_response(unauthorized, version, keep_alive, true);
             co_return;
         }
 
@@ -399,8 +403,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                     << ": " << ores::security::jwt::to_string(claims_result.error());
                 auto unauthorized = domain::http_response::unauthorized(
                     ores::security::jwt::to_string(claims_result.error()));
-                auto beast_resp = convert_response(unauthorized, version, keep_alive);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                co_await write_response(unauthorized, version, keep_alive, true);
                 co_return;
             }
 
@@ -426,8 +429,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                     BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
                                               << " lacks required role for " << matched->pattern;
                     auto forbidden = domain::http_response::forbidden("Insufficient permissions");
-                    auto beast_resp = convert_response(forbidden, version, keep_alive);
-                    co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                    co_await write_response(forbidden, version, keep_alive, true);
                     co_return;
                 }
             }
@@ -542,6 +544,13 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
                                                    unsigned version,
                                                    bool keep_alive,
                                                    bool send_body) {
+    if (counters_ != nullptr) {
+        counters_->record_response(static_cast<unsigned>(resp.status));
+        const auto bytes =
+            resp.body_stream != nullptr ? resp.body_stream->size().value_or(0) : resp.body.size();
+        counters_->response_bytes.fetch_add(bytes, std::memory_order_relaxed);
+    }
+
     if (resp.body_stream == nullptr) {
         auto beast_resp = convert_response(resp, version, keep_alive);
         co_await http::async_write(stream_, beast_resp, asio::use_awaitable);

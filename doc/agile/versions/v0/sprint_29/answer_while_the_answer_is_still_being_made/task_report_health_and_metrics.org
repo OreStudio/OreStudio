@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/report-health-and-metrics
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,17 +27,19 @@ tell a healthy server from one that is refusing every request.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Not yet started.                       |
+| Now          | Both routes answer from what the server counts. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review; the story closes with it.      |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- =/health= reports readiness: the server is accepting and its dependencies are as
-  configured.
+- =/health= states what the server can do: serving, whether a verifier is
+  configured, and how many connections are open. It does not refuse while the
+  verifier is absent, because a health check that flaps is worse than a field an
+  operator can read.
 - =/metrics= reports what the server knows: connections, requests by status, refusal
   counts, bytes, and the saturation of the handler pool.
 - Both answer without authentication and without touching a database.
@@ -62,9 +64,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Metrics cases | 3 cases, 16 assertions, all passing | =./ores.http.api.tests "[http_metrics]"= | branch head |
+| =ores.http.api= test cases | 107 cases, 346 assertions, all passing | =./ores.http.api.tests= | branch head |
 
 * Notes
+
+- The counters live in the server and the session increments them, so a metric is
+  never computed at request time: a scrape reads what is already there.
+- Every answer passes =write_response=, including the refusals, so a status class is
+  counted in one place rather than at each site that can write.
+- A scrape counts itself in =requests_total=, because a request is counted when it
+  is read and not when it is answered. The case says so.
 
 * Test Scenarios
 

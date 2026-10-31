@@ -21,7 +21,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import {
     authorisationQueue,
     countsOf,
@@ -33,7 +33,12 @@ import {
 } from '../api/queue.js';
 import { api, type HoldReason } from '../api/client.js';
 import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
-import { AreaTrail } from '../shell/AreaTrail.js';
+import {
+    localSource,
+    RecordList,
+    type ListColumn,
+} from '../refdata/RecordList.js';
+import { AreaTrail, useAreaRoot } from '../shell/AreaTrail.js';
 import { PersonRef } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
 import {
@@ -167,37 +172,6 @@ function EntityLink({ to, children }: { readonly to: string; readonly children: 
     );
 }
 
-/** One node of the rail: its label and its figure, on one line. */
-function RailNode({
-    label,
-    count,
-    selected,
-    indent = false,
-    onSelect,
-}: {
-    readonly label: string;
-    readonly count: number;
-    readonly selected: boolean;
-    readonly indent?: boolean;
-    readonly onSelect: () => void;
-}): ReactNode {
-    return (
-        <button
-            type="button"
-            onClick={onSelect}
-            aria-pressed={selected}
-            className={cx(
-                'flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-[13px]',
-                indent && 'pl-6',
-                selected ? 'bg-accent/15 text-ink' : 'text-ink-dim hover:bg-surface-2 hover:text-ink',
-            )}
-        >
-            <span className="truncate">{label}</span>
-            <span className="shrink-0 tabular-nums text-xs text-ink-faint">{count}</span>
-        </button>
-    );
-}
-
 /** The queue read, shared by the list and the page. */
 function useQueue() {
     return useQuery({
@@ -208,7 +182,6 @@ function useQueue() {
 
 export function AuthorisationQueuePage(): ReactNode {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const [klass, setKlass] = useState<QueueClass | 'all'>('all');
     /* Every state is shown until a person says otherwise: a queue that hides a
      * group by default hides work, and the figures on the buttons say what is
@@ -229,56 +202,120 @@ export function AuthorisationQueuePage(): ReactNode {
             current.includes(key) ? current.filter((one) => one !== key) : [...current, key],
         );
 
+    const columns: readonly ListColumn<QueueRow>[] = [
+        {
+            id: 'deal',
+            header: 'Deal',
+            mono: true,
+            cell: (row) => (
+                <EntityLink to={authorisationRequestPath(row.requestId)}>{row.reference}</EntityLink>
+            ),
+        },
+        {
+            id: 'type',
+            header: 'Instrument',
+            cell: (row) => (
+                <>
+                    {row.tradeType}
+                    <div className="text-xs text-ink-faint">
+                        {row.classCode === 'flow' ? 'flow' : 'non-flow'}
+                    </div>
+                </>
+            ),
+        },
+        { id: 'counterparty', header: 'Counterparty', cell: (row) => row.counterparty },
+        { id: 'book', header: 'Book', cell: (row) => row.book },
+        {
+            id: 'tradeDate',
+            header: 'Trade date',
+            mono: true,
+            cell: (row) => row.tradeDate,
+        },
+        {
+            id: 'state',
+            header: 'State',
+            cell: (row) => {
+                const palette = paletteOf(row);
+                return (
+                    <span
+                        className="inline-block rounded-full border px-2 py-0.5 text-[11px] leading-tight"
+                        style={{
+                            borderColor: palette.edge,
+                            color: palette.ink,
+                            backgroundColor: palette.wash,
+                        }}
+                    >
+                        {stateWord(row)}
+                    </span>
+                );
+            },
+        },
+    ];
+
+    const source = localSource<QueueRow>({
+        key: 'queue-authorisations',
+        rows,
+        // The rows change under the screen when a decision is taken.
+        revision: String(rows.length) + (rows[0]?.requestedAt ?? ''),
+        searchOf: (row) =>
+            `${row.reference} ${row.tradeType} ${row.counterparty} ${row.book} ${row.tradeDate}`,
+        orderOf: (left, right) => right.requestedAt.localeCompare(left.requestedAt),
+    });
+
     return (
-        <section className="flex flex-col gap-4">
-            <div>
-                <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
-                <PageHeader
-                    title={t('operations.authorisationQueue.title')}
-                    description={t('operations.screens.authorisationQueueBody')}
-                />
-            </div>
-
-            {queue.isError && <Notice tone="error">The queue could not be read.</Notice>}
-
-            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="States to show">
-                <button
-                    type="button"
-                    onClick={toggleAll}
-                    aria-pressed={allShown}
-                    className={cx(
-                        'rounded-full border px-3 py-1 text-[13px]',
-                        allShown
-                            ? 'border-accent bg-accent/15 text-ink'
-                            : 'border-line text-ink-dim hover:text-ink',
-                    )}
-                >
-                    All states
-                    <span className="ml-1.5 tabular-nums text-xs text-ink-faint">{counts.all}</span>
-                </button>
-                {GROUPS.map((entry) => {
-                    const on = states.includes(entry.key);
-                    return (
-                        <button
-                            key={entry.key}
-                            type="button"
-                            onClick={() => toggle(entry.key)}
-                            aria-pressed={on}
-                            className="rounded-full border px-3 py-1 text-[13px] transition-opacity"
-                            style={{
-                                backgroundColor: on ? entry.wash : 'transparent',
-                                borderColor: on ? entry.edge : 'var(--line, #30363d)',
-                                color: on ? entry.ink : undefined,
-                                opacity: on ? 1 : 0.6,
-                            }}
-                        >
-                            {entry.label}
-                            <span className="ml-1.5 tabular-nums text-xs">{counts[entry.key]}</span>
-                        </button>
-                    );
-                })}
-                <span className="mx-2 h-5 w-px bg-line" aria-hidden />
-                <div className="flex gap-1" role="group" aria-label="Class">
+        <RecordList
+            source={source}
+            title={t('operations.authorisationQueue.title')}
+            lead={t('operations.screens.authorisationQueueBody')}
+            crumbs={[
+                ...useAreaRoot('operations'),
+                { label: t('operations.authorisationQueue.title') },
+            ]}
+            columns={columns}
+            pathOf={(row) => authorisationRequestPath(row.requestId)}
+            keyOf={(row) => `${row.requestId}:${row.tradeId}`}
+            actions={
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={toggleAll}
+                        aria-pressed={allShown}
+                        className={cx(
+                            'rounded-full border px-3 py-1 text-[13px]',
+                            allShown
+                                ? 'border-accent bg-accent/15 text-ink'
+                                : 'border-line text-ink-dim hover:text-ink',
+                        )}
+                    >
+                        All states
+                        <span className="ml-1.5 tabular-nums text-xs text-ink-faint">
+                            {counts.all}
+                        </span>
+                    </button>
+                    {GROUPS.map((entry) => {
+                        const on = states.includes(entry.key);
+                        return (
+                            <button
+                                key={entry.key}
+                                type="button"
+                                onClick={() => toggle(entry.key)}
+                                aria-pressed={on}
+                                className="rounded-full border px-3 py-1 text-[13px]"
+                                style={{
+                                    backgroundColor: on ? entry.wash : 'transparent',
+                                    borderColor: on ? entry.edge : 'var(--line, #30363d)',
+                                    color: on ? entry.ink : undefined,
+                                    opacity: on ? 1 : 0.6,
+                                }}
+                            >
+                                {entry.label}
+                                <span className="ml-1.5 tabular-nums text-xs">
+                                    {counts[entry.key]}
+                                </span>
+                            </button>
+                        );
+                    })}
+                    <span className="mx-1 h-5 w-px bg-line" aria-hidden />
                     {CLASSES.map((entry) => (
                         <button
                             key={entry.key}
@@ -296,89 +333,8 @@ export function AuthorisationQueuePage(): ReactNode {
                         </button>
                     ))}
                 </div>
-            </div>
-
-            <div className="min-w-0 overflow-x-auto">
-                {rows.length === 0 ? (
-                    <p className="px-2 py-8 text-sm text-ink-faint">
-                        {all.length === 0
-                            ? 'Nothing waits here. A deal appears once it is live and awaits authorisation.'
-                            : 'No deal is in the states you chose.'}
-                    </p>
-                ) : (
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                                <th className="px-2 py-2">Deal</th>
-                                <th className="px-2 py-2">Type</th>
-                                <th className="px-2 py-2">Counterparty</th>
-                                <th className="px-2 py-2">Book</th>
-                                <th className="px-2 py-2">Trade date</th>
-                                <th className="px-2 py-2">State</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rows.map((row) => {
-                                const palette = paletteOf(row);
-                                return (
-                                    <tr
-                                        key={`${row.requestId}:${row.tradeId}`}
-                                        className="cursor-pointer border-b border-line-soft align-top"
-                                        style={{
-                                            backgroundColor: palette.wash,
-                                            boxShadow: `inset 3px 0 0 ${palette.edge}`,
-                                        }}
-                                        onClick={() =>
-                                            navigate(authorisationRequestPath(row.requestId))
-                                        }
-                                    >
-                                        <td className="whitespace-nowrap px-2 py-2 font-mono text-xs">
-                                            <EntityLink
-                                                to={authorisationRequestPath(row.requestId)}
-                                            >
-                                                {row.reference}
-                                            </EntityLink>
-                                        </td>
-                                        <td className="px-2 py-2">
-                                            {row.tradeType}
-                                            <div className="text-xs text-ink-faint">
-                                                {row.classCode === 'flow' ? 'flow' : 'non-flow'}
-                                            </div>
-                                        </td>
-                                        <td className="max-w-[12rem] truncate px-2 py-2">
-                                            {row.counterparty}
-                                        </td>
-                                        <td className="max-w-[10rem] truncate px-2 py-2 text-ink-dim">
-                                            {row.book}
-                                        </td>
-                                        <td className="whitespace-nowrap px-2 py-2 font-mono text-xs">
-                                            {row.tradeDate}
-                                        </td>
-                                        <td className="whitespace-nowrap px-2 py-2">
-                                            <span
-                                                className="inline-block rounded-full border px-2 py-0.5 text-[11px] leading-tight"
-                                                style={{
-                                                    borderColor: palette.edge,
-                                                    color: palette.ink,
-                                                    backgroundColor: 'transparent',
-                                                }}
-                                            >
-                                                {stateWord(row)}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-
-            <p className="text-xs text-ink-faint">
-                A decision tells the person who raised the request. The queue is read whole, so
-                the figures state the tenant's queue and not a page of it.
-            </p>
-        </section>
+            }
+        />
     );
 }
 

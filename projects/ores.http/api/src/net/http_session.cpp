@@ -53,14 +53,18 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<worker_pool> workers,
                            const http_server_options& options,
                            session_bytes_callback bytes_callback,
-                           server_counters* counters)
+                           server_counters* counters,
+                           std::shared_ptr<domain::session_store> sessions,
+                           domain::cookie_settings cookie)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
     , workers_(std::move(workers))
     , options_(options)
     , bytes_callback_(std::move(bytes_callback))
-    , counters_(counters) {
+    , counters_(counters)
+    , sessions_(std::move(sessions))
+    , cookie_(std::move(cookie)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     remote_address_ = endpoint.address().to_string();
@@ -368,34 +372,35 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
 
     BOOST_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
 
-    // Check authentication if required
+    /*
+     * One identity, two proofs. A machine client presents a bearer token. A browser
+     * presents the cookie a sign-in gave it, and the store says what that session may
+     * do: its claims were taken when it signed in, so the store is the authority for
+     * it and the token inside is not verified again. The session path is a different
+     * proof and not a cache of the first.
+     */
     if (matched->requires_auth) {
-        auto token = domain_req.get_bearer_token();
-        if (!token) {
-            BOOST_LOG_SEV(lg(), warn) << "Missing authorization token for " << matched->pattern
-                                      << " from " << remote_address_;
-            auto unauthorized = domain::http_response::unauthorized(
-                "Authorization header with Bearer token required");
-            co_await write_response(unauthorized, version, keep_alive, true);
-            co_return;
-        }
+        std::optional<ores::security::jwt::jwt_claims> claims;
+        auto clear_the_cookie = false;
 
-        // A route that requires authentication fails closed. If the server
-        // cannot verify anybody -- no verifier configured, or the public key
-        // failed to load -- it must not serve anybody. There is deliberately no
-        // second verifier to fall back to: one way of being believed.
-        auto* effective = verifier_.get();
-        if (effective == nullptr || !effective->is_configured()) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Route requires authentication but no JWT verifier is "
-                << "configured; refusing " << matched->pattern << " from " << remote_address_;
-            auto unauthorized = domain::http_response::unauthorized(
-                "Authentication is not configured on this server");
-            co_await write_response(unauthorized, version, keep_alive, true);
-            co_return;
-        }
+        if (const auto token = domain_req.get_bearer_token(); token.has_value()) {
+            /*
+             * A route that requires authentication fails closed. If the server
+             * cannot verify anybody -- no verifier configured, or the public key
+             * failed to load -- it must not serve anybody. There is deliberately no
+             * second verifier to fall back to: one way of being believed.
+             */
+            auto* effective = verifier_.get();
+            if (effective == nullptr || !effective->is_configured()) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Route requires authentication but no JWT verifier is "
+                    << "configured; refusing " << matched->pattern << " from " << remote_address_;
+                auto unauthorized = domain::http_response::unauthorized(
+                    "Authentication is not configured on this server");
+                co_await write_response(unauthorized, version, keep_alive, true);
+                co_return;
+            }
 
-        if (effective != nullptr && effective->is_configured()) {
             auto claims_result = effective->validate(*token);
             if (!claims_result) {
                 BOOST_LOG_SEV(lg(), warn)
@@ -406,32 +411,58 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 co_await write_response(unauthorized, version, keep_alive, true);
                 co_return;
             }
+            claims = std::move(claims_result.value());
+        } else if (sessions_ != nullptr) {
+            const auto identifier =
+                domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
+            if (identifier.has_value()) {
+                if (auto record = sessions_->touch(*identifier); record.has_value()) {
+                    claims = std::move(record->claims);
+                } else {
+                    /*
+                     * The browser holds a session this server no longer has, so the
+                     * cookie is worthless and telling the browser to drop it is what
+                     * turns a refusal into a sign-in page rather than a loop.
+                     */
+                    clear_the_cookie = true;
+                }
+            }
+        }
 
-            domain_req.authenticated_user = std::move(claims_result.value());
-            BOOST_LOG_SEV(lg(), debug)
-                << "Authenticated user: " << domain_req.authenticated_user->subject;
+        if (!claims.has_value()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "No usable credential for " << matched->pattern << " from " << remote_address_;
+            auto unauthorized = domain::http_response::unauthorized(
+                "A bearer token or a session cookie is required");
+            if (clear_the_cookie)
+                unauthorized.set_header("Set-Cookie", domain::session_cookie::clear(cookie_));
+            co_await write_response(unauthorized, version, keep_alive, true);
+            co_return;
+        }
 
-            // Check roles if required
-            if (!matched->required_roles.empty()) {
-                bool has_required_role = false;
-                for (const auto& required : matched->required_roles) {
-                    for (const auto& user_role : domain_req.authenticated_user->roles) {
-                        if (user_role == required) {
-                            has_required_role = true;
-                            break;
-                        }
-                    }
-                    if (has_required_role)
+        domain_req.authenticated_user = std::move(*claims);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Authenticated user: " << domain_req.authenticated_user->subject;
+
+        if (!matched->required_roles.empty()) {
+            auto has_required_role = false;
+            for (const auto& required : matched->required_roles) {
+                for (const auto& user_role : domain_req.authenticated_user->roles) {
+                    if (user_role == required) {
+                        has_required_role = true;
                         break;
+                    }
                 }
+                if (has_required_role)
+                    break;
+            }
 
-                if (!has_required_role) {
-                    BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
-                                              << " lacks required role for " << matched->pattern;
-                    auto forbidden = domain::http_response::forbidden("Insufficient permissions");
-                    co_await write_response(forbidden, version, keep_alive, true);
-                    co_return;
-                }
+            if (!has_required_role) {
+                BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
+                                          << " lacks required role for " << matched->pattern;
+                auto forbidden = domain::http_response::forbidden("Insufficient permissions");
+                co_await write_response(forbidden, version, keep_alive, true);
+                co_return;
             }
         }
     }

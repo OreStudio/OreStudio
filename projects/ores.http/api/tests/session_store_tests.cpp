@@ -51,9 +51,10 @@ private:
 session_record a_record(std::string token = "the-token") {
     session_record record;
     record.token = std::move(token);
-    record.account = "00000000-0000-0000-0000-000000000001";
-    record.tenant = "00000000-0000-0000-0000-000000000002";
-    record.party = "00000000-0000-0000-0000-000000000003";
+    record.claims.subject = "00000000-0000-0000-0000-000000000001";
+    record.claims.tenant_id = "00000000-0000-0000-0000-000000000002";
+    record.claims.party_id = "00000000-0000-0000-0000-000000000003";
+    record.claims.roles = {"reader"};
     return record;
 }
 
@@ -72,7 +73,9 @@ TEST_CASE("a_session_is_held_against_an_identifier_and_gives_it_back", "[session
     const auto found = store.touch(identifier);
     REQUIRE(found.has_value());
     REQUIRE(found->token == "the-token");
-    REQUIRE(found->account == "00000000-0000-0000-0000-000000000001");
+    REQUIRE(found->claims.subject == "00000000-0000-0000-0000-000000000001");
+    REQUIRE(found->claims.tenant_id == "00000000-0000-0000-0000-000000000002");
+    REQUIRE(found->claims.roles == std::vector<std::string>{"reader"});
 }
 
 TEST_CASE("the_store_never_holds_the_identifier_it_hands_out", "[session_store]") {

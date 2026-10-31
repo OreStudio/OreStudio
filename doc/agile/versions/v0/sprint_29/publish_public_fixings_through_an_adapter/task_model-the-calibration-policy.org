@@ -48,7 +48,7 @@ per-feed exceptions that stay visible.
 - A feed may pin one item, state its own window, or name its items
   explicitly; the record says it overrides, and clearing it returns the feed
   to the policy or the defaults. None of these is required.
-- A recalculation of a class resolves every feed and records the item, the
+- A calibration of a class resolves every feed and records the item, the
   policy and the fallback or refusal for each one.
 - The existing per-feed =fx_spot_fixing_item= rows are either left as an
   explicit override or derived when absent; they are never required, and they

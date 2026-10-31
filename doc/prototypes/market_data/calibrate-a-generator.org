@@ -56,9 +56,9 @@ This screen argues that a feed is read, not calibrated by hand.
 ** C — Resolution flow
 
 The policy, the candidates for one pair, the resolver and the feed as one
-path, over the recalculation record and the class coverage. This is a
+path, over the calibration record and the class coverage. This is a
 diagnostic view, not a daily screen: it argues that a person can trace how a
-value was chosen, and that every recalculation is the proof that it ran.
+value was chosen, and that every calibration is the proof that it ran.
 
 Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 =a=). A and B are two screens of the product; C is the explanation beside
@@ -81,11 +81,11 @@ them.
 - **A published fixing is taken without a person.** Moving the clock past the
   ECB's 31 October fixing changes the start from 1.1523 to 1.1560; the older
   value is the one a run on 30 October took.
-- **A recalculation leaves a record.** The button appends a row with the
+- **A calibration leaves a record.** The button appends a row with the
   policy's scope, how many feeds resolved and how many kept a level.
 - **The list is the landing, and it is exhaustive.** Every feed appears with
-  its state; nothing is chosen for calibration. Recalculation is class-wide;
-  a feed's own record may recalculate it alone. The list carries no policy
+  its state; nothing is chosen for calibration. Calibration is class-wide;
+  a feed's own record may calibrate it alone. The list carries no policy
   form, only a line and a link.
 - **The feed detail has two tabs.** *Feed record* carries the calibration of
   one feed; *Flow* explains how it resolved.
@@ -94,7 +94,7 @@ them.
 - **Calibration is per asset class.** One policy and one list per class, with
   a class switch on the list.
 - **Coverage is the point of the class screen.** How many feeds resolve, keep
-  a level or are blocked is the number a person governs, and a recalculation
+  a level or are blocked is the number a person governs, and a calibration
   records every start.
 - **The fallback is a policy choice.** Keep the fixed level or refuse to start;
   the screen states which, and no feed invents a second source.
@@ -109,7 +109,7 @@ them.
 The list is the landing and it is deliberately plain: the class switch, the
 policy in one line, the counts, the filters, and the feeds. It lists **every
 feed of the class**, not a subset chosen for calibration: every feed is
-calibrated on start and on recalculation, and the list is how a person sees
+calibrated on start and on calibration, and the list is how a person sees
 where each one landed. The filters (all, needs attention, overridden) narrow
 the list; they do not choose what to calibrate. The policy is a link, not a
 form on this screen.
@@ -121,12 +121,12 @@ Opened from a row and closed with *All FX feeds*. It has two tabs:
 - *Feed record* — the resolved start, the derived candidates, the measures, and
   the three exceptions (pin, window, explicit list).
 - *Flow* — how this feed resolved: the policy or defaults into the candidates
-  into the resolver, the trail, and the recent recalculations. It is read-only.
+  into the resolver, the trail, and the recent calibrations. It is read-only.
 
 ** The policy
 
 A class-level screen, reached from the list's policy line and from the flow
-tab. It carries the policy, its coverage and the recalculation record. It is
+tab. It carries the policy, its coverage and the calibration record. It is
 not a tab of a feed: the policy is shared, and putting it beside a feed's
 exceptions would suggest that editing it changes only that feed, or that every
 feed needs one.
@@ -169,7 +169,7 @@ never blocks a start; a pair with no series says it has nothing to measure.
 
 - Who may edit the policy, and whether a change needs approval. The prototype
   edits it in place.
-- When a recalculation runs: on a config save, on every start, daily, or only
+- When a calibration runs: on a config save, on every start, daily, or only
   when a person asks. The prototype offers the button and shows the record.
 - Where the policy lives in the product: a market data settings page, the feed
   class page, or the feed screen itself. The prototype draws it on the class
@@ -202,7 +202,7 @@ EUR/USD resolves from the ECB's 30 October fixing; moving the clock to
 IMF's USD/GBP, and AUD/USD has no covering source, so it keeps its level.
 Turning the inverse off sends GBP/USD to its fixed level; the refuse fallback
 blocks AUD/USD and counts it. Two extra pairs can be added as feeds, and the
-state panel prints the policy, the recalculation count and each start after
+state panel prints the policy, the calibration count and each start after
 every action.
 
 * See also

@@ -590,7 +590,7 @@ function renderFeed(results) {
       <div class="stack">${flowCard(result)}${card({ title: 'Resolution trail', body: trailList(result) })}</div>
       <div class="stack">
         ${card({ title: 'What it inherits', body: `<p class="note">${state.policyMode === 'automatic' ? 'The automatic defaults:' : 'The FX class policy:'}</p><p class="mono" style="margin-top:6px">${esc(state.policy.providerOrder.join(' → '))} · ${state.policy.windowDays} days</p><p style="margin-top:10px"><button class="act" data-act="open-policy">Open the class policy</button></p>` })}
-        ${card({ title: 'Recent recalculations', body: recalcTable() })}
+        ${card({ title: 'Recent calibrations', body: recalcTable() })}
       </div>
     </div>`;
   return `
@@ -620,7 +620,7 @@ function renderPolicy(results) {
     <div class="stack">${metrics(results)}</div>
   </div>
   ${card({ title: 'Coverage under this policy', sub: 'every feed of the class', body: feedTable(results) })}
-  ${card({ title: 'Recent recalculations', sub: 'every recalculation is class-wide', body: recalcTable() })}`;
+  ${card({ title: 'Recent calibrations', sub: 'every calibration is class-wide', body: recalcTable() })}`;
 }
 
 /* ---------------------------------------------------------------- actions */
@@ -682,7 +682,7 @@ function act(kind, target) {
     }
     render();
   }
-  if (kind === 'recalculate') {
+  if (kind === 'calibrate') {
     const results = resolveAll();
     const fromFixing = results.filter((result) => result.fromFixing).length;
     const kept = results.filter((result) => !result.fromFixing && !result.blocked).length;
@@ -743,7 +743,7 @@ function render() {
       policyMode: state.policyMode,
       clock: state.clock,
       policy: state.policy,
-      recalculationCount: state.recalc.length,
+      calibrationRuns: state.recalc.length,
       filter: state.filter,
       feedTab: state.feedTab,
       feeds: state.feeds.map((feed) => {
@@ -797,7 +797,7 @@ function onClick(event) {
     }
     return;
   }
-  if (['order-up', 'order-down', 'open-feed', 'customise', 'reset-policy', 'add-feed', 'recalculate', 'toggle-explicit', 'back-to-list', 'filter', 'feed-tab', 'open-policy'].includes(kind)) {
+  if (['order-up', 'order-down', 'open-feed', 'customise', 'reset-policy', 'add-feed', 'calibrate', 'toggle-explicit', 'back-to-list', 'filter', 'feed-tab', 'open-policy'].includes(kind)) {
     act(kind, target);
   }
 }
@@ -810,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (['record', 'flow'].includes(tab)) state.feedTab = tab;
   document.body.addEventListener('click', onClick);
   document.body.addEventListener('change', onChange);
-  document.getElementById('resolve').addEventListener('click', () => act('recalculate'));
+  document.getElementById('resolve').addEventListener('click', () => act('calibrate'));
   document.querySelectorAll('.proto-switch button').forEach((button) => {
     button.addEventListener('click', () => setScreen(button.dataset.screen));
   });

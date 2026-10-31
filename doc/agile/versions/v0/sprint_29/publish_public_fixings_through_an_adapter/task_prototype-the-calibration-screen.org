@@ -46,7 +46,7 @@ fixed level.
   carries a handwritten list; a feed pins an item or a window only as an
   exception.
 - The coverage is visible: how many feeds resolve from a fixing, keep a level
-  or are blocked, and a recalculation records every feed's start.
+  or are blocked, and a calibration records every feed's start.
 - A feed may pin an item or a window, and the page says it overrides; the
   pin is optional and reversible.
 - Three variants sit on one static page under
@@ -66,7 +66,7 @@ fixed level.
 - Variant A is policy first: the policy, the coverage across every feed, and
   one worked resolution. Variant B is a feed: the inherited policy, the
   resolved start, the derived candidates, and the pin and window exceptions.
-  Variant C is a flow: policy, candidates, resolver, and the recalculation
+  Variant C is a flow: policy, candidates, resolver, and the calibration
   record.
 - The decision taken here is distilled into [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
 
@@ -95,9 +95,9 @@ switchable by =?variant= or the bottom bar:
 - *Feed detail* — two tabs. *Feed record* carries the resolved start, the
   derived candidates with their reasons, the measures and the three
   exceptions. *Flow* explains the path from policy to process and lists the
-  recent recalculations.
+  recent calibrations.
 - *Policy* — the class-level policy screen, with its coverage and the
-  recalculation record.
+  calibration record.
 
 Every variant shows the level a run takes, the item and provider behind it,
 the time received, the inversion, the daily and hourly spread, the factor
@@ -109,9 +109,9 @@ clock of 2026-10-30. The defaults order ECB, IMF and BoC and allow inverses:
 EUR/USD resolves from the ECB's 30 October fixing, GBP/USD only as an inverse
 of the IMF's USD/GBP, and AUD/USD keeps its level because no source covers it.
 Moving the clock to 31 October takes the newer ECB fixing; adding a feed from
-its pair, recalculating and naming a feed's items explicitly all work on the
+its pair, calibrating and naming a feed's items explicitly all work on the
 page. Turning the inverse off sends GBP/USD to its fixed level; the refuse
-fallback blocks AUD/USD. The state panel prints the policy, the recalculation
+fallback blocks AUD/USD. The state panel prints the policy, the calibration
 count and every start.
 
 The measures card reports the realised volatility over the window, the

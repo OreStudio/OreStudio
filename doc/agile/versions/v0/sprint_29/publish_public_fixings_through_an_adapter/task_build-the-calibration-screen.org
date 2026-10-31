@@ -46,7 +46,7 @@ volatility it measured.
   carries the start, the candidates, the measures and the exceptions; *Flow*
   explains how it resolved and links to the policy.
 - The policy is its own class-level screen with the coverage and the
-  recalculation record, warning that a change affects every feed of the
+  calibration record, warning that a change affects every feed of the
   class.
 - With no configuration the screens state automatic calibration and the
   defaults, and every feed resolves.
@@ -57,7 +57,7 @@ volatility it measured.
   with each candidate's reason, and the measured volatility and its factor.
 - A person pins an item or a window on one feed as an exception; the page says
   that the feed overrides the policy, and offers the way back to the policy.
-- A recalculation records each feed's start and the policy it used.
+- A calibration records each feed's start and the policy it used.
 - The screens carry no vintage control or field, and a feed with no usable
   candidate shows the policy's fallback or refusal.
 

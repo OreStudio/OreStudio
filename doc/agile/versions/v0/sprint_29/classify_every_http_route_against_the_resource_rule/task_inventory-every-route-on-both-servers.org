@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 3B66B152-DDF0-425C-9218-1D5B4F185D6A
+:END:
+#+title: Task: Inventory every route on both servers
+#+description: Extract every route the BFF and ores.http answer, from their own declarations, into one generated table with its method, path, source and owner, so the classification has a complete list to work from and a gate that keeps it complete.
+#+type: task
+#+level: s1
+#+filetags: :classify_every_http_route_against_the_resource_rule:sprint_29:v0:
+#+owner: marco
+#+branch: feature/inventory-every-route-on-both-servers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One table names every route either server answers today. It is generated from the code, not typed, so it cannot drift from what the servers actually do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
+| Now          | The inventory is generated from both surfaces and gated; every route is listed and none is classified yet. |
+| Waiting on   | Nothing.                               |
+| Next         | Review, then classify the rows against the four-way rule. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- Every route the BFF registers appears in the inventory with its source file and line.
+- Every route ores.http registers appears in the inventory with its source file and line.
+- A route added to either server without a row fails a check.
+- The inventory is regenerable by one command, and the command is recorded beside it.
+
+* Plan
+
+Two shapes had to be read, and neither has a manifest yet: the BFF registers a
+route with a Fastify call whose first argument is a literal =/api/...= path, and
+ores.http registers one with =router->get/post/put/patch/delete_/head=. A tool
+reads both and writes one table; a check compares the table with the tree, so the
+list cannot go short without the gate saying so.
+
+The table carries the classification beside each route, and the tool never writes
+those cells: it keeps what it finds and leaves a new route's cells empty. The
+deciding stays with a person, and a regeneration cannot overwrite a decision.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes in the inventory | 402 (288 BFF, 114 ores.http) | =python3 build/scripts/route_inventory.py --check= | this branch |
+| Routes ores.http states by a composed path | 5 (the storage object and bucket patterns) | =grep -n "path composed" doc/knowledge/architecture/http_route_inventory.org= | this branch |
+| Gate check | =route-inventory=, 0.3 s | =./compass.sh check --only route-inventory= | this branch |
+
+* Notes
+
+- The BFF's 288 rows carry the route the module registers, not the screen that
+  calls it. The distinction matters for the classification: a route that exists
+  because a screen renders a grid looks exactly like a route that exists because a
+  domain object needs reading, and only the payload tells them apart.
+- Five ores.http routes state a path the code composes. They are listed by the
+  variable's name and the line that declares it, because inventing a resolved path
+  the extractor cannot verify would be worse than naming what it found.
+- The tool says what it cannot see: a route registered from a generated table (K1)
+  or from a loop over a family is not a literal call and would be missed. The answer
+  is to teach the tool that shape, not to add a row by hand.
+- Two behaviours are proven by mutation, not by reading the code: appending
+  =router->get("/api/v1/probe")= to a route file makes the check fail, and so does a
+  =.get('/api/probe'= in a BFF module; removing a row for a route that still exists
+  fails too.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

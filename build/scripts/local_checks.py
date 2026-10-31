@@ -481,6 +481,22 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
             "or delete the test that names an unused one.",
     ),
+    # The classification work needs a list that cannot be short. This reads the
+    # routes from the code that registers them, on both surfaces, and fails when
+    # one is answered but absent from the inventory, or the inventory names a
+    # route nobody answers.
+    Check(
+        id="route-inventory",
+        title="Every HTTP route is in the inventory",
+        argv=("python3", "build/scripts/route_inventory.py", "--check"),
+        classes=("cpp", "web", "docs", "codegen", "tooling"),
+        paths=("projects/ores.http/*",
+               "projects/ores.web/packages/bff/src/*",
+               "doc/knowledge/architecture/http_route_inventory.org",
+               "build/scripts/route_inventory.py"),
+        fix="Run python3 build/scripts/route_inventory.py --write and commit the "
+            "table, or delete the row of a route neither server answers.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",

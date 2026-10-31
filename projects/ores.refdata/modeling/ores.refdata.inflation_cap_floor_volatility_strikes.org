@@ -119,7 +119,7 @@ std::string()
 
 | expression     |
 |----------------|
-| "axis" <> ''   |
+| "axis" in ('Cap', 'Floor', 'Both') |
 
 * C++
 

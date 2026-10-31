@@ -416,7 +416,7 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         original.cap_floor_volatilities = full.cap_floor_volatilities;
         keep(original, "CapFloorVolatilities");
         const auto mapped = curve_configuration_projection::map(original);
-        // A proxy is a part row now, so its presence is the part's, not a flag.
+        // A proxy is a row, so the part's presence carries what a flag used to.
         const bool proxies = !mapped.cap_floor_proxy_configs.empty();
         CHECK((proxies || !mapped.parametric_smiles.empty()));
 
@@ -468,11 +468,11 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     CHECK(difference.empty());
 }
 
-TEST_CASE("a holder writing two kinds keeps both and the order it wrote them in",
+TEST_CASE("a holder writing two kinds keeps both and the priority it gave each",
           "[curveconfig][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info)
-        << "a holder writing two kinds keeps both and the order it wrote them in";
+        << "a holder writing two kinds keeps both and the priority it gave each";
     ores::testing::scoped_database_helper h;
 
     const auto full = load_document(products_example);

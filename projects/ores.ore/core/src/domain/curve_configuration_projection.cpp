@@ -1776,8 +1776,8 @@ void import_inflation_cap_floor_volatility(
     const auto entry_id = r.id;
     out.inflation_cap_floor_volatilities.push_back(std::move(r));
 
-    // The three lists are alternatives, so each one the entry states is a row of
-    // its own axis rather than a column that leaves the reader to pick.
+    // The three lists are alternatives, so each one the entry states is a row
+    // whose axis names the list it holds.
     // A list the document states is a row, even where it is empty: the document
     // wrote the element and the export writes it back, so presence is the fact.
     const auto add_strikes = [&](std::string_view axis,
@@ -2073,8 +2073,19 @@ std::map<boost::uuids::uuid, const Row*> by_definition(const std::vector<Row>& r
     return out;
 }
 
-/// The proxy an entry names, or null when it names none: one row per entry, so
-/// the part's presence is the flag the flat shape spelled with a column.
+/// The ORE element a strike row's axis states.
+constexpr std::string_view strikes_element_of(std::string_view axis) {
+    if (axis == "Cap")
+        return "CapStrikes";
+    if (axis == "Floor")
+        return "FloorStrikes";
+    if (axis == "Both")
+        return "Strikes";
+    throw std::runtime_error(
+        std::format("the strike row's axis '{}' is none of Cap, Floor or Both", axis));
+}
+
+/// The proxy an entry names, or null when it names none.
 const refdata::domain::cap_floor_proxy_config* proxy_of(
     const std::vector<refdata::domain::cap_floor_proxy_config>& parts,
     const boost::uuids::uuid& config_id) {
@@ -2728,9 +2739,7 @@ void export_inflation_cap_floor_volatility(
     r.set_text("Tenors", v.tenors);
     r.set_optional_integer("SettlementDays", v.settlement_days);
     for (const auto* list : strikes)
-        r.set_optional_text(std::string(list->axis == "Cap"    ? "CapStrikes"
-                                        : list->axis == "Floor" ? "FloorStrikes"
-                                                                : "Strikes"),
+        r.set_optional_text(strikes_element_of(list->axis),
                             std::optional<std::string>(list->strikes));
     r.set_text("Calendar", v.calendar);
     r.set_spelling("DayCounter", v.day_counter, "day counter");

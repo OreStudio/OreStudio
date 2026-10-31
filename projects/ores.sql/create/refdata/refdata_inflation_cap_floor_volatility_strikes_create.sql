@@ -58,7 +58,7 @@ create table if not exists "ores_refdata_inflation_cap_floor_volatility_strikes_
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("axis" <> '')
+    check ("axis" in ('Cap', 'Floor', 'Both'))
 );
 
 -- Composite natural key: unique combination for active records

@@ -76,6 +76,13 @@ combination, and a screen would have to read a name to know how to draw a
 control. A screen reads the kind for the control and the cardinality for whether
 the control repeats.
 
+A list need not say what one item is. =curve.list= is the set that says the leaf
+holds many values and admits any item, and it is used for the three leaves whose
+items no authority states: a delta written =25D=, an expiry that may be a date or
+a wildcard, and a pillar date. Those three sets of names are curated in
+=curve_value_sets.py= beside the reason and the guide or code line it came from,
+so the difference between a list of periods and a list of anything is data.
+
 * What a set looks like as data
 
 The sets are seeded, not typed in. The curated input is

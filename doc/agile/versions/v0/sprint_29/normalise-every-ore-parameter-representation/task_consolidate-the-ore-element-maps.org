@@ -30,7 +30,7 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | The map states the rule each leaf's parser gives it, a set says how many values a document writes, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The 5 leaves no ORE source read names and the schema does not type: three are built from a variable and two the extractor cannot reach. |
+| Next         | The 5 leaves no authority types, and the setting link that cannot hold two leaves of one name. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -477,6 +477,36 @@ The 5 that remain are the three tenor leaves a variable names, =DefaultCurve/Typ
 and =Qualifier=. The schema types none of the five, so text is the honest answer
 rather than a gap. The 13 leaves whose schema type the reader does not resolve are
 listed by the evidence report; they all state a rule from another authority.
+
+* A list states what one item is
+
+A set of cardinality =many= stated how many values a leaf holds and not what one
+may be, so 16 leaves said "a list of anything". The ORE user guide states the
+item for most of them in the sentence it describes the leaf with: Tenors and
+AtmTenors are "a comma separated list of valid tenor strings", Terms is "a comma
+separated list of tenors", SmileOptionTenors are "option expiries, in period
+form", CapStrikes and FloorStrikes are the strikes, DetachmentPoints are "any
+positive number less than one", and SmileSpreads are strike spreads.
+
+=curve_value_sets.py= now states that per name, and each entry carries the reason
+and the guide or code line it came from, so the map's row for a tenor list reads
+=ore_guide= and cites the line. Twelve leaves gained an item rule: eight take
+=curve.period_list= and four =curve.number_list=.
+
+Four keep =curve.list=, and their reason says why rather than leaving the gap
+unstated. A delta is written =25D=, which is neither a number nor a period; an
+expiry may be a tenor, a date or a wildcard =*=, which the guide states; and a
+pillar date is a date, for which this tree has no kind yet. A date set is the
+missing piece, and it is the next one.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that take a period list | 0 | 8 |
+| leaves that take a number list | 5 | 9 |
+| leaves that take a list with no item rule | 16 | 4 |
+
+The seeded corpus holds real tenor and strike lists, and it publishes under the
+new rules unchanged, which is what proves the item rule is not too narrow.
 
 * Plan
 

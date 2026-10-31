@@ -210,7 +210,9 @@ def describe(code, entry, term, address, overridden=None):
     if overridden:
         reason = overridden
     elif spelling == "list" and curve_sets.LIST_ITEM.get(element):
-        reason = curve_sets.LIST_ITEM[element][1]
+        stated = curve_sets.LIST_ITEM[element]
+        reason = stated["reason"]
+        source, source_ref = stated["source"], stated["source_ref"]
     elif spelling == "text" and schema:
         reason = (f"The ORE parser reads {element} as a string and the ORE schema "
                   f"declares it {schema[1]}, so the value is {SCHEMA_WORDS[schema[0]]}.")

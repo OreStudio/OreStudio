@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: external
-#+blocked_since: 2026-10-31 00:40
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -30,11 +28,11 @@ prove the file protocol, but the path a real transfer takes is unproven.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Waiting on a tree that builds and a fleet to run against. |
-| Waiting on   | =ores.trading='s generated batch header, which =ores.synthetic= does not compile without. |
-| Next         | Run the wrapper's transfer tests once the tree builds. |
+| Now          | The transfer path the wrapper uses is proven through the real gateway. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing; the grid wrapper process itself was not run. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -90,3 +88,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+Three cases run against a real =http_server= with the real storage routes, a real
+RS256 capability token and the real =storage_transfer= client, which is what the
+wrapper's =package_publisher= calls:
+
+- 8 MiB uploaded, present at its key, digest equal to the file sent, the route's
+  answer naming that digest, and no part file left behind.
+- 3 MiB uploaded and downloaded again, byte for byte.
+- An upload whose token names another bucket is refused, and nothing is written.
+
+The grid wrapper process itself was not run: it needs an assignment from the compute
+service, and the transfer path it depends on is what these cover.

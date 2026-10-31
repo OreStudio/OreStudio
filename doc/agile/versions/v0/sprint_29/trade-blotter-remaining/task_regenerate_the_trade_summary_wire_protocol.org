@@ -26,11 +26,11 @@ Regenerate the trading component's TypeScript output so the committed wire proto
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Regenerated; the PR waits on review.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge on approval.                     |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

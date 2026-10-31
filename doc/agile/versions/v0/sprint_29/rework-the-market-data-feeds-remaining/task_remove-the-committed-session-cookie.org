@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: fix/remove-the-committed-session-cookie
-#+pr:
+#+pr: 4290
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4290][#4290]] | [repo] Stop tracking the curl cookie jar |
 
 * Review
 

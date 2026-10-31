@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 0E3982E4-83E1-46A2-876E-FB510CC02571
+:END:
+#+title: An asset class is not a data-quality severity
+#+description: The badge catalogue paints asset classes but files them under a severity_code, which is a data-quality judgement. Nothing chooses that severity for a class, and no reader can act on it. Decide what severity means for a badge that is not a finding, and let a class carry a colour without one.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The badge catalogue holds one =asset_class_*= row for each asset class: a name, a background and a text colour, a =severity_code=, a =css_class= and a display order. The severity belongs to a data-quality finding, because somebody must act on the finding. An asset class is a fact about an instrument, so its severity says nothing and nothing reads it.
+
+Separate the two notions. A badge definition carries the words and the colour. A severity attaches to the finding that wears the badge, or to the badge *mapping* that records which badge a failure paints. A class keeps its colour and no severity.
+
+* Why
+
+Marco reviewed the blotter's asset-class rail on 2026-10-31 and said that mapping asset classes onto warnings makes no sense. The mapping is an accident of the catalogue's history: the table was built to paint findings, and classes joined it because the colours were already there. Left alone, the next reader treats the severity as meaningful and either shows it or invents a rule for it.
+
+The blotter takes its class names from =ores_refdata_asset_class_codes_tbl= and its colours from the house tokens in =projects/ores.web/packages/web/src/marketdata/assetClassColour.ts=. That first pass works. The badge catalogue stays out of the blotter until the severity question is settled, so the screen does not show a warning that means nothing.
+
+* References
+
+- =ores_dq_badge_definitions_tbl= and =ores_dq_badge_mappings_tbl= in =projects/ores.sql=
+- =projects/ores.web/packages/bff/src/blotter.ts= — reads the class codes
+- =projects/ores.web/packages/web/src/marketdata/assetClassColour.ts= — the house colour tokens
+- PR #4161 — the blotter rail, where the finding was raised
+
+* See also
+
+- [[proj:doc/llm/memory/badge_text_matches_the_value.org][A badge's text is the value it represents]]
+- The sprint 29 story *Draw every coded value as its badge*

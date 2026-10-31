@@ -3697,6 +3697,7 @@ export const en: SourceCatalogue = {
             viewPortfolio: 'Portfolio tree',
             railLoading: 'Reading the tree...',
             viewCounterparty: 'Counterparty',
+            viewInstrument: 'Asset class',
             flat: 'Flat',
             identifier: 'Identifier',
             structureColumn: 'Structure',
@@ -3828,11 +3829,13 @@ export const en: SourceCatalogue = {
             confirmsProseOne:
                 "The customer holds the structure as one: its terms are the structure's, not the legs'.",
             pricesProseLegs: 'No leg depends on another, so the price is the sum of the parts.',
-            pricesProseOne: 'The legs price together, so the structure is priced as one instrument.',
+            pricesProseOne:
+                'The legs price together, so the structure is priced as one instrument.',
             ofTheDeal: 'Of the structure',
             ofEachTrade: 'Of each trade',
             externalProseLegs: 'Each leg moves on its own: see the Members tab.',
-            externalProseOne: 'The structure moves as one, so a change to a leg changes the structure.',
+            externalProseOne:
+                'The structure moves as one, so a change to a leg changes the structure.',
             tradesProseLegs:
                 'A package confirms trade by trade. Each leg has its own external version, and the customer quotes the one for the trade they hold.',
             tradesProseOne:

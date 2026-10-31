@@ -1642,67 +1642,131 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
-def _codec_includes(domain_entity, model_path):
-    """The codec headers of the types this one holds.
+@functools.lru_cache(maxsize=None)
+def _model_type_names(directory):
+    """The names a modeling directory declares, split by where their shape is.
 
-    A type recurses into a member's shape, and the shape is declared in that
-    member's codec header. So a unit that encodes a message or a row holding
-    another generated type has to include the header that declares it, or the
-    compiler reads the recursion as a type with no shape at all.
+    Classification is the model's own ``#+type:`` line, never its filename: a
+    junction may be called ``ores.refdata.calendar_date.org`` and one is, so a
+    filename suffix would classify it as nothing and its members would reach the
+    compiler with no shape.
+
+    Returns:
+        tuple[frozenset[str], frozenset[str]]: (entity and junction singulars,
+            field group singulars). A group states its shape in its own header,
+            an entity or a junction in the codec header beside it.
     """
     import re
 
     names = set()
     groups = set()
-    if model_path:
-        from .org_loader import _entity_singulars_in
-        names |= set(_entity_singulars_in(str(Path(model_path).resolve().parent)))
-        for m in Path(model_path).resolve().parent.glob("*_junction.org"):
-            found = re.findall(r"^#\+name_singular:\s*(\S+)\s*$",
-                               m.read_text(encoding="utf-8"), re.M)
-            names |= set(found)
-        for m in Path(model_path).resolve().parent.glob("*_field_group.org"):
-            found = re.findall(r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$",
-                               m.read_text(encoding="utf-8"), re.M)
-            groups |= set(found)
+    for path in sorted(Path(directory).glob("*.org")):
+        text = path.read_text(encoding="utf-8")
+        found = re.search(r"^#\+type:\s*(\S+)\s*$", text, re.M)
+        kind = found.group(1) if found else ""
+        if kind == "ores.codegen.entity":
+            name = re.search(r"^#\+entity_singular:\s*(\S+)\s*$", text, re.M)
+            if name:
+                names.add(name.group(1))
+        elif kind == "ores.codegen.junction":
+            name = re.search(r"^#\+name_singular:\s*(\S+)\s*$", text, re.M)
+            if name:
+                names.add(name.group(1))
+        elif kind == "ores.codegen.field_group":
+            name = re.search(
+                r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$", text,
+                re.M)
+            if name:
+                groups.add(name.group(1))
+    return frozenset(names), frozenset(groups)
 
-    component_include = domain_entity.get("component_include") or (
-        f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}")
+
+def _model_member_names(model_path):
+    """The names declared beside this model, or nothing without a path."""
+    if not model_path:
+        return frozenset(), frozenset()
+    return _model_type_names(str(Path(model_path).resolve().parent))
+
+
+def _member_headers(cpp_types, model_path, domain_entity):
+    """The headers that declare the shape of every type these names hold.
+
+    A type recurses into a member's shape, and the shape is declared in that
+    member's codec header. So a unit that encodes a message or a row holding
+    another generated type has to include the header that declares it, or the
+    compiler reads the recursion as a type with no shape at all.
+
+    A member is named either qualified ("ores::refdata::domain::csa", the
+    message's own field types) or bare ("counterparty_identifier", resolved by a
+    using-declaration, the row's columns). Both forms name the same declaration,
+    so both resolve here.
+
+    Args:
+        cpp_types: the C++ member types, as the model states them.
+        model_path: the model file, whose directory names the sibling types.
+        domain_entity: the model being rendered, for its component root.
+
+    Returns:
+        list[str]: include paths, in first-seen order.
+    """
+    import re
+
+    names, groups = _model_member_names(model_path)
+    # The templates spell a header "ores.{{component_include}}/...", so the
+    # root here carries the product prefix too.
+    root = "ores." + (
+        domain_entity.get("component_include") or (
+            f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}"))
     out = []
 
     def add(header):
         if header not in out:
             out.append(header)
 
-    def add_codec(header):
-        add(header.replace(".hpp", "_codec.hpp"))
+    for cpp_type in (str(t) for t in cpp_types):
+        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
+            parts = [p for p in namespace.split("::") if p]
+            if len(parts) != 2 or parts[1] == "utility":
+                continue
+            if name in groups:
+                add(f"{root}/domain/{name}.hpp")
+            elif name in names:
+                add(f"{root}/domain/{name}_codec.hpp")
+            else:
+                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
+        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
+            if name in groups:
+                add(f"{root}/domain/{name}.hpp")
+            elif name in names:
+                add(f"{root}/domain/{name}_codec.hpp")
+    return out
 
-    # A field group states its shape in its own header; an entity or a junction
-    # states it in the codec header beside it.
+
+def _codec_includes(domain_entity, model_path):
+    """The codec headers the types a row holds are declared in."""
+    out = []
+    # A field group states its shape in its own header; it needs no codec header.
     for group in domain_entity.get("domain_groups") or []:
         if group.get("header"):
-            add(group["header"].strip('"'))
+            header = group["header"].strip('"')
+            if header not in out:
+                out.append(header)
     if domain_entity.get("has_audit_group"):
         # "ores::dq::domain::audit_record" -> the group's own header
         qualified = domain_entity.get("audit_group_qualified", "")
         parts = [p for p in qualified.split("::") if p and p != "domain"]
         if len(parts) == 3:
-            add(f"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp")
+            header = f"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"
+            if header not in out:
+                out.append(header)
 
-    for col in (list(domain_entity.get("columns") or [])
-                + list((domain_entity.get("primary_key") or {}).get("columns") or [])
-                + list(domain_entity.get("natural_keys") or [])):
-        cpp_type = str(col.get("cpp_type", ""))
-        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
-            parts = [p for p in namespace.split("::") if p]
-            if len(parts) == 2 and parts[1] != "utility":
-                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
-        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
-            if name in groups:
-                add(f"{component_include}/domain/{name}.hpp")
-            elif name in names:
-                add_codec(f"{component_include}/domain/{name}.hpp")
-
+    columns = (list(domain_entity.get("columns") or [])
+               + list((domain_entity.get("primary_key") or {}).get("columns") or [])
+               + list(domain_entity.get("natural_keys") or []))
+    for header in _member_headers(
+            (col.get("cpp_type", "") for col in columns), model_path, domain_entity):
+        if header not in out:
+            out.append(header)
     return out
 
 
@@ -1713,42 +1777,10 @@ def _message_codec_includes(domain_entity, model_path):
     composite request carries rows of entities the entity it belongs to never
     mentions, so the message's own field types are a second source.
     """
-    import re
-
-    names = set()
-    groups = set()
-    if model_path:
-        from .org_loader import _entity_singulars_in
-        names |= set(_entity_singulars_in(str(Path(model_path).resolve().parent)))
-        for m in Path(model_path).resolve().parent.glob("*_junction.org"):
-            names |= set(re.findall(r"^#\+name_singular:\s*(\S+)\s*$",
-                                    m.read_text(encoding="utf-8"), re.M))
-        for m in Path(model_path).resolve().parent.glob("*_field_group.org"):
-            groups |= set(re.findall(r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$",
-                                     m.read_text(encoding="utf-8"), re.M))
-
-    component_include = domain_entity.get("component_include") or (
-        f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}")
-    out = []
-
-    def add(header):
-        if header not in out:
-            out.append(header)
-
-    types = [str(f.get("cpp_type", ""))
+    types = [f.get("cpp_type", "")
              for message in domain_entity.get("messages") or []
              for f in message.get("fields") or []]
-    for cpp_type in types:
-        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
-            parts = [p for p in namespace.split("::") if p]
-            if len(parts) == 2 and parts[1] != "utility":
-                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
-        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
-            if name in groups:
-                add(f"{component_include}/domain/{name}.hpp")
-            elif name in names:
-                add(f"{component_include}/domain/{name}_codec.hpp")
-    return out
+    return _member_headers(types, model_path, domain_entity)
 
 
 def _facet_enabled(model_path, facet, addresses):

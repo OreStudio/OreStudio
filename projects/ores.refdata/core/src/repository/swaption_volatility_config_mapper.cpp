@@ -104,7 +104,9 @@ swaption_volatility_config_mapper::map(const domain::swaption_volatility_config&
     r.day_counter = v.day_counter;
     r.calendar = v.calendar;
     r.business_day_convention =
-        stored_business_day_convention(v.business_day_convention.value_or(std::string{}));
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.option_tenors = v.option_tenors;
     r.swap_tenors = v.swap_tenors;
     r.short_swap_index_base = v.short_swap_index_base;

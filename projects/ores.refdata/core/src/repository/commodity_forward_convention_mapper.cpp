@@ -81,7 +81,10 @@ commodity_forward_convention_mapper::map(const domain::commodity_forward_convent
     r.advance_calendar = v.advance_calendar;
     r.spot_relative = v.spot_relative;
     r.delivery_location = v.delivery_location;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention =
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.outright = v.outright;
     r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;

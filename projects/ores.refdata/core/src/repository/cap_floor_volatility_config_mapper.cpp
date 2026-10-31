@@ -115,7 +115,10 @@ cap_floor_volatility_config_mapper::map(const domain::cap_floor_volatility_confi
     r.include_atm = v.include_atm;
     r.day_counter = v.day_counter;
     r.calendar = v.calendar;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention =
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.tenors = v.tenors;
     r.strikes = v.strikes;
     r.optional_quotes = v.optional_quotes;

@@ -73,7 +73,10 @@ currency_pair_convention_mapper::map(const domain::currency_pair_convention& v) 
     r.pip_factor = v.pip_factor;
     r.tick_size = v.tick_size;
     r.decimal_places = v.decimal_places;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention =
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.spot_relative = v.spot_relative;
     r.end_of_month = v.end_of_month;
     r.oresmd_uri = v.oresmd_uri;

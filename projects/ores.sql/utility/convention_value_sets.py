@@ -146,9 +146,23 @@ def parser_set(parser, entry):
     }
 
 
-def set_of(term, parsers):
+# The extractor states no parser for these members, so it typed them text even
+# though the schema declares the leaf a whole number. The ORE schema is the
+# authority for the type, and it states xs:integer for every declaration of
+# SettlementDays and FixingDays, and for the commodity forward's SpotDays.
+# Keyed by the convention element and the ORE name.
+TYPE_OVERRIDE = {
+    ("SettlementDays", None): "integer",
+    ("FixingDays", None): "integer",
+    ("CommodityForward", "SpotDays"): "integer",
+}
+
+
+def set_of(term, parsers, element=None):
     """The set code of one term, and the parser whose list it is, if any."""
-    kind = term["type"]
+    kind = (TYPE_OVERRIDE.get((term["name"], None))
+            or TYPE_OVERRIDE.get((element, term["name"]))
+            or term["type"])
     if kind in CATALOGUE_OF:
         return "convention." + kind, None
     if kind in TYPE_SETS:
@@ -183,7 +197,7 @@ def data():
         for term in convention["terms"]:
             if (element, term["name"]) not in documented:
                 continue
-            code, parser = set_of(term, parsers)
+            code, parser = set_of(term, parsers, element)
             if parser and code not in sets:
                 sets[code] = parser_set(parser, parsers[parser])
             key = f"{element}|{term['name']}"

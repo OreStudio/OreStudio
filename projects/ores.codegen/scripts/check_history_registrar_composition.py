@@ -19,8 +19,9 @@ are to-do, not exempt. A census on 2026-10-28 found: ores.refdata 60 of 167
 uncomposed, ores.trading 24 of 96, ores.analytics 16 of 27, ores.synthetic 3 of
 13, ores.workflow 2 of 4, ores.dq 1 of 21, ores.iam 1 of 18, and ores.assets,
 ores.compute, ores.reporting and ores.variability composed none of theirs (2, 7,
-28 and 1). Each of those needs its own story; this check keeps the components
-that are complete from regressing.
+34 and 1). ores.reporting composed all 34 on 2026-10-31 and joins the list; the
+rest each need their own story. This check keeps the components that are
+complete from regressing.
 
 Run::
 
@@ -39,7 +40,7 @@ PROJECTS = REPO_ROOT / "projects"
 DECLARATION = re.compile(r"register_(\w+)_history_provider\s*\(")
 INCLUDE = '#include "{namespace}/{stem}_history_provider_registrar.hpp"\n'
 
-CHECKED_COMPONENTS = ("ores.refdata",)
+CHECKED_COMPONENTS = ("ores.refdata", "ores.reporting")
 
 
 def component_parts(component: Path) -> tuple[str, str]:

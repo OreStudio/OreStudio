@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/raise-an-authorisation-request-when-a-draft-is-executed
-#+pr:
+#+pr: 4284
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4284][#4284]] | [trading] Raise an authorisation request when a draft is executed |
 
 * Review
 

@@ -21,11 +21,11 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | A model declares its area and the routes render under it; no URL has moved. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Move one component's entities onto their published areas, with the client and the tests in the same change. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -40,9 +40,23 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | STARTED | 2026-10-31 | | Initial task for: Let the area come from the model |
+| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Let the area come from the model |
 
 * Decisions
+
+- The area is declared per entity, not per component, because section 11.2 lets one component
+  publish several areas and ores.iam already needs two.
+- The default is the component, so the mechanism lands without a migration in the same diff
+  and no client sees a URL change it did not ask for.
+- The published areas are the list the inventory is classified against. A second list would
+  drift, and a URL is the most expensive thing in the system to change.
+
+* Result
+
+An entity model states the area its routes publish, and the route plan resolves it in the
+one place the path is built. Nothing declares an area yet, so the generated routes are
+byte-identical to what they were, and the gate that refuses an unpublished area is in place
+for the moves that follow.
 
 * Out of scope
 

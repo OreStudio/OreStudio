@@ -27,11 +27,11 @@ outlive a component rename.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] |
-| Now          | A model may declare its area and the routes render under it; nothing declares one yet, so no URL has moved. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then move the first component's entities onto their published areas. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

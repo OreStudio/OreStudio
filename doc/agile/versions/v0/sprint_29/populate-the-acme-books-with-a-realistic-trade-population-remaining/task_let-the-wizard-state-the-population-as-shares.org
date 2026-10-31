@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-the-wizard-state-the-population-as-shares
-#+pr: 4293
+#+pr: 4304
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -96,6 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4304][#4304]] | [web] Open a profile's settings and state their units |
 | [[https://github.com/OreStudio/OreStudio/pull/4293][#4293]] | [synthetic] Restore the planners a merge dropped |
 | [[https://github.com/OreStudio/OreStudio/pull/4283][#4283]] | [iam] Scale the population's mix instead of refusing it |
 

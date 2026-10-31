@@ -8,8 +8,9 @@
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
 #+branch: feature/answer-from-a-body-source
-#+pr:
-#+blocked_on:
+#+pr: 4173
+#+blocked_on: review
+#+blocked_since: 2026-10-31 01:10
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -71,9 +72,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Response-source cases | 3 cases, 10 assertions, all passing | =./ores.http.api.tests "[http_response_stream]"= | branch head |
-| =ores.http.api= test cases | 104 cases, 330 assertions, all passing | =./ores.http.api.tests= | branch head |
-| The storage download | 3 MiB through the file source, byte for byte | =./ores.http.core.tests "[end_to_end]"= | branch head |
+| Response-source cases | 3 cases, 10 assertions, all passing | =./ores.http.api.tests "[http_response_stream]"= | =#4173= |
+| =ores.http.api= test cases | 104 cases, 330 assertions, all passing | =./ores.http.api.tests= | =#4173= |
+| The storage download | 3 MiB through the file source, byte for byte | =./ores.http.core.tests "[end_to_end]"= | =#4173= |
 
 * Notes
 
@@ -99,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4173](https://github.com/OreStudio/OreStudio/pull/4173) | [http] Answer from a body source instead of a string |
 
 * Review
 

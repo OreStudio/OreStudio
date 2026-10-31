@@ -29,11 +29,11 @@ fixed level.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Building the three variants under =doc/prototypes/market_data/calibrate-a-generator/=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Signed off; the decisions are handed to the policy model and the build. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

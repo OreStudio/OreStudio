@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: C3830177-46FC-46A1-83A0-1660C4742E82
+:END:
+#+title: Finish the authorisation queue's specification
+#+description: The queue screen states the deal, its book, its counterparty and the version it is at, and it decides a request. The rest of the signed-off prototype needs data the read does not carry: the expiry a deal is pinned by, the operational error flag that separates a wrongly booked deal from one that moved, the fields an amendment changed and their previous values, the legs of a package, and the person and time the row last moved.
+#+type: capture
+#+level: cross
+#+filetags: :web:operations:queue:trading:specification:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Four parts of the signed-off queue are not on the screen, and the reason for
+each is the same: the read behind the screen does not carry the fact. The
+screen states the deal, its type, its book, its counterparty, its trade date,
+its status and the version it is at, and it decides the request. It cannot yet
+state:
+
+- *The expiry a deal is pinned by.* The design pins a deal that is not
+  exercised and is close to expiry at the top of the queue, in red, with a
+  banner. Nothing in the trade summary states an expiry date: the option
+  instruments carry one, per family, and the queue would have to join the
+  family of the type before it can read it.
+- *The operational error flag.* An amendment carries a reason code, a
+  department and a flag that separates a deal booked wrongly from one that
+  moved for a business reason. The authorisation request holds the trade, the
+  version it was raised against and its audit columns; the flag and the
+  department are not modelled.
+- *The fields an amendment changed, with the previous values.* A trade's
+  request is a fact about a version, not a field-level proposal, so there is
+  nothing to diff: the changes read answers role grants, engine settings and
+  book changes, and no kind for trades. The trade's own history holds the
+  versions, and the request names one of them.
+- *The legs of a package.* A structure authorises as a whole and its legs
+  belong inside the open deal. The queue read joins one trade per request and
+  does not read the structure it belongs to.
+- *The person and the time the row last moved.* The design puts "updated 2 min
+  ago by …" on the row. The trade summary states neither, and the request's
+  audit columns state who raised it rather than who last touched the deal.
+
+* Why
+
+Each is a gap between a screen drawn and signed off and the store under it. None
+is a defect in the screen: the screen states what it can and says so where the
+design promised more. The point of recording them together is that they are one
+question — what a queue row must state about the deal it names — and answering
+them one at a time would leave four separate joins into the trading component,
+each reading a different table for the same row.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- One read of the queue's deals that states the facts a row needs: the expiry
+  where the type has one, the structure the deal belongs to, and when and by
+  whom it last moved. It is one join into trading, widened, rather than five.
+- A decision about where the amendment's flag, reason code and department live
+  once the request stops being a bare pointer at a version.
+- The changed values, which need either a field-level proposal for a trade or a
+  read of the version's difference, and the trade history already holds the
+  versions to compare.
+
+* What done looks like
+
+A deal close to expiry is at the top of the queue with its banner, an amendment
+says which fields moved and what they were, a package lists its legs, the flag
+is visible where the design puts it, and the row says who last touched the deal
+and when.
+
+* References
+
+- [[proj:doc/prototypes/operations/operational-authorisation-queue.org][Work the authorisation queue]] — the signed-off
+  prototype and the parts this page names.
+- =ores_trading_trade_summaries_vw= — what the queue reads about a deal today,
+  and what it does not.
+
+* See also
+
+- [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] — the screen these
+  belong to.
+- [[id:8276D0CF-A711-4FED-B073-574821E13167][Page the authorisation queue and count it on the server]] — the
+  other thing the read cannot answer yet.

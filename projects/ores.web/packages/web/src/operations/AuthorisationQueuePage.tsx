@@ -33,7 +33,6 @@ import {
 } from '../api/queue.js';
 import { api, type HoldReason } from '../api/client.js';
 import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
-import { AccountPicture } from '../ui/Images.js';
 import {
     localSource,
     RecordList,
@@ -41,7 +40,7 @@ import {
     type ListSource,
 } from '../refdata/RecordList.js';
 import { AreaTrail, useAreaRoot } from '../shell/AreaTrail.js';
-import { PersonRef, usePeopleDirectory } from '../access/PersonRef.js';
+import { PersonCell } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
 import {
     authorisationRequestPath,
@@ -56,8 +55,9 @@ import {
  *
  * A deal waits here once it is live, and an operator decides it. The queue has
  * two divisions over the same rows — how much work the deal is, and the state
- * its authorisation is in — and both are in the rail. Opening a row leaves the
- * queue for the request's own page, where the deal is read and decided.
+ * its authorisation is in — and both are buttons above the list. Opening a row
+ * leaves the queue for the request's own page, where the deal is read and
+ * decided.
  *
  * The screen is drawn from the signed-off prototype at
  * doc/prototypes/operations/operational-authorisation-queue.
@@ -68,14 +68,11 @@ import {
  *
  * The colour is the state's meaning and not decoration: a tint on the row and a
  * solid edge on its left, so a queue of forty deals reads by colour before it is
- * read by word.
- *
- * The palette is a desk's, not a rainbow's: low-chroma hues that survive a dark
- * surface, each one a reading a person already has. Amber for a deal that waits
- * on somebody, indigo for one that moved and needs re-reading, steel for one
- * parked by a query, teal for one settled and oxide for one refused. Saturated
- * pastels were tried and read as highlighting rather than as state, which is the
- * wrong signal in a screen where nothing is an error merely by being new.
+ * read by word. Each hue is low-chroma so it survives a dark surface, and each
+ * is a reading a person already has: amber for a deal that waits on somebody,
+ * indigo for one that moved and needs re-reading, steel for one parked by a
+ * query, teal for one settled, oxide for one refused and grey for one that
+ * ended.
  */
 const GROUPS: readonly {
     readonly key: QueueGroup;
@@ -185,20 +182,6 @@ function stateKey(row: QueueRow): string {
         default:
             return row.stateCode === '' ? `${STATE_KEY}.unknown` : row.stateCode;
     }
-}
-
-/** A person as the house draws one: the picture, the name and their record. */
-function PersonLine({ who }: { readonly who: string }): ReactNode {
-    const directory = usePeopleDirectory();
-    const person = directory.find(who);
-    return (
-        <span className="flex items-center gap-2">
-            {person !== undefined && (
-                <AccountPicture username={person.username} name={person.fullName} size="sm" />
-            )}
-            <PersonRef who={who} />
-        </span>
-    );
 }
 
 /** A link that is drawn as the house draws one. */
@@ -605,7 +588,7 @@ export function AuthorisationRequestPage(): ReactNode {
                         />
                         <Detail
                             label={t('operations.authorisationQueue.request.raisedBy')}
-                            value={<PersonLine who={row.requestedBy} />}
+                            value={<PersonCell who={row.requestedBy} />}
                         />
                         <Detail
                             label={t('operations.authorisationQueue.request.raisedAt')}

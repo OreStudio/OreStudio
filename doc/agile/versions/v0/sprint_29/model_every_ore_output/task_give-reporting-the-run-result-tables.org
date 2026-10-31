@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-reporting-the-run-result-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ family a figure came from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started. |
+| Now          | The metric table is modelled and its layers are generated: 31 files, from the entity model to the create and drop SQL. The files are not yet in the component's CMake lists, so nothing compiles them and the build stays green. |
 | Waiting on   | The metric and child-row readers, and the column roles. |
-| Next         | Model the three shapes and the view, then move the post-processor onto the readers. |
+| Next         | State the new entity in the reporting component's file-list model so the generated layers compile, then wire the post-processor. |
 | Last touched | 2026-10-31 |
 
 * Acceptance

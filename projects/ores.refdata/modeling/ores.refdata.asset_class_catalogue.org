@@ -128,6 +128,20 @@ Inflation-linked products: instruments whose value derives from a published pric
 
 Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.
 
+** scripted
+:PROPERTIES:
+:badge_description: Scripted asset class.
+:name:          Scripted
+:display_order: 8
+:badge_background: #64748b
+:badge_text:       #ffffff
+:badge_severity:   secondary
+:badge_css:        badge bg-secondary
+:badge_order:      57
+:END:
+
+Scripted products: trades whose payoff is stated as a script rather than as a named product, because the payoff spans asset classes or has no closed form a product element could carry. Covers the generic scripted trade, autocallables, double digital options and performance options, and the parameters each script reads -- its underlyings, its observation dates and the levels it pays at. A scripted trade names the script the engine runs and states the script itself, so its market data is whatever its underlyings need: an equity script observes equities and their volatility surfaces, and a script over several classes observes each of them.
+
 * Namespace
 
 The oresmd market-data namespace, one entry per authority an =oresmd_uri= can

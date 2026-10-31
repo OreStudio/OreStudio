@@ -246,7 +246,7 @@ cross join (values
          "min_notional": "1000000", "max_notional": "50000000", "seed": 62, "trades_per_book": 6, "structures_per_book": 1},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK scripted",
          "description": "The scripted trades the UK entity books, in its cross asset solutions book.",
-         "asset_class_code": "cross_asset", "book": "Cross Asset Solutions",
+         "asset_class_code": "scripted", "book": "Cross Asset Solutions",
          "min_tenor_code": "1Y", "max_tenor_code": "5Y",
          "min_notional": "1000000", "max_notional": "25000000", "seed": 63, "trades_per_book": 6, "structures_per_book": 1},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK equity",

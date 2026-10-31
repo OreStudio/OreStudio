@@ -216,7 +216,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 
 std::vector<std::string_view> planned_asset_classes() {
     static const std::vector<std::string_view> codes{
-        "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "cross_asset"};
+        "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
     return codes;
 }
 
@@ -236,7 +236,7 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
                                                                       {"fx", &fx},
                                                                       {"inflation", &inflation},
                                                                       {"interest_rates", &rates},
-                                                                      {"cross_asset", &scripted}};
+                                                                      {"scripted", &scripted}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -1927,7 +1927,7 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
 }
 
 std::string_view scripted_trade_planner::asset_class_code() const {
-    return "cross_asset";
+    return "scripted";
 }
 
 domain::trade_population_plan

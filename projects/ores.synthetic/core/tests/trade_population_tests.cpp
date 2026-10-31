@@ -150,13 +150,13 @@ domain::trade_generation_scope rate_scope() {
 }
 
 /*
- * A scope of the scripted family. The class is the refdata taxonomy's own name
- * for a payoff that spans asset classes, and the underlyings are the tenant's
- * equity catalogue, which is what a scripted trade observes.
+ * A scope of the scripted family. The class is the refdata taxonomy's name for a
+ * payoff stated as a script, and the underlyings are the tenant's equity
+ * catalogue, which is what the population's scripts observe.
  */
 domain::trade_generation_scope scripted_scope() {
     auto scope = bond_scope();
-    scope.asset_class_code = "cross_asset";
+    scope.asset_class_code = "scripted";
     scope.equity_underlyings = {
         domain::equity_underlying_reference{
             .code = "GB0005405286", .kind = "share", .currency = "GBP"},
@@ -996,11 +996,11 @@ TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_p
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("the_scripted_family_answers_to_the_cross_asset_class", "[trade_population]") {
-    CHECK(planner_for("cross_asset").asset_class_code() == "cross_asset");
+TEST_CASE("the_scripted_family_is_planned_by_name", "[trade_population]") {
+    CHECK(planner_for("scripted").asset_class_code() == "scripted");
 
     const auto classes = planned_asset_classes();
-    CHECK(std::ranges::find(classes, std::string_view("cross_asset")) != classes.end());
+    CHECK(std::ranges::find(classes, std::string_view("scripted")) != classes.end());
 }
 
 TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_population]") {

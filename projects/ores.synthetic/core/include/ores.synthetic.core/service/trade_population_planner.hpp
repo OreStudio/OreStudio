@@ -147,9 +147,9 @@ public:
  * no writer for the autocallable's data element, so a trade of it would book
  * and then fail to export. The gap is recorded where the code is listed.
  *
- * The class answers to =cross_asset=, which is the refdata taxonomy's own name
- * for a family whose payoffs span asset classes, and the planner refuses when
- * the tenant's equity catalogue names nothing to observe.
+ * The class answers to =scripted=, the refdata taxonomy's name for a payoff
+ * stated as a script rather than as a named product, and the planner refuses
+ * when the tenant's equity catalogue names nothing to observe.
  */
 class ORES_SYNTHETIC_CORE_EXPORT scripted_trade_planner final : public trade_planner {
 public:

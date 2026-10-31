@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/design-the-cut
-#+pr:
+#+pr: 4171
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4171][#4171]] | [doc] Design the cut and the report's selection of one |
 
 * Review
 

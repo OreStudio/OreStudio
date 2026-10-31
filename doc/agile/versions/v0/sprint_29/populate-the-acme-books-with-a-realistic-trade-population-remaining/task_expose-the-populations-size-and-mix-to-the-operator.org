@@ -110,3 +110,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The task is not delivered. Its plan was corrected before work started, so that the
+knob is placed where a run starts rather than where a run's data happens to live.

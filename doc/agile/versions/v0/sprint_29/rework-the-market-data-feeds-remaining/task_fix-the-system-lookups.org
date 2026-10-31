@@ -85,3 +85,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two defects found by live testing are fixed.
+
+- The cut families and resolution rules are the system tenant's rows, but their
+  repositories filtered to the caller's tenant, so every tenant saw an empty
+  list and the edit dialog's selects were empty. The models now carry
+  system_tenant_visible, and the regenerated repositories admit the system
+  tenant's rows; verified live: the shell lists 5 families and 7 rules, and
+  /api/reporting/cut-kind-choices answers all four arrays.
+- The cut types screen derives the signed-or-not from the inbox approval kind,
+  so a cut reader needs inbox::approval_kinds:read. The seed now grants it to
+  Member, Trading, Operations, Support, Viewer, Finance and ReportRun; the
+  running tenant's roles were granted and the types list answers for henry.
+- Checks: the reporting service rebuilt and restarted; the codegen regenerated
+  the two repositories; the live shell and BFF verified.

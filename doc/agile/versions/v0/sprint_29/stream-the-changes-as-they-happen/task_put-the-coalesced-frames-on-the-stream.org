@@ -27,11 +27,11 @@ entity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | A coalesced frame becomes an event-stream message, and a pump gives a window to every open stream. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The feed that records the change events, and the timer that calls the pump. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

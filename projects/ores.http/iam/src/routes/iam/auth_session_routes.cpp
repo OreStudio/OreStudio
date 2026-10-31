@@ -59,13 +59,14 @@ std::string principal_of(const ores::security::jwt::jwt_claims& claims,
 
 }
 
-auth_session_routes::auth_session_routes(ores::nats::service::nats_client& session,
-                                         std::shared_ptr<http::domain::session_store> sessions,
-                                         verifier_finder find_verifier,
-                                         cookie_settings cookie)
+auth_session_routes::auth_session_routes(
+    ores::nats::service::nats_client& session,
+    std::shared_ptr<http::domain::session_store> sessions,
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+    cookie_settings cookie)
     : session_(session)
     , sessions_(std::move(sessions))
-    , find_verifier_(std::move(find_verifier))
+    , verifier_(std::move(verifier))
     , cookie_(std::move(cookie)) {}
 
 void auth_session_routes::register_routes(
@@ -125,17 +126,7 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
      * The sign-in itself is IAM's: the gateway holds no credential and decides
      * nothing about who may enter. It keeps the token it is given and gives the
      * browser an identifier instead.
-     *
-     * The verifier is looked for before IAM is asked, because a token that cannot be
-     * checked is not a session: asking for one would spend a request and hand back a
-     * refusal that reads like the caller's fault.
      */
-    const auto verifier = find_verifier_ ? find_verifier_() : nullptr;
-    if (!verifier || !verifier->is_configured()) {
-        BOOST_LOG_SEV(lg(), error) << "Signing in failed: no verifier is configured";
-        co_return http_response::unauthorized("Authentication is not configured");
-    }
-
     try {
         /*
          * A sign-in cannot present a session, so it is not an authenticated call:
@@ -163,7 +154,13 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
             co_return http_response::json(body, http::domain::http_status::unauthorized);
         }
 
-        auto claims_result = verifier->validate(decoded->token);
+        auto* effective = verifier_.get();
+        if (effective == nullptr || !effective->is_configured()) {
+            BOOST_LOG_SEV(lg(), error) << "Signing in failed: no verifier is configured";
+            co_return http_response::unauthorized("Authentication is not configured");
+        }
+
+        auto claims_result = effective->validate(decoded->token);
         if (!claims_result) {
             BOOST_LOG_SEV(lg(), error)
                 << "Signing in failed: the token IAM minted does not verify: "

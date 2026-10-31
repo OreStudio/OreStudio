@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 3F2552AA-9B6A-4231-836F-F0FFE8E2BCC1
-:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_curve
 #+description: Codegen entity model for the refdata =curve_volatility_curve= part: the fields ORE's Curve states.

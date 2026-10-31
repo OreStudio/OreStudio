@@ -36,8 +36,7 @@ using namespace ores::logging;
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::security::jwt::jwt_authenticator verifier,
-                             const std::string& base_url,
-                             stream::change_feed& feed) {
+                             const std::string& base_url) {
     auto handler = std::make_shared<http_info_handler>(nats, std::move(verifier), base_url);
 
     std::vector<ores::nats::service::subscription> subs;
@@ -53,17 +52,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     BOOST_LOG_SEV(registrar_lg(), info)
         << "Registered NATS handler for " << http::messaging::get_http_info_request::nats_subject
         << " (base_url=" << base_url << ")";
-
-    // Every replica hears every change, because each one holds streams of its own
-    // and a change recorded on one replica must reach a client of another. One
-    // subscription covers every component, so a component added later is heard
-    // without this code changing.
-    subs.push_back(
-        nats.subscribe(std::string(stream::all_entity_events),
-                       [feed_ptr = &feed](ores::nats::message msg) { feed_ptr->notify(msg); }));
-
-    BOOST_LOG_SEV(registrar_lg(), info)
-        << "Hearing entity events on " << stream::all_entity_events << " for the change stream";
 
     return subs;
 }

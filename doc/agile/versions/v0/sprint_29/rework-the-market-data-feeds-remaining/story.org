@@ -86,7 +86,6 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:6ACEEC70-8EAC-4920-9854-9ABF2B6530AE][Build the cut screens]] | DONE | 2026-10-31 | 2026-10-31 | The cut model exists; build its screens: the cut types in Reference data, and the cuts list and record in Reporting. |
 | [[id:8FE208A4-448A-417F-87D9-7D33B9E60B61][Fix the system lookups and the approval read]] | DONE | 2026-10-31 | 2026-10-31 | Live testing found the cut families and rules read as an empty list for a tenant, and the types screen refused for a normal role. |
 | [[id:1011BE35-F85F-4505-9385-75A0BB36B4A2][Give the cut families and values system labels, and fix the history]] | DONE | 2026-10-31 | 2026-10-31 | The cut types screen shows raw family names and ad-hoc value words, and the History tab fails because the cut entities' history providers are not registered. |
-| [[id:A08B6E4B-45AD-4487-8134-41648A074F0A][Remove the committed session cookie]] | DONE | 2026-10-31 | 2026-10-31 | build/cj.txt holds a live curl session cookie and is tracked in git. |
 
 * Decisions
 

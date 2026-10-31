@@ -37,9 +37,9 @@ whose *Session store* and *CSRF* sections state the rules.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The door finds the verifier the runner installs, and both suites pass. |
-| Waiting on    | The build on main: no deployment can be rebuilt. |
-| Next          | Sign in against a rebuilt deployment, then close the verifier task. |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start with the store, which the other three build on. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -67,7 +67,6 @@ whose *Session store* and *CSRF* sections state the rules.
 | [[id:897125F5-8B0C-45FB-943F-438E62B2E6E4][Carry the session in a cookie]] | BACKLOG | | | Set the cookie on sign in and resolve a request from it, with HttpOnly, SameSite, Secure over TLS and the per-environment name. |
 | [[id:C72957A3-2954-489C-BFA3-9986CE20A512][Make sign in and out resources]] | DONE | | 2026-10-31 | POST and DELETE on /api/v1/auth/sessions, and a me alias that answers who the caller is without handing the token back. |
 | [[id:53943BC2-F8E5-45FB-9598-741B29897352][Guard the unsafe methods]] | STARTED | 2026-10-31 | | A cookie is not proof of intent: an unsafe method on a session request must carry the deployment's Origin and a custom header a cross-site form cannot set. |
-| [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]] | STARTED | 2026-10-31 | | The session door is built before the service runner installs the verifier, so it keeps an empty one and every sign-in answers 'Authentication is not configured'. Ask for the verifier when the door needs it, refuse before asking IAM what it cannot check, and prove that a verifier installed after construction is the one the door uses. |
 
 * Decisions
 

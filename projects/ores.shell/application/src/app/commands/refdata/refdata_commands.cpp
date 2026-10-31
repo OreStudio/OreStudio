@@ -1,15 +1,3 @@
-#include "ores.shell/app/commands/refdata/cap_floor_proxy_config_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_constant_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_curve_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_delta_surface_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_kind_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_moneyness_surface_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_proxy_surface_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_smile_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_smile_parameter_commands.hpp"
-#include "ores.shell/app/commands/refdata/curve_volatility_strike_surface_commands.hpp"
-#include "ores.shell/app/commands/refdata/fx_volatility_smile_commands.hpp"
-#include "ores.shell/app/commands/refdata/inflation_cap_floor_volatility_strikes_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_commands.hpp"
@@ -160,7 +148,6 @@
 #include "ores.shell/app/commands/refdata/supervisory_body_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
-#include "ores.shell/app/commands/refdata/swaption_proxy_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/swaption_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_basis_swap_long_short_commands.hpp"
@@ -183,19 +170,6 @@ namespace ores::shell::app::commands {
 
 void refdata_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session) {
-    cap_floor_proxy_config_commands::register_commands(root_menu, session);
-    curve_volatility_constant_commands::register_commands(root_menu, session);
-    curve_volatility_curve_commands::register_commands(root_menu, session);
-    curve_volatility_delta_surface_commands::register_commands(root_menu, session);
-    curve_volatility_kind_commands::register_commands(root_menu, session);
-    curve_volatility_moneyness_surface_commands::register_commands(root_menu, session);
-    curve_volatility_proxy_surface_commands::register_commands(root_menu, session);
-    curve_volatility_smile_commands::register_commands(root_menu, session);
-    curve_volatility_smile_parameter_commands::register_commands(root_menu, session);
-    curve_volatility_strike_surface_commands::register_commands(root_menu, session);
-    fx_volatility_smile_commands::register_commands(root_menu, session);
-    inflation_cap_floor_volatility_strikes_commands::register_commands(root_menu, session);
-    swaption_proxy_config_commands::register_commands(root_menu, session);
     trading_account_type_commands::register_commands(root_menu, session);
     asset_class_code_commands::register_commands(root_menu, session);
     asset_class_commands::register_commands(root_menu, session);

@@ -11,7 +11,7 @@
 #+brief: Refdata's ORE configuration documents as operations.
 #+filetags: :model:operation:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-31
+#+updated: 2026-10-04
 
 The configuration documents refdata owns, as operations: the curve
 configuration. Another service reaches it only through these, never through
@@ -53,10 +53,7 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/curve_volatility_constant.hpp"
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
-#include "ores.refdata.api/domain/curve_volatility_moneyness_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_kind.hpp"
-#include "ores.refdata.api/domain/curve_volatility_smile.hpp"
-#include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
 #include "ores.refdata.api/domain/curve_volatility_proxy_surface.hpp"
 #include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
@@ -233,24 +230,9 @@ message, and no family of conventions has a type here.
 :cpp_type: std::vector<ores::refdata::domain::curve_volatility_delta_surface>
 :END:
 
-*** volatility_moneyness_surfaces
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::curve_volatility_moneyness_surface>
-:END:
-
 *** volatility_proxy_surfaces
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::curve_volatility_proxy_surface>
-:END:
-
-*** volatility_smiles
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::curve_volatility_smile>
-:END:
-
-*** volatility_smile_parameters
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::curve_volatility_smile_parameter>
 :END:
 
 *** inflation_cap_floor_volatilities

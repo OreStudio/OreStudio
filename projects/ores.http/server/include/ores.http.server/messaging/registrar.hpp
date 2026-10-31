@@ -20,7 +20,6 @@
 #ifndef ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
 #define ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
 
-#include "ores.http.core/stream/change_feed.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -37,15 +36,13 @@ public:
      * @param nats Connected NATS client.
      * @param verifier JWT verifier used to authenticate inbound requests.
      * @param base_url The HTTP server's externally accessible base URL.
-     * @param feed Where each entity event is recorded, for the change stream.
      * @return Subscription handles that must be kept alive for the lifetime
      *         of the server.
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::security::jwt::jwt_authenticator verifier,
-                      const std::string& base_url,
-                      stream::change_feed& feed);
+                      const std::string& base_url);
 };
 
 } // namespace ores::http::server::messaging

@@ -28,14 +28,15 @@ Regenerate the trading component's TypeScript output so the committed wire proto
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Regenerated; the PR waits on review.   |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge on approval.                     |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
--
+- The committed wire protocol states =structure_id= and =is_leg= on the trade summary, in both the domain type and the protocol shape.
+- The drift gate reports no change for the trading component.
 
 * Plan
 
@@ -55,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files the regeneration moved | 2 — =wire-protocol/src/generated/trading/domain/trade_summary.ts= and =.../protocol/trade_summary_protocol.ts= | =python3 projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --write= | e898971da1 |
+| Drift after regeneration | No drift: generated output matches the checked-in tree | =python3 projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp= | -- |
+| Web typecheck | Clean | =npm run typecheck --workspace @ores/web= in =projects/ores.web= | -- |
 
 * Notes
 
@@ -83,3 +86,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A model change reached the server and stopped there. structure_id and is_leg
+were added to the trade summary model, the C++ and SQL generated from it were
+regenerated, and the TypeScript the wire protocol generates was not, so the
+committed client type described a trade summary the server no longer returns.
+
+Regenerating the trading component moves two files: the domain type gains the
+two members, and the protocol shape gains them with the filter operators the
+model declares for them. The drift gate for trading-cpp now reports no change,
+and the web package typechecks against the wider type.

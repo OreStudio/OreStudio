@@ -278,6 +278,7 @@
       "source_kind": "integer"
     },
     "bootstrap_calibrationgrid": {
+      "cardinality": "many",
       "description": "The values the Bootstrap.CalibrationGrid setting accepts.",
       "is_ordered": false,
       "name": "Bootstrap Calibration Grid",
@@ -407,12 +408,14 @@
       "source_kind": "number"
     },
     "buckettimesdeltagamma": {
+      "cardinality": "many",
       "description": "The values the BucketTimesDeltaGamma setting accepts.",
       "is_ordered": false,
       "name": "Bucket Times Delta Gamma",
       "source_kind": "number"
     },
     "buckettimesvega": {
+      "cardinality": "many",
       "description": "The values the BucketTimesVega setting accepts.",
       "is_ordered": false,
       "name": "Bucket Times Vega",
@@ -443,6 +446,7 @@
       "source_kind": "text"
     },
     "calibrationindexterms": {
+      "cardinality": "many",
       "description": "The values the calibrationIndexTerms setting accepts.",
       "is_ordered": false,
       "name": "calibration Index Terms",
@@ -455,6 +459,7 @@
       "source_kind": "text"
     },
     "calibrationmoneyness": {
+      "cardinality": "many",
       "description": "The values the CalibrationMoneyness setting accepts.",
       "is_ordered": false,
       "name": "Calibration Moneyness",
@@ -657,6 +662,7 @@
       "source_kind": "boolean"
     },
     "gridcoarsening": {
+      "cardinality": "many",
       "description": "The values the GridCoarsening setting accepts.",
       "is_ordered": false,
       "name": "Grid Coarsening",
@@ -1223,6 +1229,7 @@
       "source_kind": "number"
     },
     "pricing_conversionratiodiscretisationgrid": {
+      "cardinality": "many",
       "description": "The values the Pricing.ConversionRatioDiscretisationGrid setting accepts.",
       "is_ordered": false,
       "name": "Pricing Conversion Ratio Discretisation Grid",
@@ -1306,6 +1313,7 @@
       "source_kind": "integer"
     },
     "quantocurrencypairs": {
+      "cardinality": "many",
       "description": "The values the QuantoCurrencyPairs setting accepts.",
       "is_ordered": false,
       "name": "Quanto Currency Pairs",
@@ -1318,12 +1326,14 @@
       "source_kind": "text"
     },
     "recoveryrateprobabilities": {
+      "cardinality": "many",
       "description": "The values the recoveryRateProbabilities setting accepts.",
       "is_ordered": false,
       "name": "recovery Rate Probabilities",
       "source_kind": "text"
     },
     "referencecalibrationgrid": {
+      "cardinality": "many",
       "description": "The values the ReferenceCalibrationGrid setting accepts.",
       "is_ordered": false,
       "name": "Reference Calibration Grid",

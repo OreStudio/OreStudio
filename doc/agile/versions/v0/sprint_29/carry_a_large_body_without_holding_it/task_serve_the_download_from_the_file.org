@@ -8,9 +8,7 @@
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
-#+blocked_on: external
-#+blocked_since: 2026-10-30 23:20
+#+pr: 4173
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -30,11 +28,11 @@ download over once that exists.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Waiting on the response streaming that increment B1 brings. |
-| Waiting on   | Increment B1's response streaming.      |
-| Next         | Once B1 streams a response, serve the file through a fixed buffer. |
+| Now          | Delivered by the response body source in B1, #4173. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -81,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4173](https://github.com/OreStudio/OreStudio/pull/4173) | [http] Answer from a body source instead of a string |
 
 * Review
 
@@ -90,3 +88,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The download serves the file through a body source: the session writes the object
+from the descriptor a buffer at a time, with the file's own length as
+=Content-Length=, so nothing holds the object. It arrived with the response body
+source that increment B1 needed, which is the task it was waiting on.

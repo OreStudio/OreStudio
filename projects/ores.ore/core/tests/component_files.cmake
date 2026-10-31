@@ -34,6 +34,7 @@ set(files
     "pricing_engines_import_tests.cpp"
     "results_canonical_rows_tests.cpp"
     "results_child_row_reader_tests.cpp"
+    "results_corpus_gate_tests.cpp"
     "results_metric_reader_tests.cpp"
     "results_output_catalogue_tests.cpp"
     "scanner_directory_scanner_tests.cpp"

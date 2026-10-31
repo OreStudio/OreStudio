@@ -84,3 +84,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curl cookie jar is out of the tree and ignored.
+
+- build/cj.txt was tracked and held a live session token; it is removed and
+  /build/cj.txt is ignored, with the reason stated in .gitignore.
+- The token is still in the repository history; the session it holds must be
+  revoked by signing the account out or rotating its password, and a clean
+  history would need a rewrite, which is a separate decision.

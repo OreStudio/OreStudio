@@ -26,11 +26,11 @@ A seeded or synthetic book of trades raises no authorisation request, so the Ope
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded before any code was written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -85,3 +85,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded on 2026-10-31 by
+[[id:B1D9104D-0C45-45B3-900B-12759FAF4227][Book a generated trade without asking for authorisation]].
+
+This task was written before the trading service had an authorisation path, so
+it asked whether a seeded trade should carry a test booking nature or sit in a
+sandbox book. The service now raises a request only for a booking nature of
+actual, and the trade summary reads =not_required= for every other nature, so
+the question is answered and the remaining work is to state the population's
+nature honestly. The replacement task carries that decision, its reason and the
+proof on a fresh provision.

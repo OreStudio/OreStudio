@@ -65,9 +65,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| IAM suite assertions | 300 | =ores.http.iam.tests= | the commit that carries this task |
-| IAM suite cases | 35 | =ores.http.iam.tests= | the commit that carries this task |
-| Live sign-in assertions | 10 | =ores.http.iam.tests "[live]"= | the commit that carries this task |
+| IAM suite assertions | 300 | =ores.http.iam.tests= | =1d71ea95c1= |
+| IAM suite cases | 35 | =ores.http.iam.tests= | =1d71ea95c1= |
+| Live sign-in assertions | 10 | =ores.http.iam.tests "[live]"= | =1d71ea95c1= |
 
 * Notes
 

@@ -35,11 +35,11 @@ export interface Cut {
     tenant_id: string;
     id: string;
     kind_code: string;
+    party_id: string;
     scope_code: string;
+    business_centre_code: string;
     timepoint: string;
     take_ordinal: number;
-    party_id: string;
-    business_centre_code: string;
     timepoint_timezone: string;
     cut_time_code: string | null;
     market_data_snapshot_id: string | null;
@@ -58,6 +58,7 @@ export interface Cut {
     retention_months: number;
     retention_destination_code: string;
     legal_hold: boolean;
+    output_is_indicative: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

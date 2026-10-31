@@ -51,11 +51,11 @@ domain::cut cut_mapper::map(const cut_entity& v) {
     r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.kind_code = v.kind_code;
+    r.party_id = v.party_id;
     r.scope_code = v.scope_code;
+    r.business_centre_code = v.business_centre_code;
     r.timepoint = v.timepoint;
     r.take_ordinal = v.take_ordinal;
-    r.party_id = v.party_id;
-    r.business_centre_code = v.business_centre_code;
     r.timepoint_timezone = v.timepoint_timezone;
     r.cut_time_code = v.cut_time_code;
     r.market_data_snapshot_id = v.market_data_snapshot_id;
@@ -74,6 +74,7 @@ domain::cut cut_mapper::map(const cut_entity& v) {
     r.retention_months = v.retention_months;
     r.retention_destination_code = v.retention_destination_code;
     r.legal_hold = v.legal_hold;
+    r.output_is_indicative = v.output_is_indicative;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -92,11 +93,11 @@ cut_entity cut_mapper::map(const domain::cut& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.kind_code = v.kind_code;
+    r.party_id = v.party_id;
     r.scope_code = v.scope_code;
+    r.business_centre_code = v.business_centre_code;
     r.timepoint = v.timepoint;
     r.take_ordinal = v.take_ordinal;
-    r.party_id = v.party_id;
-    r.business_centre_code = v.business_centre_code;
     r.timepoint_timezone = v.timepoint_timezone;
     r.cut_time_code = v.cut_time_code;
     r.market_data_snapshot_id = v.market_data_snapshot_id;
@@ -115,6 +116,7 @@ cut_entity cut_mapper::map(const domain::cut& v) {
     r.retention_months = v.retention_months;
     r.retention_destination_code = v.retention_destination_code;
     r.legal_hold = v.legal_hold;
+    r.output_is_indicative = v.output_is_indicative;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -60,6 +60,9 @@ namespace ores::reporting::domain {
  * The retention is a copy and not a read: a cut takes the kind's retention_months,
  * retention_destination_code and legal_hold_default when it is taken, so a
  * later change to the kind does not move the retention of a body already fixed.
+ * The indicative mark is a second copy for the same reason: a cut records whether a
+ * result priced from it is indicative, taken from its kind at the take, because the
+ * mark is a fact about the body and not about its state.
  * Nothing removes a cut today; the archive is a later task.
  */
 struct cut final {
@@ -87,12 +90,27 @@ struct cut final {
     std::string kind_code;
 
     /**
-     * @brief The scope the cut fixes: the book population valued against one centre's market data,
-     * named by the code a person quotes in the label.
+     * @brief The party whose books and market data the cut fixes.
      *
-     * The books themselves are rows of ores.reporting.cut_book.
+     * Set from the session that takes the cut, and enforced by row level security, so a party sees
+     * only its own cuts.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief The scope the cut fixes: the book population valued against one centre's market data,
+     * named by the code a person quotes in the label. The books it names, and the rows that
+     * associate them with a cut, are the book-scope work: no table holds them yet.
      */
     std::string scope_code;
+
+    /**
+     * @brief The rates centre whose market data the scope's books revalue against.
+     *
+     * A body that names no centre denotes whichever centre answered first, so the centre is part of
+     * the scope and not a detail of the assembly.
+     */
+    std::string business_centre_code;
 
     /**
      * @brief The instant the body was fixed at.
@@ -103,29 +121,15 @@ struct cut final {
     std::chrono::system_clock::time_point timepoint;
 
     /**
-     * @brief Which take of this occasion the row is: 1 for the first body fixed for the kind, scope
-     * and timepoint, 2 for a retake.
+     * @brief Which take of this occasion the row is: 1 for the first body fixed for the kind,
+     * party, scope, centre and timepoint, 2 for a retake.
      *
      * A retake of the same day, kind and scope is the second cut of that day, and the label states
-     * the ordinal so a person reads which body is meant.
+     * the ordinal so a person reads which body is meant. The ordinal counts within the whole
+     * natural key, because two parties or two centres fixing the same instant fix two different
+     * bodies.
      */
     int take_ordinal = 0;
-
-    /**
-     * @brief The party whose books and market data the cut fixes.
-     *
-     * Set from the session that takes the cut, and enforced by row level security, so a party sees
-     * only its own cuts.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief The rates centre whose market data the scope's books revalue against.
-     *
-     * A body that names no centre denotes whichever centre answered first, so the centre is part of
-     * the scope and not a detail of the assembly.
-     */
-    std::string business_centre_code;
 
     /**
      * @brief The timezone the timepoint was stated in, as an IANA name such as Europe/London.
@@ -267,6 +271,18 @@ struct cut final {
      * the value at the take, and a person sets it on one cut as its own act with its own reason.
      */
     bool legal_hold = false;
+
+    /**
+     * @brief Whether a result priced from this cut carries the indicative mark, copied from its
+     * kind at the take.
+     *
+     * The mark is a fact about the body and not about its state: a cut of a kind whose values are
+     * indicative says so whatever its state, and a cut of a kind whose values are official is not
+     * indicative because it needed no authorisation. The take copies the kind's
+     * output_is_indicative for the reason it copies the retention: a later change to the kind must
+     * not relabel a body already fixed.
+     */
+    bool output_is_indicative = false;
 
     /**
      * @brief Username of the person who last modified this cut.

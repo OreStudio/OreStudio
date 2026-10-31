@@ -47,11 +47,11 @@ domain::cut generate_synthetic_cut(utility::generation::generation_context& ctx)
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.kind_code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.scope_code = std::string("ACME-LONDON") + "-" + std::to_string(idx);
+    r.business_centre_code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.timepoint = ctx.past_timepoint();
     r.take_ordinal = 1;
-    r.party_id = ctx.generate_uuid();
-    r.business_centre_code = std::string(faker::word::noun());
     r.timepoint_timezone = std::string("Europe/London");
     r.cut_time_code = std::nullopt;
     r.market_data_snapshot_id = std::nullopt;
@@ -70,6 +70,7 @@ domain::cut generate_synthetic_cut(utility::generation::generation_context& ctx)
     r.retention_months = 25;
     r.retention_destination_code = std::string("cold");
     r.legal_hold = false;
+    r.output_is_indicative = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

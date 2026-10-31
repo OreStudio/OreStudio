@@ -81,14 +81,6 @@ public:
     get_cut(const ::ores::reporting::messaging::get_cut_request& request);
     ::ores::reporting::messaging::get_many_cuts_response
     get_many_cuts(const ::ores::reporting::messaging::get_many_cuts_request& request);
-    ::ores::reporting::messaging::put_cut_response
-    put_cut(const ::ores::reporting::messaging::put_cut_request& request);
-    ::ores::reporting::messaging::put_many_cuts_response
-    put_many_cuts(const ::ores::reporting::messaging::put_many_cuts_request& request);
-    ::ores::reporting::messaging::delete_cut_response
-    delete_cut(const ::ores::reporting::messaging::delete_cut_request& request);
-    ::ores::reporting::messaging::delete_many_cuts_response
-    delete_many_cuts(const ::ores::reporting::messaging::delete_many_cuts_request& request);
     ::ores::reporting::messaging::list_by_kind_code_cuts_response list_by_kind_code_cuts(
         const ::ores::reporting::messaging::list_by_kind_code_cuts_request& request);
     ::ores::reporting::messaging::list_cut_versions_response
@@ -197,24 +189,6 @@ public:
 private:
     context ctx_;
     repository::cut_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result
-    prepare_change(const ::ores::reporting::messaging::cut_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::cut& out);
 };
 
 }

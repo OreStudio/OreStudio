@@ -39,12 +39,12 @@ std::vector<ores::diff::domain::field_value> render_cut_fields(const domain::cut
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Kind Code", .value = v.kind_code});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Scope Code", .value = v.scope_code});
+    fields.push_back({.name = "Business Centre Code", .value = v.business_centre_code});
     fields.push_back({.name = "Timepoint",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.timepoint)});
     fields.push_back({.name = "Take Ordinal", .value = std::to_string(v.take_ordinal)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Business Centre Code", .value = v.business_centre_code});
     fields.push_back({.name = "Timepoint Timezone", .value = v.timepoint_timezone});
     fields.push_back({.name = "Cut Time Code", .value = v.cut_time_code.value_or(std::string{})});
     fields.push_back({.name = "Market Data Snapshot ID",
@@ -83,6 +83,8 @@ std::vector<ores::diff::domain::field_value> render_cut_fields(const domain::cut
     fields.push_back({.name = "Retention Months", .value = std::to_string(v.retention_months)});
     fields.push_back({.name = "Retention Destination Code", .value = v.retention_destination_code});
     fields.push_back({.name = "Legal Hold", .value = v.legal_hold ? "true" : "false"});
+    fields.push_back(
+        {.name = "Output Is Indicative", .value = v.output_is_indicative ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

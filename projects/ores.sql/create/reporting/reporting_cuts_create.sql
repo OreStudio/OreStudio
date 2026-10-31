@@ -47,6 +47,9 @@
  * The retention is a copy and not a read: a cut takes the kind's retention_months,
  * retention_destination_code and legal_hold_default when it is taken, so a
  * later change to the kind does not move the retention of a body already fixed.
+ * The indicative mark is a second copy for the same reason: a cut records whether a
+ * result priced from it is indicative, taken from its kind at the take, because the
+ * mark is a fact about the body and not about its state.
  * Nothing removes a cut today; the archive is a later task.
  */
 
@@ -55,11 +58,11 @@ create table if not exists "ores_reporting_cuts_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "kind_code" text not null,
+    "party_id" uuid not null,
     "scope_code" text not null,
+    "business_centre_code" text not null,
     "timepoint" timestamp with time zone not null,
     "take_ordinal" integer not null,
-    "party_id" uuid not null,
-    "business_centre_code" text not null,
     "timepoint_timezone" text not null,
     "cut_time_code" text null,
     "market_data_snapshot_id" uuid null,
@@ -78,6 +81,7 @@ create table if not exists "ores_reporting_cuts_tbl" (
     "retention_months" integer not null,
     "retention_destination_code" text not null,
     "legal_hold" boolean not null default false,
+    "output_is_indicative" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -103,8 +107,8 @@ create table if not exists "ores_reporting_cuts_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists cuts_kind_code_scope_code_timepoint_take_ordinal_uniq_idx
-on "ores_reporting_cuts_tbl" (tenant_id, kind_code, scope_code, timepoint, take_ordinal)
+create unique index if not exists cuts_occasion_uniq_idx
+on "ores_reporting_cuts_tbl" (tenant_id, kind_code, party_id, scope_code, business_centre_code, timepoint, take_ordinal)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

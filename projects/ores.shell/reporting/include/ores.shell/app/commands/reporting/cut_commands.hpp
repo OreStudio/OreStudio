@@ -86,56 +86,6 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <kind_code> <scope_code> <timepoint> <take_ordinal> <business_centre_code>
-     * <timepoint_timezone> <cut_time_code> <market_data_snapshot_id> <deal_population_id>
-     * <reference_data_version> <engine_version> <code_version> <taken_by> <taken_at>
-     * <requires_authorisation> <approval_request_id> <approved_by> <approved_at> <refused_at>
-     * <refusal_comment> <retention_months> <retention_destination_code> <legal_hold> <reason>
-     * <commentary>
-     */
-    static void process_add(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief set <id> <kind_code> <scope_code> <timepoint> <take_ordinal> <business_centre_code>
-     * <timepoint_timezone> <cut_time_code> <market_data_snapshot_id> <deal_population_id>
-     * <reference_data_version> <engine_version> <code_version> <taken_by> <taken_at>
-     * <requires_authorisation> <approval_request_id> <approved_by> <approved_at> <refused_at>
-     * <refusal_comment> <retention_months> <retention_destination_code> <legal_hold> <reason>
-     * <commentary> [--version <n>]
-     */
-    static void process_set(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief put-many --count <n> <id> <kind_code> <scope_code> <timepoint> <take_ordinal>
-     * <business_centre_code> <timepoint_timezone> <cut_time_code> <market_data_snapshot_id>
-     * <deal_population_id> <reference_data_version> <engine_version> <code_version> <taken_by>
-     * <taken_at> <requires_authorisation> <approval_request_id> <approved_by> <approved_at>
-     * <refused_at> <refusal_comment> <retention_months> <retention_destination_code> <legal_hold>
-     * <reason> <commentary>
-     */
-    static void process_put_many(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 const std::vector<std::string>& args);
-
-    /**
-     * @brief delete <id> <reason> <commentary> [--version <n>]
-     */
-    static void process_delete(std::ostream& out,
-                               ores::nats::service::nats_client& session,
-                               const std::vector<std::string>& args);
-
-    /**
-     * @brief delete-many <id> <reason> <commentary>
-     */
-    static void process_delete_many(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    const std::vector<std::string>& args);
-
-    /**
      * @brief by-kind-code <kind_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_by_kind_code(std::ostream& out,

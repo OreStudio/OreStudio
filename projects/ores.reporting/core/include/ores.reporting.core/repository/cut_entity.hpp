@@ -56,16 +56,19 @@ struct cut_entity {
 
     std::string kind_code;
 
+    boost::uuids::uuid party_id;
+
 
     std::string scope_code;
+
+
+    std::string business_centre_code;
 
     db_timestamp timepoint;
 
 
     int take_ordinal = 0;
 
-    boost::uuids::uuid party_id;
-    std::string business_centre_code;
     std::string timepoint_timezone;
     std::optional<std::string> cut_time_code;
     std::optional<boost::uuids::uuid> market_data_snapshot_id;
@@ -84,6 +87,7 @@ struct cut_entity {
     int retention_months = 0;
     std::string retention_destination_code;
     bool legal_hold = false;
+    bool output_is_indicative = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -101,11 +105,11 @@ struct cut_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("kind_code", &e::kind_code) |
+               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("scope_code", &e::scope_code) |
+               query_builder::bind("business_centre_code", &e::business_centre_code) |
                query_builder::bind("timepoint", &e::timepoint) |
                query_builder::bind("take_ordinal", &e::take_ordinal) |
-               query_builder::bind("party_id", &e::party_id) |
-               query_builder::bind("business_centre_code", &e::business_centre_code) |
                query_builder::bind("timepoint_timezone", &e::timepoint_timezone) |
                query_builder::bind("cut_time_code", &e::cut_time_code) |
                query_builder::bind("market_data_snapshot_id", &e::market_data_snapshot_id) |
@@ -124,6 +128,7 @@ struct cut_entity {
                query_builder::bind("retention_months", &e::retention_months) |
                query_builder::bind("retention_destination_code", &e::retention_destination_code) |
                query_builder::bind("legal_hold", &e::legal_hold) |
+               query_builder::bind("output_is_indicative", &e::output_is_indicative) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -61,22 +61,6 @@ register_cut_handlers(ores::nats::service::client& nats,
             h->get_many_cuts(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_cut_request::nats_subject, cut_queue_group, [h](ores::nats::message msg) {
-            h->put_cut(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_cuts_request::nats_subject, cut_queue_group, [h](ores::nats::message msg) {
-            h->put_many_cuts(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_cut_request::nats_subject, cut_queue_group, [h](ores::nats::message msg) {
-            h->delete_cut(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_cuts_request::nats_subject, cut_queue_group, [h](ores::nats::message msg) {
-            h->delete_many_cuts(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
         list_by_kind_code_cuts_request::nats_subject,
         cut_queue_group,
         [h](ores::nats::message msg) { h->list_by_kind_code_cuts(std::move(msg)); }));

@@ -39,43 +39,6 @@ struct cut_key {
     boost::uuids::uuid id;
 };
 
-struct cut_write {
-    boost::uuids::uuid id;
-    std::string kind_code;
-    std::string scope_code;
-    std::chrono::system_clock::time_point timepoint;
-    int take_ordinal;
-    std::string business_centre_code;
-    std::string timepoint_timezone;
-    std::optional<std::string> cut_time_code;
-    std::optional<boost::uuids::uuid> market_data_snapshot_id;
-    std::optional<boost::uuids::uuid> deal_population_id;
-    std::optional<std::string> reference_data_version;
-    std::optional<std::string> engine_version;
-    std::optional<std::string> code_version;
-    std::string taken_by;
-    std::optional<std::chrono::system_clock::time_point> taken_at;
-    bool requires_authorisation;
-    std::optional<boost::uuids::uuid> approval_request_id;
-    std::string approved_by;
-    std::optional<std::chrono::system_clock::time_point> approved_at;
-    std::optional<std::chrono::system_clock::time_point> refused_at;
-    std::string refusal_comment;
-    int retention_months;
-    std::string retention_destination_code;
-    bool legal_hold;
-};
-
-struct cut_change {
-    cut_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct cut_removal {
-    cut_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
 struct cut_lookup {
     cut_key key;
     std::optional<ores::reporting::domain::cut> cut;
@@ -168,80 +131,6 @@ struct get_many_cuts_request {
 struct get_many_cuts_response {
     ores::utility::domain::result result;
     std::vector<cut_lookup> entries;
-};
-
-struct put_cut_request {
-    using response_type = struct put_cut_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.cuts.put";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    cut_change change;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_cut_response {
-    ores::utility::domain::result result;
-    std::optional<ores::reporting::domain::cut> cut;
-};
-
-struct put_many_cuts_request {
-    using response_type = struct put_many_cuts_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.cuts.put_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<cut_change> changes;
-    ores::utility::domain::change_intent intent;
-};
-
-struct put_many_cuts_response {
-    ores::utility::domain::result result;
-    std::vector<ores::reporting::domain::cut> cuts;
-};
-
-struct delete_cut_request {
-    using response_type = struct delete_cut_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.cuts.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    cut_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_cut_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_cuts_request {
-    using response_type = struct delete_many_cuts_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.cuts.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<cut_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_cuts_response {
-    ores::utility::domain::result result;
 };
 
 struct list_by_kind_code_cuts_request {

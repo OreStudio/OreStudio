@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""The leaves the map leaves unconstrained, and what a rule could be.
+"""What the element map states about each leaf, read from the seeded map.
 
-The element map states a value set per leaf address. Some addresses take the
-shared text set, which admits every value, and they fall into two groups:
+Every row of the map states a value set, where the rule comes from, and why.
+This script groups the rows by what they say, so the coverage can be read from
+the data rather than derived a second time:
 
-- the contract states =text= for the parameter, so a person decided that the
-  leaf is free text;
-- the contract holds no row for the address at all, so nothing was ever
-  decided and the leaf is unconstrained by omission.
+- a leaf governed by a catalogue, an enumerated map, or a type states a rule;
+- a leaf whose set is text states that no vocabulary governs the value, which is
+  a decision the ORE parser and the schema justify;
+- a leaf the ORE sources never name states text because nothing was ever
+  decided: the extractor does not read the form the leaf is read in, so no
+  parser states a rule for it.
 
-The second group is what curation has to answer. This script names it and
-offers, for each address, the rule its siblings take: the same element name at
-another address. A sibling is evidence, not an answer, and the count of
-siblings that disagree is printed beside it.
+The third group is what curation has to answer. For each of its addresses the
+script prints the rule a sibling takes, meaning the same element name at another
+address. A sibling is evidence, not an answer.
 
 Usage: text_addresses.py [--root PATH]
 """
@@ -38,7 +40,6 @@ def main():
     import generate_ore_element_map as g
 
     rows = g.seeded(g.MAP, "ores_reporting_ore_parameter_vocabularies_tbl")
-    stated = g.contract_sets()
 
     by_element = {}
     for row in rows:
@@ -46,44 +47,44 @@ def main():
             by_element.setdefault(row["element_name"], set()).add(
                 row["value_set_code"])
 
-    decided, undocumented = [], []
-    for row in rows:
-        if row["value_set_code"] != "text":
-            continue
-        entry = {
-            "address": row["xpath"],
-            "schema": row["schema_name"],
-            "element": row["element_name"],
-        }
-        if (row["schema_name"], row["xpath"]) in stated:
-            decided.append(entry)
-        else:
-            entry["siblings"] = sorted(by_element.get(row["element_name"], []))
-            undocumented.append(entry)
+    ruled = [row for row in rows if row["value_set_code"] != "text"]
+    decided = [row for row in rows
+               if row["value_set_code"] == "text" and row["source"] != "ore_schema"]
+    unread = [row for row in rows
+              if row["value_set_code"] == "text" and row["source"] == "ore_schema"]
 
-    print("addresses the map leaves unconstrained")
-    print(f"  total                                   {len(decided) + len(undocumented):5d}")
-    print(f"  the contract states text for them       {len(decided):5d}")
-    print(f"  the contract holds no row for them      {len(undocumented):5d}")
+    print("the element map, by what each leaf's row states")
+    print(f"  leaves                                   {len(rows):5d}")
+    print(f"  a rule governs the value                 {len(ruled):5d}")
+    print(f"  text, and the ORE source says why        {len(decided):5d}")
+    print(f"  text, because no ORE source read names it{len(unread):6d}")
     print()
 
-    if decided:
-        print("stated free text, by element")
-        counts = {}
-        for entry in decided:
-            counts[entry["element"]] = counts.get(entry["element"], 0) + 1
-        for element in sorted(counts):
-            print(f"  {element:40s} {counts[element]:3d}")
-        print()
-
-    print("no rule at all, with the rule a sibling takes")
-    for entry in sorted(undocumented, key=lambda e: (e["element"], e["address"])):
-        siblings = "  ".join(entry["siblings"]) if entry["siblings"] else "-"
-        print(f"  {entry['schema']}|{entry['address']:58s} {siblings}")
+    print("a rule, by set")
+    counts = {}
+    for row in ruled:
+        counts[row["value_set_code"]] = counts.get(row["value_set_code"], 0) + 1
+    for code in sorted(counts, key=lambda c: (-counts[c], c)):
+        print(f"  {code:44s} {counts[code]:3d}")
     print()
 
-    with_rule = [e for e in undocumented if e["siblings"]]
-    print(f"{len(with_rule)} of the {len(undocumented)} have a sibling with a rule;"
+    print("text the ORE source justifies, by element")
+    counts = {}
+    for row in decided:
+        counts[row["element_name"]] = counts.get(row["element_name"], 0) + 1
+    for element in sorted(counts):
+        print(f"  {element:44s} {counts[element]:3d}")
+    print()
+
+    print("text nothing was decided for, with the rule a sibling takes")
+    for row in sorted(unread, key=lambda r: (r["element_name"], r["xpath"])):
+        siblings = by_element.get(row["element_name"], set())
+        stated = "  ".join(sorted(siblings)) if siblings else "-"
+        print(f"  {row['schema_name']}|{row['xpath']:58s} {stated}")
+    print()
+
+    with_rule = [row for row in unread if by_element.get(row["element_name"])]
+    print(f"{len(with_rule)} of the {len(unread)} have a sibling with a rule;"
           " the rest need a decision from the schema and the ORE parser.")
     return 0
 

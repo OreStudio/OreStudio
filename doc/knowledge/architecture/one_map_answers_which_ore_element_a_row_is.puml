@@ -42,31 +42,38 @@ package "A. Which parameter is this, and where is it in the document" as A {
     }
 }
 
-package "B. Which column of which table is that element" as B {
-    entity "ores_refdata_curve_configuration_columns_tbl" as curvec <<temporal>> #C6F0D8 {
+package "B. Which leaf is this row, and which set governs it" as B {
+    entity "ores_reporting_ore_parameter_vocabularies_tbl\n(the element map)" as vocab <<temporal>> #C6F0D8 {
+        * code <<PK>>\n(schema|address)
+        --
+        * schema_name
+        * xpath
+        * element_name
+        * value_set_code
+        * source
+        * reason
+    }
+    entity "ores_reporting_ore_element_map_columns_tbl" as child <<temporal>> #C6F0D8 {
         * code <<PK>>
         --
+        * element_map_code
         * entity_name
         * table_name
         * column_name
-        * schema_name
+    }
+    entity "ores_refdata_curve_configuration_columns_tbl" as curvec <<temporal>> {
+        * code <<PK>>
+        --
+        * entity_name
+        * column_name
         * xpath
     }
-    entity "ores_refdata_convention_kind_terms_tbl" as terms <<temporal>> #C6F0D8 {
+    entity "ores_refdata_convention_kind_terms_tbl" as terms <<temporal>> {
         * code <<PK>>
         --
         * kind_code
-        * entity_name
         * column_name
-        * schema_name
         * xpath
-    }
-    entity "ores_reporting_ore_parameter_vocabularies_tbl" as vocab <<temporal>> #C6F0D8 {
-        * code <<PK>>
-        --
-        * schema_name
-        * element_name
-        * value_set_code
     }
 }
 
@@ -92,6 +99,13 @@ package "C. What a screen offers" as C {
 }
 
 package "D. Where the rule is" as D {
+    entity "ores_reporting_ore_parameter_value_sets_tbl" as sets <<temporal>> {
+        * code : text <<PK>>
+        --
+        * source_kind : text
+        * catalogue_code : text
+        * pattern : text
+    }
     entity "ores_reporting_ore_parameter_setting_value_sets_tbl" as links <<temporal>> {
         * code : text <<PK>>\n(Scope:Name)
         --
@@ -102,16 +116,25 @@ package "D. Where the rule is" as D {
 }
 
 artefact ..> params : published into, by dataset
+child }o--|| vocab : "element_map_code"
+vocab }o--|| sets : "value_set_code"
+links }o--|| sets : "value_set_code"
+curvec ..> child : seeds it
+terms ..> child : seeds it
 params ||--o{ links : "scope : name"
-curvec }o--|| params : "schema_name + xpath"
-terms }o--|| params : "schema_name + xpath"
 
 note bottom of B
-  One leaf, stated three ways. The two guards read the curve
-  columns and the convention terms and resolve a value set
-  through the contract, B -> A -> D. Nothing reads the
-  vocabularies table at runtime, so it states a decision
-  without an enforcer.
+  One leaf, one row. The guards read the child columns
+  and the map, B -> D in two joins, and the map states
+  the set its leaf takes rather than resolving it through
+  the contract. The two column maps below seed the child
+  and have no runtime reader.
+end note
+
+note bottom of A
+  Documentation for the screens: what a parameter is
+  called, what it means and where it sits. It is no
+  longer a step between a column and its rule.
 end note
 
 note bottom of C

@@ -2,7 +2,7 @@
 :ID: 17032DC3-55F4-42FD-B3C1-C33D8DCED488
 :END:
 #+title: Task: Consolidate the ORE element maps
-#+description: Three tables answer which ORE element a leaf column is and which value set states its values: the curve configuration columns, the convention kind terms and the vocabularies. One leaf states a fact three times. This task makes one map keyed by the ORE element, attaches the projection columns to it, and collapses the two link tables into one shape, before anything else in the story reads them.
+#+description: One map answers which ORE element a leaf column is and which value set states its values: the curve configuration columns, the convention kind terms and the vocabularies. One leaf states a fact three times. This task makes one map keyed by the ORE element, attaches the projection columns to it, and collapses the two link tables into one shape, before anything else in the story reads them.
 #+type: task
 #+level: s1
 #+filetags: :normalise-every-ore-parameter-representation:sprint_29:v0:
@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | The map is keyed by the leaf's address, seeded, and both guards read it. |
+| Now          | The map is keyed by the leaf's address, states the rule the ORE parser gives each leaf, and both guards read it. |
 | Waiting on   | Nothing.                               |
-| Next         | The 79 addresses no contract row describes, and a review of the 195 that state text where the schema is narrower. |
+| Next         | The 28 leaves no ORE source read names, which need the extractor to learn the form they are read in. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -294,6 +294,71 @@ So the 26 contradictions are closed, and the remaining work is the 79 addresses
 no contract row describes, plus a review of the 195 that say text where the
 schema declares something narrower.
 
+* The map states the rule from the ORE parser
+
+The 79 were not a curation backlog. They were the signature of a wrong source.
+
+A leaf's set was resolved through the parameter contract: the leaf's =xpath=
+joined a contract row, and the row's =(scope, name)= joined the setting link. The
+contract holds a row only for a leaf a person wrote text for, so a leaf ORE reads
+and the guide does not describe had no rule and took =text= by omission. Measured
+with the extractor as it stood, 79 of 480.
+
+The rule now comes from the parser the ORE source reads the leaf with, through the
+curation the value set seed is written from. A leaf's rule and the rule of the
+setting that shares its name are one fact, so the map reads the resolved curation
+(=generate_value_sets.resolved()=) instead of deriving the answer a second way,
+and the contract keeps only its own job, which is documentation for the screens.
+
+That changes what a row says. =source= is =ore_code=, =source_ref= is the ORE
+source line that reads the leaf, and =reason= is generated from the parser and the
+set's kind, so a reviewer checks the rule instead of trusting it. The 232 leaves
+that stay text state why they stay text: ORE never parses the value, or it does
+and this tree holds no catalogue of the names it accepts.
+
+Three numbers moved, and only one of them by curation:
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 206 | 220 |
+| text, and the ORE source says why | 195 | 232 |
+| text, because no ORE source read names the leaf | 79 | 28 |
+
+The 14 new rules are leaves the extractor already read and the contract did not
+describe: =BMAPaymentConvention=, =BMAPaymentLag=, =OvernightLockouDays=,
+=Accuracy=, =Guess=, =MaxEvaluations=, the two =NthWeekday/Weekday= leaves,
+=BalanceOfTheMonth=, =OffPeakHours=, =Deposit/SettlementDays=, =LongTermAtmType=,
+=LongTermDeltaType= and =UseLastFixingDate=. The 51 that fell out of the
+"no contract row" group did so because they now have a term: 37 of them state text
+with a reason, and 14 state a rule.
+
+The 28 that remain are the extractor's gap, not the model's: =extract_curve_terms.py=
+reads =getChildValue=, =getChildNode=, =getNodeValue= and their typed forms, and
+these leaves are read with =getChildrenValuesAsStrings=, =getChildrenValuesAsDoublesCompact=
+or a name built from a variable. =UNREAD_ALLOWED= in the generator holds the number
+so it can fall and not grow.
+
+** A rule from the parser is enforced, and a test says so
+
+The 14 leaves that gained a rule are enforced by the existing guards, which read
+the map, so the proof is a refusal. =refdata_convention_terms_validate_test.sql=
+now writes a BMA basis swap with =bma_payment_convention = 'Follwing'= and expects
+the refusal to name =convention.business_day_convention=. Before this slice the
+leaf took =text=, so the same typo was written and nothing refused it: the test
+fails on the previous commit and passes on this one.
+
+** The collapse left a red suite
+
+Collapsing =curve.text= into =text= in the previous slice changed a link's set code
+from =curve.text= to =text=, and one assertion read the code's prefix:
+=reporting_ore_parameter_curve_value_sets_test.sql= required every set a curve leaf
+uses to start with =curve.=, so it failed on the next run. The assertion was a
+proxy for "a curve leaf does not take a convention or pricing vocabulary", and the
+shared free-text set is not a family vocabulary: it is the one set that says no
+vocabulary governs the value. The assertion now reads the set's kind and states
+that rule, so it can still catch a curve leaf pointing at another family's
+catalogue.
+
 * Plan
 
 ** Read the three maps
@@ -350,7 +415,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| leaves in the map | 480 over 482 columns | =generate_ore_element_map.py --check= | =337d74dbfc= plus this branch |
+| leaves that state a rule | 220 | the same, first line of its report | =337d74dbfc= plus this branch |
+| leaves that state text, with the ORE source's reason | 232 | the same | =337d74dbfc= plus this branch |
+| leaves no ORE source read names | 28 | the same, and =evidence/text_addresses.txt= | =337d74dbfc= plus this branch |
+| setting links to a value set | 972 | =generate_value_sets.py --check= | =337d74dbfc= plus this branch |
+| value sets | 226 | the same | =337d74dbfc= plus this branch |
+| pgTAP suites | 71 files, 663 tests, one failure that also fails on main | =projects/ores.sql/test/run_tests.sh= | =337d74dbfc= plus this branch |
 
 * Notes
 

@@ -258,13 +258,17 @@ def set_of(term, curated, parsers, section):
 
 
 def data():
-    """The catalogues, the sets and the links the curve leaves add."""
+    """The catalogues, the sets and the links the curve leaves add.
+
+    Every leaf the ORE source reads is linked, whether or not the parameter
+    contract documents it. The rule follows from the parser the ORE code reads
+    the leaf with, and it holds of the leaf whether or not a person has written
+    a description of it, so a link is stated here and nowhere else.
+    """
     with open(TERMS) as f:
         extracted = json.load(f)
     parsers = extracted["parsers"]
     curated = curation()
-    import curve_parameter_rows
-    documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     sets = dict(OWN_SETS)
     for value_set in set(VALUE_SET_OF.values()):
         catalogue = catalogue_of(value_set)
@@ -280,8 +284,6 @@ def data():
         }
     links = {}
     for section, term in terms():
-        if (section, term["name"]) not in documented:
-            continue
         code, parser = set_of(term, curated, parsers, section)
         if parser and code not in sets:
             sets[code] = parser_set(parser, parsers[parser])
@@ -292,9 +294,9 @@ def data():
     for key in curated:
         section, _, name = key.partition("|")
         if not any((section in ("", "*") or section == sec) and nm == name
-                   for sec, nm in documented):
-            raise ValueError(f"curation entry {key} matches no documented curve leaf; "
-                             "correct the key or drop the entry")
+                   for sec, nm in ((s, t["name"]) for s, t in terms())):
+            raise ValueError(f"curation entry {key} matches no curve leaf the ORE "
+                             "source reads; correct the key or drop the entry")
     named = set(links.values())
     sets = {code: entry for code, entry in sets.items() if code in named}
     catalogues = {code: entry for code, entry in CATALOGUES.items()
@@ -316,13 +318,10 @@ def catalogue_scopes():
 
 
 def text_of():
-    """The documented leaves that fall to text, so the coverage can be read."""
+    """The leaves that fall to text, so the coverage can be read."""
     with open(TERMS) as f:
         extracted = json.load(f)
     parsers = extracted["parsers"]
     curated = curation()
-    import curve_parameter_rows
-    documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     return sorted({f"{section}|{term['name']}" for section, term in terms()
-                   if (section, term["name"]) in documented
-                   and set_of(term, curated, parsers, section)[0] == "text"})
+                   if set_of(term, curated, parsers, section)[0] == "text"})

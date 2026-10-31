@@ -55,12 +55,11 @@ assert instead.
 
 ** Which element a row is
 
-[[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE element a row is]]
+[[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE element a row is]]
 
-Identity, now that the value is settled: eight tables touch the document, three
-of them state the same leaf fact, and one of those three is read by nothing. That
-is the defect the normalisation story removes first, so it is worth knowing
-before trusting any of them.
+Identity, now that the value is settled: eight tables touch the document, and the
+leaf question has one answer that both guards join. Knowing which of the eight a
+write passes through is what makes the next page's rule checkable.
 
 ** What makes the value legal
 

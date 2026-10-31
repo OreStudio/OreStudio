@@ -748,6 +748,7 @@ package "reporting" #E0F7FA {
         --
         * version : integer
         * schema_name : text
+        * xpath : text
         * element_name : text
         * value_set_code : text
         * name : text

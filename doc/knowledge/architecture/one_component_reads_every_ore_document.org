@@ -129,7 +129,7 @@ the component that owns it.
 - [[id:FB734007-5AB3-41D0-8F94-4A37584FE049][The export writes the stored
   form, so a round trip is not byte-identical]] — *answers* where the run
   document's reconstruction is used, and what the codec is asked to write.
-- [[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE
+- [[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE
   element a row is]] — *contradicts* any reading of this page that puts the
   element's name in the codec: the name a row is stored under is a row in a
   table, not a string in the projection.

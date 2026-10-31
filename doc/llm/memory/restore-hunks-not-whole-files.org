@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F98B38EF-0360-44EE-8A3E-71DD7BE32B9B
+:END:
+#+title: Restore the hunks a merge dropped, never the whole file
+#+description: Repair a merge that dropped hunks by re-applying those hunks; checking a whole file out of an older commit also reverts every change made to it since, including other environments' merged work.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A merge that drops hunks is repaired by re-applying those hunks. Checking the whole file out of an older commit restores the dropped work and also reverts every other change made to that file since, including other environments' merged work that touches it.
+
+*Why:* 1398383538 restored three synthetic files from before a merge to get the dropped planners back. One of those files, trade_operations_service.cpp, had since gained the execute operation and its duplicate rule, and trade_operations_protocol.hpp, its handler, its registrar line and its tests had all been added. Taking the older copy swept all of it away, along with a capture explaining an unrelated breakage. Main compiled, so nothing pointed at the loss: it surfaced only when the arc's next task tried to run the cases that no longer existed.
+
+*How to apply:* When a merge is found to have dropped hunks, diff the file against the commit before the merge and re-apply only the missing hunks with git apply or an edit. If a wholesale restore really is the only way, name every file it touches and check each one for work added after the merge commit.

@@ -33,9 +33,9 @@ that knowledge lives.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Slice 1 is done: a value row names the form a configuration holds, the five sets state 153 rows, and a combo shows a fact once. The guards do not convert yet, so the mappers still do. |
+| Now          | Slice 2 is done: the four guards refuse a value outside the set and store the form the set names, so a rendering does not reach a row by any of the four write paths. The mappers still convert first, which slice 3 removes. |
 | Waiting on   | Nothing.                               |
-| Next         | Slice 2: =ores_reporting_canonical_value_fn(set_code, value)=, called by the four leaf guards, with the mappers still converting. |
+| Next         | Slice 3: stop the mappers converting in one commit, and add the check that no guarded table holds a non-canonical value. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -177,10 +177,11 @@ and the guard not converting yet would let a spelling reach a row unwatched. So:
 1. Seed the renderings into the sets from the compiled tables, with a generator
    that reads =conventions_fields.cpp=, so the set states what the table states and
    a check compares them. Nothing changes at runtime, and a combo shows a fact
-   once for the first time. **This slice.**
+   once for the first time. **Done, PR #4244.**
 2. Teach the guards to convert, and keep the mappers converting: the guard's
    conversion is then exercised by a test that writes a spelling straight to a
-   table, and the import path still converts first, so no row changes.
+   table, and the import path still converts first, so no row changes. **This
+   slice.**
 3. Stop the mappers converting, in one commit, so the spelling reaches the guard
    for the first time. The round-trip suites prove nothing was lost, and a check
    that no table holds a non-canonical value proves the guard converted.
@@ -254,6 +255,7 @@ via its "Verifies task" field.
 | PR    | Title |
 |-------+-------|
 | #4244 | [reporting] Carry one canonical form for each ORE value |
+| #4248 | [sql] Store the form a value set names, in the guard |
 
 * Review
 
@@ -297,12 +299,43 @@ Acceptance, as it stands:
   =bdc_spelling=, because the store's form is not always a form a document may
   write. Slice 4 states that direction as data too.
 - A write converts through one boundary and refuses a rendering the map does not
-  know, naming the set. **Not yet**: slice 2.
+  know, naming the set. **Done**: the four guards convert, and a value outside the
+  set is refused with the set's name.
 - The screens offer the canonical forms and the guard accepts every rendering.
-  **Half done**: a combo offers the canonical forms; the guard accepts renderings
-  because the registers still hold them, not because it converts.
+  **Done**: a combo offers the canonical forms, and the guard accepts a rendering
+  and stores its canonical form.
 - A check fails when a table holds more than one rendering of one fact. **Not
   yet**: slice 3's query over the map and the guarded tables.
+
+** Slice 2: the guard stores the form
+
+=ores_reporting_canonical_value_fn(set_code, value)= answers with the form the set
+names for one value, and with the value itself when the set states no other
+rendering of it. All four guards call it after they accept a value, so a rendering
+does not reach a row by any of the four write paths.
+
+Two of the guards walk columns they read from a table, so they rewrite the row
+through its JSON form: a trigger cannot name a column that a query named.
+
+The measurement that matters, on a freshly recreated database whose conventions
+were published afterwards:
+
+#+begin_src text
+$ psql -f tmp/noncanon.sql
+NOTICE:  checked 73 columns: 0 hold a rendering
+#+end_src
+
+The 73 are the guarded columns whose set states a rendering. Before this slice the
+same query named 45 rows, all of them =A365=, a rendering of =ACT/365.FIXED=,
+written by the conventions publish: the publisher is a writer that never went
+through the mappers. After it, the same publish leaves =ACT/365.FIXED= in all 45.
+
+| Path | What the test writes | What the row holds |
+|------+----------------------+--------------------|
+| a curve column | =A365F= | =ACT/365.FIXED= |
+| a convention term | =Z=, =MODFOLLOWING=, =A360= | =Once=, =ModifiedFollowing=, =ACT/360= |
+| a product parameter | =NONE= | =Alternating= |
+| a run setting | =NONE= | =None= |
 
 ** What the next slice needs
 

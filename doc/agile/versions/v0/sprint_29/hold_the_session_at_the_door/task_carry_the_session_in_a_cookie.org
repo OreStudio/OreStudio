@@ -8,8 +8,9 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
-#+blocked_on:
+#+pr: 4184
+#+blocked_on: review
+#+blocked_since: 2026-10-31 03:10
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -55,8 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Cookie cases | 7 cases, 35 assertions, all passing | =./ores.http.api.tests "[session_cookie]"= | branch head |
-| =ores.http.api= test cases | 121 cases, 411 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Cookie cases | 7 cases, 35 assertions, all passing | =./ores.http.api.tests "[session_cookie]"= | =#4184= |
+| =ores.http.api= test cases | 121 cases, 411 assertions, all passing | =./ores.http.api.tests= | =#4184= |
 
 * Notes
 
@@ -86,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4184](https://github.com/OreStudio/OreStudio/pull/4184) | [http] Carry the session in a cookie |
 
 * Review
 

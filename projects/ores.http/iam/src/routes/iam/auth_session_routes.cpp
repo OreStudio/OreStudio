@@ -127,12 +127,14 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
      * nothing about who may enter. It keeps the token it is given and gives the
      * browser an identifier instead.
      */
-    auto delegated = session_.with_delegation(std::string{});
     try {
-        const auto reply =
-            delegated.authenticated_request(parsed->nats_subject,
-                                            ores::nats::default_wire_codec().encode(*parsed),
-                                            ores::nats::service::default_request_timeout);
+        /*
+         * A sign-in cannot present a session, so it is not an authenticated call:
+         * asking for one with no token is refused before the request leaves.
+         */
+        const auto wire = ores::nats::default_wire_codec().encode(*parsed);
+        const auto body = std::string_view(reinterpret_cast<const char*>(wire.data()), wire.size());
+        const auto reply = session_.request(parsed->nats_subject, body);
 
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {

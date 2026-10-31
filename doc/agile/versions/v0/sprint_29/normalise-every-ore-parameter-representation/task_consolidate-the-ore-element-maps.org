@@ -262,8 +262,26 @@ and =Calendar= addresses state =text= where a sibling states =curve.text=, which
 is the same rule under another code, so the question there is whether two text
 sets should exist, not whether the leaf is text. The =DayCounter= and
 =BusinessDayConvention= addresses at =IborIndex= and =OvernightIndex= state =text=
-where a catalogue exists, and they need the ORE source read before the type is
-changed, because the extractor found no parser for them.
+where a catalogue exists.
+
+Those three are now stated as the catalogue, and the ORE source is why. The
+extractor typed them text and it was faithful: =IborIndexConvention::fromXML=
+reads =DayCounter= and =BusinessDayConvention= with =getChildValue= into
+=std::string= and never parses them
+(=OREData/ored/configuration/conventions.cpp:428= and =:430=), and
+=OvernightIndexConvention= reads its day counter the same way at =:470=. So the
+engine accepts any string there and a typo in one changes nothing, silently.
+
+The field means the same vocabulary the other twenty conventions state, so the
+rule is the catalogue and the engine's permissiveness is not a licence. A value
+the catalogue does not hold is refused with a sentence that names the set, which
+is a better answer than a typo the engine ignores. The unconstrained count falls
+to 173.
+
+What is left of the 26 is now eight addresses of =Index=, =Conventions= and
+=Calendar= that state =text= where a sibling states =curve.text=. That is one
+rule under two codes, and it is a question about the sets rather than about the
+leaves.
 
 * Plan
 

@@ -253,6 +253,8 @@ TEST_CASE("a take copies the kind's indicative mark and never the caller's", "[s
     const auto official = kind("SOD", "start_of_day", std::nullopt, 25);
 
     const auto live = plan_take(plan, indicative, boost::uuids::uuid{}, 1);
+    BOOST_LOG_SEV(lg, info) << "A take of kind " << live.kind_code << " records the mark "
+                            << live.output_is_indicative;
     CHECK(live.output_is_indicative);
     CHECK_FALSE(live.requires_authorisation);
 

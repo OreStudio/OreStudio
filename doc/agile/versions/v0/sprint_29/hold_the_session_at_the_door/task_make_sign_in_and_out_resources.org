@@ -29,9 +29,9 @@ principal and sets the cookie; the token never appears in the answer.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | Sign in, sign out and me are resources, and a sign-in is proven against a live IAM. |
+| Now          | The door is proven against a live IAM; the tenant is still bootstrapping on a generator defect that is not this task's. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing: the session door is closed, and the next increment takes the shape of a resource rather than the transport. |
 | Last touched | 2026-10-31                              |
 
 * Acceptance

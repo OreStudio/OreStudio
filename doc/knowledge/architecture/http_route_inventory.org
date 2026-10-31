@@ -1,6 +1,6 @@
 \
 #+title: The HTTP route inventory
-#+description: Every route the BFF and ores.http answer today, read from the code that registers them, with the design's classification beside each one.
+#+description: Every route the BFF and ores.http answer today, read from the code that registers them, decided against the design's four-way rule, with the published area map and the composed views' obligations.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:http:
@@ -8,10 +8,9 @@
 #+updated: 2026-10-31
 
 Every HTTP route either server answers, read from its own registration rather than
-typed by hand. The inventory exists so the classification has a complete list to
-work from: the design's four-way rule (a resource, a composed view, a transport
-capability, or a rendering concern that is not an API) is decided route by route in
-the columns to the right, and a route without a =Kind= is one nobody has decided.
+typed by hand. The design's four-way rule (a resource, a composed view, a transport
+capability, or a rendering concern that is not an API) decides every row, and the
+=Kind=, =Area= and =Note= columns state that decision.
 
 * How to regenerate
 
@@ -19,14 +18,25 @@ the columns to the right, and a route without a =Kind= is one nobody has decided
 python3 build/scripts/route_inventory.py --write
 #+end_src
 
-The tool keeps every =Kind=, =Area= and =Note= cell it finds and leaves a new
-route's cells empty, so a regeneration never overwrites a decision.
+The decisions are data in =build/scripts/route_classification.py=: an ordered list
+of rules over the method and path, an exception for a route no rule decides, and the
+owner, computation and cache policy each composed view owes. A regeneration rewrites
+every cell from them, so the table states the decisions and never holds a second copy
+of them.
+
+Two sections are derived from the same decisions and appear before the table: the
+area map, which is the published namespace of design section 11.2 and the areas this
+table publishes beside it, and the composed views, whose owner column names the
+component that must answer each one after the port.
 
 * How it is enforced
 
-=python3 build/scripts/route_inventory.py --check= fails when a route is answered
-but absent from this table, and when the table names a route neither server
-answers. The gate runs it as the =route-inventory= check.
+=python3 build/scripts/route_inventory.py --check= fails when a route answered by
+either server is absent from this table, when a row names a route neither server
+answers, when two routes share one identity, when a route is unclassified, and when a
+decision names no published kind or area, carries no evidence, or calls itself a
+composed view without stating its owner, computation and cache policy. The gate runs
+it as the =route-inventory= check.
 
 * What it reads, and what it cannot
 
@@ -39,416 +49,484 @@ ores.http declares its routes with =router->get/post/put/patch/delete_/head=, an
 five of them state a path the code composes from a prefix constant; those rows name
 the variable and the line that declares it.
 
-What neither shape covers is a route registered some other way — a generated route
+What neither shape covers is a route registered some other way: a generated route
 table (K1), or a loop that registers a family. When such a route appears, the answer
 is to teach this tool that shape, not to add a row by hand: the row would not be
 verified.
 
+* The area map
+
+The published areas (design section 11.2) and the areas this table
+publishes beside them, each with the components that answer it today,
+its size, and the kinds its routes are decided as. A route that is not
+an API publishes no area, so it is counted under =(none)=.
+
+| Area | Owner components | Routes | Kinds |
+|------+------------------+--------+-------|
+| access | iam, server | 64 | composed view 1, resource 63 |
+| agile | agile-routes | 6 | composed view 2, resource 4 |
+| analytics | sensitivity-templates | 6 | resource 6 |
+| assets | assets, server | 34 | composed view 1, resource 33 |
+| auth | audit, iam, server | 49 | resource 44, transport capability 5 |
+| changes | server | 2 | transport capability 2 |
+| grid | grid-app-versions, grid-downloads, grid-jobs, grid-report-runs, operations | 16 | composed view 3, resource 13 |
+| market-data | adapters, curves, official, series, subscriptions | 24 | composed view 2, resource 22 |
+| operations | core, operations, server | 5 | composed view 1, resource 3, transport capability 1 |
+| qa | qa | 6 | resource 6 |
+| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 40 | composed view 1, resource 39 |
+| reporting | engine-settings, grid-report-results, grid-report-runs, pricing-engines, reporting | 29 | composed view 2, resource 27 |
+| simulation | market-regime, synthetic | 21 | composed view 2, resource 19 |
+| tenancy | iam, server | 23 | composed view 2, resource 21 |
+| trading | blotter, book-changes, booking, books, structures, trades | 23 | composed view 2, resource 21 |
+| workflow | inbox, server, timeline | 17 | composed view 6, resource 11 |
+| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, reporting, sensitivity-templates, server, synthetic, tenors | 43 | not an API 28, transport capability 15 |
+
+* The composed views
+
+A composed view owes four things, and the fourth is why the owner column
+exists: without it the view is the old BFF again. The name is the view's
+own; the schema is K1's to generate; the owner is the component that must
+answer it after the port, which is not always the one that answers it
+today.
+
+| View | Routes | Owner | Computation | Cache policy |
+|------+--------+-------+-------------+--------------|
+| a report configuration | GET /api/reporting/configurations/:id | ores.reporting | the configuration, the names of its type and parties, its analytics and their names, and its market data bindings, five reads | ETag on the whole view, stale after 60 s |
+| one subject's story | GET /api/timeline | ores.workflow | every component's rows for one subject, each source read under its owner's permission and a refused source reported as a gap | ETag on the whole view, stale after 30 s |
+| the approval inbox | GET /api/requests | ores.workflow | every kind of request this person may decide, gathered into one queue with each kind's subject | ETag on the whole view, stale after 15 s |
+| the blotter | GET /api/blotter | ores.trading | one page of trades with the rail that groups them: books, portfolios, structures, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page | ETag on the whole view, stale after 30 s |
+| the book tree | GET /api/books/tree | ores.trading | every portfolio and every book, two collection reads woven into the tree | ETag on the whole view, stale after 60 s |
+| the bootstrap status | GET /api/bootstrap | ores.iam | the IAM account and tenant answer, plus a variability settings read that may fail without failing the answer | ETag on the whole view, stale after 5 s |
+| the deployment overview | GET /api/overview | ores.iam | the tenant roster counted by status, its first page, and the newest setups, each count a separate list read | ETag on the whole view, stale after 15 s |
+| the grid series | GET /api/operations/grid/series | ores.compute | the counters per bucket joined to one row of buckets per node and the host registry, two reads | ETag on the whole view, stale after 10 s |
+| the grid summary | GET /api/operations/grid | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
+| the grid usage | GET /api/operations/grid/usage | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
+| the image map | GET /api/image-map | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
+| the market data catalogue | GET /api/marketdata/catalogue | ores.marketdata | the providers and the sources that serve them, two collection reads | ETag on the whole view, stale after 5 min |
+| the market trace | GET /api/synthetic/market-trace | ores.synthetic | the scheduler's recent decisions: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds | ETag on the whole view, stale after 10 s |
+| the message bus | GET /api/operations/bus | ores.telemetry | the NATS server samples over a window, and one read per stream because no operation lists the streams | ETag on the whole view, stale after 10 s |
+| the official providers | GET /api/marketdata/official | ores.marketdata | the providers first, then the sources and the market series joined onto them | ETag on the whole view, stale after 5 min |
+| the principal's ways to hold | GET /api/me/ways-to-hold | ores.iam | the role catalogue and what each role grants against the grants the person already holds | ETag on the whole view, stale after 5 min |
+| the report health | GET /api/reporting/report-health | ores.reporting | each report definition with the row the list would draw and the reads that failed, so a failed read is not read as never having run | ETag on the whole view, stale after 60 s |
+| the request checks | GET /api/requests/:id/checks | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
+| the request story | GET /api/requests/:id/changes, GET /api/requests/:id/story | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
+| the run's progress | GET /api/workflow/:instanceId | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
+| the sprint board | GET /api/agile/board | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
+| the sprint charts | GET /api/agile/charts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
+| the synthetic folder tree | GET /api/synthetic/feed-folders | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, stale after 60 s |
+| the tenor catalogue | GET /api/tenors/catalogue | ores.refdata | the tenors with their conventions and schedules, three collection reads | ETag on the whole view, stale after 5 min |
+
 * The inventory
 
-402 routes: 288 answered by the BFF and 114 by ores.http.
+408 routes: 294 answered by the BFF and 114 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
-|  |  | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:92 |  |
-|  |  | post | =/api/account/password= | bff | projects/ores.web/packages/bff/src/server.ts:1115 |  |
-|  |  | get | =/api/accounts= | bff | projects/ores.web/packages/bff/src/server.ts:1157 |  |
-|  |  | get | =/api/accounts/:accountId/access= | bff | projects/ores.web/packages/bff/src/server.ts:1286 |  |
-|  |  | get | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1709 |  |
-|  |  | put | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1731 |  |
-|  |  | post | =/api/accounts/:accountId/lock= | bff | projects/ores.web/packages/bff/src/server.ts:1588 |  |
-|  |  | get | =/api/accounts/:accountId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1397 |  |
-|  |  | put | =/api/accounts/:accountId/reporting-line= | bff | projects/ores.web/packages/bff/src/server.ts:1263 |  |
-|  |  | post | =/api/accounts/:accountId/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1417 |  |
-|  |  | delete | =/api/accounts/:accountId/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1432 |  |
-|  |  | post | =/api/accounts/:accountId/unlock= | bff | projects/ores.web/packages/bff/src/server.ts:1606 |  |
-|  |  | get | =/api/accounts/:username= | bff | projects/ores.web/packages/bff/src/server.ts:1570 |  |
-|  |  | get | =/api/accounts/:username/picture= | bff | projects/ores.web/packages/bff/src/server.ts:1182 |  |
-|  |  | put | =/api/accounts/:username/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1686 |  |
-|  |  | get | =/api/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:1550 |  |
-|  |  | get | =/api/agile/backlog= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:129 |  |
-|  |  | get | =/api/agile/board= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:101 |  |
-|  |  | get | =/api/agile/charts= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:113 |  |
-|  |  | get | =/api/agile/docs/:id= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:134 |  |
-|  |  | get | =/api/agile/sprints= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:96 |  |
-|  |  | get | =/api/agile/trees= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:124 |  |
-|  |  | get | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:325 |  |
-|  |  | post | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:376 |  |
-|  |  | delete | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:452 |  |
-|  |  | get | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:359 |  |
-|  |  | put | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:414 |  |
-|  |  | get | =/api/analytics/sensitivity-templates/:code/history= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:366 |  |
-|  |  | get | =/api/analytics/sensitivity-templates/choices= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:354 |  |
-|  |  | get | =/api/auth-events= | bff | projects/ores.web/packages/bff/src/audit.ts:114 |  |
-|  |  | get | =/api/blotter= | bff | projects/ores.web/packages/bff/src/blotter.ts:295 |  |
-|  |  | post | =/api/book-changes= | bff | projects/ores.web/packages/bff/src/book-changes.ts:89 |  |
-|  |  | post | =/api/book-changes/preview= | bff | projects/ores.web/packages/bff/src/book-changes.ts:76 |  |
-|  |  | get | =/api/books/:id= | bff | projects/ores.web/packages/bff/src/books.ts:150 |  |
-|  |  | put | =/api/books/books= | bff | projects/ores.web/packages/bff/src/books.ts:219 |  |
-|  |  | get | =/api/books/pick-lists= | bff | projects/ores.web/packages/bff/src/books.ts:175 |  |
-|  |  | put | =/api/books/portfolios= | bff | projects/ores.web/packages/bff/src/books.ts:231 |  |
-|  |  | get | =/api/books/portfolios/:id/rights= | bff | projects/ores.web/packages/bff/src/books.ts:202 |  |
-|  |  | get | =/api/books/tree= | bff | projects/ores.web/packages/bff/src/books.ts:125 |  |
-|  |  | get | =/api/bootstrap= | bff | projects/ores.web/packages/bff/src/server.ts:706 |  |
-|  |  | post | =/api/bootstrap/administrator= | bff | projects/ores.web/packages/bff/src/server.ts:737 |  |
-|  |  | post | =/api/bootstrap/complete= | bff | projects/ores.web/packages/bff/src/server.ts:777 |  |
-|  |  | get | =/api/change-reasons= | bff | projects/ores.web/packages/bff/src/server.ts:2729 |  |
-|  |  | get | =/api/classifications= | bff | projects/ores.web/packages/bff/src/classifications.ts:211 |  |
-|  |  | get | =/api/classifications/:list= | bff | projects/ores.web/packages/bff/src/classifications.ts:239 |  |
-|  |  | put | =/api/classifications/:list/order= | bff | projects/ores.web/packages/bff/src/classifications.ts:333 |  |
-|  |  | post | =/api/classifications/:list/rows= | bff | projects/ores.web/packages/bff/src/classifications.ts:292 |  |
-|  |  | delete | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:351 |  |
-|  |  | put | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:312 |  |
-|  |  | put | =/api/classifications/:list/rows/:code/label= | bff | projects/ores.web/packages/bff/src/classifications.ts:265 |  |
-|  |  | post | =/api/client-log= | bff | projects/ores.web/packages/bff/src/server.ts:3013 |  |
-|  |  | get | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:676 |  |
-|  |  | put | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:820 |  |
-|  |  | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:618 |  |
-|  |  | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:756 |  |
-|  |  | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:550 |  |
-|  |  | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:659 |  |
-|  |  | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 |  |
-|  |  | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 |  |
-|  |  | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 |  |
-|  |  | get | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:327 |  |
-|  |  | put | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:340 |  |
-|  |  | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 |  |
-|  |  | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 |  |
-|  |  | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 |  |
-|  |  | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:306 |  |
-|  |  | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:372 |  |
-|  |  | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:347 |  |
-|  |  | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:354 |  |
-|  |  | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:388 |  |
-|  |  | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:396 |  |
-|  |  | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:404 |  |
-|  |  | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:252 |  |
-|  |  | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:262 |  |
-|  |  | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:340 |  |
-|  |  | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:366 |  |
-|  |  | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:360 |  |
-|  |  | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2928 |  |
-|  |  | post | =/api/events/watch= | bff | projects/ores.web/packages/bff/src/server.ts:2970 |  |
-|  |  | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 |  |
-|  |  | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:681 |  |
-|  |  | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:364 |  |
-|  |  | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:460 |  |
-|  |  | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2813 |  |
-|  |  | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2802 |  |
-|  |  | get | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2824 |  |
-|  |  | post | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2787 |  |
-|  |  | get | =/api/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2845 |  |
-|  |  | get | =/api/labels= | bff | projects/ores.web/packages/bff/src/classifications.ts:255 |  |
-|  |  | get | =/api/lei-entities= | bff | projects/ores.web/packages/bff/src/server.ts:2527 |  |
-|  |  | get | =/api/login-info= | bff | projects/ores.web/packages/bff/src/server.ts:1762 |  |
-|  |  | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1782 |  |
-|  |  | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:87 |  |
-|  |  | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:177 |  |
-|  |  | get | =/api/marketdata/official= | bff | projects/ores.web/packages/bff/src/official.ts:101 |  |
-|  |  | post | =/api/marketdata/official/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/official.ts:212 |  |
-|  |  | get | =/api/marketdata/official/fixings= | bff | projects/ores.web/packages/bff/src/official.ts:176 |  |
-|  |  | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:163 |  |
-|  |  | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:251 |  |
-|  |  | delete | =/api/marketdata/routes/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:274 |  |
-|  |  | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:151 |  |
-|  |  | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:201 |  |
-|  |  | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:229 |  |
-|  |  | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1202 |  |
-|  |  | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1655 |  |
-|  |  | put | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1667 |  |
-|  |  | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1246 |  |
-|  |  | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:479 |  |
-|  |  | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:521 |  |
-|  |  | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:504 |  |
-|  |  | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:493 |  |
-|  |  | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1237 |  |
-|  |  | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1304 |  |
-|  |  | put | =/api/me/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1635 |  |
-|  |  | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:308 |  |
-|  |  | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:315 |  |
-|  |  | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:331 |  |
-|  |  | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1838 |  |
-|  |  | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1212 |  |
-|  |  | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 |  |
-|  |  | get | =/api/operations/grid= | bff | projects/ores.web/packages/bff/src/operations.ts:419 |  |
-|  |  | get | =/api/operations/grid/app-versions/:id= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:99 |  |
-|  |  | put | =/api/operations/grid/app-versions/:id/release-note= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:115 |  |
-|  |  | get | =/api/operations/grid/jobs/batches= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:189 |  |
-|  |  | get | =/api/operations/grid/jobs/batches/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:201 |  |
-|  |  | get | =/api/operations/grid/jobs/batches/:id/workunits= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:212 |  |
-|  |  | get | =/api/operations/grid/jobs/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:254 |  |
-|  |  | get | =/api/operations/grid/jobs/results/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:275 |  |
-|  |  | get | =/api/operations/grid/jobs/results/:id/output= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:281 |  |
-|  |  | get | =/api/operations/grid/jobs/workunits/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:227 |  |
-|  |  | get | =/api/operations/grid/jobs/workunits/:id/input= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:270 |  |
-|  |  | get | =/api/operations/grid/jobs/workunits/:id/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:238 |  |
-|  |  | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 |  |
-|  |  | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 |  |
-|  |  | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 |  |
-|  |  | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 |  |
-|  |  | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 |  |
-|  |  | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 |  |
-|  |  | post | =/api/oresmd/parse-many= | bff | projects/ores.web/packages/bff/src/oresmd.ts:121 |  |
-|  |  | get | =/api/oresmd/schema= | bff | projects/ores.web/packages/bff/src/oresmd.ts:86 |  |
-|  |  | get | =/api/overview= | bff | projects/ores.web/packages/bff/src/server.ts:1978 |  |
-|  |  | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2451 |  |
-|  |  | get | =/api/password-policy= | bff | projects/ores.web/packages/bff/src/server.ts:1139 |  |
-|  |  | get | =/api/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1452 |  |
-|  |  | post | =/api/provision-party= | bff | projects/ores.web/packages/bff/src/server.ts:2571 |  |
-|  |  | post | =/api/provision-tenant= | bff | projects/ores.web/packages/bff/src/server.ts:2623 |  |
-|  |  | get | =/api/qa/docs/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:163 |  |
-|  |  | get | =/api/qa/scenarios= | bff | projects/ores.web/packages/bff/src/qa.ts:151 |  |
-|  |  | get | =/api/qa/scenarios/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:156 |  |
-|  |  | get | =/api/qa/scenarios/:id/files/:name= | bff | projects/ores.web/packages/bff/src/qa.ts:227 |  |
-|  |  | put | =/api/qa/scenarios/:id/run= | bff | projects/ores.web/packages/bff/src/qa.ts:172 |  |
-|  |  | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 |  |
-|  |  | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 |  |
-|  |  | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 |  |
-|  |  | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 |  |
-|  |  | get | =/api/refdata/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/records.ts:565 |  |
-|  |  | get | =/api/refdata/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/records.ts:547 |  |
-|  |  | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:579 |  |
-|  |  | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:638 |  |
-|  |  | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:597 |  |
-|  |  | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:619 |  |
-|  |  | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:606 |  |
-|  |  | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:699 |  |
-|  |  | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:742 |  |
-|  |  | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:863 |  |
-|  |  | get | =/api/registration-policy= | bff | projects/ores.web/packages/bff/src/server.ts:811 |  |
-|  |  | get | =/api/reporting-tree= | bff | projects/ores.web/packages/bff/src/server.ts:1279 |  |
-|  |  | get | =/api/reporting/choices= | bff | projects/ores.web/packages/bff/src/reporting.ts:1044 |  |
-|  |  | get | =/api/reporting/configurations/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1100 |  |
-|  |  | get | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:743 |  |
-|  |  | post | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:841 |  |
-|  |  | delete | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:950 |  |
-|  |  | get | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:787 |  |
-|  |  | put | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:868 |  |
-|  |  | put | =/api/reporting/engine-settings/:id/groups/:group= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:898 |  |
-|  |  | get | =/api/reporting/engine-settings/:id/history= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:793 |  |
-|  |  | get | =/api/reporting/engine-settings/documentation= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:782 |  |
-|  |  | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 |  |
-|  |  | post | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1026 |  |
-|  |  | delete | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1144 |  |
-|  |  | get | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:974 |  |
-|  |  | put | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1045 |  |
-|  |  | get | =/api/reporting/pricing-engines/:id/history= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:986 |  |
-|  |  | get | =/api/reporting/pricing-engines/:id/ore-document= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1002 |  |
-|  |  | get | =/api/reporting/pricing-engines/vocabulary= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:970 |  |
-|  |  | get | =/api/reporting/report-health= | bff | projects/ores.web/packages/bff/src/reporting.ts:1110 |  |
-|  |  | get | =/api/reporting/reports= | bff | projects/ores.web/packages/bff/src/reporting.ts:1014 |  |
-|  |  | put | =/api/reporting/reports/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1174 |  |
-|  |  | get | =/api/reporting/reports/:id/configurations= | bff | projects/ores.web/packages/bff/src/reporting.ts:1074 |  |
-|  |  | post | =/api/reporting/reports/:id/run= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:295 |  |
-|  |  | get | =/api/reporting/reports/:segment= | bff | projects/ores.web/packages/bff/src/reporting.ts:1157 |  |
-|  |  | get | =/api/reporting/reports/by-name/:name= | bff | projects/ores.web/packages/bff/src/reporting.ts:1131 |  |
-|  |  | get | =/api/reporting/runs/:id= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:869 |  |
-|  |  | get | =/api/reporting/runs/:id/output= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:959 |  |
-|  |  | get | =/api/reporting/runs/:id/results= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:897 |  |
-|  |  | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:352 |  |
-|  |  | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:372 |  |
-|  |  | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:402 |  |
-|  |  | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:422 |  |
-|  |  | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:433 |  |
-|  |  | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:389 |  |
-|  |  | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1446 |  |
-|  |  | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1475 |  |
-|  |  | delete | =/api/roles/:name= | bff | projects/ores.web/packages/bff/src/server.ts:1535 |  |
-|  |  | put | =/api/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1496 |  |
-|  |  | get | =/api/roles/:roleId/holders= | bff | projects/ores.web/packages/bff/src/server.ts:1362 |  |
-|  |  | get | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1342 |  |
-|  |  | put | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1517 |  |
-|  |  | post | =/api/roles/:roleId/permissions/changes= | bff | projects/ores.web/packages/bff/src/server.ts:1378 |  |
-|  |  | get | =/api/roles/page= | bff | projects/ores.web/packages/bff/src/server.ts:1314 |  |
-|  |  | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2508 |  |
-|  |  | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 |  |
-|  |  | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1014 |  |
-|  |  | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1006 |  |
-|  |  | post | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:933 |  |
-|  |  | get | =/api/session-statistics= | bff | projects/ores.web/packages/bff/src/audit.ts:139 |  |
-|  |  | post | =/api/session/party= | bff | projects/ores.web/packages/bff/src/server.ts:1023 |  |
-|  |  | post | =/api/session/switch-party= | bff | projects/ores.web/packages/bff/src/server.ts:1067 |  |
-|  |  | get | =/api/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1808 |  |
-|  |  | post | =/api/sessions/:sessionId/end= | bff | projects/ores.web/packages/bff/src/audit.ts:183 |  |
-|  |  | get | =/api/sessions/active= | bff | projects/ores.web/packages/bff/src/server.ts:1827 |  |
-|  |  | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:849 |  |
-|  |  | get | =/api/site= | bff | projects/ores.web/packages/bff/src/server.ts:891 |  |
-|  |  | get | =/api/site/deployment= | bff | projects/ores.web/packages/bff/src/server.ts:914 |  |
-|  |  | get | =/api/structure-kinds= | bff | projects/ores.web/packages/bff/src/structures.ts:495 |  |
-|  |  | get | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:656 |  |
-|  |  | post | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:516 |  |
-|  |  | get | =/api/structures/:key= | bff | projects/ores.web/packages/bff/src/structures.ts:803 |  |
-|  |  | get | =/api/structures/:key/leg-candidates= | bff | projects/ores.web/packages/bff/src/structures.ts:972 |  |
-|  |  | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1018 |  |
-|  |  | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:924 |  |
-|  |  | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:928 |  |
-|  |  | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1247 |  |
-|  |  | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1108 |  |
-|  |  | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1201 |  |
-|  |  | get | =/api/synthetic/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1159 |  |
-|  |  | get | =/api/synthetic/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1179 |  |
-|  |  | post | =/api/synthetic/convert/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1376 |  |
-|  |  | post | =/api/synthetic/convert/fx-simple= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1395 |  |
-|  |  | post | =/api/synthetic/convert/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1412 |  |
-|  |  | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:954 |  |
-|  |  | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 |  |
-|  |  | post | =/api/synthetic/feed-selection/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1045 |  |
-|  |  | post | =/api/synthetic/feed-selection/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1066 |  |
-|  |  | post | =/api/synthetic/feeds/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1294 |  |
-|  |  | post | =/api/synthetic/feeds/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1305 |  |
-|  |  | get | =/api/synthetic/feeds/:id/ticks= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1085 |  |
-|  |  | get | =/api/synthetic/folder-feeds= | bff | projects/ores.web/packages/bff/src/synthetic.ts:989 |  |
-|  |  | post | =/api/synthetic/folders/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1321 |  |
-|  |  | post | =/api/synthetic/folders/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1346 |  |
-|  |  | get | =/api/synthetic/market-history= | bff | projects/ores.web/packages/bff/src/market-regime.ts:342 |  |
-|  |  | get | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:273 |  |
-|  |  | post | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:386 |  |
-|  |  | put | =/api/synthetic/market-regime/settings= | bff | projects/ores.web/packages/bff/src/market-regime.ts:402 |  |
-|  |  | get | =/api/synthetic/market-trace= | bff | projects/ores.web/packages/bff/src/market-regime.ts:283 |  |
-|  |  | post | =/api/synthetic/preview/ir-shape= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1449 |  |
-|  |  | post | =/api/synthetic/simulate/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1361 |  |
-|  |  | post | =/api/synthetic/simulate/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1437 |  |
-|  |  | get | =/api/tenant-setup= | bff | projects/ores.web/packages/bff/src/server.ts:792 |  |
-|  |  | get | =/api/tenant-statuses= | bff | projects/ores.web/packages/bff/src/server.ts:2479 |  |
-|  |  | get | =/api/tenant-types= | bff | projects/ores.web/packages/bff/src/server.ts:2492 |  |
-|  |  | get | =/api/tenants= | bff | projects/ores.web/packages/bff/src/server.ts:1868 |  |
-|  |  | delete | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2144 |  |
-|  |  | get | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2187 |  |
-|  |  | get | =/api/tenants/:code/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:2361 |  |
-|  |  | get | =/api/tenants/:code/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2385 |  |
-|  |  | get | =/api/tenants/:code/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2289 |  |
-|  |  | get | =/api/tenants/:code/people= | bff | projects/ores.web/packages/bff/src/server.ts:2316 |  |
-|  |  | get | =/api/tenors/catalogue= | bff | projects/ores.web/packages/bff/src/tenors.ts:198 |  |
-|  |  | put | =/api/tenors/conventions= | bff | projects/ores.web/packages/bff/src/tenors.ts:323 |  |
-|  |  | get | =/api/tenors/conventions/:code/resolutions= | bff | projects/ores.web/packages/bff/src/tenors.ts:296 |  |
-|  |  | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 |  |
-|  |  | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 |  |
-|  |  | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 |  |
-|  |  | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 |  |
-|  |  | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 |  |
-|  |  | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 |  |
-|  |  | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 |  |
-|  |  | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 |  |
-|  |  | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:245 |  |
-|  |  | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 |  |
-|  |  | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:325 |  |
-|  |  | get | =/api/trades/:id= | bff | projects/ores.web/packages/bff/src/trades.ts:308 |  |
-|  |  | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:269 |  |
-|  |  | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 |  |
-|  |  | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:169 |  |
-|  |  | get | =/api/ungrouped-trades= | bff | projects/ores.web/packages/bff/src/structures.ts:511 |  |
-|  |  | get | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:313 |  |
-|  |  | post | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:354 |  |
-|  |  | put | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:367 |  |
-|  |  | get | =/api/v1/assets/image_tags/by-image-id/{image_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:423 |  |
-|  |  | post | =/api/v1/assets/image_tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:409 |  |
-|  |  | post | =/api/v1/assets/image_tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:341 |  |
-|  |  | post | =/api/v1/assets/image_tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:381 |  |
-|  |  | delete | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:394 |  |
-|  |  | get | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:329 |  |
-|  |  | get | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:313 |  |
-|  |  | post | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:354 |  |
-|  |  | put | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:367 |  |
-|  |  | post | =/api/v1/assets/images/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:409 |  |
-|  |  | post | =/api/v1/assets/images/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:341 |  |
-|  |  | post | =/api/v1/assets/images/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:381 |  |
-|  |  | delete | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:394 |  |
-|  |  | get | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:329 |  |
-|  |  | get | =/api/v1/assets/images/{code}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:423 |  |
-|  |  | get | =/api/v1/assets/images/{code}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:439 |  |
-|  |  | get | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:313 |  |
-|  |  | post | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:354 |  |
-|  |  | put | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:367 |  |
-|  |  | post | =/api/v1/assets/tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:409 |  |
-|  |  | post | =/api/v1/assets/tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:341 |  |
-|  |  | post | =/api/v1/assets/tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:381 |  |
-|  |  | delete | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:394 |  |
-|  |  | get | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:329 |  |
-|  |  | get | =/api/v1/assets/tags/{name}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:423 |  |
-|  |  | get | =/api/v1/assets/tags/{name}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:439 |  |
-|  |  | delete | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:93 |  |
-|  |  | post | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:83 |  |
-| resource | auth | get | =/api/v1/auth/sessions/me= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:104 |  |
-|  |  | get | =/api/v1/iam/account_credentials= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:245 |  |
-|  |  | get | =/api/v1/iam/account_credentials/by-account-id/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:286 |  |
-|  |  | post | =/api/v1/iam/account_credentials/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:273 |  |
-|  |  | get | =/api/v1/iam/account_credentials/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:261 |  |
-|  |  | get | =/api/v1/iam/account_credentials/{id}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:304 |  |
-|  |  | get | =/api/v1/iam/account_credentials/{id}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:320 |  |
-|  |  | get | =/api/v1/iam/accounts= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:227 |  |
-|  |  | post | =/api/v1/iam/accounts/delete= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:251 |  |
-|  |  | post | =/api/v1/iam/accounts/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:255 |  |
-|  |  | post | =/api/v1/iam/accounts/put= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:221 |  |
-|  |  | get | =/api/v1/iam/accounts/{username}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:243 |  |
-|  |  | get | =/api/v1/iam/accounts/{username}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:268 |  |
-|  |  | get | =/api/v1/iam/accounts/{username}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:284 |  |
-|  |  | post | =/api/v1/iam/auth_events/list= | ores.http | projects/ores.http/iam/src/routes/iam/auth_event_operations_routes.cpp:125 |  |
-|  |  | get | =/api/v1/iam/login_info= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:198 |  |
-|  |  | post | =/api/v1/iam/login_info/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:226 |  |
-|  |  | get | =/api/v1/iam/login_info/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:214 |  |
-|  |  | post | =/api/v1/iam/ops/assign_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:179 |  |
-|  |  | post | =/api/v1/iam/ops/bootstrap_status= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:134 |  |
-|  |  | post | =/api/v1/iam/ops/change_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:325 |  |
-|  |  | post | =/api/v1/iam/ops/create_initial_admin= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:149 |  |
-|  |  | post | =/api/v1/iam/ops/end_session= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:149 |  |
-|  |  | post | =/api/v1/iam/ops/get_account_roles= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:208 |  |
-|  |  | post | =/api/v1/iam/ops/get_active_sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:135 |  |
-|  |  | post | =/api/v1/iam/ops/get_role_permissions= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:223 |  |
-|  |  | post | =/api/v1/iam/ops/get_session_statistics= | ores.http | projects/ores.http/iam/src/routes/iam/session_statistics_operations_routes.cpp:126 |  |
-|  |  | post | =/api/v1/iam/ops/lock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:265 |  |
-|  |  | post | =/api/v1/iam/ops/login= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:133 |  |
-|  |  | post | =/api/v1/iam/ops/logout= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:146 |  |
-|  |  | post | =/api/v1/iam/ops/lookup_country= | ores.http | projects/ores.http/iam/src/routes/iam/geo_operations_routes.cpp:124 |  |
-|  |  | post | =/api/v1/iam/ops/reset_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:295 |  |
-|  |  | post | =/api/v1/iam/ops/revoke_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:193 |  |
-|  |  | post | =/api/v1/iam/ops/signup= | ores.http | projects/ores.http/iam/src/routes/iam/signup_routes.cpp:124 |  |
-|  |  | post | =/api/v1/iam/ops/unlock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:280 |  |
-|  |  | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:236 |  |
-|  |  | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:310 |  |
-|  |  | get | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:290 |  |
-|  |  | post | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:331 |  |
-|  |  | put | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:344 |  |
-|  |  | post | =/api/v1/iam/permissions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:386 |  |
-|  |  | post | =/api/v1/iam/permissions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:318 |  |
-|  |  | post | =/api/v1/iam/permissions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:358 |  |
-|  |  | delete | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:371 |  |
-|  |  | get | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:306 |  |
-|  |  | get | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:313 |  |
-|  |  | post | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:354 |  |
-|  |  | put | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:367 |  |
-|  |  | post | =/api/v1/iam/roles/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:408 |  |
-|  |  | post | =/api/v1/iam/roles/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:341 |  |
-|  |  | post | =/api/v1/iam/roles/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:381 |  |
-|  |  | delete | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:394 |  |
-|  |  | get | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:329 |  |
-|  |  | get | =/api/v1/iam/roles/{name}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:423 |  |
-|  |  | get | =/api/v1/iam/roles/{name}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:439 |  |
-|  |  | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:238 |  |
-|  |  | get | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:288 |  |
-|  |  | post | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:329 |  |
-|  |  | put | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:342 |  |
-|  |  | post | =/api/v1/iam/sessions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:384 |  |
-|  |  | post | =/api/v1/iam/sessions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:316 |  |
-|  |  | post | =/api/v1/iam/sessions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:356 |  |
-|  |  | delete | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:369 |  |
-|  |  | get | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:304 |  |
-|  |  | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:147 |  |
-|  |  | get | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:320 |  |
-|  |  | post | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:361 |  |
-|  |  | put | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:374 |  |
-|  |  | post | =/api/v1/refdata/currencies/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:416 |  |
-|  |  | post | =/api/v1/refdata/currencies/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:348 |  |
-|  |  | post | =/api/v1/refdata/currencies/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:388 |  |
-|  |  | delete | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:401 |  |
-|  |  | get | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:336 |  |
-|  |  | get | =/api/v1/refdata/currencies/{iso_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:430 |  |
-|  |  | get | =/api/v1/refdata/currencies/{iso_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:446 |  |
-|  |  | get | =/api/v1/system-settings= | ores.http | projects/ores.http/core/src/routes/variability_routes.cpp:48 |  |
-|  |  | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2647 |  |
-|  |  | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2661 |  |
-|  |  | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 |  |
-|  |  | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:212 | path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) path composed from bucket_pattern (declared at 161) |
-|  |  | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:203 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:186 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | head | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:194 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
-|  |  | put | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:169 | path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) path composed from object_pattern (declared at 159) |
+| transport capability | (none) | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:92 | The built browser bundle's index, served so a browser can start the application. |
+| resource | auth | post | =/api/account/password= | bff | projects/ores.web/packages/bff/src/server.ts:1115 | Replaces the signed-in account's own password, the account named by the session so nobody else's is reachable. |
+| resource | access | get | =/api/accounts= | bff | projects/ores.web/packages/bff/src/server.ts:1157 | The tenant's accounts, one page, because the number of accounts a tenant holds is not a number a screen uses. |
+| resource | access | get | =/api/accounts/:accountId/access= | bff | projects/ores.web/packages/bff/src/server.ts:1286 | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
+| resource | access | get | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1709 | One account's contact record as an administrator reads or writes it, the write reusing the identifier of the account's current record. |
+| resource | access | put | =/api/accounts/:accountId/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1731 | One account's contact record as an administrator reads or writes it, the write reusing the identifier of the account's current record. |
+| resource | access | post | =/api/accounts/:accountId/lock= | bff | projects/ores.web/packages/bff/src/server.ts:1588 | One account locked or unlocked, a lock refusing the next sign-in while leaving the sessions it already holds open. |
+| resource | access | get | =/api/accounts/:accountId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1397 | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
+| resource | access | put | =/api/accounts/:accountId/reporting-line= | bff | projects/ores.web/packages/bff/src/server.ts:1263 | Sets or clears who one account reports to, and nothing else. |
+| resource | access | post | =/api/accounts/:accountId/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1417 | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
+| resource | access | delete | =/api/accounts/:accountId/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1432 | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
+| resource | access | post | =/api/accounts/:accountId/unlock= | bff | projects/ores.web/packages/bff/src/server.ts:1606 | One account locked or unlocked, a lock refusing the next sign-in while leaving the sessions it already holds open. |
+| resource | access | get | =/api/accounts/:username= | bff | projects/ores.web/packages/bff/src/server.ts:1570 | One account by username, answered with nothing rather than a 404 when the row has gone since the list was read. |
+| resource | access | get | =/api/accounts/:username/picture= | bff | projects/ores.web/packages/bff/src/server.ts:1182 | The image one account uses, read by username because most places that name an account know a username rather than an image id. |
+| resource | access | put | =/api/accounts/:username/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1686 | One account's profile fields, written whole from a read taken inside the request. |
+| resource | auth | get | =/api/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:1550 | One account's sign-in state and its sessions, newest first. |
+| resource | agile | get | =/api/agile/backlog= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:129 | The stories no sprint holds, in the order the file store keeps them. |
+| composed view | agile | get | =/api/agile/board= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:101 | One sprint's work items and the states they sit in, woven into the columns a person reads, from the sprint file and the story, task and capture documents under it. |
+| composed view | agile | get | =/api/agile/charts= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:113 | One sprint's scope and the work remaining per day, computed from the sprint file and the state changes of the documents under it. |
+| resource | agile | get | =/api/agile/docs/:id= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:134 | One sprint, story, task, capture or scenario document, by the identifier its file states. |
+| resource | agile | get | =/api/agile/sprints= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:96 | The sprints the file store states, the collection the board and the charts are read against. |
+| resource | agile | get | =/api/agile/trees= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:124 | The git work trees the agents work in, the source the board reads when it shows who holds what. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:325 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | post | =/api/analytics/sensitivity-templates= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:376 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | delete | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:452 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:359 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | put | =/api/analytics/sensitivity-templates/:code= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:414 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| resource | analytics | get | =/api/analytics/sensitivity-templates/:code/history= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:366 | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| not an API | (none) | get | =/api/analytics/sensitivity-templates/choices= | bff | projects/ores.web/packages/bff/src/sensitivity-templates.ts:354 | The two lookups a template states, in the order the screen offers them, which is display order for a form. |
+| resource | auth | get | =/api/auth-events= | bff | projects/ores.web/packages/bff/src/audit.ts:114 | The tenant's authentication events, newest first, with the account filter the read takes though the screen does not offer it. |
+| composed view | trading | get | =/api/blotter= | bff | projects/ores.web/packages/bff/src/blotter.ts:295 | One page of trades with the rail that groups them: books, portfolios, structures and structure members, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page. |
+| resource | trading | post | =/api/book-changes= | bff | projects/ores.web/packages/bff/src/book-changes.ts:89 | A proposal of writes to a book: the preview runs them through the real service and writes nothing, and the write raises one request holding them. |
+| resource | trading | post | =/api/book-changes/preview= | bff | projects/ores.web/packages/bff/src/book-changes.ts:76 | A proposal of writes to a book: the preview runs them through the real service and writes nothing, and the write raises one request holding them. |
+| resource | trading | get | =/api/books/:id= | bff | projects/ores.web/packages/bff/src/books.ts:150 | One book with the portfolio it sits in, the portfolio read by id so the page shows a name rather than a key; one collection with its key resolved is a resource and not a view. |
+| resource | trading | put | =/api/books/books= | bff | projects/ores.web/packages/bff/src/books.ts:219 | One book or one portfolio written against the version the screen read. |
+| not an API | (none) | get | =/api/books/pick-lists= | bff | projects/ores.web/packages/bff/src/books.ts:175 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| resource | trading | put | =/api/books/portfolios= | bff | projects/ores.web/packages/bff/src/books.ts:231 | One book or one portfolio written against the version the screen read. |
+| resource | trading | get | =/api/books/portfolios/:id/rights= | bff | projects/ores.web/packages/bff/src/books.ts:202 | The rights granted on one portfolio, with the tenant's accounts read beside them so each right names the account that holds it; one collection with its key resolved is a resource and not a view. |
+| composed view | trading | get | =/api/books/tree= | bff | projects/ores.web/packages/bff/src/books.ts:125 | Every portfolio and every book in one answer, two collection reads woven into the tree a person navigates. |
+| composed view | tenancy | get | =/api/bootstrap= | bff | projects/ores.web/packages/bff/src/server.ts:706 | Whether the deployment still needs its first administrator, composed from the IAM account and tenant answer and a variability settings read; a failure of the second read still answers the first. |
+| resource | tenancy | post | =/api/bootstrap/administrator= | bff | projects/ores.web/packages/bff/src/server.ts:737 | Creates the account that closes bootstrap mode, refused unless the deployment says it is still in bootstrap. |
+| resource | tenancy | post | =/api/bootstrap/complete= | bff | projects/ores.web/packages/bff/src/server.ts:777 | Records that the first-run journey finished, one settings write for the tenant the session works in. |
+| resource | reference-data | get | =/api/change-reasons= | bff | projects/ores.web/packages/bff/src/server.ts:2729 | The reasons a write may carry, a deployment-specific code list the server holds rather than the client. |
+| not an API | (none) | get | =/api/classifications= | bff | projects/ores.web/packages/bff/src/classifications.ts:211 | The lists a screen offers, each with the columns to draw and a row count read per list in twenty eight sequential calls, which describes a table rather than a resource. |
+| not an API | (none) | get | =/api/classifications/:list= | bff | projects/ores.web/packages/bff/src/classifications.ts:239 | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
+| not an API | (none) | put | =/api/classifications/:list/order= | bff | projects/ores.web/packages/bff/src/classifications.ts:333 | Writes the display order of the rows that moved; order for display is a rendering concern the design keeps in the client. |
+| not an API | (none) | post | =/api/classifications/:list/rows= | bff | projects/ores.web/packages/bff/src/classifications.ts:292 | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
+| not an API | (none) | delete | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:351 | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
+| not an API | (none) | put | =/api/classifications/:list/rows/:code= | bff | projects/ores.web/packages/bff/src/classifications.ts:312 | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
+| not an API | (none) | put | =/api/classifications/:list/rows/:code/label= | bff | projects/ores.web/packages/bff/src/classifications.ts:265 | Attaches or removes a label code, and the handler states that a label is how a code is drawn rather than what it is. |
+| transport capability | operations | post | =/api/client-log= | bff | projects/ores.web/packages/bff/src/server.ts:3013 | The browser's own trail written into the services' journal under the session's id; it carries log lines rather than a domain object. |
+| resource | reference-data | get | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:676 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| resource | reference-data | put | =/api/conventions/:family= | bff | projects/ores.web/packages/bff/src/conventions.ts:820 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| resource | reference-data | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:618 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| resource | reference-data | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:756 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| resource | reference-data | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:550 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| not an API | (none) | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:659 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| resource | reference-data | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:327 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:340 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| not an API | (none) | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:306 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
+| resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:372 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:347 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:354 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:388 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:396 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:404 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:252 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:262 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:340 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:360 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| transport capability | changes | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2928 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
+| transport capability | changes | post | =/api/events/watch= | bff | projects/ores.web/packages/bff/src/server.ts:2970 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
+| resource | auth | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
+| transport capability | (none) | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:681 | The liveness answer the deployment's probes read, beside the metrics endpoints the design puts in the server. |
+| not an API | (none) | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:364 | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
+| resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:460 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
+| composed view | assets | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2813 | Which image every flagged record uses, weaving currencies, countries, calendars and business centres into one code to image map, five reads, with a calendar and a business centre falling back to their country's flag and a placeholder for a code that has none. |
+| resource | assets | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2802 | The rule an uploaded image must satisfy, read from the validator that enforces it rather than copied into a picker. |
+| resource | assets | get | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2824 | The tenant's image catalogue: a page of the chooser's rows, an upload that answers the identifier, and one image's bytes. |
+| resource | assets | post | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2787 | The tenant's image catalogue: a page of the chooser's rows, an upload that answers the identifier, and one image's bytes. |
+| resource | assets | get | =/api/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2845 | The tenant's image catalogue: a page of the chooser's rows, an upload that answers the identifier, and one image's bytes. |
+| not an API | (none) | get | =/api/labels= | bff | projects/ores.web/packages/bff/src/classifications.ts:255 | Every label and the labels each code domain uses: translated copy for display, which the design puts in the client. |
+| resource | tenancy | get | =/api/lei-entities= | bff | projects/ores.web/packages/bff/src/server.ts:2527 | The root legal entities a tenant can be started from, matched and sized by the read because the deployment holds tens of thousands. |
+| resource | auth | get | =/api/login-info= | bff | projects/ores.web/packages/bff/src/server.ts:1762 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
+| resource | auth | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1782 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
+| resource | market-data | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:87 | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
+| composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:177 | The providers and the sources that serve them in one answer, two collection reads, so a subscription or a route can name a source by id. |
+| composed view | market-data | get | =/api/marketdata/official= | bff | projects/ores.web/packages/bff/src/official.ts:101 | Every official provider with its terms, its sources and the fixing series it fills, the providers read first and the sources and market series read together after. |
+| resource | market-data | post | =/api/marketdata/official/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/official.ts:212 | Records that a party accepted one official provider's terms at the version read, one row written against a provider that may have moved on. |
+| resource | market-data | get | =/api/marketdata/official/fixings= | bff | projects/ores.web/packages/bff/src/official.ts:176 | The fixings of up to a dozen series in one read, oldest first, by series. |
+| resource | market-data | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:163 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:251 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/routes/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:274 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:151 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:201 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:229 | A subscription or a route the session party holds, with the source that serves it, read as a page and written or removed one at a time. |
+| resource | access | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1202 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
+| resource | access | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1655 | The signed-in person's own contact record, answered with nothing when there is none yet because the first write creates it. |
+| resource | access | put | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1667 | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
+| resource | access | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1246 | Sets or clears the party quick sign-in uses on the signed-in account. |
+| resource | workflow | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:479 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:521 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:504 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:493 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | tenancy | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1237 | The parties the signed-in person works in, each named by the server because the association read carries an identifier alone. |
+| resource | access | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1304 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
+| resource | access | put | =/api/me/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1635 | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
+| resource | workflow | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:308 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | workflow | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:315 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | workflow | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:331 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | auth | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1838 | The signed-in person's own open sessions, a self read the server scopes to the caller. |
+| composed view | access | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1212 | The roles the person could ask for that would give them a permission, weaving the role catalogue and what each role grants against the grants the person already has. |
+| composed view | operations | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 | The NATS server samples over a window and one row per stream, a second read for each named stream, because no operation lists the streams. |
+| composed view | grid | get | =/api/operations/grid= | bff | projects/ores.web/packages/bff/src/operations.ts:419 | The compute grid as one answer: the stored summary, the host registry with its hardware rows and the service roster, three reads so a node carries the name a person reads and the runner that serves it. |
+| resource | grid | get | =/api/operations/grid/app-versions/:id= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:99 | One app version with its packages and the versions beside it, and the write that replaces its release note against the version read. |
+| resource | grid | put | =/api/operations/grid/app-versions/:id/release-note= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:115 | One app version with its packages and the versions beside it, and the write that replaces its release note against the version read. |
+| resource | grid | get | =/api/operations/grid/jobs/batches= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:189 | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/jobs/batches/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:201 | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/jobs/batches/:id/workunits= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:212 | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/jobs/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:254 | One page of the runs that ended with an outcome, the answer to which of them failed, or one run by id. |
+| resource | grid | get | =/api/operations/grid/jobs/results/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:275 | One page of the runs that ended with an outcome, the answer to which of them failed, or one run by id. |
+| resource | grid | get | =/api/operations/grid/jobs/results/:id/output= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:281 | The input bundle of one workunit or the output of one run, the bytes the grid stored. |
+| resource | grid | get | =/api/operations/grid/jobs/workunits/:id= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:227 | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/jobs/workunits/:id/input= | bff | projects/ores.web/packages/bff/src/grid-downloads.ts:270 | The input bundle of one workunit or the output of one run, the bytes the grid stored. |
+| resource | grid | get | =/api/operations/grid/jobs/workunits/:id/results= | bff | projects/ores.web/packages/bff/src/grid-jobs.ts:238 | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/report-runs/:id= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:366 | One report run with its health, the batch that carried it and the name of its definition resolved onto it; one collection with its keys resolved is a resource and not a view. |
+| resource | grid | get | =/api/operations/grid/report-runs/:id/errors= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:319 | The error events one report run raised, with their total; one collection filtered by its parent. |
+| composed view | grid | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 | The grid counters per bucket and one row of buckets per node on one time axis, two reads joined onto the host registry. |
+| composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
+| resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
+| resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
+| transport capability | (none) | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse-many= | bff | projects/ores.web/packages/bff/src/oresmd.ts:121 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | get | =/api/oresmd/schema= | bff | projects/ores.web/packages/bff/src/oresmd.ts:86 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| composed view | tenancy | get | =/api/overview= | bff | projects/ores.web/packages/bff/src/server.ts:1978 | The system administrator's home: the tenant roster divided into in service, on evaluation and setting up, the first page of the roster and the newest setups, every count a separate list read that asks for its total. |
+| resource | tenancy | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2451 | One page of the session's own tenant's parties, scoped by row-level security so the route names no tenant. |
+| resource | auth | get | =/api/password-policy= | bff | projects/ores.web/packages/bff/src/server.ts:1139 | The rules a password must satisfy, read from the validator that enforces them rather than copied into a screen. |
+| resource | access | get | =/api/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1452 | Every permission the platform defines, the catalogue a role is described against. |
+| resource | tenancy | post | =/api/provision-party= | bff | projects/ores.web/packages/bff/src/server.ts:2571 | Adds one party to the tenant the caller works in and starts the run that brings it to life, the row first and the run after it. |
+| resource | tenancy | post | =/api/provision-tenant= | bff | projects/ores.web/packages/bff/src/server.ts:2623 | Provisions one tenant from a starting point and answers the run that does the rest. |
+| resource | qa | get | =/api/qa/docs/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:163 | One document the scenario store holds, by its identifier. |
+| resource | qa | get | =/api/qa/scenarios= | bff | projects/ores.web/packages/bff/src/qa.ts:151 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
+| resource | qa | get | =/api/qa/scenarios/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:156 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
+| resource | qa | get | =/api/qa/scenarios/:id/files/:name= | bff | projects/ores.web/packages/bff/src/qa.ts:227 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
+| resource | qa | put | =/api/qa/scenarios/:id/run= | bff | projects/ores.web/packages/bff/src/qa.ts:172 | Runs one scenario and answers its verdict, the write that makes it a run rather than a document. |
+| resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
+| not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
+| not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/records.ts:565 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| not an API | (none) | get | =/api/refdata/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/records.ts:547 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| resource | reference-data | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:579 | The materialised days of one calendar in one year, one page of a derived collection. |
+| resource | reference-data | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:638 | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
+| resource | reference-data | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:597 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:619 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:606 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | get | =/api/refdata/curve-configurations= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:699 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
+| resource | reference-data | get | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:742 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
+| resource | reference-data | put | =/api/refdata/curve-configurations/:id= | bff | projects/ores.web/packages/bff/src/curve-configuration.ts:863 | The curve configurations a party holds, with the definitions, the count of curves each section names, and a write that changes the leaves it names. |
+| resource | tenancy | get | =/api/registration-policy= | bff | projects/ores.web/packages/bff/src/server.ts:811 | What the deployment offers somebody not in it yet: the switch, the destination and whether a registration can be used at once. |
+| resource | access | get | =/api/reporting-tree= | bff | projects/ores.web/packages/bff/src/server.ts:1279 | The tenant's reporting shape in one read, or one account's branch of it. |
+| not an API | (none) | get | =/api/reporting/choices= | bff | projects/ores.web/packages/bff/src/reporting.ts:1044 | The codes the report edit form offers so a save is accepted rather than refused, which is the form's option set and not a resource. |
+| composed view | reporting | get | =/api/reporting/configurations/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1100 | One configuration with what its five keys point at: the type names, the party names, its analytics, their analytic names and its market data bindings, five reads so the page shows names rather than ids. |
+| resource | reporting | get | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:743 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | post | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:841 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | delete | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:950 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:787 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | put | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:868 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | put | =/api/reporting/engine-settings/:id/groups/:group= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:898 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/:id/history= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:793 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/documentation= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:782 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
+| resource | reporting | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | post | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1026 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | delete | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1144 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | get | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:974 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | put | =/api/reporting/pricing-engines/:id= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1045 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | get | =/api/reporting/pricing-engines/:id/history= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:986 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | get | =/api/reporting/pricing-engines/:id/ore-document= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1002 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | post | =/api/reporting/pricing-engines/ore-import= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1112 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| resource | reporting | post | =/api/reporting/pricing-engines/ore-import/preview= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1077 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| not an API | (none) | get | =/api/reporting/pricing-engines/vocabulary= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:970 | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
+| composed view | reporting | get | =/api/reporting/report-health= | bff | projects/ores.web/packages/bff/src/reporting.ts:1110 | Each report definition with the row the list would draw for it and the reads that failed, so the answer says a run could not be checked rather than that it never ran. |
+| resource | reporting | get | =/api/reporting/reports= | bff | projects/ores.web/packages/bff/src/reporting.ts:1014 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| resource | reporting | put | =/api/reporting/reports/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1174 | One report definition written against the version read. |
+| resource | reporting | get | =/api/reporting/reports/:id/configurations= | bff | projects/ores.web/packages/bff/src/reporting.ts:1074 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| resource | reporting | post | =/api/reporting/reports/:id/run= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:295 | Starts a run of one definition and answers the run it created. |
+| resource | reporting | get | =/api/reporting/reports/:id/runs= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:306 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| resource | reporting | get | =/api/reporting/reports/:segment= | bff | projects/ores.web/packages/bff/src/reporting.ts:1157 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| resource | reporting | get | =/api/reporting/reports/by-name/:name= | bff | projects/ores.web/packages/bff/src/reporting.ts:1131 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| resource | reporting | get | =/api/reporting/runs/:id= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:869 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
+| resource | reporting | get | =/api/reporting/runs/:id/output= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:959 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
+| resource | reporting | get | =/api/reporting/runs/:id/results= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:897 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
+| composed view | workflow | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:352 | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
+| resource | workflow | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:372 | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
+| composed view | workflow | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:402 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
+| composed view | workflow | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:422 | Runs a request's proposed lines through the real write and answers what it says now, weaving the request with the record as it stands. |
+| resource | workflow | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:433 | Approves, refuses, holds or resumes one request against the version read. |
+| composed view | workflow | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:389 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
+| resource | access | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1446 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1475 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | delete | =/api/roles/:name= | bff | projects/ores.web/packages/bff/src/server.ts:1535 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | put | =/api/roles/:roleId= | bff | projects/ores.web/packages/bff/src/server.ts:1496 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | get | =/api/roles/:roleId/holders= | bff | projects/ores.web/packages/bff/src/server.ts:1362 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | get | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1342 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | put | =/api/roles/:roleId/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1517 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | post | =/api/roles/:roleId/permissions/changes= | bff | projects/ores.web/packages/bff/src/server.ts:1378 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | access | get | =/api/roles/page= | bff | projects/ores.web/packages/bff/src/server.ts:1314 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2508 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
+| resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
+| transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1014 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1006 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| transport capability | auth | post | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:933 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | get | =/api/session-statistics= | bff | projects/ores.web/packages/bff/src/audit.ts:139 | The tenant's session statistics, one row per day and account, newest day first, the audit screen's own collection. |
+| transport capability | auth | post | =/api/session/party= | bff | projects/ores.web/packages/bff/src/server.ts:1023 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| transport capability | auth | post | =/api/session/switch-party= | bff | projects/ores.web/packages/bff/src/server.ts:1067 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | get | =/api/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1808 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
+| resource | auth | post | =/api/sessions/:sessionId/end= | bff | projects/ores.web/packages/bff/src/audit.ts:183 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
+| resource | auth | get | =/api/sessions/active= | bff | projects/ores.web/packages/bff/src/server.ts:1827 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
+| resource | auth | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:849 | Registers one account against the tenant the address resolves to and answers its state rather than a session. |
+| transport capability | (none) | get | =/api/site= | bff | projects/ores.web/packages/bff/src/server.ts:891 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
+| transport capability | (none) | get | =/api/site/deployment= | bff | projects/ores.web/packages/bff/src/server.ts:914 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
+| resource | trading | get | =/api/structure-kinds= | bff | projects/ores.web/packages/bff/src/structures.ts:495 | The kinds a structure may be, a lookup the server holds. |
+| resource | trading | get | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:656 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| resource | trading | post | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:516 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| resource | trading | get | =/api/structures/:key= | bff | projects/ores.web/packages/bff/src/structures.ts:803 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| resource | trading | get | =/api/structures/:key/leg-candidates= | bff | projects/ores.web/packages/bff/src/structures.ts:972 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| resource | trading | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1018 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| resource | trading | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:924 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| not an API | (none) | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:928 | A catalogue of the synthetic resources a screen may write, each with its key field, sortable fields, search flag, permission names and the reason it may be read only, which is a table description rather than a resource. |
+| not an API | (none) | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1247 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| not an API | (none) | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1108 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| not an API | (none) | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1201 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| not an API | (none) | get | =/api/synthetic/:resource/by/:parent= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1159 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| not an API | (none) | get | =/api/synthetic/:resource/key/:key= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1179 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| resource | simulation | post | =/api/synthetic/convert/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1376 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| resource | simulation | post | =/api/synthetic/convert/fx-simple= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1395 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| resource | simulation | post | =/api/synthetic/convert/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1412 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| composed view | simulation | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:954 | The folders and the feeds under each at any depth, two collections woven, with the count of each kind so no screen reads the feeds. |
+| resource | simulation | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 | The times of the ticks each feed published in the window, one row per feed, a stopped feed keeping its row so the picture shows that it is silent. |
+| resource | simulation | post | =/api/synthetic/feed-selection/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1045 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
+| resource | simulation | post | =/api/synthetic/feed-selection/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1066 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
+| resource | simulation | post | =/api/synthetic/feeds/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1294 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| resource | simulation | post | =/api/synthetic/feeds/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1305 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| resource | simulation | get | =/api/synthetic/feeds/:id/ticks= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1085 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| resource | simulation | get | =/api/synthetic/folder-feeds= | bff | projects/ores.web/packages/bff/src/synthetic.ts:989 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| resource | simulation | post | =/api/synthetic/folders/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1321 | Starts or stops every feed under one folder, its subtree included, and answers what started, what was already running and what was skipped. |
+| resource | simulation | post | =/api/synthetic/folders/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1346 | Starts or stops every feed under one folder, its subtree included, and answers what started, what was already running and what was skipped. |
+| resource | simulation | get | =/api/synthetic/market-history= | bff | projects/ores.web/packages/bff/src/market-regime.ts:342 | The ticks of the last hour folded by the second and by asset class, with the pace and active share of each slot, counts rather than ticks so the read costs the same at any tick rate. |
+| resource | simulation | get | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:273 | The market state in force, the multiplier every feed is scaled by, and who holds the state. |
+| resource | simulation | post | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:386 | Forces the regime or hands it back to the chain, or sets how the market moves, the reply being the state after the write. |
+| resource | simulation | put | =/api/synthetic/market-regime/settings= | bff | projects/ores.web/packages/bff/src/market-regime.ts:402 | Forces the regime or hands it back to the chain, or sets how the market moves, the reply being the state after the write. |
+| composed view | simulation | get | =/api/synthetic/market-trace= | bff | projects/ores.web/packages/bff/src/market-regime.ts:283 | The scheduler's recent decisions woven into one trail: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds. |
+| resource | simulation | post | =/api/synthetic/preview/ir-shape= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1449 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| resource | simulation | post | =/api/synthetic/simulate/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1361 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| resource | simulation | post | =/api/synthetic/simulate/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1437 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| resource | tenancy | get | =/api/tenant-setup= | bff | projects/ores.web/packages/bff/src/server.ts:792 | The tenant administrator's own setup run, the session naming the tenant so the request carries nothing. |
+| resource | tenancy | get | =/api/tenant-statuses= | bff | projects/ores.web/packages/bff/src/server.ts:2479 | The tenant lifecycle statuses or tenant types, the deployment's own rows. The badge code each row carries is stored on the row and is not a rendering concern: the route returns the row, and a client decides how to paint it. |
+| resource | tenancy | get | =/api/tenant-types= | bff | projects/ores.web/packages/bff/src/server.ts:2492 | The tenant lifecycle statuses or tenant types, the deployment's own rows. The badge code each row carries is stored on the row and is not a rendering concern: the route returns the row, and a client decides how to paint it. |
+| resource | tenancy | get | =/api/tenants= | bff | projects/ores.web/packages/bff/src/server.ts:1868 | The tenants this deployment holds: a page of the roster, one tenant with the run that set it up, and the removal that closes a tenant and keeps its data. |
+| resource | tenancy | delete | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2144 | The tenants this deployment holds: a page of the roster, one tenant with the run that set it up, and the removal that closes a tenant and keeps its data. |
+| resource | tenancy | get | =/api/tenants/:code= | bff | projects/ores.web/packages/bff/src/server.ts:2187 | The tenants this deployment holds: a page of the roster, one tenant with the run that set it up, and the removal that closes a tenant and keeps its data. |
+| resource | tenancy | get | =/api/tenants/:code/accounts/:username/sign-ins= | bff | projects/ores.web/packages/bff/src/server.ts:2361 | A page of one tenant's parties, people or accounts and their sign-ins, read from inside the tenant rather than from the deployment. |
+| resource | tenancy | get | =/api/tenants/:code/images/:id= | bff | projects/ores.web/packages/bff/src/server.ts:2385 | A page of one tenant's parties, people or accounts and their sign-ins, read from inside the tenant rather than from the deployment. |
+| resource | tenancy | get | =/api/tenants/:code/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2289 | A page of one tenant's parties, people or accounts and their sign-ins, read from inside the tenant rather than from the deployment. |
+| resource | tenancy | get | =/api/tenants/:code/people= | bff | projects/ores.web/packages/bff/src/server.ts:2316 | A page of one tenant's parties, people or accounts and their sign-ins, read from inside the tenant rather than from the deployment. |
+| composed view | reference-data | get | =/api/tenors/catalogue= | bff | projects/ores.web/packages/bff/src/tenors.ts:198 | The tenors with their conventions and their schedules in one answer, three collection reads, because a tenor is meaningless without the rules that resolve it. |
+| resource | reference-data | put | =/api/tenors/conventions= | bff | projects/ores.web/packages/bff/src/tenors.ts:323 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | get | =/api/tenors/conventions/:code/resolutions= | bff | projects/ores.web/packages/bff/src/tenors.ts:296 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| not an API | (none) | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| resource | reference-data | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
+| resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:245 | The link types a person can record between trades, a lookup the server holds. |
+| resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:325 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades/:id= | bff | projects/ores.web/packages/bff/src/trades.ts:308 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:269 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:169 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/ungrouped-trades= | bff | projects/ores.web/packages/bff/src/structures.ts:511 | The trades no structure holds, a filtered read of the trade collection. |
+| resource | assets | get | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:313 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:354 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | put | =/api/v1/assets/image_tags= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:367 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/image_tags/by-image-id/{image_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:423 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/image_tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:409 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/image_tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:341 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/image_tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:381 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | delete | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:394 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/image_tags/{image_id}/{tag_id}= | ores.http | projects/ores.http/assets/src/routes/assets/image_tag_routes.cpp:329 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:313 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:354 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | put | =/api/v1/assets/images= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:367 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/images/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:409 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/images/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:341 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/images/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:381 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | delete | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:394 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/images/{code}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:329 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/images/{code}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:423 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/images/{code}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/image_routes.cpp:439 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:313 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:354 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | put | =/api/v1/assets/tags= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:367 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/tags/delete-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:409 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/tags/get-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:341 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | post | =/api/v1/assets/tags/put-many= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:381 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | delete | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:394 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/tags/{name}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:329 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/tags/{name}/versions= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:423 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | assets | get | =/api/v1/assets/tags/{name}/versions/{version}= | ores.http | projects/ores.http/assets/src/routes/assets/tag_routes.cpp:439 | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| resource | auth | delete | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:93 | A session is a thing: signing in creates one and sets the cookie it rides in, signing out ends the caller's, and /me reads the identity it states. |
+| resource | auth | post | =/api/v1/auth/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:83 | A session is a thing: signing in creates one and sets the cookie it rides in, signing out ends the caller's, and /me reads the identity it states. |
+| resource | auth | get | =/api/v1/auth/sessions/me= | ores.http | projects/ores.http/iam/src/routes/iam/auth_session_routes.cpp:104 | A session is a thing: signing in creates one and sets the cookie it rides in, signing out ends the caller's, and /me reads the identity it states. |
+| resource | auth | get | =/api/v1/iam/account_credentials= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:245 | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| resource | auth | get | =/api/v1/iam/account_credentials/by-account-id/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:286 | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| resource | auth | post | =/api/v1/iam/account_credentials/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:273 | A generated write of the account credential collection, or its bulk get. |
+| resource | auth | get | =/api/v1/iam/account_credentials/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:261 | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| resource | auth | get | =/api/v1/iam/account_credentials/{id}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:304 | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| resource | auth | get | =/api/v1/iam/account_credentials/{id}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_credential_routes.cpp:320 | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| resource | access | get | =/api/v1/iam/accounts= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:227 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
+| resource | access | post | =/api/v1/iam/accounts/delete= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:251 | A generated write of the IAM account collection: the delete, the bulk get, or a whole-record put. |
+| resource | access | post | =/api/v1/iam/accounts/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:255 | A generated write of the IAM account collection: the delete, the bulk get, or a whole-record put. |
+| resource | access | post | =/api/v1/iam/accounts/put= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:221 | A generated write of the IAM account collection: the delete, the bulk get, or a whole-record put. |
+| resource | access | get | =/api/v1/iam/accounts/{username}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:243 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
+| resource | access | get | =/api/v1/iam/accounts/{username}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:268 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
+| resource | access | get | =/api/v1/iam/accounts/{username}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:284 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
+| resource | auth | post | =/api/v1/iam/auth_events/list= | ores.http | projects/ores.http/iam/src/routes/iam/auth_event_operations_routes.cpp:125 | The tenant's authentication events, read through one POST that carries the filter. |
+| resource | auth | get | =/api/v1/iam/login_info= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:198 | The login record collection, generated with list, read and bulk get; a record is written by signing in and carries no credential column. |
+| resource | auth | post | =/api/v1/iam/login_info/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:226 | A generated write of the login record collection, or its bulk get. |
+| resource | auth | get | =/api/v1/iam/login_info/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/login_info_routes.cpp:214 | The login record collection, generated with list, read and bulk get; a record is written by signing in and carries no credential column. |
+| resource | access | post | =/api/v1/iam/ops/assign_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:179 | The roles one account holds and the permissions one role grants, read or written through an RPC-shaped verb. |
+| resource | tenancy | post | =/api/v1/iam/ops/bootstrap_status= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:134 | The deployment's first-run state and the first administrator it creates, the pair that closes bootstrap mode. |
+| resource | auth | post | =/api/v1/iam/ops/change_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:325 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
+| resource | tenancy | post | =/api/v1/iam/ops/create_initial_admin= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_routes.cpp:149 | The deployment's first-run state and the first administrator it creates, the pair that closes bootstrap mode. |
+| resource | auth | post | =/api/v1/iam/ops/end_session= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:149 | An RPC-shaped write that ends one session, the caller's or the identifier's. |
+| resource | access | post | =/api/v1/iam/ops/get_account_roles= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:208 | The roles one account holds and the permissions one role grants, read or written through an RPC-shaped verb. |
+| resource | auth | post | =/api/v1/iam/ops/get_active_sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_operations_routes.cpp:135 | An RPC-shaped read of the session store: the sessions with no end time, or the per-day per-account roll-up of them. |
+| resource | access | post | =/api/v1/iam/ops/get_role_permissions= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:223 | The roles one account holds and the permissions one role grants, read or written through an RPC-shaped verb. |
+| resource | auth | post | =/api/v1/iam/ops/get_session_statistics= | ores.http | projects/ores.http/iam/src/routes/iam/session_statistics_operations_routes.cpp:126 | An RPC-shaped read of the session store: the sessions with no end time, or the per-day per-account roll-up of them. |
+| resource | access | post | =/api/v1/iam/ops/lock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:265 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
+| resource | auth | post | =/api/v1/iam/ops/login= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:133 | An RPC-shaped write that mints one session: the object is the session, and the verb in the path names the write. |
+| resource | auth | post | =/api/v1/iam/ops/logout= | ores.http | projects/ores.http/iam/src/routes/iam/login_routes.cpp:146 | An RPC-shaped write that ends one session, the caller's or the identifier's. |
+| resource | auth | post | =/api/v1/iam/ops/lookup_country= | ores.http | projects/ores.http/iam/src/routes/iam/geo_operations_routes.cpp:124 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
+| resource | auth | post | =/api/v1/iam/ops/reset_password= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:295 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
+| resource | access | post | =/api/v1/iam/ops/revoke_role= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:193 | The roles one account holds and the permissions one role grants, read or written through an RPC-shaped verb. |
+| resource | auth | post | =/api/v1/iam/ops/signup= | ores.http | projects/ores.http/iam/src/routes/iam/signup_routes.cpp:124 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
+| resource | access | post | =/api/v1/iam/ops/unlock_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:280 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
+| resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:236 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
+| resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:310 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
+| resource | access | get | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:290 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | post | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:331 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | put | =/api/v1/iam/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:344 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | post | =/api/v1/iam/permissions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:386 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | post | =/api/v1/iam/permissions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:318 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | post | =/api/v1/iam/permissions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:358 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | delete | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:371 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | get | =/api/v1/iam/permissions/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/permission_routes.cpp:306 | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | access | get | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:313 | The role collection itself, read as a list and written one role at a time. |
+| resource | access | post | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:354 | The role collection itself, read as a list and written one role at a time. |
+| resource | access | put | =/api/v1/iam/roles= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:367 | The role collection itself, read as a list and written one role at a time. |
+| resource | access | post | =/api/v1/iam/roles/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:408 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | post | =/api/v1/iam/roles/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:341 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | post | =/api/v1/iam/roles/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:381 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | delete | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:394 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | get | =/api/v1/iam/roles/{name}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:329 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | get | =/api/v1/iam/roles/{name}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:423 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | get | =/api/v1/iam/roles/{name}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/role_routes.cpp:439 | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:238 | Replaces the permissions one role grants with exactly the set sent. |
+| resource | auth | get | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:288 | The session collection, generated with list, create, replace, remove, bulk get and put. |
+| resource | auth | post | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:329 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | put | =/api/v1/iam/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:342 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | post | =/api/v1/iam/sessions/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:384 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | post | =/api/v1/iam/sessions/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:316 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | post | =/api/v1/iam/sessions/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:356 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | delete | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:369 | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | auth | get | =/api/v1/iam/sessions/{id}= | ores.http | projects/ores.http/iam/src/routes/iam/session_routes.cpp:304 | The session collection, generated with list, create, replace, remove, bulk get and put. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:147 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| resource | reference-data | get | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:320 | The currency collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | reference-data | post | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:361 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | put | =/api/v1/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:374 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | post | =/api/v1/refdata/currencies/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:416 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | post | =/api/v1/refdata/currencies/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:348 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | post | =/api/v1/refdata/currencies/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:388 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | delete | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:401 | A generated write of the currency collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| resource | reference-data | get | =/api/v1/refdata/currencies/{iso_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:336 | The currency collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | reference-data | get | =/api/v1/refdata/currencies/{iso_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:430 | The currency collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | reference-data | get | =/api/v1/refdata/currencies/{iso_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_routes.cpp:446 | The currency collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| resource | operations | get | =/api/v1/system-settings= | ores.http | projects/ores.http/core/src/routes/variability_routes.cpp:48 | The deployment's system settings, the variability component's own collection. |
+| composed view | workflow | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2647 | A run's progress as a rail renders it: the run's status, the step executing and one summary per step, three reads, so a page follows the run rather than the engine's events. |
+| resource | workflow | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2661 | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
+| transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:102 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
+| transport capability | (none) | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:212 | path composed from bucket_pattern (declared at 161). A page of the keys one bucket of the object store holds. |
+| transport capability | (none) | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:203 | path composed from object_pattern (declared at 159). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |
+| transport capability | (none) | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:186 | path composed from object_pattern (declared at 159). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |
+| transport capability | (none) | head | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:194 | path composed from object_pattern (declared at 159). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |
+| transport capability | (none) | put | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:169 | path composed from object_pattern (declared at 159). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |

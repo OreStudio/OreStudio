@@ -23,20 +23,21 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The route list exists and is gated: 402 routes, none classified yet. |
-| Waiting on    | Nothing.                               |
-| Next          | Classify every row against the four-way rule, then publish the area list. |
+| Now           | The route list exists, every row is classified, and the area map is published. |
+| Waiting on    | Review of the judgements, not of the plumbing. |
+| Next          | Agree the area list as the manifest's source of truth, then close the story. |
 | Last touched  | 2026-10-29                               |
 
 * Acceptance
 
 - [X] One table lists every route either server answers, generated from the code and
       gated so it cannot go short (the exit criterion's inventory table).
-- [ ] Every row states its kind: resource, composed view, transport capability, or not
+- [X] Every row states its kind: resource, composed view, transport capability, or not
       an API.
-- [ ] Every composed view states its name, its owning component, its computation and
+- [X] Every composed view states its name, its owning component, its computation and
       its cache policy.
-- [ ] The published area list is agreed as the manifest's source of truth.
+- [ ] The published area list is agreed as the manifest's source of truth. Published and
+      gated by this story's second task; the agreement is the review of that merge.
 
 * Tasks
 
@@ -47,7 +48,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Decisions
 
-- The inventory is generated from the registrations on both surfaces, not typed, and
+- The inventory is generated from what each server registers, not typed, and
   a gate compares it with the tree. A classification applied to a list that can go
   stale is a classification of a tree that no longer exists.
 - The tool never writes a =Kind=, =Area= or =Note= cell. It keeps what it finds, so a

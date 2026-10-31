@@ -97,6 +97,11 @@ std::optional<query_builder::condition> report_definition_filter_condition(
     if (filter->party_id)
         r.push_back(
             query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
+    if (filter->cut_kind_code)
+        r.push_back(*filter->cut_kind_code ?
+                        query_builder::equals(
+                            "cut_kind_code", query_builder::filter_value(**filter->cut_kind_code)) :
+                        query_builder::is_null("cut_kind_code"));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -108,6 +113,12 @@ std::optional<query_builder::condition> report_definition_filter_condition(
         for (const auto& v : *filter->party_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("party_id", std::move(values)));
+    }
+    if (filter->cut_kind_code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->cut_kind_code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("cut_kind_code", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
         r.push_back(query_builder::contains_any({"name", "description"}, *filter->search));

@@ -74,6 +74,14 @@ render_report_instance_fields(const domain::report_instance& v) {
                       .value = v.engine_settings_version ?
                                    std::to_string(*v.engine_settings_version) :
                                    std::string{}});
+    fields.push_back(
+        {.name = "Cut ID", .value = v.cut_id ? boost::uuids::to_string(*v.cut_id) : std::string{}});
+    fields.push_back({.name = "Cut Label", .value = v.cut_label.value_or(std::string{})});
+    fields.push_back({.name = "Cut Kind Code", .value = v.cut_kind_code.value_or(std::string{})});
+    fields.push_back({.name = "Cut Timepoint",
+                      .value = v.cut_timepoint ? ores::platform::time::datetime::to_iso8601_utc(
+                                                     *v.cut_timepoint) :
+                                                 std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

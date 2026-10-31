@@ -54,6 +54,10 @@ struct report_instance_write {
     std::string price_note;
     std::optional<boost::uuids::uuid> engine_settings_id;
     std::optional<int> engine_settings_version;
+    std::optional<boost::uuids::uuid> cut_id;
+    std::optional<std::string> cut_label;
+    std::optional<std::string> cut_kind_code;
+    std::optional<std::chrono::system_clock::time_point> cut_timepoint;
 };
 
 struct report_instance_change {
@@ -74,9 +78,11 @@ struct report_instance_lookup {
 struct report_instances_filter {
     std::optional<boost::uuids::uuid> definition_id;
     std::optional<std::string> kind;
+    std::optional<std::optional<boost::uuids::uuid>> cut_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> definition_id_one_of;
     std::optional<std::vector<std::string>> kind_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> cut_id_one_of;
 };
 
 struct report_instance_event {

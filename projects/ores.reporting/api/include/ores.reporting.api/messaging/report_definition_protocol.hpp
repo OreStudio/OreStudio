@@ -55,6 +55,8 @@ struct report_definition_write {
     std::string post_processing;
     bool is_official;
     std::optional<std::string> regulatory_book_type;
+    std::optional<std::string> cut_kind_code;
+    std::optional<boost::uuids::uuid> cut_id;
 };
 
 struct report_definition_change {
@@ -74,8 +76,10 @@ struct report_definition_lookup {
 
 struct report_definitions_filter {
     std::optional<boost::uuids::uuid> party_id;
+    std::optional<std::optional<std::string>> cut_kind_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+    std::optional<std::vector<std::string>> cut_kind_code_one_of;
     std::optional<std::string> search;
 };
 

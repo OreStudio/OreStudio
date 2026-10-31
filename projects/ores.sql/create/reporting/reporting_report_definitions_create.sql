@@ -60,6 +60,8 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "post_processing" text not null,
     "is_official" boolean not null default true,
     "regulatory_book_type" text null,
+    "cut_kind_code" text null,
+    "cut_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -73,7 +75,8 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("cut_id" is null or "cut_kind_code" is not null)
 );
 
 -- Composite natural key: unique combination for active records
@@ -122,6 +125,20 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid regulatory_book_type: %. No active regulatory book type found with this code.', NEW.regulatory_book_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate cut_kind_code (optional soft FK to ores_reporting_cut_kinds_tbl)
+    if NEW.cut_kind_code is not null then
+        if not exists (
+            select 1 from ores_reporting_cut_kinds_tbl
+            where (tenant_id = NEW.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
+              and code = NEW.cut_kind_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid cut_kind_code: %. No active cut kind found with this code.', NEW.cut_kind_code
                 using errcode = '23503';
         end if;
     end if;

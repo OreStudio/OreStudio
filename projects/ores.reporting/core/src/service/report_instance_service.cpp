@@ -121,6 +121,10 @@ domain::report_instance report_instance_to_domain(const messaging::report_instan
     v.price_note = write.price_note;
     v.engine_settings_id = write.engine_settings_id;
     v.engine_settings_version = write.engine_settings_version;
+    v.cut_id = write.cut_id;
+    v.cut_label = write.cut_label;
+    v.cut_kind_code = write.cut_kind_code;
+    v.cut_timepoint = write.cut_timepoint;
     return v;
 }
 
@@ -151,6 +155,12 @@ messaging::list_report_instances_response report_instance_service::list_report_i
         request.filter->kind_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "kind_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->cut_id_one_of &&
+        request.filter->cut_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "cut_id_one_of", .limit = "1000"});
         return response;
     }
     // A list narrows to kind unless the caller states one, so the default view is

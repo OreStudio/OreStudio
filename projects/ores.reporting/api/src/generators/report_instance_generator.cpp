@@ -63,6 +63,10 @@ generate_synthetic_report_instance(utility::generation::generation_context& ctx)
     r.price_note = std::string{};
     r.engine_settings_id = std::nullopt;
     r.engine_settings_version = std::nullopt;
+    r.cut_id = std::nullopt;
+    r.cut_label = std::nullopt;
+    r.cut_kind_code = std::nullopt;
+    r.cut_timepoint = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

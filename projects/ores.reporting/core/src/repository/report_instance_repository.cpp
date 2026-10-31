@@ -59,7 +59,9 @@ std::string report_instance_repository::sql() {
 }
 
 bool report_instance_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "cut_timepoint",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -96,6 +98,10 @@ report_instance_filter_condition(const std::optional<messaging::report_instances
                                           query_builder::filter_value(*filter->definition_id)));
     if (filter->kind)
         r.push_back(query_builder::equals("kind", query_builder::filter_value(*filter->kind)));
+    if (filter->cut_id)
+        r.push_back(*filter->cut_id ? query_builder::equals(
+                                          "cut_id", query_builder::filter_value(**filter->cut_id)) :
+                                      query_builder::is_null("cut_id"));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -113,6 +119,12 @@ report_instance_filter_condition(const std::optional<messaging::report_instances
         for (const auto& v : *filter->kind_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("kind", std::move(values)));
+    }
+    if (filter->cut_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->cut_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("cut_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

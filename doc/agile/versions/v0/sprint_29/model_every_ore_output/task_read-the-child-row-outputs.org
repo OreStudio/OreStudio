@@ -120,6 +120,11 @@ that made the flow.
 The suite reads the checked-in sample of each family and three synthetic
 fixtures for what the corpus does not show.
 
+Superseded on 2026-10-31 by the next task in the story. A typed row carried
+eight of the figures a family states and the store needs them all, so the three
+readers were replaced by one reader driven by the catalogue, which names each
+figure by its heading and each part of a stressed figure by the part it is.
+
 Open at close: the light gate's =curve-sections-wiring= check fails on this
 branch, and the generated file it names is not one this branch touches: main is
 inconsistent there and another environment owns it.

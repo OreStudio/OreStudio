@@ -26,11 +26,11 @@ A booking that is not a real deal asks nobody for authorisation, and the one pla
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Proved on a fresh provision: 156 generated trades, no requests. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

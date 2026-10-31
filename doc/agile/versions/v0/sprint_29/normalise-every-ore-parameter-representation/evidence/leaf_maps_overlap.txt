@@ -1,0 +1,83 @@
+rows in each source
+  curve configuration columns        212  (123 distinct leaves)
+  convention kind terms              270  (176 distinct leaves)
+  vocabularies                         4  (4 distinct leaves)
+  the parameter contract            2339  (293 distinct leaves)
+  setting links to a value set       760
+
+overlap of the three leaf maps
+  curve columns and vocabularies       4
+  convention terms and vocabularies    0
+  curve columns and convention terms    0
+  in all three                         0
+
+the vocabularies rows, leaf by leaf
+  curveconfig.xsd|BusinessDayConvention      set=curve.business_day_convention      guarded=yes via the contract=curve.business_day_convention
+  curveconfig.xsd|Currency                   set=curve.currency                     guarded=yes via the contract=curve.currency
+  curveconfig.xsd|DayCounter                 set=curve.day_counter                  guarded=yes via the contract=curve.day_counter
+  curveconfig.xsd|YieldCurveDayCounter       set=curve.day_counter                  guarded=yes via the contract=curve.day_counter
+
+the leaves the two guards check
+  distinct leaves                    299
+  resolve to a set via the contract  245
+  resolve to no set                   54
+    in the contract, with no set       0  (a parameter, and no rule)
+    not in the contract at all        54  (the map names a leaf the document does not)
+    named in vocabularies              0
+
+unresolved leaves, by element
+  Accuracy                         conventions.xsd
+  AtmTenors                        curveconfig.xsd
+  BMAPaymentCalendar               conventions.xsd
+  BMAPaymentConvention             conventions.xsd
+  BMAPaymentLag                    conventions.xsd
+  BalanceOfTheMonth                conventions.xsd
+  BalanceOfTheMonthPricingCalendar conventions.xsd
+  BaseYieldCurve                   curveconfig.xsd
+  BondTenors                       curveconfig.xsd
+  BusinessDaysAfter                conventions.xsd
+  CPRQuote                         curveconfig.xsd
+  CalendarDaysBefore               conventions.xsd
+  CapStrikes                       curveconfig.xsd
+  ConversionFactor                 curveconfig.xsd
+  CorrelationType                  curveconfig.xsd
+  DayOfMonth                       conventions.xsd
+  DetachmentPoints                 curveconfig.xsd
+  FXIndexTag                       curveconfig.xsd
+  FloorStrikes                     curveconfig.xsd
+  Guess                            conventions.xsd
+  Index1                           curveconfig.xsd
+  Index2                           curveconfig.xsd
+  IndexInterpolated                curveconfig.xsd
+  IndexName                        conventions.xsd
+  IndexTerm                        curveconfig.xsd
+  LastWeekday                      conventions.xsd
+  LongTermAtmType                  conventions.xsd
+  LongTermDeltaType                conventions.xsd
+  MaxEvaluations                   conventions.xsd
+  Nth                              conventions.xsd
+  ONCapSettlementDays              curveconfig.xsd
+  OffPeakHours                     conventions.xsd
+  OffPeakIndex                     conventions.xsd
+  OptionTenors                     curveconfig.xsd
+  OvernightLockouDays              conventions.xsd
+  PeakCalendar                     conventions.xsd
+  PeakIndex                        conventions.xsd
+  PriceQuote                       curveconfig.xsd
+  Qualifier                        curveconfig.xsd
+  RecoveryRateQuote                curveconfig.xsd
+  SmileOptionTenors                curveconfig.xsd
+  SmileSpreads                     curveconfig.xsd
+  SmileSwapTenors                  curveconfig.xsd
+  SpreadQuote                      curveconfig.xsd
+  SwapTenors                       curveconfig.xsd
+  SwaptionVolatility               curveconfig.xsd
+  Tenors                           curveconfig.xsd
+  Terms                            curveconfig.xsd
+  UpfrontSettlementDays            conventions.xsd
+  UseEffeciveVolatility            curveconfig.xsd
+  UseLastFixingDate                curveconfig.xsd
+  Weekday                          conventions.xsd
+  WeeklyDayOfTheWeek               conventions.xsd
+  YieldCurve                       curveconfig.xsd
+

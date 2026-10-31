@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,143 @@ One table states which ORE element a leaf column is and which value set states i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Not yet started. It runs first in the story. |
+| Now          | Measured and designed. The three maps are read, the numbers are in Discovery, and the target shape is in Design. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the three maps, then write the one. |
-| Last touched | 2026-10-30                               |
+| Next         | Slice 1: the child table, the seed, and both guards reading the map. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
--
+- One table keys a leaf by =(schema_name, element_name)=, and it is the only
+  statement of which value set governs a leaf.
+- Every projection column that carries a leaf is attached to that map, so both
+  guards read the map and the parameter contract is no longer a prerequisite of
+  enforcement.
+- Every row of the three tables is represented in the new map, and a test counts
+  the leaves and the columns before and after.
+- Both guards' pgTAP suites pass unchanged.
+- The leaves the maps name and the contract does not describe are listed by the
+  map, each with a decision: a value set, or =text=.
+
+* Discovery
+
+Measured from the seed scripts rather than from a database, so the numbers do not
+depend on which schema a checkout's database holds:
+=evidence/leaf_maps_overlap.py=, with its output in =leaf_maps_overlap.txt=
+beside it.
+
+| Source | Rows | Leaves | Schema |
+|--------+------+--------+--------|
+| curve configuration columns | 212 | 123 | curveconfig.xsd |
+| convention kind terms | 270 | 176 | conventions.xsd |
+| vocabularies | 4 | 4 | curveconfig.xsd |
+| the parameter contract | 2339 | 293 | both, and ore.xsd |
+| setting links to a value set | 760 | | |
+
+** The three maps do not overlap
+
+The curve columns name only =curveconfig.xsd= leaves and the convention terms
+only =conventions.xsd= ones, so their intersection is empty. The vocabularies
+table names four =curveconfig.xsd= leaves, and for each of the four the contract
+path resolves the same set to the same code:
+
+| Leaf | Set, both ways |
+|------+----------------|
+| =BusinessDayConvention= | =curve.business_day_convention= |
+| =Currency= | =curve.currency= |
+| =DayCounter= | =curve.day_counter= |
+| =YieldCurveDayCounter= | =curve.day_counter= |
+
+So the tree holds two column maps, one per schema, and a four-row duplicate of
+what the contract already states. It does not hold three statements of one leaf.
+
+** The real gap is coverage
+
+Of the 299 distinct leaves the two guards check, 245 resolve to a value set and
+54 resolve to none, because the contract holds no row for them at all. A leaf the
+map names and the contract does not is silently unguarded: the guard's join finds
+nothing and admits every value. The 54 are mostly lists (=AtmTenors=,
+=CapStrikes=, =DetachmentPoints=, =Index1=, =OptionTenors=, =SwapTenors=, and
+others) plus a few leaves whose spelling differs from the contract's
+(=Accuracy=, =Guess=, =Qualifier=).
+
+Both findings are in =leaf_maps_overlap.txt=, leaf by leaf.
+
+** What that changes
+
+The consolidation is not the de-duplication of three equal statements. It is one
+map keyed by the ORE element that absorbs the two column maps, absorbs or removes
+the four-row duplicate, and shows the 54 leaves that no set governs. Enforcement
+then reads the map, so a tenant that has not published the parameter contract
+still meets the guard; today it meets nothing.
+
+* Design
+
+The map is one table keyed by the ORE element, with the projection columns as a
+child. Both guards read it directly, so enforcement stops depending on the
+parameter contract, and the seeding stops depending on a column being noticed.
+
+** The two tables
+
+=ores_reporting_ore_parameter_vocabularies_tbl= already keys a leaf by
+=(schema_name, element_name)= and carries =value_set_code=, =name=, =source=,
+=source_ref= and =reason=. It becomes the map: no rename in this task, and a
+rename to =ore_element_map= is its own small task, because the name is carried by
+generated C++, TypeScript, shell recipes and their tests.
+
+| Table | Keys | States |
+|-------+------+--------|
+| =ores_reporting_ore_parameter_vocabularies_tbl= (the map) | =(schema_name, element_name)= | the value set that governs the element, and where its provenance came from |
+| =ores_reporting_ore_element_map_columns_tbl= (new child) | =(element_map_code, entity_name, column_name)= | the projection column that carries the element, its table, and the =xpath= the column's leaf sits at |
+
+The child is what the two existing column maps become: the curve configuration
+columns (212 rows) and the convention kind terms (270). The =xpath= stays on the
+child because it is the leaf's address in the document, which is what the import
+and the convention screens show.
+
+** What the guards join
+
+Today a guard walks three tables: its column map, then the contract on
+=(schema_name, xpath)=, then the setting link on =(scope, name)=. After this task
+it walks two: its child rows for the entity the trigger names, then the map, then
+the value set. The contract keeps its own job, which is documentation for the
+screens, and stops being a prerequisite of enforcement; a tenant that has not
+published the contract still meets the guard.
+
+** Why every column with a leaf is mapped
+
+The seeding decides what is guarded. =generate_curve_column_guards.py= already
+knows every column of every curve family table and the ORE leaf it carries (it
+writes the =xpath= today), so it also writes the child rows and the map rows,
+with =text= where no set exists. The convention terms are generated the same way.
+A column whose leaf is known but has no set therefore lands in the map as a
+decision to be made, instead of vanishing as the 54 do today.
+
+** The slices, each one verifiable on its own
+
+1. The map gains the child table, and the seed writes both from the three
+   sources. Both guards read the map; their pgTAP suites pass unchanged, which is
+   the proof that the same column still resolves the same set.
+2. The convention CRUD and the ORE import read the child instead of
+   =ores_refdata_convention_kind_terms_tbl=, then the two old column maps and
+   their populate scripts go.
+3. The 54 leaves the contract does not describe get their decision: a set where
+   one exists, =text= where the document takes a list. The generator emits them,
+   so the count of unmapped leaves goes to zero and stays there.
+4. =value_set_code= gains a foreign key to the value sets, which closes the
+   misspelt-code gap the knowledge cluster records.
+
+Slices 1 and 2 are this task. Slice 3 is value-set curation and belongs to the
+story's canonical-form tasks. Slice 4 rides slice 1, because it is the same
+migration.
+
+** Out of scope
+
+The canonical rendering of a value (next task), the screen that shows a leaf, and
+any change to what a value set states. This task moves where a leaf's set is
+found, not what the set says.
 
 * Plan
 
@@ -47,6 +174,7 @@ column to an entity, a table and an =xpath=.
 schema and an =xpath=. =ores_reporting_ore_parameter_vocabularies_tbl= (4) maps
 a schema and an element to a value set. The first two carry the element
 implicitly in the =xpath=, the third names it, and only the third names a set.
+The Discovery section above holds what each one actually names.
 
 Only the first two are read at runtime. Both guards resolve a set by joining
 the map to the parameter contract on =(schema_name, xpath)= and the contract to

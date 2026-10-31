@@ -21,11 +21,11 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | A model declares its area and the routes render under it; no URL has moved. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Move one component's entities onto their published areas, with the client and the tests in the same change. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 |------+-------+-------+-----+-------------|
 | [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Let the area come from the model |
-| [[id:3664F26F-8F35-4A9F-98FC-2696360DAAF6][Move the currency routes onto reference-data]] | STARTED | 2026-10-31 | | The first URL the project moves. Declare the area on the currency model, regenerate the route unit, its tests, its recipe and its hurl scripts, update the classification rules and the inventory, and prove nothing else in the tree still names the old path. |
+| [[id:3664F26F-8F35-4A9F-98FC-2696360DAAF6][Move the currency routes onto reference-data]] | DONE | 2026-10-31 | 2026-10-31 | The first URL the project moves. Declare the area on the currency model, regenerate the route unit, its tests, its recipe and its hurl scripts, update the classification rules and the inventory, and prove nothing else in the tree still names the old path. |
 
 * Decisions
 
@@ -54,10 +54,12 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 
 * Result
 
-An entity model states the area its routes publish, and the route plan resolves it in the
-one place the path is built. Nothing declares an area yet, so the generated routes are
-byte-identical to what they were, and the gate that refuses an unpublished area is in place
-for the moves that follow.
+An entity model states the area its routes publish, the route plan resolves it in the one
+place the path is built, and the currency collection is the first to answer on its published
+area. The chain that has to move together was exercised once: the model, the route unit, its
+tests, the recipe page, the ten hurl scripts tangled from it, the classification rules and
+the inventory. The other generated collections can follow the same path, one component per
+change.
 
 * Out of scope
 

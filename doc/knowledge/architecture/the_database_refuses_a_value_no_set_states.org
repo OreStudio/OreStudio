@@ -26,6 +26,12 @@ The reason for the database rather than the services is that the writers are
 plural: the shell, a screen through the BFF, an import job and a publish
 function all reach the same table, and only a trigger sees all four.
 
+The same guard states what is stored. A set names the form a configuration holds
+for a value ORE writes several ways, and the guard replaces the value with that
+form before the row exists, through =ores_reporting_canonical_value_fn=. A
+document that says =A360= and one that says =ACT/360= therefore leave one row, and
+the rendering never reaches a table at all.
+
 * The four guards
 
 | Trigger function | Attached to | Resolves the set by |
@@ -38,6 +44,11 @@ function all reach the same table, and only a trigger sees all four.
 Each is a =security definer= trigger, and each raises an error that names the
 value, the setting and the set. The message is the interface: a person reading a
 failed import sees which rule refused them.
+
+Each also stores the canonical form of a value it accepts, so a rendering does not
+reach a row by any of the four paths. The verdict and the conversion are two
+questions, and the guard asks them in that order: whether the value is in the set,
+then which form of it a configuration holds.
 
 The part guard is the one that does not spell its own join. It reads the columns
 a group holds from =ores_reporting_engine_settings_group_settings_tbl=, so a
@@ -88,11 +99,11 @@ and draws it, rather than carrying a copy of the rule.
 All are stated here rather than left for a reader to discover.
 
 - A leaf the element map states =text= for is admitted, because text is a rule
-  that admits every value. For 227 of the 480 leaves that is a decision the ORE
-  parser justifies. For 7 it is not: the extractor does not read the form those
-  leaves are read in, so no parser states a rule for them. The count is a ratchet
-  in =generate_ore_element_map.py= (=UNREAD_ALLOWED=), so it can fall but not grow
-  unnoticed.
+  that admits every value. For all 155 of the 477 leaves that number is a decision
+  an ORE source justifies, and three more take the rule the ORE schema states for
+  them: the extractor reads at least one form for every leaf, and the ratchet in
+  =generate_ore_element_map.py= (=UNREAD_ALLOWED=) holds that count at zero so it
+  can fall but not grow unnoticed.
 - A parameter with no set is admitted by the product parameter guard: it returns
   the row when the link is not found
   (=…reporting_ore_parameter_value_validate_fn_create.sql:231=). The engine
@@ -104,9 +115,10 @@ All are stated here rather than left for a reader to discover.
   has no set or a set has no values, and it refuses to judge at all when the
   contract is not published for the tenant.
 - A set code that names no set admits every value
-  (=…reporting_ore_parameter_value_validate_fn_create.sql:87=). Nothing catches a
-  typo in a link's =value_set_code=; only a foreign key would. The consolidation
-  task is the moment to add one, because it is rewriting the links anyway.
+  (=…reporting_ore_parameter_value_validate_fn_create.sql:87=), and the canonical
+  function answers with the value itself for the same reason. Nothing catches a
+  typo in a link's =value_set_code=; only a foreign key would, and it is still
+  missing.
 
 Until both are closed, "the rule is always enforced" is true for a parameter that
 has a set and false for one whose set is missing or misspelt. A reader checking a

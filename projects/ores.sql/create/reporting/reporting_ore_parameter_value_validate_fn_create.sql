@@ -19,7 +19,8 @@
  */
 
 /**
- * Refuses a parameter value outside the set the setting names.
+ * Refuses a parameter value outside the set the setting names, and stores the
+ * form the set names for one it accepts.
  *
  * One enforcement point, in the database, because every client writes through
  * it. The setting is keyed by (scope, name), which is the parameter row's own
@@ -253,6 +254,9 @@ begin
         raise exception 'Invalid value % for %.%: the value is not in set %.',
             NEW.parameter_value, v_scope, NEW.parameter_name, v_set_code;
     end if;
+
+    NEW.parameter_value := ores_reporting_canonical_value_fn(
+        v_set_code, NEW.parameter_value);
     return NEW;
 end;
 $$ language plpgsql;

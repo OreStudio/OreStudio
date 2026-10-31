@@ -19,7 +19,8 @@
  */
 
 /**
- * Refuses an engine run setting value its value set does not accept.
+ * Refuses an engine run setting value its value set does not accept, and stores
+ * the form the set names for one it accepts.
  *
  * The part tables hold one column per setting, so a rule written as a column
  * check would state the bound or the list a second time, beside the set the
@@ -29,7 +30,8 @@
  * save under a sign-off and the ORE import.
  *
  * A column the group does not state is left alone, which keeps the guard from
- * knowing the table it is on.
+ * knowing the table it is on. The row is rewritten through its JSON form because
+ * a trigger cannot name a column it read from a table.
  */
 
 create or replace function ores_reporting_validate_engine_settings_part_fn()
@@ -39,9 +41,13 @@ set search_path = public, pg_temp
 as $$
 declare
     v_setting record;
+    v_code text;
     v_value text;
     v_found boolean;
     v_in_set boolean;
+    v_set_code text;
+    v_canonical text;
+    v_stored jsonb := '{}'::jsonb;
 begin
     for v_setting in
         select s.column_name, s.ore_name
@@ -53,16 +59,25 @@ begin
         execute format('select ($1).%I::text', v_setting.column_name) into v_value using NEW;
         continue when v_value is null;
 
-        select v.found, v.is_in_set
-          into v_found, v_in_set
-          from ores_reporting_setting_value_verdict_fn(
-                   'Setup:' || v_setting.ore_name, v_value) v;
+        v_code := 'Setup:' || v_setting.ore_name;
+        select v.found, v.is_in_set, v.value_set_code
+          into v_found, v_in_set, v_set_code
+          from ores_reporting_setting_value_verdict_fn(v_code, v_value) v;
 
         if not coalesce(v_found and v_in_set, false) then
             raise exception 'Invalid value % for %.%, the value is not in its value set.',
                 v_value, TG_ARGV[0], v_setting.column_name;
         end if;
+
+        v_canonical := ores_reporting_canonical_value_fn(v_set_code, v_value);
+        if v_canonical is distinct from v_value then
+            v_stored := v_stored || jsonb_build_object(v_setting.column_name, v_canonical);
+        end if;
     end loop;
+
+    if v_stored <> '{}'::jsonb then
+        NEW := jsonb_populate_record(NEW, v_stored);
+    end if;
 
     return NEW;
 end;

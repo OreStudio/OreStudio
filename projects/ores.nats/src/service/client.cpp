@@ -127,20 +127,21 @@ struct buffered_subscription::impl {
     std::shared_ptr<message_buffer> buffer;
 };
 
-namespace {
-
 /**
  * @brief What the connection's closed callback sets, and what drain() waits on.
  *
  * It exists so drain() can wait for a fact rather than for a time.
+ *
+ * It has a name rather than living in this file's anonymous namespace because
+ * =client::impl= holds one: a subobject of a type with no linkage inside a class
+ * with external linkage is what gcc's -Wsubobject-linkage refuses, and the
+ * project builds with -Werror on every toolchain.
  */
 struct connection_closed_latch {
     std::mutex mu;
     std::condition_variable cv;
     bool closed = false;
 };
-
-}
 
 // ---------------------------------------------------------------------------
 // client::impl

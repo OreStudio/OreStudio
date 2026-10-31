@@ -141,33 +141,28 @@ void fx_volatility_config_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> "
-        "<smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> "
-        "<fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> "
-        "<base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> "
-        "<butterfly_error_tolerance> <reason> <commentary>");
+        "add <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id> "
+        "<fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> "
+        "<base_volatility_1> <base_volatility_2> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> "
-        "<smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> "
-        "<fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> "
-        "<base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> "
-        "<butterfly_error_tolerance> <reason> <commentary> [--version <n>]");
+        "set <id> <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id> "
+        "<fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> "
+        "<base_volatility_1> <base_volatility_2> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <curve_definition_id> <dimension> <smile_type> "
-        "<smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> "
-        "<fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> "
-        "<base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> "
-        "<time_weighting> <butterfly_error_tolerance> <reason> <commentary>");
+        "put-many --count <n> <id> <curve_definition_id> <dimension> <deltas> <conventions> "
+        "<expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> "
+        "<day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -362,8 +357,8 @@ void fx_volatility_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 20 + 2) {
-            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -374,14 +369,7 @@ void fx_volatility_config_commands::process_add(std::ostream& out,
         fx_volatility_config_read_token(
             req.change.write.dimension, parsed->positionals[next++], "dimension");
         fx_volatility_config_read_token(
-            req.change.write.smile_type, parsed->positionals[next++], "smile_type");
-        fx_volatility_config_read_token(req.change.write.smile_interpolation,
-                                        parsed->positionals[next++],
-                                        "smile_interpolation");
-        fx_volatility_config_read_token(
             req.change.write.deltas, parsed->positionals[next++], "deltas");
-        fx_volatility_config_read_token(
-            req.change.write.smile_delta, parsed->positionals[next++], "smile_delta");
         fx_volatility_config_read_token(
             req.change.write.conventions, parsed->positionals[next++], "conventions");
         fx_volatility_config_read_token(
@@ -404,16 +392,6 @@ void fx_volatility_config_commands::process_add(std::ostream& out,
             req.change.write.base_volatility_1, parsed->positionals[next++], "base_volatility_1");
         fx_volatility_config_read_token(
             req.change.write.base_volatility_2, parsed->positionals[next++], "base_volatility_2");
-        fx_volatility_config_read_token(req.change.write.smile_extrapolation,
-                                        parsed->positionals[next++],
-                                        "smile_extrapolation");
-        fx_volatility_config_read_token(
-            req.change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-        fx_volatility_config_read_token(
-            req.change.write.time_weighting, parsed->positionals[next++], "time_weighting");
-        fx_volatility_config_read_token(req.change.write.butterfly_error_tolerance,
-                                        parsed->positionals[next++],
-                                        "butterfly_error_tolerance");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -456,8 +434,8 @@ void fx_volatility_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 21 + 2) {
-            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -468,14 +446,7 @@ void fx_volatility_config_commands::process_set(std::ostream& out,
         fx_volatility_config_read_token(
             req.change.write.dimension, parsed->positionals[next++], "dimension");
         fx_volatility_config_read_token(
-            req.change.write.smile_type, parsed->positionals[next++], "smile_type");
-        fx_volatility_config_read_token(req.change.write.smile_interpolation,
-                                        parsed->positionals[next++],
-                                        "smile_interpolation");
-        fx_volatility_config_read_token(
             req.change.write.deltas, parsed->positionals[next++], "deltas");
-        fx_volatility_config_read_token(
-            req.change.write.smile_delta, parsed->positionals[next++], "smile_delta");
         fx_volatility_config_read_token(
             req.change.write.conventions, parsed->positionals[next++], "conventions");
         fx_volatility_config_read_token(
@@ -498,16 +469,6 @@ void fx_volatility_config_commands::process_set(std::ostream& out,
             req.change.write.base_volatility_1, parsed->positionals[next++], "base_volatility_1");
         fx_volatility_config_read_token(
             req.change.write.base_volatility_2, parsed->positionals[next++], "base_volatility_2");
-        fx_volatility_config_read_token(req.change.write.smile_extrapolation,
-                                        parsed->positionals[next++],
-                                        "smile_extrapolation");
-        fx_volatility_config_read_token(
-            req.change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-        fx_volatility_config_read_token(
-            req.change.write.time_weighting, parsed->positionals[next++], "time_weighting");
-        fx_volatility_config_read_token(req.change.write.butterfly_error_tolerance,
-                                        parsed->positionals[next++],
-                                        "butterfly_error_tolerance");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -562,8 +523,8 @@ void fx_volatility_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 21 + 2) {
-            fail(out) << "Expected " << (change_count * 21 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -576,14 +537,7 @@ void fx_volatility_config_commands::process_put_many(std::ostream& out,
             fx_volatility_config_read_token(
                 change.write.dimension, parsed->positionals[next++], "dimension");
             fx_volatility_config_read_token(
-                change.write.smile_type, parsed->positionals[next++], "smile_type");
-            fx_volatility_config_read_token(change.write.smile_interpolation,
-                                            parsed->positionals[next++],
-                                            "smile_interpolation");
-            fx_volatility_config_read_token(
                 change.write.deltas, parsed->positionals[next++], "deltas");
-            fx_volatility_config_read_token(
-                change.write.smile_delta, parsed->positionals[next++], "smile_delta");
             fx_volatility_config_read_token(
                 change.write.conventions, parsed->positionals[next++], "conventions");
             fx_volatility_config_read_token(
@@ -606,16 +560,6 @@ void fx_volatility_config_commands::process_put_many(std::ostream& out,
                 change.write.base_volatility_1, parsed->positionals[next++], "base_volatility_1");
             fx_volatility_config_read_token(
                 change.write.base_volatility_2, parsed->positionals[next++], "base_volatility_2");
-            fx_volatility_config_read_token(change.write.smile_extrapolation,
-                                            parsed->positionals[next++],
-                                            "smile_extrapolation");
-            fx_volatility_config_read_token(
-                change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-            fx_volatility_config_read_token(
-                change.write.time_weighting, parsed->positionals[next++], "time_weighting");
-            fx_volatility_config_read_token(change.write.butterfly_error_tolerance,
-                                            parsed->positionals[next++],
-                                            "butterfly_error_tolerance");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

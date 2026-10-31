@@ -54,9 +54,6 @@ struct inflation_cap_floor_volatility_config_write {
     std::string extrapolation;
     std::string tenors;
     std::optional<int> settlement_days;
-    std::optional<std::string> cap_strikes;
-    std::optional<std::string> floor_strikes;
-    std::optional<std::string> strikes;
     std::string calendar;
     std::string day_counter;
     std::string business_day_convention;
@@ -350,11 +347,6 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"tenors", &inflation_cap_floor_volatility_config_write::tenors},
         utility::codec::field{"settlement_days",
                               &inflation_cap_floor_volatility_config_write::settlement_days},
-        utility::codec::field{"cap_strikes",
-                              &inflation_cap_floor_volatility_config_write::cap_strikes},
-        utility::codec::field{"floor_strikes",
-                              &inflation_cap_floor_volatility_config_write::floor_strikes},
-        utility::codec::field{"strikes", &inflation_cap_floor_volatility_config_write::strikes},
         utility::codec::field{"calendar", &inflation_cap_floor_volatility_config_write::calendar},
         utility::codec::field{"day_counter",
                               &inflation_cap_floor_volatility_config_write::day_counter},

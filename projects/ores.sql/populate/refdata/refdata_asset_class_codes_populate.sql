@@ -60,7 +60,10 @@ values
      6, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
     (ores_utility_system_tenant_id_fn(), 'bond', 0, 'Bond',
      'Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.',
-     7, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes')
+     7, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'),
+    (ores_utility_system_tenant_id_fn(), 'scripted', 0, 'Scripted',
+     'Scripted products: trades whose payoff is stated as a script rather than as a named product, because the payoff spans asset classes or has no closed form a product element could carry. Covers the generic scripted trade, autocallables, double digital options and performance options, and the parameters each script reads -- its underlyings, its observation dates and the levels it pays at. A scripted trade names the script the engine runs and states the script itself, so its market data is whatever its underlyings need: an equity script observes equities and their volatility surfaces, and a script over several classes observes each of them.',
+     8, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

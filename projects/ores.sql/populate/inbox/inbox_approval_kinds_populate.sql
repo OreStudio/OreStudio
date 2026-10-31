@@ -48,6 +48,17 @@
  * stay visible rather than close in silence. It names no apply workflow either:
  * the market data service applies it through marketdata.v1.ops.withdraw_curve.
  *
+ * A cut authorisation is decided by the function its occasion belongs to, so
+ * the two kinds name different deciders: the end of day one is decided by
+ * Finance, because Finance signs off data the firm produced, and the
+ * verification one by Market Risk, because testing the firm's own marks is that
+ * function's. Neither names a raise permission: the cut kind that points here is
+ * what states the occasion, and the reporting service gates the take. Both
+ * allow a hold, because an asker may be told "not yet", and neither expires
+ * silently: an unanswered cut authorisation leaves no body in use, and the run
+ * that looked for it says so. Neither names an apply workflow: the reporting
+ * service stamps the cut as a role grant is stamped, by reconciliation.
+ *
  * An engine run settings change is decided by the parts the kind names, one for
  * each number-changing group of settings, so the kind's own decide permission
  * reaches none of its deciders and is the Market Risk one because that function
@@ -105,6 +116,18 @@ insert into ores_inbox_approval_kinds_tbl (
      'inbox::approvals:decide_operations',
      null,
      true, true, null, null, null, 1, 40,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'reporting.eod_cut_authorisation', 0, 'End of day cut authorisation',
+     'A person asks for a cut of an end of day occasion to become the body the firm signs off',
+     'inbox::approvals:decide_finance',
+     null,
+     true, false, 14, null, null, 1, 61,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'reporting.ipv_cut_authorisation', 0, 'Verification cut authorisation',
+     'A person asks for an independent price verification cut to become the body the firm tests its marks against',
+     'inbox::approvals:decide_market_risk',
+     null,
+     true, false, 14, null, null, 1, 62,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'reporting.engine_settings_change', 0, 'Engine run settings change',
      'A person proposes a change to a group of engine run settings that moves the numbers a run computes',

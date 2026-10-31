@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 02F43F6D-B21C-4F51-B0E5-C615E62AADE4
+:END:
+#+title: Test calendar arithmetic from a month-end day
+#+description: A date test anchored on a day every month has proves nothing about month arithmetic. Anchor on the 31st, or on the 29th of February, and assert every date the code states is a real date.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A test of month or year arithmetic states its anchor as a day some months do not have, and asserts that every date it produces is a real date.
+
+*Why:* On 2026-10-31 the trade population invented 2026-09-31 and 2026-06-31 because it keeps the day of the month while stepping back from the day it runs. Three tests written that day all passed: they anchored on 2026-01-02, a day every month has, and handed the wire and the store explicit valid dates. The live run anchors on the day it runs, which was the 31st, so the invented day travelled as the absent date and the FX variance swap's window collapsed to one value. The defect was found by the environment that owned the family, not by the tests.
+
+*How to apply:* When writing or reviewing a test whose subject is month or year arithmetic, set the anchor to the 31st and check year_month_day::ok() on every date produced. If the code holds a day to the month's last, say so in the case name or a comment so the next reader knows the anchor is the point.

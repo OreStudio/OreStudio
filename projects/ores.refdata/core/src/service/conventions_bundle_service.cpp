@@ -20,17 +20,19 @@
 #include "conventions_identity.hpp"
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -94,7 +96,7 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
     for (const auto& row : bundle.rows) {
         if (row.family != family)
             continue;
-        const auto decoded = rfl::json::read<Row>(row.payload);
+        const auto decoded = ores::utility::codec::json::try_read<Row>(row.payload);
         if (!decoded)
             throw std::runtime_error("Bundle payload for family \"" + std::string(family) +
                                      "\" does not decode.");
@@ -118,6 +120,11 @@ conventions_bundle conventions_bundle_service::read() {
     // The two part families belong to a central row the bundle must also carry,
     // and the part tables would accept one that names nothing. The central
     // family is read first, because registry order puts it before its parts.
+    //
+    // A row is skipped for one of two reasons: it is not this bundle's kind, or
+    // its central row is not carried. A payload that does not decode cannot
+    // reach here, because the family read refuses an undecodable row before a
+    // bundle is staged.
     std::set<std::string> covered_central;
     for (std::size_t i = 0; i < domain::convention_family_count; ++i) {
         const auto family = std::string(domain::convention_families[i].key);
@@ -127,19 +134,24 @@ conventions_bundle conventions_bundle_service::read() {
             // The shared convention table carries every kind, and this bundle
             // covers one of them.
             if (family == central_family) {
-                const auto decoded = rfl::json::read<domain::convention>(payload);
+                const auto decoded =
+                    ores::utility::codec::json::try_read<domain::convention>(payload);
                 if (!decoded || decoded->identity.kind_code != tenor_basis_swap_kind)
                     continue;
                 covered_central.insert(boost::uuids::to_string(decoded->identity.id));
             }
             if (family == pay_receive_family) {
-                const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
+                const auto decoded =
+                    ores::utility::codec::json::try_read<domain::tenor_basis_swap_pay_receive>(
+                        payload);
                 if (!decoded || !covered_central.contains(
                                     boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             if (family == long_short_family) {
-                const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
+                const auto decoded =
+                    ores::utility::codec::json::try_read<domain::tenor_basis_swap_long_short>(
+                        payload);
                 if (!decoded || !covered_central.contains(
                                     boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;

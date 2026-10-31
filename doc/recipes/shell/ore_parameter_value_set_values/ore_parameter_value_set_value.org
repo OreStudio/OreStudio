@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_set_values add <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <reason> <commentary>
+ore_parameter_value_set_values add <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <canonical_value> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_set_values.put=.
 
 #+name: ore_parameter_value_set_values-add
 #+begin_src ores-shell :tangle ore_parameter_value_set_values-add.ores :exports none
-ore_parameter_value_set_values add __none__ __none__ __none__ __none__ __none__ 0 false system.new_record generated_script
+ore_parameter_value_set_values add __none__ __none__ __none__ __none__ __none__ 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_set_values set <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <reason> <commentary> [--version <n>]
+ore_parameter_value_set_values set <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <canonical_value> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_set_values.put=.
 
 #+name: ore_parameter_value_set_values-set
 #+begin_src ores-shell :tangle ore_parameter_value_set_values-set.ores :exports none
-ore_parameter_value_set_values set __none__ __none__ __none__ __none__ __none__ 0 false system.new_record generated_script
+ore_parameter_value_set_values set __none__ __none__ __none__ __none__ __none__ 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-ore_parameter_value_set_values put-many --count <n> <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <reason> <commentary>
+ore_parameter_value_set_values put-many --count <n> <code> <value_set_code> <value> <label> <description> <display_order> <is_active> <canonical_value> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.ore_parameter_value_set_values.put_many=.
 
 #+name: ore_parameter_value_set_values-put-many
 #+begin_src ores-shell :tangle ore_parameter_value_set_values-put-many.ores :exports none
-ore_parameter_value_set_values put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 false system.new_record generated_script
+ore_parameter_value_set_values put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

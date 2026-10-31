@@ -44,6 +44,22 @@ rest. Nothing reports the shortfall to the person who provisioned it.
 - The booking that failed: trade =9f756808-1bc9-56e1-9644-9f29e145a3d5=, on
   =main= at =aae241ac55=
 
+* Fixed
+
+Fixed on 2026-10-31 by =e65378f4d0= -- *[synthetic,utility] Let a generated date
+be a real date*, merged as PR #4206, environment =festive_dijkstra=. The
+population anchors on the day it runs and steps back by months, keeping the day
+of the month, so an anchor on the 31st asked for 2026-09-31. The reflector wrote
+a date it could not state as the empty string, the store encoded the absent date
+as 0002-11-30 BC, and the variance swap's window collapsed to two equal values,
+which its table refuses. The planner now holds a day to the month's last and the
+reflector refuses an invented date at the first hop.
+
+The three cases below were written before the fix and all passed, because they
+anchored on 2026-01-02 -- a day every month has -- and handed the wire and the
+store explicit valid dates. The lesson is recorded as
+[[proj:doc/llm/memory/test_calendar_arithmetic_from_a_month_end_day.org][Test calendar arithmetic from a month-end day]].
+
 * Where it came from
 
 The row the population books is built by the variance swap arm of the FX

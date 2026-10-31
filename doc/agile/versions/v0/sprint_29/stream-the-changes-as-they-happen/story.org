@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 16667B92-64FB-4BF7-86CA-B5696163EB2E
+:END:
+#+title: Story: Stream the changes as they happen
+#+description: A browser needs to hear about a change when it happens rather than when it next polls. Serve the change stream over the HTTP server: a hub every publisher reaches, a source that waits without holding the thread, the SSE framing, and a keep-alive a proxy will not time out.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A client can follow the changes over one long response, and a quiet market does not look like a dead connection.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- A change published to the hub reaches every open stream.
+- A stream that is not read drops its oldest frames instead of growing without limit.
+- A quiet stream writes a keep-alive comment and does not spin on the queue.
+- A closed subscription ends the stream.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:292BB7CD-24D4-42DA-9525-A1F4C5F88885][Scaffold story: Stream the changes as they happen]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:61DD6C03-CA84-4363-989E-B8D6883E266A][Open the change stream]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Stream the changes as they happen |
+| [[id:DD5C4D99-9E30-4D0F-ACEB-57200AA95285][Coalesce a burst into one frame]] | DONE | 2026-10-31 | 2026-10-31 | A bulk import writes thousands of rows and a stream that sends one frame per row is useless to a screen that redraws a list. Accumulate the changes into a dirty set per tenant, party and entity, and emit at most one frame per entity per tick, listing what changed. |
+| [[id:A8E3F1EE-165F-4671-AF87-5AF4AA65532D][Put the coalesced frames on the stream]] | DONE | 2026-10-31 | 2026-10-31 | The coalescer gathers a burst and the hub fans text to the streams, and nothing joins them. Format a coalesced frame as one event-stream message and pump what a window gathered into every open stream, so an event recorded anywhere reaches a client as one frame per entity. |
+
+* Decisions
+
+* Result
+
+One slice, and the path it proves: a publish reaches every open stream, a slow reader loses its
+oldest frames rather than the server's memory, a quiet stream is kept alive without spinning,
+and a closed subscription ends the body. The hub is empty until the next task fills it.
+
+* Out of scope
+
+-

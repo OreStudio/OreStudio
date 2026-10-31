@@ -26,7 +26,8 @@
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <rfl/json.hpp>
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -37,7 +38,7 @@ void apply_tenor_basis_swap_long_short(const ores::database::context& ctx,
                                        const std::string& payload,
                                        [[maybe_unused]] conventions_apply_result& result) {
     const auto decoded =
-        rfl::json::read<ores::refdata::domain::tenor_basis_swap_long_short>(payload);
+        ores::utility::codec::json::try_read<ores::refdata::domain::tenor_basis_swap_long_short>(payload);
     if (!decoded)
         throw std::runtime_error("Staged conventions payload for family "
                                  "\"tenor_basis_swap_long_short\" does not decode.");
@@ -55,7 +56,7 @@ read_tenor_basis_swap_long_short_payloads(const ores::database::context& ctx) {
     std::vector<std::string> payloads;
     for (const auto& row :
          ores::refdata::repository::tenor_basis_swap_long_short_repository().read_latest(ctx))
-        payloads.push_back(rfl::json::write(row));
+        payloads.push_back(ores::utility::codec::json::write(row));
     return payloads;
 }
 

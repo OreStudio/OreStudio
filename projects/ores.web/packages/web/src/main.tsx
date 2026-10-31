@@ -34,8 +34,8 @@ import './styles.css';
  *
  * The environment is fixed when the process starts, so there is nothing here
  * about choosing where to connect. The providers are the whole of the wiring:
- * one query client, the translations, the session, the bootstrap gate, the
- * environment the deployment serves, and the router. What renders is
+ * one query client, the translations, the palette, the session, the bootstrap
+ * gate, the environment the deployment serves, and the router. What renders is
  * `ConnectedApp`, which is the route table and the gate the story decided on.
  *
  * The router is a data router with one route that takes every address and

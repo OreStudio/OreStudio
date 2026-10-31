@@ -1,0 +1,2 @@
+#TradeId,Type,CashflowNo,LegNo,PayDate,FlowType,Amount,Currency,Notional,PresentValue
+Swap_1,Swap,1,0,2017-03-01,Interest,not-a-figure,EUR,1000.0,99.0

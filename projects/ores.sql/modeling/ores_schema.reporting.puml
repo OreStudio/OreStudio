@@ -32,14 +32,17 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 39
+Tables: 44
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
 note as OtherGroups
 Keys this group states reach into:
+- ores_inbox_approval_kinds_tbl (inbox)
 - ores_inbox_approval_requests_tbl (inbox)
+- ores_refdata_business_centres_tbl (refdata)
+- ores_refdata_parties_tbl (refdata)
 - ores_refdata_regulatory_book_types_tbl (refdata)
 - ores_scheduler_job_definitions_tbl (scheduler)
 - ores_scheduler_job_instances_tbl (scheduler)
@@ -281,6 +284,228 @@ package "reporting" #E0F7FA {
     report_configuration, so several reports share one configuration without
     copying it, and the kind of configuration it is comes from
     configuration_type by foreign key rather than from a text code.
+    end note
+
+    entity ores_reporting_cut_families_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cut_families_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Family Table
+    Reference data table of the families a cut kind belongs to. A family groups
+    the kinds whose body is the same and whose instant comes from the same place.
+    The family fixes the body rule and the source of the instant; a kind inside it
+    fixes the rest. The end of day family holds the ordinary close, the month end
+    and the year end, because all three fix the same four inputs at the same
+    centre's close and differ only in what the occasion covers and how long the cut
+    is kept. A family of one is not a wasted row: it states the body rule and the
+    instant source for every kind that will join it.
+    The families are end_of_day, start_of_day, verification, intraday and
+    consumer. The consumer family is the one whose instant the run supplies, which
+    is the LIVE kind.
+    end note
+
+    entity ores_reporting_cut_gaps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * cut_id : uuid <<FK>>
+        * part_code : text
+        * item : text
+        * party_id : uuid <<FK>>
+        * reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cut_gaps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Gap Table
+    One part of a cut's body that the assembly could not fill: the part, the item
+    inside it and the reason it could not be filled.
+    A cut that fixed the data and omitted a part it could not read would look
+    smaller than it is. The gap list is the answer to that: the body that could not
+    be assembled is a fact a person acts on, and the cut's own page is where the
+    list is read. A take that could not close a gap saves the attempt as an
+    incomplete cut and raises no approval request, because a decider would be asked
+    to sign a body that does not meet the definition.
+    The parts are the four inputs the body holds: the market data, the deal
+    population, the reference data, and the engine and the code.
+    end note
+
+    entity ores_reporting_cut_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * family_code : text <<FK>>
+          approval_kind_code : text <<FK>>
+        * output_is_indicative : boolean
+        * resolution_rule_code : text <<FK>>
+        * retention_months : integer
+        * retention_destination_code : text
+        * legal_hold_default : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cut_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Kind Table
+    +#+updated: 2026-10-31
+    Reference data table of the kinds of cut. A kind is not a sentence in a
+    knowledge page: it is a row a person maintains, because four of the facts it
+    carries are decisions a firm changes and reads back.
+    approval_kind_code is a nullable foreign key to the inbox's own lookup. It is
+    the whole of the authorisation rule: the end of day family's kinds point at
+    reporting.eod_cut_authorisation, whose decider is Finance, the verification
+    kind points at reporting.ipv_cut_authorisation, whose decider is Market Risk,
+    and the start of day, intraday and consumer kinds point at nothing. A screen
+    draws the words from the key's target and a dash where the key is null, so a
+    firm that gives the close to another function changes one approval kind and no
+    cut kind.
+    Nothing a screen prints about authorisation is stored: the signed-or-not a
+    person reads is derived from this column.
+    retention_months states the periods the design fixes: 25 for the ordinary
+    close and the open, 84 for the month end and the verification, 120 for the year
+    end, 3 for the intraday view and 1 for the live view. retention_destination_code
+    names where a cut goes when it leaves the warm tier. No storage tier lookup
+    exists yet, so the column carries a check on the codes this round knows and the
+    archive is a later task.
+    end note
+
+    entity ores_reporting_cut_resolution_rules_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cut_resolution_rules_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Resolution Rule Table
+    Reference data table of the rules a cut kind may name. A report holds a cut
+    selection, and the selection is a rule: the run executes it against the date the
+    report covers, the report's scope and the scope's rates centre, and the answer is
+    one concrete cut or a refusal.
+    A rule is read from the kind at the moment of the resolution and never copied
+    onto a cut or a report, because a report resolving today must follow today's
+    rule and not the rule in force when the report was defined.
+    The rules are stated on
+    [[id:F6362451-D569-4609-97A3-F1C785AAAF02][the cut design page]], section
+    *The resolution*. A kind whose occasion no rule can resolve names the_cut_named,
+    and the report reaches its cuts by pinning one rather than by selecting a kind.
+    end note
+
+    entity ores_reporting_cuts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * kind_code : text <<FK>>
+        * party_id : uuid <<FK>>
+        * scope_code : text
+        * business_centre_code : text <<FK>>
+        * timepoint : timestamptz
+        * take_ordinal : integer
+        * timepoint_timezone : text
+          cut_time_code : text
+          market_data_snapshot_id : uuid <<FK>>
+          deal_population_id : uuid <<FK>>
+          reference_data_version : text
+          engine_version : text
+          code_version : text
+        * taken_by : text
+          taken_at : timestamptz
+        * requires_authorisation : boolean
+          approval_request_id : uuid <<FK>>
+        * approved_by : text
+          approved_at : timestamptz
+          refused_at : timestamptz
+        * refusal_comment : text
+        * retention_months : integer
+        * retention_destination_code : text
+        * legal_hold : boolean
+        * output_is_indicative : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cuts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Table
+    The record of one cut: a body of data fixed at one timepoint, the four inputs
+    the valuation reads, the gaps the assembly could not fill, and the acts that
+    made it. A report's run resolves its selection to a cut and prices from the
+    body the cut names, so a result is reproduced by naming its cut rather than by
+    re-reading a rule.
+    The state a reader sees is a function of these facts and is stored nowhere, as
+    the published set's state is. Draft when no taking instant holds and no gap
+    stands; incomplete when no taking instant holds and a gap stands; taken when the
+    body is fixed, the kind requires an authorisation and none is recorded; in use
+    when the body is fixed and the kind requires none; authorised when an approval
+    is recorded; refused when a refusal is recorded; superseded when a later cut of
+    the same kind and scope holds its place.
+    The label a person quotes is derived from the kind, the scope and the timepoint,
+    and the take ordinal where a body is taken more than once for one occasion:
+    EOD.ACME-LONDON.2026-10-06 and EOD.ACME-LONDON.2026-10-06.2. A live cut
+    carries its instant to the second instead of an ordinal. No column holds the
+    label.
+    The retention is a copy and not a read: a cut takes the kind's retention_months,
+    retention_destination_code and legal_hold_default when it is taken, so a
+    later change to the kind does not move the retention of a body already fixed.
+    The indicative mark is a second copy for the same reason: a cut records whether a
+    result priced from it is indicative, taken from its kind at the take, because the
+    mark is a fact about the body and not about its state.
+    Nothing removes a cut today; the archive is a later task.
     end note
 
     entity ores_reporting_engine_settings_building_tbl <<temporal>> #C6F0D8 {
@@ -688,6 +913,7 @@ package "reporting" #E0F7FA {
         * description : text
         * display_order : integer
         * is_active : boolean
+          canonical_value : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -882,6 +1108,8 @@ package "reporting" #E0F7FA {
         * post_processing : text
         * is_official : boolean
           regulatory_book_type : text <<FK>>
+          cut_kind_code : text <<FK>>
+          cut_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1093,6 +1321,10 @@ package "reporting" #E0F7FA {
           price_note : text
           engine_settings_id : uuid <<FK>>
           engine_settings_version : integer
+          cut_id : uuid <<FK>>
+          cut_label : text
+          cut_kind_code : text
+          cut_timepoint : timestamptz
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1346,6 +1578,10 @@ ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_market_bin
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_ore_parameters_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
+ores_reporting_cuts_tbl ||--o{ ores_reporting_cut_gaps_tbl : "has"
+ores_reporting_cut_families_tbl ||--o{ ores_reporting_cut_kinds_tbl : "has"
+ores_reporting_cut_resolution_rules_tbl ||--o{ ores_reporting_cut_kinds_tbl : "has"
+ores_reporting_cut_kinds_tbl ||--o{ ores_reporting_cuts_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_building_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_changes_tbl : "has"
 ores_reporting_engine_settings_groups_tbl ||--o{ ores_reporting_engine_settings_changes_tbl : "has"
@@ -1360,6 +1596,7 @@ ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configuration
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
+ores_reporting_cut_kinds_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
 ores_reporting_report_instances_tbl ||--o{ ores_reporting_report_error_events_tbl : "has"
 ores_reporting_report_error_scopes_tbl ||--o{ ores_reporting_report_error_events_tbl : "has"
 ores_reporting_report_instance_kinds_tbl ||--o{ ores_reporting_report_instances_tbl : "has"

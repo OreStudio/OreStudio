@@ -480,7 +480,7 @@ Replace it with a trie built once at startup from a generated manifest:
 #+begin_src cpp
 struct route_entry {
     std::string_view method;          // interned, compared as an enum
-    std::string_view path_template;   // "/api/v1/refdata/currencies/{iso_code}"
+    std::string_view path_template;   // "/api/v1/reference-data/currencies/{iso_code}"
     std::uint16_t segment_count;
     auth_profile profile;             // anonymous | session | bearer
     body_limit body;
@@ -688,6 +688,12 @@ and it is one direction, which is all the design needs.
   healthy stream is never idle for more than 15 s; a stream that cannot be
   written to for the stall deadline is closed, because that is a dead client and
   not a quiet market.
+
+The stream above needs a body source that can wait. The synchronous =body_source=
+serves a file, which always has its next piece; an event stream does not, and reading it
+synchronously would hold the connection's thread. =awaitable_body_source= is the same
+contract with a =co_await= in it, and the session takes the loop that suits whichever source
+the response names.
 
 *File transfer.* The grid already moves every package, input, output and log
 through this server over =/api/v1/storage/{bucket}/{key}=, with a capability
@@ -1139,6 +1145,13 @@ belong in the contract.
 | the built bundle and its assets, =/health=, =/metrics= | transport capability | =static= and =server= |
 | =GET /api/refdata/:resource= | not an API: a router that hides the schema | dies; the generated collection per resource already exists |
 | a payload carrying =displayColour=, =isButtonVisible=, =formattedLabel= | a rendering concern, not an API | the client |
+
+Three paths in the row above are targets and not what answers today. The views behind them
+are =GET /api/overview=, =GET /api/blotter= and =GET /api/requests=, which a screen calls
+now; the inventory at =doc/knowledge/architecture/http_route_inventory.org= names every
+view, the route it answers on, and the client module that calls it. So the port moves a
+working view behind the same request, and the published namespace arrives as a versioned
+change after the cutover rather than as part of it.
 
 *A composed view is legitimate only when it satisfies all four of these.* Without
 them it is the old BFF again, whatever it is called.

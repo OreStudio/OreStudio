@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B5492D6C-7C18-4723-BA47-232AEAA13314
+:END:
+#+title: Compose every generated registrar or two gates refuse it
+#+description: A new codegen entity generates an event registrar and a history-provider registrar that nothing calls until a composition point names them.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :codegen:entity:gate:memory:project:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+A new entity is commissioned only when ores.<component>'s event_registrar.cpp calls its event mapping and registrar.cpp calls its history provider.
+
+*Why:* The generated registrar compiles and builds with nothing calling it, so no test notices; two composition gates then refuse it, and the entity publishes no event and answers no history call.
+
+*How to apply:* After regenerating a new entity, run check_history_registrar_composition.py --fix for the history side, add the event mapping beside its family in the component's event_registrar.cpp, then re-run both checks.

@@ -27,6 +27,7 @@
 
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_proxy_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
@@ -49,15 +50,24 @@
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/curve_volatility_constant.hpp"
+#include "ores.refdata.api/domain/curve_volatility_curve.hpp"
+#include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_kind.hpp"
+#include "ores.refdata.api/domain/curve_volatility_proxy_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
@@ -95,6 +105,7 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::default_curve_config> default_curves;
     std::vector<ores::refdata::domain::commodity_curve_config> commodity_curves;
     std::vector<ores::refdata::domain::fx_volatility_config> fx_volatilities;
+    std::vector<ores::refdata::domain::fx_volatility_smile> fx_volatility_smiles;
     std::vector<ores::refdata::domain::yield_volatility_config> yield_volatilities;
     std::vector<ores::refdata::domain::base_correlation_config> base_correlations;
     std::vector<ores::refdata::domain::curve_correlation_config> correlations;
@@ -102,10 +113,20 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::cds_volatility_config> cds_volatilities;
     std::vector<ores::refdata::domain::cds_volatility_term> cds_volatility_terms;
     std::vector<ores::refdata::domain::curve_volatility_config> volatility_configs;
+    std::vector<ores::refdata::domain::curve_volatility_kind> volatility_kinds;
+    std::vector<ores::refdata::domain::curve_volatility_constant> volatility_constants;
+    std::vector<ores::refdata::domain::curve_volatility_curve> volatility_curves;
+    std::vector<ores::refdata::domain::curve_volatility_strike_surface> volatility_strike_surfaces;
+    std::vector<ores::refdata::domain::curve_volatility_delta_surface> volatility_delta_surfaces;
+    std::vector<ores::refdata::domain::curve_volatility_proxy_surface> volatility_proxy_surfaces;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_config>
         inflation_cap_floor_volatilities;
+    std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
+        inflation_volatility_strikes;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;
+    std::vector<ores::refdata::domain::swaption_proxy_config> swaption_proxy_configs;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
+    std::vector<ores::refdata::domain::cap_floor_proxy_config> cap_floor_proxy_configs;
     std::vector<ores::refdata::domain::curve_parametric_smile> parametric_smiles;
     std::vector<ores::refdata::domain::curve_parametric_smile_parameter>
         parametric_smile_parameters;

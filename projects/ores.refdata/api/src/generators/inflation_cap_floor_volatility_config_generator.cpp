@@ -54,9 +54,6 @@ generate_synthetic_inflation_cap_floor_volatility_config(
     r.extrapolation = std::string("Y");
     r.tenors = std::string("1Y");
     r.settlement_days = std::nullopt;
-    r.cap_strikes = std::nullopt;
-    r.floor_strikes = std::nullopt;
-    r.strikes = std::nullopt;
     r.calendar = std::string("TARGET");
     r.day_counter = std::string("A365");
     r.business_day_convention = std::string("Following");

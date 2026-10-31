@@ -46,8 +46,7 @@ namespace ores::refdata::domain {
  * curve_parametric_smile.
  *
  * A ProxyConfig builds the surface from another one; it is one per entry, so
- * its fields are the proxy_ columns, and has_proxy_config says whether the
- * entry wrote it.
+ * it is a row of swaption_proxy_config and the entry holds none of its fields.
  */
 struct swaption_volatility_config final {
     /**
@@ -165,36 +164,6 @@ struct swaption_volatility_config final {
      * @brief The tag the surface's quotes are named with.
      */
     std::optional<std::string> quote_tag;
-
-    /**
-     * @brief Whether the entry writes a ProxyConfig element.
-     */
-    bool has_proxy_config = false;
-
-    /**
-     * @brief The swaption volatility a proxy surface is built from.
-     */
-    std::optional<std::string> proxy_source_curve_id;
-
-    /**
-     * @brief The short swap index of the proxy's source.
-     */
-    std::optional<std::string> proxy_source_short_swap_index_base;
-
-    /**
-     * @brief The swap index of the proxy's source.
-     */
-    std::optional<std::string> proxy_source_swap_index_base;
-
-    /**
-     * @brief The short swap index of the proxy's target.
-     */
-    std::optional<std::string> proxy_target_short_swap_index_base;
-
-    /**
-     * @brief The swap index of the proxy's target.
-     */
-    std::optional<std::string> proxy_target_swap_index_base;
 
     /**
      * @brief Username of the person who last modified this swaption volatility config.

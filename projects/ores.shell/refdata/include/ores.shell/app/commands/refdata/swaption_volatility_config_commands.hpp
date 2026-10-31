@@ -91,9 +91,7 @@ public:
      * <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter>
      * <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base>
      * <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag>
-     * <has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base>
-     * <proxy_source_swap_index_base> <proxy_target_short_swap_index_base>
-     * <proxy_target_swap_index_base> <reason> <commentary>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,9 +102,7 @@ public:
      * <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter>
      * <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base>
      * <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag>
-     * <has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base>
-     * <proxy_source_swap_index_base> <proxy_target_short_swap_index_base>
-     * <proxy_target_swap_index_base> <reason> <commentary> [--version <n>]
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -117,9 +113,7 @@ public:
      * <interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift>
      * <day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors>
      * <short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors>
-     * <smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id>
-     * <proxy_source_short_swap_index_base> <proxy_source_swap_index_base>
-     * <proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> <commentary>
+     * <smile_spreads> <quote_tag> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

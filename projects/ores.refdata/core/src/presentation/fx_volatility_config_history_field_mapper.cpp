@@ -43,11 +43,7 @@ render_fx_volatility_config_fields(const domain::fx_volatility_config& v) {
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Dimension", .value = v.dimension});
-    fields.push_back({.name = "Smile Type", .value = v.smile_type.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Smile Interpolation", .value = v.smile_interpolation.value_or(std::string{})});
     fields.push_back({.name = "Deltas", .value = v.deltas.value_or(std::string{})});
-    fields.push_back({.name = "Smile Delta", .value = v.smile_delta.value_or(std::string{})});
     fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
     fields.push_back({.name = "Expiries", .value = v.expiries.value_or(std::string{})});
     fields.push_back({.name = "FX Spot ID", .value = v.fx_spot_id.value_or(std::string{})});
@@ -62,15 +58,6 @@ render_fx_volatility_config_fields(const domain::fx_volatility_config& v) {
         {.name = "Base Volatility 1", .value = v.base_volatility_1.value_or(std::string{})});
     fields.push_back(
         {.name = "Base Volatility 2", .value = v.base_volatility_2.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Smile Extrapolation", .value = v.smile_extrapolation.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Time Interpolation", .value = v.time_interpolation.value_or(std::string{})});
-    fields.push_back({.name = "Time Weighting", .value = v.time_weighting.value_or(std::string{})});
-    fields.push_back({.name = "Butterfly Error Tolerance",
-                      .value = v.butterfly_error_tolerance ?
-                                   std::to_string(*v.butterfly_error_tolerance) :
-                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

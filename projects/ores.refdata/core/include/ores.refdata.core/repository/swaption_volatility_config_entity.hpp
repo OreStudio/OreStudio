@@ -73,12 +73,6 @@ struct swaption_volatility_config_entity {
     std::optional<std::string> smile_swap_tenors;
     std::optional<std::string> smile_spreads;
     std::optional<std::string> quote_tag;
-    bool has_proxy_config = false;
-    std::optional<std::string> proxy_source_curve_id;
-    std::optional<std::string> proxy_source_short_swap_index_base;
-    std::optional<std::string> proxy_source_swap_index_base;
-    std::optional<std::string> proxy_target_short_swap_index_base;
-    std::optional<std::string> proxy_target_swap_index_base;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -115,16 +109,6 @@ struct swaption_volatility_config_entity {
                query_builder::bind("smile_swap_tenors", &e::smile_swap_tenors) |
                query_builder::bind("smile_spreads", &e::smile_spreads) |
                query_builder::bind("quote_tag", &e::quote_tag) |
-               query_builder::bind("has_proxy_config", &e::has_proxy_config) |
-               query_builder::bind("proxy_source_curve_id", &e::proxy_source_curve_id) |
-               query_builder::bind("proxy_source_short_swap_index_base",
-                                   &e::proxy_source_short_swap_index_base) |
-               query_builder::bind("proxy_source_swap_index_base",
-                                   &e::proxy_source_swap_index_base) |
-               query_builder::bind("proxy_target_short_swap_index_base",
-                                   &e::proxy_target_short_swap_index_base) |
-               query_builder::bind("proxy_target_swap_index_base",
-                                   &e::proxy_target_swap_index_base) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

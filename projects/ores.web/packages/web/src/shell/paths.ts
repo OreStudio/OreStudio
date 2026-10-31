@@ -53,7 +53,7 @@ export const PATHS = {
     rescue: '/organisation/rescue',
     operations: '/operations',
     signIns: '/operations/sign-ins',
-    marketDataSources: '/operations/market-data-sources',
+    marketDataFeeds: '/operations/market-data-feeds',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
     curveBlueprints: '/market-data/curve-blueprints',
@@ -76,11 +76,6 @@ export const PATHS = {
 /** The address of one public publisher's record. */
 export function publicRatesPublisherPath(code: string): string {
     return `${PATHS.publicRates}/${encodeURIComponent(code)}`;
-}
-
-/** The address of one market data source's record. */
-export function marketDataSourcePath(name: string): string {
-    return `${PATHS.marketDataSources}/${encodeURIComponent(name)}`;
 }
 
 /** The address of the documents of one convention kind. */

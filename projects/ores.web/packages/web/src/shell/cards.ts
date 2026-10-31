@@ -293,13 +293,13 @@ export const CARDS = {
         permission: ['iam::sessions:read', 'iam::login_info:read'],
         screenTitleKey: 'auditSignIns.title',
     },
-    marketDataSources: {
-        titleKey: 'operations.screens.sources',
-        bodyKey: 'operations.screens.sourcesBody',
-        to: PATHS.marketDataSources,
+    marketDataFeeds: {
+        titleKey: 'operations.screens.feeds',
+        bodyKey: 'operations.screens.feedsBody',
+        to: PATHS.marketDataFeeds,
         icon: 'server',
-        permission: 'marketdata::market_data_sources:read',
-        screenTitleKey: 'operations.sources.title',
+        permission: 'marketdata::feeds:read',
+        screenTitleKey: 'operations.feeds.title',
     },
     versions: {
         titleKey: 'operations.screens.versions',
@@ -417,7 +417,7 @@ export const AREA_CARDS = {
         'publishedCurves',
         'curveEvolution',
     ],
-    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataSources'],
+    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataFeeds'],
     reporting: [
         'reports',
         'pricingEngines',

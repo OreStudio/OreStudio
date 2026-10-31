@@ -479,18 +479,10 @@ package "dq_staging" #F3E5F5 {
           flat_first_period : text
           use_effecive_volatility : text
           use_effective_volatility : text
-        * has_proxy_config : boolean
-          proxy_source_curve_id : text <<FK>>
-          proxy_source_index : text
-          proxy_source_rate_computation_period : text
-          proxy_target_index : text
-          proxy_target_rate_computation_period : text
-          proxy_target_on_cap_settlement_days : integer
-          proxy_scaling_factor : double
     }
 
     note right of ores_dq_cap_floor_volatility_configs_artefact_tbl
-    The settings of one CapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the CapFloorVolatilities section: the cap and floor surface's tenors and strikes, the index and discount curve it is stripped with, and how it interpolates. Its Report is a row of curve_report_configuration, its BootstrapConfig a row of curve_bootstrap_config and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling kept for old documents, and UseEffectiveVolatility; each has its own column so either round trips. - Artefact Table
+    The settings of one CapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the CapFloorVolatilities section: the cap and floor surface's tenors and strikes, the index and discount curve it is stripped with, and how it interpolates. Its Report is a row of curve_report_configuration, its BootstrapConfig a row of curve_bootstrap_config and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of cap_floor_proxy_config and the entry holds none of its fields. The schema allows both UseEffeciveVolatility, a misspelling kept for old documents, and UseEffectiveVolatility; each has its own column so either round trips. - Artefact Table
     end note
 
     entity ores_dq_cashflow_types_artefact_tbl  #F7E5FF {
@@ -1400,39 +1392,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
-        * kind : text
         * is_wrapped : boolean
-          priority : integer
-          quote_type : text
-          volatility_type : text
-          exercise_type : text
-          strikes : text
-          expiries : text
-          time_interpolation : text
-          strike_interpolation : text
-          extrapolation : text
-          time_extrapolation : text
-          time_extrapolation_variance : text
-          strike_extrapolation : text
-          calendar : text
-          quote : text
-          interpolation : text
-          enforce_monotone_variance : boolean
-          delta_type : text
-          atm_type : text
-          atm_delta_type : text
-          put_deltas : text
-          call_deltas : text
-          future_price_correction : text
-          proxy_volatility_curve : text
-          fx_volatility_curve : text
-          correlation_curve : text
-          cds_volatility_curve : text
-        * position : integer
     }
 
     note right of ores_dq_curve_volatility_configs_artefact_tbl
-    One way a volatility entry's surface may be built. CDS, equity and commodity volatilities each name one or more volatility configurations, each with an optional priority; ORE builds the first that succeeds. kind names the element the document wrote, and the columns that kind uses are set. An entry writes a kind either directly or inside a VolatilityConfig element, which holds at most one of each kind; is_wrapped says which. The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface, DeltaSurface and ProxySurface. A Curve kind's quotes are rows of curve_quote on the entry, in the list Curve or VolatilityConfig/Curve. MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface appear in no corpus document, and the mapper refuses them. - Artefact Table
+    The volatility block of one ORE curve entry: the holder its kinds are listed in. ORE writes either one bare kind element on the entry, or a VolatilityConfig element holding up to one of each kind in an xs:all; is_wrapped says which form this block was written in. The kinds themselves are rows of curve_volatility_kind, and each kind's own fields are the row of that kind's part. The row carries no kind and no field of any kind. Every one of those facts belongs to a kind or to a kind's part, and a row that carried them as well would state each one twice. - Artefact Table
     end note
 
     entity ores_dq_default_curve_configs_artefact_tbl  #F7E5FF {
@@ -1776,10 +1740,7 @@ package "dq_staging" #F3E5F5 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
         * dimension : text
-          smile_type : text
-          smile_interpolation : text
           deltas : text
-          smile_delta : text
           conventions : text
           expiries : text
           fx_spot_id : text <<FK>>
@@ -1790,14 +1751,10 @@ package "dq_staging" #F3E5F5 {
           fx_index_tag : text
           base_volatility_1 : text
           base_volatility_2 : text
-          smile_extrapolation : text
-          time_interpolation : text
-          time_weighting : text
-          butterfly_error_tolerance : double
     }
 
     note right of ores_dq_fx_volatility_configs_artefact_tbl
-    The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The smile is not here. ORE makes every smile element optional, so a flat row cannot say that a smile surface has a smile and an ATM one does not; that condition is the presence of a fx_volatility_smile row. dimension stays, because it also decides how deltas is read. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
     end note
 
     entity ores_dq_gmm_components_artefact_tbl  #F7E5FF {
@@ -1877,9 +1834,6 @@ package "dq_staging" #F3E5F5 {
         * extrapolation : text
         * tenors : text
           settlement_days : integer
-          cap_strikes : text
-          floor_strikes : text
-          strikes : text
         * calendar : text
         * day_counter : text
         * business_day_convention : text
@@ -1893,7 +1847,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
-    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors and strikes, with the index and curves it is built from. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
+    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors, with the index and curves it is built from. The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes and Strikes -- as alternatives, so they are rows of inflation_cap_floor_volatility_strikes, one per axis the entry states, rather than three nullable columns that leave the reader to work out which one a row meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
     end note
 
     entity ores_dq_inflation_curve_configs_artefact_tbl  #F7E5FF {
@@ -2720,16 +2674,10 @@ package "dq_staging" #F3E5F5 {
           smile_swap_tenors : text
           smile_spreads : text
           quote_tag : text
-        * has_proxy_config : boolean
-          proxy_source_curve_id : text <<FK>>
-          proxy_source_short_swap_index_base : text
-          proxy_source_swap_index_base : text
-          proxy_target_short_swap_index_base : text
-          proxy_target_swap_index_base : text
     }
 
     note right of ores_dq_swaption_volatility_configs_artefact_tbl
-    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. - Artefact Table
+    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row per curve_definition in the SwaptionVolatilities section: the surface's dimension and volatility type, the option and swap tenors of its ATM matrix and smile, and the swap indices it is built on. Its Report is a row of curve_report_configuration and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of swaption_proxy_config and the entry holds none of its fields. - Artefact Table
     end note
 
     entity ores_dq_tags_artefact_tbl  #F7E5FF {

@@ -32,10 +32,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <optional>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -264,8 +264,8 @@ struct bond_future_option_terms final {
     std::string knocks_out;
 };
 
-[[nodiscard]] inline bond_product construct_bond_future_option(
-    const bond_future_option_terms& terms) {
+[[nodiscard]] inline bond_product
+construct_bond_future_option(const bond_future_option_terms& terms) {
     using namespace bond_rules;
     require_text("A bond future option", "its option type", terms.option_type);
     auto product = construct_bond_future(terms.future);
@@ -341,8 +341,8 @@ struct bond_trs_terms final {
     require_text("A bond total return swap", "the return it pays", terms.return_type);
     require_text("A bond total return swap", "the leg that funds it", terms.funding_leg_type);
     if (!terms.funding_rate.has_value() && terms.funding_index.empty())
-        throw bond_product_error(
-            "A bond total return swap states a funding rate or the index it funds at, not neither.");
+        throw bond_product_error("A bond total return swap states a funding rate or the index it "
+                                 "funds at, not neither.");
 
     bond_product product;
     product.row.instrument.identity.trade_type_code = "BondTRS";
@@ -412,7 +412,8 @@ struct callable_bond_terms final {
     using namespace bond_rules;
     require_common("A callable bond", terms.common);
     if (terms.calls.empty())
-        throw bond_product_error("A callable bond states at least one date its issuer may call it.");
+        throw bond_product_error(
+            "A callable bond states at least one date its issuer may call it.");
 
     bond_product product;
     product.row.instrument.identity.trade_type_code = "CallableBond";
@@ -449,12 +450,12 @@ struct convertible_bond_terms final {
     std::vector<bond_conversion_target_terms> targets;
 };
 
-[[nodiscard]] inline bond_product construct_convertible_bond(
-    const convertible_bond_terms& terms) {
+[[nodiscard]] inline bond_product construct_convertible_bond(const convertible_bond_terms& terms) {
     using namespace bond_rules;
     require_common("A convertible bond", terms.common);
     if (terms.targets.empty())
-        throw bond_product_error("A convertible bond states at least one target it may convert into.");
+        throw bond_product_error(
+            "A convertible bond states at least one target it may convert into.");
 
     bond_product product;
     product.row.instrument.identity.trade_type_code = "ConvertibleBond";

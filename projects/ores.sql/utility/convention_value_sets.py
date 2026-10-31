@@ -47,21 +47,12 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import ore_aliases as aliases  # noqa: E402
 import ore_schema_types as schema_types  # noqa: E402
 
 TERMS = os.path.join(HERE, "convention_terms.json")
 
 CATALOGUES = {
-    "refdata.business_day_convention": {
-        "name": "Business day conventions",
-        "relation": "ores_refdata_business_day_convention_catalogue_v",
-        "description": "The business day conventions reference data holds.",
-    },
-    "refdata.day_counter": {
-        "name": "Day counters",
-        "relation": "ores_refdata_day_counter_catalogue_v",
-        "description": "The day counters reference data holds.",
-    },
     "refdata.currency": {
         "name": "Currencies",
         "relation": "ores_refdata_currency_catalogue_v",
@@ -70,9 +61,16 @@ CATALOGUES = {
 }
 
 CATALOGUE_OF = {
-    "business_day_convention": "refdata.business_day_convention",
-    "day_counter": "refdata.day_counter",
     "currency": "refdata.currency",
+}
+
+# The kinds ORE's reader converts before the store sees a value, and the compiled
+# table that states which renderings mean one fact. The set states the renderings
+# as data, so a document may write any of them and a configuration holds the one
+# form the set names.
+RENDERED_OF = {
+    "business_day_convention": "business_day_conventions",
+    "day_counter": "day_counters",
 }
 
 # The kinds whose parser states no list, and the set each takes instead.
@@ -140,6 +138,7 @@ def parser_set(parser, entry):
                            f"meaning {meaning}.",
             "order": len(values),
         })
+    stated(values, parser)
     label = words(parser[len("parse"):])
     return {
         "name": label,
@@ -149,6 +148,29 @@ def parser_set(parser, entry):
         "is_ordered": False,
         "values": values,
     }
+
+
+def stated(values, parser):
+    """State the canonical form of a list's values, and prove it agrees with the code.
+
+    A parser whose reader converts several renderings of one fact names a compiled
+    table, and the set states what that table states: one form a configuration
+    holds, and a canonical value on every other rendering. The check runs while
+    both statements exist, so neither can drift from the other unobserved.
+    """
+    table = aliases.PARSER_TABLE.get(parser)
+    if not table:
+        return
+    for value in values:
+        canonical = aliases.canonical_of(table, value["value"])
+        if canonical is None:
+            raise ValueError(f"{parser} accepts {value['value']!r}, and the {table} "
+                             "table states no canonical form for it")
+        if canonical != value["value"]:
+            value["canonical_value"] = canonical
+    problems = aliases.compare(values, table)
+    if problems:
+        raise ValueError(f"{parser}: " + "; ".join(problems))
 
 
 # The kinds the tree states for a term the extractor typed another way, and the
@@ -202,39 +224,77 @@ def override_of(element, term):
     return found
 
 
+_DRAWN = None
+
+
+def is_drawn(term):
+    """Whether a convention mapper carries this term, so a generated set is used."""
+    global _DRAWN
+    if _DRAWN is None:
+        import generate_convention_kind_terms as kinds
+        rows, problems = kinds.rows()
+        if problems:
+            raise ValueError("\n".join(problems))
+        _DRAWN = {row["xpath"] for row in rows}
+    return address_of(term) in _DRAWN
+
+
 def set_of(term, parsers, element=None):
     """The set code of one term, and the parser whose list it is, if any."""
     override, _ = override_of(element, term)
     kind = override or term["type"]
+    if kind in RENDERED_OF:
+        return "convention." + kind, aliases.rendered_set(RENDERED_OF[kind], parsers)
     if kind in CATALOGUE_OF:
         return "convention." + kind, None
     if kind in TYPE_SETS:
         return TYPE_SETS[kind], None
     parser = LIST_OF.get(kind, term["parser"])
     if parser and parser in parsers:
-        return parser_set_code(parser), parser
+        return parser_set_code(parser), parser_set(parser, parsers[parser])
     if kind in WITHOUT_LIST:
-        stated = schema_rule(term)
+        stated = schema_set(term)
         if stated:
-            return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
+            return stated
         return WITHOUT_LIST[kind], None
     raise ValueError(f"{term['source_ref']}: {term['name']} is read by {term['parser']}, "
                      f"which states no list, and its kind {kind} names no set")
 
 
-def schema_rule(term):
-    """The kind the ORE schema declares for a term the parser read as a string.
+def schema_set(term):
+    """The set the ORE schema states for one term, and its row when generated.
 
-    The parser says what the engine accepts and is the first authority. Where it
-    reads a term as a plain string without saying more, the schema still declares
-    a type, and a term declared xs:integer or bool is not free text.
+    A built-in type is one of the sets this family already holds. A named simple
+    type the schema restricts states more: the values it enumerates, the pattern a
+    value must match, or the bounds it allows. Such a set is generated only for a
+    term a mapper carries, because a set nothing names and no row carries is dead
+    data.
     """
+    found = schema_types.rule("conventions.xsd", address_of(term))
+    if not found:
+        return None
+    kind, type_name = found
+    stated = schema_types.restriction(type_name)
+    # A kind the family already holds a set for takes that set unless the schema
+    # narrows it further with bounds: a flag is a flag, and the static set accepts
+    # the Y and N that ORE also writes.
+    bounded = bool(stated and (stated.get("minimum") is not None
+                               or stated.get("maximum") is not None))
+    if kind in SCHEMA_TYPE_SETS and not bounded:
+        return TYPE_SETS[SCHEMA_TYPE_SETS[kind]], None
+    if not stated:
+        return None
+    if not is_drawn(term):
+        return ("text", None)
+    return schema_types.stated_set(kind, type_name, "convention.")
+
+
+def address_of(term):
+    """The term's address in the conventions schema."""
     leaf = term["name"]
     if term.get("list_item"):
         leaf = f"{term['name']}/{term['list_item']}"
-    found = schema_types.rule("conventions.xsd",
-                              "/Conventions/" + "/".join(term["path"] + [leaf]))
-    return found[0] if found else None
+    return "/Conventions/" + "/".join(term["path"] + [leaf])
 
 
 def set_of_leaf(term, element):
@@ -265,12 +325,16 @@ def data():
             "catalogue_code": catalogue,
             "is_ordered": False,
         }
-    links = {}
+    links, built = {}, set()
     for element, convention in sorted(extracted["conventions"].items()):
         for term in convention["terms"]:
-            code, parser = set_of(term, parsers, element)
-            if parser and code not in sets:
-                sets[code] = parser_set(parser, parsers[parser])
+            code, generated = set_of(term, parsers, element)
+            if generated:
+                built.add(code)
+                if code in sets and sets[code] != generated:
+                    raise ValueError(f"{code}: two sources state a different set "
+                                     "under one code")
+                sets.setdefault(code, generated)
             key = f"{element}|{term['name']}"
             if links.get(key, code) != code:
                 raise ValueError(f"{key} would take two sets, {links[key]} and {code}")
@@ -279,4 +343,5 @@ def data():
     sets = {code: entry for code, entry in sets.items() if code in named}
     catalogues = {code: entry for code, entry in CATALOGUES.items()
                   if any(s.get("catalogue_code") == code for s in sets.values())}
-    return {"catalogues": catalogues, "sets": sets, "links": links}
+    return {"catalogues": catalogues, "sets": sets, "links": links,
+            "generated": built}

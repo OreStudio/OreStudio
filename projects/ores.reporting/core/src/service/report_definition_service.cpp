@@ -117,6 +117,8 @@ report_definition_to_domain(const messaging::report_definition_write& write) {
     v.post_processing = write.post_processing;
     v.is_official = write.is_official;
     v.regulatory_book_type = write.regulatory_book_type;
+    v.cut_kind_code = write.cut_kind_code;
+    v.cut_id = write.cut_id;
     return v;
 }
 
@@ -141,6 +143,12 @@ messaging::list_report_definitions_response report_definition_service::list_repo
         request.filter->party_id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->cut_kind_code_one_of &&
+        request.filter->cut_kind_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "cut_kind_code_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {

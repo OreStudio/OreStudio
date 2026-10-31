@@ -26,25 +26,28 @@ One table states which ORE element a leaf column is and which value set states i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | The map states the rule each leaf's parser gives it, a set says how many values a document writes, and both guards read the map. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The 5 leaves no ORE source read names and the schema does not type: three are built from a variable and two the extractor cannot reach. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- One table keys a leaf by =(schema_name, element_name)=, and it is the only
+- One table keys a leaf by its address, =(schema_name, xpath)=, and it is the only
   statement of which value set governs a leaf.
 - Every projection column that carries a leaf is attached to that map, so both
   guards read the map and the parameter contract is no longer a prerequisite of
-  enforcement.
+  enforcement. Done: both guards join the child and the map.
 - Every row of the three tables is represented in the new map, and a test counts
-  the leaves and the columns before and after.
+  the leaves and the columns before and after. Done:
+  =reporting_ore_element_map_test.sql= states the 480 leaves, the 482 columns, and
+  that neither side holds a row the other does not.
 - Both guards' pgTAP suites pass unchanged.
 - The leaves the maps name and the contract does not describe are listed by the
-  map, each with a decision: a value set, or =text=.
+  map, each with a decision: a value set, or =text=. Done: every one of the 480
+  names the authority that decided it, and none is left unaccounted.
 
 * Discovery
 
@@ -478,6 +481,149 @@ and =Qualifier=. The schema types none of the five, so text is the honest answer
 rather than a gap. The 13 leaves whose schema type the reader does not resolve are
 listed by the evidence report; they all state a rule from another authority.
 
+* A list states what one item is
+
+A set of cardinality =many= stated how many values a leaf holds and not what one
+may be, so 16 leaves said "a list of anything". The ORE user guide states the
+item for most of them in the sentence it describes the leaf with: Tenors and
+AtmTenors are "a comma separated list of valid tenor strings", Terms is "a comma
+separated list of tenors", SmileOptionTenors are "option expiries, in period
+form", CapStrikes and FloorStrikes are the strikes, DetachmentPoints are "any
+positive number less than one", and SmileSpreads are strike spreads.
+
+=curve_value_sets.py= now states that per name, and each entry carries the reason
+and the guide or code line it came from, so the map's row for a tenor list reads
+=ore_guide= and cites the line. Twelve leaves gained an item rule: eight take
+=curve.period_list= and four =curve.number_list=.
+
+Four keep =curve.list=, and their reason says why rather than leaving the gap
+unstated. A delta is written =25D=, which is neither a number nor a period; an
+expiry may be a tenor, a date or a wildcard =*=, which the guide states; and a
+pillar date is a date, for which this tree has no kind yet. A date set is the
+missing piece, and it is the next one.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that take a period list | 0 | 8 |
+| leaves that take a number list | 5 | 9 |
+| leaves that take a list with no item rule | 16 | 4 |
+
+The seeded corpus holds real tenor and strike lists, and it publishes under the
+new rules unchanged, which is what proves the item rule is not too narrow.
+
+* The schema states the values it enumerates
+
+An enumerated simple type in the schema names its values, so the rule for a leaf
+of that type is a set of them and not a shape one value must have. The schema
+states 142 such types, and 33 mapped leaves had text where one of them applied:
+=Dimension= with 4 values, =VolatilityType= with 3, =Extrapolation= with 4, the
+commodity future weekday with 7, the default curve's =Type= with 8, and the
+segment types of a yield curve.
+
+=ore_schema_types.py= now reads them, and =curve_value_sets.py= and
+=convention_value_sets.py= generate one enumerated set per type, named
+=curve.<type>= or =convention.<type>=, with the values in the schema's order and
+the file and line the schema states them at.
+
+Two rules keep the sets honest. A set the schema states is generated only for a
+leaf a column carries, because a set nothing names and no row carries is dead
+data; that is what the curve value-set test's orphan assertion catches. And the
+schema lists the empty string where a leaf may be left unset, which the guard
+treats as absent rather than as a choice, so the set states the choices and the
+unset case stays an empty field.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 273 | 306 |
+| text, and the ORE source says why | 207 | 174 |
+| text, because no ORE source read names the leaf | 5 | 4 |
+| sets | 229 | 245 |
+
+The scheme also closed one of the five untyped leaves: =DefaultCurve/Type= is
+declared =defaultCurveType= in the schema, which enumerates eight values, so the
+map states them without any ORE source reading the leaf.
+
+* No leaf is left unread
+
+Four leaves were still unread, and all four were the same shape: ORE names the
+element from a label the class passes to its base constructor, so no read spells
+the name. The swaption class passes =("Swap", "SwaptionVolatility", "SWAPTION",
+"")= and the yield class =("Bond", "YieldVolatility", "BOND_OPTION",
+"Qualifier")=, and =GenericYieldVolatilityCurveConfig::fromXML= reads
+=underlyingLabel_ + "Tenors"= and =qualifierLabel_=.
+
+=extract_curve_terms.py= now reads those two forms and expands them once the
+class's labels are known: one term per label, named as the document spells it.
+Swaptions gain =SwapTenors= and =SmileSwapTenors=, yield curves gain =BondTenors=,
+=SmileBondTenors= and =Qualifier=, and the empty qualifier label states no leaf,
+because the swaption class never reads one.
+
+The three tenor leaves take =curve.period_list=, citing the guide where it states
+the leaf in period form and the class constructor where it does not. =Qualifier=
+states =text= with the reason the parser gives: the engine reads it and never
+parses it.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 306 | 309 |
+| text, and the authority says why | 174 | 171 |
+| leaves that name no authority at all | 4 | 0 |
+| leaves the ORE schema types alone | 2 | 3 |
+| leaves the ORE source reads as terms | 508 | 513 |
+
+=UNREAD_ALLOWED= is now zero, so the check fails the moment a projection column
+carries a leaf no authority can state a rule for. Coverage is complete in the
+sense the task set out to prove: every leaf the map carries names the authority
+that decided it.
+
+Three leaves take their rule from the ORE schema because no ORE source read names
+them at all: =UseEffeciveVolatility=, which ORE spells that way and reads
+elsewhere, =DefaultCurve/Type=, whose projection path the schema types but no read
+matches, and =IndexInterpolated=. Their rows say the schema is the only authority
+that speaks, so the difference between "the parser read it" and "the schema typed
+it" is read rather than assumed.
+
+* The schema states a pattern and a range too
+
+A schema simple type states more than an enumeration. It restricts its base to a
+pattern, or to a range of values, and both are rules the model can hold:
+
+- =date= states the pattern ORE's date parser accepts, and its own comment says
+  it "is not super strict, e.g. 2016-17-39 would pass, but it catches most
+  errors";
+- =calendar= states a pattern naming every calendar ORE resolves, including the
+  joint form =US,MWK= that ORE writes by repeating the group;
+- =dayOfMonth= restricts =xs:integer= to 1 through 31.
+
+So =ore_schema_types.py= now reads the restriction facets: base, pattern,
+=minInclusive= and =maxInclusive=. A built-in type keeps the family's static set,
+because a flag is a flag and the static set accepts the =Y= and =N= that ORE also
+writes; a named type the family has no static set for, or one that narrows a kind
+with bounds, generates a set of its own.
+
+Sixteen leaves gained a rule: the thirteen calendars the projection carries, the
+base correlation's =StartDate=, and the two commodity future day-of-month leaves.
+=PillarDates= gained an item rule too, =curve.date_list=, so a list of dates is
+stated rather than left as a list of anything.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 309 | 325 |
+| text, and the authority says why | 171 | 155 |
+| leaves that take a list of dates | 0 | 1 |
+| sets | 245 | 249 |
+
+** A pattern is anchored
+
+The guard matches a pattern anywhere in the value, so a seeded pattern is wrapped
+in =^(...)$=. Without the anchor =date= would admit =x2024-01-31y=, and a pattern
+that means "the whole value" would be read as "somewhere in the value". The test
+states both directions: a date the pattern allows is in, one it refuses is out.
+
+The schema's date pattern admits month 13, and that is the schema's own statement
+about its strictness rather than a gap in the model. The test says so, so a reader
+does not mistake the rule for calendar validation.
+
 * Plan
 
 ** Read the three maps
@@ -560,9 +706,24 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR    | Title |
+|-------+-------|
+| #4167 | Measure the leaf maps and design the one that replaces them |
+| #4170 | Seed the element map and the columns that carry it |
+| #4172 | Publish the currencies a fresh database's publish test reads |
+| #4175 | Key the element map by the leaf's address, and read it from both guards |
+| #4186 | Census the leaf rules the map inherits |
+| #4188 | State the type three convention modifiers are read as |
+| #4190 | State the catalogue on the index conventions' vocabulary fields |
+| #4194 | Collapse the two free-text sets into one |
+| #4199 | Take a leaf's rule from the ORE parser, not the contract |
+| #4207 | State how many values a set governs, and read ORE's list forms |
+| #4208 | Let the ORE schema state the rule where the parser states none |
+| #4213 | State what one item of a list may be |
+| #4217 | Take the values the ORE schema enumerates |
+| #4219 | Read the leaves ORE names after a class label |
+| #4225 | Take the pattern and the range the ORE schema states |
+| #4226 | State the map's shape as a test |
 
 * Review
 
@@ -571,3 +732,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The map is one table keyed by a leaf's address, its child names the projection
+column that carries the leaf, and both leaf guards join the pair, so the parameter
+contract is no longer a prerequisite of enforcement.
+
+Every one of the 480 leaves states a rule or the reason it has none, and each row
+names the authority that decided it: the ORE parser for 207 rules and 171 text
+decisions, the ORE user guide for 14, and the ORE schema for 88. No leaf is left
+unaccounted, and =UNREAD_ALLOWED= is zero so one cannot arrive quietly.
+
+The value set states what one value may be by its kind, how many the document
+writes by its cardinality, and the values, pattern, bounds or catalogue it draws
+on. A set is generated from the parser's map or the schema's restriction wherever
+a source states it, and curated with its reason where a person does.
+
+What the work found that the plan did not expect: the contract was the wrong
+source for a leaf's rule, a set could not say how many values it governed, the
+extractor could not read a list or a name a class builds, and the schema was an
+authority nobody consulted. Each is a case of a rule that lived in prose, in a
+name, or in another table rather than in the model.
+
+What is left belongs to the next task. A setting link is keyed by =(scope, name)=
+and so cannot state two rules for two leaves of one name: the equity volatility
+curve's =Expiries= is a list of dates and the report grid beside it is a list of
+periods, and only the drawn leaf is linked. No drawn leaf disagrees today, so no
+data is wrong; the key is what has to change before a screen can draw both.
+

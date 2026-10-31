@@ -8,12 +8,12 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-scripted-family
-#+pr:
+#+pr: 4263
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ ACME's books hold scripted trades: ScriptedTrade, Autocallable_01, DoubleDigital
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -43,9 +43,28 @@ ACME's books hold scripted trades: ScriptedTrade, Autocallable_01, DoubleDigital
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Give the taxonomy the class, then plan the family under it.
+
+The seven classes the catalogue states are the classes a config may name, and a
+scripted payoff belonged to none of them. Filing it under =equity= would be a
+half-truth — the codes are equity payoffs written as scripts — and it would also
+put two planners on one class, because the equity family already answers there.
+So the catalogue gains a =scripted= class, and everything that reads it follows
+from the model: the code row, its display order, its prose and its badge.
+
+The planner states the three codes the ORE projection writes an element for:
+the generic scripted trade, the double digital option and the performance
+option. =Autocallable_01= routes like the others and is named out of scope: the
+projection has no writer for its data element, so the trade would book and then
+export as an empty product.
+
+The parameters are the document's own members rather than the population's
+keys, because the projection writes every key it does not recognise as an element
+the schema does not hold. That is what the round-trip case in the ORE suite
+proves: the three types carry their parameters back through the export and the
+import.
+
+ACME charters a cross asset solutions book and one config, six trades.
 
 * Measurements
 
@@ -59,7 +78,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The population a fresh tenant holds | 190 trades, six of them scripted | =select count(distinct id) from ores_trading_trades_tbl= | branch head |
+| The scripted trades | 2 ScriptedTrade, 2 DoubleDigitalOption, 2 PerformanceOption_01 | =select trade_type_code, count(distinct trade_id) from ores_trading_scripted_instruments_tbl group by 1 order by 1= | branch head |
+| The class share | 6 of 190 = 3.2%, against the weights page's 3% | the two counts above | branch head |
+| The class the config names | =scripted=, one of the eight the catalogue now states | =select code from ores_refdata_asset_class_codes_tbl order by display_order= | branch head |
+| The export round trip | three types, ten assertions | =publish/bin/ores.ore.core.tests "a_scripted_trade_states_what_the_population_writes_and_reads_it_back"= | branch head |
+| Suites | synthetic.core 2451/98, ore.core 484508/456, both green | =publish/bin/<suite>= | branch head |
+| The provisioning run | completed, all nine steps | the provisioning script | branch head |
 
 * Notes
 
@@ -78,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4263][#4263]] | [synthetic,refdata] Populate the scripted family |
 
 * Review
 
@@ -87,3 +112,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scripted family books, exports and reads back.
+
+Measured on a fresh tenant: six scripted trades, two of each of the three codes
+the projection writes an element for, in a population of 190 — 3.2 per cent of it
+against the weight's three. The provisioning run completes all nine steps.
+
+Decisions this task settles:
+
+- *The class is new, and the taxonomy is where it goes.* The seven classes could
+  not carry a scripted payoff, and the two honest alternatives were both wrong:
+  filing the family under =equity= puts two planners on one class, and naming a
+  class the catalogue does not hold is what the store's own validator refuses.
+  The catalogue gains =scripted=, and the seed SQL, the badge and the docs that
+  read it are generated from that one declaration.
+- *One code is out of scope, by name.* =Autocallable_01= is routed and has no
+  writer in the ORE projection, so it would book and export as an empty product.
+  The task states that rather than booking it.
+- *The parameters are the document's, not the generator's.* A key the projection
+  does not recognise is written as an element the schema has no member for, so
+  the population states exactly the members the document holds — and a
+  round-trip case in the ORE suite keeps it that way.
+
+The family prices as far as its underlyings let it: a scripted trade reads the
+equity surfaces and spots the equity family already needs, and the engine runs the
+script the row names. The class states no market data of its own, which is the
+point of a script that observes other classes.
+
+The asset class the taxonomy gained is a model change, so the three SQL files
+generated from it are in this diff; nothing else in refdata is regenerated, and
+the curve-configuration drift main already carries is untouched.

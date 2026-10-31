@@ -64,8 +64,7 @@ TEST_CASE("notification_operations_commands_registers_raise_notification", "[com
     BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
-TEST_CASE("notification_operations_commands_raise_notification_requires_a_session",
-          "[commands]") {
+TEST_CASE("notification_operations_commands_raise_notification_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -97,8 +96,7 @@ TEST_CASE("notification_operations_commands_raise_notification_reports_the_expec
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("notification_operations_commands_raise_notification_reads_named_values",
-          "[commands]") {
+TEST_CASE("notification_operations_commands_raise_notification_reads_named_values", "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto session = signed_in_session();
@@ -121,8 +119,7 @@ TEST_CASE("notification_operations_commands_raise_notification_reads_named_value
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("notification_operations_commands_raise_notification_refuses_a_bare_name",
-          "[commands]") {
+TEST_CASE("notification_operations_commands_raise_notification_refuses_a_bare_name", "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto session = signed_in_session();

@@ -69,9 +69,9 @@ system_generator_offers(const feed_kind_registry& registry,
 
     // The id a provider's own notation writes, and the subject its tick travels on. The simulator
     // never spells an id itself.
-    const auto target_of = [&adapter_id, &faults, &provider_code](
-                               const vendor::quote_description& description)
-        -> std::optional<adapter_target> {
+    const auto target_of =
+        [&adapter_id, &faults, &provider_code](
+            const vendor::quote_description& description) -> std::optional<adapter_target> {
         return adapter_target_of(adapter_id, provider_code, description, faults);
     };
 
@@ -91,14 +91,15 @@ system_generator_offers(const feed_kind_registry& registry,
             continue;
 
         if (candidate.fx_pair && target.row.kind->kind == fx_spot_feed_kind) {
-            const auto written = target_of(
-                vendor::fx_spot_quote{candidate.fx_pair->first, candidate.fx_pair->second,
-                                      notation->primary_side()});
+            const auto written = target_of(vendor::fx_spot_quote{
+                candidate.fx_pair->first, candidate.fx_pair->second, notation->primary_side()});
             if (!written)
                 continue;
             const auto adapter = *written;
             out.push_back(generator_offer{
-                .id = adapter.id, .group = {}, .make = [&registry, &build, target, adapter, adapter_for_build] {
+                .id = adapter.id,
+                .group = {},
+                .make = [&registry, &build, target, adapter, adapter_for_build] {
                     auto outcome = target.row.candidate.build_input(adapter_for_build);
                     if (!outcome.input)
                         throw std::runtime_error(outcome.skip_reason);

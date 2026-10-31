@@ -57,9 +57,12 @@ begin
     perform ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class_bond', 'Bond', 'Bond asset class.',
         '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 56);
+    perform ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class_scripted', 'Scripted', 'Scripted asset class.',
+        '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57);
     perform ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'Asset Class',
-        'Top-level product classification codes (fx, interest_rates, credit, equity, commodity, inflation, bond), shown on instrument_code and asset_class_code.', 30);
+        'Top-level product classification codes (fx, interest_rates, credit, equity, commodity, inflation, bond, scripted), shown on instrument_code and asset_class_code.', 30);
     perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'fx', 'asset_class_fx');
     perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -74,4 +77,6 @@ begin
         'asset_class', 'inflation', 'asset_class_inflation');
     perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'bond', 'asset_class_bond');
+    perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'asset_class', 'scripted', 'asset_class_scripted');
 end $$;

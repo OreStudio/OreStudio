@@ -40,6 +40,7 @@ export interface OreParameterValueSetValue {
     description: string;
     display_order: number;
     is_active: boolean;
+    canonical_value: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

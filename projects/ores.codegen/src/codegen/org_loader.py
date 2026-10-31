@@ -1409,6 +1409,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     fm = doc.frontmatter
     for k in (
         "brief", "entity_singular", "entity_plural", "entity_title",
+        "http_area",
     ):
         if k in fm:
             de[k] = fm[k]
@@ -5649,7 +5650,11 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
     plural = entity.get("entity_plural", "")
     singular_words = singular.replace("_", " ")
     plural_words = plural.replace("_", " ")
-    base = f"/api/v1/{component}/{plural}"
+    # The area is the published namespace (design section 11.2), so a component
+    # rename cannot move a URL. A model that states none keeps its component,
+    # which is what every route answers on today.
+    area = (entity.get("http_area") or "").strip() or component
+    base = f"/api/v1/{area}/{plural}"
 
     routes: list[dict[str, Any]] = []
     for command in plan["commands"]:

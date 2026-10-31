@@ -87,9 +87,7 @@ void wire::expect_size(std::span<const std::byte> in, std::size_t size, std::str
                " bytes, not " + std::to_string(size));
 }
 
-void wire::expect_min_size(std::span<const std::byte> in,
-                           std::size_t size,
-                           std::string_view type) {
+void wire::expect_min_size(std::span<const std::byte> in, std::size_t size, std::string_view type) {
     if (in.size() < size)
         refuse("A " + std::string(type) + " value has " + std::to_string(in.size()) +
                " bytes, fewer than the " + std::to_string(size) + " it states");

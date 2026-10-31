@@ -27,6 +27,7 @@ message, and no family of conventions has a type here.
 #+begin_src cpp :name includes
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_proxy_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
@@ -49,15 +50,24 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/curve_volatility_constant.hpp"
+#include "ores.refdata.api/domain/curve_volatility_curve.hpp"
+#include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_kind.hpp"
+#include "ores.refdata.api/domain/curve_volatility_proxy_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
@@ -155,6 +165,11 @@ message, and no family of conventions has a type here.
 :cpp_type: std::vector<ores::refdata::domain::fx_volatility_config>
 :END:
 
+*** fx_volatility_smiles
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::fx_volatility_smile>
+:END:
+
 *** yield_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::yield_volatility_config>
@@ -190,9 +205,44 @@ message, and no family of conventions has a type here.
 :cpp_type: std::vector<ores::refdata::domain::curve_volatility_config>
 :END:
 
+*** volatility_kinds
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_kind>
+:END:
+
+*** volatility_constants
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_constant>
+:END:
+
+*** volatility_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_curve>
+:END:
+
+*** volatility_strike_surfaces
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_strike_surface>
+:END:
+
+*** volatility_delta_surfaces
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_delta_surface>
+:END:
+
+*** volatility_proxy_surfaces
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_proxy_surface>
+:END:
+
 *** inflation_cap_floor_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::inflation_cap_floor_volatility_config>
+:END:
+
+*** inflation_volatility_strikes
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
 :END:
 
 *** swaption_volatilities
@@ -200,9 +250,19 @@ message, and no family of conventions has a type here.
 :cpp_type: std::vector<ores::refdata::domain::swaption_volatility_config>
 :END:
 
+*** swaption_proxy_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swaption_proxy_config>
+:END:
+
 *** cap_floor_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::cap_floor_volatility_config>
+:END:
+
+*** cap_floor_proxy_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cap_floor_proxy_config>
 :END:
 
 *** parametric_smiles

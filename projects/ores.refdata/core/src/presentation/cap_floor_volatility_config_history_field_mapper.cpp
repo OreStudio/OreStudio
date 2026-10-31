@@ -89,24 +89,6 @@ render_cap_floor_volatility_config_fields(const domain::cap_floor_volatility_con
                       .value = v.use_effecive_volatility.value_or(std::string{})});
     fields.push_back({.name = "Use Effective Volatility",
                       .value = v.use_effective_volatility.value_or(std::string{})});
-    fields.push_back({.name = "Has Proxy Config", .value = v.has_proxy_config ? "true" : "false"});
-    fields.push_back({.name = "Proxy Source Curve ID",
-                      .value = v.proxy_source_curve_id.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Proxy Source Index", .value = v.proxy_source_index.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Source Rate Computation Period",
-                      .value = v.proxy_source_rate_computation_period.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Proxy Target Index", .value = v.proxy_target_index.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Target Rate Computation Period",
-                      .value = v.proxy_target_rate_computation_period.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Target On Cap Settlement Days",
-                      .value = v.proxy_target_on_cap_settlement_days ?
-                                   std::to_string(*v.proxy_target_on_cap_settlement_days) :
-                                   std::string{}});
-    fields.push_back({.name = "Proxy Scaling Factor",
-                      .value = v.proxy_scaling_factor ? std::to_string(*v.proxy_scaling_factor) :
-                                                        std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

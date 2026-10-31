@@ -72,6 +72,21 @@ std::vector<std::string> report_operations_split_list_token(const std::string& v
     return parts;
 }
 
+/**
+ * @brief Read a boolean token, which the shell spells out as a word.
+ */
+bool parse_flag(const std::string& value, bool& out) {
+    if (value.empty() || value == "false") {
+        out = false;
+        return true;
+    }
+    if (value == "true") {
+        out = true;
+        return true;
+    }
+    return false;
+}
+
 }
 
 void report_operations_operations_commands::register_commands(cli::Menu& root_menu,
@@ -204,6 +219,15 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
             process_get_next_fire(std::ref(out), std::ref(session), std::move(args));
         },
         "get-next-fire <definition_ids>");
+
+    menu->Insert(
+        "resolve-cut",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_resolve_cut(std::ref(out), std::ref(session), std::move(args));
+        },
+        "resolve-cut <report_definition_id> <covered_date> <scope_code> <business_centre_code> "
+        "[--preview <v>] [--market_data_snapshot_id <v>] [--deal_population_id <v>] "
+        "[--reference_data_version <v>] [--engine_version <v>] [--code_version <v>]");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -1161,6 +1185,95 @@ void report_operations_operations_commands::process_get_next_fire(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::reporting::messaging::get_next_fire_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_resolve_cut(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating resolve-cut request.";
+
+    using request_type = ores::reporting::messaging::resolve_cut_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run resolve-cut." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "preview", .requires_value = true, .default_value = ""},
+        {.name = "market_data_snapshot_id", .requires_value = true, .default_value = ""},
+        {.name = "deal_population_id", .requires_value = true, .default_value = ""},
+        {.name = "reference_data_version", .requires_value = true, .default_value = ""},
+        {.name = "engine_version", .requires_value = true, .default_value = ""},
+        {.name = "code_version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 4;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.report_definition_id = ores::shell::app::from_token<boost::uuids::uuid>(
+            parsed->positionals[next++], "report_definition_id");
+        req.covered_date = parsed->positionals[next++];
+        req.scope_code = parsed->positionals[next++];
+        req.business_centre_code = parsed->positionals[next++];
+        if (const auto& raw_preview = parsed->flag("preview"); !raw_preview.empty()) {
+            if (!parse_flag(raw_preview, req.preview)) {
+                fail(out) << "preview must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+        if (const auto& raw_market_data_snapshot_id = parsed->flag("market_data_snapshot_id");
+            !raw_market_data_snapshot_id.empty()) {
+            req.market_data_snapshot_id = raw_market_data_snapshot_id;
+        }
+        if (const auto& raw_deal_population_id = parsed->flag("deal_population_id");
+            !raw_deal_population_id.empty()) {
+            req.deal_population_id = raw_deal_population_id;
+        }
+        if (const auto& raw_reference_data_version = parsed->flag("reference_data_version");
+            !raw_reference_data_version.empty()) {
+            req.reference_data_version = raw_reference_data_version;
+        }
+        if (const auto& raw_engine_version = parsed->flag("engine_version");
+            !raw_engine_version.empty()) {
+            req.engine_version = raw_engine_version;
+        }
+        if (const auto& raw_code_version = parsed->flag("code_version");
+            !raw_code_version.empty()) {
+            req.code_version = raw_code_version;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::resolve_cut_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::resolve_cut_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::resolve_cut_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

@@ -87,33 +87,27 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas>
-     * <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id>
-     * <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1>
-     * <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting>
-     * <butterfly_error_tolerance> <reason> <commentary>
+     * @brief add <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id>
+     * <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag>
+     * <base_volatility_1> <base_volatility_2> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas>
-     * <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id>
-     * <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1>
-     * <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting>
-     * <butterfly_error_tolerance> <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <dimension> <deltas> <conventions> <expiries>
+     * <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter>
+     * <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <dimension> <smile_type>
-     * <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id>
-     * <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag>
-     * <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation>
-     * <time_weighting> <butterfly_error_tolerance> <reason> <commentary>
+     * @brief put-many --count <n> <id> <curve_definition_id> <dimension> <deltas> <conventions>
+     * <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter>
+     * <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

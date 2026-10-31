@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 2858EF0B-6DDE-5D4A-A93F-A8AE186B4438
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cuts commands from the shell?
+#+description: Every command the cuts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cuts:
+
+This file documents the cuts resource at the shell, one section per command. Every command is a subcommand of =cuts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4A409D84-090D-5D3B-A870-59356259CA9D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.list=.
+
+#+name: cuts-list
+#+begin_src ores-shell :tangle cuts-list.ores :exports none
+cuts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6E930DCE-8D2A-5B10-9221-A15386DDE349
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts get <id>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.get=.
+
+#+name: cuts-get
+#+begin_src ores-shell :tangle cuts-get.ores :exports none
+cuts get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A758DB81-A478-5F54-93A8-9FEE3C586209
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.get_many=.
+
+#+name: cuts-get-many
+#+begin_src ores-shell :tangle cuts-get-many.ores :exports none
+cuts get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-kind-code=
+:PROPERTIES:
+:ID: 2B8D8FBB-0E92-5EFC-91F6-D58EC3FF4C7A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts by-kind-code <kind_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.list_by_kind_code=.
+
+#+name: cuts-by-kind-code
+#+begin_src ores-shell :tangle cuts-by-kind-code.ores :exports none
+cuts by-kind-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E8D1D242-1CBD-55C1-9C23-AE161AC338E9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts_versions.list=.
+
+#+name: cuts-versions
+#+begin_src ores-shell :tangle cuts-versions.ores :exports none
+cuts versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 115B5CE0-DCE9-5978-B46A-53B7D084D631
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.cuts_versions.get=.
+
+#+name: cuts-version
+#+begin_src ores-shell :tangle cuts-version.ores :exports none
+cuts version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

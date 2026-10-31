@@ -40,8 +40,14 @@ namespace ores::refdata::domain {
  *
  * The settings of one InflationCapFloorVolatility entry of a curveconfig.xml,
  * one row per curve_definition in the InflationCapFloorVolatilities section:
- * a zero coupon or year on year inflation cap and floor surface over tenors and
- * strikes, with the index and curves it is built from. Its Report is a row of
+ * a zero coupon or year on year inflation cap and floor surface over tenors, with
+ * the index and curves it is built from.
+ *
+ * The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes
+ * and Strikes -- as alternatives, so they are rows of
+ * inflation_cap_floor_volatility_strikes, one per axis the entry states, rather
+ * than three nullable columns that leave the reader to work out which one a row
+ * meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of
  * curve_report_configuration and its BootstrapConfig a row of
  * curve_bootstrap_config, both keyed to the entry.
  */
@@ -101,21 +107,6 @@ struct inflation_cap_floor_volatility_config final {
      * @brief The number of settlement days.
      */
     std::optional<int> settlement_days;
-
-    /**
-     * @brief The cap strikes, as ORE's comma separated text.
-     */
-    std::optional<std::string> cap_strikes;
-
-    /**
-     * @brief The floor strikes, as ORE's comma separated text.
-     */
-    std::optional<std::string> floor_strikes;
-
-    /**
-     * @brief The strikes of a volatility quoted surface, as ORE's comma separated text.
-     */
-    std::optional<std::string> strikes;
 
     /**
      * @brief The surface's calendar, as the document spells it.

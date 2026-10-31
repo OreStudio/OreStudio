@@ -485,8 +485,9 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{
-            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
+        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
+                                               return std::make_shared<failing_generator>();
+                                           }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -719,7 +720,10 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers = [containers](const auto&) { return containers(); }});
+        .containers =
+            [containers](const auto&) {
+                return containers();
+            }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -816,7 +820,8 @@ svc::feed_kind_candidate
 curve_candidate(const std::string& id,
                 const boost::uuids::uuid& container,
                 std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars,
-                std::function<svc::feed_build_outcome(const ores::synthetic::feed::feed_adapter&)> build_input) {
+                std::function<svc::feed_build_outcome(const ores::synthetic::feed::feed_adapter&)>
+                    build_input) {
     svc::feed_kind_candidate c;
     c.feed_config_id = id;
     c.container_id = container;
@@ -1078,11 +1083,11 @@ TEST_CASE("a curve publishes only where the ingest listens",
 
     // A pillar that serves an adapter travels on the adapter's ingress, which is the family the
     // market data ingest maps, stores and delivers.
-    const auto serving = make({{.start_tenor_code = "SPOT",
-                                .end_tenor_code = "3M",
-                                .target = {.id = id,
-                                           .subject = domain::adapter_ingress_subject(
-                                               adapter_id, id.external_id)}}});
+    const auto serving = make(
+        {{.start_tenor_code = "SPOT",
+          .end_tenor_code = "3M",
+          .target = {.id = id,
+                     .subject = domain::adapter_ingress_subject(adapter_id, id.external_id)}}});
     CHECK(serving.published_subject() ==
           domain::adapter_ingress_subject(adapter_id, id.external_id));
     CHECK(domain::ingest_consumes(serving.published_subject()));
@@ -1095,8 +1100,7 @@ TEST_CASE("a curve publishes only where the ingest listens",
     CHECK_FALSE(domain::ingest_consumes(domain::feed_display_subject_for("bloomberg-a")));
 }
 
-TEST_CASE("a_feed_quotes_the_id_its_provider_writes",
-          "[simulator_adapter][adapter][subjects]") {
+TEST_CASE("a_feed_quotes_the_id_its_provider_writes", "[simulator_adapter][adapter][subjects]") {
     namespace vendor = ores::marketdata::vendor;
     // The one place a feed and the simulator both take a vendor id from: the notation of the
     // provider, with the subject the ingest consumes.

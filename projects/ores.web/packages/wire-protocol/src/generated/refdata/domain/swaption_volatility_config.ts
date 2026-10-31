@@ -54,12 +54,6 @@ export interface SwaptionVolatilityConfig {
     smile_swap_tenors: string | null;
     smile_spreads: string | null;
     quote_tag: string | null;
-    has_proxy_config: boolean;
-    proxy_source_curve_id: string | null;
-    proxy_source_short_swap_index_base: string | null;
-    proxy_source_swap_index_base: string | null;
-    proxy_target_short_swap_index_base: string | null;
-    proxy_target_swap_index_base: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

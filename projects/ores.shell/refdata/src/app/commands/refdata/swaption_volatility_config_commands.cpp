@@ -148,9 +148,7 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "<output_volatility_type> <model_shift> <output_shift> <day_counter> <calendar> "
         "<business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base> "
         "<swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag> "
-        "<has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base> "
-        "<proxy_source_swap_index_base> <proxy_target_short_swap_index_base> "
-        "<proxy_target_swap_index_base> <reason> <commentary>");
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -161,10 +159,7 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "<extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter> "
         "<calendar> <business_day_convention> <option_tenors> <swap_tenors> "
         "<short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> "
-        "<smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id> "
-        "<proxy_source_short_swap_index_base> <proxy_source_swap_index_base> "
-        "<proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> <commentary> "
-        "[--version <n>]");
+        "<smile_spreads> <quote_tag> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -175,10 +170,7 @@ void swaption_volatility_config_commands::register_commands(cli::Menu& root_menu
         "<interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift> "
         "<day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors> "
         "<short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> "
-        "<smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id> "
-        "<proxy_source_short_swap_index_base> <proxy_source_swap_index_base> "
-        "<proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> "
-        "<commentary>");
+        "<smile_spreads> <quote_tag> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -373,8 +365,8 @@ void swaption_volatility_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 25 + 2) {
-            fail(out) << "Expected " << (25 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -422,23 +414,6 @@ void swaption_volatility_config_commands::process_add(std::ostream& out,
             req.change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
         swaption_volatility_config_read_token(
             req.change.write.quote_tag, parsed->positionals[next++], "quote_tag");
-        swaption_volatility_config_read_token(
-            req.change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_curve_id,
-                                              parsed->positionals[next++],
-                                              "proxy_source_curve_id");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_short_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_source_short_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_source_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_target_short_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_target_short_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_target_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_target_swap_index_base");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -481,8 +456,8 @@ void swaption_volatility_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 26 + 2) {
-            fail(out) << "Expected " << (26 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 20 + 2) {
+            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -531,23 +506,6 @@ void swaption_volatility_config_commands::process_set(std::ostream& out,
             req.change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
         swaption_volatility_config_read_token(
             req.change.write.quote_tag, parsed->positionals[next++], "quote_tag");
-        swaption_volatility_config_read_token(
-            req.change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_curve_id,
-                                              parsed->positionals[next++],
-                                              "proxy_source_curve_id");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_short_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_source_short_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_source_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_source_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_target_short_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_target_short_swap_index_base");
-        swaption_volatility_config_read_token(req.change.write.proxy_target_swap_index_base,
-                                              parsed->positionals[next++],
-                                              "proxy_target_swap_index_base");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -602,8 +560,8 @@ void swaption_volatility_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 26 + 2) {
-            fail(out) << "Expected " << (change_count * 26 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 20 + 2) {
+            fail(out) << "Expected " << (change_count * 20 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -654,23 +612,6 @@ void swaption_volatility_config_commands::process_put_many(std::ostream& out,
                 change.write.smile_spreads, parsed->positionals[next++], "smile_spreads");
             swaption_volatility_config_read_token(
                 change.write.quote_tag, parsed->positionals[next++], "quote_tag");
-            swaption_volatility_config_read_token(
-                change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-            swaption_volatility_config_read_token(change.write.proxy_source_curve_id,
-                                                  parsed->positionals[next++],
-                                                  "proxy_source_curve_id");
-            swaption_volatility_config_read_token(change.write.proxy_source_short_swap_index_base,
-                                                  parsed->positionals[next++],
-                                                  "proxy_source_short_swap_index_base");
-            swaption_volatility_config_read_token(change.write.proxy_source_swap_index_base,
-                                                  parsed->positionals[next++],
-                                                  "proxy_source_swap_index_base");
-            swaption_volatility_config_read_token(change.write.proxy_target_short_swap_index_base,
-                                                  parsed->positionals[next++],
-                                                  "proxy_target_short_swap_index_base");
-            swaption_volatility_config_read_token(change.write.proxy_target_swap_index_base,
-                                                  parsed->positionals[next++],
-                                                  "proxy_target_swap_index_base");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

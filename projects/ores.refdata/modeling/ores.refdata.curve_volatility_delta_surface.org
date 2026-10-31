@@ -1,0 +1,293 @@
+:PROPERTIES:
+:ID: 4C4D6135-7ECB-44CD-82C1-06002AEAAAB4
+:END:
+#+title: ores.refdata.curve_volatility_delta_surface
+#+description: Codegen entity model for the refdata =curve_volatility_delta_surface= part: the fields ORE's DeltaSurface states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_volatility_delta_surface
+#+entity_plural: curve_volatility_delta_surfaces
+#+entity_title: Curve Volatility Delta Surface
+#+brief: The delta and expiry grid a DeltaSurface kind states.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+ORE's =volatilityDeltaSurfaceConfig= states a grid of deltas against expiries: the
+delta type, the ATM type and the ATM delta type that name what the grid's points
+mean, the put and call deltas, and how the grid interpolates and extrapolates.
+Those are the kind's own fields; the four terms every kind may state and the
+=priority= are on =curve_volatility_kind=, and a row of this part exists only when
+the entry holds a kind of this type.
+
+Seven of this part's columns name the same things =curve_volatility_strike_surface=
+names: the expiries and the six ways the grid interpolates and extrapolates. They
+are stated in both because a part mirrors one ORE complex type, and each type
+states its own grid. A column shared with a sibling type is not a fact held twice:
+neither row can stand for the other, and a surface that could read its grid from
+either would make the pair interchangeable, which the schema does not say.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The kind this surface belongs to. One surface per kind, so the generated table
+adds the unique index on the live rows of =(tenant_id, curve_volatility_kind_id)=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this kind belongs to. Carried so row level security
+can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** delta_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which delta the surface's grid is quoted in, such as =Spot= or =Forward=.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** atm_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which strike the surface reads as at the money, such as =AtmSpot= or =AtmFwd=.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** atm_delta_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Which delta the surface's at the money point is quoted in, where it differs from
+the grid's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** put_deltas
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The put deltas the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** call_deltas
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The call deltas the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The expiries the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface interpolates along time.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** strike_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface interpolates across its delta axis.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the surface is extrapolated at all.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** time_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface extrapolates along time.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** time_extrapolation_variance
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the variance rather than the volatility is extrapolated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface extrapolates across its delta axis.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** future_price_correction
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the surface corrects its strikes for the future price.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_delta_surfaces_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_volatility_delta_surface
+:entity_plural_short:   curve_volatility_delta_surfaces
+:entity_singular_words: curve volatility delta surface
+:entity_plural_words:   curve volatility delta surfaces
+:END:
+
+* Foreign keys
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:table:         ores_refdata_curve_volatility_kinds_tbl
+:target_column: id
+:parent_entity: curve_volatility_kind
+:nullable:      false
+:error_message: Invalid curve_volatility_kind_id: %. No active volatility kind found with this id.
+:END:
+
+* See also
+
+- [[id:2D6A4F18-7C3E-4B95-9A21-5E8D3C07B4F6][ores.refdata.curve_volatility_kind]] — the kind this row gives its fields to.
+- [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] — the task that introduced it.

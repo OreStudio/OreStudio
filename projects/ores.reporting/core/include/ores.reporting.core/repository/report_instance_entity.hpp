@@ -71,6 +71,10 @@ struct report_instance_entity {
     std::optional<std::string> price_note;
     std::optional<boost::uuids::uuid> engine_settings_id;
     std::optional<int> engine_settings_version;
+    std::optional<boost::uuids::uuid> cut_id;
+    std::optional<std::string> cut_label;
+    std::optional<std::string> cut_kind_code;
+    std::optional<db_timestamp> cut_timepoint;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -102,6 +106,10 @@ struct report_instance_entity {
                query_builder::bind("price_note", &e::price_note) |
                query_builder::bind("engine_settings_id", &e::engine_settings_id) |
                query_builder::bind("engine_settings_version", &e::engine_settings_version) |
+               query_builder::bind("cut_id", &e::cut_id) |
+               query_builder::bind("cut_label", &e::cut_label) |
+               query_builder::bind("cut_kind_code", &e::cut_kind_code) |
+               query_builder::bind("cut_timepoint", &e::cut_timepoint) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

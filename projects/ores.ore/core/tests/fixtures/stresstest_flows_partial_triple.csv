@@ -1,0 +1,2 @@
+#TradeId,ScenarioLabel,CashflowNo,LegNo,PayDate,FlowType,Amount_Base,Currency
+Trade1,BASE,1,0,2026-05-11,Interest,733286.315738,USD

@@ -26,7 +26,7 @@
 
 begin;
 
-select plan(10);
+select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -74,6 +74,17 @@ $$;
 select lives_ok(
     $$select pg_temp.swap('PGTAP-GOOD-SWAP', 'Annual', 'ModifiedFollowing', '30/360', null)$$,
     'a swap whose terms are in their sets is written');
+
+select lives_ok(
+    $$select pg_temp.swap('PGTAP-RENDERING-SWAP', 'Z', 'MODFOLLOWING', 'A360', null)$$,
+    'a swap whose terms are other renderings of the values is written');
+
+select is(
+    (select fixed_frequency || ' ' || fixed_convention || ' ' || fixed_day_count_fraction
+       from ores_refdata_swap_conventions_tbl
+      where id = 'PGTAP-RENDERING-SWAP'),
+    'Once ModifiedFollowing ACT/360',
+    'each rendering is stored as the form its set names');
 
 select throws_like(
     $$select pg_temp.swap('PGTAP-BAD-FREQUENCY', 'Fortnightly', 'ModifiedFollowing', '30/360', null)$$,
@@ -128,7 +139,7 @@ select is(
        from ores_reporting_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/OIS/SpotLag'
         and valid_to = ores_utility_infinity_timestamp_fn()),
-    'convention.integer ore_schema',
+    'convention.integer ore_xsd',
     'a leaf the parser reads as a string takes the type the schema declares');
 
 select is(
@@ -136,7 +147,7 @@ select is(
        from ores_reporting_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/TenorBasisSwap/SpreadOnShort'
         and valid_to = ores_utility_infinity_timestamp_fn()),
-    'flag ore_schema',
+    'flag ore_xsd',
     'a leaf the parser reads as a string takes the flag the schema declares');
 
 select ok(

@@ -150,10 +150,7 @@ void cap_floor_volatility_config_commands::register_commands(cli::Menu& root_men
         "<index> <rate_computation_period> <on_cap_settlement_days> <discount_curve> <atm_tenors> "
         "<settlement_days> <interpolate_on> <time_interpolation> <strike_interpolation> "
         "<input_type> <quote_includes_index_name> <flat_first_period> <use_effecive_volatility> "
-        "<use_effective_volatility> <has_proxy_config> <proxy_source_curve_id> "
-        "<proxy_source_index> <proxy_source_rate_computation_period> <proxy_target_index> "
-        "<proxy_target_rate_computation_period> <proxy_target_on_cap_settlement_days> "
-        "<proxy_scaling_factor> <reason> <commentary>");
+        "<use_effective_volatility> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -166,10 +163,7 @@ void cap_floor_volatility_config_commands::register_commands(cli::Menu& root_men
         "<index> <rate_computation_period> <on_cap_settlement_days> <discount_curve> <atm_tenors> "
         "<settlement_days> <interpolate_on> <time_interpolation> <strike_interpolation> "
         "<input_type> <quote_includes_index_name> <flat_first_period> <use_effecive_volatility> "
-        "<use_effective_volatility> <has_proxy_config> <proxy_source_curve_id> "
-        "<proxy_source_index> <proxy_source_rate_computation_period> <proxy_target_index> "
-        "<proxy_target_rate_computation_period> <proxy_target_on_cap_settlement_days> "
-        "<proxy_scaling_factor> <reason> <commentary> [--version <n>]");
+        "<use_effective_volatility> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -182,11 +176,8 @@ void cap_floor_volatility_config_commands::register_commands(cli::Menu& root_men
         "<tenors> <strikes> <optional_quotes> <ibor_index> <index> <rate_computation_period> "
         "<on_cap_settlement_days> <discount_curve> <atm_tenors> <settlement_days> <interpolate_on> "
         "<time_interpolation> <strike_interpolation> <input_type> <quote_includes_index_name> "
-        "<flat_first_period> <use_effecive_volatility> <use_effective_volatility> "
-        "<has_proxy_config> <proxy_source_curve_id> <proxy_source_index> "
-        "<proxy_source_rate_computation_period> <proxy_target_index> "
-        "<proxy_target_rate_computation_period> <proxy_target_on_cap_settlement_days> "
-        "<proxy_scaling_factor> <reason> <commentary>");
+        "<flat_first_period> <use_effecive_volatility> <use_effective_volatility> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -381,8 +372,8 @@ void cap_floor_volatility_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 37 + 2) {
-            fail(out) << "Expected " << (37 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 29 + 2) {
+            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -455,29 +446,6 @@ void cap_floor_volatility_config_commands::process_add(std::ostream& out,
         cap_floor_volatility_config_read_token(req.change.write.use_effective_volatility,
                                                parsed->positionals[next++],
                                                "use_effective_volatility");
-        cap_floor_volatility_config_read_token(
-            req.change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_source_curve_id,
-                                               parsed->positionals[next++],
-                                               "proxy_source_curve_id");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_source_index, parsed->positionals[next++], "proxy_source_index");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_source_rate_computation_period,
-            parsed->positionals[next++],
-            "proxy_source_rate_computation_period");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_target_index, parsed->positionals[next++], "proxy_target_index");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_target_rate_computation_period,
-            parsed->positionals[next++],
-            "proxy_target_rate_computation_period");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_target_on_cap_settlement_days,
-                                               parsed->positionals[next++],
-                                               "proxy_target_on_cap_settlement_days");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_scaling_factor,
-                                               parsed->positionals[next++],
-                                               "proxy_scaling_factor");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -520,8 +488,8 @@ void cap_floor_volatility_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 38 + 2) {
-            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 30 + 2) {
+            fail(out) << "Expected " << (30 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -595,29 +563,6 @@ void cap_floor_volatility_config_commands::process_set(std::ostream& out,
         cap_floor_volatility_config_read_token(req.change.write.use_effective_volatility,
                                                parsed->positionals[next++],
                                                "use_effective_volatility");
-        cap_floor_volatility_config_read_token(
-            req.change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_source_curve_id,
-                                               parsed->positionals[next++],
-                                               "proxy_source_curve_id");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_source_index, parsed->positionals[next++], "proxy_source_index");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_source_rate_computation_period,
-            parsed->positionals[next++],
-            "proxy_source_rate_computation_period");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_target_index, parsed->positionals[next++], "proxy_target_index");
-        cap_floor_volatility_config_read_token(
-            req.change.write.proxy_target_rate_computation_period,
-            parsed->positionals[next++],
-            "proxy_target_rate_computation_period");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_target_on_cap_settlement_days,
-                                               parsed->positionals[next++],
-                                               "proxy_target_on_cap_settlement_days");
-        cap_floor_volatility_config_read_token(req.change.write.proxy_scaling_factor,
-                                               parsed->positionals[next++],
-                                               "proxy_scaling_factor");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -672,8 +617,8 @@ void cap_floor_volatility_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 38 + 2) {
-            fail(out) << "Expected " << (change_count * 38 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 30 + 2) {
+            fail(out) << "Expected " << (change_count * 30 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -749,29 +694,6 @@ void cap_floor_volatility_config_commands::process_put_many(std::ostream& out,
             cap_floor_volatility_config_read_token(change.write.use_effective_volatility,
                                                    parsed->positionals[next++],
                                                    "use_effective_volatility");
-            cap_floor_volatility_config_read_token(
-                change.write.has_proxy_config, parsed->positionals[next++], "has_proxy_config");
-            cap_floor_volatility_config_read_token(change.write.proxy_source_curve_id,
-                                                   parsed->positionals[next++],
-                                                   "proxy_source_curve_id");
-            cap_floor_volatility_config_read_token(
-                change.write.proxy_source_index, parsed->positionals[next++], "proxy_source_index");
-            cap_floor_volatility_config_read_token(
-                change.write.proxy_source_rate_computation_period,
-                parsed->positionals[next++],
-                "proxy_source_rate_computation_period");
-            cap_floor_volatility_config_read_token(
-                change.write.proxy_target_index, parsed->positionals[next++], "proxy_target_index");
-            cap_floor_volatility_config_read_token(
-                change.write.proxy_target_rate_computation_period,
-                parsed->positionals[next++],
-                "proxy_target_rate_computation_period");
-            cap_floor_volatility_config_read_token(change.write.proxy_target_on_cap_settlement_days,
-                                                   parsed->positionals[next++],
-                                                   "proxy_target_on_cap_settlement_days");
-            cap_floor_volatility_config_read_token(change.write.proxy_scaling_factor,
-                                                   parsed->positionals[next++],
-                                                   "proxy_scaling_factor");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

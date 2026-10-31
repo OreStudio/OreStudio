@@ -41,9 +41,6 @@ export interface InflationCapFloorVolatilityConfigWrite {
     extrapolation: string;
     tenors: string;
     settlement_days: number | null;
-    cap_strikes: string | null;
-    floor_strikes: string | null;
-    strikes: string | null;
     calendar: string;
     day_counter: string;
     business_day_convention: string;

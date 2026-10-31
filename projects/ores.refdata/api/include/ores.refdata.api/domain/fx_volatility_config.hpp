@@ -39,9 +39,14 @@ namespace ores::refdata::domain {
  * @brief The settings of one ORE FX volatility entry.
  *
  * The settings of one FXVolatility entry of a curveconfig.xml, one row per
- * curve_definition in the FXVolatilities section: the surface's dimension and
- * smile, the deltas and expiries it is quoted on, and the curves and spot it is
- * built with. Its Report is a row of curve_report_configuration.
+ * curve_definition in the FXVolatilities section: the surface's dimension, the
+ * deltas and expiries it is quoted on, and the curves and spot it is built with.
+ * Its Report is a row of curve_report_configuration.
+ *
+ * The smile is not here. ORE makes every smile element optional, so a flat row
+ * cannot say that a smile surface has a smile and an ATM one does not; that
+ * condition is the presence of a fx_volatility_smile row. dimension stays,
+ * because it also decides how deltas is read.
  *
  * The schema also allows a ParametricSmileConfiguration, which no corpus
  * document writes; the mapper refuses an entry that has one rather than lose it.
@@ -79,24 +84,9 @@ struct fx_volatility_config final {
     std::string dimension;
 
     /**
-     * @brief How the smile is quoted.
-     */
-    std::optional<std::string> smile_type;
-
-    /**
-     * @brief How the smile interpolates.
-     */
-    std::optional<std::string> smile_interpolation;
-
-    /**
      * @brief The deltas the smile is quoted at, as ORE's comma separated text.
      */
     std::optional<std::string> deltas;
-
-    /**
-     * @brief The delta convention of the smile.
-     */
-    std::optional<std::string> smile_delta;
 
     /**
      * @brief The convention the surface's options follow, by its id.
@@ -147,26 +137,6 @@ struct fx_volatility_config final {
      * @brief The second volatility a triangulated surface is built from.
      */
     std::optional<std::string> base_volatility_2;
-
-    /**
-     * @brief How the smile extrapolates.
-     */
-    std::optional<std::string> smile_extrapolation;
-
-    /**
-     * @brief How the surface interpolates in time.
-     */
-    std::optional<std::string> time_interpolation;
-
-    /**
-     * @brief The time weighting the surface's time interpolation uses.
-     */
-    std::optional<std::string> time_weighting;
-
-    /**
-     * @brief The tolerance a smile's butterfly arbitrage check allows.
-     */
-    std::optional<double> butterfly_error_tolerance;
 
     /**
      * @brief Username of the person who last modified this FX volatility config.

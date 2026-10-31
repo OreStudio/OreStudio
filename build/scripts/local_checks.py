@@ -481,6 +481,38 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
             "or delete the test that names an unused one.",
     ),
+    # A published area is part of a URL, so a declared area that belongs to no
+    # area at all is a URL nobody can name. One list of areas serves both the
+    # inventory's classification and this check.
+    Check(
+        id="http-areas",
+        title="Every declared HTTP area is published",
+        argv=("python3", "build/scripts/check_http_areas.py"),
+        classes=("modeling", "codegen"),
+        paths=("projects/*/modeling/*",
+               "build/scripts/route_classification.py",
+               "build/scripts/check_http_areas.py"),
+        fix="Declare the area in build/scripts/route_classification.py AREAS, or use "
+            "one that is already published.",
+    ),
+    # The classification work needs a list that cannot be short. This reads the
+    # routes from the code that registers them, on both surfaces, and fails when
+    # one is answered but absent from the inventory, when the inventory names a
+    # route nobody answers, or when a row disagrees with the decisions in
+    # route_classification.
+    Check(
+        id="route-inventory",
+        title="Every HTTP route is in the inventory",
+        argv=("python3", "build/scripts/route_inventory.py", "--check"),
+        classes=("cpp", "web", "docs", "codegen", "tooling"),
+        paths=("projects/ores.http/*",
+               "projects/ores.web/packages/bff/src/*",
+               "doc/knowledge/architecture/http_route_inventory.org",
+               "build/scripts/route_inventory.py",
+               "build/scripts/route_classification.py"),
+        fix="Run python3 build/scripts/route_inventory.py --write and commit the "
+            "table, or delete the row of a route neither server answers.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",
@@ -689,6 +721,8 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/curve_value_set_curation.json",
             "projects/ores.sql/utility/ore_parameter_vocabularies.json",
             "projects/ores.sql/utility/ore_schema_types.py",
+            "projects/ores.sql/utility/ore_aliases.py",
+            "projects/ores.ore/core/src/domain/conventions_fields.cpp",
             "projects/ores.sql/utility/convention_value_sets.py",
             "projects/ores.sql/utility/convention_parameter_rows.py",
             "projects/ores.sql/utility/convention_terms.json",
@@ -801,6 +835,8 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/convention_value_sets.py",
             "projects/ores.sql/utility/ore_parameter_vocabularies.json",
             "projects/ores.sql/utility/ore_schema_types.py",
+            "projects/ores.sql/utility/ore_aliases.py",
+            "projects/ores.ore/core/src/domain/conventions_fields.cpp",
             "projects/ores.sql/utility/curve_terms.json",
             "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",

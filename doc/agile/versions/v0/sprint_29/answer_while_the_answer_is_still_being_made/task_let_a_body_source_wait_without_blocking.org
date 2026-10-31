@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/let-a-body-source-wait-without-blocking
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,77 +20,62 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A response body is read with a plain =read=, on the connection's thread. That is
-right for a file, which is in the page cache and answers in microseconds. It is
-wrong for a stream: a source whose next event has not arrived would hold the thread
-that serves every other connection on that thread, which is the defect A1 removed
-from the handlers.
-
-Increment B3 builds the change stream on this mechanism, so the awaitable form has
-to exist before it starts.
+A response may name a body source that has to wait for its next piece without stopping the
+connection's thread, so the change stream of increment B3 has a form to arrive in.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Waiting on B3's need for it; nothing else blocks it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | An awaitable read, chosen by the source itself. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- A source may be awaited rather than called, and the session writes each piece as
-  it arrives.
-- A source that has nothing to write yields the thread instead of holding it: a
-  test shows another connection answered while one source waits.
-- A file keeps the synchronous form, so the common case pays nothing for it.
+- [X] A response may name an awaitable body source, and the session writes it.
+- [X] A source that states its length is answered with =Content-Length=; one that does not is chunked.
+- [X] A waiting source does not stop another connection being served on the same thread.
+- [X] A source that fails mid-body closes the connection rather than short-changing the client.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two sources, one write loop. The synchronous =body_source= stays as it is, because a file
+always has more to give and the extra suspension would buy nothing. =awaitable_body_source=
+is the same contract with a =co_await= on the read. The loop takes the next piece from
+whichever one the response names, so the framing, the drain and the failure handling are
+written once.
+
+The alternative was a second write loop for the awaitable case. It reads as the simpler diff
+and is the worse code: two copies of the chunked framing, the need_buffer handling and the
+short-body rule, one of which a change would forget.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Streaming response cases | 7 cases, 25 assertions, all passing | =./ores.http.api.tests "[http_response_stream]"= | this branch |
+| Whole =ores.http.api= suite | 126 cases, 435 assertions, all passing | =./ores.http.api.tests= | this branch |
+| Targets rebuilt | 319, exit 0 | =cmake --build … --target ores.http.api.tests= | this branch |
 
 * Notes
 
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+- The isolation case runs the server with one worker thread and holds one response open for
+  400 ms. A synchronous read would have held that thread and the prompt request would have
+  waited; it answers in tens of milliseconds instead. That is the whole claim, and it is why
+  the case fixes the thread count rather than trusting a default.
+- The first version of the case measured nothing, because the waiting source returned its
+  piece before waiting and a fixed =Content-Length= let the client finish early. The source
+  now waits before every piece, which is also the truthful shape for an event stream.
+- The failure case asserts on the client's side only. The session cannot send a status once
+  the headers are out, so what a case can prove is that the client does not receive the
+  length the headers promised.
 
 * Result
+
+=awaitable_body_source= exists, the write loop serves it beside the synchronous one, and four
+cases pin the behaviour that matters: the length, the chunked framing, the thread that is not
+held, and the connection that closes instead of lying about its length.

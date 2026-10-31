@@ -68,8 +68,11 @@ import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
-import { MarketDataSourcePage } from './operations/MarketDataSourcePage.js';
-import { MarketDataSourcesPage } from './operations/MarketDataSourcesPage.js';
+import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
+import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
+import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
+import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
+import { PublicRatesPublisherPage } from './marketdata/PublicRatesPublisherPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
@@ -110,10 +113,6 @@ import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
-import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
-import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
-import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
-import { PublicRatesPublisherPage } from './marketdata/PublicRatesPublisherPage.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -582,25 +581,61 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/operations/market-data-sources/:sourceName"
+                path={PATHS.connectivity}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <MarketDataSourcePage />
+                        <ConnectivityPage />
                     ),
                     'workspace',
                 )}
             />
             <Route
-                path={PATHS.marketDataSources}
+                path={PATHS.fixingSeries}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <MarketDataSourcesPage />
+                        <FixingSeriesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.publicRates}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublicRatesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.publicRates}/:publisher`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublicRatesPublisherPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.marketDataFeeds}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <MarketDataFeedsPage />
                     ),
                     'workspace',
                 )}
@@ -697,54 +732,6 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <SubscriptionsPage partyId={view.party.id} />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.connectivity}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <ConnectivityPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={`${PATHS.publicRates}/:publisher`}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <PublicRatesPublisherPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.fixingSeries}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <FixingSeriesPage />
-                    ),
-                    'workspace',
-                )}
-            />
-            <Route
-                path={PATHS.publicRates}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <PublicRatesPage />
                     ),
                     'workspace',
                 )}

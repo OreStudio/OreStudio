@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 25E9A1BD-8AB5-4FC3-B2EA-63247FED1F74
+:END:
+#+title: Task: Classify every row against the four-way rule
+#+description: Decide each of the inventory's rows: a resource, a composed view, a transport capability, or a rendering concern that is not an API. Name each composed view with its owner, and state the evidence for every route that is not a resource.
+#+type: task
+#+level: s1
+#+filetags: :classify_every_http_route_against_the_resource_rule:sprint_29:v0:
+#+owner: marco
+#+branch: feature/classify-every-row-against-the-four-way-rule
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every row of the inventory states what it is, so the port has a contract to port and the
+routes that should not survive are named.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
+| Now          | All 408 rows are decided, and the area map and the composed views' obligations are emitted beside them. |
+| Waiting on   | Nothing. |
+| Next         | Nothing: the port works from this table. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- [X] Every row in the inventory states a kind, and no row is left empty.
+- [X] Every route called a composed view states its name, its owning component, its
+      computation and its cache policy.
+- [X] Every route called not-an-API names the field or behaviour that condemns it, so
+      the decision can be argued with.
+- [X] The decisions survive a regeneration and the gate stays green.
+
+* Plan
+
+The decisions are data. One module holds an ordered list of rules over the method and
+path, three exceptions for the routes no rule decides, and the obligations each composed
+view owes. The generator applies them, and the gate fails when a row and a rule disagree,
+when a route is undecided, when two routes share one identity, or when a decision names
+no published kind or area or carries no evidence.
+
+The alternative was to fill 402 cells by hand and keep the rules nowhere. It was
+rejected on one measurement: the 402 rows hold 173 distinct notes, and 31 KB of the
+note text repeats across siblings. A rule states a family's reason once, and a new route
+in that family inherits it instead of failing the gate for a decision already taken.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rows decided | 408 of 408, none unclassified | =python3 build/scripts/route_inventory.py --check= | this branch |
+| Kinds | resource 332, composed view 25, not an API 28, transport capability 23 | same | this branch |
+| Decisions | 175 rules, 3 exceptions, 24 composed views | =python3 -c "import route_classification as r; print(len(r.RULES), len(r.EXCEPTIONS), len(r.VIEWS))"= | this branch |
+| Published areas | 17, of which 9 are new beside the design's list | =sed -n "/area map/,/composed views/p" doc/knowledge/architecture/http_route_inventory.org= | this branch |
+| Distinct notes over rows | 177 notes for 408 rows | =python3 -c "import route_inventory as i; rows=i.read_inventory(); print(len({r["note"] for r in rows.values()}), len(rows))"= | this branch |
+| Rules that decide one route | 106 of 177 | =python3 -c "..."= (distribution counted in review) | this branch |
+| Gate check | =route-inventory=, 0.2 s | =./compass.sh check --only route-inventory= | this branch |
+
+* Notes
+
+- The three view paths the design names as examples, =/api/v1/tenancy/estate=,
+  =/api/v1/trading/blotter= and =/api/v1/workflow/inbox=, are targets and not what
+  answers today. The views behind them are real routes a screen calls now,
+  =GET /api/overview=, =GET /api/blotter= and =GET /api/requests=, and the composed views
+  table names the client module that calls each one. The port therefore moves working
+  views into ores.http with the same request, rather than inventing them, and the
+  published namespace is a versioned change after the cutover.
+- The 28 routes called not-an-API cluster in three files: =records.ts= and
+  =synthetic.ts= (a generic router whose payload shape changes with a string in the
+  URL) and =classifications.ts= (label codes, display order and column widths). The
+  generic history read is a fourth, named by an opaque =entityType= string. Deleting
+  those files removes most of the kind.
+- The owner column names the component that must answer each view after the port, not
+  the module that answers it today. Two views, the sprint board and the sprint charts,
+  read the project's own documents and have no service; their owner says so, and X1
+  decides whether they survive.
+- The cache policies are proposals, not measurements: an ETag over the whole view and a
+  freshness drawn from the slowest input, between 5 s for a run's progress and 5 min for
+  a catalogue. They are stated so a reviewer can argue with a number instead of a
+  silence.
+- The judgements worth arguing with, each with its evidence in the Note column:
+  sessions are a resource in ores.http and a transport capability in the BFF; the
+  computed reads (=simulate=, =convert=, =curve compute=, =preview-resolution=) are
+  resources with a derived-read note; the seven form option bundles are not-an-API
+  because a CLI would never ask for a pick-list keyed by control name; and the 20
+  =iam/ops= verbs are resources whose verb names the read or write.
+- Six routes were missing from the first version of this table, and an independent
+  verifier found them by counting registrations against rows. The scanner read one line
+  at a time, so a registration whose path literal sat on the next line was invisible, and
+  the gate built its missing set with the same scanner. The scanners now read whole files,
+  a guard counts the registrations either surface declares, and the table holds 408 rows.
+  The same review corrected four judgements: retrying a run is a command on it and not
+  the run's progress view, the engine settings documentation is one collection reshaped,
+  the tenant lookups keep their badge code as a stored fact, and the report configuration
+  page reads five collections so it is a view.
+- The rules layer was reviewed against the alternative and kept. 101 of the 173 rules
+  decide exactly one route, which is close to transcription, but the 72 rules that
+  decide more than one carry the note that would otherwise repeat in the table, and a
+  rule set is what lets a new route in a known family inherit a decision.
+
+* Result
+
+Every route either server answers states what it is, with the evidence a reviewer needs to
+argue with the verdict. The port has a contract to port, the area map is the published
+namespace the manifest will read, and the gate refuses a row that states no kind, names
+an unpublished area, carries no note, or calls itself a composed view without an owner,
+a computation and a cache policy.
+
+
+The inventory is a decision record. Every route states a kind, an area where it
+publishes one, and the evidence for the decision, and the gate refuses a row without
+them. The area map is the published namespace the manifest will read, and each composed
+view states the four obligations the design demands of one.

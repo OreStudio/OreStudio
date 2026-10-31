@@ -208,8 +208,8 @@ public:
      * belongs to the market data service, so the lookup reads it through that component's
      * client and not through this service's tables.
      */
-    using adapter_lookup_fn = std::function<std::optional<feed::feed_adapter>(
-        std::string_view provider_code)>;
+    using adapter_lookup_fn =
+        std::function<std::optional<feed::feed_adapter>(std::string_view provider_code)>;
 
     /**
      * @brief The three reads the registry does on every kind's behalf.
@@ -335,8 +335,8 @@ private:
  * publishes through. The service passes its own; a caller that passes none builds every feed as
  * a producer with no adapter, which stores no tick.
  */
-feed_kind_registry make_default_feed_kind_registry(
-    feed_kind_registry::adapter_lookup_fn adapter_of_provider = {});
+feed_kind_registry
+make_default_feed_kind_registry(feed_kind_registry::adapter_lookup_fn adapter_of_provider = {});
 
 /**
  * @brief The one simulate envelope: clamp, then step num_paths processes of

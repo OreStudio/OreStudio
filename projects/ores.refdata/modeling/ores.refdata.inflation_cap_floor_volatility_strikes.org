@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 5A9F3C71-8D24-4E6B-B0F7-13C8E6A2D954
+:END:
+#+title: ores.refdata.inflation_cap_floor_volatility_strikes
+#+description: Codegen entity model for the refdata =inflation_cap_floor_volatility_strikes= part: the strike list an ORE inflation cap and floor volatility states for one axis.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: inflation_cap_floor_volatility_strikes
+#+entity_plural: inflation_cap_floor_volatility_strikes
+#+entity_title: Inflation Cap Floor Volatility Strikes
+#+brief: The strikes one axis of an inflation cap and floor surface is quoted at.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+ORE's =inflationCapFloorVolatility= states three strike lists: =CapStrikes=,
+=FloorStrikes= and =Strikes=. They are alternatives, not three facts: a cap quote
+is struck on caps, a floor quote on floors, and a surface on both sides at once.
+Three optional columns in one row would let a row state a cap list and a floor
+list and leave the reader to work out which it meant.
+
+The part is a row per axis the entry states, so the choice is structural. An
+entry with caps and floors holds two rows, a surface holds one, and an entry that
+states no list holds none.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** inflation_cap_floor_volatility_config_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+The entry this strike list belongs to. An entry holds one row for each axis it
+states, so the key is this column with =axis=, and the generated table adds the
+unique index on the pair over the live rows.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** axis
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+Which list this row is: =Cap=, =Floor= or =Both=. =Both= is the schema's
+=Strikes=, the one list a surface states for its two sides.
+
+#+begin_src cpp :name generator
+std::string("Cap")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this row belongs to. Carried so row level security
+can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** strikes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The strikes this axis is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_inflation_cap_floor_volatility_strikes_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression     |
+|----------------|
+| "axis" in ('Cap', 'Floor', 'Both') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: inflation_strikes
+:entity_plural_short:   inflation_strikes
+:entity_singular_words: inflation cap floor volatility strikes
+:entity_plural_words:   inflation cap floor volatility strikes
+:END:
+
+* Foreign keys
+
+** inflation_cap_floor_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_inflation_cap_floor_volatility_configs_tbl
+:target_column: id
+:parent_entity: inflation_cap_floor_volatility_config
+:nullable:      false
+:error_message: Invalid inflation_cap_floor_volatility_config_id: %. No active inflation cap and floor volatility entry found with this id.
+:END:
+
+* See also
+
+- [[id:7608FED8-BFE9-4196-BD9F-AAA7882E10C5][ores.refdata.inflation_cap_floor_volatility_config]] — the entry these strikes belong to.
+- [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] — the task that introduced it.

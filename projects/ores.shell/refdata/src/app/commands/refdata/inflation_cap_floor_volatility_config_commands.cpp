@@ -145,10 +145,9 @@ void inflation_cap_floor_volatility_config_commands::register_commands(cli::Menu
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <curve_definition_id> <inflation_type> <quote_type> <volatility_type> <extrapolation> "
-        "<tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar> "
-        "<day_counter> <business_day_convention> <index> <index_curve> <index_interpolated> "
-        "<observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> "
-        "<commentary>");
+        "<tenors> <settlement_days> <calendar> <day_counter> <business_day_convention> <index> "
+        "<index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> "
+        "<conventions> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -156,10 +155,9 @@ void inflation_cap_floor_volatility_config_commands::register_commands(cli::Menu
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type> "
-        "<extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> "
-        "<calendar> <day_counter> <business_day_convention> <index> <index_curve> "
-        "<index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions> "
-        "<reason> <commentary> [--version <n>]");
+        "<extrapolation> <tenors> <settlement_days> <calendar> <day_counter> "
+        "<business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> "
+        "<yield_term_structure> <quote_index> <conventions> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -167,10 +165,9 @@ void inflation_cap_floor_volatility_config_commands::register_commands(cli::Menu
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <curve_definition_id> <inflation_type> <quote_type> "
-        "<volatility_type> <extrapolation> <tenors> <settlement_days> <cap_strikes> "
-        "<floor_strikes> <strikes> <calendar> <day_counter> <business_day_convention> <index> "
-        "<index_curve> <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> "
-        "<conventions> <reason> <commentary>");
+        "<volatility_type> <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> "
+        "<business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag> "
+        "<yield_term_structure> <quote_index> <conventions> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -364,8 +361,8 @@ void inflation_cap_floor_volatility_config_commands::process_add(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 20 + 2) {
-            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -385,12 +382,6 @@ void inflation_cap_floor_volatility_config_commands::process_add(
             req.change.write.tenors, parsed->positionals[next++], "tenors");
         inflation_cap_floor_volatility_config_read_token(
             req.change.write.settlement_days, parsed->positionals[next++], "settlement_days");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.cap_strikes, parsed->positionals[next++], "cap_strikes");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.floor_strikes, parsed->positionals[next++], "floor_strikes");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.strikes, parsed->positionals[next++], "strikes");
         inflation_cap_floor_volatility_config_read_token(
             req.change.write.calendar, parsed->positionals[next++], "calendar");
         inflation_cap_floor_volatility_config_read_token(
@@ -454,8 +445,8 @@ void inflation_cap_floor_volatility_config_commands::process_set(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 21 + 2) {
-            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -476,12 +467,6 @@ void inflation_cap_floor_volatility_config_commands::process_set(
             req.change.write.tenors, parsed->positionals[next++], "tenors");
         inflation_cap_floor_volatility_config_read_token(
             req.change.write.settlement_days, parsed->positionals[next++], "settlement_days");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.cap_strikes, parsed->positionals[next++], "cap_strikes");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.floor_strikes, parsed->positionals[next++], "floor_strikes");
-        inflation_cap_floor_volatility_config_read_token(
-            req.change.write.strikes, parsed->positionals[next++], "strikes");
         inflation_cap_floor_volatility_config_read_token(
             req.change.write.calendar, parsed->positionals[next++], "calendar");
         inflation_cap_floor_volatility_config_read_token(
@@ -557,8 +542,8 @@ void inflation_cap_floor_volatility_config_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 21 + 2) {
-            fail(out) << "Expected " << (change_count * 21 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -581,12 +566,6 @@ void inflation_cap_floor_volatility_config_commands::process_put_many(
                 change.write.tenors, parsed->positionals[next++], "tenors");
             inflation_cap_floor_volatility_config_read_token(
                 change.write.settlement_days, parsed->positionals[next++], "settlement_days");
-            inflation_cap_floor_volatility_config_read_token(
-                change.write.cap_strikes, parsed->positionals[next++], "cap_strikes");
-            inflation_cap_floor_volatility_config_read_token(
-                change.write.floor_strikes, parsed->positionals[next++], "floor_strikes");
-            inflation_cap_floor_volatility_config_read_token(
-                change.write.strikes, parsed->positionals[next++], "strikes");
             inflation_cap_floor_volatility_config_read_token(
                 change.write.calendar, parsed->positionals[next++], "calendar");
             inflation_cap_floor_volatility_config_read_token(

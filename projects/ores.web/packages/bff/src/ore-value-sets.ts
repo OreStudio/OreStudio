@@ -18,11 +18,9 @@
  *
  */
 
-import { subjects as businessDayConventionTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/business_day_convention_type_protocol';
 import { subjects as calendarSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_protocol';
 import { subjects as currencyPairSubjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_protocol';
 import { subjects as currencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_protocol';
-import { subjects as dayCounterSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_counter_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as templateSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
@@ -179,25 +177,12 @@ const CATALOGUE_READERS: ReadonlyMap<string, CatalogueReader> = new Map([
             labelOf: (row) => text(row['name']),
         },
     ],
-    [
-        'ores_refdata_day_counter_catalogue_v',
-        {
-            subject: dayCounterSubjects.list_day_counters_request,
-            key: 'day_counters',
-            valueOf: (row) => text(row['code']),
-            labelOf: (row) => text(row['description']),
-        },
-    ],
-    [
-        'ores_refdata_business_day_convention_catalogue_v',
-        {
-            subject: businessDayConventionTypeSubjects.list_business_day_convention_types_request,
-            key: 'types',
-            valueOf: (row) => text(row['code']),
-            labelOf: (row) => text(row['name']),
-        },
-    ],
 ]);
+
+/** The canonical form one value row is a rendering of, or empty when it is one. */
+function canonicalOf(row: Readonly<Record<string, unknown>>): string {
+    return text(row['canonical_value']);
+}
 
 /** The number a set row carries, or null when it carries none. */
 function optionalNumber(value: unknown): number | null {
@@ -249,6 +234,9 @@ export async function readValueSets(
     );
     const ordered = new Map<string, { readonly order: number; readonly choice: Choice }[]>();
     for (const row of tables.values) {
+        // A row that names a canonical form is another rendering of one, not a
+        // choice: a configuration holds the form, and a combo offers it once.
+        if (canonicalOf(row) !== '') continue;
         const code = text(row['value_set_code']);
         const entries = ordered.get(code) ?? [];
         entries.push({

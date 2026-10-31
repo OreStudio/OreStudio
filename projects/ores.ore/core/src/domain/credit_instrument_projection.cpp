@@ -723,9 +723,9 @@ auto read_cds(const record_reader& trade) -> credit_instrument_data {
         fact.trade_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "TradeDate"));
         fact.cash_settlement_days = optional_int_of(*d, "CashSettlementDays");
-        set_internal_reference_entity(
-            result.instrument,
-            fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id.value_or(""));
+        set_internal_reference_entity(result.instrument,
+                                      fact.issuer_id ? *fact.issuer_id :
+                                                       fact.credit_curve_id.value_or(""));
         if (const auto leg = d->child("LegData")) {
             map_leg_dates(*leg, result.instrument);
             append_leg(result, *leg, "premium");

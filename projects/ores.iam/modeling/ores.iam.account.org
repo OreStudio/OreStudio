@@ -7,6 +7,7 @@
 #+title: ores.iam.account
 #+description: Codegen entity model for the iam accounts table. Drives the C++ domain type, mapper, repository, generator, eventing, TypeScript metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+http_area: access
 #+component: iam
 #+filetags: :model:entity:iam:
 #+entity_singular: account

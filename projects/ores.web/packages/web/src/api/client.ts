@@ -731,15 +731,15 @@ const subscriptionRowSchema = z.object({
 export type SubscriptionRow = z.infer<typeof subscriptionRowSchema>;
 
 /**
- * A route: the one source that serves a party for a provider. The source is
- * named by its id, and its name and kind come from the catalogue.
+ * A route: the one feed that serves a party for a publisher. The feed is named
+ * by its id, and its name and service come from the catalogue.
  */
 const routeRowSchema = z.object({
     version: z.number(),
     id: z.string(),
     party_id: z.string(),
-    provider_code: z.string(),
-    source_id: z.string(),
+    publisher_code: z.string(),
+    feed_id: z.string(),
     modified_by: z.string().default(''),
     performed_by: z.string().default(''),
     change_reason_code: z.string().default(''),
@@ -749,7 +749,19 @@ const routeRowSchema = z.object({
 
 export type RouteRow = z.infer<typeof routeRowSchema>;
 
-/** The providers and the sources a subscription and a route choose from. */
+/** One feed of the catalogue: one publisher's data, on one service, through one session. */
+const feedRowSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    publisher_code: z.string(),
+    session_code: z.string().default(''),
+    service: z.string().default(''),
+    provider_key: z.string().default(''),
+    is_default: z.boolean().default(false),
+    description: z.string().default(''),
+});
+
+/** The providers and the feeds a subscription and a route choose from. */
 const marketDataCatalogueSchema = z.object({
     providers: z.array(
         z.object({
@@ -760,44 +772,22 @@ const marketDataCatalogueSchema = z.object({
             display_order: z.number().default(0),
         }),
     ),
-    sources: z.array(
-        z.object({
-            id: z.string(),
-            name: z.string(),
-            provider_code: z.string(),
-            kind: z.string().default(''),
-            is_default: z.boolean().default(false),
-            description: z.string().default(''),
-        }),
-    ),
+    feeds: z.array(feedRowSchema),
 });
 
 export type MarketDataCatalogue = z.infer<typeof marketDataCatalogueSchema>;
 
-const publicRatesSeriesSchema = z.object({
+const officialSeriesSchema = z.object({
     id: z.string(),
     oresmd_uri: z.string(),
     base: z.string(),
     quote: z.string(),
 });
 
-const publicRatesFeedSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    service: z.string(),
-    provider_key: z.string(),
-    is_default: z.boolean(),
-    session_code: z.string(),
-    supplier_code: z.string(),
-    supplier_name: z.string(),
-    asset_classes: z.array(z.string()),
-});
-
-const publicRatesProviderSchema = z.object({
+const officialProviderSchema = z.object({
     code: z.string(),
     version: z.number(),
     name: z.string(),
-    kind: z.string(),
     description: z.string(),
     terms_url: z.string(),
     terms_credit: z.string(),
@@ -805,136 +795,28 @@ const publicRatesProviderSchema = z.object({
     terms_accepted: z.boolean(),
     terms_accepted_by: z.string(),
     terms_accepted_at: z.string().nullable(),
-    feeds: z.array(publicRatesFeedSchema),
-    series: z.array(publicRatesSeriesSchema),
+    feeds: z.array(feedRowSchema),
+    series: z.array(officialSeriesSchema),
 });
 
-const publicRatesSchema = z.object({ providers: z.array(publicRatesProviderSchema) });
+const officialRatesSchema = z.object({ providers: z.array(officialProviderSchema) });
 
-/** A public publisher: one that releases its rates and feeds them through a session. */
-export type PublicRatesProvider = z.infer<typeof publicRatesProviderSchema>;
-export type PublicRatesFeed = z.infer<typeof publicRatesFeedSchema>;
-export type PublicRatesSeries = z.infer<typeof publicRatesSeriesSchema>;
+/** An official provider: a publisher of daily rates read through the official rates adapter. */
+export type OfficialProvider = z.infer<typeof officialProviderSchema>;
+export type OfficialSeries = z.infer<typeof officialSeriesSchema>;
 
-const publicRatesFixingsSchema = z.object({
+const officialFixingsSchema = z.object({
     fixings: z.record(z.string(), z.array(z.object({ date: z.string(), value: z.string() }))),
 });
 
 /** The fixings of each series asked for, oldest first. */
-export type PublicRatesFixings = z.infer<typeof publicRatesFixingsSchema>['fixings'];
-
-const seriesCoverageSchema = z.object({
-    first: z.string(),
-    last: z.string(),
-    count: z.number().int(),
-});
-
-const publicRatesCoverageSchema = z.object({
-    series: z.record(z.string(), seriesCoverageSchema),
-});
-
-/** How far back each series goes, and how many values it holds. */
-export type SeriesCoverage = z.infer<typeof seriesCoverageSchema>;
-
-const connectivityPublisherSchema = z.object({
-    code: z.string(),
-    name: z.string(),
-    kind: z.string(),
-    description: z.string(),
-    terms_url: z.string(),
-    terms_credit: z.string(),
-    terms_accepted: z.boolean(),
-    terms_accepted_by: z.string(),
-    terms_accepted_at: z.string().nullable(),
-});
-
-const connectivitySupplierSchema = z.object({
-    code: z.string(),
-    name: z.string(),
-    kind: z.string(),
-    description: z.string(),
-    contract_reference: z.string(),
-    support: z.string(),
-});
-
-const connectivityAdapterFieldSchema = z.object({
-    name: z.string(),
-    type: z.string(),
-    required: z.boolean(),
-    default: z.string(),
-});
-
-const connectivityAdapterSchema = z.object({
-    code: z.string(),
-    name: z.string(),
-    module_version: z.string(),
-    description: z.string(),
-    process: z.string(),
-    asset_classes: z.array(z.string()),
-    services: z.array(z.string()),
-    schema: z.array(connectivityAdapterFieldSchema),
-});
-
-const connectivitySessionSchema = z.object({
-    code: z.string(),
-    name: z.string(),
-    supplier_code: z.string(),
-    adapter_code: z.string(),
-    environment: z.string(),
-    endpoint: z.string(),
-    credential_ref: z.string(),
-    settings: z.record(z.string(), z.unknown()),
-    enabled: z.boolean(),
-    description: z.string(),
-});
-
-const connectivityScopeSchema = z.object({
-    asset_class: z.string(),
-    item: z.string(),
-    vendor_instrument_id: z.string().nullable(),
-});
-
-const connectivityRouteSchema = z.object({
-    party_id: z.string(),
-    publisher_code: z.string(),
-    asset_class: z.string(),
-});
-
-const connectivityFeedSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    publisher_code: z.string(),
-    session_code: z.string(),
-    service: z.string(),
-    provider_key: z.string(),
-    is_default: z.boolean(),
-    description: z.string(),
-    scopes: z.array(connectivityScopeSchema),
-    routes: z.array(connectivityRouteSchema),
-});
-
-const connectivitySchema = z.object({
-    publishers: z.array(connectivityPublisherSchema),
-    suppliers: z.array(connectivitySupplierSchema),
-    adapters: z.array(connectivityAdapterSchema),
-    sessions: z.array(connectivitySessionSchema),
-    feeds: z.array(connectivityFeedSchema),
-});
-
-/** The delivery catalogue the Connectivity screen draws. */
-export type Connectivity = z.infer<typeof connectivitySchema>;
-export type ConnectivityPublisher = z.infer<typeof connectivityPublisherSchema>;
-export type ConnectivitySupplier = z.infer<typeof connectivitySupplierSchema>;
-export type ConnectivityAdapter = z.infer<typeof connectivityAdapterSchema>;
-export type ConnectivitySession = z.infer<typeof connectivitySessionSchema>;
-export type ConnectivityFeed = z.infer<typeof connectivityFeedSchema>;
-export type ConnectivityScope = z.infer<typeof connectivityScopeSchema>;
+export type OfficialFixings = z.infer<typeof officialFixingsSchema>['fixings'];
 
 /** One provider of the catalogue, as a selector names it. */
 export type MarketDataProvider = MarketDataCatalogue['providers'][number];
 
-/** One source of the catalogue, as a route names it. */
-export type MarketDataSource = MarketDataCatalogue['sources'][number];
+/** One feed of the catalogue, as a route names it. */
+export type MarketDataFeed = MarketDataCatalogue['feeds'][number];
 
 /** What narrows the feeds a screen lists; every part is optional. */
 export interface FeedFilter {
@@ -2407,11 +2289,28 @@ export const api = {
             .parse(await request('/api/marketdata/subscriptions', { method: 'GET' })).subscriptions;
     },
 
-    /** The routes the session may read: the one source that serves each party and provider. */
+    /** The routes the session may read: the one feed that serves each party and publisher. */
     async marketDataRoutes(): Promise<readonly RouteRow[]> {
         return z
             .object({ routes: z.array(routeRowSchema) })
             .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
+    },
+
+    /** The official providers, with their terms, their feeds and their fixing series. */
+    async officialRates(): Promise<readonly OfficialProvider[]> {
+        return officialRatesSchema.parse(
+            await request('/api/marketdata/official', { method: 'GET' }),
+        ).providers;
+    },
+
+    /** The fixings of up to a dozen series, oldest first. */
+    async officialFixings(series: readonly string[]): Promise<OfficialFixings> {
+        const query = new URLSearchParams({ series: series.join(',') });
+        return officialFixingsSchema.parse(
+            await request(`/api/marketdata/official/fixings?${query.toString()}`, {
+                method: 'GET',
+            }),
+        ).fixings;
     },
 
     /** One stored item, named by its oresmd URI. */
@@ -2490,7 +2389,7 @@ export const api = {
         );
     },
 
-    /** The providers and the sources, which are what a subscription and a route choose from. */
+    /** The providers and the feeds, which are what a subscription and a route choose from. */
     async marketDataCatalogue(): Promise<MarketDataCatalogue> {
         return marketDataCatalogueSchema.parse(
             await request('/api/marketdata/catalogue', { method: 'GET' }),
@@ -2531,10 +2430,10 @@ export const api = {
         });
     },
 
-    /** Adds the session party's route to one source, for one provider. */
+    /** Adds the session party's route to one feed, for one publisher. */
     async addRoute(input: {
-        readonly provider_code: string;
-        readonly source_id: string;
+        readonly publisher_code: string;
+        readonly feed_id: string;
     }): Promise<void> {
         await request('/api/marketdata/routes', {
             method: 'POST',
@@ -2543,16 +2442,16 @@ export const api = {
         });
     },
 
-    /** Removes the session party's route for a provider, at the version it was read at. */
+    /** Removes the session party's route for a publisher, at the version it was read at. */
     async removeRoute(
-        providerCode: string,
+        publisherCode: string,
         input: {
             readonly version: number;
             readonly reasonCode: string;
             readonly commentary: string;
         },
     ): Promise<void> {
-        await request(`/api/marketdata/routes/${encodeURIComponent(providerCode)}`, {
+        await request(`/api/marketdata/routes/${encodeURIComponent(publisherCode)}`, {
             method: 'DELETE',
             headers: JSON_HEADERS,
             body: JSON.stringify({
@@ -4112,6 +4011,162 @@ export const api = {
 };
 
 export { ApiFailure };
+
+const publicRatesSeriesSchema = z.object({
+    id: z.string(),
+    oresmd_uri: z.string(),
+    base: z.string(),
+    quote: z.string(),
+});
+
+const publicRatesFeedSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    service: z.string(),
+    provider_key: z.string(),
+    is_default: z.boolean(),
+    session_code: z.string(),
+    supplier_code: z.string(),
+    supplier_name: z.string(),
+    asset_classes: z.array(z.string()),
+});
+
+const publicRatesProviderSchema = z.object({
+    code: z.string(),
+    version: z.number(),
+    name: z.string(),
+    kind: z.string(),
+    description: z.string(),
+    terms_url: z.string(),
+    terms_credit: z.string(),
+    allows_storage: z.boolean(),
+    terms_accepted: z.boolean(),
+    terms_accepted_by: z.string(),
+    terms_accepted_at: z.string().nullable(),
+    feeds: z.array(publicRatesFeedSchema),
+    series: z.array(publicRatesSeriesSchema),
+});
+
+const publicRatesSchema = z.object({ providers: z.array(publicRatesProviderSchema) });
+
+/** A public publisher: one that releases its rates and feeds them through a session. */
+export type PublicRatesProvider = z.infer<typeof publicRatesProviderSchema>;
+export type PublicRatesFeed = z.infer<typeof publicRatesFeedSchema>;
+export type PublicRatesSeries = z.infer<typeof publicRatesSeriesSchema>;
+
+const publicRatesFixingsSchema = z.object({
+    fixings: z.record(z.string(), z.array(z.object({ date: z.string(), value: z.string() }))),
+});
+
+/** The fixings of each series asked for, oldest first. */
+export type PublicRatesFixings = z.infer<typeof publicRatesFixingsSchema>['fixings'];
+
+const seriesCoverageSchema = z.object({
+    first: z.string(),
+    last: z.string(),
+    count: z.number().int(),
+});
+
+const publicRatesCoverageSchema = z.object({
+    series: z.record(z.string(), seriesCoverageSchema),
+});
+
+/** How far back each series goes, and how many values it holds. */
+export type SeriesCoverage = z.infer<typeof seriesCoverageSchema>;
+
+const connectivityPublisherSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    kind: z.string(),
+    description: z.string(),
+    terms_url: z.string(),
+    terms_credit: z.string(),
+    terms_accepted: z.boolean(),
+    terms_accepted_by: z.string(),
+    terms_accepted_at: z.string().nullable(),
+});
+
+const connectivitySupplierSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    kind: z.string(),
+    description: z.string(),
+    contract_reference: z.string(),
+    support: z.string(),
+});
+
+const connectivityAdapterFieldSchema = z.object({
+    name: z.string(),
+    type: z.string(),
+    required: z.boolean(),
+    default: z.string(),
+});
+
+const connectivityAdapterSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    module_version: z.string(),
+    description: z.string(),
+    process: z.string(),
+    asset_classes: z.array(z.string()),
+    services: z.array(z.string()),
+    schema: z.array(connectivityAdapterFieldSchema),
+});
+
+const connectivitySessionSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    supplier_code: z.string(),
+    adapter_code: z.string(),
+    environment: z.string(),
+    endpoint: z.string(),
+    credential_ref: z.string(),
+    settings: z.record(z.string(), z.unknown()),
+    enabled: z.boolean(),
+    description: z.string(),
+});
+
+const connectivityScopeSchema = z.object({
+    asset_class: z.string(),
+    item: z.string(),
+    vendor_instrument_id: z.string().nullable(),
+});
+
+const connectivityRouteSchema = z.object({
+    party_id: z.string(),
+    publisher_code: z.string(),
+    asset_class: z.string(),
+});
+
+const connectivityFeedSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    publisher_code: z.string(),
+    session_code: z.string(),
+    service: z.string(),
+    provider_key: z.string(),
+    is_default: z.boolean(),
+    description: z.string(),
+    scopes: z.array(connectivityScopeSchema),
+    routes: z.array(connectivityRouteSchema),
+});
+
+const connectivitySchema = z.object({
+    publishers: z.array(connectivityPublisherSchema),
+    suppliers: z.array(connectivitySupplierSchema),
+    adapters: z.array(connectivityAdapterSchema),
+    sessions: z.array(connectivitySessionSchema),
+    feeds: z.array(connectivityFeedSchema),
+});
+
+/** The delivery catalogue the Connectivity screen draws. */
+export type Connectivity = z.infer<typeof connectivitySchema>;
+export type ConnectivityPublisher = z.infer<typeof connectivityPublisherSchema>;
+export type ConnectivitySupplier = z.infer<typeof connectivitySupplierSchema>;
+export type ConnectivityAdapter = z.infer<typeof connectivityAdapterSchema>;
+export type ConnectivitySession = z.infer<typeof connectivitySessionSchema>;
+export type ConnectivityFeed = z.infer<typeof connectivityFeedSchema>;
+export type ConnectivityScope = z.infer<typeof connectivityScopeSchema>;
 
 const fixingSeriesSchema = z.object({
     series: z

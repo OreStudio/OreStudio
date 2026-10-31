@@ -46,9 +46,9 @@
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
+#include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
@@ -494,12 +494,10 @@ TEST_CASE("a_booked_variance_swap_keeps_its_dates_in_order", "[service]") {
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
 
-    const auto start = std::chrono::year_month_day{std::chrono::year{2026},
-                                                   std::chrono::month{10},
-                                                   std::chrono::day{31}};
-    const auto end = std::chrono::year_month_day{std::chrono::year{2027},
-                                                 std::chrono::month{10},
-                                                 std::chrono::day{31}};
+    const auto start = std::chrono::year_month_day{
+        std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
+    const auto end = std::chrono::year_month_day{
+        std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
     ores::trading::domain::fx_variance_swap_terms terms{
         start, end, "USD", "AAPL", "Long", 16.0, {}, "Variance"};
     terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
@@ -510,8 +508,9 @@ TEST_CASE("a_booked_variance_swap_keeps_its_dates_in_order", "[service]") {
     const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
 
     REQUIRE(response.result.outcome == outcome::ok);
-    const auto rows = ores::trading::repository::fx_variance_swap_instrument_repository().read_latest(
-        f.ctx, boost::uuids::to_string(req.anchor.id));
+    const auto rows =
+        ores::trading::repository::fx_variance_swap_instrument_repository().read_latest(
+            f.ctx, boost::uuids::to_string(req.anchor.id));
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().start_date == start);
     CHECK(rows.front().end_date == end);

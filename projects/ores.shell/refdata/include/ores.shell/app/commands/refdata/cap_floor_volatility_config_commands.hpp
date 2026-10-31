@@ -93,10 +93,7 @@ public:
      * <rate_computation_period> <on_cap_settlement_days> <discount_curve> <atm_tenors>
      * <settlement_days> <interpolate_on> <time_interpolation> <strike_interpolation> <input_type>
      * <quote_includes_index_name> <flat_first_period> <use_effecive_volatility>
-     * <use_effective_volatility> <has_proxy_config> <proxy_source_curve_id> <proxy_source_index>
-     * <proxy_source_rate_computation_period> <proxy_target_index>
-     * <proxy_target_rate_computation_period> <proxy_target_on_cap_settlement_days>
-     * <proxy_scaling_factor> <reason> <commentary>
+     * <use_effective_volatility> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -109,10 +106,7 @@ public:
      * <ibor_index> <index> <rate_computation_period> <on_cap_settlement_days> <discount_curve>
      * <atm_tenors> <settlement_days> <interpolate_on> <time_interpolation> <strike_interpolation>
      * <input_type> <quote_includes_index_name> <flat_first_period> <use_effecive_volatility>
-     * <use_effective_volatility> <has_proxy_config> <proxy_source_curve_id> <proxy_source_index>
-     * <proxy_source_rate_computation_period> <proxy_target_index>
-     * <proxy_target_rate_computation_period> <proxy_target_on_cap_settlement_days>
-     * <proxy_scaling_factor> <reason> <commentary> [--version <n>]
+     * <use_effective_volatility> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -125,10 +119,7 @@ public:
      * <optional_quotes> <ibor_index> <index> <rate_computation_period> <on_cap_settlement_days>
      * <discount_curve> <atm_tenors> <settlement_days> <interpolate_on> <time_interpolation>
      * <strike_interpolation> <input_type> <quote_includes_index_name> <flat_first_period>
-     * <use_effecive_volatility> <use_effective_volatility> <has_proxy_config>
-     * <proxy_source_curve_id> <proxy_source_index> <proxy_source_rate_computation_period>
-     * <proxy_target_index> <proxy_target_rate_computation_period>
-     * <proxy_target_on_cap_settlement_days> <proxy_scaling_factor> <reason> <commentary>
+     * <use_effecive_volatility> <use_effective_volatility> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

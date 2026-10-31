@@ -48,35 +48,7 @@ struct curve_volatility_config_key {
 struct curve_volatility_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
-    std::string kind;
     bool is_wrapped;
-    std::optional<int> priority;
-    std::optional<std::string> quote_type;
-    std::optional<std::string> volatility_type;
-    std::optional<std::string> exercise_type;
-    std::optional<std::string> strikes;
-    std::optional<std::string> expiries;
-    std::optional<std::string> time_interpolation;
-    std::optional<std::string> strike_interpolation;
-    std::optional<std::string> extrapolation;
-    std::optional<std::string> time_extrapolation;
-    std::optional<std::string> time_extrapolation_variance;
-    std::optional<std::string> strike_extrapolation;
-    std::optional<std::string> calendar;
-    std::optional<std::string> quote;
-    std::optional<std::string> interpolation;
-    std::optional<bool> enforce_monotone_variance;
-    std::optional<std::string> delta_type;
-    std::optional<std::string> atm_type;
-    std::optional<std::string> atm_delta_type;
-    std::optional<std::string> put_deltas;
-    std::optional<std::string> call_deltas;
-    std::optional<std::string> future_price_correction;
-    std::optional<std::string> proxy_volatility_curve;
-    std::optional<std::string> fx_volatility_curve;
-    std::optional<std::string> correlation_curve;
-    std::optional<std::string> cds_volatility_curve;
-    int position;
 };
 
 struct curve_volatility_config_change {
@@ -335,46 +307,7 @@ inline constexpr std::string_view deleted = "refdata.v1.curve_volatility_configs
         utility::codec::field{"id", &curve_volatility_config_write::id},
         utility::codec::field{"curve_definition_id",
                               &curve_volatility_config_write::curve_definition_id},
-        utility::codec::field{"kind", &curve_volatility_config_write::kind},
         utility::codec::field{"is_wrapped", &curve_volatility_config_write::is_wrapped},
-        utility::codec::field{"priority", &curve_volatility_config_write::priority},
-        utility::codec::field{"quote_type", &curve_volatility_config_write::quote_type},
-        utility::codec::field{"volatility_type", &curve_volatility_config_write::volatility_type},
-        utility::codec::field{"exercise_type", &curve_volatility_config_write::exercise_type},
-        utility::codec::field{"strikes", &curve_volatility_config_write::strikes},
-        utility::codec::field{"expiries", &curve_volatility_config_write::expiries},
-        utility::codec::field{"time_interpolation",
-                              &curve_volatility_config_write::time_interpolation},
-        utility::codec::field{"strike_interpolation",
-                              &curve_volatility_config_write::strike_interpolation},
-        utility::codec::field{"extrapolation", &curve_volatility_config_write::extrapolation},
-        utility::codec::field{"time_extrapolation",
-                              &curve_volatility_config_write::time_extrapolation},
-        utility::codec::field{"time_extrapolation_variance",
-                              &curve_volatility_config_write::time_extrapolation_variance},
-        utility::codec::field{"strike_extrapolation",
-                              &curve_volatility_config_write::strike_extrapolation},
-        utility::codec::field{"calendar", &curve_volatility_config_write::calendar},
-        utility::codec::field{"quote", &curve_volatility_config_write::quote},
-        utility::codec::field{"interpolation", &curve_volatility_config_write::interpolation},
-        utility::codec::field{"enforce_monotone_variance",
-                              &curve_volatility_config_write::enforce_monotone_variance},
-        utility::codec::field{"delta_type", &curve_volatility_config_write::delta_type},
-        utility::codec::field{"atm_type", &curve_volatility_config_write::atm_type},
-        utility::codec::field{"atm_delta_type", &curve_volatility_config_write::atm_delta_type},
-        utility::codec::field{"put_deltas", &curve_volatility_config_write::put_deltas},
-        utility::codec::field{"call_deltas", &curve_volatility_config_write::call_deltas},
-        utility::codec::field{"future_price_correction",
-                              &curve_volatility_config_write::future_price_correction},
-        utility::codec::field{"proxy_volatility_curve",
-                              &curve_volatility_config_write::proxy_volatility_curve},
-        utility::codec::field{"fx_volatility_curve",
-                              &curve_volatility_config_write::fx_volatility_curve},
-        utility::codec::field{"correlation_curve",
-                              &curve_volatility_config_write::correlation_curve},
-        utility::codec::field{"cds_volatility_curve",
-                              &curve_volatility_config_write::cds_volatility_curve},
-        utility::codec::field{"position", &curve_volatility_config_write::position},
     };
 }
 

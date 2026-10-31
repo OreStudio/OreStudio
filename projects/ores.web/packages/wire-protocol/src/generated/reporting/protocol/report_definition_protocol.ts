@@ -48,6 +48,8 @@ export interface ReportDefinitionWrite {
     post_processing: string;
     is_official: boolean;
     regulatory_book_type: string | null;
+    cut_kind_code: string | null;
+    cut_id: string | null;
 }
 
 export interface ReportDefinitionChange {
@@ -67,8 +69,10 @@ export interface ReportDefinitionLookup {
 
 export interface ReportDefinitionsFilter {
     party_id: string | null;
+    cut_kind_code: string | null | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
+    cut_kind_code_one_of: string[] | null;
     search: string | null;
 }
 

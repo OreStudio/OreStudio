@@ -128,12 +128,12 @@ ALL_VERBS = [
 ]
 
 
-def _entity(operations=None, requires_session=True):
+def _entity(operations=None, requires_session=True, http_area=None):
     """An entity shaped the way the loader hands it to the projection."""
     ops = ALL_VERBS if operations is None else operations
     if not requires_session:
         ops = [dict(op, requires_session=False) for op in ops]
-    return {
+    entity = {
         "component": "demo",
         "subcomponent": "api",
         "entity_singular": "widget",
@@ -144,10 +144,13 @@ def _entity(operations=None, requires_session=True):
         "write_fields": [_write("type"), _write("description")],
         "operations": ops,
     }
+    if http_area is not None:
+        entity["http_area"] = http_area
+    return entity
 
 
-def _plan(operations=None, requires_session=True):
-    return entity_http_route_plan(_entity(operations, requires_session))
+def _plan(operations=None, requires_session=True, http_area=None):
+    return entity_http_route_plan(_entity(operations, requires_session, http_area))
 
 
 def _addressing(plan):
@@ -182,6 +185,25 @@ class TestTheRouteTable:
             ("get", "/api/v1/demo/widgets/{type}/versions"),
             ("get", "/api/v1/demo/widgets/{type}/versions/{version}"),
         ]
+
+    def test_a_declared_area_is_the_namespace_its_routes_publish(self):
+        # The URL is a contract and a component rename must not move it, so the
+        # area is the model's declaration and not the component's name.
+        patterns = {pattern for _, pattern in
+                    _addressing(_plan(http_area="reference-data"))}
+        assert all(pattern.startswith("/api/v1/reference-data/")
+                   for pattern in patterns), patterns
+
+    def test_the_rendered_unit_carries_the_declared_area(self):
+        # The plan is not what a caller reaches: the template's text is.
+        text = _rendered_impl(_entity(http_area="reference-data"))
+        assert 'router->get("/api/v1/reference-data/widgets")' in text, text[:400]
+        assert "/api/v1/demo/" not in text
+
+    def test_an_entity_with_no_area_keeps_its_component(self):
+        patterns = {pattern for _, pattern in _addressing(_plan())}
+        assert all(pattern.startswith("/api/v1/demo/")
+                   for pattern in patterns), patterns
 
     def test_a_create_and_a_replace_share_a_path_and_differ_by_method(self):
         # The whole of what separates them is the claim, so the verb carries

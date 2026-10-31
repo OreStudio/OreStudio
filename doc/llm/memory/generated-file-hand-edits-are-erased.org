@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B71DDE37-CFC8-44C1-A3DA-4B50C4CBE3EE
+:END:
+#+title: A rule kept in a generated file is erased by the next regeneration
+#+description: Why a rule written into a generated file disappears, and where it belongs instead.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A rule that only a generated file carries is lost when that file is regenerated, and nothing fails until something walks the store.
+
+*Why:* Generation rewrites the file from its model, so a hand edit has no place to survive; the row still compiles, so the loss is silent and only a round trip that reads the value back notices it.
+
+*How to apply:* State the rule in the model and render it from the template, then regenerate. When that is too large for the change at hand, add a gate that fails when the rule is missing, and re-apply the edit after every regeneration until then. Let the drift gate run: it names the generated files the tree holds and the model does not produce.

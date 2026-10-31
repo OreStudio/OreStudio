@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 5C31A0D7-6E42-4B18-9F0A-2D7E4C81B3A6
+:END:
+#+title: ores.reporting.cut_family
+#+description: Codegen entity model for the reporting =cut_family= table. The family a cut kind belongs to: the body rule and the source of the instant that every kind inside it shares.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The body rule and instant source a cut kind shares with its siblings.
+#+entity_singular: cut_family
+#+entity_plural: cut_families
+#+entity_title: Cut Family
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+Reference data table of the families a cut kind belongs to. A family groups
+the kinds whose body is the same and whose instant comes from the same place.
+
+The family fixes the body rule and the source of the instant; a kind inside it
+fixes the rest. The end of day family holds the ordinary close, the month end
+and the year end, because all three fix the same four inputs at the same
+centre's close and differ only in what the occasion covers and how long the cut
+is kept. A family of one is not a wasted row: it states the body rule and the
+instant source for every kind that will join it.
+
+The families are =end_of_day=, =start_of_day=, =verification=, =intraday= and
+=consumer=. The consumer family is the one whose instant the run supplies, which
+is the LIVE kind.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique family code.
+
+Examples: 'end_of_day', 'consumer'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the family.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Family"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The body rule and the source of the instant the family's kinds share.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_reporting_cut_families_tbl
+:rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: family
+:entity_plural_short:   families
+:entity_singular_words: cut family
+:entity_plural_words:   cut families
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cf
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        cut_families
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field       | label       | type      | is_key | is_required | placeholder            |
+|-------------+-------------+-----------+--------+-------------+------------------------|
+| code        | Code        | line_edit | true   | true        | Enter family code      |
+| name        | Name        | line_edit |        | true        | Enter display name     |
+| description | Description | text_edit |        |             | Enter a description    |
+
+*** Columns
+
+| enum_name    | field         | header      | type   | width |
+|--------------+---------------+-------------+--------+-------|
+| Code         | code          | Code        | string | 160   |
+| Name         | name          | Name        | string | 200   |
+| Description  | description   | Description | string | 300   |
+| DisplayOrder | display_order | Order       | int    | 80    |
+| Version      | version       | Version     | int    | 80    |
+| ModifiedBy   | modified_by   | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — why a family and why EOM and EOY are kinds.
+- [[id:1B2C3D4E-5F60-4718-9A2B-3C4D5E6F7A80][ores.reporting.cut_kind]] — the kinds the family groups.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

@@ -50,9 +50,6 @@ std::vector<ores::diff::domain::field_value> render_inflation_cap_floor_volatili
     fields.push_back(
         {.name = "Settlement Days",
          .value = v.settlement_days ? std::to_string(*v.settlement_days) : std::string{}});
-    fields.push_back({.name = "Cap Strikes", .value = v.cap_strikes.value_or(std::string{})});
-    fields.push_back({.name = "Floor Strikes", .value = v.floor_strikes.value_or(std::string{})});
-    fields.push_back({.name = "Strikes", .value = v.strikes.value_or(std::string{})});
     fields.push_back({.name = "Calendar", .value = v.calendar});
     fields.push_back({.name = "Day Counter", .value = v.day_counter});
     fields.push_back({.name = "Business Day Convention", .value = v.business_day_convention});

@@ -88,9 +88,9 @@ public:
 
     /**
      * @brief add <curve_definition_id> <inflation_type> <quote_type> <volatility_type>
-     * <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar>
-     * <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated>
-     * <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
+     * <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> <business_day_convention>
+     * <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure>
+     * <quote_index> <conventions> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,10 +98,9 @@ public:
 
     /**
      * @brief set <id> <curve_definition_id> <inflation_type> <quote_type> <volatility_type>
-     * <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes> <strikes> <calendar>
-     * <day_counter> <business_day_convention> <index> <index_curve> <index_interpolated>
-     * <observation_lag> <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
-     * [--version <n>]
+     * <extrapolation> <tenors> <settlement_days> <calendar> <day_counter> <business_day_convention>
+     * <index> <index_curve> <index_interpolated> <observation_lag> <yield_term_structure>
+     * <quote_index> <conventions> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -109,10 +108,9 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <curve_definition_id> <inflation_type> <quote_type>
-     * <volatility_type> <extrapolation> <tenors> <settlement_days> <cap_strikes> <floor_strikes>
-     * <strikes> <calendar> <day_counter> <business_day_convention> <index> <index_curve>
-     * <index_interpolated> <observation_lag> <yield_term_structure> <quote_index> <conventions>
-     * <reason> <commentary>
+     * <volatility_type> <extrapolation> <tenors> <settlement_days> <calendar> <day_counter>
+     * <business_day_convention> <index> <index_curve> <index_interpolated> <observation_lag>
+     * <yield_term_structure> <quote_index> <conventions> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -55,35 +55,7 @@ struct curve_volatility_config_entity {
     int version = 0;
     boost::uuids::uuid party_id;
     boost::uuids::uuid curve_definition_id;
-    std::string kind;
     bool is_wrapped = false;
-    std::optional<int> priority;
-    std::optional<std::string> quote_type;
-    std::optional<std::string> volatility_type;
-    std::optional<std::string> exercise_type;
-    std::optional<std::string> strikes;
-    std::optional<std::string> expiries;
-    std::optional<std::string> time_interpolation;
-    std::optional<std::string> strike_interpolation;
-    std::optional<std::string> extrapolation;
-    std::optional<std::string> time_extrapolation;
-    std::optional<std::string> time_extrapolation_variance;
-    std::optional<std::string> strike_extrapolation;
-    std::optional<std::string> calendar;
-    std::optional<std::string> quote;
-    std::optional<std::string> interpolation;
-    std::optional<bool> enforce_monotone_variance;
-    std::optional<std::string> delta_type;
-    std::optional<std::string> atm_type;
-    std::optional<std::string> atm_delta_type;
-    std::optional<std::string> put_deltas;
-    std::optional<std::string> call_deltas;
-    std::optional<std::string> future_price_correction;
-    std::optional<std::string> proxy_volatility_curve;
-    std::optional<std::string> fx_volatility_curve;
-    std::optional<std::string> correlation_curve;
-    std::optional<std::string> cds_volatility_curve;
-    int position = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -102,35 +74,7 @@ struct curve_volatility_config_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("curve_definition_id", &e::curve_definition_id) |
-               query_builder::bind("kind", &e::kind) |
                query_builder::bind("is_wrapped", &e::is_wrapped) |
-               query_builder::bind("priority", &e::priority) |
-               query_builder::bind("quote_type", &e::quote_type) |
-               query_builder::bind("volatility_type", &e::volatility_type) |
-               query_builder::bind("exercise_type", &e::exercise_type) |
-               query_builder::bind("strikes", &e::strikes) |
-               query_builder::bind("expiries", &e::expiries) |
-               query_builder::bind("time_interpolation", &e::time_interpolation) |
-               query_builder::bind("strike_interpolation", &e::strike_interpolation) |
-               query_builder::bind("extrapolation", &e::extrapolation) |
-               query_builder::bind("time_extrapolation", &e::time_extrapolation) |
-               query_builder::bind("time_extrapolation_variance", &e::time_extrapolation_variance) |
-               query_builder::bind("strike_extrapolation", &e::strike_extrapolation) |
-               query_builder::bind("calendar", &e::calendar) |
-               query_builder::bind("quote", &e::quote) |
-               query_builder::bind("interpolation", &e::interpolation) |
-               query_builder::bind("enforce_monotone_variance", &e::enforce_monotone_variance) |
-               query_builder::bind("delta_type", &e::delta_type) |
-               query_builder::bind("atm_type", &e::atm_type) |
-               query_builder::bind("atm_delta_type", &e::atm_delta_type) |
-               query_builder::bind("put_deltas", &e::put_deltas) |
-               query_builder::bind("call_deltas", &e::call_deltas) |
-               query_builder::bind("future_price_correction", &e::future_price_correction) |
-               query_builder::bind("proxy_volatility_curve", &e::proxy_volatility_curve) |
-               query_builder::bind("fx_volatility_curve", &e::fx_volatility_curve) |
-               query_builder::bind("correlation_curve", &e::correlation_curve) |
-               query_builder::bind("cds_volatility_curve", &e::cds_volatility_curve) |
-               query_builder::bind("position", &e::position) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

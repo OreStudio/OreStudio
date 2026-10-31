@@ -47,6 +47,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import ore_aliases as aliases  # noqa: E402
 import ore_schema_types as schema_types  # noqa: E402
 
 TERMS = os.path.join(HERE, "curve_terms.json")
@@ -56,16 +57,6 @@ CURATION_KEYS = ("link", "reason", "source", "source_ref", "curator", "date")
 SOURCES = ("ore_guide", "ore_code", "ore_xsd", "authored", "seed")
 
 CATALOGUES = {
-    "refdata.business_day_convention": {
-        "name": "Business day conventions",
-        "relation": "ores_refdata_business_day_convention_catalogue_v",
-        "description": "The business day conventions reference data holds.",
-    },
-    "refdata.day_counter": {
-        "name": "Day counters",
-        "relation": "ores_refdata_day_counter_catalogue_v",
-        "description": "The day counters reference data holds.",
-    },
     "refdata.currency": {
         "name": "Currencies",
         "relation": "ores_refdata_currency_catalogue_v",
@@ -103,6 +94,25 @@ def vocabularies(schema=SCHEMA):
     return {entry["element"]: entry["value_set"] for entry in declared.values()}
 
 
+def renderings_of(value_set):
+    """The conversion table a declared value set states, or None for another kind.
+
+    A vocabulary whose values ORE's reader converts states the table that says
+    which renderings mean one fact, and the set is drawn from it. A vocabulary
+    drawn from a catalogue states the catalogue instead, and one drawn from
+    nothing is text.
+    """
+    for entry in declared_vocabularies().values():
+        if entry["value_set"] != value_set:
+            continue
+        table = entry.get("renderings")
+        if table is not None and table not in aliases.SETS:
+            raise ValueError(f"{value_set}: the declaration names {table}, which is "
+                             "not a family ORE's reader converts")
+        return table
+    raise ValueError(f"{value_set}: the declaration names a set no row backs")
+
+
 def catalogue_of(value_set):
     """The catalogue a declared value set draws on, or None for a text set.
 
@@ -132,10 +142,129 @@ VALUE_SET_OF = vocabularies()
 # extractor sees the read and not what parses an item, so a person states it here
 # and names the place the ORE code proves it.
 LIST_ITEM = {
-    "Strikes": ("number_list",
-                "The report grid beside the curve parses its strike list as a real "
-                "(OREData/ored/configuration/reportconfig.cpp:68), and both leaves "
-                "name the same set of strikes, so one item is a number."),
+    "Strikes": {
+        "kind": "number_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/reportconfig.cpp:68",
+        "reason": "The report grid beside the curve parses its strike list as a "
+                  "real, and both leaves name the same set of strikes, so one item "
+                  "is a number.",
+    },
+    "CapStrikes": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:50",
+        "reason": "The guide states the strikes for which cap prices are quoted, so "
+                  "one item is a number.",
+    },
+    "FloorStrikes": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:52",
+        "reason": "The guide states the strikes for which floor prices are quoted, "
+                  "so one item is a number.",
+    },
+    "DetachmentPoints": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:38",
+        "reason": "The guide states any positive number less than one, so one item "
+                  "is a number.",
+    },
+    "SmileSpreads": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:111",
+        "reason": "The guide states strikes expressed as strike spreads relative to "
+                  "the ATM strike, so one item is a number.",
+    },
+    "Tenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:94",
+        "reason": "The guide states a comma separated list of valid tenor strings, "
+                  "and a tenor is a period.",
+    },
+    "AtmTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:106",
+        "reason": "The guide states a comma separated list of valid tenor strings, "
+                  "and a tenor is a period.",
+    },
+    "Terms": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:37",
+        "reason": "The guide states a comma separated list of tenors, and a tenor "
+                  "is a period.",
+    },
+    "SmileOptionTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:109",
+        "reason": "The guide states option expiries in period form, so one item is "
+                  "a period.",
+    },
+    "OptionTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:148",
+        "reason": "The option tenors are the expiries of the volatility surface, "
+                  "and every family reads an option tenor as a period, so one item "
+                  "is a period.",
+    },
+    "SwapTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:135",
+        "reason": "The guide states the underlying Swap term in period form, so one "
+                  "item is a period.",
+    },
+    "SmileSwapTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:142",
+        "reason": "The guide states the underlying Swap term in period form for the "
+                  "smile section, so one item is a period.",
+    },
+    "BondTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/yieldvolcurveconfig.hpp:42",
+        "reason": "The yield volatility class builds this leaf from the same read "
+                  "the swaption class builds SwapTenors from, with Bond as the "
+                  "underlying label, and a bond tenor is a period.",
+    },
+    "SmileBondTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/yieldvolcurveconfig.hpp:42",
+        "reason": "The yield volatility class builds this leaf from the same read "
+                  "the swaption class builds SmileSwapTenors from, and a bond tenor "
+                  "is a period.",
+    },
+    "Deltas": {
+        "kind": None,
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:167",
+        "reason": "ORE writes a delta as 25D, which is neither a number nor a "
+                  "period, and this tree states no rule for one yet.",
+    },
+    "Expiries": {
+        "kind": None,
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:128",
+        "reason": "The guide states expiry tenors and or expiry dates, and a single "
+                  "wildcard *, so no one rule holds of an item yet.",
+    },
+    "PillarDates": {
+        "kind": "date_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+        "reason": "A pillar date is a date the ORE date parser accepts, and the "
+                  "schema states the pattern.",
+    },
 }
 
 TYPE_SETS = {
@@ -145,6 +274,7 @@ TYPE_SETS = {
     "period": "curve.period",
     "number_list": "curve.number_list",
     "period_list": "curve.period_list",
+    "date_list": "curve.date_list",
     "list": "curve.list",
 }
 
@@ -194,6 +324,16 @@ OWN_SETS = {
                        "the ORE code reads into one vector.",
         "source_kind": "regex",
         "pattern": PERIOD_PATTERN,
+        "cardinality": "many",
+        "is_ordered": True,
+    },
+    "curve.date_list": {
+        "name": "Dates",
+        "description": "A comma separated list of dates, in a form the ORE schema "
+                       "and the ORE date parser accept.",
+        "source_kind": "regex",
+        "pattern": schema_types.restriction("date") and (
+            "^(" + schema_types.restriction("date")["pattern"] + ")$"),
         "cardinality": "many",
         "is_ordered": True,
     },
@@ -286,8 +426,31 @@ def curated_for(curated, section, name):
     return curated.get(f"{section}|{name}") or curated.get(f"*|{name}")
 
 
+_DRAWN = None
+
+
+def is_drawn(term):
+    """Whether the projection carries this leaf, so a set generated for it is used.
+
+    The schema enumerates a type for many leaves the projection does not carry, and
+    a set nothing names and no row carries is dead data. A set the schema states is
+    therefore generated only for a leaf a column actually holds.
+    """
+    global _DRAWN
+    if _DRAWN is None:
+        import generate_curve_column_guards as guards
+        _DRAWN = {row["xpath"] for row in guards.rows()}
+    return "/CurveConfiguration/" + "/".join(term["path"]) in _DRAWN
+
+
 def set_of(term, curated, parsers, section):
-    """The set code of one leaf, and the parser whose list it is, if any."""
+    """The set one leaf takes, and the set's row when this module generates it.
+
+    A set the parser or the schema states is built here, because its values come
+    from a source rather than from a person: the parser's map, or the values a
+    schema simple type enumerates. The row travels with the code so the caller
+    seeds it without deriving the same answer a second time.
+    """
     name = term["name"]
     entry = curated_for(curated, section, name)
     if entry:
@@ -297,9 +460,12 @@ def set_of(term, curated, parsers, section):
         if link not in parsers:
             raise ValueError(f"{name}: the curation links to {link}, which no ORE source "
                              "states a list for; correct the entry or drop it")
-        return parser_set_code(link), link
+        return parser_set_code(link), parser_set(link, parsers[link])
     if name in VALUE_SET_OF:
         value_set = VALUE_SET_OF[name]
+        table = renderings_of(value_set)
+        if table is not None:
+            return value_set, aliases.rendered_set(table, parsers)
         return ("text" if catalogue_of(value_set) is None else value_set), None
     if term["type"] in TYPE_SETS:
         if term["type"] == "list":
@@ -307,21 +473,44 @@ def set_of(term, curated, parsers, section):
             if stated:
                 return stated, None
         return TYPE_SETS[term["type"]], None
-    stated = schema_rule(term)
+    stated = schema_set(term)
     if stated:
-        return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
+        return stated
     return "text", None
 
 
-def schema_rule(term):
-    """The kind the ORE schema declares for a leaf the parser read as a string.
+def schema_set(term):
+    """The set the ORE schema states for one leaf, and its row when generated.
 
-    The parser says what the engine accepts and is the first authority. Where it
-    reads a leaf as a plain string without saying more, the schema still declares
-    a type, and a leaf declared xs:integer is not free text.
+    A built-in type is one of the sets this family already holds. A named simple
+    type the schema restricts states more: the values it enumerates, the pattern a
+    value must match, or the bounds it allows. Such a set is generated only for a
+    leaf a column carries, because a set nothing names and no row carries is dead
+    data.
     """
     found = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
-    return found[0] if found else None
+    if not found:
+        return None
+    kind, type_name = found
+    stated = schema_types.restriction(type_name)
+    # A kind the family already holds a set for takes that set unless the schema
+    # narrows it further with bounds: a flag is a flag, and the static set accepts
+    # the Y and N that ORE also writes.
+    bounded = bool(stated and (stated.get("minimum") is not None
+                               or stated.get("maximum") is not None))
+    if kind in SCHEMA_TYPE_SETS and not bounded:
+        return TYPE_SETS[SCHEMA_TYPE_SETS[kind]], None
+    if not stated:
+        return None
+    if not is_drawn(term):
+        return ("text", None)
+    return schema_types.stated_set(kind, type_name, "curve.")
+
+
+def schema_enum_set(term):
+    """The enumerated set the ORE schema states for one leaf's type."""
+    _, type_name = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
+    return schema_types.stated_set("enumerated", type_name, "curve.")
 
 
 def item_set_of(term):
@@ -334,7 +523,7 @@ def item_set_of(term):
     values and the unproven read is the extractor's gap rather than a second rule.
     """
     stated = LIST_ITEM.get(term["name"])
-    return TYPE_SETS[stated[0]] if stated else None
+    return TYPE_SETS[stated["kind"]] if stated and stated["kind"] else None
 
 
 def data():
@@ -359,6 +548,10 @@ def data():
     curated = curation()
     sets = dict(OWN_SETS)
     for value_set in set(VALUE_SET_OF.values()):
+        table = renderings_of(value_set)
+        if table is not None:
+            sets[value_set] = aliases.rendered_set(table, parsers)
+            continue
         catalogue = catalogue_of(value_set)
         if catalogue is None:
             continue
@@ -373,11 +566,15 @@ def data():
     import generate_curve_column_guards as curves
 
     projected = {row["xpath"] for row in curves.rows()}
-    codes = {}
+    codes, built = {}, set()
     for section, term in terms():
-        code, parser = set_of(term, curated, parsers, section)
-        if parser and code not in sets:
-            sets[code] = parser_set(parser, parsers[parser])
+        code, generated = set_of(term, curated, parsers, section)
+        if generated:
+            built.add(code)
+            if code in sets and sets[code] != generated:
+                raise ValueError(f"{code}: two sources state a different set under "
+                                 "one code")
+            sets.setdefault(code, generated)
         key = f"{section}|{term['name']}"
         address = "/CurveConfiguration/" + "/".join(term["path"])
         found = codes.setdefault(key, {})
@@ -402,7 +599,7 @@ def data():
     catalogues = {code: entry for code, entry in CATALOGUES.items()
                   if any(s.get("catalogue_code") == code for s in sets.values())}
     return {"catalogues": catalogues, "sets": sets, "links": links,
-            "conflicted": conflicted}
+            "conflicted": conflicted, "generated": built}
 
 
 def set_of_leaf(term, section=None):

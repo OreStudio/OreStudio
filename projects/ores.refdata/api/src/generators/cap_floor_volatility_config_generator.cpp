@@ -75,14 +75,6 @@ generate_synthetic_cap_floor_volatility_config(utility::generation::generation_c
     r.flat_first_period = std::nullopt;
     r.use_effecive_volatility = std::nullopt;
     r.use_effective_volatility = std::nullopt;
-    r.has_proxy_config = false;
-    r.proxy_source_curve_id = std::nullopt;
-    r.proxy_source_index = std::nullopt;
-    r.proxy_source_rate_computation_period = std::nullopt;
-    r.proxy_target_index = std::nullopt;
-    r.proxy_target_rate_computation_period = std::nullopt;
-    r.proxy_target_on_cap_settlement_days = std::nullopt;
-    r.proxy_scaling_factor = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

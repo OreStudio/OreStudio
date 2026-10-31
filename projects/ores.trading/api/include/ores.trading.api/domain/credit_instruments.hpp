@@ -53,8 +53,8 @@ namespace credit_terms {
     throw credit_product_error("A " + std::string(product) + " states " + std::string(fact) + ".");
 }
 
-inline void require_text(std::string_view product, std::string_view fact,
-                         const std::string& value) {
+inline void
+require_text(std::string_view product, std::string_view fact, const std::string& value) {
     if (value.empty())
         refuse(product, fact);
 }
@@ -67,8 +67,8 @@ inline void require_lei(std::string_view product, const std::string& value) {
     if (value.size() != 20)
         refuse(product, "an LEI of twenty characters, or an Internal identifier");
     for (const auto c : value) {
-        const auto alphanumeric = (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
-                                  (c >= 'a' && c <= 'z');
+        const auto alphanumeric =
+            (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
         if (!alphanumeric)
             refuse(product, "an LEI of twenty alphanumeric characters");
     }
@@ -89,8 +89,7 @@ struct credit_common_terms final {
 
 namespace credit_builders {
 
-inline credit_instrument common_row(std::string_view product,
-                                    const credit_common_terms& terms) {
+inline credit_instrument common_row(std::string_view product, const credit_common_terms& terms) {
     using namespace credit_terms;
     require_text(product, "a trade type", terms.trade_type_code);
     require_text(product, "a reference entity identifier", terms.reference_entity_id);
@@ -135,8 +134,7 @@ construct_risk_participation_agreement(const credit_common_terms& terms) {
     return credit_builders::common_row("risk participation agreement", terms);
 }
 
-[[nodiscard]] inline credit_instrument
-construct_synthetic_cdo(const credit_common_terms& terms) {
+[[nodiscard]] inline credit_instrument construct_synthetic_cdo(const credit_common_terms& terms) {
     return credit_builders::common_row("synthetic CDO", terms);
 }
 

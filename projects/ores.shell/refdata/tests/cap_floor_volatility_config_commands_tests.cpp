@@ -163,7 +163,7 @@ TEST_CASE("cap_floor_volatility_config_commands_process_add_requires_a_session",
 
     command_feedback::reset();
     cap_floor_volatility_config_commands::process_add(
-        out, session, cap_floor_volatility_config_tokens(38));
+        out, session, cap_floor_volatility_config_tokens(30));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -199,7 +199,7 @@ TEST_CASE("cap_floor_volatility_config_commands_process_set_requires_a_session",
 
     command_feedback::reset();
     cap_floor_volatility_config_commands::process_set(
-        out, session, cap_floor_volatility_config_tokens(38));
+        out, session, cap_floor_volatility_config_tokens(30));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -236,7 +236,7 @@ TEST_CASE("cap_floor_volatility_config_commands_process_put_many_requires_a_sess
 
     command_feedback::reset();
     cap_floor_volatility_config_commands::process_put_many(
-        out, session, cap_floor_volatility_config_tokens(38));
+        out, session, cap_floor_volatility_config_tokens(30));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

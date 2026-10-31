@@ -134,10 +134,9 @@ ores::synthetic::feed::ir_curve_refdata_context make_refdata_context() {
 
     // A short ladder: a month, a quarter and two years, so a curve can name more
     // than one rung and the months and years units are both exercised.
-    for (const auto& [code, unit, multiplier] :
-         {std::tuple{"1M", "MONTH", 1},
-          std::tuple{"3M", "MONTH", 3},
-          std::tuple{"2Y", "YEAR", 2}}) {
+    for (const auto& [code, unit, multiplier] : {std::tuple{"1M", "MONTH", 1},
+                                                 std::tuple{"3M", "MONTH", 3},
+                                                 std::tuple{"2Y", "YEAR", 2}}) {
         tenor t;
         t.code = code;
         t.kind = "PERIOD";
@@ -352,8 +351,7 @@ TEST_CASE("a_curve_publishes_one_datum_per_pillar_of_the_one_series_its_series_u
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
-TEST_CASE("every_rung_of_a_curve_is_its_own_term_of_the_one_series_it_shares",
-          "[feed_factory]") {
+TEST_CASE("every_rung_of_a_curve_is_its_own_term_of_the_one_series_it_shares", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto f = make_ir_fixture();
     // A spot-starting ladder, as the seeded demo curve is: three tenors, one series,

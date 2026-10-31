@@ -300,6 +300,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", "[eventing][integratio
 {{/parent_party_isolated}}
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
+{{^parent_party_isolated}}
 {{#seed_parent_party_id}}
     // The {{entity_singular}} and this {{parent_entity_singular}} belong to the same
     // party, so the {{parent_entity_singular}} carries the party already seeded for
@@ -325,6 +326,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", "[eventing][integratio
     {{column}}_party_repo.write(party_ctx, {{column}}_party);
     {{column}}_parent.{{{parent_party_prefix}}}party_id = {{column}}_party.id;
 {{/seed_parent_party_id}}
+{{/parent_party_isolated}}
 {{/parent_supplies_party}}
 {{/parent_requires_party}}
 {{#parent_is_party}}

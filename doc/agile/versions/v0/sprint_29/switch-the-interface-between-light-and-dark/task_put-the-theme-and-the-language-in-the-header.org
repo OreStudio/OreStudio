@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 7B061404-E8C9-45FB-A546-556EEC1179CF
+:END:
+#+title: Task: Put the theme and the language in the header
+#+description: A light palette beside the dark one, a button that switches between them with the sun and the moon the icon set draws, and a globe that opens the three languages. The language leaves the account menu.
+#+type: task
+#+level: s1
+#+filetags: :switch-the-interface-between-light-and-dark:sprint_29:v0:
+#+owner: marco
+#+branch: feature/put-the-theme-and-the-language-in-the-header
+#+pr: 4241
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A6E6653D-40FD-464B-A7F7-DC3D05FBFAEF][Switch the interface between light and dark, and choose the language from the header]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The header offers both settings, and the palette they set survives a reload.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A6E6653D-40FD-464B-A7F7-DC3D05FBFAEF][Switch the interface between light and dark, and choose the language from the header]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A light palette states every role token the dark one does
+- The theme toggle shows the palette it will switch to and survives a reload
+- The language menu opens from the header and marks the language in use
+- The account menu no longer carries a language select
+
+* Plan
+
+The palette is a second block of the same role tokens, selected on an attribute
+of the document, so no screen learns that a second palette exists: every utility
+already reads a role, and the block says what that role is in the light one.
+
+The choice is kept in the module that owns it rather than in a React context.
+The attribute on the document is the one place the palette is in force, and a
+context would be a second copy that could disagree with it; a control subscribes
+to the module with =useSyncExternalStore= instead, and a screen that never asks
+for the palette pays nothing.
+
+The language menu leaves the account menu for the header and reuses the
+language label the header already carried. The document's =lang= attribute
+follows the choice, so a screen reader and a browser's dictionary agree with the
+menu.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| web gate | pass (typecheck, format, tests) | =compass check --exclude-heavy= | branch head |
+| web package suite | 2341 tests in 187 files | =npx vitest run= in packages/web | branch head |
+| production bundle | builds | =npm run build= in projects/ores.web | branch head |
+| theme module | 8 tests | =npx vitest run src/theme/theme.test.ts= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4241][#4241]] | [web] Switch the palette and the language from the header |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The header carries the palette switch and the language menu beside the bell, and
+the account menu keeps only the person's own pages. The palette survives a
+reload, applies before the first paint, and the language sets the document's own
+language with it.
+
+The two icons are vendored from the Fluent set and recorded in the icon guide,
+as the guide asks of a new icon.

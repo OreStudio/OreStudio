@@ -62,9 +62,6 @@ struct inflation_cap_floor_volatility_config_entity {
     std::string extrapolation;
     std::string tenors;
     std::optional<int> settlement_days;
-    std::optional<std::string> cap_strikes;
-    std::optional<std::string> floor_strikes;
-    std::optional<std::string> strikes;
     std::string calendar;
     std::string day_counter;
     std::string business_day_convention;
@@ -99,9 +96,6 @@ struct inflation_cap_floor_volatility_config_entity {
                query_builder::bind("extrapolation", &e::extrapolation) |
                query_builder::bind("tenors", &e::tenors) |
                query_builder::bind("settlement_days", &e::settlement_days) |
-               query_builder::bind("cap_strikes", &e::cap_strikes) |
-               query_builder::bind("floor_strikes", &e::floor_strikes) |
-               query_builder::bind("strikes", &e::strikes) |
                query_builder::bind("calendar", &e::calendar) |
                query_builder::bind("day_counter", &e::day_counter) |
                query_builder::bind("business_day_convention", &e::business_day_convention) |

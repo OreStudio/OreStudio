@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 53628EFD-225D-4C9F-BBD7-EC0FCC601186
+:END:
+#+title: Task: Name the two types gcc refuses in a unity build
+#+description: gcc's -Wsubobject-linkage rejects a subobject whose type has no linkage. The nats client holds a latch from its anonymous namespace and the jwks coroutine holds a lambda from its own function scope, so the gcc nightly fails on ores.nats.lib and nothing in a clang build says so.
+#+type: task
+#+level: s1
+#+filetags: :keep-the-build-warning-free-on-every-toolchain:sprint_29:v0:
+#+owner: marco
+#+branch: feature/name-the-two-types-gcc-refuses
+#+pr: 4216
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.nats.lib compiles with gcc at -Werror in the unity build the project uses.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4DBC8953-25FC-403A-A8C3-94BA54F33786][Hotfix: Keep the build warning-free on every toolchain]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The latch the client holds is a named type
+- The jwks retry attempt is a named type rather than a lambda in the coroutine's frame
+- The nats unity translation unit compiles with gcc 16 and the project's warning flags
+
+* Plan
+
+Reproduce the gcc error without a gcc build tree: the compiler sees the same
+sources the clang build's unity file includes, so compiling that one file with
+g++ and the project's warning flags is the same test, in seconds rather than an
+hour of vcpkg and configure.
+
+Then give each type a name that has linkage: the latch goes at namespace scope
+beside =client::impl=, and the jwks attempt becomes a functor with the client,
+the timeout and the result string as members.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| nats unity unit under gcc | compiles, 0 warnings | =g++ -std=c++23 -O3 -Wall -Wextra -Werror -c unity_0_cxx.cxx= with the target's include paths | branch head |
+| nats unity unit under clang | compiles, 0 warnings | =clang++ -std=c++23 -O2 -Wall -Wextra -Werror -c unity_0_cxx.cxx= | branch head |
+| local checks | 21 of 21 pass | =compass check --exclude-heavy= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4216][#4216]] | [nats] Name the two types gcc refuses in a unity build |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+ores.nats.lib compiles clean under gcc 16.2 and clang 21 with -Werror, so the
+gcc nightly no longer stops on this library.
+
+The two other failures in the same nightly are not this task's: the web build
+reads a generated marketdata module that the source-to-feed rename deleted, and
+the MSVC unity build runs out of template context on a generated entity. Each is
+recorded on the parent story.

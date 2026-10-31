@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: 3C0B9E52-6D1A-4F7B-9E34-8A2D5C61F0B7
+:END:
+#+title: ores.refdata.cap_floor_proxy_config
+#+description: Codegen entity model for the refdata =cap_floor_proxy_config= part: the ProxyConfig element a cap and floor volatility entry may state.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: cap_floor_proxy_config
+#+entity_plural: cap_floor_proxy_configs
+#+entity_title: Cap Floor Proxy Config
+#+brief: The proxy surface a cap and floor volatility entry is built from.
+#+created: 2026-10-30
++#+updated: 2026-10-30
+
+A cap and floor volatility entry may name a proxy surface instead of its own
+quotes, and ORE states it as a =ProxyConfig= element inside the entry's
+=CapFloorVolatility=:
+
+#+begin_example
+<ProxyConfig>
+  <Source>
+    <CurveId>...</CurveId>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+  </Source>
+  <Target>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+    <ONCapSettlementDays>...</ONCapSettlementDays>
+  </Target>
+  <ScalingFactor>...</ScalingFactor>
+</ProxyConfig>
+#+end_example
+
+That block was seven nullable columns of the entry, meaningful only when the
+entry named a proxy. A row of this part holds it, and a row exists only when the
+entry names one, so the presence of the part is the flag and no =has_proxy_config=
+column is needed.
+
+The swaption entry's proxy block is a different element: its source and target
+carry =ShortSwapIndexBase= and =SwapIndexBase= where this one carries an index
+and a rate computation period. It is its own part, =swaption_proxy_config=, for
+that reason: the two share a shape, not a type.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** cap_floor_volatility_config_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The volatility entry this proxy belongs to. One row per entry, so the generated
+table adds the unique index on the live rows of =(tenant_id, cap_floor_volatility_config_id)=:
+an entry names a proxy or it does not, and never two. History is unaffected,
+because the index is partial on =valid_to= infinity.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this proxy belongs to. Carried so row level
+security can isolate the part without a join, and stamped from the session that
+writes the document.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** source_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The cap and floor volatility the proxy surface is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_rate_computation_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rate computation period of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target_rate_computation_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rate computation period of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target_on_cap_settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The overnight cap settlement days of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** scaling_factor
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The factor the proxy's volatilities are scaled by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cap_floor_proxy_configs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cap_floor_proxy_config
+:entity_plural_short:   cap_floor_proxy_configs
+:entity_singular_words: cap floor proxy config
+:entity_plural_words:   cap floor proxy configs
+:END:
+
+* Foreign keys
+
+** cap_floor_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_cap_floor_volatility_configs_tbl
+:target_column: id
+:parent_entity: cap_floor_volatility_config
+:nullable:      false
+:error_message: Invalid cap_floor_volatility_config_id: %. No active cap and floor volatility entry found with this id.
+:END:
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — why the block is a type and not seven columns.

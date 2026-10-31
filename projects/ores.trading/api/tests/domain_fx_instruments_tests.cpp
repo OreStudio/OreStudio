@@ -78,8 +78,7 @@ using namespace ores::logging;
 TEST_CASE("an_fx_forward_states_what_is_bought_and_sold", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    const auto sut =
-        construct_fx_forward(fx_forward_terms{make_fx_legs(), an_fx_date(), "Cash"});
+    const auto sut = construct_fx_forward(fx_forward_terms{make_fx_legs(), an_fx_date(), "Cash"});
     BOOST_LOG_SEV(lg, info) << "Forward type: " << sut.identity.trade_type_code;
 
     CHECK(sut.identity.trade_type_code == "FxForward");
@@ -210,8 +209,13 @@ TEST_CASE("a_variance_swap_requires_an_end_after_its_start_and_a_positive_strike
 TEST_CASE("an_accumulator_states_the_range_its_fixings_accrue_inside", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    fx_accumulator_terms terms{"USD", fx_money("10000"), "EUR/USD", "Long", an_fx_date(),
-                               fx_money("1.10"), fx_money("1.15")};
+    fx_accumulator_terms terms{"USD",
+                               fx_money("10000"),
+                               "EUR/USD",
+                               "Long",
+                               an_fx_date(),
+                               fx_money("1.10"),
+                               fx_money("1.15")};
     const auto sut = construct_fx_accumulator(terms);
     BOOST_LOG_SEV(lg, info) << "Accumulator bounds: " << sut.range_bounds.size();
 

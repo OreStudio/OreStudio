@@ -23,8 +23,7 @@ smile, and the swap indices it is built on. Its =Report= is a row of
 =curve_parametric_smile=.
 
 A =ProxyConfig= builds the surface from another one; it is one per entry, so
-its fields are the =proxy_= columns, and =has_proxy_config= says whether the
-entry wrote it.
+it is a row of =swaption_proxy_config= and the entry holds none of its fields.
 
 * Flags
 :PROPERTIES:
@@ -309,84 +308,6 @@ std::nullopt
 :END:
 
 The tag the surface's quotes are named with.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** has_proxy_config
-:PROPERTIES:
-:type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-Whether the entry writes a =ProxyConfig= element.
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** proxy_source_curve_id
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The swaption volatility a proxy surface is built from.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_source_short_swap_index_base
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The short swap index of the proxy's source.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_source_swap_index_base
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The swap index of the proxy's source.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_target_short_swap_index_base
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The short swap index of the proxy's target.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_target_swap_index_base
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The swap index of the proxy's target.
 
 #+begin_src cpp :name generator
 std::nullopt

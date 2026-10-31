@@ -49,10 +49,7 @@ struct fx_volatility_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string dimension;
-    std::optional<std::string> smile_type;
-    std::optional<std::string> smile_interpolation;
     std::optional<std::string> deltas;
-    std::optional<std::string> smile_delta;
     std::optional<std::string> conventions;
     std::optional<std::string> expiries;
     std::optional<std::string> fx_spot_id;
@@ -63,10 +60,6 @@ struct fx_volatility_config_write {
     std::optional<std::string> fx_index_tag;
     std::optional<std::string> base_volatility_1;
     std::optional<std::string> base_volatility_2;
-    std::optional<std::string> smile_extrapolation;
-    std::optional<std::string> time_interpolation;
-    std::optional<std::string> time_weighting;
-    std::optional<double> butterfly_error_tolerance;
 };
 
 struct fx_volatility_config_change {
@@ -325,11 +318,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_volatility_configs_ev
         utility::codec::field{"curve_definition_id",
                               &fx_volatility_config_write::curve_definition_id},
         utility::codec::field{"dimension", &fx_volatility_config_write::dimension},
-        utility::codec::field{"smile_type", &fx_volatility_config_write::smile_type},
-        utility::codec::field{"smile_interpolation",
-                              &fx_volatility_config_write::smile_interpolation},
         utility::codec::field{"deltas", &fx_volatility_config_write::deltas},
-        utility::codec::field{"smile_delta", &fx_volatility_config_write::smile_delta},
         utility::codec::field{"conventions", &fx_volatility_config_write::conventions},
         utility::codec::field{"expiries", &fx_volatility_config_write::expiries},
         utility::codec::field{"fx_spot_id", &fx_volatility_config_write::fx_spot_id},
@@ -342,13 +331,6 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_volatility_configs_ev
         utility::codec::field{"fx_index_tag", &fx_volatility_config_write::fx_index_tag},
         utility::codec::field{"base_volatility_1", &fx_volatility_config_write::base_volatility_1},
         utility::codec::field{"base_volatility_2", &fx_volatility_config_write::base_volatility_2},
-        utility::codec::field{"smile_extrapolation",
-                              &fx_volatility_config_write::smile_extrapolation},
-        utility::codec::field{"time_interpolation",
-                              &fx_volatility_config_write::time_interpolation},
-        utility::codec::field{"time_weighting", &fx_volatility_config_write::time_weighting},
-        utility::codec::field{"butterfly_error_tolerance",
-                              &fx_volatility_config_write::butterfly_error_tolerance},
     };
 }
 

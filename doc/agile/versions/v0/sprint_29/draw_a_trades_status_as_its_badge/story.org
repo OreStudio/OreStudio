@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 3F581E83-7CDD-4BB6-B6D7-B6D80ECC9134
+:END:
+#+title: Story: Draw a trade's status as its badge
+#+description: The trade screens state a deal's status as words, and the badge catalogue has no trade-status domain, so nothing paints it. Add the domain and its badges for the codes a trade holds, and draw the status through it wherever a trade's status appears.
+#+type: story
+#+level: s2
+#+filetags: :trading:dq:web:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every place a trade's status is drawn paints it as the badge the system holds
+for that status, so two screens cannot state one deal differently.
+
+A trade's status is a coded value like a book's or a party's, and the badge
+catalogue paints those. It paints no trade status, because no =trade_status=
+domain exists in it: the values a trade holds are the ones the trading status
+lookup seeds, and nothing in the catalogue names them. So the screens fall back
+to words -- the queue draws the status as a muted tag and the trade page as its
+own tag -- and each screen is free to state the same deal in different words.
+
+The gap surfaced building the Operations authorisation queue, where a deal's
+status sits beside its authorisation state and the two are read together.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- The badge catalogue holds a trade-status domain, with one badge for each code
+  the trading status lookup seeds, and the mapping is complete: a code the
+  lookup holds is a code the domain paints.
+- A trade screen draws the status through that badge: the queue's page, the
+  trade page and the blotter's rows say the same thing about one deal.
+- A status code the domain does not paint is drawn as plain text rather than
+  hidden, and the test says so.
+
+* What the work will have to settle
+
+- Which catalogue the domain belongs to. The badge catalogue holds the codes the
+  system paints, and the trading status lookup holds the codes a trade may hold;
+  the two must agree, and the domain is the place they agree.
+- Whether the badge's words are the status's own words or a shorter form. The
+  house rule is that a badge states the value it paints, so the status's name
+  wins.
+- Whether the colours are new or reused. Book and party statuses already hold a
+  set of neutral pairs; a trade status whose meaning is the same should reuse
+  them rather than add a fourth vocabulary.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:93C96C11-9D11-469F-8661-335D8BC44897][Add the trade status domain and its badges]] | BACKLOG | | | Seed a trade_status domain in the badge catalogue with one badge for each code the trading status lookup holds, and a mapping for each, so a trade's status has a badge to be painted with. The web reads it through the labels read the classifications screens already use. |
+
+* Decisions
+
+* Out of scope
+
+- The authorisation state itself, which is a request state and not the trade's.
+  It keeps the tag the inbox draws for it.
+- Any status outside trading: a fixing, a report or a workflow step paints its
+  own.

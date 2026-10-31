@@ -17,11 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/domain/convention_identity.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_codec.hpp"
+#include "ores.refdata.api/domain/currency_json_io.hpp"
+#include "ores.refdata.api/eventing/currency_event.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -32,6 +36,7 @@
 #include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -66,8 +71,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
 
     const auto msgpack = codec::write_msgpack(v);
     CHECK(msgpack == their_msgpack(v));
-    CHECK(codec::write_msgpack(codec::read_msgpack(message_bytes_of(msgpack))) ==
-          msgpack);
+    CHECK(codec::write_msgpack(codec::read_msgpack(message_bytes_of(msgpack))) == msgpack);
 
     // The specialisation is the generated one, not the reflector-backed
     // primary template: a translation unit that includes the codec header
@@ -103,23 +107,22 @@ ores::refdata::domain::currency a_currency() {
 
 ores::refdata::messaging::currency_write a_currency_write() {
     const auto c = a_currency();
-    return ores::refdata::messaging::currency_write{
-        c.iso_code,
-        c.name,
-        c.numeric_code,
-        c.symbol,
-        c.fraction_symbol,
-        c.fractions_per_unit,
-        c.rounding_type,
-        c.rounding_precision,
-        c.format,
-        c.monetary_nature,
-        c.market_tier,
-        c.ore_currency_type,
-        c.image_id,
-        c.spot_days,
-        c.day_basis,
-        c.base_precedence};
+    return ores::refdata::messaging::currency_write{c.iso_code,
+                                                    c.name,
+                                                    c.numeric_code,
+                                                    c.symbol,
+                                                    c.fraction_symbol,
+                                                    c.fractions_per_unit,
+                                                    c.rounding_type,
+                                                    c.rounding_precision,
+                                                    c.format,
+                                                    c.monetary_nature,
+                                                    c.market_tier,
+                                                    c.ore_currency_type,
+                                                    c.image_id,
+                                                    c.spot_days,
+                                                    c.day_basis,
+                                                    c.base_precedence};
 }
 
 }
@@ -141,8 +144,7 @@ TEST_CASE("every generated refdata message codec writes what reflect-cpp writes"
 
     auto bare = a_currency_write();
     bare.ore_currency_type = "Fiat";
-    bare.image_id = boost::uuids::string_generator{}(
-        "3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+    bare.image_id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
     same_bytes_as_reflect_cpp(bare);
 
     same_bytes_as_reflect_cpp(currency_removal{currency_key{"GBP"}});
@@ -166,16 +168,18 @@ TEST_CASE("every generated refdata message codec writes what reflect-cpp writes"
         {a_currency()},
         1});
 
-    same_bytes_as_reflect_cpp(currencies_filter{std::vector<std::string>{"GBP", "EUR"},
-                                               std::nullopt});
+    same_bytes_as_reflect_cpp(
+        currencies_filter{std::vector<std::string>{"GBP", "EUR"}, std::nullopt});
 
-    same_bytes_as_reflect_cpp(list_currencies_request{
-        0, 100, ores::utility::domain::order{"iso_code", false},
-        currencies_filter{std::nullopt, std::nullopt}, std::nullopt});
+    same_bytes_as_reflect_cpp(
+        list_currencies_request{0,
+                                100,
+                                ores::utility::domain::order{"iso_code", false},
+                                currencies_filter{std::nullopt, std::nullopt},
+                                std::nullopt});
 }
 
-TEST_CASE("a refdata field group states its shape, so its holder recurses",
-          "[codec][refdata]") {
+TEST_CASE("a refdata field group states its shape, so its holder recurses", "[codec][refdata]") {
     auto group = ores::refdata::domain::convention_identity{};
     group.id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
     group.party_id = boost::uuids::string_generator{}("5c9d4a3b-2e1f-4a6b-8c7d-9e0f1a2b3c4d");
@@ -199,20 +203,52 @@ TEST_CASE("the wire codec sends a refdata message through its generated codec",
 
     using codec = ores::utility::codec::wire_traits<currency_event>;
 
-    for (const auto format :
-         {ores::nats::wire_format::json, ores::nats::wire_format::msgpack}) {
+    for (const auto format : {ores::nats::wire_format::json, ores::nats::wire_format::msgpack}) {
         const ores::nats::wire_codec nats_codec(format);
         const auto bytes = nats_codec.encode(v);
-        const std::string_view sent(reinterpret_cast<const char*>(bytes.data()),
-                                    bytes.size());
+        const std::string_view sent(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 
-        const auto generated = format == ores::nats::wire_format::json ?
-                                   codec::write_json(v) :
-                                   codec::write_msgpack(v);
+        const auto generated = format == ores::nats::wire_format::json ? codec::write_json(v) :
+                                                                         codec::write_msgpack(v);
         CHECK(sent == generated);
 
         const auto read = nats_codec.decode<currency_event>(bytes);
         REQUIRE(read);
         CHECK(codec::write_json(*read) == codec::write_json(v));
     }
+}
+
+TEST_CASE("a generated event header converts a notification without the reflector",
+          "[codec][refdata][eventing]") {
+    using traits = ores::eventing::domain::entity_event_traits<
+        ores::refdata::messaging::currency_event>;
+
+    auto notification = ores::eventing::domain::entity_event_notification{};
+    notification.event_id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    notification.key = R"({"iso_code":"GBP"})";
+    notification.action = "written";
+    notification.version = 7;
+    notification.occurred_at =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+
+    const auto event = traits::from_notification(notification);
+    CHECK(event.key.iso_code == "GBP");
+    CHECK(event.action == "written");
+    CHECK(event.version == 7);
+
+    // A key this build cannot read leaves the event's own default rather than
+    // dropping the notification, which is what the reflector-backed read did.
+    notification.key = "not json at all";
+    const auto unreadable = traits::from_notification(notification);
+    CHECK(unreadable.key.iso_code.empty());
+    CHECK(unreadable.action == "written");
+}
+
+TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") {
+    // The json_io unit prints a row for a log; the codec writes it, so the two
+    // must agree or the log changes shape.
+    const auto c = a_currency();
+    std::ostringstream printed;
+    printed << c;
+    CHECK(printed.str() == rfl::json::write(c));
 }

@@ -75,22 +75,23 @@ TEST_CASE("role_routes_registers_every_derived_route", "[routes]") {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             role_expected_route{http_method::get, std::string{"/api/v1/iam/roles"}, true},
-             role_expected_route{http_method::get, std::string{"/api/v1/iam/roles/{name}"}, true},
+             role_expected_route{http_method::get, std::string{"/api/v1/access/roles"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/get-many"}, true},
-             role_expected_route{http_method::post, std::string{"/api/v1/iam/roles"}, true},
-             role_expected_route{http_method::put, std::string{"/api/v1/iam/roles"}, true},
+                 http_method::get, std::string{"/api/v1/access/roles/{name}"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/get-many"}, true},
+             role_expected_route{http_method::post, std::string{"/api/v1/access/roles"}, true},
+             role_expected_route{http_method::put, std::string{"/api/v1/access/roles"}, true},
              role_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/roles/{name}"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/put-many"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/delete-many"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/roles/{name}"}, true},
              role_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/roles/{name}/versions"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/delete-many"}, true},
+             role_expected_route{
+                 http_method::get, std::string{"/api/v1/access/roles/{name}/versions"}, true},
              role_expected_route{http_method::get,
-                                 std::string{"/api/v1/iam/roles/{name}/versions/{version}"},
+                                 std::string{"/api/v1/access/roles/{name}/versions/{version}"},
                                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -113,22 +114,23 @@ TEST_CASE("role_routes_requires_a_session_where_the_operation_does", "[routes]")
     // a session cannot be registered without one, and one that does not is
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
-             role_expected_route{http_method::get, std::string{"/api/v1/iam/roles"}, true},
-             role_expected_route{http_method::get, std::string{"/api/v1/iam/roles/{name}"}, true},
+             role_expected_route{http_method::get, std::string{"/api/v1/access/roles"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/get-many"}, true},
-             role_expected_route{http_method::post, std::string{"/api/v1/iam/roles"}, true},
-             role_expected_route{http_method::put, std::string{"/api/v1/iam/roles"}, true},
+                 http_method::get, std::string{"/api/v1/access/roles/{name}"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/put-many"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/get-many"}, true},
+             role_expected_route{http_method::post, std::string{"/api/v1/access/roles"}, true},
+             role_expected_route{http_method::put, std::string{"/api/v1/access/roles"}, true},
              role_expected_route{
-                 http_method::delete_, std::string{"/api/v1/iam/roles/{name}"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/put-many"}, true},
              role_expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/delete-many"}, true},
+                 http_method::delete_, std::string{"/api/v1/access/roles/{name}"}, true},
              role_expected_route{
-                 http_method::get, std::string{"/api/v1/iam/roles/{name}/versions"}, true},
+                 http_method::post, std::string{"/api/v1/access/roles/delete-many"}, true},
+             role_expected_route{
+                 http_method::get, std::string{"/api/v1/access/roles/{name}/versions"}, true},
              role_expected_route{http_method::get,
-                                 std::string{"/api/v1/iam/roles/{name}/versions/{version}"},
+                                 std::string{"/api/v1/access/roles/{name}/versions/{version}"},
                                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {

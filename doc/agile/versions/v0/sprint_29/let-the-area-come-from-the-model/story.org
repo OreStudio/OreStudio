@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 5D31F9D8-143A-43AA-8AE3-F75D17F6822E
+:END:
+#+title: Story: Let the area come from the model
+#+description: The generated route template writes /api/v1/<component>/<plural>, which leaks an internal component name into a published contract. Let an entity model declare its HTTP area, resolve it once, default it to the component so nothing moves yet, and gate a declared area against the published list.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An entity's HTTP area is a declaration on its model, resolved in one place, so a URL can outlive a component rename.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- An entity that declares #+http_area: renders its routes under that area.
+- An entity that declares no area renders under its component, so no existing URL moves.
+- A declared area that is not in the published list fails a check.
+- A codegen test covers both cases.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Let the area come from the model |
+| [[id:3664F26F-8F35-4A9F-98FC-2696360DAAF6][Move the currency routes onto reference-data]] | DONE | 2026-10-31 | 2026-10-31 | The first URL the project moves. Declare the area on the currency model, regenerate the route unit, its tests, its recipe and its hurl scripts, update the classification rules and the inventory, and prove nothing else in the tree still names the old path. |
+
+* Decisions
+
+- The area is declared per entity, not per component, because section 11.2 lets one component
+  publish several areas and ores.iam already needs two.
+- The default is the component, so the mechanism lands without a migration in the same diff
+  and no client sees a URL change it did not ask for.
+- The published areas are the list the inventory is classified against. A second list would
+  drift, and a URL is the most expensive thing in the system to change.
+
+* Result
+
+An entity model states the area its routes publish, the route plan resolves it in the one
+place the path is built, and the currency collection is the first to answer on its published
+area. The chain that has to move together was exercised once: the model, the route unit, its
+tests, the recipe page, the ten hurl scripts tangled from it, the classification rules and
+the inventory. The other generated collections can follow the same path, one component per
+change.
+
+* Out of scope
+
+-

@@ -26,6 +26,9 @@
  * sees the type, the set, how many values the document writes, the catalogue it
  * draws on and, for an enumerated set, its choices in order. The check that no
  * parameter lacks a set reads this view.
+ *
+ * A value row that names a canonical form is another rendering of one, which a
+ * write converts and a control never offers, so the choices leave those rows out.
  */
 
 create or replace view ores_reporting_ore_parameter_settings_v as
@@ -44,6 +47,7 @@ select p.scope,
              from ores_reporting_ore_parameter_value_set_values_tbl v
             where v.value_set_code = s.code
               and v.is_active
+              and v.canonical_value is null
               and v.valid_to = ores_utility_infinity_timestamp_fn()
        ) as choices
   from (

@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/cut_resolution_rules/cut_resolution_rule.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cut_resolution_rules get __none__

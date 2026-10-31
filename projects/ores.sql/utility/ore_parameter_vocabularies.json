@@ -1,9 +1,9 @@
 {
   "curveconfig.xsd|BusinessDayConvention": {
-    "catalogue": "refdata.business_day_convention",
     "element": "BusinessDayConvention",
     "name": "Business day conventions",
-    "reason": "ORE spells the element BusinessDayConvention, and the set states the 27 spellings ORE's parser maps onto seven conventions. The rule is the element's own name, which the schema states, so every section that declares the leaf takes the same catalogue.",
+    "reason": "ORE spells the element BusinessDayConvention, and the set states every rendering ORE's reader accepts and the convention each means. The rule is the element's own name, which the schema states, so every section that declares the leaf takes the same set.",
+    "renderings": "business_day_conventions",
     "schema": "curveconfig.xsd",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",
@@ -20,20 +20,20 @@
     "value_set": "curve.currency"
   },
   "curveconfig.xsd|DayCounter": {
-    "catalogue": "refdata.day_counter",
     "element": "DayCounter",
     "name": "Day counters",
-    "reason": "ORE spells the element DayCounter, and a day counter is one of the spellings reference data holds. The rule is the element's own name, which the schema states, so every section that declares a DayCounter leaf takes the same catalogue.",
+    "reason": "ORE spells the element DayCounter, and the set states every rendering ORE's reader accepts and the day counter each means. The rule is the element's own name, which the schema states, so every section that declares a DayCounter leaf takes the same set.",
+    "renderings": "day_counters",
     "schema": "curveconfig.xsd",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",
     "value_set": "curve.day_counter"
   },
   "curveconfig.xsd|YieldCurveDayCounter": {
-    "catalogue": "refdata.day_counter",
     "element": "YieldCurveDayCounter",
     "name": "Day counters",
-    "reason": "The yield curve names its day counter with an element of its own, and its values are the day counters reference data holds.",
+    "reason": "The yield curve names its day counter with an element of its own, and its values are the renderings ORE's reader accepts for a day counter.",
+    "renderings": "day_counters",
     "schema": "curveconfig.xsd",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",

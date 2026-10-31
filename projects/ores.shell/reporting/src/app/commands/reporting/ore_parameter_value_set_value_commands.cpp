@@ -145,7 +145,7 @@ void ore_parameter_value_set_value_commands::register_commands(cli::Menu& root_m
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <code> <value_set_code> <value> <label> <description> <display_order> <is_active> "
-        "<reason> <commentary>");
+        "<canonical_value> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +153,7 @@ void ore_parameter_value_set_value_commands::register_commands(cli::Menu& root_m
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <code> <value_set_code> <value> <label> <description> <display_order> <is_active> "
-        "<reason> <commentary> [--version <n>]");
+        "<canonical_value> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +161,7 @@ void ore_parameter_value_set_value_commands::register_commands(cli::Menu& root_m
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <code> <value_set_code> <value> <label> <description> "
-        "<display_order> <is_active> <reason> <commentary>");
+        "<display_order> <is_active> <canonical_value> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void ore_parameter_value_set_value_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -374,6 +374,8 @@ void ore_parameter_value_set_value_commands::process_add(std::ostream& out,
             req.change.write.display_order, parsed->positionals[next++], "display_order");
         ore_parameter_value_set_value_read_token(
             req.change.write.is_active, parsed->positionals[next++], "is_active");
+        ore_parameter_value_set_value_read_token(
+            req.change.write.canonical_value, parsed->positionals[next++], "canonical_value");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -416,8 +418,8 @@ void ore_parameter_value_set_value_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -435,6 +437,8 @@ void ore_parameter_value_set_value_commands::process_set(std::ostream& out,
             req.change.write.display_order, parsed->positionals[next++], "display_order");
         ore_parameter_value_set_value_read_token(
             req.change.write.is_active, parsed->positionals[next++], "is_active");
+        ore_parameter_value_set_value_read_token(
+            req.change.write.canonical_value, parsed->positionals[next++], "canonical_value");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -488,8 +492,8 @@ void ore_parameter_value_set_value_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -509,6 +513,8 @@ void ore_parameter_value_set_value_commands::process_put_many(
                 change.write.display_order, parsed->positionals[next++], "display_order");
             ore_parameter_value_set_value_read_token(
                 change.write.is_active, parsed->positionals[next++], "is_active");
+            ore_parameter_value_set_value_read_token(
+                change.write.canonical_value, parsed->positionals[next++], "canonical_value");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

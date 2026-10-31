@@ -99,6 +99,19 @@ configurations that already hold it and is refused for a new one.
 true
 #+end_src
 
+** canonical_value
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The canonical value this row is another rendering of, or null when this row *is*
+the canonical form. ORE reads =Z= and =Once= as the same frequency, and a
+document may write either, so the set states the one form a configuration holds
+and names it here on every other rendering it accepts. A control offers the rows
+whose column is null; a write converts a rendering to its canonical form.
+
 * SQL
 
 ** Flags
@@ -156,3 +169,4 @@ true
 | label         | Label       |
 | display_order | Order       |
 | is_active     | Active      |
+| canonical_value | Canonical form |

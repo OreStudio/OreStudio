@@ -21,12 +21,12 @@
  * pgTAP tests for the shape of the ORE element map.
  *
  * The map is one row per leaf and its child is one row per projection column, so
- * the counts state the coverage the task set out to prove: 480 leaves over 482
+ * the counts state the coverage the task set out to prove: 477 leaves over 479
  * columns. A leaf no column carries is dead data, and a column that names no leaf
  * is a projection nobody rules, so both directions are asserted as well as the
  * counts.
- * - The map carries 480 leaves
- * - The child carries 482 columns
+ * - The map carries 477 leaves
+ * - The child carries 479 columns
  * - Every column names a leaf the map holds
  * - Every leaf is carried by at least one column
  * - Every row names the authority that decided its rule
@@ -42,14 +42,14 @@ select plan(6);
 select is(
     (select count(*)::int from ores_reporting_ore_parameter_vocabularies_tbl
       where valid_to = ores_utility_infinity_timestamp_fn()),
-    480,
-    'the map carries 480 leaves');
+    477,
+    'the map carries 477 leaves');
 
 select is(
     (select count(*)::int from ores_reporting_ore_element_map_columns_tbl
       where valid_to = ores_utility_infinity_timestamp_fn()),
-    482,
-    'the child carries 482 columns');
+    479,
+    'the child carries 479 columns');
 
 select is_empty(
     $$select k.code, k.element_map_code

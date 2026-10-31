@@ -913,6 +913,7 @@ package "reporting" #E0F7FA {
         * description : text
         * display_order : integer
         * is_active : boolean
+          canonical_value : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -90,13 +90,14 @@ header documents and what the wire already wrote; the mapper was the odd one out
 =codec_product_type_tests.cpp= compares the codec against =rfl::json::write= for
 every enumerator, so the two agree by test and not by argument.
 
-**Eight refdata mappers the regeneration surfaces.** Regenerating the repository
-facet is what the enum change requires, and it rewrote eight refdata mappers
+**Five refdata mappers the regeneration surfaces.** Regenerating the repository
+facet is what the enum change requires, and it rewrote five refdata mappers
 because their models state =:store_transform:= and the tree had stopped applying
 it: =[marketdata] Finish the connectivity and public rates screens (#4262)=
-removed the calls without removing the property. The model is authoritative in
-this story, so the tree follows it. It is another component's unit and is stated
-here rather than buried.
+removed the calls without removing the property. The removal was partial and so
+is this repair: eleven refdata models state a store transform, and main applied
+it in six mappers. The model is authoritative in this story, so the tree follows
+it. It is another component's unit and is stated here rather than buried.
 
 **What is left, and why each one stays.**
 - =economic_digest.hpp= walks a value's members to hash the ones its model marks

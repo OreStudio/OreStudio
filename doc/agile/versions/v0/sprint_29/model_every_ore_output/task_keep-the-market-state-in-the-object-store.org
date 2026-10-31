@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 1D326204-29A2-4467-8DC7-779BD0C3CFAB
+:END:
+#+title: Task: Keep the market state in the object store
+#+description: A cube is tens to hundreds of megabytes. Held as base64 text in a row it adds a third on top of gzip and puts the payload in the database, which is the wrong place for grid throughput. The row keeps the index and a storage key; the compressed file lives in the object store and is fetched only when a reader needs the values.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A market-state file is kept where a large blob belongs, and the row keeps what
+makes it findable.
+
+The payload column holds a compressed cube as base64 text. That adds a third to
+the compressed size and puts the bytes in the database, which is the wrong place
+for a grid that stores many runs. The row should keep the index, the size, the
+digest and a storage key; the compressed file should live in the object store
+and be fetched only by a reader that needs the values.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- =ores_marketdata_market_state_payloads_tbl= carries a storage key and no
+  payload column.
+- The writer compresses the file, writes it to the object store, and inserts the
+  row with the key, the compressed size and the digest.
+- A read of the index does not fetch the object; a read of the values fetches it.
+- The row's key, index and digest are the same facts as today, so a reader that
+  only looks at the index is unaffected.
+- The round trip is proved against a checked-in sample: store, read the index,
+  read the values, decompress, compare.
+
+* Plan
+
+The object key follows the platform grammar: =marketdata/state/<run>/<family>.gz=.
+The index, the digest and the size stay in the row because they are what a reader
+filters on; the file itself is one object.
+
+This is the change that lets the store hold a grid's worth of runs: rows stay
+small and indexable, and the bytes are paid for only when they are read.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

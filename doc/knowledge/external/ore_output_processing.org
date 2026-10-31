@@ -145,4 +145,5 @@ because the corpus cannot state their shape. They are filed as
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the inputs a run reads, and the parameters that name these outputs.
 - [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] — the measures and the report catalogue a person sees.
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Journey: read what a run produced]] — the reader's view of the same files.
+- [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — how these files become rows: which reader reads which family, and which store takes which shape.
 - [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].

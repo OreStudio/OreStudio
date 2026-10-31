@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: DA5EBB3A-E221-4DC0-BFA1-6B2CDEF15DBB
+:END:
+#+title: Task: Document how a report run is processed
+#+description: One page states the flow of a run end to end and what post-processing does with its output: the phases the workflow invokes, what each hands the next, how the archive becomes rows in the two stores, which component owns which format, and why the shapes are what they are. The existing pipeline page predates the implementation and says only that post-processing records rows.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page states the flow of a report run end to end, and what post-processing
+does with the output, in enough detail that a person can follow a run without
+reading the code.
+
+It covers the phases the workflow invokes, what each hands the next, how the
+engine's output becomes rows in the two stores, which component owns which
+format, and why the shapes are what they are.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | The flow is documented: the phases and what each step hands on are on the pipeline page, and post-processing has its own page stating the routing, the readers, the two stores, the refusals, the node's part and the cost. |
+| Waiting on   | The three tasks that change the cost shape, whose outcome the page states as in flight. |
+| Next         | Replace the "what changes" section with what happens, once those three land. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A knowledge page states the run's phases in order, with what each consumes,
+  produces and hands on.
+- It states what post-processing does: which readers run, which tables are
+  written, how a family's shape decides between them, and what happens to a file
+  no family covers.
+- It states the ownership rule: the format belongs to ores.ore, the table to the
+  component that stores it, and no screen learns a family.
+- It states the cost shape: one object per file, blocks of rows, and the market
+  state in the object store.
+- The existing pipeline page points at it, and the ORE output processing page
+  links to it.
+
+* Plan
+
+The page lives under =doc/knowledge/architecture/= beside the pipeline page it
+completes, and the pipeline page keeps the phase table while the new page keeps
+the detail of what post-processing writes.
+
+The page is updated as the three tasks that change the cost shape land, so it
+never states a flow the code does not take.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

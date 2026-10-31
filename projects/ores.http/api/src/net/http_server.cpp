@@ -22,6 +22,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <string>
 
 namespace ores::http::net {
 
@@ -67,16 +68,47 @@ void http_server::setup_builtin_routes() {
     BOOST_LOG_SEV(lg(), debug) << "Setting up built-in routes";
 
     // Health check endpoint
+    /*
+     * Readiness, not liveness: the process answers because it is running, and it is
+     * ready when it can believe a caller. A server with no verifier refuses every
+     * authenticated route, so saying "ready" would be a promise it cannot keep.
+     */
     auto health_builder =
         router_->get("/health")
             .summary("Health check")
-            .description("Returns server health status")
+            .description("Reports whether this server can serve an authenticated caller")
             .tags({"system"})
             .auth_optional()
-            .handler([](const domain::http_request&) -> asio::awaitable<domain::http_response> {
-                co_return domain::http_response::json(R"({"status":"healthy"})");
+            .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
+                const auto configured = verifier_ != nullptr && verifier_->is_configured();
+                auto body =
+                    std::string(R"({"status":"ready","verifier":")") +
+                    (configured ? "configured" : "absent") + R"(","connections":)" +
+                    std::to_string(counters_.connections_open.load(std::memory_order_relaxed)) +
+                    "}";
+                co_return domain::http_response::json(body);
             });
     router_->add_route(health_builder.build());
+
+    /*
+     * What the server counts, in the format a scraper reads. It answers without a
+     * database and without a session, because an operator needs it precisely when
+     * those are the thing that broke.
+     */
+    auto metrics_builder =
+        router_->get("/metrics")
+            .summary("Server metrics")
+            .description("The counters this server keeps, in the text exposition format")
+            .tags({"system"})
+            .auth_optional()
+            .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
+                domain::http_response resp;
+                resp.status = domain::http_status::ok;
+                resp.content_type = "text/plain; version=0.0.4; charset=utf-8";
+                resp.body = counters_.to_text();
+                co_return resp;
+            });
+    router_->add_route(metrics_builder.build());
 
     // OpenAPI spec endpoint
     auto openapi_builder =
@@ -151,11 +183,12 @@ asio::awaitable<void> http_server::accept_connections() {
             }
 
             active_connections_.fetch_add(1);
+            counters_.connections_open.fetch_add(1, std::memory_order_relaxed);
             BOOST_LOG_SEV(lg(), debug) << "Active connections: " << active_connections_.load();
 
             // Create and run session
             auto session = std::make_shared<http_session>(
-                std::move(socket), router_, verifier_, workers_, options_, accumulate_);
+                std::move(socket), router_, verifier_, workers_, options_, accumulate_, &counters_);
 
             asio::co_spawn(
                 io_ctx_,
@@ -166,6 +199,7 @@ asio::awaitable<void> http_server::accept_connections() {
                         BOOST_LOG_SEV(lg(), error) << "Session exception: " << e.what();
                     }
                     active_connections_.fetch_sub(1);
+                    counters_.connections_open.fetch_sub(1, std::memory_order_relaxed);
                     BOOST_LOG_SEV(lg(), debug)
                         << "Session ended, active connections: " << active_connections_.load();
                 },

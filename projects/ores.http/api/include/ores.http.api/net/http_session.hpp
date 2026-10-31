@@ -23,6 +23,7 @@
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -66,7 +67,8 @@ public:
                           std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
                           std::shared_ptr<worker_pool> workers,
                           const http_server_options& options,
-                          session_bytes_callback bytes_callback = nullptr);
+                          session_bytes_callback bytes_callback = nullptr,
+                          server_counters* counters = nullptr);
 
     /**
      * @brief Starts processing the session.
@@ -151,6 +153,9 @@ private:
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;
+
+    // Counters the server owns and reports. Null in a test that does not want them.
+    server_counters* counters_;
 };
 
 }

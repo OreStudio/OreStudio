@@ -65,17 +65,17 @@ struct world {
  * The assembly reads the components' own operations through this seam, so a
  * test states what they answered without a trading service or a NATS broker.
  */
-struct stub_reader final : service::cut_body_reader {
-    service::cut_body_facts answer;
+struct stub_reader final : ores::reporting::service::cut_body_reader {
+    ores::reporting::service::cut_body_facts answer;
 
-    [[nodiscard]] service::cut_body_facts read(const service::cut_body_query&) override {
+    [[nodiscard]] ores::reporting::service::cut_body_facts read(const ores::reporting::service::cut_body_query&) override {
         return answer;
     }
 };
 
 /** Facts a store that answers every part gives, at the demo's own sizes. */
-service::cut_body_facts full_answers() {
-    service::cut_body_facts facts;
+ores::reporting::service::cut_body_facts full_answers() {
+    ores::reporting::service::cut_body_facts facts;
     facts.deal_count = 1284;
     facts.market_data_set_count = 7;
     facts.market_data_as_of = "2026-10-06 16:00:00.000000Z";
@@ -112,7 +112,7 @@ world seed_world(ores::testing::scoped_database_helper& h, const std::string& su
 }
 
 /** A request to take a cut of one kind, fixed a day ago so it is never ahead. */
-messaging::take_cut_request a_take(const std::string& kind_code) {
+ores::reporting::messaging::take_cut_request a_take(const std::string& kind_code) {
     return {.kind_code = kind_code,
             .scope_code = "ACME-LONDON",
             .business_centre_code = "GBLO",

@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_SERVICE_SERVICE_NATS_CUT_BODY_READER_HPP
-#define ORES_REPORTING_SERVICE_SERVICE_NATS_CUT_BODY_READER_HPP
+#ifndef ORES_REPORTING_CORE_SERVICE_NATS_CUT_BODY_READER_HPP
+#define ORES_REPORTING_CORE_SERVICE_NATS_CUT_BODY_READER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.core/service/cut_body_reader.hpp"
-#include "ores.reporting.service/export.hpp"
+#include "ores.reporting.core/export.hpp"
 #include <string>
 
 namespace ores::reporting::service {
@@ -46,7 +46,7 @@ namespace ores::reporting::service {
  * The code revision has no read: nothing in the store records the build of
  * the services that assembled the body, so the part states that as its note.
  */
-class ORES_REPORTING_SERVICE_EXPORT nats_cut_body_reader final : public cut_body_reader {
+class ORES_REPORTING_CORE_EXPORT nats_cut_body_reader final : public cut_body_reader {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.nats_cut_body_reader";

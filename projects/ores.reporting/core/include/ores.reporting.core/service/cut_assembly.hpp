@@ -106,7 +106,7 @@ struct cut_body_facts {
  */
 struct cut_assembly {
     /** @brief Every part of the body, in the order a person reads them. */
-    std::vector<messaging::cut_body_part> parts;
+    std::vector<ores::reporting::messaging::cut_body_part> parts;
 
     /** @brief The parts the assembly could not fill. */
     std::vector<cut_gap_candidate> gaps;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.service/service/nats_cut_body_reader.hpp"
+#include "ores.reporting.core/service/nats_cut_body_reader.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
@@ -64,7 +64,7 @@ call_as_caller(ores::nats::service::client& nats,
     }
     try {
         const auto& codec = ores::nats::default_wire_codec();
-        const auto* subject = Req::nats_subject;
+        constexpr auto subject = Req::nats_subject;
         auto reply = nats.request_sync(
             subject,
             codec.encode(request),

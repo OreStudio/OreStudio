@@ -84,7 +84,7 @@ instant_of(const std::string& text) {
 }
 
 /** A refusal as the caller reads it: the outcome and one sentence. */
-ores::utility::domain::result refusal_of(outcome o, std::string message) {
+ores::utility::domain::result refuse_with(outcome o, std::string message) {
     return {.outcome = o, .code = std::string{}, .message = std::move(message), .fields = {}};
 }
 
@@ -103,42 +103,42 @@ cut_take_service::cut_take_service(context ctx, cut_body_reader& reader)
     : ctx_(std::move(ctx))
     , reader_(reader) {}
 
-messaging::take_cut_response cut_take_service::take(
-    const messaging::take_cut_request& request) {
-    messaging::take_cut_response response;
+ores::reporting::messaging::take_cut_response cut_take_service::take(
+    const ores::reporting::messaging::take_cut_request& request) {
+    ores::reporting::messaging::take_cut_response response;
 
     // The refusals that need no read are answered first, so a typo costs no
     // database work and the person reads what to state instead.
     if (request.kind_code.empty()) {
-        response.result = refusal_of(outcome::invalid, "Choose the kind of cut to take.");
+        response.result = refuse_with(outcome::invalid, "Choose the kind of cut to take.");
         return response;
     }
     if (request.scope_code.empty()) {
         response.result =
-            refusal_of(outcome::invalid, "Name the scope the body fixes, so the cut states books.");
+            refuse_with(outcome::invalid, "Name the scope the body fixes, so the cut states books.");
         return response;
     }
     if (request.business_centre_code.empty()) {
-        response.result = refusal_of(outcome::invalid,
+        response.result = refuse_with(outcome::invalid,
                                      "Name the rates centre the scope revalues against, so the "
                                      "market data half denotes one centre.");
         return response;
     }
     const auto party = party_of(ctx_);
     if (!party) {
-        response.result = refusal_of(outcome::invalid, party.error());
+        response.result = refuse_with(outcome::invalid, party.error());
         return response;
     }
     const auto instant = instant_of(request.timepoint);
     if (!instant) {
-        response.result = refusal_of(outcome::invalid, instant.error());
+        response.result = refuse_with(outcome::invalid, instant.error());
         return response;
     }
 
     repository::cut_kind_repository kinds_repo;
     const auto kinds = kinds_repo.read_latest(ctx_, request.kind_code);
     if (kinds.empty()) {
-        response.result = refusal_of(
+        response.result = refuse_with(
             outcome::missing,
             "No kind of cut is called " + request.kind_code +
                 ", so there is no retention and no authorisation basis to take the body under.");
@@ -146,7 +146,7 @@ messaging::take_cut_response cut_take_service::take(
     }
     const auto& kind = kinds.front();
     if (kind.family_code == "consumer") {
-        response.result = refusal_of(
+        response.result = refuse_with(
             outcome::invalid,
             "A " + kind.code +
                 " cut is minted by the run that consumes it, so there is no take to press.");
@@ -185,7 +185,7 @@ messaging::take_cut_response cut_take_service::take(
     // A preview answers the same parts and gaps and writes nothing, so the
     // person who reviews the body reads the body the press would fix.
     if (request.preview) {
-        response.result = refusal_of(outcome::ok, {});
+        response.result = refuse_with(outcome::ok, {});
         return response;
     }
 
@@ -194,7 +194,7 @@ messaging::take_cut_response cut_take_service::take(
     const auto needs_reason = kind.approval_kind_code.has_value() && assembly.complete();
     if (needs_reason && request.reason.empty()) {
         response.result =
-            refusal_of(outcome::invalid,
+            refuse_with(outcome::invalid,
                        "Say why the body is being fixed: a cut of the kind " + kind.code +
                            " waits on a signature, and the decider reads the reason.");
         return response;
@@ -347,7 +347,7 @@ messaging::take_cut_response cut_take_service::take(
         BOOST_LOG_SEV(lg(), info) << "Took cut " << response.cut_id << " of kind " << cut.kind_code
                                   << " for scope " << cut.scope_code;
     }
-    response.result = refusal_of(outcome::ok, {});
+    response.result = refuse_with(outcome::ok, {});
     return response;
 }
 

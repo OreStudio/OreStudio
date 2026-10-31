@@ -26,7 +26,7 @@ namespace ores::reporting::service {
 
 namespace {
 
-using messaging::cut_body_part;
+using ores::reporting::messaging::cut_body_part;
 
 /** The part codes the body holds, which are the codes a gap may name. */
 constexpr std::string_view kind_part = "kind";

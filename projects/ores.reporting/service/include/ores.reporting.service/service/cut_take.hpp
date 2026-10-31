@@ -69,7 +69,8 @@ public:
      *
      * A call that answers a refusal writes nothing and states the sentence.
      */
-    messaging::take_cut_response take(const messaging::take_cut_request& request);
+    ores::reporting::messaging::take_cut_response
+    take(const ores::reporting::messaging::take_cut_request& request);
 
 private:
     context ctx_;

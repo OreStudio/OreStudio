@@ -26,7 +26,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.service/service/cut_take.hpp"
-#include "ores.reporting.service/service/nats_cut_body_reader.hpp"
+#include "ores.reporting.core/service/nats_cut_body_reader.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -92,8 +92,8 @@ public:
 
         try {
             const auto authorization = bearer_of(msg);
-            service::nats_cut_body_reader reader(*req_ctx, nats_, authorization);
-            auto answer = service::cut_take_service(*req_ctx, reader).take(*req);
+            ores::reporting::service::nats_cut_body_reader reader(*req_ctx, nats_, authorization);
+            auto answer = ores::reporting::service::cut_take_service(*req_ctx, reader).take(*req);
             BOOST_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject;
             ores::service::messaging::reply(nats_, msg, answer);
         } catch (const std::exception& e) {

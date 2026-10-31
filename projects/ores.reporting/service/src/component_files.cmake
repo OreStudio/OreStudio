@@ -67,7 +67,6 @@ set(files
     "messaging/report_type_event_registrar.cpp"
     "service/cut_take.cpp"
     "service/engine_settings_proposal.cpp"
-    "service/nats_cut_body_reader.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -124,5 +123,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/ores.reporting.service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/service/cut_take.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/service/engine_settings_proposal.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/service/nats_cut_body_reader.hpp"
 )

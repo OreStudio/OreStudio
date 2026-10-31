@@ -83,7 +83,7 @@ task and name that file in the Command column.
 | The class share | 6 of 190 = 3.2%, against the weights page's 3% | the two counts above | branch head |
 | The class the config names | =scripted=, one of the eight the catalogue now states | =select code from ores_refdata_asset_class_codes_tbl order by display_order= | branch head |
 | The export round trip | three types, ten assertions | =publish/bin/ores.ore.core.tests "a_scripted_trade_states_what_the_population_writes_and_reads_it_back"= | branch head |
-| Suites | synthetic.core 2451/98, ore.core 483514/454, both green | =publish/bin/<suite>= | branch head |
+| Suites | synthetic.core 2451/98, ore.core 484508/456, both green | =publish/bin/<suite>= | branch head |
 | The provisioning run | completed, all nine steps | the provisioning script | branch head |
 
 * Notes

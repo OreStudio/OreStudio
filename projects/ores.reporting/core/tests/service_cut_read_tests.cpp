@@ -29,7 +29,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -80,45 +79,44 @@ const auto second = a_cut("22222222-2222-4222-8222-222222222222", "2026-10-07T16
 TEST_CASE("a month is a range the caller's clock decides", "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
-    const auto [from, to] = service::cut_window_of("2026-10");
+    const auto window = service::cut_window_of("2026-10");
+    REQUIRE(window.has_value());
 
-    REQUIRE(datetime::to_iso8601_utc(from) == "2026-10-01 00:00:00.000000Z");
-    REQUIRE(datetime::to_iso8601_utc(to) == "2026-11-01 00:00:00.000000Z");
+    REQUIRE(datetime::to_iso8601_utc(window->first) == "2026-10-01 00:00:00.000000Z");
+    REQUIRE(datetime::to_iso8601_utc(window->second) == "2026-11-01 00:00:00.000000Z");
 }
 
 TEST_CASE("a month that ends a year reads into the next one", "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
-    const auto [from, to] = service::cut_window_of("2026-12");
+    const auto window = service::cut_window_of("2026-12");
+    REQUIRE(window.has_value());
 
-    REQUIRE(datetime::to_iso8601_utc(from) == "2026-12-01 00:00:00.000000Z");
-    REQUIRE(datetime::to_iso8601_utc(to) == "2027-01-01 00:00:00.000000Z");
+    REQUIRE(datetime::to_iso8601_utc(window->first) == "2026-12-01 00:00:00.000000Z");
+    REQUIRE(datetime::to_iso8601_utc(window->second) == "2027-01-01 00:00:00.000000Z");
 }
 
-TEST_CASE("a month a person stated wrongly is refused by name", "[cut_read_service]") {
+TEST_CASE("a month a person stated wrongly is a refusal, and not an exception", "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
-    REQUIRE_THROWS_AS(service::cut_window_of("2026-13"), std::invalid_argument);
-    REQUIRE_THROWS_AS(service::cut_window_of("October"), std::invalid_argument);
-    REQUIRE_THROWS_AS(service::cut_window_of("2026-1"), std::invalid_argument);
-    REQUIRE_THROWS_AS(service::cut_window_of("2026/10"), std::invalid_argument);
 
-    try {
-        const auto window = service::cut_window_of("2026-13");
-        (void)window;
-        FAIL("A month of thirteen months was accepted.");
-    } catch (const std::invalid_argument& e) {
-        REQUIRE(std::string(e.what()).find("YYYY-MM") != std::string::npos);
+    // The month is the caller's own input, so the read answers it rather than
+    // throwing past the handler that must turn it into a bad request.
+    for (const auto& month : {"2026-13", "October", "2026-1", "2026/10", "2026-1x"}) {
+        const auto window = service::cut_window_of(month);
+        REQUIRE_FALSE(window.has_value());
+        REQUIRE(window.error().find("YYYY-MM") != std::string::npos);
     }
 }
 
 TEST_CASE("an empty month reads everything the store holds", "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
-    const auto [from, to] = service::cut_window_of("");
+    const auto window = service::cut_window_of("");
+    REQUIRE(window.has_value());
 
-    REQUIRE(datetime::to_iso8601_utc(from) == "1970-01-01 00:00:00.000000Z");
-    REQUIRE(to > system_clock::now());
+    REQUIRE(datetime::to_iso8601_utc(window->first) == "1970-01-01 00:00:00.000000Z");
+    REQUIRE(window->second > system_clock::now());
 }
 
 TEST_CASE("the body that replaced a cut is the earliest later body a run may price from",

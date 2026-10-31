@@ -142,21 +142,25 @@ public:
                                                                 .month = req->month,
                                                                 .search = req->search,
                                                                 .state = req->state});
-            response.total = page.total;
-            response.rows.reserve(page.rows.size());
-            for (const auto& view : page.rows)
+            if (!page) {
+                // A month a caller stated wrongly is the caller's fault, so the
+                // read answers it as a refusal with its own sentence and the
+                // BFF turns it into the bad request it is.
+                BOOST_LOG_SEV(report_cut_read_handler_lg(), warn)
+                    << msg.subject << ": " << page.error();
+                response.result.outcome = ores::utility::domain::outcome::invalid;
+                response.result.code = std::string(
+                    ores::database::domain::to_string(
+                        ores::database::domain::outcome_code::filter_range_invalid));
+                response.result.message = page.error();
+                reply(nats_, msg, response);
+                return;
+            }
+            response.total = page->total;
+            response.rows.reserve(page->rows.size());
+            for (const auto& view : page->rows)
                 response.rows.push_back(row_of(view));
             BOOST_LOG_SEV(report_cut_read_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, response);
-        } catch (const std::invalid_argument& e) {
-            // A month a caller stated wrongly is the caller's fault, so it is a
-            // refusal with the read's own sentence rather than a failed call.
-            BOOST_LOG_SEV(report_cut_read_handler_lg(), warn) << msg.subject << ": " << e.what();
-            response.result.outcome = ores::utility::domain::outcome::invalid;
-            response.result.code = std::string(
-                ores::database::domain::to_string(
-                    ores::database::domain::outcome_code::filter_range_invalid));
-            response.result.message = e.what();
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_cut_read_handler_lg(), error)

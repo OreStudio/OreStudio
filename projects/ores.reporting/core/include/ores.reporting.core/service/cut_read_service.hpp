@@ -29,6 +29,7 @@
 #include "ores.reporting.core/service/cut_state.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <expected>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -112,10 +113,16 @@ struct cut_record_view {
  * everything the store holds, and its window ends a day past now because a body
  * may fix a close the day has not reached yet.
  *
- * @throws std::invalid_argument if the month is not an ISO 8601 year and month.
+ * The month is the caller's input, so a wrong one is a refusal and not an
+ * exception: the caller reads the sentence that says which form the field takes
+ * and answers it as the bad request it is.
+ *
+ * @return the window, or the sentence that refuses the month.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT
-std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>
+std::expected<std::pair<std::chrono::system_clock::time_point,
+                        std::chrono::system_clock::time_point>,
+              std::string>
 cut_window_of(const std::string& month);
 
 /**
@@ -158,10 +165,10 @@ public:
     /**
      * @brief Reads the cuts a query names, newest instant first.
      *
-     * @throws std::invalid_argument if the month is not an ISO 8601 year and
-     * month, so a caller hears which field it stated wrongly.
+     * @return the page, or the sentence that refuses a narrowing the caller
+     * stated, such as a month that is not an ISO 8601 year and month.
      */
-    cut_page list(const cut_list_query& query);
+    [[nodiscard]] std::expected<cut_page, std::string> list(const cut_list_query& query);
 
     /**
      * @brief Reads one cut as its record page draws it, or nothing when the

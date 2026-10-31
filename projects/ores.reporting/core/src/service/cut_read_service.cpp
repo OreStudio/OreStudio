@@ -32,7 +32,6 @@
 #include <chrono>
 #include <map>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -54,39 +53,42 @@ constexpr int max_rows = 1000;
 
 }
 
-std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>
+std::expected<std::pair<std::chrono::system_clock::time_point,
+                        std::chrono::system_clock::time_point>,
+              std::string>
 cut_window_of(const std::string& month) {
     if (month.empty()) {
-        const auto from = std::chrono::system_clock::time_point(std::chrono::sys_days(
-            std::chrono::year{1970} / std::chrono::January / 1));
+        const auto from = std::chrono::system_clock::time_point(
+            std::chrono::sys_days(std::chrono::year{1970} / std::chrono::January / 1));
         const auto to = std::chrono::system_clock::now() + std::chrono::hours(24);
-        return {from, to};
+        return std::make_pair(from, to);
     }
 
-    const auto digits = [&month](std::size_t offset) {
-        const auto text = month.substr(offset, 2);
-        if (!std::all_of(text.begin(), text.end(), [](char c) { return c >= '0' && c <= '9'; }))
-            throw std::invalid_argument("A month is stated as YYYY-MM, and this one is '" +
-                                        month + "'.");
-        return std::stoi(text);
+    const auto refusal = [&month] {
+        return std::unexpected("A month is stated as YYYY-MM, and this one is '" + month + "'.");
     };
+    if (month.size() != 7 || month[4] != '-')
+        return refusal();
+    const auto digits = [&month](std::size_t offset, std::size_t length) {
+        return std::all_of(month.begin() + static_cast<std::ptrdiff_t>(offset),
+                           month.begin() + static_cast<std::ptrdiff_t>(offset + length),
+                           [](char c) { return c >= '0' && c <= '9'; });
+    };
+    if (!digits(0, 4) || !digits(5, 2))
+        return refusal();
 
-    if (month.size() != 7 || month[4] != '-' ||
-        !std::all_of(month.begin(), month.begin() + 4, [](char c) { return c >= '0' && c <= '9'; }))
-        throw std::invalid_argument("A month is stated as YYYY-MM, and this one is '" + month +
-                                    "'.");
-
-    const std::chrono::year_month start{std::chrono::year{std::stoi(month.substr(0, 4))},
-                                       std::chrono::month{static_cast<unsigned>(digits(5))}};
+    const std::chrono::year_month start{
+        std::chrono::year{std::stoi(month.substr(0, 4))},
+        std::chrono::month{static_cast<unsigned>(std::stoi(month.substr(5, 2)))}};
     if (!start.ok())
-        throw std::invalid_argument("A month is stated as YYYY-MM, and this one is '" + month +
-                                    "'.");
+        return refusal();
 
     const auto after = start + std::chrono::months{1};
-    return {std::chrono::system_clock::time_point(std::chrono::sys_days(start.year() /
-                                                                      start.month() / 1)),
-            std::chrono::system_clock::time_point(std::chrono::sys_days(after.year() /
-                                                                       after.month() / 1))};
+    return std::make_pair(
+        std::chrono::system_clock::time_point(
+            std::chrono::sys_days(start.year() / start.month() / 1)),
+        std::chrono::system_clock::time_point(
+            std::chrono::sys_days(after.year() / after.month() / 1)));
 }
 
 namespace {
@@ -156,14 +158,19 @@ replacement_of(const domain::cut& cut, const std::vector<domain::cut>& candidate
     return replacement;
 }
 
-cut_page cut_read_service::list(const cut_list_query& query) {
+std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query& query) {
     const auto party_id = ctx_.party_id();
     if (!party_id) {
         BOOST_LOG_SEV(lg(), warn) << "A cuts list was read with no party in the session.";
-        return {};
+        return cut_page{};
     }
 
-    const auto [from, to] = cut_window_of(query.month);
+    const auto window_of_month = cut_window_of(query.month);
+    if (!window_of_month) {
+        BOOST_LOG_SEV(lg(), warn) << "A cuts list was refused: " << window_of_month.error();
+        return std::unexpected(window_of_month.error());
+    }
+    const auto [from, to] = *window_of_month;
     repository::cut_repository cuts_repo;
     auto window = cuts_repo.read_for_party_in_window(ctx_, *party_id, query.kind_code, from, to);
 

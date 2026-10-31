@@ -97,22 +97,22 @@ and nothing joins that prose to the catalogue the store holds.
 
 * Order of work
 
-| Order | Task                                                    | Waits on    |
-|-------+---------------------------------------------------------+-------------|
-|     1 | Settle the axes a product type carries                  | none        |
-|     2 | Analyse how the pricing engine types join the product   | none        |
-|     3 | Model the product type as the golden source             | 1           |
-|     4 | Publish the catalogue from the system tenant            | 3           |
-|     5 | Author the description of every product type            | 3           |
-|     6 | Hold what allows a product type                         | 3           |
-|     7 | Classify each product type as flow or non-flow          | 3           |
-|     8 | Serve the product type catalogue to the browser         | 3, 5, 6     |
-|     9 | Join the pricing engine types to the product type       | 2, 3, 8     |
-|    10 | Retire the duplicate product catalogues                 | 3, 8, 9     |
-|    11 | Draw the product type list and page                     | 8           |
-|    12 | Link every mention of a product type                    | 11          |
-|    13 | Make the knowledge corpus read from the catalogue       | 5, 11       |
-|    14 | Prove the product type catalogue holds one copy         | 11, 12, 13  |
+| Order | Task                                                   | Waits on   |
+|-------+--------------------------------------------------------+------------|
+| 1     | Settle the axes a product type carries                 | none       |
+| 2     | Analyse how the pricing engine types join the product  | none       |
+| 3     | Model the product type as the golden source            | 1          |
+| 4     | Publish the catalogue from the system tenant           | 3          |
+| 5     | Author the description of every product type           | 3          |
+| 6     | Hold what allows a product type                        | 3          |
+| 7     | Classify each product type as flow or non-flow         | 3          |
+| 8     | Serve the product type catalogue to the browser        | 3, 5, 6    |
+| 9     | Join the pricing engine types to the product type      | 2, 3, 8    |
+| 10    | Retire the duplicate product catalogues                | 3, 8, 9    |
+| 11    | Draw the product type list and page                    | 8          |
+| 12    | Link every mention of a product type                   | 11         |
+| 13    | Make the knowledge corpus read from the catalogue      | 5, 11      |
+| 14    | Prove the product type catalogue holds one copy        | 11, 12, 13 |
 
 * Out of scope
 

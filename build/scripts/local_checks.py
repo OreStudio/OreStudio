@@ -202,7 +202,8 @@ PATH_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         ),
     ),
     ("plugins", ("projects/ores.dsh_environment/*",)),
-    ("tooling", ("projects/ores.compass/*", "build/scripts/*")),
+    ("tooling", ("projects/ores.compass/*", "projects/ores.ore/scripts/*",
+                 "build/scripts/*")),
     ("ci", (".github/*", "projects/ores.codegen/library/templates/*")),
 )
 

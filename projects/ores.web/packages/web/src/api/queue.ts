@@ -120,14 +120,22 @@ export function groupOf(row: QueueRow): QueueGroup {
     return GROUP_OF_STATE[row.stateCode] ?? 'awaiting';
 }
 
-/** The rows of one class and one group, newest request first. */
+/**
+ * The rows of one class in the states a person asked for, newest request first.
+ *
+ * The states are a choice rather than a mode: a person working the queue wants
+ * the held deals and the changes at once and not the waiting ones. An empty
+ * choice draws nothing, which is what a person who unticked every box asked
+ * for, and `all` is stated by the screen as every group.
+ */
 export function rowsOf(
     rows: readonly QueueRow[],
     klass: QueueClass | 'all',
-    group: QueueGroup,
+    states: readonly QueueGroup[],
 ): readonly QueueRow[] {
+    const wanted = new Set(states);
     return rows
-        .filter((row) => (klass === 'all' || row.classCode === klass) && (group === 'all' || groupOf(row) === group))
+        .filter((row) => (klass === 'all' || row.classCode === klass) && wanted.has(groupOf(row)))
         .slice()
         .sort((left, right) => right.requestedAt.localeCompare(left.requestedAt));
 }

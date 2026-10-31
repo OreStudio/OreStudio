@@ -25,6 +25,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import {
     authorisationQueue,
     countsOf,
+    groupOf,
     rowsOf,
     type QueueClass,
     type QueueGroup,
@@ -55,13 +56,66 @@ import {
  * doc/prototypes/operations/operational-authorisation-queue.
  */
 
-const GROUPS: readonly { readonly key: QueueGroup; readonly label: string }[] = [
-    { key: 'awaiting', label: 'Awaiting authorisation' },
-    { key: 'changed', label: 'Changed since requested' },
-    { key: 'held', label: 'Held over' },
-    { key: 'authorised', label: 'Authorised' },
-    { key: 'denied', label: 'Denied' },
+/**
+ * The states, in the order a person works them, with the colour each is drawn in.
+ *
+ * The colour is the state's meaning and not decoration: a pastel wash on the row
+ * and a stronger edge on its left so a queue of forty deals can be read by
+ * colour before it is read by word. The choices are deliberate -- butter for a
+ * deal that waits, lilac for one that moved, sky for one parked, mint for one
+ * approved and blush for one refused -- because those are the readings a person
+ * already has of them.
+ */
+const GROUPS: readonly {
+    readonly key: QueueGroup;
+    readonly label: string;
+    readonly wash: string;
+    readonly edge: string;
+    readonly ink: string;
+}[] = [
+    {
+        key: 'awaiting',
+        label: 'Awaiting authorisation',
+        wash: 'rgba(250, 204, 21, 0.10)',
+        edge: '#eab308',
+        ink: '#a16207',
+    },
+    {
+        key: 'changed',
+        label: 'Changed since requested',
+        wash: 'rgba(168, 85, 247, 0.10)',
+        edge: '#a855f7',
+        ink: '#7e22ce',
+    },
+    {
+        key: 'held',
+        label: 'Held over',
+        wash: 'rgba(56, 189, 248, 0.10)',
+        edge: '#38bdf8',
+        ink: '#0369a1',
+    },
+    {
+        key: 'authorised',
+        label: 'Authorised',
+        wash: 'rgba(52, 211, 153, 0.10)',
+        edge: '#34d399',
+        ink: '#047857',
+    },
+    {
+        key: 'denied',
+        label: 'Denied',
+        wash: 'rgba(251, 113, 133, 0.10)',
+        edge: '#fb7185',
+        ink: '#be123c',
+    },
 ];
+
+const EVERY_STATE: readonly QueueGroup[] = GROUPS.map((entry) => entry.key);
+
+/** The colour a row is drawn in, by the state its authorisation is in. */
+function paletteOf(row: QueueRow) {
+    return GROUPS.find((entry) => entry.key === groupOf(row)) ?? GROUPS[0]!;
+}
 
 const CLASSES: readonly { readonly key: QueueClass | 'all'; readonly label: string }[] = [
     { key: 'all', label: 'All deals' },
@@ -156,14 +210,24 @@ export function AuthorisationQueuePage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [klass, setKlass] = useState<QueueClass | 'all'>('all');
-    const [group, setGroup] = useState<QueueGroup>('awaiting');
+    /* Every state is shown until a person says otherwise: a queue that hides a
+     * group by default hides work, and the figures on the buttons say what is
+     * being hidden. */
+    const [states, setStates] = useState<readonly QueueGroup[]>(EVERY_STATE);
 
     const queue = useQueue();
     const open = queue.data?.items ?? [];
     const answered = queue.data?.answered ?? [];
     const all = useMemo(() => [...open, ...answered], [open, answered]);
-    const rows = useMemo(() => rowsOf(all, klass, group), [all, klass, group]);
+    const rows = useMemo(() => rowsOf(all, klass, states), [all, klass, states]);
     const counts = useMemo(() => countsOf(all, klass), [all, klass]);
+    const allShown = states.length === EVERY_STATE.length;
+
+    const toggleAll = () => setStates(allShown ? [] : EVERY_STATE);
+    const toggle = (key: QueueGroup) =>
+        setStates((current) =>
+            current.includes(key) ? current.filter((one) => one !== key) : [...current, key],
+        );
 
     return (
         <section className="flex flex-col gap-4">
@@ -177,65 +241,93 @@ export function AuthorisationQueuePage(): ReactNode {
 
             {queue.isError && <Notice tone="error">The queue could not be read.</Notice>}
 
-            <div className="flex min-h-[28rem] gap-4">
-                <aside className="w-56 shrink-0 border-r border-line pr-2" aria-label="Read by">
-                    <div className="px-2 py-1 text-xs uppercase tracking-wide text-ink-faint">
-                        Class
-                    </div>
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="States to show">
+                <button
+                    type="button"
+                    onClick={toggleAll}
+                    aria-pressed={allShown}
+                    className={cx(
+                        'rounded-full border px-3 py-1 text-[13px]',
+                        allShown
+                            ? 'border-accent bg-accent/15 text-ink'
+                            : 'border-line text-ink-dim hover:text-ink',
+                    )}
+                >
+                    All states
+                    <span className="ml-1.5 tabular-nums text-xs text-ink-faint">{counts.all}</span>
+                </button>
+                {GROUPS.map((entry) => {
+                    const on = states.includes(entry.key);
+                    return (
+                        <button
+                            key={entry.key}
+                            type="button"
+                            onClick={() => toggle(entry.key)}
+                            aria-pressed={on}
+                            className="rounded-full border px-3 py-1 text-[13px] transition-opacity"
+                            style={{
+                                backgroundColor: on ? entry.wash : 'transparent',
+                                borderColor: on ? entry.edge : 'var(--line, #30363d)',
+                                color: on ? entry.ink : undefined,
+                                opacity: on ? 1 : 0.6,
+                            }}
+                        >
+                            {entry.label}
+                            <span className="ml-1.5 tabular-nums text-xs">{counts[entry.key]}</span>
+                        </button>
+                    );
+                })}
+                <span className="mx-2 h-5 w-px bg-line" aria-hidden />
+                <div className="flex gap-1" role="group" aria-label="Class">
                     {CLASSES.map((entry) => (
-                        <RailNode
+                        <button
                             key={entry.key}
-                            label={entry.label}
-                            count={countsOf(all, entry.key).all}
-                            selected={klass === entry.key}
-                            onSelect={() => setKlass(entry.key)}
-                        />
+                            type="button"
+                            onClick={() => setKlass(entry.key)}
+                            aria-pressed={klass === entry.key}
+                            className={cx(
+                                'rounded-md px-2.5 py-1 text-[13px]',
+                                klass === entry.key
+                                    ? 'bg-accent/15 text-ink'
+                                    : 'text-ink-dim hover:text-ink',
+                            )}
+                        >
+                            {entry.label}
+                        </button>
                     ))}
-                    <div className="mt-3 px-2 py-1 text-xs uppercase tracking-wide text-ink-faint">
-                        State
-                    </div>
-                    {GROUPS.map((entry) => (
-                        <RailNode
-                            key={entry.key}
-                            indent
-                            label={entry.label}
-                            count={counts[entry.key]}
-                            selected={group === entry.key}
-                            onSelect={() => setGroup(entry.key)}
-                        />
-                    ))}
-                    <RailNode
-                        indent
-                        label="All trades"
-                        count={counts.all}
-                        selected={group === 'all'}
-                        onSelect={() => setGroup('all')}
-                    />
-                </aside>
+                </div>
+            </div>
 
-                <div className="min-w-0 flex-1 overflow-x-auto">
-                    {rows.length === 0 ? (
-                        <p className="px-2 py-8 text-sm text-ink-faint">
-                            Nothing waits here. A deal appears once it is live and awaits
-                            authorisation.
-                        </p>
-                    ) : (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                                    <th className="px-2 py-2">Deal</th>
-                                    <th className="px-2 py-2">Type</th>
-                                    <th className="px-2 py-2">Counterparty</th>
-                                    <th className="px-2 py-2">Book</th>
-                                    <th className="px-2 py-2">Trade date</th>
-                                    <th className="px-2 py-2">State</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row) => (
+            <div className="min-w-0 overflow-x-auto">
+                {rows.length === 0 ? (
+                    <p className="px-2 py-8 text-sm text-ink-faint">
+                        {all.length === 0
+                            ? 'Nothing waits here. A deal appears once it is live and awaits authorisation.'
+                            : 'No deal is in the states you chose.'}
+                    </p>
+                ) : (
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
+                                <th className="px-2 py-2">Deal</th>
+                                <th className="px-2 py-2">Type</th>
+                                <th className="px-2 py-2">Counterparty</th>
+                                <th className="px-2 py-2">Book</th>
+                                <th className="px-2 py-2">Trade date</th>
+                                <th className="px-2 py-2">State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((row) => {
+                                const palette = paletteOf(row);
+                                return (
                                     <tr
                                         key={`${row.requestId}:${row.tradeId}`}
-                                        className="cursor-pointer border-b border-line-soft align-top hover:bg-surface-2"
+                                        className="cursor-pointer border-b border-line-soft align-top"
+                                        style={{
+                                            backgroundColor: palette.wash,
+                                            boxShadow: `inset 3px 0 0 ${palette.edge}`,
+                                        }}
                                         onClick={() =>
                                             navigate(authorisationRequestPath(row.requestId))
                                         }
@@ -263,16 +355,23 @@ export function AuthorisationQueuePage(): ReactNode {
                                             {row.tradeDate}
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-2">
-                                            <Tag small tone={stateTone(row)}>
+                                            <span
+                                                className="inline-block rounded-full border px-2 py-0.5 text-[11px] leading-tight"
+                                                style={{
+                                                    borderColor: palette.edge,
+                                                    color: palette.ink,
+                                                    backgroundColor: 'transparent',
+                                                }}
+                                            >
                                                 {stateWord(row)}
-                                            </Tag>
+                                            </span>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             <p className="text-xs text-ink-faint">

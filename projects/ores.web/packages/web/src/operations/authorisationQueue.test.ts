@@ -79,19 +79,30 @@ describe('the authorisation queue', () => {
         expect(countsOf(rows, 'non-flow')).toMatchObject({ all: 2, awaiting: 1, changed: 1 });
     });
 
-    it('narrows to one class and one state, newest request first', () => {
+    it('narrows to one class and the states a person chose, newest request first', () => {
         const rows = [
             row({ requestId: 'old', requestedAt: '2026-10-31 08:00:00Z' }),
             row({ requestId: 'new', requestedAt: '2026-10-31 11:00:00Z' }),
             row({ requestId: 'other', classCode: 'non-flow' }),
             row({ requestId: 'held', stateCode: 'held' }),
         ];
-        expect(rowsOf(rows, 'flow', 'awaiting').map((one) => one.requestId)).toEqual(['new', 'old']);
-        expect(rowsOf(rows, 'all', 'all').map((one) => one.requestId)).toEqual([
+        expect(rowsOf(rows, 'flow', ['awaiting']).map((one) => one.requestId)).toEqual([
+            'new',
+            'old',
+        ]);
+        // More than one state at once: the waiting and the held, across classes.
+        expect(rowsOf(rows, 'all', ['awaiting', 'held']).map((one) => one.requestId)).toEqual([
             'new',
             'other',
             'held',
             'old',
         ]);
+        expect(rowsOf(rows, 'all', ['awaiting']).map((one) => one.requestId)).toEqual([
+            'new',
+            'other',
+            'old',
+        ]);
+        // Nothing chosen draws nothing: the person unticked every box.
+        expect(rowsOf(rows, 'all', [])).toEqual([]);
     });
 });

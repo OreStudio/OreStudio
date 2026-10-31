@@ -34,12 +34,15 @@ the value set does not. That direction is left where it is until the export is
 stated as data too.
 """
 
+import json
 import os
 import re
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 SOURCE = os.path.join(ROOT, "projects", "ores.ore", "core", "src", "domain",
                       "conventions_fields.cpp")
+RENDERINGS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "ore_renderings.json")
 
 CODE_TABLE = re.compile(r"const code_table (\w+) = \{(.*?)\n\};", re.S)
 SPELLING_TABLE = re.compile(
@@ -53,11 +56,13 @@ def _unescape(text):
     return text.replace('\\"', '"').replace("\\\\", "\\")
 
 
-def tables():
-    """Every conversion table, and the renderings each maps onto a canonical form."""
-    global _cached
-    if _cached is not None:
-        return _cached
+def reader_tables():
+    """The tables ORE's reader states, read from its source.
+
+    A step on the way to the value sets stating the renderings themselves: the
+    reader still converts, so the file is written from its tables and checked
+    against them. When the reader stops converting, nothing reads them.
+    """
     with open(SOURCE, encoding="utf-8") as handle:
         source = handle.read()
     found = {}
@@ -70,6 +75,31 @@ def tables():
     if len(found) < 5:
         raise ValueError(f"{SOURCE} holds {len(found)} conversion tables, and ORE's "
                          "reader holds at least five; the table names likely changed")
+    return found
+
+
+def tables():
+    """Every table's renderings, as the value sets read them.
+
+    Each entry is a (rendering, canonical form) pair, the canonical form first in
+    its own group, so a caller that walks the table meets a form before the
+    renderings that mean it.
+    """
+    global _cached
+    if _cached is not None:
+        return _cached
+    with open(RENDERINGS, encoding="utf-8") as handle:
+        declared = json.load(handle)["tables"]
+    found = {}
+    for name, groups in declared.items():
+        pairs = []
+        for canonical, renderings in groups.items():
+            for rendering in renderings:
+                pairs.append((rendering, canonical))
+        found[name] = pairs
+    if len(found) < 5:
+        raise ValueError(f"{RENDERINGS} holds {len(found)} tables, and ORE's reader "
+                         "holds at least five; the file likely lost entries")
     _cached = found
     return found
 

@@ -20,6 +20,7 @@
  */
 
 import { z } from 'zod';
+import { reportHealthWordSchema } from './reporting.js';
 import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 
 /**
@@ -243,6 +244,36 @@ export const cutRecordSchema = z.object({
 });
 
 export type CutRecord = z.infer<typeof cutRecordSchema>;
+
+/**
+ * One run that priced from a cut: the run, the state it reached and the instant
+ * it started.
+ *
+ * The comparison a run of one cut makes against another is the audit journey's,
+ * which reads the two runs' results; this list states the runs and their state
+ * and points at the run, where that journey begins.
+ */
+export const cutRunSchema = z.object({
+    id: z.string(),
+    /** The report the run executes, as a person knows it. */
+    name: z.string(),
+    /** The state the run reached, as the machines declare it. */
+    stateName: z.string(),
+    /** The health word the service derives from that state, or null where it states none. */
+    health: reportHealthWordSchema.nullable(),
+    startedAt: nullableWireTimestampSchema,
+    completedAt: nullableWireTimestampSchema,
+    pricedAt: nullableWireTimestampSchema,
+});
+
+export type CutRun = z.infer<typeof cutRunSchema>;
+
+/** The runs that priced from one cut, newest start first. */
+export const cutRunsSchema = z.object({
+    runs: z.array(cutRunSchema),
+});
+
+export type CutRuns = z.infer<typeof cutRunsSchema>;
 
 /** The fields the type form offers, and the only ones a save may change. */
 export const cutKindWriteSchema = z.object({

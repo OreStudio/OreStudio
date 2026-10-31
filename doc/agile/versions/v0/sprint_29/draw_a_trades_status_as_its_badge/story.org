@@ -65,7 +65,7 @@ status sits beside its authorisation state and the two are read together.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:93C96C11-9D11-469F-8661-335D8BC44897][Add the trade status domain and its badges]] | BACKLOG | | | Seed a trade_status domain in the badge catalogue with one badge for each code the trading status lookup holds, and a mapping for each, so a trade's status has a badge to be painted with. The web reads it through the labels read the classifications screens already use. |
 
 * Decisions
 

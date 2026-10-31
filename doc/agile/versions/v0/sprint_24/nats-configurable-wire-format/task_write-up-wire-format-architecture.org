@@ -75,7 +75,7 @@ against, covering:
 
 * Plan
 
-** 1. Blast-radius audit
+** Blast-radius audit
 
 Every NATS-relevant =rfl::json::write=/=rfl::json::read= call site,
 found by grepping for direct calls and manually excluding unrelated
@@ -217,7 +217,7 @@ inspecting the surrounding code: none of these call sites reference
 =nats_client=/=client::request_sync=/=publish=. Dropped from this
 story's scope entirely; no follow-up needed.
 
-** 2. Architecture
+** Architecture
 
 *** The =wire_codec= type
 
@@ -305,7 +305,7 @@ threaded to every consumer via dependency injection:
   =do_request=/=do_auth_request= helper (see the shell migration
   task).
 
-** 3. Rationale versus the rejected alternative
+** Rationale versus the rejected alternative
 
 *Considered*: mirror the compression feature's design exactly -- a
 self-describing =X-Content-Type= NATS header (=application/json= /

@@ -127,7 +127,7 @@ collapse first, because the reverse reshapes the same tables twice.
 
 * Plan
 
-** 1. Model the collapse
+** Model the collapse
 
 =instrument_identity_field_group= is the leverage point. It declares
 =instrument_id=, =trade_type_code=, =party_id= and =trade_id=, and 26
@@ -140,13 +140,13 @@ PR 3 adds more.
 =trade.instrument_id= goes with it. The link becomes the child's
 =trade_id=, and a real foreign key replaces the soft one.
 
-** 2. Sequence so nothing breaks in the middle
+** Sequence so nothing breaks in the middle
 
 Model first, then regenerate, then the hand-written callers, then the
 SQL. No commit removes a column before its replacement exists. The
 component audit runs before the task closes.
 
-** 3. Split the security, after the collapse
+** Split the security, after the collapse
 
 *Moved out of this task by decision D17.* The split reshapes the bond
 family around a security identity and is the largest part of the diff,
@@ -170,20 +170,20 @@ ORE's schema rather than invented:
   security is right, and the inline case then populates the security
   rather than bypassing it.
 
-** 4. Regenerate and repair the callers
+** Regenerate and repair the callers
 
 Regenerate the component and the SQL, then repair every hand-written
 caller: the mappers, the readers, the import path and the shell
 commands. The ORE mapper and its container are hand-written and will
 need a pass.
 
-** 5. Prove
+** Prove
 
 Run the ORE round trip through the shell over the bond documents and
 require zero loss. Then the whole-tree build, the four suites and the
 drift dry run.
 
-** 6. Record
+** Record
 
 Update the story's checklist rows for M05 and M07, and record the
 closure of defects 7, 9, 10 and 13.

@@ -80,7 +80,7 @@ application.
 
 Three canonical Qt patterns address the large-application problem.
 
-** 1. Qt Plugin System (~QPluginLoader~) — recommended
+** Qt Plugin System (~QPluginLoader~) — recommended
 
 Plugins are built as shared libraries (.so on Linux, .dll on Windows).  The
 host loads them at runtime via ~QPluginLoader~ by scanning a plugins directory.
@@ -109,7 +109,7 @@ Each plugin implements a pure-virtual interface annotated with
 - The framework library (=ores.qt.api=) must itself be a shared library (see
   Section [[*Why ores.qt.api Must Be a Shared Library]]).
 
-** 2. Qt Static Plugins (~Q_IMPORT_PLUGIN~)
+** Qt Static Plugins (~Q_IMPORT_PLUGIN~)
 
 The same interface/metadata machinery as option 1, but the plugin is a static
 library.  ~Q_IMPORT_PLUGIN(PluginClassName)~ in =main.cpp= forces the linker to
@@ -122,7 +122,7 @@ shape as dynamic plugins.
 the host.  The host retains a transitive compile-time dependency on all domain
 APIs.  Does not achieve the isolation goal.
 
-** 3. Explicit Factory / Registry (no Qt plugin machinery)
+** Explicit Factory / Registry (no Qt plugin machinery)
 
 Each domain module is a static library exporting a plain
 ~register_xxx_plugin()~ C++ function called from =main.cpp= before

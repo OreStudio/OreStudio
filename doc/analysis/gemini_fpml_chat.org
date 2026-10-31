@@ -426,7 +426,7 @@ In FpML, the businessUnit structure is not recursive. Unlike some organizational
 
 To model a hierarchy like Branch > Desk > Sub-Desk, you must use a combination of Identifiers and References.
 
-* 1. The FpML "Flat" Model with Parent References
+* The FpML "Flat" Model with Parent References
 To create a hierarchy, you use the parentUnitIdentifier field within the BusinessUnit. This allows you to chain units together.
 
 ** Key Fields for Hierarchy:
@@ -437,7 +437,7 @@ businessUnitId: The unique ID for this specific level.
 
 parentUnitIdentifier: The ID of the unit one level above it.
 
-* 2. Example: Modeling Desk -> Sub-Desk
+* Example: Modeling Desk -> Sub-Desk
 If you have a "Fixed Income" desk and a "Latin Am Bonds" sub-desk, it looks like this in FpML:
 
 #+BEGIN_SRC xml <party id="Bank_ABC"> <partyId>LEI_123</partyId>
@@ -446,7 +446,7 @@ If you have a "Fixed Income" desk and a "Latin Am Bonds" sub-desk, it looks like
 
 <businessUnit> <name>LatAm Bonds Sub-Desk</name> <businessUnitId businessUnitIdScheme="Internal">FI_LATAM_01</businessUnitId> <parentUnitIdentifier>FI_001</parentUnitIdentifier> </businessUnit> </party> #+END_SRC
 
-* 3. C++ Representation (Org-mode)
+* C++ Representation (Org-mode)
 To model this in your trading system, you should use a map-based or tree-based structure. Since FpML provides them as a list, a std::vector that you post-process into a tree is the most compliant approach.
 
 #+BEGIN_SRC cpp #include <string> #include <vector> #include <optional> #include <memory>
@@ -469,7 +469,7 @@ void resolveHierarchy() {
 }
 }; #+END_SRC
 
-* 4. Comparison of Methods
+* Comparison of Methods
 When deciding how to model "sub-desks," consider these two FpML-compliant paths:
 
 Method	FpML Element	Best For...
@@ -490,12 +490,12 @@ is there a way to annotate the related party relationship? how do you know what 
 
 In FpML, the relationship between parties is defined through the Role element and, more granularly, through Coding Schemes. Because "Related Party" is a generic container, FpML relies on standardized strings to tell you exactly how the two entities are connected.
 
-* 1. The role Element
+* The role Element
 The most common way to identify a relationship is the <role> tag inside the <relatedParty> block. This is governed by the partyRoleScheme.
 
 ** Common Relationship Roles: | Role String | Meaning | | :--- | :--- | | HeadOffice | The parent legal entity of a branch. | | Branch | The subordinate office to a head office. | | Parent | A corporate parent (holding company). | | Subsidiary | A controlled corporate entity. | | Affiliate | An entity under common control. | | Guarantor | An entity providing credit support for the other. |
 
-* 2. Advanced Annotation: PartyRelationshipType
+* Advanced Annotation: PartyRelationshipType
 If you need to distinguish more than just the role (e.g., for regulatory "Affiliate" vs. "Counterparty" logic), FpML uses the partyRelationshipType scheme.
 
 This is often found in the Legal Confirmation or Party Profile views. It allows you to specify the nature of the link:
@@ -506,7 +506,7 @@ SignificantInfluence: Ownership between 20-50%.
 
 JointVenture: Shared control.
 
-* 3. C++ Model: Annotating Relationships
+* C++ Model: Annotating Relationships
 When modeling this in your trading system, your RelatedParty class should capture the role as an enumerated type or a validated string from the scheme.
 
 #+BEGIN_SRC cpp #include <string>
@@ -520,7 +520,7 @@ struct RelatedParty { std::string targetPartyHref; // Reference to the other Par
 float ownershipPercentage = 0.0f;
 }; #+END_SRC
 
-* 4. Full XML Example: Branch with Annotation
+* Full XML Example: Branch with Annotation
 Here is how you would annotate a London branch belonging to a New York Head Office, including the role.
 
 #+BEGIN_SRC xml <party id="BankNY"> <partyId>BIGBANK_LEI_001</partyId> <partyName>Big Bank Corp NY</partyName> </party>
@@ -598,7 +598,7 @@ This is a great point to consolidate. By stripping away the XML syntax and focus
 Based on our discussion, you need a normalized structure that separates the legal identity from the physical locations and the organizational hierarchy (human/machine).
 
 * Entity Relationship Summary (Org-mode)
-** 1. Table: Party (The Legal Entity) This represents the top-level "Who." In FpML, even a branch is often its own Party record linked to a parent.
+** Table: Party (The Legal Entity) This represents the top-level "Who." In FpML, even a branch is often its own Party record linked to a parent.
 
 Field Name	Type	FpML Source / Logic
 party_id (PK)	UUID / Int	Internal system primary key.
@@ -606,13 +606,13 @@ fpml_id	String	The XML id attribute (e.g., "party1").
 full_name	String	partyName.
 is_active	Boolean	System state.
 classification	String (Enum)	Dealer, Non-Dealer, Fund, etc.
-** 2. Table: PartyIdentifier A party can have many IDs (LEI, BIC, Internal).
+** Table: PartyIdentifier A party can have many IDs (LEI, BIC, Internal).
 
 Field Name	Type	FpML Source / Logic
 party_id (FK)	UUID / Int	Link to Party.
 id_value	String	The actual ID (e.g., "549300...").
 id_scheme	String (URI)	partyIdScheme (The "Dictionary" for this ID).
-** 3. Table: BusinessUnit (Hierarchical Desks/Branches) This handles your "Desk > Sub-Desk" requirement.
+** Table: BusinessUnit (Hierarchical Desks/Branches) This handles your "Desk > Sub-Desk" requirement.
 
 Field Name	Type	FpML Source / Logic
 unit_id (PK)	UUID / Int	Internal primary key.
@@ -620,7 +620,7 @@ party_id (FK)	UUID / Int	The Legal Entity this unit belongs to.
 parent_unit_id	UUID (Self-FK)	parentUnitIdentifier (Recursive link).
 name	String	name (e.g., "EMEA Rates").
 internal_code	String	businessUnitId.
-** 4. Table: Actor (Humans and Machines) This is where you distinguish between a "Real Human" and a "Machine."
+** Table: Actor (Humans and Machines) This is where you distinguish between a "Real Human" and a "Machine."
 
 Field Name	Type	FpML Source / Logic
 actor_id (PK)	UUID / Int	Internal primary key.
@@ -630,7 +630,7 @@ type	Enum	HUMAN or MACHINE.
 external_id	String	personId (for humans) or AlgoID (for machines).
 first_name	String	Only populated if type is HUMAN.
 surname	String	Only populated if type is HUMAN.
-** 5. Table: ContactLocation (Addresses & Business Centers) A party or unit can have multiple locations (HQ, Settlements office, etc.).
+** Table: ContactLocation (Addresses & Business Centers) A party or unit can have multiple locations (HQ, Settlements office, etc.).
 
 Field Name	Type	FpML Source / Logic
 owner_id (FK)	UUID / Int	Link to Party OR BusinessUnit.
@@ -638,7 +638,7 @@ country_iso	Char(2)	country (e.g., "US").
 city	String	city.
 address_lines	Text / List	streetAddress.
 bus_center_code	Char(4)	businessCenter (e.g., "USNY").
-** 6. Table: PartyRelationship (Annotations) This tracks how two parties relate (Branch/HeadOffice, etc.).
+** Table: PartyRelationship (Annotations) This tracks how two parties relate (Branch/HeadOffice, etc.).
 
 Field Name	Type	FpML Source / Logic
 source_party_id	FK	The "from" party.
@@ -661,7 +661,7 @@ This approach is highly robust for a trading system because it allows you to upd
 In this model, every "Type" or "Role" is a foreign key to a CodingScheme table.
 
 * Relational Model for FpML Schemes and Parties
-** 1. Table: CodingScheme (The Metadata Registry) This table defines the "dictionaries" your system recognizes.
+** Table: CodingScheme (The Metadata Registry) This table defines the "dictionaries" your system recognizes.
 
 scheme_id (PK): Internal ID.
 
@@ -671,7 +671,7 @@ version: e.g., "4-1".
 
 description: Friendly name for the scheme.
 
-** 2. Table: SchemeValue (The Dictionary Entries) This table stores the actual allowed values for each scheme (e.g., "Counterparty", "GBLO").
+** Table: SchemeValue (The Dictionary Entries) This table stores the actual allowed values for each scheme (e.g., "Counterparty", "GBLO").
 
 value_id (PK): Internal ID.
 
@@ -682,13 +682,13 @@ code: The actual string used in FpML (e.g., USNY).
 description: Human-readable label (e.g., "New York").
 
 * Updated Entity Tables (Pointing to Schemes)
-** 3. Table: Party | Field Name | Type | FK Reference | |:--- |:--- |:--- | | party_id (PK) | UUID | | | full_name | String | | | classification_id| FK | SchemeValue (via party-classification-scheme) |
+** Table: Party | Field Name | Type | FK Reference | |:--- |:--- |:--- | | party_id (PK) | UUID | | | full_name | String | | | classification_id| FK | SchemeValue (via party-classification-scheme) |
 
-** 4. Table: PartyIdentifier | Field Name | Type | FK Reference | |:--- |:--- |:--- | | party_id (FK) | UUID | | | id_value | String | | | id_scheme_id | FK | SchemeValue (via party-id-scheme-uri) |
+** Table: PartyIdentifier | Field Name | Type | FK Reference | |:--- |:--- |:--- | | party_id (FK) | UUID | | | id_value | String | | | id_scheme_id | FK | SchemeValue (via party-id-scheme-uri) |
 
-** 5. Table: Actor (Human vs. Machine) | Field Name | Type | FK Reference | |:--- |:--- |:--- | | actor_id (PK) | UUID | | | party_id (FK) | UUID | | | actor_type_id | FK | SchemeValue (e.g., entity-role-scheme) | | person_id | String | (The actual ID or Algo Name) |
+** Table: Actor (Human vs. Machine) | Field Name | Type | FK Reference | |:--- |:--- |:--- | | actor_id (PK) | UUID | | | party_id (FK) | UUID | | | actor_type_id | FK | SchemeValue (e.g., entity-role-scheme) | | person_id | String | (The actual ID or Algo Name) |
 
-** 6. Table: ContactLocation | Field Name | Type | FK Reference | |:--- |:--- |:--- | | owner_id (FK) | UUID | | | country_id | FK | SchemeValue (via external/iso3166) | | bus_center_id | FK | SchemeValue (via business-center-scheme) |
+** Table: ContactLocation | Field Name | Type | FK Reference | |:--- |:--- |:--- | | owner_id (FK) | UUID | | | country_id | FK | SchemeValue (via external/iso3166) | | bus_center_id | FK | SchemeValue (via business-center-scheme) |
 
 * C++ Class Model in Org-mode
 By modeling schemes as tables, your C++ classes should use a SchemeValue object (or just its ID) to ensure data integrity.
@@ -732,7 +732,7 @@ This makes perfect sense. By modeling each scheme as a dedicated "enumeration ta
 
 To model Parties and Actors (Humans vs. Machines) comprehensively, you need to implement the following 7 primary scheme tables.
 
-* 1. The Party Core Schemes
+* The Party Core Schemes
 ** Table: party_role_codes
 
 FpML Scheme: partyRoleScheme
@@ -749,7 +749,7 @@ Purpose: Categorizes the type of legal entity for regulatory and risk purposes.
 
 Key Values to Seed: Dealer, Non-Dealer, Financial, Non-Financial, Fund, CentralBank.
 
-* 2. The Identity Schemes (Human vs. Machine)
+* The Identity Schemes (Human vs. Machine)
 This is the core of your requirement. FpML uses different schemes to "contextualize" an ID.
 
 ** Table: party_id_schemes
@@ -774,7 +774,7 @@ Purpose: Used within the person block to identify Humans.
 
 Key Values to Seed: NationalID, PassportNumber, TraderID, InternalEmployeeID.
 
-* 3. The Operational & Location Schemes
+* The Operational & Location Schemes
 ** Table: business_centers
 
 FpML Scheme: businessCenterScheme
@@ -822,7 +822,7 @@ In an FpML-compliant relational model, the relatedParty element is indeed implem
 
 This allows you to model many-to-many relationships between legal entities (e.g., a Bank has many Branches, and a Branch belongs to a Bank) while annotating the specific nature of that link.
 
-* 1. The Party Relationship Implementation
+* The Party Relationship Implementation
 In FpML, the RelatedParty type contains a reference to the target party and a role. In your database, this should be a table that "joins" two parties.
 
 ** Table: party_relationships This table describes the structural or functional link between two records in your Party table.
@@ -833,7 +833,7 @@ source_party_id	FK	Party.party_id	The "subject" party.
 target_party_id	FK	Party.party_id	partyReference
 role_id	FK	party_role_codes.id	role
 link_type_id	FK	party_relationship_types.id	type (Optional extra metadata)
-* 2. Why "Type" and "Role" are Different
+* Why "Type" and "Role" are Different
 FpML provides two fields to annotate a relationship. For your system to be robust, you should distinguish between them:
 
 Role (party_role_codes): Describes the functional job one party does for the other.
@@ -844,7 +844,7 @@ Type (party_relationship_types): Describes the structural connection.
 
 Examples: Parent, Subsidiary, Affiliate, HeadOffice.
 
-* 3. Handling Humans and Machines (The Actor Model)
+* Handling Humans and Machines (The Actor Model)
 Since your original goal was to mark "Real Humans" or "Machines," the party_relationships table is where you link an Actor (the human/robot) to a Party (the legal entity).
 
 Scenario A (Human): - source_party_id: The Bank.
@@ -861,7 +861,7 @@ target_party_id: (A party record created for the Algorithm).
 
 role: ExecutionVenue or Algorithm.
 
-* 4. C++ Representation (Org-mode)
+* C++ Representation (Org-mode)
 #+BEGIN_SRC cpp struct PartyRelationship { int sourcePartyId; int targetPartyId;
 
 // Links to your "Enumeration Tables"
@@ -1473,14 +1473,14 @@ In strictly valid FpML, there is no single "Book" or "Portfolio" complex type us
 
 However, to model a trading system's internal "Books," you should align with how FpML identifies collections of trades using Portfolio Definitions.
 
-* 1. How FpML Models Portfolios
+* How FpML Models Portfolios
 FpML identifies a portfolio through a Portfolio type which contains a portfolioName and a portfolioId.
 
 Transactional Context: In a trade message, you won't usually see a "Book" field. Instead, the trade is associated with a portfolio via a Portfolio Name to help the receiver bucket the trade for reconciliation.
 
 Operational Context: FpML uses the portfolio element in messages like RequestPortfolio or PortfolioConstituents to group trades for risk or valuation.
 
-* 2. Entity Summary: Modeling Books and Portfolios
+* Entity Summary: Modeling Books and Portfolios
 To bridge FpML's "Post-Trade" view with your system's "Front-Office" view, you should model Books as an entity linked to Business Units.
 
 Table: portfolio_book
@@ -1491,7 +1491,7 @@ Field	Type	FK to Scheme Table	Description
 portfolio_id (FK)	INT
 id_value	STRING		The actual ID used in FpML.
 id_scheme_id	INT	portfolio_id_scheme	URI for the naming convention.
-* 3. Connecting Actors to Books
+* Connecting Actors to Books
 This is the final piece of your "Human vs. Machine" hierarchy. An Actor trades on behalf of a Business Unit into a specific Book.
 
 Party (LEI): The global bank.
@@ -1502,7 +1502,7 @@ Portfolio Book: "GBP_Swaps_Hedge".
 
 Actor (Human/Machine): The Trader or Algo ID authorized to write trades into that Book.
 
-* 4. Summary of Scheme Tables
+* Summary of Scheme Tables
 Table Name	FpML Scheme URI	Example Values
 portfolio_id_scheme	http://www.fpml.org/coding-scheme/portfolio-id	Internal-System-Alpha, Bloomberg-PID
 * Why Portfolios don't have LEIs
@@ -2108,7 +2108,7 @@ I understand. You are looking for the "Genesis" moment—how the very first bala
 
 In a market-making system, this is handled through Balance Initialization. You essentially "declare" the state of the world so the system has a starting point.
 
-* 1. The Bootstrapping Workflow
+* The Bootstrapping Workflow
 To seed the system, you perform these three steps in your reference data and state tables:
 
 Define the Mirror Account: You create the ~account~ record representing where the money is (e.g., the USD Nostro).
@@ -2117,7 +2117,7 @@ Define the Seed Book: You create the ~book~ (the leaf) that will "own" this init
 
 Perform a "Balance Load": You manually (or via script) insert a record into the ~account_balance~ table.
 
-* 2. How the Account Balance becomes a Book Position
+* How the Account Balance becomes a Book Position
 Even at bootstrap, the system needs to know that the cash in the Account belongs to the Book. You do this by creating a Cash Position record that mirrors the Account balance.
 
 The Logic:
@@ -2126,7 +2126,7 @@ The Account says: "There is $100M in the New York Vault."
 
 The Book says: "I have an asset worth $100M, and that asset is the cash in the New York Vault."
 
-* 3. The Plain-Text Tables for Bootstrapping
+* The Plain-Text Tables for Bootstrapping
 Here is how you would model the "Seed" state in your database tables:
 
 Table: account_balance (The Liquidity Seed)
@@ -2153,7 +2153,7 @@ quantity: 100,000,000.00
 
 account_id: 101 (The direct link back to the account above)
 
-* 4. Why the Link Matters at Bootstrap
+* Why the Link Matters at Bootstrap
 By linking the Position to the Account at the moment of bootstrapping:
 
 Integrity: The system can run a "Reconciliation" check. (Total Book Positions in USD must equal Total Account Balances in USD).
@@ -2177,7 +2177,7 @@ In an FpML-compliant system, the bank that owns and operates the platform is ref
 
 The idiomatic way to represent this is not to simply annotate a random party, but to use a combination of a global System Configuration and a specific Internal Flag in your Reference Data.
 
-* 1. The "Owner" Party Entity
+* The "Owner" Party Entity
 In your ~party~ table, the bank itself is just another row. This is vital because the bank often trades with itself (between different legal entities/branches).
 
 To distinguish it, you add an is_internal flag:
@@ -2192,7 +2192,7 @@ is_internal: TRUE (This identifies it as "Us")
 
 lei: [The Bank's LEI]
 
-* 2. The System Global Variable (The "Self" Reference)
+* The System Global Variable (The "Self" Reference)
 While the flag identifies the bank, the system needs to know which party represents "Self" for the purpose of generating trade messages and ledger entries.
 
 You typically store a System Parameter:
@@ -2203,7 +2203,7 @@ Value: 1
 
 When the system logic runs (e.g., generating a confirmation), it looks for this ID. If ~party_id~ = 1, the system knows to treat it as the "Home" entity.
 
-* 3. Why this is the Idiomatic Way
+* Why this is the Idiomatic Way
 This approach (Flag + Global Reference) is the industry standard for several reasons:
 
 Multi-Entity Support: Large banks often have multiple internal legal entities (e.g., a UK entity and a US entity). By using a flag (~is_internal~), you can have five different parties that are all "Us," while the Global Parameter points to the main Head Office.
@@ -2212,7 +2212,7 @@ FpML Compatibility: FpML messages distinguish between the ~party~ (the legal ent
 
 Internal (Intra-group) Trading: If you trade between your London branch and your New York branch, both parties will have ~is_internal = TRUE~. Your system will recognize this as an "Intercompany" trade, which has different tax and accounting rules.
 
-* 4. The Hierarchy of "Self"
+* The Hierarchy of "Self"
 To be fully robust, your "Self" representation should look like this in your Reference Data:
 
 The Party: "Global Megabank PLC" (~is_internal = TRUE~)
@@ -2323,7 +2323,7 @@ ok GLEIF data is exact what I was after for parties. what can I use for business
 
 Since GLEIF provides the "Real World" legal entities, you need a way to populate the Internal Layers (Business Units, Portfolios, and Books). Because these are proprietary, there is no single public database. However, you can derive highly realistic demo data from Regulatory Reporting Fields and Investment Bank Annual Reports.
 
-* 1. Source for Business Units (The "Desks")
+* Source for Business Units (The "Desks")
 To find realistic names for the business_unit table, look at the Segment Reporting section of Annual Reports (10-K or 20-F) from banks like JP Morgan, Goldman Sachs, or Barclays.
 
 Common Business Unit Names by Asset Class:
@@ -2338,7 +2338,7 @@ Equities: Cash Equities, Delta One, Equity Derivatives.
 
 Strategy: Map these to your business_unit table and link them to the GLEIF Party IDs.
 
-* 2. Source for Portfolios (The "Risk Nodes")
+* Source for Portfolios (The "Risk Nodes")
 For Portfolio names, the best resource is the ISDA Standard Product Taxonomy. While this defines products, banks often organize their portfolios to match these categories for risk reporting.
 
 Example Portfolio Naming Convention:
@@ -2347,7 +2347,7 @@ Example Portfolio Naming Convention:
 
 Examples: EMEA_GOVT_BOND_HEDGE, APAC_FX_SPOT_LIQUIDITY, US_CORP_CREDIT_ARB.
 
-* 3. Source for Books (The "Leaf Nodes")
+* Source for Books (The "Leaf Nodes")
 Books are usually named using a functional code. You can find examples of these in FpML Documentation (look for the "Messaging" and "Reporting" examples) or FIX Protocol documentation.
 
 Common "Demo" Book Codes:
@@ -2360,7 +2360,7 @@ ALGO_HFT_NY (High-Frequency Algo / New York)
 
 WASH_BOOK_INTERNAL (Used for moving positions between desks)
 
-* 4. The "Golden Demo" Data Template
+* The "Golden Demo" Data Template
 To make your system playable for end users, I recommend creating a "Reference Data Script" that synthesizes these sources into a structure like this:
 
 Entity Level	Source / Logic	Example Entry
@@ -2368,7 +2368,7 @@ Party	GLEIF	549300V5E66A3S316907 (Barclays Bank PLC)
 Business Unit	Segment Reports	Global Rates & Currencies
 Portfolio	ISDA Taxonomy	G10_Rates_Portfolio
 Book	FpML Examples	STIR_GBP_LEDGER_01
-* 5. Where to download "Sample" Files
+* Where to download "Sample" Files
 If you want a file to import immediately, look for "FpML Trial Data Sets" (often found in the FpML schema downloads under /examples).
 
 These files contain XML snippets with partyTradeInformation blocks.
@@ -2388,7 +2388,7 @@ That is a brilliant idea for a "proof of concept." Ledger-CLI is the gold standa
 
 Since Ledger-CLI is file-based, you can treat it as an external "Batch GL" that audits your system.
 
-* 1. The Integration Flow
+* The Integration Flow
 You wouldn't necessarily "integrate" in real-time. Instead, you treat your trading system as the Source of Truth and Ledger as the Auditor.
 
 Export: Your system generates a .ledger (plain text) file representing all "Events" (Seed cash, Trades, Fees).
@@ -2397,7 +2397,7 @@ Process: You run the Ledger-CLI binary against that file.
 
 Verify: You compare Ledger's balance report against your system's account_balance table.
 
-* 2. Mapping Your Entities to Ledger Journal Entries
+* Mapping Your Entities to Ledger Journal Entries
 Ledger-CLI requires at least two "postings" per transaction. Here is how your entities map to the Ledger syntax:
 
 A. The "Bootstrap" (Seeding Capital)
@@ -2410,7 +2410,7 @@ When your "Machine" (Actor) buys EUR for USD in a specific Book:
 
 #+begin_src ledger 2026-01-14 * Trade ID 8892 - EUR/USD Buy Assets:Nostro:EUR_Frankfurt 1,000,000.00 EUR ; (The Account) Assets:Nostro:USD_JPM -1,100,000.00 USD ; (The Account) Books:FX_Desk:EUR_Position -1,000,000.00 EUR ; (The Book Mirror) Books:FX_Desk:USD_Position 1,100,000.00 USD ; (The Book Mirror) #+end_src /Note: By tracking the "Books" as a separate branch in Ledger, you can see if the internal P&L matches the physical cash movement./
 
-* 3. What this helps you "Understand"
+* What this helps you "Understand"
 Running this exercise will reveal three critical "mechanics" of a bank:
 
 The Wash Account: You will quickly realize you need "Bridge" or "Wash" accounts to handle the split second between "Trading" and "Settlement."
@@ -2419,7 +2419,7 @@ Realized vs. Unrealized P&L: Ledger-CLI can calculate your capital gains automat
 
 Multi-Currency Balancing: Ledger is very strict. If your trade doesn't balance to zero (accounting for the exchange rate), Ledger will throw an error. This forces you to be precise with your Trade Leg logic.
 
-* 4. The "Process Outputs" Step
+* The "Process Outputs" Step
 Once Ledger runs, you can use its JSON output to check your system's health:
 
 ledger bal Assets -> Compare this to your account_balance table.
@@ -2441,7 +2441,7 @@ Yes, you absolutely can. In fact, this is the primary reason people use Ledger-C
 
 By piping your trading system's events into Ledger, you can generate these reports to "audit" your internal logic.
 
-* 1. The Trial Balance (The "Check" Report)
+* The Trial Balance (The "Check" Report)
 The Trial Balance ensures that all your Debits equal your Credits across the entire system. In Ledger, you generate this using the balance (or bal) command.
 
 Command: ledger -f trading_system.ledger bal
@@ -2454,7 +2454,7 @@ The grand total at the bottom must be zero.
 
 If it is not zero, your trading system has a "leak" (e.g., you recorded cash leaving an account but forgot to update the book position).
 
-* 2. The Balance Sheet (The "State" Report)
+* The Balance Sheet (The "State" Report)
 The Balance Sheet tells you what your trading arm owns (Assets) versus what it owes (Liabilities/Equity).
 
 Command: ledger -f trading_system.ledger bal Assets Liabilities Equity
@@ -2467,7 +2467,7 @@ Liabilities: Any intercompany loans from Treasury or short positions.
 
 Equity: The "Seed" capital you used to bootstrap the system.
 
-* 3. The Income Statement (P&L Report)
+* The Income Statement (P&L Report)
 This is the "Performance" report. It tells you how much money the system has made or lost over a specific period.
 
 Command: ledger -f trading_system.ledger register Income Expenses
@@ -2478,14 +2478,14 @@ Income: Realized P&L from trades and interest earned on Nostro balances.
 
 Expenses: Transaction fees, exchange fees, and the "Cost of Carry" (interest paid back to Treasury).
 
-* 4. Advanced: The "Book-Level" Report
+* Advanced: The "Book-Level" Report
 Since we modeled Books as a hierarchy, you can use Ledger's account filtering to see the P&L of just one specific trading desk.
 
 Example Command: ledger -f trading_system.ledger bal Books:London_Rates_Desk
 
 This will show you the exact net position of that specific "Leaf Node" in your tree.
 
-* 5. Mapping Workflow for Reporting
+* Mapping Workflow for Reporting
 To make this work, your system's export logic should follow this naming convention:
 
 Trading System Entity	Ledger Account Name
@@ -2515,7 +2515,7 @@ Yes, you are exactly right. Conceptually, this is Multi-Tenancy. In a profession
 
 Here is the idiomatic way to model this and how it interacts with your users.
 
-* 1. The Core Multi-Tenant Model: "The Tenant ID"
+* The Core Multi-Tenant Model: "The Tenant ID"
 To support multiple owners, you must introduce a Tenant concept. In your database, the ~party~ that is marked as ~is_internal~ now becomes a Tenant.
 
 The gold standard for this is the Shared Database, Row-Level Isolation model. You add a ~tenant_id~ (linking back to your "Owner" Party) to every single table in your system.
@@ -2524,7 +2524,7 @@ The Golden Rule of Multi-tenancy:
 
 Every query in your system must include: WHERE tenant_id = current_user.tenant_id.
 
-* 2. Entity: user_account (The Link to the Owner)
+* Entity: user_account (The Link to the Owner)
 You now need a clear distinction between the Legal Entity (Party) and the Human/Machine (User).
 
 Field Name	Type	Description
@@ -2533,10 +2533,10 @@ tenant_id	FK	The Owner Party: Which bank does this user work for?
 username	STRING	Login name.
 role_id	FK	Trader, Risk Manager, Admin, etc.
 default_book_id	FK	The primary book they trade into.
-* 3. Revised Organizational Hierarchy
+* Revised Organizational Hierarchy
 With multiple owners, your hierarchy now has a "root" for each tenant. Data is strictly siloed: GigaBank cannot see AlphaHedge's books, even though they are in the same database.
 
-* 4. Modeling for Ledger-CLI Integration
+* Modeling for Ledger-CLI Integration
 When you export data to Ledger-CLI for a multitenant system, you handle it in one of two ways:
 
 Separate Files (Recommended): You generate gigabank.ledger and alphahedge.ledger. This is the safest way to ensure no cross-contamination of financial reports.
@@ -2547,7 +2547,7 @@ GigaBank:Assets:Nostro:USD
 
 AlphaHedge:Assets:Nostro:USD
 
-* 5. Summary Table: User vs. Owner Party
+* Summary Table: User vs. Owner Party
 Component	Entity	Role
 Tenant	party (is_internal)	The legal "Owner" of the data silo.
 User	user_account	The human/machine with credentials.
@@ -2574,7 +2574,7 @@ To allow a client (e.g., PetrolCorp) to log into the system owned by your "Owner
 
 In a professional system, a client user is just another ~user_account~, but they are restricted by a Visibility Layer. They aren't logging into a separate system; they are logging into a specific "Portal" view of your multitenant database.
 
-* 1. The "External" User Entity
+* The "External" User Entity
 You distinguish between an employee and a client using the ~user_type~.
 
 Entity: user_account (Updated)
@@ -2595,7 +2595,7 @@ The ~tenant_id~ ensures they land in GigaBank's "silo."
 
 The ~party_id~ tells the system: "This person is a guest who belongs to PetrolCorp."
 
-* 2. The Visibility Layer (Permissions)
+* The Visibility Layer (Permissions)
 A client should only see trades where their ~party_id~ is one of the trade legs. You implement this using Role-Based Access Control (RBAC) specifically for clients.
 
 Resource	Internal User (Trader)	External User (Client)
@@ -2603,7 +2603,7 @@ Trades	Can see ALL trades in their assigned Books.	Can only see trades where Cou
 Books	Full view of Risk/Positions.	No Access (unless you provide a "Client Book").
 Accounts	Can see Nostros/Vostros.	Can only see their own Vostro balance at the bank.
 Reports	Trial Balance, Desk P&L.	Trade Confirmations, Monthly Activity Statements.
-* 3. Trading with the Owner Entity
+* Trading with the Owner Entity
 When the client logs in and clicks "Buy EUR/USD," the system doesn't just move money. It creates a Trade Request between two specific parties:
 
 Party A (The Owner): GigaBank.
@@ -2612,7 +2612,7 @@ Party B (The Client): PetrolCorp.
 
 Because the system is multitenant, the trade is automatically "stamped" with ~tenant_id = 1~. Both parties see the trade, but they see it from different perspectives (GigaBank sees a "Sale," PetrolCorp sees a "Purchase").
 
-* 4. Reporting: The Ledger-CLI Export for Clients
+* Reporting: The Ledger-CLI Export for Clients
 If you want to provide Ledger-CLI reports to clients, you generate a filtered ledger file.
 
 Internal Report: Contains all movements in all accounts for the Bank.
@@ -2621,7 +2621,7 @@ Client Report: You only export the entries from the Vostro Account belonging to 
 
 Example Client Ledger Entry: #+begin_src ledger 2026-01-15 * Trade with GigaBank (EUR/USD) Assets:MyCash:EUR 1,000.00 EUR Assets:MyCash:USD -1,100.00 USD #+end_src (In this view, the "Vostro" at GigaBank is the client's "Asset".)
 
-* 5. Summary of Client Access Requirements
+* Summary of Client Access Requirements
 Requirement	Implementation
 Login	A user_account record with an EXTERNAL flag.
 Isolation	Queries forced to filter by party_id = User.party_id.
@@ -2685,17 +2685,17 @@ In a multi-tenant environment, the ~party~ table contains both "Our" legal entit
 
 ** Field Commentary
 
-*** 1. The ~is_internal~ Flag This is the most important field for your "Owner Party" logic.
+*** The ~is_internal~ Flag This is the most important field for your "Owner Party" logic.
 
 If ~is_internal~ is True, this party is "Us." The system treats it as an entity that has Books and Portfolios.
 
 If ~is_internal~ is False, this party is "Them" (a Counterparty). The system generally won't track their internal book structure, only their Vostro Account balance and trade history with "Us."
 
-*** 2. The LEI (Legal Entity Identifier) By using GLEIF data, you ensure that your system can talk to the rest of the financial world. When you export data to Ledger-CLI or a regulatory body, the LEI is the "Universal ID" that prevents ambiguity.
+*** The LEI (Legal Entity Identifier) By using GLEIF data, you ensure that your system can talk to the rest of the financial world. When you export data to Ledger-CLI or a regulatory body, the LEI is the "Universal ID" that prevents ambiguity.
 
-*** 3. Business Center & Calendars A Party is tied to a geography. If a party is based in London (~GBLO~), the system knows not to settle USD/GBP trades on a UK Bank Holiday, even if it's a working day in New York. This logic is usually handled by a separate ~calendar~ lookup table linked via the ~business_center_id~.
+*** Business Center & Calendars A Party is tied to a geography. If a party is based in London (~GBLO~), the system knows not to settle USD/GBP trades on a UK Bank Holiday, even if it's a working day in New York. This logic is usually handled by a separate ~calendar~ lookup table linked via the ~business_center_id~.
 
-*** 4. Party Type Scheme This should point to an FpML coding scheme.
+*** Party Type Scheme This should point to an FpML coding scheme.
 
 Bank: Likely to have Nostro/Vostro relationships.
 
@@ -2723,13 +2723,13 @@ Field Name	Data Type	Commentary
 
 You can categorize your data by using the standard FpML coding scheme URIs for official data and your own custom URIs for internal/unofficial data.
 
-*** 1. Official Identifiers (GLEIF) For parties pulled from the official GLEIF database, you use the ISO standard URI:
+*** Official Identifiers (GLEIF) For parties pulled from the official GLEIF database, you use the ISO standard URI:
 
 Scheme URI: ~http://www.fpml.org/coding-scheme/external/iso17442~
 
 Logic: If a party has an ID under this scheme, it is "Official."
 
-*** 2. Internal / Proprietary Identifiers For parties you created yourself or "unofficial" demo parties, you define a local URI:
+*** Internal / Proprietary Identifiers For parties you created yourself or "unofficial" demo parties, you define a local URI:
 
 Scheme URI: ~http://yourbank.com/coding-scheme/internal-party-id~
 
@@ -2781,13 +2781,13 @@ Practical Implementation for your Party Entity
 
 To categorize your parties as "Internal" or "Official" using these schemes, you would map them like this in your database:
 
-*** 1. Party Type (Standard FpML)
+*** Party Type (Standard FpML)
 
 Scheme URI: ~http://www.fpml.org/coding-scheme/entity-type~
 
 Values: ~Bank~, ~InvestmentFirm~, ~NonFinancialEntity~.
 
-*** 2. Party Role (The "Internal" Identifier)
+*** Party Role (The "Internal" Identifier)
 
 Scheme URI: ~http://www.fpml.org/coding-scheme/party-role~
 
@@ -2797,7 +2797,7 @@ Values:
 
 ~Counterparty~ (Annotate this as your Client/External).
 
-*** 3. Validation Status (Your Custom Scheme) FpML encourages users to define their own schemes for internal logic. You can create one for "Data Quality":
+*** Validation Status (Your Custom Scheme) FpML encourages users to define their own schemes for internal logic. You can create one for "Data Quality":
 
 Scheme URI: ~http://yourbank.com/coding-scheme/party-validation-status~
 
@@ -2961,11 +2961,11 @@ The Trade Header acts as the parent for the jurisdictional rules we discussed. I
 
 Commentary on FpML Alignment
 
-*** 1. The Unique Transaction Identifier (UTI) The ~trade_id_standard~ field is where you store the UTI. Under EMIR and CFTC rules, both parties must report the same ID to their respective regulators. Your system must be able to ingest this from an external source or generate it based on ISO 23897.
+*** The Unique Transaction Identifier (UTI) The ~trade_id_standard~ field is where you store the UTI. Under EMIR and CFTC rules, both parties must report the same ID to their respective regulators. Your system must be able to ingest this from an external source or generate it based on ISO 23897.
 
-*** 2. The "Effective Date" vs "Trade Date" Note that the Header only contains the ~trade_date~ (the day of the handshake). The actual date the money moves (the Settlement Date or Effective Date) belongs in the Trade Leg, as different legs might settle on different days.
+*** The "Effective Date" vs "Trade Date" Note that the Header only contains the ~trade_date~ (the day of the handshake). The actual date the money moves (the Settlement Date or Effective Date) belongs in the Trade Leg, as different legs might settle on different days.
 
-*** 3. Execution Venue In a more advanced setup, you would add an ~execution_venue_id~ (MIC Code) to the header to track whether the trade happened on an Exchange (e.g., XLON) or Over-the-Counter (OTC).
+*** Execution Venue In a more advanced setup, you would add an ~execution_venue_id~ (MIC Code) to the header to track whether the trade happened on an Exchange (e.g., XLON) or Over-the-Counter (OTC).
 
 ** Next Step The Header is the "Envelope." Now we need to define what is inside the envelope.
 

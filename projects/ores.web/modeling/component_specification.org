@@ -16,7 +16,7 @@ The interface is not built yet. The component is a shell and a transport. It
 holds a session and it reaches the server, and no screen is wired to it. This
 document specifies those parts and nothing else.
 
-* 1. The five packages
+* The five packages
 
 The component is one npm workspace with five packages. Each package has one job.
 
@@ -30,7 +30,7 @@ The component is one npm workspace with five packages. Each package has one job.
 
 Only =@ores/wire-protocol= carries generated code. See §6.
 
-* 2. The browser shell
+* The browser shell
 
 =packages/web/src/main.tsx= is the entry point. It composes four providers and
 renders one placeholder.
@@ -55,7 +55,7 @@ is not a shell anybody can debug.
 =BrowserRouter= is mounted with no routes. The shell is ready for routes, and it
 has none.
 
-* 3. The session
+* The session
 
 ** Where the session lives
 
@@ -89,7 +89,7 @@ that fails with status 401 means no session, and that is not an error.
 | =selectParty(partyId)= | Scopes the session to a party. |
 | =logout()= | Closes the session. |
 
-* 4. The transport to the BFF
+* The transport to the BFF
 
 ** The boundary
 
@@ -203,7 +203,7 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 
 The BFF also serves the built browser bundle from =packages/web/dist=.
 
-* 5. The i18n catalogue and the styling
+* The i18n catalogue and the styling
 
 ** Languages
 
@@ -230,7 +230,7 @@ live in the catalogue under the same keys. The catalogue is in
 =packages/web/src/styles.css= holds the Tailwind entry and the theme tokens.
 Components use the tokens rather than raw colours.
 
-* 6. The wire-protocol package
+* The wire-protocol package
 
 =@ores/wire-protocol= is the one package that carries generated code.
 
@@ -247,7 +247,7 @@ regenerate; do not edit a generated file.
 The package exposes a browser entry point, =@ores/wire-protocol/browser=, for the
 shapes that carry no Node dependency.
 
-* 7. Decisions this document makes
+* Decisions this document makes
 
 | Decision | Why |
 |---|---|
@@ -258,7 +258,7 @@ shapes that carry no Node dependency.
 | One query client, one session provider | Every request shares one cache and one session state. |
 | The shell ships before the screens | The transport and the session are verifiable on their own, and a screen built on an unverified transport hides which of the two is broken. |
 
-* 8. Open questions
+* Open questions
 
 /When do the screens arrive?/ The shell holds no route. The build order is
 deliberate, but the placeholder is not a destination.

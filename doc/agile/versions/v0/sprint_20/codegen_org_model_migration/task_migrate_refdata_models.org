@@ -66,7 +66,7 @@ land via the =:implements <kind-UUID>= mechanism.
 
 * Plan
 
-** 1. Write =migrate_json_to_org.py=
+** Write =migrate_json_to_org.py=
 
 Single file, =argparse=, no external dependency beyond stdlib.
 
@@ -103,20 +103,20 @@ Out of scope for the script (left for hand-authoring later):
 - Service flags introduced by the refdata-cpp drift work
   (=service_find_by_uuid=, etc.). Those were never in the JSON.
 
-** 2. Run on refdata, inspect
+** Run on refdata, inspect
 
 Run the script. Spot-check 3-4 produced files against the party pilot
 for shape. Read one file end-to-end to confirm the structure reads
 naturally.
 
-** 3. Round-trip verify
+** Round-trip verify
 
 Snapshot refdata-cpp regen output with the JSON files present.
 Delete the JSONs, leave only the org files in place, regen, diff. The
 two outputs must be byte-identical. Iterate on the script until they
 are.
 
-** 4. Manual touch-up
+** Manual touch-up
 
 For each entity, briefly read the generated org file and:
 - Add a =#+description= field if the script's auto-derived one is
@@ -125,12 +125,12 @@ For each entity, briefly read the generated org file and:
 
 This step is the gate where the user has eyes on every entity.
 
-** 5. Build + test
+** Build + test
 
 - =cmake --build --preset linux-clang-debug-make=
 - =ctest -R "ores\.refdata"=
 
-** 6. Commit + push + raise PR
+** Commit + push + raise PR
 
 Three commits:
 1. Add the conversion script.

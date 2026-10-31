@@ -25,20 +25,20 @@ This sprint represents a major architectural leap for OreStudio. We have success
 
 * 🛠️ Detailed Component Updates
 
-** 1. Connectivity & Web Infrastructure
+** Connectivity & Web Infrastructure
 
 - *HTTP/REST Support*: Added dynamic routing, path parameter extraction, and CORS management.
 - *Interactive API*: Integrated *Swagger UI* to serve auto-generated OpenAPI 3.0 specifications directly from the backend.
 - *Wt Integration*: Configured the C++ web toolkit with transitive dependency linking (Freetype, Pango) to ensure reliable static builds.
 - *Socket Recording*: Enabled session recording at the socket level for auditing and performance debugging.
 
-** 2. Security & Geolocation
+** Security & Geolocation
 
 - *RBAC Infrastructure*: Seeded the database with predefined roles and permissions. Added protocol messages for listing and assigning roles.
 - *Geolocation Refactor*: Replaced MaxMind with =ip2country=. Hardened the SQL layer against injection and improved IPv6 handling in PostgreSQL functions.
 - *Account Security*: Added password reset logic and input validation for the new signup service.
 
-** 3. Quality & Documentation
+** Quality & Documentation
 
 - *Test Coverage*: Pushed coverage above *70%* via new suites for CSV exporters, filesystem operations, and session statistics.
 - *Doxygen Audit*: Standardized documentation for *60+ sub-namespaces* using formalized naming conventions (e.g., =ores.<component>.hpp=).

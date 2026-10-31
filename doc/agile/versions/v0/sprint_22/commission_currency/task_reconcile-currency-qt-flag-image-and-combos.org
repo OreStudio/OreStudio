@@ -58,7 +58,7 @@ was scoped as a genuine call-site migration of currency's real files
 — not a land-template-then-verify-by-diff-then-discard pass. Two
 independent pieces of work:
 
-** 1. Flag image handling migration
+** Flag image handling migration
 
 =DetailDialogBase= already has a complete, mature flag mechanism
 (=initFlagButton=, =entityImageId()=/=keyFlagField()=/=keyFlagIcon()=
@@ -83,7 +83,7 @@ match Country's pattern exactly:
   old =setCurrency= — unique to currency, inconsistent with how
   every other flag-icon entity handles a null =image_id=.
 
-** 2. Combo-field codegen wiring
+** Combo-field codegen wiring
 
 Landed a new =combo_domain_type=-gated branch in the
 =detail_dialog= template (=cpp_qt_detail_dialog.cpp.mustache=)
@@ -108,7 +108,7 @@ the verified generated snippet in (adjusting only the real file's
 =currentCurrency_= member name vs. the model's generic =item_var=
 naming — a pre-existing, unrelated drift).
 
-** 3. Fetch-failure-signalling decision
+** Fetch-failure-signalling decision
 
 The pilot (task 8AA363F8) flagged that =populateDynamicCombo='s bare
 =std::vector<Entity>= fetch signature can't distinguish "fetch

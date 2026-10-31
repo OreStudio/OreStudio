@@ -125,7 +125,7 @@ DB (EAV child table)                 Qt Dialog
 
 ** Steps
 
-*** 1. Strongly-typed parameter structs (hand-written)
+*** Strongly-typed parameter structs (hand-written)
 
 New structs in =ores.analytics.quant=, one per process type, living beside their process headers:
 
@@ -138,7 +138,7 @@ New structs in =ores.analytics.quant=, one per process type, living beside their
 - Each process header gains a constructor taking the params struct (or a new constructor overload).
 - No DB tables, no codegen — just plain C++ structs.
 
-*** 2. New codegen entity: =yield_curve_process_parameter_definition=
+*** New codegen entity: =yield_curve_process_parameter_definition=
 
 Full codegen entity (via =compass add entity=) scoped to =ores.synthetic=:
 
@@ -151,7 +151,7 @@ Full codegen entity (via =compass add entity=) scoped to =ores.synthetic=:
 - **Seed data**: rows for all 4 process types (see step 5).
 - **Codegen layers**: domain struct, DB schema, CRUD repository, NATS eventing, Qt MDI window + detail dialog (read-only).
 
-*** 3. Codegen child entity on the config: =ir_curve_generation_config_process_parameter_value=
+*** Codegen child entity on the config: =ir_curve_generation_config_process_parameter_value=
 
 Added as a =has_many= child of =ir_curve_generation_config= (same pattern as =gmm_component= on
 =fx_spot_generation_config=):
@@ -164,7 +164,7 @@ Added as a =has_many= child of =ir_curve_generation_config= (same pattern as =gm
   =theta=, =sigma=, =initial_rate= fields). The codegen =has_many= handles child save/load in the repository.
 - **Codegen layers**: domain struct, DB schema with FK trigger, CRUD, NATS eventing.
 
-*** 4. Mapping layer (hand-written paste block)
+*** Mapping layer (hand-written paste block)
 
 New file: =ores.synthetic.api/include/ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp=
 
@@ -188,7 +188,7 @@ Implementation: for each known =process_type=, build a =std::map<string, double>
 of keys exactly matches the expected set for that type (no missing, no unexpected), extract each named value, construct
 the appropriate typed-params struct, and construct the process.
 
-*** 5. Seed data
+*** Seed data
 
 =synthetic_yield_curve_process_types_populate.sql=: add =TWO_FACTOR_GAUSSIAN= row.
 
@@ -202,7 +202,7 @@ New =synthetic_yield_curve_process_parameter_definitions_populate.sql=: one row 
 
 Each row has a rich =description= field explaining what the parameter means — this is the text users see in the UI.
 
-*** 6. Data migration
+*** Data migration
 
 One-shot SQL script:
 
@@ -211,7 +211,7 @@ One-shot SQL script:
 2. Drop the flat columns from =ores_synthetic_ir_curve_generation_configs_tbl=.
 3. Drop the now-superseded CHECK constraints (=initial_rate >= 0= for CIR, =sigma >= 0=).
 
-*** 7. Update factory consumers
+*** Update factory consumers
 
 - =ir_curve_feed.cpp= (line 276): replace the =make_yield_curve_process(cfg.process_type, cfg.kappa, …, cfg.sigma,
   cfg.initial_rate, …)= call with =map_parameters_to_yield_curve_process(cfg.process_type, cfg.parameters, seed, dt)=.
@@ -221,7 +221,7 @@ One-shot SQL script:
   =std::vector<parameter_spec>= where =parameter_spec= = ={parameter_name, parameter_value}=.
 - =preview_ir_curve_shape_protocol.hpp=: same treatment.
 
-*** 8. Qt dialog rewrite
+*** Qt dialog rewrite
 
 =IrCurveGenerationConfigDetailDialog=:
 

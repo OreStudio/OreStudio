@@ -236,7 +236,7 @@ plan itself stays — it is the historical record of what we did.)
 Three refdata entities, cleanly separated by concern (definition vs.
 computed result vs. override), plus one reused ORE-export mechanism:
 
-*** 1. =calendar= (existing entity, extended into a template registry)
+*** =calendar= (existing entity, extended into a template registry)
 
 Add two columns to the existing =ores_refdata_calendars_tbl=:
 
@@ -264,7 +264,7 @@ The existing 60 QuantLib rows get =source='quantlib'=,
 =is_editable=false=, =base_calendar_code=null= via a migration
 populate-script update — no other change to that seed data.
 
-*** 2. =calendar_adjustment= (wire up the existing domain type as a real entity)
+*** =calendar_adjustment= (wire up the existing domain type as a real entity)
 
 Codegen a proper refdata entity from the struct that already exists,
 with one change: promote the currently-implicit natural key
@@ -291,7 +291,7 @@ and the UI must make that pairing obvious (e.g. grey out / hide the
 this calendar" to "create a new =calendar= + =calendar_adjustment=
 pair with this one as base" rather than an edit-in-place action).
 
-*** 3. =calendar_dates= (new — the materialised/instantiated output)
+*** =calendar_dates= (new — the materialised/instantiated output)
 
 New DQ-published, read-only refdata entity: one row per
 (=calendar_code=, =date=). Populated by a batch/service operation
@@ -428,7 +428,7 @@ calendar":
   =CalendarAdjustments= file; QuantLib ones are never patched or
   restated there.
 
-*** 1. =base_calendar_code= placement — decided: lives on =calendar= only
+*** =base_calendar_code= placement — decided: lives on =calendar= only
 
 Normalises the template graph into one place: =calendar= carries
 =source=, =is_editable=, and =base_calendar_code= together (the
@@ -440,7 +440,7 @@ while =calendar_adjustment= is reduced to purely the delta payload
 that has never shipped wired to a real table, so no migration
 concern.
 
-*** 2. Materialisation horizon — decided: a =system_setting=, not a new config table
+*** Materialisation horizon — decided: a =system_setting=, not a new config table
 
 Reuses the existing =ores.variability= =system_setting= entity
 (generic name/value/type refdata already used for exactly this kind
@@ -452,7 +452,7 @@ Two settings:
   ratchet that only ever moves forward via explicit regeneration, not
   a "today + N years" formula recomputed on every run)
 
-*** 3. Refresh/regeneration — decided: on-demand, user-triggered, not a cron job
+*** Refresh/regeneration — decided: on-demand, user-triggered, not a cron job
 
 No =ores.scheduler= involvement. A single command/service operation
 (mirroring the existing =publish-from-dq= NATS-command shape used
@@ -470,7 +470,7 @@ watermark. Applies uniformly to both cases:
   save action can offer/perform "regenerate now" inline) or whenever
   its horizon needs extending, same as QuantLib rows.
 
-*** 4. Rules vs. materialisation — decided: explicit two-stage model, confirmed
+*** Rules vs. materialisation — decided: explicit two-stage model, confirmed
 
 =calendar= (+ =calendar_adjustment= for =source='user'= rows) is the
 *rule* — what to compute. =calendar_dates= is the *instantiation* —

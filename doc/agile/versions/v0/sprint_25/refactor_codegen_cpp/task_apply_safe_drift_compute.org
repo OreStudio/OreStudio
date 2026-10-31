@@ -46,14 +46,14 @@ production that the template cannot capture.
 
 * Plan
 
-** 1. Rebase onto =origin/main=
-** 2. Regenerate
+** Rebase onto =origin/main=
+** Regenerate
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component compute-cpp --address ores.cpp
 #+end_src
 
-** 3. Restore exclusions from HEAD (12 files)
+** Restore exclusions from HEAD (12 files)
 
 | File | Reason |
 |------+--------|
@@ -67,14 +67,14 @@ projects/ores.codegen/codegen.sh regenerate --component compute-cpp --address or
 | =app_repository.cpp= | Reads union =tenant_id == tid \vert\vert tenant_id == system= |
 | =app_version_repository.cpp= | Same |
 
-** 4. Build with =make=
+** Build with =make=
 
 Many callers in messaging handlers reference the custom service API. If any
 break, additional handler restores may be needed.
 
-** 5. Run compute tests
-** 6. Final zero-diff check
-** 7. Commit + push + raise PR
+** Run compute tests
+** Final zero-diff check
+** Commit + push + raise PR
 
 * Notes
 

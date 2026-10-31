@@ -27,7 +27,7 @@ screenshot placeholders, and manual wiring?
 
 * Answer
 
-** 0. Gather the domain-knowledge source
+** Gather the domain-knowledge source
 
 Before writing a word of the chapter, ask the user which domain-knowledge
 document(s) — from the [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] index, usually a hub note under
@@ -51,7 +51,7 @@ chapter's domain section rather than silently omitting or silently
 including it (see the Currency Pairs chapter's "A word of scope is due
 before moving on" paragraph on deliverability for the pattern).
 
-** 1. Scaffold the chapter
+** Scaffold the chapter
 
 Create the chapter under =doc/manual/user_guide= as =chapter_<plural>.org=
 (e.g. =chapter_countries.org=) — no chapter number in the filename.
@@ -71,7 +71,7 @@ The frontmatter follows the exemplars: =#+type: manual=, =#+level: cross=,
 =#+filetags: :knowledge:manual:<plural>:refdata:user_guide:=, and
 =#+startup: inlineimages= so the screenshots render in Emacs.
 
-** 2. Follow the thesis structure
+** Follow the thesis structure
 
 Every entity chapter is an *argument*, laid out in the same order. The
 sections, top to bottom:
@@ -147,7 +147,7 @@ sections, top to bottom:
 The =** Provenance= subsection links to the shared [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] chapter's
 Provenance section by ID rather than re-describing the common audit fields.
 
-** 3. Placeholder every screenshot — do not capture them yet
+** Placeholder every screenshot — do not capture them yet
 
 At this stage no real screenshots exist; each one is a *placeholder* the
 next recipe ([[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]) will replace.
@@ -167,7 +167,7 @@ file with the =TODO_= prefix and the *real* target name after it (see
 naming convention below) so a repo-wide search for =TODO_= finds every
 outstanding capture across every chapter.
 
-** 4. Name screenshots to the standard
+** Name screenshots to the standard
 
 Screenshots live in =assets/images/= and are referenced from the chapter
 with =[[proj:assets/images/<name>.png]]=. The naming rule turns on
@@ -192,7 +192,7 @@ Each image is introduced with a =#+caption[Short caption]: Long caption…=
 on the line above the link; the short caption feeds the PDF list of
 figures, the long one describes what the reader is looking at.
 
-** 5. Wire the chapter into the manual and the site index
+** Wire the chapter into the manual and the site index
 
 Add the chapter to =doc/manual/user_guide/user_manual.org= in reading
 order, inside the correct =\part=, as a top-level heading with a
@@ -223,7 +223,7 @@ matching =Part:= divider row:
 | [[id:849845B0-29BE-4BBB-96D1-05579F06EEED][6. Countries]] | Country management: ISO 3166-1, history and revert, shell and CLI commands. |
 #+end_example
 
-** 6. Build to validate
+** Build to validate
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct manual

@@ -21,7 +21,7 @@ How do I add a new document type to the ORE Studio [[id:C0CF98E8-082F-2F04-2533-
 
 Follow these steps to define the new type and enable codegen support.
 
-** 1. Define the type in metadata
+** Define the type in metadata
 
 Update the foundational documentation to include the new type.
 
@@ -31,7 +31,7 @@ Update the foundational documentation to include the new type.
 2.  *Update [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]]*: Add a new entry for the document type with its definition
    and a reference table (Owner, How to generate, Example).
 
-** 2. Create a Mustache template
+** Create a Mustache template
 
 Create a new template in [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]].
 
@@ -41,7 +41,7 @@ Create a new template in [[proj:projects/ores.codegen/library/templates][=projec
 
 Example: =doc_investigation.org.mustache=
 
-** 3. Update the codegen script
+** Update the codegen script
 
 Modify [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]] to register the new type.
 
@@ -58,7 +58,7 @@ Modify [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/
    branch (usually the same branch as =knowledge= or =recipe= for leaf
    documents).
 
-** 4. Update documentation recipes
+** Update documentation recipes
 
 1.  Update [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] to include the new type in the question
    and provide a "New <type>" section with a sample shell command.

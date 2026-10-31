@@ -13,7 +13,7 @@ Adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
 
 See also [[id:613C09B0-D516-417F-9627-2349D46A3645][Analytical Design, Sparklines, and Layering]] for extensions from /Envisioning Information/, /Visual Explanations/, and /Beautiful Evidence/.
 
-* 1. Graphical Excellence
+* Graphical Excellence
 
 Excellence in statistical graphics consists of complex ideas communicated with clarity, precision, and efficiency.
 
@@ -35,7 +35,7 @@ Excellence in statistical graphics consists of complex ideas communicated with c
 - Does it encourage thinking about content over decoration?
 - Can the viewer compare data elements easily?
 
-* 2. Graphical Integrity
+* Graphical Integrity
 
 Graphics must tell the truth about the data.
 
@@ -65,7 +65,7 @@ Lie Factor = Size of effect shown in graphic / Size of effect in data
 - Area/volume encoding of linear data.
 - Missing context or baselines.
 
-* 3. Data-Ink Ratio
+* Data-Ink Ratio
 
 The data-ink ratio is the proportion of a graphic's ink devoted to the non-redundant display of data-information.
 
@@ -90,7 +90,7 @@ Maximise the data-ink ratio within reason:
 
 The *eraser test*: if you can erase something without losing data information, erase it.
 
-* 4. Chartjunk
+* Chartjunk
 
 Chartjunk is the interior decoration of graphics that does not convey information.
 
@@ -121,7 +121,7 @@ Chartjunk is the interior decoration of graphics that does not convey informatio
 - 3D effects, shadows, gradients without purpose.
 - Clip art, icons, or illustrations that don't carry data.
 
-* 5. Small Multiples
+* Small Multiples
 
 Small multiples are series of graphics showing the same combination of variables, indexed by changes in another variable.
 
@@ -148,7 +148,7 @@ Small multiples are series of graphics showing the same combination of variables
 - Clear labelling of what varies.
 - Tight spacing (data should dominate).
 
-* 6. Data Density & Information Resolution
+* Data Density & Information Resolution
 
 *Data density = numbers plotted per unit area.*
 
@@ -168,7 +168,7 @@ Graphics can often be reduced significantly while maintaining readability and ga
 - Can we show more data in the same space?
 - Are we wasting white space?
 
-* 7. Multifunctioning Graphical Elements
+* Multifunctioning Graphical Elements
 
 Every graphical element should serve multiple purposes when possible.
 
@@ -180,7 +180,7 @@ Data measures that can serve as: data point, label, scale marker, grid reference
 - Axis that is also a data series.
 - Range frames (axis shows data range, not arbitrary extent).
 
-* 8. Aesthetics and Technique
+* Aesthetics and Technique
 
 ** Balance complexity and simplicity
 

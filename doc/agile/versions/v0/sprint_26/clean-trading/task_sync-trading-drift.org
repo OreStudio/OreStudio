@@ -69,7 +69,7 @@ already reproduces the tree's semantics.
 
 * Plan
 
-** 1. Re-measure and confirm the cause of every block
+** Re-measure and confirm the cause of every block
 
 Run the dry run and confirm the classification at the new head before
 writing anything.
@@ -117,7 +117,7 @@ per-family registrars are wired at the same composition point. Read the
 composition point before deleting, because the drift gate cannot see an
 unwired registrar.
 
-** 2. Apply D1 before regenerating, not after
+** Apply D1 before regenerating, not after
 
 The generator emits per-family protocols, handlers and registrars for
 nine rates families: fra, vanilla swap, cap floor, swaption, balance
@@ -445,7 +445,7 @@ leaves them unchanged; the lesson is that a worktree with uncommitted
 work is restored from the index, never from HEAD.
 
 
-** 3. Regenerate
+** Regenerate
 
 Run the drift check without =--dry-run=. It writes the tree. Then read
 the diff in the order of its causes, not in file order: the banner
@@ -460,7 +460,7 @@ If the regeneration reveals a generator defect, fix it at its source
 with a regression test in the codegen suite, then regenerate. Do not
 edit generated output.
 
-** 4. Migrate the consumers
+** Migrate the consumers
 
 The canonical list verb renames =get_trades_request= to
 =list_trades_request= and =h->list= to =h->list_trades=, and the
@@ -468,7 +468,7 @@ eventing headers rename. Consumers outside the component: 38 files in
 ores.shell, 17 in ores.ore, 1 in ores.reporting. Migrate all of them in
 this PR. Nothing is kept for compatibility.
 
-** 5. Fix the CMake source lists
+** Fix the CMake source lists
 
 #+begin_src sh
 projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.api
@@ -476,7 +476,7 @@ projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_c
 projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.trading.service
 #+end_src
 
-** 6. Build and test
+** Build and test
 
 Build the whole tree, not only the component, because the canonical
 protocol change reaches ores.shell, ores.ore and ores.reporting. Then
@@ -487,12 +487,12 @@ cmake --build build/output/linux-clang-debug-make -j 3
 ctest --test-dir build/output/linux-clang-debug-make -R "ores.trading|ores.shell.trading|ores.ore" --output-on-failure
 #+end_src
 
-** 7. Prove idempotence
+** Prove idempotence
 
 Run the dry run twice more and require both runs to report nothing. A
 second run that still changes something is a generator defect.
 
-** 8. Record the items
+** Record the items
 
 Update the story's checklist rows for G01, G02, G03, G04, G06, P01,
 P02, P03, P05, W01, V01 and V02. Record which gates were run before the

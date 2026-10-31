@@ -50,9 +50,9 @@ has and the current template does not generate.
 
 * Plan
 
-** 1. Rebase onto =origin/main=
+** Rebase onto =origin/main=
 
-** 2. Add =has_party_id= template flag
+** Add =has_party_id= template flag
 
 Touched templates:
 - =cpp_domain_type_class.hpp.mustache= — emit =party_id= field
@@ -61,15 +61,15 @@ Touched templates:
 - =cpp_domain_type_generator.cpp.mustache= — emit
   =r.party_id = ctx.generate_uuid()=
 
-** 3. Confirm workspace model has =has_party_id: true=
+** Confirm workspace model has =has_party_id: true=
 
-** 4. Regenerate
+** Regenerate
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component workspace-cpp --address ores.cpp
 #+end_src
 
-** 5. Restore exclusions from HEAD
+** Restore exclusions from HEAD
 
 | File | Reason |
 |------+--------|
@@ -79,10 +79,10 @@ projects/ores.codegen/codegen.sh regenerate --component workspace-cpp --address 
 | =projects/ores.workspace.core/src/repository/workspace_repository.cpp= | Same |
 | =projects/ores.workspace.api/include/ores.workspace.api/messaging/workspace_protocol.hpp= | Hand-crafted request / response types with callers in =ores.qt.workspace=, =ores.qt.api= |
 
-** 6. Build with =make=
-** 7. Run workspace tests
-** 8. Final zero-diff check (regenerate + restore exclusions, =git diff --exit-code= clean)
-** 9. Commit + push + raise PR
+** Build with =make=
+** Run workspace tests
+** Final zero-diff check (regenerate + restore exclusions, =git diff --exit-code= clean)
+** Commit + push + raise PR
 
 * Notes
 

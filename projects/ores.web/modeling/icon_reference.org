@@ -24,7 +24,7 @@ the artwork itself. The two specifications that once used it are superseded:
 =entity_specification.org= describes entity screens that are deleted, and
 =component_specification.org= now specifies the browser shell and the transport.
 
-* 1. The system
+* The system
 
 One icon set: /Microsoft Fluent UI System Icons/. The Qt client also carried a
 Solar set as an alternate theme; this interface does not, because supporting two
@@ -49,7 +49,7 @@ primary actions. The live set has no filled file.
 
 /Colour./ Icons are monochrome and recoloured at use, not shipped in colour.
 
-* 2. How the Qt client declared them
+* How the Qt client declared them
 
 Historical reference. The Qt client is deleted from the tree, so nothing here
 runs today.
@@ -68,7 +68,7 @@ table in the icon module replaced both. Commit =e47043269f= deleted that module
 with the generated entity screens, so the set is a flat directory of SVG files
 today.
 
-* 3. The inventory
+* The inventory
 
 Seventy concepts in twelve categories. Each concept names a file in
 =projects/ores.web/packages/web/src/assets/icons/=. The file is the concept with
@@ -180,7 +180,7 @@ Every name in the table is a file in
 before you write it, because a wrong name renders as nothing rather than as an
 error.
 
-* 4. Adding an icon
+* Adding an icon
 
 /In the Qt client (historical):/
 
@@ -206,7 +206,7 @@ The artwork and the table are updated together. An icon added to the set but not
 to the table is one the next person will not find, and will re-add under a
 different concept.
 
-* 5. Actions a journey screen draws on
+* Actions a journey screen draws on
 
 The subset the entity screens used. Those screens are deleted, so nothing
 consumes this table today. It stays as the vocabulary the journey screens draw

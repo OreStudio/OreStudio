@@ -35,7 +35,7 @@ result to react to instead of a decision to make.
 
 * How to use this skill
 
-** 1. Write the question as an observation
+** Write the question as an observation
 
 What will you look at, and what will each outcome look like? A prototype
 whose result needs interpreting has not been aimed. "Does pruning the
@@ -45,7 +45,7 @@ attenuation work" is not.
 Decide in advance what each outcome implies, so the result cannot be
 read to mean whatever was already preferred.
 
-** 2. Build the smallest thing that produces it
+** Build the smallest thing that produces it
 
 Not a version of the feature. The smallest apparatus that makes the
 observation happen (=principle-laziness-protocol=). Hard-code what does
@@ -55,14 +55,14 @@ thing rather than the real thing where that is safer.
 Where the observation can be made against what already exists, make it
 there and build nothing.
 
-** 3. Observe, and record what you saw
+** Observe, and record what you saw
 
 Run it and write down the actual output, not the conclusion. The numbers,
 the message, the count of what remained. This is the part that survives
 the prototype, and a summary written from memory a phase later loses
 exactly the detail that made it evidence.
 
-** 4. Throw it away
+** Throw it away
 
 Delete the apparatus, or move it to the scratchpad. A prototype kept
 "because it might be useful" becomes something to maintain that nobody
@@ -70,7 +70,7 @@ designed and nothing tests.
 
 Restore anything the prototype disturbed, and check that you did.
 
-** 5. Record the decision, not the code
+** Record the decision, not the code
 
 The finding goes where the decision it settled lives: the task's plan or
 notes, or a knowledge document if it is durable. Say what was observed

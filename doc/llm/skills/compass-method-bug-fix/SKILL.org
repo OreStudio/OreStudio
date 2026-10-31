@@ -36,7 +36,7 @@ the work, and the principles cited at its judgement calls. Copy them into
 the todo list before starting; a phase you skip stays in the list with
 =skip:= and the reason.
 
-** 1. Ground
+** Ground
 
 Name the domain concepts the report touches and resolve each to a
 knowledge document ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]).
@@ -51,7 +51,7 @@ discovered task, not a reason to stop.
 Use [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][compass-doc-find]] and
 [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]].
 
-** 2. State the predicate
+** State the predicate
 
 Before touching anything, write down what would make this fixed, in terms
 someone else could check. "The link resolves" is a predicate. "Search
@@ -61,7 +61,7 @@ This is the phase most often skipped and the one that decides whether the
 rest is honest. A predicate written after the fix describes the fix; a
 predicate written before it describes the defect.
 
-** 3. Reproduce
+** Reproduce
 
 Make it happen, on the surface it was reported on. A defect you cannot
 reproduce is one you cannot prove fixed, and a fix for an unreproduced
@@ -74,7 +74,7 @@ instrument the last phase needs.
 For a failing test, use
 [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][compass-code-investigate-test-failure]].
 
-** 4. Find the root cause
+** Find the root cause
 
 Form the candidate causes, then eliminate them against evidence rather
 than plausibility (=principle-fix-root-causes=). Each pass, take the split
@@ -89,7 +89,7 @@ are about to change. A guard in the shared function is a smaller diff than
 a guard in each caller, and patching only the path the report names leaves
 its siblings broken.
 
-** 5. Fix
+** Fix
 
 The smallest change the evidence justifies. A belt-and-suspenders extra
 that "might also help" is a second hypothesis riding on the first; it does
@@ -98,7 +98,7 @@ not ship (=principle-laziness-protocol=).
 If the fix crosses a boundary or the design is unclear, stop and design
 first rather than discovering the shape by editing.
 
-** 6. Prove
+** Prove
 
 Run the reproduction from phase 3 and watch it pass
 (=principle-prove-it-works=). Then climb the
@@ -113,7 +113,7 @@ the test or the lint that fails without it
 (=principle-encode-lessons-in-structure=,
 [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][compass-code-add-tests]]).
 
-** 7. Land
+** Land
 
 Order the commits so the failing case lands before the fix, and the
 history tells the story (=principle-sequence-verifiable-units=). Close the

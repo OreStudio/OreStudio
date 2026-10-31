@@ -9,7 +9,7 @@ It is great to meet a fellow developer working on high-performance finance tools
 
 Since you are using Qt, you have excellent options like QGraphicsView for custom drawing or QChart for more standard layouts.
 
-** 1. Visualization Strategy: The "Report Progress" Heatmap**
+** Visualization Strategy: The "Report Progress" Heatmap**
 
 For a single report broken into chunks, a Fragmented Progress Map works better than a simple progress bar. It allows the user to see if specific "heavy" chunks are causing a tail-latency issue.
 
@@ -17,7 +17,7 @@ For a single report broken into chunks, a Fragmented Progress Map works better t
 
 *** B. Proposed Layout Imagine a grid where each cell represents a "Work Unit."
 
-** 2. Expanding the Concept: The Multi-View Dashboard**
+** Expanding the Concept: The Multi-View Dashboard**
 
 As you mentioned, one heatmap might not be enough. To get a full picture of the "health" of the risk run, consider these three perspectives:
 
@@ -43,7 +43,7 @@ Goal: Optimize data fetching.
 
 Visual: Heatmap showing cache hits vs. misses for market data used by chunks.
 
-** 3. Sample Visualization Concepts**
+** Sample Visualization Concepts**
 
 I can generate some visual representations to help you decide on the "look and feel" for your Qt application.
 

@@ -72,7 +72,7 @@ Ran, on this tree:
 
 * Paths taken
 
-** 1. How much of ORE market data oresmd models
+** How much of ORE market data oresmd models
 
 *** Instrument types
 
@@ -144,7 +144,7 @@ shift forms with no surface; the equity =MNY/Spot/1.2= moneyness strike; and
   out of scope by decision, and [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]
   holds the curve question.
 
-** 2. What the round-trip tests prove
+** What the round-trip tests prove
 
 There are four round trips in the suite. Each one checks less than its name
 suggests.
@@ -236,7 +236,7 @@ token is in the correct field, which is the fault in section 1.
 - I count 96 market payload files with the selection rule. The clean task's V08
   row says 118.
 
-** 3. How clean the implementation and the code generation are
+** How clean the implementation and the code generation are
 
 *** The grammar is generated in name only
 
@@ -319,7 +319,7 @@ exists for any generated message handler, for =publish_from_dq_handler=, for
 =curve_republish_service=, or for =market_data_client=. Only
 =series_classification_rule= has an eventing integration test.
 
-** 4. The clean-standard checklist
+** The clean-standard checklist
 
 The standard has 49 items. The clean task records 33 of them. It does not
 record 16.

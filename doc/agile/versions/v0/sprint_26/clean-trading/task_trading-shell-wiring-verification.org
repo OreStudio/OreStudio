@@ -176,7 +176,7 @@ aggregator lists it as a local unit rather than deriving it from a model.
 
 * Plan
 
-** 1. Enable the shell facet and generate
+** Enable the shell facet and generate
 
 Set =:ores.cpp.shell-command.enabled: true= on the entities that should
 have commands, or record the reason an entity has none. Generate the
@@ -184,18 +184,18 @@ units and their tests, then delete the hand-written units the generation
 replaces. If the facet still has no aggregator archetype, build it in
 the codegen library with a regression test.
 
-** 2. Generate the recipes
+** Generate the recipes
 
 Generate one recipe per command, regenerate the inventory, and run every
 recipe against the live fleet. Record the run.
 
-** 3. Seed the permissions
+** Seed the permissions
 
 Take the 98 codes the handlers check, find the 92 that no populate
 script seeds, seed them, grant them to the roles that need them, and add
 the component to the permissions gate's registry. Then run the gate.
 
-** 4. Run the audits and the surveys
+** Run the audits and the surveys
 
 - The Component Architecture Audit, with its record.
 - The two-pass diagrams, reading the rendered image.
@@ -204,7 +204,7 @@ the component to the permissions gate's registry. Then run the gate.
 - The V08 per-file coverage survey.
 - The V07 stub test: stub the subject and require the test to fail.
 
-** 5. Recreate, start and run live
+** Recreate, start and run live
 
 #+begin_src sh
 ./compass.sh db recreate -y -k
@@ -215,14 +215,14 @@ ctest --test-dir build/output/linux-clang-debug-make -R "ores.trading" --output-
 Run every generated shell command against the fleet. Record any command
 that cannot run.
 
-** 6. Enter the registry
+** Enter the registry
 
 Add the component to =COMPONENTS_UNDER_TEST= in
 =projects/ores.codegen/scripts/component_registry.py= and run
 =check_component_drift.py --all=. This is the last step, and it turns
 every vacuous green into a real one.
 
-** 7. Record every item
+** Record every item
 
 Fill the story's checklist with the final result per item, the evidence
 file, and the reason for each not-applicable.

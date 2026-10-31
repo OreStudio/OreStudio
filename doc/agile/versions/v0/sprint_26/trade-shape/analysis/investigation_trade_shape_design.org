@@ -103,7 +103,7 @@ Read on main at =1786aa23cd= (2026-10-02).
 The design moved in sections. Each records the decision and what it
 set aside.
 
-** 1. Anchor and components
+** Anchor and components
 
 /Decided/: the trade becomes an immutable anchor row plus component
 tables keyed by the trade, one per access pattern, each versioning on
@@ -127,7 +127,7 @@ its own timeline.
 /Set aside/: keeping =trade= as one wide temporal row, which versions
 booking, lifecycle and classification together on every change.
 
-** 2. Identity and the trade id
+** Identity and the trade id
 
 - =external_id= leaves the anchor. Every identifier scheme — UTI, USI,
   a legacy system's id, ORE's =Trade/@id= — is a row of
@@ -138,7 +138,7 @@ booking, lifecycle and classification together on every change.
 - /Set aside/: a human-readable deal number on the anchor, and the
   firm's number as one more scheme.
 
-** 3. Party, counterparty and cancel-and-rebook
+** Party, counterparty and cancel-and-rebook
 
 - The firm's legal entity (party) and the counterparty are fixed for a
   trade's life and sit on the anchor. A change of either is a cancel
@@ -148,7 +148,7 @@ booking, lifecycle and classification together on every change.
   knowledge notes described the field two contradictory ways, and that
   is now resolved in Trade Versioning.
 
-** 4. Links, sets and groups
+** Links, sets and groups
 
 The trade-links documentation merged on main during the design. Its
 catalogue filed structures, merges, compressions, allocations and
@@ -176,7 +176,7 @@ Recorded in [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade grou
 catalogue, Trade Links, Trade Versioning and Trade Activity brought
 into line.
 
-** 5. Book moves
+** Book moves
 
 Researched before deciding. No rule forbids moving a trade between two
 books that share a legal entity, a branch, a regulatory book and an
@@ -194,7 +194,7 @@ P&L break the analysis notes describe.
 
 Recorded in [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]].
 
-** 6. Dates
+** Dates
 
 /Decided/: the dates are economic terms and live on the instrument;
 each family states them in its own words. The blotter maps them to
@@ -203,7 +203,7 @@ view.
 
 /Set aside/: dates copied onto the booking, and a separate dates table.
 
-** 7. The operations queue
+** The operations queue
 
 Authorisation is stored as decisions, not as a status column.
 
@@ -221,7 +221,7 @@ Authorisation is stored as decisions, not as a status column.
 - /Decided/: the unit Operations authorises is the unit the customer
   confirms — a structure that confirms as a whole, or each trade.
 
-** 8. One activity per version
+** One activity per version
 
 /Decided/: =trade_activity= records each business event — type, actor,
 time, comment, operational-error flag — and every component version
@@ -233,7 +233,7 @@ confirmable activity; a null amend is recorded and versions nothing.
 /Set aside/: a reason code per row grouped by transaction time, and an
 activity table for confirmable events only.
 
-** 9. Counterparty and netting set
+** Counterparty and netting set
 
 - The anchor gains =counterparty_id=, immutable like =party_id=.
 - =trade_booking= keeps =netting_set_id=, versioned, because
@@ -244,7 +244,7 @@ activity table for confirmable events only.
 - =trade_party_role= keeps only the other roles: broker, sales person,
   agent, calculation agent.
 
-** 10. The ORE envelope
+** The ORE envelope
 
 /Decided/: import resolves the envelope's counterparty name and
 portfolio ids to entities and rejects a document that does not
@@ -254,7 +254,7 @@ resolve; export regenerates them. =AdditionalFields= becomes
 /Set aside/: a provenance copy of the document's text, and keeping
 today's envelope tables.
 
-** 11. Structures
+** Structures
 
 - =structure= is an immutable anchor: tenant, party, counterparty,
   kind, template.
@@ -269,7 +269,7 @@ today's envelope tables.
   nullable =parent_structure_id= and a check that a structure with a
   parent has no children.
 
-** 12. Acts
+** Acts
 
 /Decided/: an act is an activity. =trade_activity_participant=
 (activity, trade, role) replaces the activity's single unit, and each
@@ -282,7 +282,7 @@ created them.
 /Set aside/: groups as separate entities pointing at an activity, and a
 table pair per kind.
 
-** 13. Workspaces, and what replaced them
+** Workspaces, and what replaced them
 
 The design first kept a copy of a trade in another workspace under the
 same trade id, with the workspace in every key. It paused there, because
@@ -329,7 +329,7 @@ workspace into every key, query and foreign key.
 The anchor's key returns to (tenant, id), and the real foreign keys need
 no workspace.
 
-** 14. The instrument tables
+** The instrument tables
 
 The instrument refactor began with the bonds, and the clean-trading
 story's decisions record its outcome (D10, D18, D19, D21, D28, D29). It
@@ -360,7 +360,7 @@ the dispatch the export handler hand-codes today.
 header's columns in every product table, and one table per ORE trade
 type.
 
-** 15. Where each entity lives
+** Where each entity lives
 
 /Decided/: trading owns what describes trades; reference data owns
 what exists independently of any trade.
@@ -381,7 +381,7 @@ outlives its last.
 /Set aside/: a credit component created now for agreements, netting sets
 and CSAs, before anything in it computes; and placing them in trading.
 
-** 16. The C1202 check
+** The C1202 check
 
 /Superseded on 2026-10-03/: the nine-field limit below does not hold.
 220 of the 287 reflected structs the models generate have more than nine

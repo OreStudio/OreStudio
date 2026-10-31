@@ -111,7 +111,7 @@ value set, so a spelling could exist with no set that accepts it.
 
 ** Where the conversion runs
 
-*** 1. The repository hands the crosswalk to the mapper (recommended)
+*** The repository hands the crosswalk to the mapper (recommended)
 
 The mapper stays a pure function of (domain, crosswalk) and keeps the
 conversion, which is the decision already taken: the mapping is responsible for
@@ -119,12 +119,12 @@ converting between representations. The repository loads the crosswalk once per
 write batch, so the database is read, and the mapper remains testable without
 one.
 
-*** 2. A trigger normalises before the guard
+*** A trigger normalises before the guard
 
 Data-driven and impossible to bypass, but it puts a second rule where the guard
 already lives, and the domain never sees the conversion.
 
-*** 3. The XML codec normalises
+*** The XML codec normalises
 
 Rejected: it breaks the corpus test that proves a document survives read and
 write untouched, and it would put database knowledge in a codec.

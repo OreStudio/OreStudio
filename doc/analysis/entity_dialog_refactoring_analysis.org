@@ -26,7 +26,7 @@ Each entity typically has:
 
 ** Summary of Findings
 
-*** 1. High Consistency
+*** High Consistency
 
 The codebase demonstrates excellent consistency in patterns:
 - All controllers inherit from =EntityController=
@@ -34,7 +34,7 @@ The codebase demonstrates excellent consistency in patterns:
 - All dialogs follow create/edit/view-only mode patterns
 - All async operations use =QtConcurrent::run= with =QFutureWatcher=
 
-*** 2. Duplicated Constants
+*** Duplicated Constants
 
 **** Icon Color (Currently Hardcoded in ~20+ Locations)
 
@@ -84,7 +84,7 @@ setColumnWidth(1, 200);  // Old value
 // Column 2 stretches
 #+end_src
 
-*** 3. Duplicated Code Patterns
+*** Duplicated Code Patterns
 
 **** Stale Indicator Pattern (All MDI Windows)
 
@@ -310,7 +310,7 @@ Most history dialogs are very similar. Could potentially create:
 
 ** What NOT to Refactor
 
-*** 1. Entity-Specific Logic
+*** Entity-Specific Logic
 
 Each entity has unique:
 - Field layouts in detail dialogs
@@ -320,12 +320,12 @@ Each entity has unique:
 
 These should remain entity-specific.
 
-*** 2. Controller Window Management
+*** Controller Window Management
 
 The =EntityController= base class already provides good infrastructure.
 Further abstraction may reduce flexibility.
 
-*** 3. Existing Working Patterns
+*** Existing Working Patterns
 
 The current patterns work well. Don't refactor just for the sake of
 refactoring - only address clear duplication.

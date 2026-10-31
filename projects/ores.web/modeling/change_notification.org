@@ -32,7 +32,7 @@ pulses, marked rows and history entries, and a warning on an edit in progress.
 The sections below state what each does. Dependent screens and a role grant are
 not heard yet, and §7 lists what is open.
 
-* 1. What the Qt client does
+* What the Qt client does
 
 Worth stating because it is the accumulated answer, and because two of its three
 parts are right and the third is a gap.
@@ -51,7 +51,7 @@ without re-reading the table.
 the record changed elsewhere. Saving then either fails on the optimistic lock or,
 worse, overwrites. That is the gap, and this document closes it.
 
-* 2. The rules
+* The rules
 
 /Never reload on notification./ No screen refreshes because the server said
 something changed. A list that jumps while somebody is reading it is worse than a
@@ -76,7 +76,7 @@ they typed is theirs until they discard it.
 refuses it. The screen's job is to have said so /before/ the save, so the refusal
 is a confirmation rather than a surprise.
 
-* 3. The three states
+* The three states
 
 | State | What it means | What the screen shows |
 |---+---+---|
@@ -88,7 +88,7 @@ A screen moves from current to stale, and stays there until the person reloads.
 It does not move back on its own, because the point of the mark is that it is
 still there when they look up.
 
-* 4. The TypeScript shape
+* The TypeScript shape
 
 The parts, in the order data flows.
 
@@ -292,7 +292,7 @@ An edit in progress learns of a newer version and is never reloaded.
   the version the edit started from and is refused when the record has moved.
 #+end_src
 
-* 5. The visual language
+* The visual language
 
 Built. These are the treatments, so no screen invents a second language.
 
@@ -317,7 +317,7 @@ reads as an error, and a pulse that never stops becomes wallpaper within a day.
 gold and a still ring and no pulse. The information is the same; only the
 movement is dropped.
 
-* 6. What the interface must not do
+* What the interface must not do
 
 Recorded because each is the tempting shortcut.
 
@@ -338,7 +338,7 @@ when the dialog closes.
 /Mark a row that did not change./ A whole-table flash is the same as no flash,
 and it teaches people to ignore the mark.
 
-* 7. Open questions
+* Open questions
 
 Named rather than assumed, because they change the shape.
 

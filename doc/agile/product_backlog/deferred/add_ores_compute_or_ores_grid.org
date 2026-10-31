@@ -24,7 +24,7 @@ strictly follows the **BOINC** nomenclature.
 To provide a robust, strictly-typed orchestration layer, we must implement the
 following entities within the PostgreSQL instance.
 
-****** 1. The Host (Node) Entity
+****** The Host (Node) Entity
 
 Represents the physical or virtual compute resource.
 
@@ -39,7 +39,7 @@ Represents the physical or virtual compute resource.
   - =last_rpc_time=: TIMESTAMPTZ (Last heartbeat from the Node).
   - =credit_total=: NUMERIC (Total work units successfully processed).
 
-****** 2. The Application & Versioning (App Executable)
+****** The Application & Versioning (App Executable)
 
 Defines the "What" – the engine being wrapped.
 
@@ -57,7 +57,7 @@ Defines the "What" – the engine being wrapped.
   - =package_uri=: TEXT (Location of the zipped Wrapper + App bundle).
   - =platform=: TEXT (e.g., 'linux_x86_64').
 
-****** 3. The Workunit (Job Template)
+****** The Workunit (Job Template)
 
 The abstract problem definition. Does not contain results.
 
@@ -72,7 +72,7 @@ The abstract problem definition. Does not contain results.
   - =target_redundancy=: INTEGER (Default: 1. Set > 1 for volunteer/untrusted nodes).
   - =canonical_result_id=: INTEGER (Nullable; updated by Validator).
 
-****** 4. The Result (Execution Instance)
+****** The Result (Execution Instance)
 
 The bridge between the DB and PGMQ.
 
@@ -87,7 +87,7 @@ The bridge between the DB and PGMQ.
   - =output_uri=: TEXT (Where the Wrapper uploaded the result zip).
   - =received_at=: TIMESTAMPTZ.
 
-****** 5. The Batch & Assimilator State
+****** The Batch & Assimilator State
 
 Handles the finance-specific "Batch" requirement and dependencies.
 

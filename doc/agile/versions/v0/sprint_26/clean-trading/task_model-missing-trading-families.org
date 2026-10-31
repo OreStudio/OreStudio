@@ -81,7 +81,7 @@ to the reference-data work and are out of scope, per decision D5.
   nothing after the work, and =check_model_drift.py --summary= reports
   no drift.
 
-** 0. What is done
+** What is done
 
 M09's model half is done and this branch carries it.
 
@@ -140,7 +140,7 @@ Two findings from doing it:
    retired message type, which is what the refdata precedent
    (=6bb3577a55=) removed.
 
-** 1. Bound or recorded: the M02 survey
+** Bound or recorded: the M02 survey
 
 Thirty-one of the component's sixty-five org files bound a profile when
 the survey was measured on 2026-09-26 (twenty-six trading-instrument,
@@ -249,7 +249,7 @@ no-matches with their feature values.
 
 * Plan
 
-** 1. Bind the unbound entities
+** Bind the unbound entities
 
 Choose a profile or record a no-match for each of the 26. The bond
 family is the large group: =bond_issue= and its children are shared
@@ -258,7 +258,7 @@ per-trade instrument is the wrong bind, and a forced nearest bind is not
 allowed. Where no profile fits, record the entity's actual feature
 values and the reason, as item M02 requires.
 
-** 2. Author the nine missing models
+** Author the nine missing models
 
 Eight tables have a table, a repository, a service, a handler and SQL, and
 no model at all: =activity_types=, =fpml_event_types=, =commodity_instruments=,
@@ -415,7 +415,7 @@ regenerated create and trigger scripts before the eventing suites pass. A
 =compass db recreate -y -k= does that. The port itself needs no database
 change to build.
 
-** 3. Classify the unmodelled hand-written domain types
+** Classify the unmodelled hand-written domain types
 
 Done. Measured 2026-09-27. The twenty-four types fall into four states,
 not three:
@@ -466,7 +466,7 @@ instrument variants, the payload and the container are the candidates.
 The rest are infrastructure with a recorded reason. No type is left
 unclassified, and none is deleted from this PR.
 
-** 4. Clear the legacy fragments
+** Clear the legacy fragments
 
 #+begin_src sh
 grep -rn "Presentation" projects/ores.trading/modeling/
@@ -478,7 +478,7 @@ Five models carry a presentation drawer: =trade=, =lifecycle_event=,
 name the generator facet in the singular. Fix both in the models and
 regenerate; do not edit the generated output.
 
-** 5. Close the type defects
+** Close the type defects
 
 Work them in the order the investigation gives, because each makes the
 next smaller. Defects 2, 3, 4 and 6 are item M08: SQL type spellings
@@ -740,7 +740,7 @@ express are PR 4's. PR 3 claims none of them.
 | 15 | An underlying is an unqualified name | Nine equity tables carry =underlying_name text=, and the two basket products escape through =basket_json=; the oresmd URI and the =instrument_underlyings= table the defect page describes are PR 4's shape |
 | 16 | No observation schedule | The scalar averaging, fixing, cliquet and strip columns remain; the shared schedule table is the same shape as defect 1's child and is authored with the identity reshape |
 
-** 6. Regenerate and prove
+** Regenerate and prove
 
 Regenerate the component and re-run the dry run twice. Every new
 entity must leave the tree byte-identical. Then run the codegen suite.
@@ -750,7 +750,7 @@ projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q
 projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp --dry-run
 #+end_src
 
-** 7. Record
+** Record
 
 Update the story's checklist rows for M02, M04, M05, M08 and M09.
 

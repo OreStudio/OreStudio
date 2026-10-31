@@ -101,7 +101,7 @@ extension idea retreats to a simpler sidecar-fragment design.
 
 * Plan
 
-** 1. Write a small Python org parser
+** Write a small Python org parser
 
 No external dependency required. The org subset we need is small:
 
@@ -116,7 +116,7 @@ No external dependency required. The org subset we need is small:
 case during implementation (e.g., escaped =#+= sequences inside source
 blocks), we add =orgparse= then. Not before.
 
-** 2. Design: unified org file structure for an entity
+** Design: unified org file structure for an entity
 
 The org file replaces *both* the current C++ JSON
 (=*_domain_entity.json=) and SQL JSON (=*_entity.json= /
@@ -164,7 +164,7 @@ Each section is consumed by one or both paths:
 - SQL codegen consumes: Flags (SQL subset), Primary key, Natural keys,
   Columns, SQL.
 
-** 3. Implementation: parser + validator
+** Implementation: parser + validator
 
 [[proj:projects/ores.codegen/src/codegen/org_loader.py][=projects/ores.codegen/src/codegen/org_loader.py=]] (new):
 
@@ -196,7 +196,7 @@ The validator:
 Add a dispatch in =manifest.py= or wherever models are loaded:
 =.org= → =org_loader=, =.json= → existing JSON loader.
 
-** 4. Pilot: =party_entity.org= (single unified file)
+** Pilot: =party_entity.org= (single unified file)
 
 Hand-author =projects/ores.codegen/models/refdata/party_entity.org=
 covering:
@@ -216,7 +216,7 @@ have markers (post-render substitution) for:
 - additional declarations (from each method's =declaration= block).
 - additional definitions (from each method's =implementation= block).
 
-** 5. Verify equivalence
+** Verify equivalence
 
 For each file that codegen produces from the party model, generate it from
 both the JSON path and the org path. Diff the outputs.
@@ -225,7 +225,7 @@ Acceptance: zero diff for everything that the JSON model can already
 express. The four custom methods are *added* by the org path (the JSON path
 currently produces nothing for them).
 
-** 6. Build + test
+** Build + test
 
 - =cmake --build --preset linux-clang-debug-make= passes.
 - =ctest -R "ores\.refdata"= passes.
@@ -233,14 +233,14 @@ currently produces nothing for them).
   custom methods now generated automatically, the missing fields now in
   party.hpp from the model).
 
-** 7. Decide
+** Decide
 
 Document the findings in =* Result=. Pick one:
 - *Continue migration.* Open a story to migrate the remaining ~100 models.
 - *Retreat to sidecar fragments.* Strip the org-model code, keep the
   extension-only mechanism in a smaller follow-up.
 
-** 8. Commit + push + raise PR
+** Commit + push + raise PR
 
 The PR ships:
 - =orgparse= dependency added.

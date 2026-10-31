@@ -25,7 +25,7 @@ produced a recipe, and the 247 files at the generated recipe path shape have gon
 unchecked since the facet landed. Both bodies below were found the day the sweep
 started rendering the whole =ores= address.
 
-** 1. Fifty-eight recipes are a placeholder behind the template
+** Fifty-eight recipes are a placeholder behind the template
 
 Every one differs in the same region and nowhere else: inside its
 =#+begin_src ores-shell :tangle ...= blocks, an argument placeholder that the
@@ -36,7 +36,7 @@ direction is the shell owner's call: either the recipes are behind the template
 and want regenerating, or the template is ahead of the shell and wants
 correcting.
 
-** 2. Two recipes are a staging change behind main
+** Two recipes are a staging change behind main
 
 =doc/recipes/shell/lei_entities/lei_entity.org= and
 =doc/recipes/shell/lei_relationships/lei_relationship.org= are staging shims, and
@@ -52,7 +52,7 @@ a path leaves nothing behind for the comparison to walk, so the deletion is
 silent until some later branch happens to touch the file. Here the marker task
 touched it.
 
-** 3. Seventy-six files at the shape no model produces
+** Seventy-six files at the shape no model produces
 
 The shape holds 247 files; the render accounts for 171 of them once the 14 it
 produces but the tree lacks are set aside, leaving 76 with no model behind them,

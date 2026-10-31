@@ -55,7 +55,7 @@ how to find it there.
 
 * Plan
 
-** 1. Decide the discovery mechanism
+** Decide the discovery mechanism
 
 Two parts:
 
@@ -70,19 +70,19 @@ Two parts:
 This makes the modeling directory a literate-friendly space where the
 codegen consumes only the files explicitly marked as models.
 
-** 2. Update =manifest.py=
+** Update =manifest.py=
 
 The =Component= dataclass grows a =modeling_dir= field pointing at the
 component's =modeling/= directory. =entity_glob= and =exclude_suffix= still
 apply to the legacy =models_dir=; the new =modeling_dir= is globbed as
 =*.org= and filtered by =#+type:= via a small helper.
 
-** 3. Update =generate.py= driver
+** Update =generate.py= driver
 
 For each component, union the (legacy JSON) matches and the (new org)
 matches. Pass both into the existing model-by-model loop.
 
-** 4. Move the pilot file
+** Move the pilot file
 
 #+begin_src sh
 mkdir -p projects/ores.refdata/modeling
@@ -90,17 +90,17 @@ git mv projects/ores.codegen/models/refdata/party_entity.org \
        projects/ores.refdata/modeling/ores.refdata.party.org
 #+end_src
 
-** 5. Regenerate and verify
+** Regenerate and verify
 
 =codegen.sh regenerate --component refdata-cpp --profile all-cpp= produces
 the same =party.hpp= (and other party files) as before the move.
 
-** 6. Document
+** Document
 
 Add a recipe under [[proj:doc/recipes/codegen][=doc/recipes/codegen/=]] for "How do I add a new codegen
 entity model?". Points at =compass add entity-org= and the meta-model.
 
-** 7. Commit + push + raise PR
+** Commit + push + raise PR
 
 * Notes
 

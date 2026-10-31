@@ -117,18 +117,18 @@ This task produces the inventory; the pilot task fixes them.
 
 * Plan
 
-** 1. Survey
+** Survey
 
 Walk [[proj:projects][=projects/=]] and =git grep 'ores\.refdata\.api'= (and =.core=,
 =.service=, =ores.qt.refdata=) to enumerate every reference. Capture
 the counts per category in the story's =* Decisions= section.
 
-** 2. Decide
+** Decide
 
 Resolve Q1–Q3 (Q4 and Q5 are surveys; their output feeds the per-group
 plans). Record the decision and reasoning under =* Decisions=.
 
-** 3. Scaffold per-group tasks
+** Scaffold per-group tasks
 
 For each product group (refdata first; then trading, iam, dq,
 analytics, reporting, scheduler, workflow, controller, database,
@@ -136,13 +136,13 @@ workspace, compute), scaffold a task via
 =compass add task --parent-dir doc/agile/versions/v0/sprint_19/regroup_components ...=
 with a plan body that follows the refdata pilot template.
 
-** 4. Pilot plan
+** Pilot plan
 
 Write the refdata pilot's full plan (which files move, the git mv
 sequence, the search-and-replace patterns, the verification script).
 Subsequent groups inherit this plan with names substituted.
 
-** 5. Commit + raise PR
+** Commit + raise PR
 
 Just docs (story update + investigation deliverable + scaffolded
 follow-on tasks). One PR.

@@ -144,7 +144,7 @@ exist in the log while the workflow reports only a timeout.
 
 Three mechanisms compound.
 
-** 1. The engine has no channel for the handler's error
+** The engine has no channel for the handler's error
 
 =workflow_engine.cpp:1061= =deadline_failure_text= assembles the message
 from exactly three inputs: the budget, the elapsed silence, and whether a
@@ -158,7 +158,7 @@ different situations: the command was never delivered, it was delivered
 and never entered a handler, it was entered and hung, or it was entered
 and the process died. All four produce the same text.
 
-** 2. A handler path discards a command in silence
+** A handler path discards a command in silence
 
 =ores.iam.core/messaging/tenant_provisioning_handler.hpp:587=:
 
@@ -174,7 +174,7 @@ propagate, not to the engine and not to the service log. Every other
 failure path in that function catches, logs =provision_step failed=, and
 calls =wf->fail(...)=, which replies. This one is the exception.
 
-** 3. The engine never recorded a start
+** The engine never recorded a start
 
 =started_at= is NULL, so there is no handler-side state, no partial step
 log, and nothing to read after the fact. The deadline is the first and

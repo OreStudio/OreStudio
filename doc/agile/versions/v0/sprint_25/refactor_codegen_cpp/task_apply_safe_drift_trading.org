@@ -48,20 +48,20 @@ refdata does not.
 
 * Plan
 
-** 1. Rebase onto =origin/main=
+** Rebase onto =origin/main=
 
 #+begin_src sh
 git rebase origin/main
 #+end_src
 
-** 2. Add template flags trading needs
+** Add template flags trading needs
 
 | Flag | What it gates |
 |------+---------------|
 | =service_pagination= | =list_X(offset, limit)= + =count_X()= using in-memory slice of =read_latest()= |
 | =service_batch_get= | =get_Xs(vector<string>)= delegating to =repo_.read_latest(ctx_, ids)= (requires =has_batch_read= in repo) |
 
-** 3. Update trading models
+** Update trading models
 
 | Model group | Flags |
 |-------------+-------|
@@ -71,13 +71,13 @@ git rebase origin/main
 | 10 models missing =has_batch_read= | =has_batch_read= |
 | =balance_guaranteed_swap_instrument= | fix =entity_singular_short= and =entity_plural_short= to full names (not =bgs_*=) |
 
-** 4. Regenerate trading-cpp
+** Regenerate trading-cpp
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address ores.cpp
 #+end_src
 
-** 5. Restore exclusions from HEAD
+** Restore exclusions from HEAD
 
 | File | Reason |
 |------+--------|
@@ -86,19 +86,19 @@ projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address or
 | =projects/ores.trading.core/include/ores.trading.core/service/fra_instrument_service.hpp= | =get_swap_legs= / =get_swap_legs_batch= use =swap_leg_repository= |
 | =projects/ores.trading.core/src/service/fra_instrument_service.cpp= | Same |
 
-** 6. Build with =make=
+** Build with =make=
 
 #+begin_src sh
 cmake --build --preset linux-clang-debug-make
 #+end_src
 
-** 7. Run trading tests
+** Run trading tests
 
 #+begin_src sh
 ctest --test-dir build/output/linux-clang-debug-make -R "ores\.trading" --output-on-failure
 #+end_src
 
-** 8. Final zero-diff check
+** Final zero-diff check
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address ores.cpp
@@ -106,7 +106,7 @@ projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address or
 git diff --exit-code   # must be zero
 #+end_src
 
-** 9. Commit + push + raise PR
+** Commit + push + raise PR
 
 * Notes
 

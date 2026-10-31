@@ -55,7 +55,7 @@ types intentionally keep =std::string= for serialisation; they are out of scope.
 
 The fully migrated =portfolio= type is the canonical reference.
 
-** 1. Domain header
+** Domain header
 
 #+begin_src diff
 -    std::string tenant_id;
@@ -68,7 +68,7 @@ Add the include if not already present:
 #include "ores.utility/uuid/tenant_id.hpp"
 #+end_src
 
-** 2. Repository mapper — entity→domain (read from DB)
+** Repository mapper — entity→domain (read from DB)
 
 The DB column always contains a valid UUID string.  Use =.value()= — a malformed
 row is a data corruption bug, not an expected runtime condition.
@@ -80,7 +80,7 @@ row is a data corruption bug, not an expected runtime condition.
 
 Reference: =portfolio_mapper.cpp= line 38.
 
-** 3. Repository mapper — domain→entity (write to DB)
+** Repository mapper — domain→entity (write to DB)
 
 #+begin_src diff
 -    r.tenant_id = v.tenant_id;
@@ -89,7 +89,7 @@ Reference: =portfolio_mapper.cpp= line 38.
 
 Reference: =portfolio_mapper.cpp= line 68.
 
-** 4. Special case: =party_repository.cpp= manual row mapping
+** Special case: =party_repository.cpp= manual row mapping
 
 =party_repository::read_system_party= maps rows by index rather than via the
 mapper (line 129).  Change:
@@ -99,7 +99,7 @@ mapper (line 129).  Change:
 +    p.tenant_id = utility::uuid::tenant_id::from_string(*row[1]).value();
 #+end_src
 
-** 5. Generators
+** Generators
 
 Generators pull tenant_id from =ctx.env()= with a default of ="system"=.  The
 literal ="system"= is not a UUID; use =value_or= to fall back to the system

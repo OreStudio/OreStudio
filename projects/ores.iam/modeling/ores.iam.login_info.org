@@ -6,6 +6,7 @@
 #+title: ores.iam.login_info
 #+description: Login tracking and security state for an account: last login, failed attempts, lock and online flags, and the last two IP addresses.
 #+type: ores.codegen.entity
+#+http_area: auth
 #+component: iam
 #+filetags: :model:entity:iam:
 #+entity_singular: login_info

@@ -310,7 +310,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     BOOST_LOG_SEV(lg(), info) << "Registering roles routes";
 
     auto list_route =
-        router->get("/api/v1/iam/roles")
+        router->get("/api/v1/access/roles")
             .summary("List roles")
             .description("Forwards to the iam.v1.roles.list operation.")
             .tags({"iam"})
@@ -326,7 +326,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/iam/roles/{name}")
+        router->get("/api/v1/access/roles/{name}")
             .summary("Get one role")
             .description("Forwards to the iam.v1.roles.get operation.")
             .tags({"iam"})
@@ -338,7 +338,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/iam/roles/get-many")
+        router->post("/api/v1/access/roles/get-many")
             .summary("Get many roles")
             .description("Forwards to the iam.v1.roles.get_many operation.")
             .tags({"iam"})
@@ -351,7 +351,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(get_many_built);
 
     auto add_route =
-        router->post("/api/v1/iam/roles")
+        router->post("/api/v1/access/roles")
             .summary("Create one role")
             .description("Forwards to the iam.v1.roles.put operation.")
             .tags({"iam"})
@@ -364,7 +364,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(add_built);
 
     auto set_route =
-        router->put("/api/v1/iam/roles")
+        router->put("/api/v1/access/roles")
             .summary("Replace one role")
             .description("Forwards to the iam.v1.roles.put operation.")
             .tags({"iam"})
@@ -378,7 +378,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(set_built);
 
     auto put_many_route =
-        router->post("/api/v1/iam/roles/put-many")
+        router->post("/api/v1/access/roles/put-many")
             .summary("Write many roles")
             .description("Forwards to the iam.v1.roles.put_many operation.")
             .tags({"iam"})
@@ -391,7 +391,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(put_many_built);
 
     auto delete_route =
-        router->delete_("/api/v1/iam/roles/{name}")
+        router->delete_("/api/v1/access/roles/{name}")
             .summary("Delete one role")
             .description("Forwards to the iam.v1.roles.delete operation.")
             .tags({"iam"})
@@ -405,7 +405,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     router->add_route(delete_built);
     registry->register_route(delete_built);
 
-    auto delete_many_route = router->post("/api/v1/iam/roles/delete-many")
+    auto delete_many_route = router->post("/api/v1/access/roles/delete-many")
                                  .summary("Delete many roles")
                                  .description("Forwards to the iam.v1.roles.delete_many operation.")
                                  .tags({"iam"})
@@ -420,7 +420,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(delete_many_built);
 
     auto versions_route =
-        router->get("/api/v1/iam/roles/{name}/versions")
+        router->get("/api/v1/access/roles/{name}/versions")
             .summary("List the recorded versions of one role")
             .description("Forwards to the iam.v1.roles_versions.list operation.")
             .tags({"iam"})
@@ -436,7 +436,7 @@ void role_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     registry->register_route(versions_built);
 
     auto version_route =
-        router->get("/api/v1/iam/roles/{name}/versions/{version}")
+        router->get("/api/v1/access/roles/{name}/versions/{version}")
             .summary("Get one recorded version of one role")
             .description("Forwards to the iam.v1.roles_versions.get operation.")
             .tags({"iam"})

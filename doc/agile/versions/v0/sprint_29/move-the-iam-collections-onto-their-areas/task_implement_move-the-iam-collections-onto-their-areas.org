@@ -7,82 +7,74 @@
 #+level: s1
 #+filetags: :move-the-iam-collections-onto-their-areas:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-move-the-iam-collections-onto-their-areas
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CFA3BC5C-9297-4C49-8336-40DB598C61DB][Move the IAM collections onto their areas]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The IAM entity collections answer under the area they belong to, and no two routes want the same path for different reasons.
+The IAM entity collections answer under the area they belong to, and no two routes want the
+same path for different reasons.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CFA3BC5C-9297-4C49-8336-40DB598C61DB][Move the IAM collections onto their areas]] |
-| Now          | Not yet started.                       |
+| Now          | Six collections answer on access or auth, and the session door keeps the path the collection wanted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the operation routes, whose area differs per operation. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- Each IAM entity model declares the area the inventory decided for it.
-- The generated routes, tests, recipes and hurl scripts state the new paths.
-- The session door keeps its path and the generated session collection takes another, with the reason recorded.
-- The iam tests build and pass, and the gates are green.
+- [X] Each IAM entity model declares the area the inventory decided for it.
+- [X] The generated routes, tests, recipes and hurl scripts state the new paths.
+- [X] The session door keeps its path and the generated session collection takes another, with the reason recorded.
+- [X] The iam tests build and pass, and the gates are green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One area declaration per model, then the generator writes the route unit, its tests, its
+recipe and its hurl scripts. The classification rules that decide the paths are repointed by
+hand, because the decisions live outside the generator.
+
+The move exposed a collision worth finding before a bulk edit shipped it. The inventory had
+classified the generated session collection into =auth=, where the session door already
+answers: =POST /api/v1/auth/sessions= signs in and =DELETE= signs out. Two routes cannot own
+one path for different reasons. The door keeps it because it mints the credential, and the
+collection becomes =/api/v1/access/sessions=, the ledger an administrator reads.
+
+Two models declare nothing. =auth_event= and =role_permission_junction= render no route unit,
+so the declaration would have been inert; their only addresses come from operation routes.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Models that declare an area | 6 | =python3 build/scripts/check_http_areas.py= (7 with the currency model) | this branch |
+| Routes moved | 61 | =grep -c "api/v1/access\|api/v1/auth/" projects/ores.http/iam/src/routes/iam/*_routes.cpp= | this branch |
+| Generated tests and recipes | 73 files regenerated | =git status --short= before the commit | this branch |
+| =ores.http.iam= tests | 34 cases, 285 assertions, 1 skipped, all passing | =./ores.http.iam.tests= | this branch |
 
 * Notes
 
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+- The skipped case is the live sign-in from the session door's task. It skips because this
+  checkout has no fleet running, not because of this move.
+- The operation routes still answer under =/api/v1/iam/=, and their areas are already
+  decided as access, auth or tenancy. They are the next move, and they need a declaration per
+  operation rather than per entity.
 
 * Result
+
+The IAM collections answer on =access= and =auth=. The session collection is on
+=/api/v1/access/sessions= and the door on =/api/v1/auth/sessions=, each for its own reason,
+and the tests that the generator wrote pass against the built unit.

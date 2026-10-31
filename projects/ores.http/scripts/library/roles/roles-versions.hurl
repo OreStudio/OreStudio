@@ -1,9 +1,9 @@
-# =GET /api/v1/iam/roles/__none__/versions=
+# =GET /api/v1/access/roles/__none__/versions=
 #
 # GENERATED from doc/recipes/http/roles/role.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_http_recipes
 #
-GET {{base_url}}/api/v1/iam/roles/__none__/versions
+GET {{base_url}}/api/v1/access/roles/__none__/versions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

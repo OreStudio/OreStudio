@@ -12,7 +12,7 @@ This file documents the roles resource over HTTP, one section per endpoint. Ever
 
 * Endpoints
 
-** =GET /api/v1/iam/roles=
+** =GET /api/v1/access/roles=
 :PROPERTIES:
 :ID: 37460C99-E3AD-5D18-A31D-6AB4022440B8
 :END:
@@ -24,18 +24,18 @@ It forwards to =iam.v1.roles.list=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/roles
+GET /api/v1/access/roles
 #+end_example
 
 #+name: roles-list
 #+begin_src hurl :tangle roles-list.hurl :exports none
-GET {{base_url}}/api/v1/iam/roles
+GET {{base_url}}/api/v1/access/roles
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =GET /api/v1/iam/roles/__none__=
+** =GET /api/v1/access/roles/__none__=
 :PROPERTIES:
 :ID: 424EF871-4F9B-5F8D-AA56-964FCEBF2B77
 :END:
@@ -47,18 +47,18 @@ It forwards to =iam.v1.roles.get=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/roles/__none__
+GET /api/v1/access/roles/__none__
 #+end_example
 
 #+name: roles-get
 #+begin_src hurl :tangle roles-get.hurl :exports none
-GET {{base_url}}/api/v1/iam/roles/__none__
+GET {{base_url}}/api/v1/access/roles/__none__
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/get-many=
+** =POST /api/v1/access/roles/get-many=
 :PROPERTIES:
 :ID: C1764DF4-51C3-5404-A9B5-94368432AA34
 :END:
@@ -70,18 +70,18 @@ It forwards to =iam.v1.roles.get_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/get-many
+POST /api/v1/access/roles/get-many
 #+end_example
 
 #+name: roles-get-many
 #+begin_src hurl :tangle roles-get-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/get-many
+POST {{base_url}}/api/v1/access/roles/get-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles=
+** =POST /api/v1/access/roles=
 :PROPERTIES:
 :ID: 21BDB4CF-17EB-561C-8758-2401546DC664
 :END:
@@ -93,18 +93,18 @@ It forwards to =iam.v1.roles.put=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles
+POST /api/v1/access/roles
 #+end_example
 
 #+name: roles-add
 #+begin_src hurl :tangle roles-add.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles
+POST {{base_url}}/api/v1/access/roles
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =PUT /api/v1/iam/roles=
+** =PUT /api/v1/access/roles=
 :PROPERTIES:
 :ID: 2966AD57-0D58-5BD8-8DD8-00FEEE9A6EEB
 :END:
@@ -116,18 +116,18 @@ It forwards to =iam.v1.roles.put=.
 The request is:
 
 #+begin_example
-PUT /api/v1/iam/roles
+PUT /api/v1/access/roles
 #+end_example
 
 #+name: roles-set
 #+begin_src hurl :tangle roles-set.hurl :exports none
-PUT {{base_url}}/api/v1/iam/roles
+PUT {{base_url}}/api/v1/access/roles
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/put-many=
+** =POST /api/v1/access/roles/put-many=
 :PROPERTIES:
 :ID: 797DCEE8-B0AA-5CEF-8029-60C6C5A24C73
 :END:
@@ -139,18 +139,18 @@ It forwards to =iam.v1.roles.put_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/put-many
+POST /api/v1/access/roles/put-many
 #+end_example
 
 #+name: roles-put-many
 #+begin_src hurl :tangle roles-put-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/put-many
+POST {{base_url}}/api/v1/access/roles/put-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =DELETE /api/v1/iam/roles/__none__=
+** =DELETE /api/v1/access/roles/__none__=
 :PROPERTIES:
 :ID: 022D5313-8527-5561-A63E-47B6DB9A4BE1
 :END:
@@ -162,18 +162,18 @@ It forwards to =iam.v1.roles.delete=.
 The request is:
 
 #+begin_example
-DELETE /api/v1/iam/roles/__none__
+DELETE /api/v1/access/roles/__none__
 #+end_example
 
 #+name: roles-delete
 #+begin_src hurl :tangle roles-delete.hurl :exports none
-DELETE {{base_url}}/api/v1/iam/roles/__none__
+DELETE {{base_url}}/api/v1/access/roles/__none__
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/delete-many=
+** =POST /api/v1/access/roles/delete-many=
 :PROPERTIES:
 :ID: 2AF3FF11-9A89-571E-BC7E-A21C384E67F6
 :END:
@@ -185,18 +185,18 @@ It forwards to =iam.v1.roles.delete_many=.
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/delete-many
+POST /api/v1/access/roles/delete-many
 #+end_example
 
 #+name: roles-delete-many
 #+begin_src hurl :tangle roles-delete-many.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/delete-many
+POST {{base_url}}/api/v1/access/roles/delete-many
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =GET /api/v1/iam/roles/__none__/versions=
+** =GET /api/v1/access/roles/__none__/versions=
 :PROPERTIES:
 :ID: 3FDFAB26-7521-5E9A-BAE7-7C590B64E96F
 :END:
@@ -208,18 +208,18 @@ It forwards to =iam.v1.roles_versions.list=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/roles/__none__/versions
+GET /api/v1/access/roles/__none__/versions
 #+end_example
 
 #+name: roles-versions
 #+begin_src hurl :tangle roles-versions.hurl :exports none
-GET {{base_url}}/api/v1/iam/roles/__none__/versions
+GET {{base_url}}/api/v1/access/roles/__none__/versions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =GET /api/v1/iam/roles/__none__/versions/0=
+** =GET /api/v1/access/roles/__none__/versions/0=
 :PROPERTIES:
 :ID: C25B5FBF-472A-56D8-AE02-307352F0A0D2
 :END:
@@ -231,12 +231,12 @@ It forwards to =iam.v1.roles_versions.get=.
 The request is:
 
 #+begin_example
-GET /api/v1/iam/roles/__none__/versions/0
+GET /api/v1/access/roles/__none__/versions/0
 #+end_example
 
 #+name: roles-version
 #+begin_src hurl :tangle roles-version.hurl :exports none
-GET {{base_url}}/api/v1/iam/roles/__none__/versions/0
+GET {{base_url}}/api/v1/access/roles/__none__/versions/0
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

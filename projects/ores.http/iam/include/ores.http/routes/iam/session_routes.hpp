@@ -73,56 +73,56 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/sessions — List sessions.
+     * @brief GET /api/v1/access/sessions — List sessions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/iam/sessions/{id} — Get one session.
+     * @brief GET /api/v1/access/sessions/{id} — Get one session.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/sessions/get-many — Get many sessions.
+     * @brief POST /api/v1/access/sessions/get-many — Get many sessions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/sessions — Create one session.
+     * @brief POST /api/v1/access/sessions — Create one session.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_add(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief PUT /api/v1/iam/sessions — Replace one session.
+     * @brief PUT /api/v1/access/sessions — Replace one session.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_set(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/sessions/put-many — Write many sessions.
+     * @brief POST /api/v1/access/sessions/put-many — Write many sessions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_put_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief DELETE /api/v1/iam/sessions/{id} — Delete one session.
+     * @brief DELETE /api/v1/access/sessions/{id} — Delete one session.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/sessions/delete-many — Delete many sessions.
+     * @brief POST /api/v1/access/sessions/delete-many — Delete many sessions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete_many(const ores::http::domain::http_request& req,

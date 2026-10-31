@@ -6,6 +6,7 @@
 #+title: ores.iam.session
 #+description: Codegen entity model for the iam sessions table. Drives the C++ domain type, JSON IO, table IO, mapper, repository, generator, service, eventing, TypeScript metadata, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+http_area: access
 #+component: iam
 #+filetags: :model:entity:iam:
 #+entity_singular: session

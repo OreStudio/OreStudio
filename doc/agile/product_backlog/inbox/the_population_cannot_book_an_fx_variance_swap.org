@@ -44,6 +44,30 @@ rest. Nothing reports the shortfall to the person who provisioned it.
 - The booking that failed: trade =9f756808-1bc9-56e1-9644-9f29e145a3d5=, on
   =main= at =aae241ac55=
 
+* Where it came from
+
+The row the population books is built by the variance swap arm of the FX
+batch, which arrived with =e8318cbc32= -- *[synthetic] Let an fx trade state its
+rows*, 2026-10-30, environment =festive_dijkstra=. The check constraint is older
+and is not the change: it is in the table from =3734c23655=, 2026-04-09, and the
+population reached no variance swap before the arm existed.
+
+* What is ruled out
+
+Three cases, added with this capture, say the obvious places are not the fault:
+
+- =a_planned_fx_variance_swap_ends_after_it_starts= -- the planner states an end
+  after its start for the band the profile uses (one month to two years).
+- =a_wire_round_trip_keeps_a_variance_swaps_dates= -- the msgpack round trip of
+  =book_trade_request= returns the same two dates.
+- =a_booked_variance_swap_keeps_its_dates_in_order= -- the trading service books
+  an ordered variance swap into its own table without complaint.
+
+So the refused row comes from the live booking path and not from the plan, the
+wire or the storage. The next step is to state the dates the refused row
+carries: run the population with =log_parameter_max_length_on_error= set and
+read the database's detail for the failing insert.
+
 * See also
 
 - The sprint 29 story *Populate the ACME books with a realistic trade population*

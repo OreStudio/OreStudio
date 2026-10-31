@@ -26,6 +26,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
+#include <format>
 #include <map>
 #include <set>
 #include <sstream>
@@ -982,4 +983,32 @@ TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scope
         if (found != issuer_of.end())
             REQUIRE(bond_of(slot).issuer_id == found->second);
     }
+}
+
+/*
+ * The FX family states sixteen types and the profile of the ACME FX config
+ * draws a band from one month to two years, so the variance swap is reached.
+ * Its own table refuses a row whose end is not after its start, so the plan
+ * has to state both in order before anything is booked.
+ */
+TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]") {
+    auto scope = fx_scope();
+    scope.min_tenor_code = "1M";
+    scope.max_tenor_code = "2Y";
+    scope.trades_per_book = 16;
+    scope.seed = 44;
+
+    const auto plan = plan_of(scope);
+
+    std::size_t swaps = 0;
+    for (const auto& slot : plan.slots) {
+        for (const auto& row : slot.instruments.fx_variance_swap_instruments) {
+            ++swaps;
+            INFO("start " << std::format("{:%Y-%m-%d}", row.start_date) << " end "
+                          << std::format("{:%Y-%m-%d}", row.end_date));
+            CHECK(row.end_date > row.start_date);
+        }
+    }
+    /* One per book: sixteen types in the cycle, two books in the scope. */
+    CHECK(swaps == 2);
 }

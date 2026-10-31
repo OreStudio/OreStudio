@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-fx_volatility_configs add <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary>
+fx_volatility_configs add <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.fx_volatility_configs.put=.
 
 #+name: fx_volatility_configs-add
 #+begin_src ores-shell :tangle fx_volatility_configs-add.ores :exports none
-fx_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+fx_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-fx_volatility_configs set <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary> [--version <n>]
+fx_volatility_configs set <id> <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.fx_volatility_configs.put=.
 
 #+name: fx_volatility_configs-set
 #+begin_src ores-shell :tangle fx_volatility_configs-set.ores :exports none
-fx_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+fx_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-fx_volatility_configs put-many --count <n> <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary>
+fx_volatility_configs put-many --count <n> <id> <curve_definition_id> <dimension> <deltas> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.fx_volatility_configs.put_many=.
 
 #+name: fx_volatility_configs-put-many
 #+begin_src ores-shell :tangle fx_volatility_configs-put-many.ores :exports none
-fx_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+fx_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

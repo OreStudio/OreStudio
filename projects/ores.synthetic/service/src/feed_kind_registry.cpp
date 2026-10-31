@@ -151,10 +151,8 @@ feed_kind make_fx_spot_kind() {
                         return {.input = std::nullopt, .skip_reason = written.error()};
                     target = std::move(*written);
                 }
-                return {.input = feed::feed_build_input{
-                            fx_spot_feed_build_input{
-                                fx, std::move(components), std::move(target),
-                                std::move(fixing_items)}},
+                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
+                            fx, std::move(components), std::move(target), std::move(fixing_items)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -278,19 +276,18 @@ feed_kind make_ir_curve_kind() {
                 if (adapter.has_adapter()) {
                     targets.reserve(entries.size());
                     for (const auto& e : entries) {
-                        auto target = target_for(
-                            adapter,
-                            vendor::ir_curve_pillar{cfg.currency_code,
-                                                    cfg.index_family,
-                                                    e.instrument_code,
-                                                    e.start_tenor_code,
-                                                    e.end_tenor_code});
+                        auto target = target_for(adapter,
+                                                 vendor::ir_curve_pillar{cfg.currency_code,
+                                                                         cfg.index_family,
+                                                                         e.instrument_code,
+                                                                         e.start_tenor_code,
+                                                                         e.end_tenor_code});
                         if (!target)
                             return {.input = std::nullopt, .skip_reason = target.error()};
-                        targets.push_back(feed::ir_pillar_quote_target{
-                            .start_tenor_code = e.start_tenor_code,
-                            .end_tenor_code = e.end_tenor_code,
-                            .target = std::move(*target)});
+                        targets.push_back(
+                            feed::ir_pillar_quote_target{.start_tenor_code = e.start_tenor_code,
+                                                         .end_tenor_code = e.end_tenor_code,
+                                                         .target = std::move(*target)});
                     }
                 }
 
@@ -524,8 +521,8 @@ void feed_kind_registry::reply_unknown_kind(ores::nats::service::client& nats,
         feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
 }
 
-feed_kind_registry make_default_feed_kind_registry(
-    feed_kind_registry::adapter_lookup_fn adapter_of_provider) {
+feed_kind_registry
+make_default_feed_kind_registry(feed_kind_registry::adapter_lookup_fn adapter_of_provider) {
     feed_kind_registry registry(std::move(adapter_of_provider));
     registry.register_kind(make_fx_spot_kind());
     registry.register_kind(make_ir_curve_kind());

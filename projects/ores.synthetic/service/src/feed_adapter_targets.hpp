@@ -53,11 +53,10 @@ adapter_target_of(std::string_view adapter_id,
     const auto written = notation->write(description);
     if (!written)
         return std::nullopt;
-    return feed::adapter_target{
-        .id = *written,
-        .subject =
-            ores::marketdata::domain::adapter_ingress_subject(adapter_id, written->external_id),
-        .faults = std::move(faults)};
+    return feed::adapter_target{.id = *written,
+                                .subject = ores::marketdata::domain::adapter_ingress_subject(
+                                    adapter_id, written->external_id),
+                                .faults = std::move(faults)};
 }
 
 }

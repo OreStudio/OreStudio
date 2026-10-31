@@ -88,11 +88,10 @@ std::expected<datum::market_datum, std::string> pillar_quote_datum(const pillar_
     if (!tenor)
         return std::unexpected("pillar quote: the index tenor: " + tenor.error());
 
-    auto term = d::parse_value(d::field::term,
-                               pillar_term_text(quote.start_tenor_code,
-                                                quote.end_tenor_code,
-                                                quote.start_date,
-                                                quote.end_date));
+    auto term = d::parse_value(
+        d::field::term,
+        pillar_term_text(
+            quote.start_tenor_code, quote.end_tenor_code, quote.start_date, quote.end_date));
     if (!term)
         return std::unexpected("pillar quote: the term: " + term.error());
 

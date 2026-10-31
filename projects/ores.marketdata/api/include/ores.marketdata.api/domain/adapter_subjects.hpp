@@ -199,7 +199,9 @@ inline bool subject_matches(std::string_view wildcard, std::string_view subject)
     const auto actual = subject_tokens_of(subject);
     // A subject or a wildcard with an empty token is one NATS refuses, so it is none of the
     // loop's, whatever its shape.
-    const auto empty = [](auto token) { return token.empty(); };
+    const auto empty = [](auto token) {
+        return token.empty();
+    };
     if (std::ranges::any_of(actual, empty) || std::ranges::any_of(wanted, empty))
         return false;
     for (std::size_t i = 0; i < wanted.size(); ++i) {

@@ -254,15 +254,19 @@ private:
     }
 
     /// The quote of one pillar of the ladder, as the feed states it.
-    static ores::marketdata::core::pillar_quote
-    quote_of(const std::string& start, const std::string& end) {
-        return {"USD", "1D", start, end, std::chrono::year{2026} / 1 / 1,
+    static ores::marketdata::core::pillar_quote quote_of(const std::string& start,
+                                                         const std::string& end) {
+        return {"USD",
+                "1D",
+                start,
+                end,
+                std::chrono::year{2026} / 1 / 1,
                 std::chrono::year{2026} / 3 / 2};
     }
 
     /// The series one pillar's quote belongs to, and the datum the quote is.
-    static ores::marketdata::datum::market_datum
-    quote_datum(const std::string& start, const std::string& end) {
+    static ores::marketdata::datum::market_datum quote_datum(const std::string& start,
+                                                             const std::string& end) {
         const auto made = ores::marketdata::core::pillar_quote_datum(quote_of(start, end));
         if (!made)
             throw std::runtime_error("no datum for the pillar " + start + " to " + end + ": " +

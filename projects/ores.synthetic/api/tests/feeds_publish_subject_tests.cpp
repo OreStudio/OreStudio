@@ -34,8 +34,9 @@
 TEST_CASE("a_feed_without_an_adapter_publishes_where_the_ingest_listens",
           "[feeds][subjects][ingest]") {
     using namespace ores::marketdata::domain;
-    for (const auto& source :
-         {std::string("synthetic.bloomberg.usdsofr"), std::string("synthetic.demo.eur"), std::string("a")}) {
+    for (const auto& source : {std::string("synthetic.bloomberg.usdsofr"),
+                               std::string("synthetic.demo.eur"),
+                               std::string("a")}) {
         CAPTURE(source);
         CHECK(ingest_consumes(ores::synthetic::feed::producer_subject(source)));
     }
@@ -45,8 +46,9 @@ TEST_CASE("a_feed_that_serves_an_adapter_publishes_where_the_ingest_listens",
           "[feeds][subjects][ingest]") {
     using namespace ores::marketdata::domain;
     // The id of a pillar, which the publisher writes in the provider's notation.
-    for (const auto& id :
-         {std::string("USD SOFR DEPO SPOT 3M Curncy"), std::string("EUR="), std::string("EUR/USD")}) {
+    for (const auto& id : {std::string("USD SOFR DEPO SPOT 3M Curncy"),
+                           std::string("EUR="),
+                           std::string("EUR/USD")}) {
         CAPTURE(id);
         CHECK(ingest_consumes(adapter_ingress_subject("bloomberg-a", id)));
     }

@@ -127,10 +127,8 @@ domain::trade_generation_scope bond_scope() {
      * A convertible bond states the share it may convert into, so every bond
      * scope needs the equity catalogue the writer loads for it.
      */
-    scope.equity_underlyings = {
-        domain::equity_underlying_reference{.code = "GB0005405286",
-                                            .kind = "share",
-                                            .currency = "GBP"}};
+    scope.equity_underlyings = {domain::equity_underlying_reference{
+        .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
@@ -527,8 +525,7 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", "[trade_population]
     for (std::size_t i = 0; i < once.slots.size(); ++i) {
         REQUIRE(once.slots[i].trade_id == twice.slots[i].trade_id);
         REQUIRE(once.slots[i].internal_identifier == twice.slots[i].internal_identifier);
-        REQUIRE(once.slots[i].bond_issue->security_id ==
-                twice.slots[i].bond_issue->security_id);
+        REQUIRE(once.slots[i].bond_issue->security_id == twice.slots[i].bond_issue->security_id);
         REQUIRE(once.slots[i].notional == twice.slots[i].notional);
         REQUIRE(once.slots[i].trade_date == twice.slots[i].trade_date);
         REQUIRE(once.slots[i].bond_issue_leg_schedules.front().end_date ==
@@ -1003,9 +1000,8 @@ TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
         const auto bond = bond_of(slot);
         products_of[bond.security_id].insert(slot.trade_type_code);
     }
-    const auto two_products = std::ranges::any_of(products_of, [](const auto& entry) {
-        return entry.second.size() > 1u;
-    });
+    const auto two_products = std::ranges::any_of(
+        products_of, [](const auto& entry) { return entry.second.size() > 1u; });
     REQUIRE_FALSE(two_products);
 
     const auto term = plan.slots.front();

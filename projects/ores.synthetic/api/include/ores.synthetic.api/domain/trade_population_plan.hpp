@@ -611,8 +611,7 @@ struct trade_population_slot final {
      *
      * The targets belong to the security for the same reason the calls do.
      */
-    std::vector<ores::trading::domain::bond_issue_conversion_target>
-        bond_issue_conversion_targets;
+    std::vector<ores::trading::domain::bond_issue_conversion_target> bond_issue_conversion_targets;
     /// The structure this trade is a leg of, when the population groups one.
     std::optional<boost::uuids::uuid> structure_id;
     /// The role it takes in that structure, and its place among the legs.

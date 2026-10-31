@@ -84,8 +84,7 @@ TEST_CASE("the_term_of_a_pillar_that_names_a_period_is_that_period", "[pillar_qu
     CHECK(pillar_term_text("3M", "6M", first_day, later_day) == "6M");
 }
 
-TEST_CASE("the_term_of_a_meeting_dated_pillar_is_the_date_its_end_resolves_to",
-          "[pillar_quote]") {
+TEST_CASE("the_term_of_a_meeting_dated_pillar_is_the_date_its_end_resolves_to", "[pillar_quote]") {
     // A meeting code names no period, so the term is the date the conventions
     // resolved the pillar's end to.
     const auto meeting = pillar_quote{"USD", "1D", "1F", "2F", first_day, later_day};
@@ -95,8 +94,7 @@ TEST_CASE("the_term_of_a_meeting_dated_pillar_is_the_date_its_end_resolves_to",
           "&term=20260302");
 }
 
-TEST_CASE("a_spot_pillar_whose_template_names_no_end_counts_the_days_it_spans",
-          "[pillar_quote]") {
+TEST_CASE("a_spot_pillar_whose_template_names_no_end_counts_the_days_it_spans", "[pillar_quote]") {
     const auto end =
         std::chrono::year_month_day{std::chrono::sys_days{first_day} + std::chrono::days{50}};
     CHECK(pillar_term_text("SPOT", "", first_day, end) == "50D");

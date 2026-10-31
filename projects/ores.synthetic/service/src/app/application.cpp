@@ -295,8 +295,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             if (!sources)
                 return std::nullopt;
             for (const auto& source : *sources)
-                if (source.publisher_code == provider_code && source.session_code == "synthetic-local" &&
-                    source.is_default)
+                if (source.publisher_code == provider_code &&
+                    source.session_code == "synthetic-local" && source.is_default)
                     return feed::feed_adapter{.id = source.name,
                                               .provider_code = std::string(provider_code)};
         } catch (const std::exception& e) {

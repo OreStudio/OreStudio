@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-calibration-policy
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ per-feed exceptions that stay visible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -56,9 +56,70 @@ per-feed exceptions that stay visible.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Where it lives
+
+The policy is a synthetic concern, so it lives in =ores.synthetic=: the class
+that calibrates its generators decides how. The fixing catalogue it reads stays
+in =ores.marketdata=.
+
+** The schema
+
+- =calibration_policy= (versioned, system tenant): =asset_class= (the
+  refdata code), =window_days=, =allow_inverse=, =fallback= (a lookup:
+  =keep_fixed= or =refuse=).
+- =calibration_provider_order= (child, versioned with its parent):
+  =provider_code= and =rank=. Child rows rather than a JSON list, so the order
+  is queryable and the provider is a soft FK.
+- =fx_spot_generation_config= gains a nullable =calibration_window_days=: the
+  one per-feed exception that has nowhere else to live. The item pin and the
+  explicit list already have a home: =fx_spot_fixing_item=.
+
+No policy row means automatic: providers in catalogue display order, 90 days,
+inverse allowed, keep the fixed level. A row overrides any of the four.
+
+** Resolution
+
+The synthetic service already resolves a start in =resolve_fixing_start=. The
+change is where the candidates come from:
+
+- If the config has =fx_spot_fixing_item= rows, they are the explicit list:
+  use them in rank order (today's behaviour).
+- Otherwise, derive them: read the class policy (or the defaults), read the
+  accepted providers and the fixing series for the pair, order by the policy's
+  provider rank then direct before inverse, and filter by the clock.
+- A pinned item is one =fx_spot_fixing_item= row; the window is the config's
+  override or the policy's.
+
+The derivation reads market data over its existing read subjects; it adds no
+new store.
+
+** Recalculation and coverage
+
+=POST /api/synthetic/calibration/{assetClass}/calibrate= resolves every feed of
+the class, records one calibration run, and returns the per-feed outcome. A
+=GET /api/synthetic/calibration/{assetClass}= returns the policy, the feeds
+with their resolved starts, the coverage counts and the run history. The feed
+page reads the same resolution for one feed.
+
+** Order of work
+
+1. Entity, child and config column; regenerate the synthetic SQL, C++, TS and
+   docs; rebuild.
+2. Service reads: policy lookup with defaults, candidate derivation, window
+   override; unit tests with the existing fixing fixtures.
+3. BFF endpoints and tests.
+4. Screens: list, feed detail with two tabs, policy screen (the prototype).
+5. Seed one default policy per class? No: the absence of a row is the default.
+   Seed a policy only where the market needs one.
+
+** Open choices
+
+- Provider order as child rows (recommended) or a text list.
+- Fallback as a lookup table (recommended, consistent with the enums) or a
+  check-constrained text.
+- Whether the calibration run is its own entity or a field set on the feed's
+  start records. Recommended: its own small table, so a class run has an
+  identity and an actor.
 
 * Measurements
 

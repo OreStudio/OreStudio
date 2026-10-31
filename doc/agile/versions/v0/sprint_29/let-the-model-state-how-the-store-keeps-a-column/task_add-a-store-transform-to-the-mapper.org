@@ -28,22 +28,34 @@ Make the convention normalisation a property of the model, so a regeneration kee
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0B2C266E-6A32-4495-950E-44DE8054A6D7][Let the model state how the store keeps a column]] |
-| Now          | Not yet started.                       |
+| Now          | Suites, tests and drift are green.     |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the gates, then raise the PR.      |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- A column property names a store transform and the header it needs
-- The generated mapper calls the transform on the domain-to-entity direction only
-- The ten refdata convention columns state the transform in their models, and the generated mappers are byte-identical to the hand-written ones
+- A column states a store transform and the header that declares it
+- The generated mapper calls the transform on the way into the row, and not on the way out of it
+- A column whose domain member is optional keeps absence absent through the transform
+- The eleven refdata convention columns state the transform in their models, and a regeneration keeps the call and its include
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The mapper template already branches on the shape of a column, and the store
+transform has to follow the same three shapes: a plain column passes the value,
+a nullable string passes the value or the empty string, and a column whose
+domain member is =std::optional<T>= maps inside the optional. The first two
+branches took the transform, and the third is what the convention columns
+actually are: their models state =:cpp_type: std::optional<std::string>= with
+=:nullable: true=, so the mapper reaches them through =is_already_optional=.
+
+The header is a gate like the enum and date includes: the model names it, the
+gate lists it once, and the template emits it in the same include block.
+
+The eleven columns then state the transform, and a regeneration writes the
+call. The hand edit is gone, so nothing has to be re-applied after a codegen
+run.
 
 * Measurements
 
@@ -57,7 +69,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| refdata suite | 488 cases, 5723 assertions, 0 failures | =compass test run -- -R 'ores.refdata.core.tests|ores.ore.core.tests'= | branch head |
+| ore core suite | 425 cases, 478415 assertions, 0 failures | same | branch head |
+| codegen tests | 1695 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests= | branch head |
+| refdata drift | no drift | =check_component_drift.py --component refdata= | branch head |
+| regeneration of the refdata repository | no change to the tree | =compass codegen regenerate --component refdata --address ores.cpp.repository= then =git status= | branch head |
 
 * Notes
 
@@ -85,3 +101,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The transform is a property of the model. A generated mapper applies it on the
+way into the row, keeps absence absent where the domain member is optional, and
+includes the header once. The eleven convention columns state it, and a
+regeneration against the tree changes nothing.
+
+The document round trip and the ORE example suite both pass, so the store keeps
+the seven codes while the documents keep the spellings they state.

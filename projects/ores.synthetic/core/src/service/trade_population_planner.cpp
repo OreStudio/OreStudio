@@ -559,10 +559,12 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
         domain::bond_terms terms;
         terms.tenor_years = std::clamp(drawn, min_years, max_years);
-        terms.security_id =
-            security_id_for(scope, terms.tenor_years, bond_types[slot % bond_type_count]);
-        terms.issue_id = issue_id_for_security(terms.security_id);
         terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
+        terms.security_id = security_id_for(scope,
+                                            terms.tenor_years,
+                                            bond_types[slot % bond_type_count],
+                                            terms.issuer_id);
+        terms.issue_id = issue_id_for_security(terms.security_id);
         terms.reference_curve_id = scope.reference_curve_id;
 
         /*
@@ -1015,17 +1017,21 @@ std::string internal_identifier_for(const domain::trade_generation_scope& scope,
 
 std::string security_id_for(const domain::trade_generation_scope& scope,
                             std::uint32_t tenor_years,
-                            std::string_view product) {
+                            std::string_view product,
+                            const boost::uuids::uuid& issuer_id) {
     /*
-     * A security is named by its currency, the anchor, its original term and the
-     * product it is. The product is part of the name because the security's own
-     * rows are: a callable bond states the dates its issuer may call it and a
-     * plain bond of the same term states none, so the two are different
-     * securities and cannot share an issue. Nothing about a book or a trade
-     * enters the name, so any book that keeps the currency may hold it and two
-     * trades of it name one issue.
+     * A security is named by its issuer, its currency, the anchor, its original
+     * term and the product it is. The issuer is part of the name because a bond
+     * is its issuer's: two legal entities of one tenant each hold their own
+     * issuer catalogue, so one currency, anchor, term and product under two
+     * issuers is two securities and cannot share an issue. The product is in the
+     * name for the same reason: a callable bond states the dates its issuer may
+     * call it and a plain bond of the same term states none. Nothing about a
+     * book or a trade enters the name, so any book that keeps the currency may
+     * hold the security and two trades of it name one issue.
      */
-    const auto digest = named(std::format("bond:{}:{}:{}Y:{}",
+    const auto digest = named(std::format("bond:{}:{}:{}:{}Y:{}",
+                                          boost::uuids::to_string(issuer_id),
                                           scope.currency_code,
                                           format_date(scope.as_of_date),
                                           tenor_years,

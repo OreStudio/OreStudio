@@ -22,6 +22,7 @@
 
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -280,20 +281,23 @@ ORES_SYNTHETIC_CORE_EXPORT std::string
 internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32_t slot);
 
 /**
- * @brief The security identifier (ISIN-shaped) of the security with the given
- * original term and product.
+ * @brief The security identifier (ISIN-shaped) of the security one issuer holds
+ * for a currency, an original term and a product.
  *
- * The population draws its trades from a pool of securities, one per currency,
- * whole year of the tenor band and product. The product is part of the name
- * because the security's own rows are: a callable bond states the dates its
- * issuer may call it and a plain bond of the same term states none, so the two
- * are different securities. A security is a fact about its issuer and its terms
- * and never about a book or a trade, so any book that keeps its currency may
- * hold it and every trade of it states the same maturity.
+ * The population draws its trades from a pool of securities, one per issuer,
+ * currency, whole year of the tenor band and product. The issuer is part of the
+ * name because a bond is its issuer's: each legal entity of a tenant holds its
+ * own issuer catalogue, so one currency, anchor, term and product under two
+ * issuers is two securities. The product is there for the same reason: a
+ * callable bond states the dates its issuer may call it and a plain bond of the
+ * same term states none. A security is a fact about its issuer and its terms and
+ * never about a book or a trade, so any book that keeps its currency may hold it
+ * and every trade of it states the same maturity.
  */
 ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
                                                        std::uint32_t tenor_years,
-                                                       std::string_view product);
+                                                       std::string_view product,
+                                                       const boost::uuids::uuid& issuer_id);
 
 /**
  * @brief The counterparty that issued the security with the given original

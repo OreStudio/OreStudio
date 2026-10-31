@@ -67,7 +67,7 @@ one scaffolds.
 
 * Plan
 
-** 1. Enumerate
+** Enumerate
 
 #+begin_src sh :results verbatim
 find projects/ores.codegen/models -maxdepth 3 -name '*.json' | sort
@@ -79,7 +79,7 @@ service / other), whether codegen actually reads it (search for the
 filename / pattern in [[proj:projects/ores.codegen/src][=projects/ores.codegen/src/=]]), and the
 templates that consume it.
 
-** 2. Group by kind
+** Group by kind
 
 Visible kinds today (from a quick scan of the tree at the time of
 writing):
@@ -104,7 +104,7 @@ For each kind, decide:
 - *Out of scope.* Some kinds are third-party data or generator
   fixtures and can stay JSON for now.
 
-** 3. Sequence follow-on tasks
+** Sequence follow-on tasks
 
 One task per migrate-able kind, ordered by:
 1. Number of files in the kind (small kinds first as warm-ups).
@@ -116,7 +116,7 @@ One task per migrate-able kind, ordered by:
 A final cleanup task removes =projects/ores.codegen/models/=
 entirely once the per-kind tasks all merge.
 
-** 4. Commit + raise PR
+** Commit + raise PR
 
 Just docs:
 - Inventory in this task's =* Result= section.

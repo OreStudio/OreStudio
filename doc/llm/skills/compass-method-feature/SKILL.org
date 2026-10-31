@@ -34,7 +34,7 @@ choose and the answer is observable: settle that with
 Copy the phases into the todo list before reasoning about the task. A
 phase you skip stays in the list with =skip:= and the reason.
 
-** 1. Ground
+** Ground
 
 Resolve every domain concept the request names to a knowledge document
 ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]), reading the
@@ -42,14 +42,14 @@ cluster's structure note first where one exists. A feature built on a
 misunderstood concept is not a feature with a bug in it; it is the wrong
 feature, and no amount of later verification finds that.
 
-** 2. State the predicate
+** State the predicate
 
 What will be true when this is done, in terms someone else can check?
 Write it before designing. Where behaviour is involved, the predicate
 belongs in a specification rather than only in prose, so it can be checked
 rather than remembered.
 
-** 3. Name the data shape
+** Name the data shape
 
 Before any control flow, name what is being represented and how it is
 held (=principle-model-the-domain=). Most of the difficulty in a feature
@@ -63,7 +63,7 @@ semantic primitives branded, external input parsed at the boundary.
 Where the shape belongs to an entity, it is generated rather than written:
 the model is the source and the code follows from it.
 
-** 4. Check what already exists
+** Check what already exists
 
 Search before writing (=principle-subtract-before-you-add=). The most
 common waste is re-implementing something a few files over, and the second
@@ -72,7 +72,7 @@ most common is adding a parallel mechanism beside one that nearly fits.
 Ask also what comes out. A feature that only adds has usually not been
 thought about long enough.
 
-** 5. Build
+** Build
 
 The smallest thing that satisfies the predicate
 (=principle-laziness-protocol=). No interface with one implementation, no
@@ -87,7 +87,7 @@ Sequence it so each step ends in something checkable
 (=principle-sequence-verifiable-units=), rather than one commit that works
 only when finished.
 
-** 6. Prove
+** Prove
 
 Against the predicate from phase 2, on the real artefact rather than a
 proxy (=principle-prove-it-works=). Climb the
@@ -100,7 +100,7 @@ for anything a user touches,
 "It compiles" is not evidence. Neither is a unit test that asserts the
 implementation back to itself.
 
-** 7. Land
+** Land
 
 Close the bookkeeping with
 [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]],

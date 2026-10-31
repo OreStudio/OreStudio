@@ -61,7 +61,7 @@ uses the same lifecycle primitives from =ores.service=.
 
 Three additions, zero modifications to existing interfaces.
 
-*** 1. =on_shutdown= callback (extend =domain_service_runner=)
+*** =on_shutdown= callback (extend =domain_service_runner=)
 
 Add an optional =on_shutdown= callback to =domain_service_runner=.  Called
 immediately after the shutdown signal is received, before =nats.drain()=.
@@ -91,7 +91,7 @@ if (on_shutdown) on_shutdown();   // NEW
 nats.drain();
 #+end_src
 
-*** 2. =run()= overload without database context
+*** =run()= overload without database context
 
 An overload of =run()= for services that have no database (=ores.compute.wrapper=).
 The register_fn signature drops the =ctx= parameter.
@@ -111,7 +111,7 @@ run(boost::asio::io_context& io_ctx,
 Implementation in =domain_service_runner_impl.hpp= is identical to the
 existing overload, minus the =ctx= construction and pass-through.
 
-*** 3. =signing_service_runner= (new, IAM only)
+*** =signing_service_runner= (new, IAM only)
 
 A parallel runner for the one service that creates a JWT signer rather than
 fetching a verifier.  The lifecycle is identical to =domain_service_runner=
@@ -144,7 +144,7 @@ auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
 All other steps — signal setup, register_fn call, on_started, signal wait,
 on_shutdown, drain, shutdown log — are identical to the domain runner.
 
-*** 4. =wt_service_runner= (new, Wt only)
+*** =wt_service_runner= (new, Wt only)
 
 Wt's =WServer::waitForShutdown()= is a blocking call that owns signal
 handling; it cannot be replaced by the ASIO signal wait inside

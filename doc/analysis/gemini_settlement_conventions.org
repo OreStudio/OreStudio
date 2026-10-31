@@ -42,18 +42,18 @@ The logical relationships are structured as follows:
 
 ** Core Entities
 
-*** 1. Currency Pair (Reference Data)
+*** Currency Pair (Reference Data)
 Defines the absolute economic pair standard.
 - =Pair Code= [PK] (e.g., =USDCNY=, =EURUSD=, =USDBRL=)
 - =Base Currency=
 - =Quote Currency=
 
-*** 2. Business Center (Reference Data)
+*** Business Center (Reference Data)
 Defines the calendar authorities and financial centers governing lifecycle schedules.
 - =Center Code= [PK] (e.g., =USNY=, =GBLO=, =CNBE=, =SGSI=)
 - =Center Name=
 
-*** 3. Settlement Market Convention (Junction & Behavioral Definition)
+*** Settlement Market Convention (Junction & Behavioral Definition)
 Maps how a specific currency pair behaves structural-wise given a designated trading context or location.
 - =Convention ID= [PK]
 - =Pair Code= [FK to Currency Pair]
@@ -64,7 +64,7 @@ Maps how a specific currency pair behaves structural-wise given a designated tra
 - =Settlement Currency= [Currency Code, Nullable] (The deliverable currency cash is paid out in, usually =USD=)
 - =Fixing Currency= [Currency Code, Nullable] (The non-deliverable currency whose rate dictates the payout calculation)
 
-*** 4. Convention Holiday Calendar (Junction)
+*** Convention Holiday Calendar (Junction)
 Maps the distinct operational calendars required for execution across different lifecycles.
 - =Convention ID= [FK to Settlement Market Convention]
 - =Center Code= [FK to Business Center]

@@ -42,7 +42,7 @@ continues as an ordinary one.
 
 * How to use this skill
 
-** 1. Decline, if the work does not earn it
+** Decline, if the work does not earn it
 
 Say so plainly and fall through to the plain action skills. Moving a
 date, fixing a sentence, changing one configuration value, answering a
@@ -57,7 +57,7 @@ domain the agent has not grounded itself in.
 
 Declining is a normal outcome, not a failure to engage.
 
-** 2. Declare the System
+** Declare the System
 
 Name the level the session is acting at, which attenuates the catalogue
 to the slice in scope
@@ -69,14 +69,14 @@ Declare it once, at the start, and say which. A session that never
 declares is acting at every level at once, which is the variety problem
 the levels exist to solve.
 
-** 3. Read the principles index
+** Read the principles index
 
 Read [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] at task
 start, grouped by the moment each is cited. This is what makes a
 citation possible later: a rule the session has not loaded is a rule it
 will not think to cite at the judgement call.
 
-** 4. Match the work to a method
+** Match the work to a method
 
 Apply the matching rule in
 [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]: the
@@ -84,7 +84,7 @@ ordered questions, the arbitration when two match, and the null case.
 Say which method matched and why, in one line. A match nobody can see is
 a match nobody can dispute.
 
-** 5. Copy the phases in verbatim
+** Copy the phases in verbatim
 
 Write the matched method's phases into the todo list *before* reasoning
 about the task, in the method's own words and order.
@@ -99,7 +99,7 @@ A phase deliberately skipped stays in the list with =skip:= and the
 reason. Silent skipping is refused: if the reason cannot be written down
 it is not a decision, it is an omission.
 
-** 6. Run the phases, routing outward
+** Run the phases, routing outward
 
 Work the phases in order. As each fires:
 
@@ -114,7 +114,7 @@ Re-check the match at each phase boundary. Discovering the shape was
 misjudged is a reason to re-match, not to push on through phases that no
 longer fit.
 
-** 7. Delegate as this same mode
+** Delegate as this same mode
 
 A delegate is spawned as a named System under this mode, never as a
 generic agent. It inherits none of the session's grounding, so the brief
@@ -125,7 +125,7 @@ Resume an existing delegate rather than spawning a sibling beside it.
 Two delegates on one piece of work contend for the same files and
 produce two partial answers.
 
-** 8. Close the loop
+** Close the loop
 
 Finish through the actions:
 [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]]

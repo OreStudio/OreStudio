@@ -66,7 +66,7 @@ Work in the order of the sections: an inventory before an edit, types
 before data, data before effects, and verification last, because
 verification is what proves the rest.
 
-** 1. Baseline and inventory
+** Baseline and inventory
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -77,7 +77,7 @@ verification is what proves the rest.
 | TS-B04 | All | Read the package's open captures and the in-flight branches that touch it, so the work does not collide with them. | Links on the task |
 | TS-B05 | All | The declared engine floor is not below the floor any installed tool declares. This is a real defect class: a floor stated lower than the toolchain's own rejects nobody here and breaks a contributor's install. | =node -p "require('./node_modules/<tool>/package.json').engines"= for each tool, against =engines.node= |
 
-** 2. Types and the type system
+** Types and the type system
 
 The compiler is the strongest gate this standard has, so the first items
 are the ones it already proves. The rest are the mistakes it does not
@@ -102,7 +102,7 @@ catch, and each names the rule that does.
 | TS-T14 | All | Derive a wire shape from its model. A hand-written type that duplicates a generated one is drift with a delay on it. | The generated marker; =check_component_drift.py --dry-run= |
 | TS-T15 | All | No =Function=, no =Object=, no ={}= as a type. Each accepts almost anything and says nothing. | =@typescript-eslint/no-restricted-types= |
 
-** 3. Data at the boundary
+** Data at the boundary
 
 A boundary is where a value the compiler knows nothing about becomes one
 it does. The rule is parse, do not validate: the parse produces the typed
@@ -118,7 +118,7 @@ value, and there is no second representation downstream.
 | TS-D05 | All | Narrow a parsed union on its discriminant. Do not reach into an unparsed value by field name. | =@typescript-eslint/no-unsafe-member-access=; review |
 | TS-D06 | All | A quantity carries its unit in its type, not in its parameter name. | Type review |
 
-** 4. Architecture and module boundaries
+** Architecture and module boundaries
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -131,7 +131,7 @@ value, and there is no second representation downstream.
 | TS-A06 | Browser | The browser learns nothing about where the server is: no host, no port, no namespace, no certificate. The BFF is its only HTTP surface. | Route review; no deployment detail in a browser response |
 | TS-A07 | Browser | The browser never holds the bearer token. The session is an opaque cookie, and only the server can read it. | The session provider; review |
 
-** 5. Components and rendering
+** Components and rendering
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -143,7 +143,7 @@ value, and there is no second representation downstream.
 | TS-C05 | Browser | Styling uses the theme tokens, never a raw colour. | Review, against =styles.css= |
 | TS-C06 | Browser | A hook obeys the rules of hooks, and an effect declares every dependency. | =eslint-plugin-react-hooks= |
 
-** 6. Effects, errors and asynchronous work
+** Effects, errors and asynchronous work
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -155,7 +155,7 @@ value, and there is no second representation downstream.
 | TS-E05 | All | An error a person sees states what failed and what to do next. It never prints a stack, a subject or an internal identifier. | The error mapper; review |
 | TS-E06 | All | An operation that may be retried is idempotent, or it says that it is not. | Review, against the operation's model |
 
-** 7. Tests
+** Tests
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -169,7 +169,7 @@ value, and there is no second representation downstream.
 | TS-X07 | All | An unhandled rejection fails the run, and the escape hatch that disables that is absent from the configuration. | =vitest= fails on an unhandled rejection by default; review the config for =dangerouslyIgnoreUnhandledErrors= |
 | TS-X08 | All | A coverage floor is declared, and it does not go down. | =test.coverage.thresholds= with =@vitest/coverage-v8= |
 
-** 8. Generated artefacts and the toolchain
+** Generated artefacts and the toolchain
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -180,7 +180,7 @@ value, and there is no second representation downstream.
 | TS-R04 | All | A generator defect is fixed in the template, with a regression test in the codegen suite. | The codegen suite |
 | TS-R05 | All | The generated TypeScript compiles under the same strictness as the hand-written code. | =npm run typecheck=, over the generated tree included |
 
-** 9. Structure and hygiene
+** Structure and hygiene
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |
@@ -193,7 +193,7 @@ value, and there is no second representation downstream.
 | TS-H06 | All | No default export. Every importer may rename a default export, so one symbol acquires as many names as it has importers. | =import/no-default-export=; review |
 | TS-H07 | All | No mutation of a function parameter. | =no-param-reassign= |
 
-** 10. Verification
+** Verification
 
 #+ATTR_HTML: :class hug-leading
 | Id    | Applies to | Item | Evidence |

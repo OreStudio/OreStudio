@@ -39,13 +39,13 @@ everything else inherits.
 
 * Plan
 
-** 1. Rebase onto =origin/main=
+** Rebase onto =origin/main=
 
 #+begin_src sh
 git rebase origin/main
 #+end_src
 
-** 2. Add template flags refdata needs
+** Add template flags refdata needs
 
 | Flag | What it gates | Templates touched |
 |------+---------------+-------------------|
@@ -57,7 +57,7 @@ git rebase origin/main
 All four flags are no-ops without a model opting in. After adding them,
 regenerating any component should produce zero diff (sanity check).
 
-** 3. Update refdata models
+** Update refdata models
 
 Per-model flag application:
 
@@ -76,13 +76,13 @@ Per-model flag application:
 | =party_status_domain_entity.json= | =service_find_prefix= |
 | =party_id_scheme_domain_entity.json= | =service_find_prefix= |
 
-** 4. Regenerate refdata-cpp
+** Regenerate refdata-cpp
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp
 #+end_src
 
-** 5. Restore documented exclusions from HEAD
+** Restore documented exclusions from HEAD
 
 | File | Reason |
 |------+--------|
@@ -92,7 +92,7 @@ projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.c
 If =party_repository_tests.cpp= or callers (=organisation_publisher_integration_tests.cpp=)
 break against the new stateless repo signatures, they need to be updated to the new API.
 
-** 6. Build with =make=
+** Build with =make=
 
 #+begin_src sh
 cmake --build --preset linux-clang-debug-make
@@ -101,13 +101,13 @@ cmake --build --preset linux-clang-debug-make
 The build must complete with exit code 0. Any error means a regenerated API
 doesn't match an existing caller — restore additional files OR update callers.
 
-** 7. Run refdata tests
+** Run refdata tests
 
 #+begin_src sh
 ctest --test-dir build/output/linux-clang-debug-make -R "ores\.refdata" --output-on-failure
 #+end_src
 
-** 8. Final zero-diff check
+** Final zero-diff check
 
 After build + tests are green:
 
@@ -119,7 +119,7 @@ git checkout -- projects/ores.refdata.core/include/ores.refdata.core/repository/
 git diff --exit-code   # must be zero
 #+end_src
 
-** 9. Commit + push + raise PR
+** Commit + push + raise PR
 
 The commit message lists every file restored from HEAD with one-line reason
 (see "Restore exclusions" above).

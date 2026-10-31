@@ -45,7 +45,7 @@ clause inside a paragraph that has no point is wasted work.
 Report findings per layer. Do not rewrite the document unless asked;
 the author keeps the judgement.
 
-** 1. Claim
+** Claim
 
 State the document's claim in one sentence, using only what the document
 says.
@@ -54,7 +54,7 @@ If you cannot, the document has no claim and every later layer is
 premature. A document that surveys without concluding is a reference,
 and belongs under a different standard.
 
-** 2. Spine
+** Spine
 
 For each section, say in one clause which move it makes toward the
 claim. Swales' three moves name the usual sequence: establish the
@@ -65,7 +65,7 @@ territory, establish the niche, occupy the niche.
 - A finding stated before the evidence that produces it is asserted, not
   derived. Move it after.
 
-** 3. Paragraph
+** Paragraph
 
 State each paragraph's single idea. Two ideas means split it. No idea
 means cut it.
@@ -74,7 +74,7 @@ The first sentence carries that idea. A paragraph opening on
 meta-commentary about the document, rather than on its subject, has
 buried its point by one sentence.
 
-** 4. Sentence
+** Sentence
 
 Gopen and Swan's reader-expectation rules. Each has a mechanical test.
 
@@ -96,7 +96,7 @@ Two further rules earn their place in this corpus.
 - *No chained pronouns.* Two referring expressions in one sentence, each
   pointing at a different antecedent, is one too many.
 
-** 5. Term
+** Term
 
 List every term the document uses more than three times. For each, state
 its one referent.
@@ -108,7 +108,7 @@ its one referent.
 - One name per thing, throughout. Rewording an unchanged idea teaches
   the reader a second thing that does not exist.
 
-** 6. Evidence
+** Evidence
 
 Every claim is derived from something stated, cited to a source, or
 labelled as unsupported. There is no fourth option.
@@ -120,7 +120,7 @@ labelled as unsupported. There is no fourth option.
 - An aphorism is not a premise. "A definition admitting everything
   discriminates nothing" argues by maxim; state the criterion instead.
 
-** 7. Honesty
+** Honesty
 
 - State limits rather than leaving a reader to infer them.
 - Claim no more than the evidence carries. Where a mechanism only

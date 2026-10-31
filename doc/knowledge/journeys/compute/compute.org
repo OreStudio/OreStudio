@@ -45,7 +45,7 @@ is the last resort, not the first.
 
 * The use cases
 
-** 1. Is the grid healthy right now?
+** Is the grid healthy right now?
 
 How many nodes, are they reporting, which is behind, what the wrappers are
 doing, how much work is in flight, and how that load moved over the last day
@@ -58,7 +58,7 @@ when it dispatches that tenant's work and when it takes the result back, so it
 records what it did as a fact about its own operation. They need no
 cross-tenant read — the ledger is installation data — and no second journey.
 
-** 2. Where is one job?
+** Where is one job?
 
 One job end to end: its state, its node, its timings, its inputs and outputs,
 and where its time went.
@@ -66,7 +66,7 @@ and where its time went.
 *Security:* rows. A member sees their own job, a tenant administrator their
 tenant's, the super administrator all of them. One journey.
 
-** 3. Why did it fail, and can I run it again?
+** Why did it fail, and can I run it again?
 
 A job's full detail — its app version, package, command, inputs, exit code and
 stderr — plus the node's own logs, so the work can be reproduced locally.
@@ -77,7 +77,7 @@ than a journey. The job's own detail is rows and narrows as in use case 2. A
 pulling them is a capability the super administrator holds and another tenant
 administrator does not. Same screen, one control withheld.
 
-** 4. What is coming, and can the grid take it?
+** What is coming, and can the grid take it?
 
 What capacity the nodes have, what a job needs, what is scheduled to kick in
 soon, and whether the grid can absorb it.
@@ -85,7 +85,7 @@ soon, and whether the grid can absorb it.
 *Security:* rows again. A tenant sees its own arrivals and its own share; the
 installation's totals are the installation's.
 
-** 5. What may the grid run, and how much at once?
+** What may the grid run, and how much at once?
 
 The apps, their versions and packages, and the concurrency policy that caps
 how many of a thing run together.
@@ -94,7 +94,7 @@ how many of a thing run together.
 everyone's, because a tenant needs to know what it may submit. A permission on
 the write, one journey.
 
-** 6. Keep the grid running
+** Keep the grid running
 
 Drain a node for maintenance, requeue stuck work, stop a runaway.
 

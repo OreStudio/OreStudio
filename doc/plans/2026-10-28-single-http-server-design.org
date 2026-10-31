@@ -8,7 +8,7 @@
 #+STATUS: PROPOSED
 #+description: Design for a single C++ HTTP server that serves the browser, the machine clients and the event stream over plain HTTP and TLS, replacing the Fastify BFF. Covers the thread model, data-oriented storage, cookie sessions, the event hub, TLS, codegen, security and the migration path.
 
-* 1. The decision this document argues for
+* The decision this document argues for
 
 One process serves every HTTP caller. Its name is =ores.http=.
 
@@ -36,7 +36,7 @@ One process serves every HTTP caller. Its name is =ores.http=.
 
 The rest of this document says how, and what must change to get there.
 
-* 2. What exists today
+* What exists today
 
 ** 2.1 ores.http
 
@@ -133,7 +133,7 @@ not: the C++ server is single-threaded, blocking inside its handlers, capped at
 100 connections, and has no way to write a response in pieces. That gap, and not
 the contract, is the whole of the work in Section 6.
 
-* 3. Why one server, and not two
+* Why one server, and not two
 
 Each argument below is a cost we pay today and stop paying.
 
@@ -161,7 +161,7 @@ The counter-argument is real and must be stated: TypeScript is faster to change
 than C++. Section 13 addresses how to keep that advantage without a second
 server.
 
-* 4. Requirements
+* Requirements
 
 ** 4.1 Functional
 
@@ -273,7 +273,7 @@ the framing that started this work: *the grid is not an argument for HTTP
 streaming.* It is an argument for large-file transfer with flow control, on the
 same server and the same port, which this design also provides (Section 6.7).
 
-* 5. Design principles
+* Design principles
 
 *P1. One process, one session store, one contract.* A deployment has one
 addressable service: one binary, one route table, one cookie, one journal. It may
@@ -308,7 +308,7 @@ change notification is a time and idempotent by construction.
 *P8. Measure, then optimise.* The benchmark exists before the fast path does.
 Section 10 states the numbers to beat.
 
-* 6. Architecture
+* Architecture
 
 ** 6.1 Process, threads and accept
 
@@ -893,7 +893,7 @@ integration suite, a test that a plain request to the TLS port fails closed, a
 test that a certificate reload leaves a live stream connected, and a handshake
 flood test that asserts the per-core cap holds.
 
-* 7. Where coroutines earn their place
+* Where coroutines earn their place
 
 Coroutines are a tool here, not a constraint. The rule: *use them where control
 flow is the hard part; do not use them where allocation is the hard part.*
@@ -922,7 +922,7 @@ Costs worth knowing:
 If the benchmark in Section 10 shows the request frame costing more than 2% of
 end-to-end latency, revisit it. Not before.
 
-* 8. Codegen: one model, four artefacts
+* Codegen: one model, four artefacts
 
 ** 8.1 Today
 
@@ -970,7 +970,7 @@ find six months later. They live in hand-written units — session and cookie in
 =auth=, the hub and framing in =stream=, error mapping once in =domain= — and the
 manifest records their routes so the table stays complete.
 
-* 9. Security
+* Security
 
 | Threat | Mitigation | Enforced in |
 |---|---|---|
@@ -1001,7 +1001,7 @@ the internet:
    does not drop a live stream (6.12). The =enable_ssl= field that nothing reads
    is removed, not left as decoration.
 
-* 10. The efficiency budget
+* The efficiency budget
 
 | Path | Cost | Notes |
 |---|---|---|
@@ -1067,7 +1067,7 @@ Each records into =history.tsv= with the same long-form columns, so
 =compare.py= works unchanged, and the nightly run fails when a target regresses
 by more than the noise floor stated in the suite's README.
 
-* 11. Module layout
+* Module layout
 
 One binary, four compiled units, no second process.
 
@@ -1227,7 +1227,7 @@ The test: if changing it changes the meaning of the resource, it is shape and it
 is in the contract. If a different client could ask for something different of
 the same resource, it is delivery and it is negotiated.
 
-* 12. Increments
+* Increments
 
 The work is delivered in increments that each land green and each leave the
 system working: the BFF keeps serving the browser the whole time, and the C++
@@ -1309,7 +1309,7 @@ time.
 - *The BFF is deleted last, and by evidence.* Not by plan date: when its logs
   carry no traffic for a full working week.
 
-* 13. Alternatives considered
+* Alternatives considered
 
 *Keep the BFF and add nothing.* Cheapest today, and it leaves every cost in
 Section 3 in place, including the duplicate contract that keeps drifting.
@@ -1329,7 +1329,7 @@ already satisfied by the manifest.
 *Embed a JavaScript runtime to reuse the BFF.* Rejected. It keeps the TypeScript
 and adds an interpreter, a GC and a new attack surface to a security boundary.
 
-* 14. Risks and open questions
+* Risks and open questions
 
 | Risk | Weight | Mitigation |
 |---|---|---|
@@ -1374,7 +1374,7 @@ Answered by the evidence, and no longer open:
   designed in 6.12 and built in Phase 1. The remaining question is only where the
   certificate comes from.
 
-* 15. Decisions requested
+* Decisions requested
 
 1. Approve one process serving both schemes from one route table, and reject any
    browser-specific component or binary.

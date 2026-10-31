@@ -19,19 +19,19 @@ The proposed layout modernizes this window into a high-density, accessible tradi
 
 * Critical UI/UX Pain Points & Diagnostic Analysis
 
-** 1. Excessive Color Fatigue (Ticker Visual Noise)
+** Excessive Color Fatigue (Ticker Visual Noise)
 - **Problem:** The original design applied red or green typography across the entire text length of the currency pair string (e.g., full red =USD/CHF= or full green =GBP/USD=).
 - **Impact:** In high-frequency environments, flooding structural text labels with active semantic colors causes eye strain and dulls the user's autonomic response to *actual* real-time rate volatility. Color must be reserved exclusively for directional price changes.
 
-** 2. Poor Layout Alignment & Decimals
+** Poor Layout Alignment & Decimals
 - **Problem:** Numeric columns were either centered or left-aligned, and the window layout left vast, empty gaps between data fields while compressing labels elsewhere.
 - **Impact:** Vertical scanning speed was severely compromised because decimal places did not stack symmetrically over one another.
 
-** 3. Financial Convention Violation (The JPY Exception)
+** Financial Convention Violation (The JPY Exception)
 - **Problem:** The system rendered =USD/JPY= out to five decimal places (=114.93026=).
 - **Impact:** In global financial markets, Japanese Yen (JPY) pairs are conventionally quoted to *3 decimal places* (with fractional pips on the 3rd decimal place). Displaying 5 decimals on JPY risks misreading by traders accustomed to rapid-fire ordering entries.
 
-** 4. Redundant Status Signaling
+** Redundant Status Signaling
 - **Problem:** Every active row displayed an identical, bright green pulsing vector accompanied by the word string =LIVE=.
 - **Impact:** If the system data connection is stable, repeating the word =LIVE= across dozens of lines acts as constant background noise.
 

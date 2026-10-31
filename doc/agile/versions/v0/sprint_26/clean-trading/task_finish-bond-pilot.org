@@ -80,14 +80,14 @@ identity keys and the security split, because those touch every family.
 
 * Plan
 
-** 1. Re-model the bond future against the current schema
+** Re-model the bond future against the current schema
 
 The synced XSD is the ground truth, and the current table is older than
 it. Model the five declared members, resolve the contract terms against
 PR 4's security entity, and drop the NOT NULL columns ORE does not
 require. Regenerate.
 
-** 2. Decide the underlyings table
+** Decide the underlyings table
 
 Read the design section that specifies it
 (=design_bond_relational_model.org=) and either build it as a shared
@@ -97,14 +97,14 @@ and underlyings whole because no column can hold them, and that the
 shared tables are their destination. That decision is currently
 unimplemented.
 
-** 3. Resolve the eight residue elements
+** Resolve the eight residue elements
 
 =task F8D78E13= aligned =bond_issue= with ORE and removed what ORE does
 not have. Eight =bondData= elements went the other way: ORE has them and
 we have no column. Decide each against the current XSD, then model it or
 record it.
 
-** 4. Fix the delete and add paths
+** Fix the delete and add paths
 
 The delete is in
 =projects/ores.shell/trading/src/app/commands/trading/bond_instrument_commands.cpp=,
@@ -112,14 +112,14 @@ around line 361. It sends one delete for the header. Make the service
 delete the family rows it owns, or refuse and say why. Make the add path
 one transaction in the service layer.
 
-** 5. Add the presence flag
+** Add the presence flag
 
 A stated element with a default value cannot be told from an absent one
 today, so the reverse mapper tests the value rather than the presence.
 Model a presence flag per optional member where ORE distinguishes them,
 and prove it with the bond future case from the abandoned task.
 
-** 6. Run the corpus sweep
+** Run the corpus sweep
 
 #+begin_src sh
 python3 scripts/ore_mapper_roundtrip_diff.py
@@ -129,7 +129,7 @@ python3 scripts/ore_schema_column_drift.py
 Extend the round trip to every bond document under
 =external/ore/examples/=, not two of them, and record the count.
 
-** 7. Record
+** Record
 
 Record the closure of the bond items and update the story's checklist
 rows the work touches.

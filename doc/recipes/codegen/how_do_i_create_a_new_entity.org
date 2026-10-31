@@ -15,14 +15,14 @@ How do I add a new domain entity to ORE Studio?
 
 * Answer
 
-** 1. Read the standard first
+** Read the standard first
 
 Every entity must conform to [[id:608675E1-4284-4902-99AC-4DA565390AFB][entity lifecycle]] before writing any code.
 That document specifies what each layer must contain and what the defaults
 are. Partial entities or disabled defaults without written rationale are not
 acceptable.
 
-** 2. Create the codegen model
+** Create the codegen model
 
 Scaffold the org model:
 
@@ -39,7 +39,7 @@ If any of =has_history=, =has_pagination=, or =detail_fields= is absent
 or disabled, add a =deviation_rationale_{dimension}= key with a one-sentence
 justification before proceeding.
 
-** 3. Generate and integrate each layer
+** Generate and integrate each layer
 
 #+begin_src sh
 # SQL (table DDL, trigger, RLS, artefact table)
@@ -52,7 +52,7 @@ justification before proceeding.
 Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for CMakeLists integration,
 layer wiring, and PR checkpoints at each layer boundary.
 
-** 4. Validate
+** Validate
 
 #+begin_src sh
 # SQL schema integrity

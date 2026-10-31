@@ -32,7 +32,7 @@ refactor produces neither a good answer nor a reviewable diff.
 
 * How to use this skill
 
-** 1. State the question and what would answer it
+** State the question and what would answer it
 
 Write the question down, and write what evidence would settle it. A
 question with no stated answer-shape expands until the context runs out.
@@ -40,7 +40,7 @@ question with no stated answer-shape expands until the context runs out.
 Say also what would change if the answer went each way. A question whose
 answers all lead to the same action does not need investigating.
 
-** 2. Ground before searching
+** Ground before searching
 
 Resolve the concepts to knowledge documents first
 ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]), reading the
@@ -52,7 +52,7 @@ a term; a structure note says which of them are load-bearing
 For why a thing is the way it is, the record is in the decisions and the
 closed tasks rather than the code: the code says what, the task says why.
 
-** 3. Read narrowly, and stop
+** Read narrowly, and stop
 
 Open the two or three sources the map ranked highest, not the twenty the
 search returned (=principle-guard-the-context-window=). Reading more is
@@ -60,7 +60,7 @@ not safer: an answer assembled from a wide shallow sweep is less reliable
 than one from a narrow deep read, and it costs the context the answer has
 to be written in.
 
-** 4. Check the claim against the system, not the language
+** Check the claim against the system, not the language
 
 Where the answer asserts that something is enforced, verify it here rather
 than reasoning from how the tool usually behaves. A compiler flag the
@@ -70,7 +70,7 @@ enforced nowhere: each reads as true and is not.
 Running the smallest thing that would fail if the claim were false beats
 any amount of reading.
 
-** 5. Answer, with citations and with the gaps named
+** Answer, with citations and with the gaps named
 
 Give the answer first, then the evidence, each claim pointing at the file,
 document or command that supports it. Where the evidence ran out, say so

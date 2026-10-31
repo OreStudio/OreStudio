@@ -52,7 +52,7 @@ each item's result in the component's task. An item that cannot pass is
 recorded with its reason. Work in section order: the inventory comes
 before any journey is named.
 
-** 1. Inventory
+** Inventory
 
 | Id  | Item | Evidence |
 |-----+------+----------|
@@ -62,7 +62,7 @@ before any journey is named.
 | I04 | List every secret or sensitive field that must never reach a browser, and check the wire shape for it. A secret on the wire is a defect: capture it at once. | Sensitive-field list; captures filed |
 | I05 | State how owned records are stored (one-to-one children, junctions, current-state tables with no history), because that decides whether a record is a panel, a list or a History view. | Notes on the task |
 
-** 2. Legacy Qt screens
+** Legacy Qt screens
 
 | Id  | Item | Evidence |
 |-----+------+----------|
@@ -72,7 +72,7 @@ before any journey is named.
 | Q04 | Give every Qt action a disposition: *kept* (a journey covers it), *changed* (a journey covers it differently, and says how), or *dropped* (with the reason). No action is left without one. | Disposition column |
 | Q05 | Record what the Qt screens got wrong that the journeys must not repeat: entity-shaped screens, duplicated forms, unguarded destructive actions. | Notes on the task |
 
-** 3. Vocabulary and screen rules
+** Vocabulary and screen rules
 
 | Id  | Item | Evidence |
 |-----+------+----------|
@@ -80,7 +80,7 @@ before any journey is named.
 | V02 | Find terms that collide with project terms (as /journey/ did with the IAM glossary) and settle each collision. | Notes on the task |
 | V03 | Name every term a journey must not invent, and every screen rule that binds it: [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][the component specification]], [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][the UI design principles]], [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][the UX language]] and [[id:6A63AAC7-4869-493A-97E7-55B919874784][the journey runtime]]. The [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][entity specification]] is void and binds no screen. | Rule list on the task |
 
-** 4. Journeys
+** Journeys
 
 | Id  | Item | Evidence |
 |-----+------+----------|
@@ -93,7 +93,7 @@ before any journey is named.
 | J07 | A journey carries no server state by default. Where it needs resumable state, the state is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in =ores.workflow=, and the journey says so. | Catalogue note |
 | J08 | Agree the catalogue with the product owner before any document is written. | Agreement recorded on the task |
 
-** 5. Documents
+** Documents
 
 | Id  | Item | Evidence |
 |-----+------+----------|
@@ -103,7 +103,7 @@ before any journey is named.
 | D04 | Give each document a coverage table: every step's operation, its subject, and its status (=exists=, =partial= or =missing=). | Coverage table |
 | D05 | Add each new group to the journeys index, and each journey to its group page. | Index and group pages |
 
-** 6. Verification and gaps
+** Verification and gaps
 
 | Id  | Item | Evidence |
 |-----+------+----------|

@@ -57,7 +57,7 @@ Source tree: =/mnt/development/OreStudio/ores_dev_festive_dijkstra= (read-only; 
 
 Base classes in the inheritance chain: =ores::qt::DetailDialogBase : public QWidget= (=DDB.hpp:84=); =ores::qt::HistoryDialogBase : public QWidget= (=HDB.hpp:75=); =AccountDetailDialog final : public DetailDialogBase= (=ACC.hpp:58=); =AccountHistoryDialog final : public HistoryDialogBase= (=ACH.hpp:40=). The generic =HistoryDialog final : public HistoryDialogBase= (=HD.hpp:53=). The dialog is /not/ a =QDialog=; it is a =QWidget= hosted inside a =DetachableMdiSubWindow= (=CTRL:326-328, 457-459=). Child CRUD dialogs are additionally wrapped in a throwaway =QDialog= wrapper to get modal =exec()= (=ACET.cpp:140-166, 203-225=).
 
-* 1. DIALOG STRUCTURE
+* DIALOG STRUCTURE
 
 ** 1.1 Root shell (account)
 
@@ -132,7 +132,7 @@ closeConfirmed_ = true; requestClose();
 #+end_src
 =hasUnsavedChanges()= for account returns =isDirty_= (=ACC.hpp:159-161=). =requestClose()= emits =closeRequested= (=DDB.hpp:196-198=), which the controller connects to the sub-window's close slot (=connect_dialog_close=, =CTRL:475=).
 
-* 2. FORM FIELDS (account, in exact order)
+* FORM FIELDS (account, in exact order)
 
 The dialog has /no/ date pickers, spin boxes, or free-text areas among entity fields (the only =QPlainTextEdit= is the read-only provenance commentary). Every editable field is a =QLineEdit= or =QComboBox=.
 
@@ -188,7 +188,7 @@ Citations: =ACC.ui:231-347=. Populated by =setLoginInfo= (=ACC.cpp:447-487=): ba
 - No email-format, no full-name, no job-title validation.
 - Submit gating: Save is enabled only when something is dirty (=updateSaveResetButtonState=, =ACC.cpp:1131-1152=).
 
-* 3. TABBED / GROUPED SECTIONS
+* TABBED / GROUPED SECTIONS
 
 Tab order as built (=.ui= order, then runtime insertions):
 
@@ -216,7 +216,7 @@ Group headings are exact: =Account Information=, =Photo=, =Password=, =Login Sta
 
 Both widgets emit =statusMessage=, =errorMessage=, =roleListChanged=/=partyListChanged=, and parties additionally =dataLoaded=/=defaultPartyChanged=; the parent wires these to its own signals and to =updateSaveResetButtonState()= (=ACC.cpp:171-212=).
 
-* 4. CHILD ENTITY TABLES
+* CHILD ENTITY TABLES
 
 ** 4.1 Generic widget — =ChildEntityTableWidget=
 
@@ -263,7 +263,7 @@ The generated detail dialog reserves a seam for hosting such tables (and hierarc
 #+end_src
 =ACID.cpp:56-65= (same text in =T-cpp:97-103=).
 
-* 5. SAVE FLOW
+* SAVE FLOW
 
 Entry point =onSaveClicked()= (=ACC.cpp:517-964=); =save()= is a public thin wrapper (=ACC.cpp:489-491=).
 
@@ -337,7 +337,7 @@ save_<entity>_request request; request.data = entity_;
 #+end_src
 =T-cpp:1356-1396=; concrete instance in =ACID.cpp:333-341, 358-361=. Success emits =<item>Saved(code)= and =notifySaveSuccess(tr("{{entity_title}} '%1' saved").arg(code))= (=T-cpp:1404-1414=; =ACID.cpp:378-384=).
 
-* 6. DELETE FLOW
+* DELETE FLOW
 
 Account delete (=onDeleteClicked=, =ACC.cpp:971-1049=):
 
@@ -359,7 +359,7 @@ Account delete (=onDeleteClicked=, =ACC.cpp:971-1049=):
 
 Generic template equivalent wording: title =Delete {{entity_title}}=, body =Are you sure you want to delete {{entity_singular_words}} '%1'?=, success ={{entity_title}} '%1' deleted= + entity-deleted signal + =requestClose()=, failure =Delete Failed= (=T-cpp:1438-1440, 1518-1528=; =ACID.cpp:407-411, 455-465=).
 
-* 7. AUDIT FIELDS
+* AUDIT FIELDS
 
 ** 7.1 Domain audit fields (every versioned entity)
 
@@ -410,7 +410,7 @@ Citations: =CRD.cpp:64-85, 159-167=. Minimum width 450 (=CRD.cpp:73=). Form row 
 
 =DetailDialogBase::populateProvenance(version, modified_by, performed_by, recorded_at, change_reason_code, change_commentary)= forwards to =ProvenanceWidget::populate=, which writes the six fields (=DDB.cpp:68-79=, =PW.cpp:38-57=). =recorded_at= is rendered through =relative_time_helper::format()= and left blank when the time_point is default-constructed (=PW.cpp:48-53=). The tab is disabled in create mode and for entities with no such tab (=DDB.hpp:237-243=, =DDB.cpp:54-66=). For account this is called from =setAccount= (=ACC.cpp:285-290=).
 
-* 8. HISTORY DIALOG
+* HISTORY DIALOG
 
 Two coexisting implementations share =HistoryDialogBase=:
 
@@ -466,7 +466,7 @@ Timeline cards are custom widgets: title =v<version> · <relative time>= (toolti
 
 Every history dialog enforces a minimum of 900×600 via =sizeHint()= override (=HDB.cpp:277-280=).
 
-* 9. VALIDATION AND ERROR PRESENTATION
+* VALIDATION AND ERROR PRESENTATION
 
 There is /no field-level inline error UI/ (no red asterisks/text under fields) in this codebase. Errors are presented as modal message boxes plus status/error signals:
 
@@ -494,7 +494,7 @@ There is /no field-level inline error UI/ (no red asterisks/text under fields) i
 
 Combo boxes are globally configured (max 10 visible items, bounded popup view) by =WidgetUtils::setupComboBoxes(parent)=, called by every dialog after =setupUi()= (=WU.hpp:133-138=; =ACC.cpp:69=; =CRD.cpp:62=; =PW.cpp:31=; =ACID.cpp:52=).
 
-* 10. WHAT VARIES PER ENTITY
+* WHAT VARIES PER ENTITY
 
 The authoritative "what an implementer supplies" list is the codegen entity model's =** Qt= section plus the =*** Detail fields= table. For a codegen-bound entity, /everything/ below is data in the model =.org= file; the mustache templates produce the dialog. The account dialog is hand-authored and deviates (see §10.4).
 

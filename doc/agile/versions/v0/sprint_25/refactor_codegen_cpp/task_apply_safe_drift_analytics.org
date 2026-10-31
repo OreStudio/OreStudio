@@ -44,8 +44,8 @@ Four pricing models need flag updates; no production exclusions expected.
 
 * Plan
 
-** 1. Rebase onto =origin/main=
-** 2. Update analytics models
+** Rebase onto =origin/main=
+** Update analytics models
 
 | Model | Flags |
 |-------+-------|
@@ -54,15 +54,15 @@ Four pricing models need flag updates; no production exclusions expected.
 | =pricing_model_product_domain_entity.json= | =service_find_by_uuid= |
 | =pricing_model_product_parameter_domain_entity.json= | =service_find_by_uuid= |
 
-** 3. Regenerate
+** Regenerate
 
 #+begin_src sh
 projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --address ores.cpp
 #+end_src
 
-** 4. Build + test
-** 5. Final zero-diff check
-** 6. Commit + push + raise PR
+** Build + test
+** Final zero-diff check
+** Commit + push + raise PR
 
 * Notes
 

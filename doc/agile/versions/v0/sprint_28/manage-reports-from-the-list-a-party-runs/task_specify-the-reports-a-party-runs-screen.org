@@ -183,7 +183,7 @@ further: the party from =get_my_parties=, and the tally from the rows.
 
 * The eight server-side questions
 
-** 1. Is there a read that returns the reports a party runs, scoped by the party in the JWT?
+** Is there a read that returns the reports a party runs, scoped by the party in the JWT?
 
 *Yes for the definitions, and yes for the scoping, but the scope is row-level
 security and not a request field.*
@@ -213,7 +213,7 @@ A definition read then returns the whole tenant. Verified in the policy's own
 comment and in the =claims->party_id= absent branch, which returns a
 tenant-scoped context with no party.
 
-** 2. Is there a read that returns the latest run per definition, or must the screen fetch every instance and reduce? What does that cost?
+** Is there a read that returns the latest run per definition, or must the screen fetch every instance and reduce? What does that cost?
 
 *No, and yes: every instance is fetched and reduced.*
 
@@ -241,7 +241,7 @@ So the screen pages the party's whole run history on every load and keeps, per
 runs, not with reports: forty definitions with three years of daily runs is
 about forty thousand rows to draw forty.
 
-** 3. Is there a read for the next fire time?
+** Is there a read for the next fire time?
 
 *Not on the reporting side, and next fire is not a trigger event anyway. It is
 reachable from the scheduler if the screen is willing to make a fourth read, and
@@ -281,7 +281,7 @@ drawn:
   job and for an expression the evaluator cannot advance. And no person role
   holds the permission: see G8.
 
-** 4. Is there a read for health?
+** Is there a read for health?
 
 *No. Health is not stored and not returned. The screen derives it, and the state
 ids it derives from resolve to names only through a fourth read.*
@@ -303,7 +303,7 @@ The retrieval stores that tarball and nothing parses it, and
 only (=compute_results_create.sql:50-52=). Health comes from the run's state and
 the run's error rows, which is why the error read is on the list above.
 
-** 5. Is there a read for the problem count, given errors are events?
+** Is there a read for the problem count, given errors are events?
 
 *The rows are readable and the count is not. The screen reads rows and counts
 them, and the split by severity is a column on the row.*
@@ -328,7 +328,7 @@ publishes them (=reporting_report_error_events_notify_trigger_create.sql=). The
 journey's statement that no event exists for this entity is wrong, and this task
 corrects it. It does not change the design: the screen still reads the rows.
 
-** 6. Which permissions do these reads require, and which roles hold them today?
+** Which permissions do these reads require, and which roles hold them today?
 
 *Every one of them is held by the two administrative roles and by service
 roles, and by no person role at all. That is the largest gap in this list.*
@@ -365,7 +365,7 @@ Consequence, stated plainly: the screen's two primary reads and the error read
 are refused for every actor the journey names except the tenant administrator. A
 read nobody can call is a gap, not a field. See G6, G7, G8 and G9.
 
-** 7. What does the party scoping depend on, and does the JWT carry it?
+** What does the party scoping depend on, and does the JWT carry it?
 
 *It depends on row-level security fed by two JWT claims, and the JWT carries
 both. What the JWT does not carry is the party's short code.*
@@ -394,7 +394,7 @@ and is scoped to the caller's own account
 parties the account is associated with, which is not the same set as the
 visible party set the policy uses. See G11.
 
-** 8. Does anything tell the screen that a run changed, and can the event name the row?
+** Does anything tell the screen that a run changed, and can the event name the row?
 
 *The run's change events exist and the BFF can subscribe to them. The event names
 the run by name and carries no definition id, so the row cannot be identified

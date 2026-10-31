@@ -97,7 +97,7 @@ Mirrors =fx_spot_generation_config='s =price_source=/=vintage_source=/
 =curve_feed_controller=. IR's =initial_rate= plays the role FX's
 =gmm_initial_price= plays.
 
-** 1. Model the three new fields (codegen source of truth)
+** Model the three new fields (codegen source of truth)
 
 =ir_curve_generation_config= is codegen'd (SQL/domain/table/entity/
 mapper files all carry "AUTO-GENERATED — DO NOT EDIT MANUALLY"
@@ -131,7 +131,7 @@ output:
   =vintageDateEdit= widgets, =PriceSource=/=VintageSource=/
   =VintageDate= model columns).
 
-** 2. =curve_feed_controller=: vintage resolution, mirroring =feed_controller=
+** =curve_feed_controller=: vintage resolution, mirroring =feed_controller=
 
 Port =feed_controller='s =vintage_data_available()= (parse ORE
 key → =market_data_client::find_series()= → paged
@@ -168,7 +168,7 @@ FX to account for:
   they can never drift — same invariant the task's Acceptance calls
   out, same shape =make_ir_curve_feed= already keeps in sync today.
 
-** 3. =make_ir_curve_feed=/=ir_curve_feed_config_handler= wiring
+** =make_ir_curve_feed=/=ir_curve_feed_config_handler= wiring
 
 - =make_ir_curve_feed= gains the vintage resolution call (or takes a
   pre-resolved =initial_rate= from the caller, matching whichever
@@ -185,7 +185,7 @@ FX to account for:
   confirm it composes with this task's resolution path rather than
   duplicating it (ideally both call the same underlying resolver).
 
-** 4. Verification
+** Verification
 
 - Unit tests around the new =curve_feed_controller= vintage resolution
   (missing vintage → =vintage_data_missing= with actionable detail;

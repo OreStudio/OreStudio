@@ -265,7 +265,7 @@ Nothing here has been run yet. =/dev/sda= is assumed throughout --
 *re-confirm with =lsblk -f= immediately before Step 3*, as device naming
 can change across boots and Step 3 is the irreversible one.
 
-*** 0. Preconditions and tooling (DONE 2026-07-28)
+*** Preconditions and tooling (DONE 2026-07-28)
 
 btrfs kernel support is present (=btrfs.ko= ships with kernel
 =7.1.4+deb14-amd64=) but *btrfs-progs was not installed* -- =mkfs.btrfs=
@@ -358,7 +358,7 @@ ssh-add -l                     # expect the RSA key, may prompt for passphrase
 git ls-remote git@github.com:OreStudio/OreStudio.git >/dev/null && echo OK
 #+end_src
 
-*** 1. Stop everything using the partition (DONE 2026-07-28)
+*** Stop everything using the partition (DONE 2026-07-28)
 
 #+begin_src sh
 # Per worktree (swift_curie, prime_origin, brave_hopper, bright_faraday,
@@ -416,7 +416,7 @@ The general lesson is D6's, applied to processes rather than
 repositories: enumerate what is actually holding the mount with
 =fuser -vm=, do not assume a known list of services covers it.
 
-*** 2. Preserve only what cannot be regenerated
+*** Preserve only what cannot be regenerated
 
 No bulk backup, and *no PostgreSQL dump* -- the cluster is recreated
 from scratch (D5). Build output, =vcpkg= trees, NATS state, the ccache
@@ -507,7 +507,7 @@ aside first so any local tuning can be diffed back in:
 sudo cp -a /etc/postgresql/18/main ~/postgresql-18-main.conf.pre-migration
 #+end_src
 
-*** 3. Repartition and reformat (POINT OF NO RETURN) -- DONE 2026-07-28
+*** Repartition and reformat (POINT OF NO RETURN) -- DONE 2026-07-28
 
 #+begin_src sh
 lsblk -f                      # RE-CONFIRM /dev/sda is the 223.6G ADATA SU650
@@ -529,7 +529,7 @@ sudo mkswap -L devswap /dev/sda2
 sudo btrfs filesystem show /dev/sda1
 #+end_src
 
-*** 4. Subvolumes, mount, fstab (DONE 2026-07-28)
+*** Subvolumes, mount, fstab (DONE 2026-07-28)
 
 #+begin_src sh
 sudo mount /dev/sda1 /mnt/development
@@ -596,7 +596,7 @@ sudo findmnt --verify --verbose
 sudo swapon -a && swapon --show   # sda2 pri=100, sdb3 pri=-1
 #+end_src
 
-*** 5. Reconfigure ccache for reflink, not hard link (DONE 2026-07-28)
+*** Reconfigure ccache for reflink, not hard link (DONE 2026-07-28)
 
 #+begin_src sh
 mkdir -p /mnt/development/.cache/ccache
@@ -635,7 +635,7 @@ the filesystem decision above.
 Note =compsize= must be run as root; as an unprivileged user it silently
 prints nothing rather than failing.
 
-*** 6. Recreate the fleet
+*** Recreate the fleet
 
 Bare repo first, so no worktree is privileged:
 
@@ -869,7 +869,7 @@ ln -sfn /mnt/development/Moimba /home/marco/Development/Moimba
 ls -l /home/marco/Development/Moimba && ls /home/marco/Development/Moimba/
 #+end_src
 
-*** 7. Deduplicate
+*** Deduplicate
 
 Reflinks only arise where something clones a file. The ~1.2G
 =vcpkg_installed= tree that each worktree builds independently is
@@ -920,7 +920,7 @@ Integrity spot-checked afterwards: =ores.qt= intact at 38,111,376 bytes
 and executing (it reaches Qt platform-plugin init and fails only on
 =could not connect to display=, correct for a headless shell).
 
-*** 8. Verify
+*** Verify
 
 Correctness -- the bug this story exists to fix:
 
@@ -1103,7 +1103,7 @@ Secondary limits arrive only if services *run* in many worktrees at once,
 not from building: 31G RAM against ~17 services per worktree, and
 PostgreSQL =max_connections= (800, restored in Step 6).
 
-*** 9. Ongoing maintenance
+*** Ongoing maintenance
 
 Not required for acceptance, but this is what btrfs costs versus XFS
 and it should be written down rather than rediscovered:

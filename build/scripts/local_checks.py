@@ -330,6 +330,16 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs",),
     ),
     Check(
+        id="heading-numbers",
+        title="No org heading carries its own number",
+        argv=("python3", "build/scripts/check_heading_numbers.py"),
+        classes=("docs",),
+        fix="Run: python3 build/scripts/check_heading_numbers.py --write."
+            " Org numbers every exported section, so a heading that numbers"
+            " itself renders as '2.1. 1. The document's shape has one owner',"
+            " and the copy goes stale as soon as a section is inserted above it.",
+    ),
+    Check(
         id="skill-namespace",
         title="Every skill uses the compass namespace",
         argv=("python3", "build/scripts/rename_skills_to_compass_namespace.py", "--check"),

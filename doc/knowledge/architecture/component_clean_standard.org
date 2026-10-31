@@ -77,7 +77,7 @@ Work one entity at a time. Regenerate, build and test after each one.
 Sprint 25 found five generator defects that a diff, the drift check and
 a typecheck all missed; only a build and a test run found them.
 
-** 1. Baseline and inventory
+** Baseline and inventory
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -88,7 +88,7 @@ a typecheck all missed; only a build and a test run found them.
 | B05 | All | Read the component's open captures and in-flight branches, so that the work does not collide with them. | Links on the task |
 | B06 | All | Classify every public symbol by its consumer: production, test-only, or none. A test-only consumer is dead code, because a test is not a consumer. Name the intended consumer on the task, or delete the symbol with its test. | =git grep= over =projects/= for each public symbol, excluding the component and its own tests |
 
-** 2. Models
+** Models
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -103,7 +103,7 @@ a typecheck all missed; only a build and a test run found them.
 | M09 | All | No legacy fragment remains in any model: no Qt or Wt presentation drawer or property, no property that names a retired message type, no feature the canonical protocol retired, no dead history property. | =grep= over the modeling directory for the retired keywords |
 | M10 | All | The component model (=component_overview.org=) is current, declares its parts, and a composite has its group model so that codegen generates its root =CMakeLists.txt=. | =validate_docs.sh=; regeneration |
 
-** 3. Protocol
+** Protocol
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -114,7 +114,7 @@ a typecheck all missed; only a build and a test run found them.
 | P05 | Protocol | Every consumer in other components, the shell and the CLI follows the protocol change in the same piece of work. Nothing is carried for backwards compatibility. | Whole-tree build |
 | P06 | Protocol | An event cache warms through the canonical list and follows the canonical event actions. | Generated cache code |
 
-** 4. Generation
+** Generation
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -127,7 +127,7 @@ a typecheck all missed; only a build and a test run found them.
 | G07 | All | No generated artefact is refreshed while its generator has a known defect, because a refresh can delete correct content. Fix the generator at its source with a regression test, then refresh. A diagram refresh also honours the two-pass contract: run the automated pass, redo the manual pass below the sentinel, and verify the sentinel section survived. | The generator's own dry run, with its diff read line by line against the committed artefact |
 | G08 | All | The namespace documentation headers are not dead headers. Every component keeps one for its outermost namespace: =include/<component>/<component>.hpp= for a single-module component, and =include/<component>.<module>/<component>.<module>.hpp= for each module of a multi-module one. Where a facet has a header of its own, at =include/<component>/<facet>/<component>.<facet>.hpp= or =include/<component>/<facet>/<facet>.hpp=, that documents the sub-namespace and is not dead either; the coverage of facet headers is uneven across the tree today and filling the gaps is separate work, not a condition of this item. Each carries the namespace =@brief= that doxygen renders, and the outermost one is the description the diagram conventions read. A consumer census does not apply to them: an empty namespace is their whole content, so nothing includes them and nothing should. A claim in one is a document bug, corrected in place, never a reason to delete the file. | The diagram conventions; the component's own header list; a census of every component |
 
-** 5. Wiring and data
+** Wiring and data
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -136,14 +136,14 @@ a typecheck all missed; only a build and a test run found them.
 | W03 | Entity | Every name a populate script uses is defined by a populate script. | =check_populate_references.py= |
 | W04 | Entity | Every SQL script (tables, triggers, notify triggers, row-level security) is reachable from the create and drop aggregators, and the service grants cover every table the service reads. | SQL schema validation (no =WIRE_001=); =compass db recreate= |
 
-** 6. Shell
+** Shell
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
 | S01 | Entity | Every verb of every entity and junction has a generated shell command unit and a test. The hand-written units the generation replaces are deleted. | Generated units; shell tests |
 | S02 | Entity | Every command has a generated literate recipe, and the recipe inventory lists them all. A destructive command is declared destructive in its model. | =regenerate_shell_recipe_inventory.py= |
 
-** 7. Structure and hygiene
+** Structure and hygiene
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
@@ -153,7 +153,7 @@ a typecheck all missed; only a build and a test run found them.
 | H04 | All | No hand-rolled per-platform shim survives where every supported compiler provides the standard facility. Replace the shim with the standard facility, and delete what existed only to carry it. | Review against the three supported compilers: MSVC, AppleClang, and GCC or Clang |
 | H05 | All | The component has its documentation, and the documentation is complete rather than a skeleton. Every component, and every part of a composite, carries a =component_overview.org= with the six sections [[id:B9D3D469-9E59-465F-8C18-34546B680D13][the Component Documentation Guide]] requires: Summary, Inputs, Outputs, Entry points, Dependencies, See also. Each overview carries a =Diagram= section, its =.puml= source and a rendered image committed beside it, and the =Diagram= section points at that image. A diagram that predates the code it draws is a finding: where the component's code changed, the diagram is refreshed in the same pass, per H01's two passes. A schema-owning component also carries its ER diagram. Placeholder prose and empty bullets do not pass. | The overview files and their =.puml=/image pairs; =validate_docs.sh=; the rendered image read, not merely regenerated |
 
-** 8. Verification
+** Verification
 
 Every evidence cell below names a command or a document, and the number a command
 produces belongs in the task's =* Measurements= table beside the command that

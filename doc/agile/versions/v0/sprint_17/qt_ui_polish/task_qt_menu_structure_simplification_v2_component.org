@@ -45,7 +45,7 @@ Restructure the Qt application menu bar into logical submenus (System, Analytics
 
 Two cohesive changes on one branch:
 
-*** 1. Qt menu structure simplification (phases 1–5)
+*** Qt menu structure simplification (phases 1–5)
 
 Restructures the application menu bar to reduce top-level menus and
 group related items more logically:
@@ -67,7 +67,7 @@ loop (=setup_menus= then =create_menus=) driven by =load_order()=.
 =analytics_codes_menu=, =operations_menu=, =reference_data_menu=,
 =data_management_menu=.
 
-*** 2. V2 component documentation for all Qt plugins
+*** V2 component documentation for all Qt plugins
 
 Brings the 12 =ores.qt.*= plugin components into full V2 compliance:
 

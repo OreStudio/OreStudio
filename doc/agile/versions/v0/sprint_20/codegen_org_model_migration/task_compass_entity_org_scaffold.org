@@ -59,7 +59,7 @@ migration task that follows in this story.
 
 * Plan
 
-** 1. Template
+** Template
 
 Write =doc_entity_org.org.mustache= mirroring the meta-model spec.
 Frontmatter:
@@ -81,7 +81,7 @@ Body: one paragraph describing the modelled entity (placeholder for the
 author), then the =See [[id:BDE309BA-...][meta-model]]= pointer, then
 empty section headings.
 
-** 2. doc_generate wiring
+** doc_generate wiring
 
 In [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/doc_generate.py=]]:
 - Add =entity_org= to =TYPE_TO_TEMPLATE=, =PARENTLESS_TYPES=,
@@ -92,14 +92,14 @@ In [[proj:projects/ores.codegen/src/doc_generate.py][=projects/ores.codegen/src/
   =parent_dir / f"ores.{component}.{slug}.org"=.
 - Add =component= to the template variables dict.
 
-** 3. compass plumbing
+** compass plumbing
 
 Compass already forwards unknown flags to doc_generate, so =--component=
 flows through automatically. The only compass change is updating the
 =usage= banner in =cmd_add= to list =entity_org= alongside the existing
 types.
 
-** 4. Validation
+** Validation
 
 Round-trip smoke test:
 
@@ -117,7 +117,7 @@ print('OK')"
 rm projects/ores.refdata/modeling/ores.refdata.smoke.org
 #+end_src
 
-** 5. Commit + PR
+** Commit + PR
 
 One commit per logical unit:
 - Template.

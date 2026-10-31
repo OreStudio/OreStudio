@@ -13,7 +13,7 @@ Adapted from the work of [[https://x.com/draparente][Dr. Angelica Parente]].
 
 Extends [[id:F322DD08-D114-4B9E-8B89-E392ED5C591E][Tufte's Principles for Data Visualisation]] with material from /Envisioning Information/ (1990), /Visual Explanations/ (1997), and /Beautiful Evidence/ (2006).
 
-* 1. The Six Principles of Analytical Design
+* The Six Principles of Analytical Design
 
 From /Beautiful Evidence/. The most actionable framework Tufte produced — applies to any analytical presentation, not just charts.
 
@@ -26,7 +26,7 @@ From /Beautiful Evidence/. The most actionable framework Tufte produced — appl
 
 *Use in critique:* walk through all six. The lowest-scoring principle is usually the biggest improvement opportunity.
 
-* 2. Sparklines
+* Sparklines
 
 Word-sized, data-intense graphics. Tufte's signature /Beautiful Evidence/ invention.
 
@@ -56,7 +56,7 @@ Word-sized, data-intense graphics. Tufte's signature /Beautiful Evidence/ invent
 - When precise readings matter — sparklines show shape, not value.
 - For categorical or part-to-whole data.
 
-* 3. Layering and Separation
+* Layering and Separation
 
 From /Envisioning Information/. The most useful concept for dense displays.
 
@@ -71,7 +71,7 @@ From /Envisioning Information/. The most useful concept for dense displays.
 
 *Test:* squint at the graphic. The most important data should remain visible; chartjunk should disappear first.
 
-* 4. Micro/Macro Design
+* Micro/Macro Design
 
 Distinct from raw data density. A micro/macro graphic reveals *different stories at different viewing distances*.
 
@@ -86,7 +86,7 @@ Distinct from raw data density. A micro/macro graphic reveals *different stories
 
 *Design implication:* don't choose between overview and detail — show both simultaneously by layering.
 
-* 5. Escaping Flatland
+* Escaping Flatland
 
 The 2D page/screen is inherently flat; good information design adds dimensions /without/ 3D gimmicks.
 
@@ -101,7 +101,7 @@ The 2D page/screen is inherently flat; good information design adds dimensions /
 
 *Anti-pattern:* 3D bar charts, pie charts with depth, isometric projections that distort proportions. These add visual dimension without adding information dimension — pure chartjunk.
 
-* 6. Range-Frame and Dot-Dash Plot
+* Range-Frame and Dot-Dash Plot
 
 Tufte's signature reinventions of standard chart elements. Direct applications of data-ink maximisation.
 
@@ -119,7 +119,7 @@ Tufte's signature reinventions of standard chart elements. Direct applications o
 
 *Pattern:* every standard chart element (axis, tick, gridline) can be redesigned to carry data.
 
-* 7. Confections, Parallelism, Narrative
+* Confections, Parallelism, Narrative
 
 From /Visual Explanations/.
 
@@ -127,7 +127,7 @@ From /Visual Explanations/.
 - *Parallelism* — repetition of visual structure to enable comparison. Small multiples are one form, but parallelism extends to side-by-side maps, before/after states, repeated annotation styles.
 - *Narrative graphics of space and time* — combine spatial and temporal dimensions in one frame. Minard's Napoleon graphic encodes troop size, geography, direction, temperature, and time simultaneously.
 
-* 8. Cause and Effect
+* Cause and Effect
 
 From /Visual Explanations/. Causality is hard to visualise because it requires showing both the variables and the mechanism linking them.
 

@@ -81,7 +81,7 @@ Four edges to land:
 
 * Plan
 
-** 1. Settle conventions
+** Settle conventions
 
 - How does a doc express "owning component"? Property drawer
   (=:component:= id) vs section (=* See also: component=)? Match
@@ -89,7 +89,7 @@ Four edges to land:
 - For "entity → schema": a per-column =:schema:= property in the
   column drawer, or a =* See also= section listing the cross-refs?
 
-** 2. Group overviews (11 new)
+** Group overviews (11 new)
 
 Scaffold via compass (=add component= type) or hand-write from the
 existing =ores.database= shape. Each one carries:
@@ -100,24 +100,24 @@ existing =ores.database= shape. Each one carries:
 - =* Entities= section: id-links to every entity org under the same
   =modeling/=.
 
-** 3. Sub-component → group back-link sweep
+** Sub-component → group back-link sweep
 
 Add a =* Group= section (or property) to each existing
 sub-component overview pointing at its group overview.
 
-** 4. Entity → group back-link sweep
+** Entity → group back-link sweep
 
 Touch every =ores.<group>.<entity>.org= already in the tree to add
 the back-link.
 
-** 5. Entity → schema link sweep
+** Entity → schema link sweep
 
 After edges 1-4 ship, walk every entity column that references a
 lookup table and add an id-link. Driven by a small script that
 parses the entity's =* Columns= sub-headings and matches column
 names against the lookup catalogue.
 
-** 6. Commit + raise PR
+** Commit + raise PR
 
 Likely two PRs:
 - Edges 1-3 (overview infrastructure) — depends on [[id:ADBD1D70-F62F-468E-A4FB-26DF28FBA527][component migration]].

@@ -21,7 +21,7 @@ How do I add a new codegen entity model?
 
 * Answer
 
-** 1. Scaffold the file
+** Scaffold the file
 
 #+begin_src sh :results verbatim
 projects/ores.compass/compass.sh add entity_org \
@@ -54,7 +54,7 @@ friends) and the shape's knobbed sections (=Flags=, =Primary key=,
 =Natural keys=, =Columns=, =SQL=, optionally =Foreign keys=/=Insert
 trigger=, =C++=, optionally =Presentation=).
 
-** 2. Fill in the model
+** Fill in the model
 
 Open the scaffolded file and resolve every =TODO= — the shape sets
 knobs, not entity-specific facts like actual columns, foreign-key
@@ -66,7 +66,7 @@ generates cleanly, work through the [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][p
 fixed manual integration steps (registrar wiring, NATS event-relay
 wiring, ...) codegen does not and will not wire up for you.
 
-** 3. Wire the component (first entity in a component only)
+** Wire the component (first entity in a component only)
 
 If =projects/ores.<component>/modeling/= is the first org model in
 this component, add a =modeling_dir= entry to the component's
@@ -83,7 +83,7 @@ this component, add a =modeling_dir= entry to the component's
 Existing components that already have =modeling_dir= set need no change
 to add another entity.
 
-** 4. Regenerate
+** Regenerate
 
 #+begin_src sh :results verbatim
 ./compass.sh codegen regenerate \

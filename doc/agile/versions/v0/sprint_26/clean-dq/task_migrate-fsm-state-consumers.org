@@ -44,7 +44,7 @@ The migration also left the tree unable to recreate its own database. a fresh =c
 
 * Plan
 
-** 1. The FSM consumers
+** The FSM consumers
 
 =load_fsm_states= takes the states of one machine by name. The generated
 wire surface addresses a state by name alone, and a state's name is unique
@@ -52,14 +52,14 @@ only within its machine, so the question cannot be asked over the wire. The
 migration's own remedy is a read on the store, so dq's fsm_state repository
 gains =read_latest_by_machine_name= and the loader moves onto it.
 
-** 2. The consumers of that decision
+** The consumers of that decision
 
 A direct read needs a grant the NATS call did not: both services declare the
 =ores_dq_fsm_= select prefix, and the grants regenerate from the registry
 model. The workflow service also stops taking an outbound authenticated
 client, because the state load was its only use.
 
-** 3. Whatever else the recreate finds
+** Whatever else the recreate finds
 
 A recreate is the acceptance test for a generated tree. Each defect it
 surfaced is fixed at its source, not worked around.

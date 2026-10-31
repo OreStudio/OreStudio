@@ -172,7 +172,7 @@ about 100 exchanges in that minute. [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][R
 Source: [[./report_execution_at_scale_sequence.puml][=report_execution_at_scale_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/report_execution_at_scale_sequence.puml=.
 
-*** 1. Create the definition
+*** Create the definition
 
 A person of the party creates the definition in reporting, with their own
 token. The definition holds the report type, the scope, the concurrency policy
@@ -186,7 +186,7 @@ the party.
 No grant exists yet. A definition without a schedule cannot run, except by a
 manual trigger.
 
-*** 2. Schedule it
+*** Schedule it
 
 The person asks reporting to schedule the definition. Reporting performs three
 actions, in this order:
@@ -213,7 +213,7 @@ is gone is deleted, and its grant is revoked.
 Source: [[./report_definition_schedule_states.puml][=report_definition_schedule_states.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/report_definition_schedule_states.puml=.
 
-*** 3. Fire
+*** Fire
 
 The scheduler loop fires the job at its minute. It writes the firing record
 and then sends the trigger to reporting as an authenticated request with its
@@ -225,7 +225,7 @@ the trigger permission, then acts on the definition as itself. That is
 reporting's own work on its own table. The run's tenant identity starts with
 the first step.
 
-*** 4. Admit
+*** Admit
 
 Reporting decides the state the instance is born in. Two checks apply, in this
 order:
@@ -267,7 +267,7 @@ Source: [[./report_instance_admission_states.puml][=report_instance_admission_st
 The trigger is idempotent on the firing id. A repeated trigger finds the
 instance for that firing and returns it.
 
-*** 5. Start the run
+*** Start the run
 
 Reporting creates the instance and publishes =workflow.v1.ops.start_workflow=. The workflow
 instance id is created by reporting and recorded on the instance. A repeated
@@ -306,7 +306,7 @@ substituted chains replace step 1 or step 3 as
 [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]]
 describes. Every step compensates with =reporting.v1.ops.fail_report=.
 
-*** 6. Prepare the input
+*** Prepare the input
 
 =ores.ore= owns this step. It owns the mapping to the engine's documents, so
 the archive has one author.
@@ -341,7 +341,7 @@ the archive has one author.
 The step converges on a repeat. A repeat finds the archive under the digest,
 or it generates it again under the same key.
 
-*** 7. Submit to the grid
+*** Submit to the grid
 
 =ores.compute= owns this step. It obtains the run token and creates the batch
 in the tenant, with the report instance id as the batch's external reference.
@@ -357,7 +357,7 @@ covers the queue wait and the engine time.
 Compute dispatches with its own identity. Dispatch is compute's own work on its
 own table, and the fair share below decides its order.
 
-*** 8. Execute
+*** Execute
 
 A worker node takes an assignment from the queue of its platform. The worker
 holds no run token. An engine run can last longer than any token, and a node
@@ -370,7 +370,7 @@ diagram]] draws this path beside a step service that keeps exchanging.
 [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes the
 node's work.
 
-*** 9. Collect the results
+*** Collect the results
 
 Reporting obtains the run token and reads the output archive from storage. It
 uses the parser that =ores.ore= supplies as a library, and it bulk loads the
@@ -379,7 +379,7 @@ results into the result store as
 Each row carries the instance id, the tenant and the party. A repeat replaces
 the rows of the instance and does not add to them.
 
-*** 10. Finalise
+*** Finalise
 
 Reporting moves the instance to =completed= and records the output key, the
 row counts and which phases were substituted. It then promotes the next queued

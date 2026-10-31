@@ -46,7 +46,7 @@ The shell holds no hand-written unit that generation supersedes, the three defec
 Four pieces of work, in the order the standard asks for them: remove what
 generation supersedes, fix what is broken, and correct the record.
 
-** 1. Remove the fourteen hand-written trading instrument units
+** Remove the fourteen hand-written trading instrument units
 
 They live in =projects/ores.shell/application/src/app/commands/trading/= and
 they are the shell surface of =ores.trading= entities. Measured against that
@@ -68,7 +68,7 @@ regeneration cannot be narrowed to the shell facet, so it carries that
 component's drift. Remove the units only where the generated replacement exists,
 and record each removal with the unit that replaces it.
 
-** 2. Fix the three defects, at their source
+** Fix the three defects, at their source
 
 =accounts sessions= aborts against the live fleet:
 
@@ -93,7 +93,7 @@ menu already carries =assign-role=, =revoke-role=, =get-account-roles=,
 each one: retire the hand-written verb and point callers at the generated one,
 or keep it and record why the addresses both earn their place.
 
-** 3. Correct the iam record
+** Correct the iam record
 
 =component_registry.py= carries an accepted exception on item S01 for =iam=
 whose reason reads "registered after the generated aggregator, so some

@@ -53,7 +53,7 @@ client contains two archetypes and one is better than the other. Where they
 disagree this document states the rule and names the divergence, so that "what
 should this screen do" has one answer rather than two.
 
-* 0. Two archetypes, and which one is the standard
+* Two archetypes, and which one is the standard
 
 /The generated standard./ Produced by codegen from the entity's =.org= model
 into =Client<Entity>Model= and =<Entity>MdiWindow=. This is the pattern that
@@ -70,7 +70,7 @@ The accounts screen is the one the request named, and it is a good reference for
 because it deviates in specific and important ways listed in section 13. This
 document follows the generated standard where they disagree.
 
-* 1. Vocabulary
+* Vocabulary
 
 Fixed terms, used consistently in code, in the interface, and in conversation.
 
@@ -93,7 +93,7 @@ Fixed terms, used consistently in code, in the interface, and in conversation.
 
 Naming in code follows section 12. Never invent a synonym.
 
-* 2. What makes a record an entity
+* What makes a record an entity
 
 An entity has all six of these. If it lacks one it is not a regular entity and
 needs a deliberate exception rather than a shortcut.
@@ -133,7 +133,7 @@ needs a deliberate exception rather than a shortcut.
 | A natural code | Lookup entities |
 | A status | Entities with a lifecycle beyond existing |
 
-* 3. The layers
+* The layers
 
 Five layers, each with one job. Every entity has all five.
 
@@ -168,7 +168,7 @@ routes, and the screens. It never touches another entity's code. If adding an
 entity requires editing shared, unrelated code, that shared code is missing an
 abstraction and fixing it is the first task.
 
-* 4. The screens
+* The screens
 
 | Screen | Route | Purpose |
 |---+---+---|
@@ -181,7 +181,7 @@ abstraction and fixing it is the first task.
 Read and edit share the detail screen because they render the same fields. The
 mode changes which are editable and which actions appear, not the layout.
 
-* 5. The list screen
+* The list screen
 
 #+begin_src text
   <Plural>                                        [Refresh] [Add]
@@ -292,7 +292,7 @@ watching a live system sees what just changed without re-reading the table.
 Worth carrying across, and worth making a setting, because a table that flashes
 on every update is worse than one that never does.
 
-* 6. The detail screen
+* The detail screen
 
 ** Layout
 
@@ -391,7 +391,7 @@ hiding it; hidden is better, for the reason in section 11.
 Closing with unsaved changes prompts: title "Unsaved Changes", text "You have
 unsaved changes. Close anyway?". That wording is exact and worth keeping.
 
-* 7. The audit rule
+* The audit rule
 
 /Every accepted write carries a reason./ This section is the one place the
 accounts screen is not merely different but wrong, and the difference is worth
@@ -477,7 +477,7 @@ this order, with these labels:
 The tab is disabled in create mode, because a record that does not exist has no
 provenance.
 
-* 8. The history screen
+* The history screen
 
 Two layouts exist in the Qt client. The generic compare-mode dialog is the
 standard; the accounts screen's bespoke one is not.
@@ -514,7 +514,7 @@ Opening a version in read-only mode reopens the detail screen with Save and
 Delete hidden, a "Revert to this version" action shown, and the Security tab
 disabled. That is the right treatment and is kept.
 
-* 9. Child and related records
+* Child and related records
 
 A child entity is never listed independently. It appears as a tab on its parent
 with a table and two actions.
@@ -536,7 +536,7 @@ The rules, all of which the Qt client gets right and are worth keeping:
 - The whole section is read-only when the parent is being viewed historically.
 - The column set is declared once per relationship, never hand-built inline.
 
-* 10. Icons
+* Icons
 
 Every icon comes from Microsoft Fluent UI System Icons, named
 =ic_fluent_<concept>_<size>_<variant>=. Regular variants are for passive and
@@ -601,7 +601,7 @@ A dropdown chevron is not from this set; it is the platform's own control.
 An icon never appears alone where its meaning is not obvious. If removing an icon
 loses no meaning, remove it.
 
-* 11. Feedback, access, and safety
+* Feedback, access, and safety
 
 ** Feedback
 
@@ -638,7 +638,7 @@ where there is any.
 - Reverting creates a new version. It never removes one, and the confirmation
   says so.
 
-* 12. Naming and the default column set
+* Naming and the default column set
 
 For an entity named =book= in a component named =refdata=:
 
@@ -668,7 +668,7 @@ available through a copy action on the detail screen.
 The Qt client hides =description= on every entity by rule and the audit fields by
 declaration. Same result, and the rule is worth keeping.
 
-* 13. Where the Qt client disagrees with itself
+* Where the Qt client disagrees with itself
 
 Recorded so the port does not inherit a defect by accident. In each case this
 document takes the generated standard.
@@ -694,7 +694,7 @@ The last row is not a disagreement but a gap. The Qt standard list screen has
 person looking for one record among four hundred will not page through to find
 it. Search is part of this specification even though the reference lacks it.
 
-* 14. Implementing a new entity
+* Implementing a new entity
 
 Work through this in order. Each step ends in something checkable, so a mistake is
 caught where it was made rather than three steps later.
@@ -746,7 +746,7 @@ caught where it was made rather than three steps later.
 18. Add the entity to the navigation.
 19. Record anything about this entity that would surprise the next person.
 
-* 15. Exceptions
+* Exceptions
 
 Some entities genuinely are not regular. The exception is named and justified,
 never discovered later by someone wondering why this one is different.

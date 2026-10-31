@@ -25,7 +25,7 @@ How do I add a new PlantUML diagram to an org-mode document?
 
 * Answer
 
-** 1. Verify PlantUML is installed
+** Verify PlantUML is installed
 
 #+begin_src sh :results verbatim
 plantuml -version
@@ -34,7 +34,7 @@ plantuml -version
 On Ubuntu/Debian: =sudo apt install plantuml=.
 Check the [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] for the exact version used in CI.
 
-** 2. Scaffold the =.puml= file
+** Scaffold the =.puml= file
 
 Use =compass add diagram= to create a properly headed skeleton. Pass the
 target directory with =--parent-dir= and an optional =--title=:
@@ -49,7 +49,7 @@ This writes =doc/meta/my_diagram.puml= with the standard GPL licence header,
 =@startuml=, the title line, and =@enduml=. The file is immediately
 compilable.
 
-** 3. Edit the =.puml= source
+** Edit the =.puml= source
 
 Open the generated file and add diagram content between the =title= line and
 =@enduml=. Example using a simple component diagram:
@@ -70,7 +70,7 @@ A --> B : NATS
 
 See [[https://plantuml.com/component-diagram][plantuml.com/component-diagram]] for the full syntax reference.
 
-** 4. Export to PNG
+** Export to PNG
 
 #+begin_src sh :results verbatim
 plantuml -tpng doc/meta/my_diagram.puml
@@ -80,7 +80,7 @@ This produces =doc/meta/my_diagram.png= alongside the source file. Re-run
 after every edit; the PNG is committed to the repo so the site build does not
 need PlantUML at CI time.
 
-** 5. Embed in the org-mode document
+** Embed in the org-mode document
 
 Place the PNG reference immediately after any context it illustrates. Use
 =#+caption:= for figure captions and =#+attr_html: :width 100%= when the
@@ -101,7 +101,7 @@ the image render at its natural size:
 [[proj:doc/recipes/plantuml/task_lifecycle.png]]
 #+end_example
 
-** 6. Commit both files
+** Commit both files
 
 Always commit the =.puml= source and the generated =.png= together so the
 repo is self-contained:

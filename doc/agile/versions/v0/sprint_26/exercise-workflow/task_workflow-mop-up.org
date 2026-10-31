@@ -45,7 +45,7 @@ Every path the identity fixture can reach is trustworthy: a step that completes 
 Three workstreams, in this order, because each is what makes the next one
 trustworthy.
 
-** 1. The step-row race
+** The step-row race
 
 =on_start_workflow= calls =stamp_command_published= after it publishes, and
 =on_step_completed= calls =set_step_state= when the answer arrives. Both are a
@@ -75,7 +75,7 @@ first: the timestamps above say the completion is processed inside the start,
 which is what a synchronous delivery on one thread would also look like, and
 the two want opposite fixes.
 
-** 2. A start that reports acceptance
+** A start that reports acceptance
 
 =workflow start= prints "Dispatched", an instance id and a follow-up command
 whatever happens. It did so for an unregistered type, for a request with no
@@ -88,7 +88,7 @@ JetStream publish and callers still poll for the terminal state, so this must
 not quietly turn a crash-safe publish into a request/response transaction.
 Record that where the reply is defined.
 
-** 3. The configurations
+** The configurations
 
 Named, one script each, asserting terminal state rather than printing it. The
 set designed on the identity workflow task: =happy_path=, =fan_out=,
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 * Result
 
-** 1. The step-row race -- done
+** The step-row race -- done
 
 Measured first, because the two candidate causes want opposite fixes. Both engine
 handlers were given a log line carrying =std::this_thread::get_id()=, the service
@@ -225,7 +225,7 @@ workflow wait eeeeeeee-... --timeout 60 --expect-steps 2
 
 All four workflow test targets pass.
 
-** 2. A start that reports acceptance -- done
+** A start that reports acceptance -- done
 
 =workflow start= now matches the type against the registered definitions before
 it dispatches anything, and then waits for the instance row the engine creates.
@@ -246,7 +246,7 @@ Started identity_workflow.
 workflow_instance_id: ffffffff-1111-2222-3333-444444444444
 #+end_example
 
-** 3. The configurations -- done
+** The configurations -- done
 
 Six recipes under =doc/recipes/shell/workflow/=, each tangling into a script that
 asserts its own terminal state: =happy_path=, =fan_out=, =with_warnings=,
@@ -266,7 +266,7 @@ engine at all.
 The instance ids are fixed, so a second run of any script reports the existing
 run rather than re-exercising the engine: each path is proven on first run only.
 
-** 4. The paths a script cannot reach -- done
+** The paths a script cannot reach -- done
 
 Four cases in =ores.workflow.core.tests=, in =workflow_engine_tests.cpp=. A
 =--load= script can only start a run and watch it, so it cannot ask the engine

@@ -85,7 +85,7 @@ content is folded in below as the implementation plan.
 Folded in from the 4 tasks of the absorbed story
 [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]]:
 
-** 1. Schema + C++ layer: party_id column on variability settings
+** Schema + C++ layer: party_id column on variability settings
 
 Alter =ores_variability_system_settings_tbl= to add a non-nullable
 =party_id= (uuid) column. Update =system_setting_entity=, its mapper,
@@ -94,7 +94,7 @@ provisioner seed calls to pass the system party's UUID for
 system/tenant-scoped settings (avoids a nullable FK, keeps index
 cardinality well-defined — same rationale the absorbed story used).
 
-** 2. onboarding.* flag definitions
+** onboarding.* flag definitions
 
 Add =onboarding.system=, =onboarding.tenant=, =onboarding.party= to
 =system_setting_definitions= with clear descriptions. Add
@@ -103,7 +103,7 @@ Add =onboarding.system=, =onboarding.tenant=, =onboarding.party= to
 tenant provisioner (system-party scoped); seed =onboarding.party =
 false= per party in the party provisioner flow.
 
-** 3. Wire wizards + fix login's party_setup_required
+** Wire wizards + fix login's party_setup_required
 
 - =TenantProvisioningWizard=: write =onboarding.tenant = true= in the
   =complete_provisioning= handler, server side — same NATS-routed
@@ -120,7 +120,7 @@ false= per party in the party provisioner flow.
   but party still Inactive" case, so the client shows a message
   instead of re-launching the wizard.
 
-** 4. NOTIFY listener mutex contention + max_backoff (carried over, may split out)
+** NOTIFY listener mutex contention + max_backoff (carried over, may split out)
 
 =listen_loop= currently holds the mutex for the entire
 =consume_input()= + =get_notifications()= + callback chain. Under a

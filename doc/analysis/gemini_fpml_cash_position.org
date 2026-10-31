@@ -6,7 +6,7 @@ Here is a brainstorm of the approach in Org-mode format.
 
 ORE Pipeline Brainstorm: Historic Cash Positions
 
-** 1. Modeling Historic Cash in ORE ORE expects trades with defined payoffs. To represent a static cash balance (which technically has an NPV equal to its face value), you have two primary options:
+** Modeling Historic Cash in ORE ORE expects trades with defined payoffs. To represent a static cash balance (which technically has an NPV equal to its face value), you have two primary options:
 
 *** Option A: The Bond Approach (Recommended) Model the cash as a Zero Coupon Bond or a very simple Fixed Rate Bond with a single payment.
 
@@ -26,7 +26,7 @@ Structure: Define a single ~CashFlow~ node with an amount and a date.
 
 Usage: This is the "purest" way to represent a payment. If the payment date is in the past, ORE might ignore it depending on your configuration, so you usually set the ~SettlementDate~ to T+0 (today).
 
-** 2. Suitable Reports Since your goal is to test the workflow, you should enable the most transparent reports:
+** Suitable Reports Since your goal is to test the workflow, you should enable the most transparent reports:
 
 *** NPV Report (~npv.csv~)
 
@@ -44,7 +44,7 @@ It will list the date, amount, and currency of the position.
 
 To ensure your pipeline is working, ORE needs to "see" a discount curve for the currency of your cash. Even if the NPV is simple, ORE will check for a ~YieldCurve~ in your ~todaysmarket.xml~.
 
-** 3. Thoughts on the Workflow Test This approach is excellent for "plumbing" tests because:
+** Thoughts on the Workflow Test This approach is excellent for "plumbing" tests because:
 
 Low Computational Overhead: You won't be debugging convergence issues or Monte Carlo noise.
 
@@ -52,7 +52,7 @@ Data Mapping Focus: Your main challenge will be converting your source data into
 
 Environment Validation: It confirms that your ~ore.xml~, ~pricingengine.xml~, and ~conventions.xml~ are correctly linked.
 
-** 4. Next Steps
+** Next Steps
 
 Create a minimal ~portfolio.xml~ with one ~Bond~ trade representing your cash.
 
@@ -78,7 +78,7 @@ Here is why you still need to provide a curve and how to handle it for your spec
 
 ORE Technical Logic: Why the Curve Still Matters
 
-** 1. The "Pricing Engine" Requirement In ORE, every trade—including a simple ~CashFlow~—is assigned a Pricing Engine.
+** The "Pricing Engine" Requirement In ORE, every trade—including a simple ~CashFlow~—is assigned a Pricing Engine.
 
 Even for a basic cash flow, the engine's job is to calculate NPV=CashAmount×DiscountFactor.
 
@@ -86,7 +86,7 @@ To get that DiscountFactor, the engine must look up a yield curve associated wit
 
 If no curve is found, ORE will throw an error and fail to initialize the trade, even if the math would just be multiplying by 1.
 
-** 2. Controlling the Discounting Since you want the "Historic" or "Face Value" of the cash without interest rate effects, you have two ways to handle this in your configuration:
+** Controlling the Discounting Since you want the "Historic" or "Face Value" of the cash without interest rate effects, you have two ways to handle this in your configuration:
 
 *** A. The "Flat 0%" Curve (Recommended for Testing) You provide a market data file with a yield curve where the rate is 0.0% for all tenors.
 
@@ -98,11 +98,11 @@ It validates that your market data ingestion pipeline is working correctly.
 
 Note: If the cash flow date is in the past (truly "historic"), ORE's default behavior is often to value it at 0 because the payment has already occurred. For a "Bank Balance" test, you usually want to set the date to ~AsOfDate~ or T+1.
 
-** 3. Sample Portfolio Structure (~portfolio.xml~) To support multiple positions per book, your XML would look like this:
+** Sample Portfolio Structure (~portfolio.xml~) To support multiple positions per book, your XML would look like this:
 
 #+BEGIN_SRC xml <Portfolio> <Trade id="Cash_EUR_001"> <TradeType>CashFlow</TradeType> <Envelope> <Counterparty>INTERNAL</Counterparty> <NettingSet>CASH_POOL</NettingSet> <AdditionalFields> <Field name="Book">Treasury_Main</Field> </AdditionalFields> </Envelope> <CashFlowData> <Currency>EUR</Currency> <Amount>1000000</Amount> <Date>2026-01-06</Date> </CashFlowData> </Trade> </Portfolio> #+END_SRC
 
-** 4. Recommended Report: "CashFlow" vs "NPV"
+** Recommended Report: "CashFlow" vs "NPV"
 
 NPV Report: Will give you the total value per book. Since you have multiple positions, you can use the ~NettingSet~ or a custom ~Book~ field in the envelope to see the aggregated totals in the ~npv.csv~.
 
@@ -126,7 +126,7 @@ Even though these positions aren't active derivatives (like an Option or a Swap)
 
 Modeling Accumulated Cash Positions
 
-** 1. Why the "Today" Date is Correct In ORE/QuantLib logic, a cash flow that occurred in the past (e.g., a trade that settled yesterday) has a present value of zero because the payment is no longer "due."
+** Why the "Today" Date is Correct In ORE/QuantLib logic, a cash flow that occurred in the past (e.g., a trade that settled yesterday) has a present value of zero because the payment is no longer "due."
 
 To capture the risk of an accumulated balance in ORE, you should treat the balance as a "Spot" position.
 
@@ -136,7 +136,7 @@ Logic: This tells ORE: "As of today, I have this amount of currency."
 
 Effect: ORE will include the full nominal value of that cash in your NPV. Since it's on the ~AsOfDate~, the discount factor will be 1.0, and the sensitivity to interest rates (Rho) will be zero, but the sensitivity to FX (Delta) will be 1:1.
 
-** 2. Handling FX Sensitivities You mentioned these positions should have FX sensitivity against an aggregation currency. Here is how that flows through ORE:
+** Handling FX Sensitivities You mentioned these positions should have FX sensitivity against an aggregation currency. Here is how that flows through ORE:
 
 Reporting Currency: In your ~ore.xml~, you define a ~BaseCurrency~ (e.g., USD).
 
@@ -146,7 +146,7 @@ The Sensitivity: When you run the ~Sensitivity~ analytic, ORE will "bump" the EU
 
 The Result: Because the EUR cash is valued in USD, the NPV will change when the rate is bumped. This will show up in your ~sensitivity.csv~ as a delta on the FX risk factor.
 
-** 3. Aggregating by Book Since these are accumulated positions, you likely want to see the total risk per "Book" rather than for every individual historic trade.
+** Aggregating by Book Since these are accumulated positions, you likely want to see the total risk per "Book" rather than for every individual historic trade.
 
 Netting: You can group all historic cash for a specific currency and book into a single trade in your ~portfolio.xml~.
 
@@ -154,7 +154,7 @@ Envelopes: Use the ~<Envelope>~ section to tag the position with its original Bo
 
 #+BEGIN_SRC xml <Trade id="Accumulated_EUR_Treasury"> <TradeType>CashFlow</TradeType> <Envelope> <Counterparty>INTERNAL</Counterparty> <AdditionalFields> <Field name="Book">Treasury_Alpha</Field> <Field name="Source">Historic_Ledger</Field> </AdditionalFields> </Envelope> <CashFlowData> <Currency>EUR</Currency> <Amount>5420000.00</Amount> <Date>2026-01-06</Date> </CashFlowData> </Trade> #+END_SRC
 
-** 4. Summary of the Approach | Element | Configuration | | :--- | :--- | | Trade Type | ~CashFlow~ | | Date | Always set to ~AsOfDate~ | | Yield Curve | Still required by the engine, but will result in a multiplier of 1.0. | | FX Rate | Must be provided in ~marketdata.txt~ for the Ccy/BaseCcy pair. | | Sensitivity | Enable ~Sensitivity~ in ~ore.xml~ to see the FX Delta. |
+** Summary of the Approach | Element | Configuration | | :--- | :--- | | Trade Type | ~CashFlow~ | | Date | Always set to ~AsOfDate~ | | Yield Curve | Still required by the engine, but will result in a multiplier of 1.0. | | FX Rate | Must be provided in ~marketdata.txt~ for the Ccy/BaseCcy pair. | | Sensitivity | Enable ~Sensitivity~ in ~ore.xml~ to see the FX Delta. |
 
 This "Spot Cash" approach is the standard way to bridge the gap between a ledger (accounting) and a risk engine (valuation). It ensures your total "Net Open Position" is reflected in your risk metrics.
 
@@ -173,21 +173,21 @@ In ORE, the ~portfolio.xml~ is your primary trade static data file. It is the en
 
 File 1: portfolio.xml
 
-** 1. Structure and Purpose This file contains the "Definition" of your trades. For your historic cash project, we will use the ~CashFlow~ trade type.
+** Structure and Purpose This file contains the "Definition" of your trades. For your historic cash project, we will use the ~CashFlow~ trade type.
 
-** 2. Sample Data: portfolio.xml Here is a minimal example representing two accumulated cash positions in different currencies, belonging to different internal books.
+** Sample Data: portfolio.xml Here is a minimal example representing two accumulated cash positions in different currencies, belonging to different internal books.
 
 #+BEGIN_SRC xml <Portfolio> <Trade id="HIST_CASH_EUR_001"> <TradeType>CashFlow</TradeType> <Envelope> <Counterparty>INTERNAL_TREASURY</Counterparty> <NettingSet>CASH_SETTLE</NettingSet> <AdditionalFields> <Field name="BookID">BOOK_A</Field> <Field name="ExternalSystemID">LEDGER_12345</Field> <Field name="AssetClass">Cash</Field> </AdditionalFields> </Envelope> <CashFlowData> <Currency>EUR</Currency> <Amount>1500000.00</Amount> <Date>2026-01-07</Date> </CashFlowData> </Trade>
 
 <Trade id="HIST_CASH_GBP_001"> <TradeType>CashFlow</TradeType> <Envelope> <Counterparty>INTERNAL_TREASURY</Counterparty> <NettingSet>CASH_SETTLE</NettingSet> <AdditionalFields> <Field name="BookID">BOOK_B</Field> <Field name="ExternalSystemID">LEDGER_67890</Field> </AdditionalFields> </Envelope> <CashFlowData> <Currency>GBP</Currency> <Amount>850000.00</Amount> <Date>2026-01-07</Date> </CashFlowData> </Trade> </Portfolio> #+END_SRC
 
-** 3. Custom Fields: Binding to Your System You asked if you can add any fields: Yes, via the ~<AdditionalFields>~ node.
+** Custom Fields: Binding to Your System You asked if you can add any fields: Yes, via the ~<AdditionalFields>~ node.
 
 Flexibility: You can add as many ~<Field name="YourName">Value</Field>~ entries as you like.
 
 Reporting: These fields are "carried through" the engine. When ORE generates the ~npv.csv~ output, it includes columns for these additional fields. This makes it incredibly easy to join ORE's risk results back to your own database or BI tool using your ~ExternalSystemID~ or ~BookID~.
 
-** 4. Counterparties in ORE Regarding the domain type for counterparties:
+** Counterparties in ORE Regarding the domain type for counterparties:
 
 String Identifiers: ORE treats counterparties primarily as string identifiers. There isn't a "hard" domain list (like an Enum) in the engine itself; it will accept any string you provide.
 
@@ -195,7 +195,7 @@ The NettingSet Logic: The ~Counterparty~ and ~NettingSet~ fields are used by the
 
 For your use case: Since you are modeling historic cash (likely internal balances), you can use a placeholder like ~INTERNAL~ or ~SELF~. ORE won't complain unless you explicitly ask it to calculate credit risk for that specific string name.
 
-** 5. Key Rules for CashFlow Trades
+** Key Rules for CashFlow Trades
 
 One Currency per Trade: A ~CashFlow~ trade type supports a single amount and currency. If you have 10 currencies in a book, you'll need 10 ~<Trade>~ entries (or 10 cashflow nodes if using the complex version, but separate trades are cleaner for your "trivial example").
 
@@ -211,9 +211,9 @@ For your historic cash example, this file is what links your EUR cash flow to a 
 
 File 2: todaysmarket.xml
 
-** 1. Structure and Purpose This file is organized into <Configuration> blocks. You usually have one called default. Inside, you map risk factors (like Yield or FX) to specific IDs.
+** Structure and Purpose This file is organized into <Configuration> blocks. You usually have one called default. Inside, you map risk factors (like Yield or FX) to specific IDs.
 
-** 2. Sample Data: todaysmarket.xml Since you are tracking cash in EUR and GBP (with USD as your likely base/aggregation currency), your file should look like this:
+** Sample Data: todaysmarket.xml Since you are tracking cash in EUR and GBP (with USD as your likely base/aggregation currency), your file should look like this:
 
 #+BEGIN_SRC xml <TodaysMarket> <Configuration id="default">
 
@@ -235,7 +235,7 @@ File 2: todaysmarket.xml
 </FxSpots>
 </Configuration> </TodaysMarket> #+END_SRC
 
-** 3. Key Concepts in this File
+** Key Concepts in this File
 
 *** The Naming Convention You'll notice strings like Yield/EUR/EUR-ZERO. These are Keys.
 
@@ -247,7 +247,7 @@ You can name them anything, but the Type/CCY/Name format is the ORE standard.
 
 *** FX Spot Logic The <FxSpots> section is vital for your goal of FX sensitivity. By mapping EURUSD to FX/RATE/EUR/USD, you are telling ORE: "Whenever you see EUR cash and need to report in USD, go find this rate in the market data file."
 
-** 4. Interaction with portfolio.xml When ORE loads the trade we created earlier:
+** Interaction with portfolio.xml When ORE loads the trade we created earlier:
 
 It sees the trade is in EUR.
 
@@ -265,7 +265,7 @@ Building a internal C++ representation first is a great way to ensure your syste
 
 C++ Data Structures for Historic Cash & Market Mapping
 
-** 1. The Core Trade Entity For your system, you likely want a base trade structure that can hold the "Common" ORE fields (the Envelope) and specific data for the ~CashFlow~.
+** The Core Trade Entity For your system, you likely want a base trade structure that can hold the "Common" ORE fields (the Envelope) and specific data for the ~CashFlow~.
 
 #+BEGIN_SRC cpp #include <string> #include <vector> #include <optional>
 
@@ -273,7 +273,7 @@ C++ Data Structures for Historic Cash & Market Mapping
 
 // The specific data for a Cash Position struct CashPosition { TradeMetadata meta; std::string currency; // e.g., "EUR" double amount; // e.g., 1500000.00 std::string settleDate; // ISO 8601: "2026-01-07" }; #+END_SRC
 
-** 2. The Market Configuration (todaysmarket.xml) To model the mapping logic in your system, you need a way to track how a Currency relates to specific Market Strings.
+** The Market Configuration (todaysmarket.xml) To model the mapping logic in your system, you need a way to track how a Currency relates to specific Market Strings.
 
 #+BEGIN_SRC cpp struct MarketMapping { std::string currency; std::string yieldCurveNames; // e.g., "Yield/EUR/EUR-ZERO" std::string discountingCurveName; // e.g., "Yield/EUR/EUR-ZERO" };
 
@@ -281,13 +281,13 @@ struct FxMapping { std::string sourceCcy; // e.g., "EUR" std::string targetCcy; 
 
 struct TodaysMarketConfig { std::string configId = "default"; std::vector<MarketMapping> yieldMappings; std::vector<FxMapping> fxMappings; }; #+END_SRC
 
-** 3. Thoughts on Database Schema If you are translating these structs into tables, here is a suggested layout:
+** Thoughts on Database Schema If you are translating these structs into tables, here is a suggested layout:
 
 Table	Key Columns	Purpose
 Trades	TradeID (PK), Counterparty, BookID, SettleDate	Header info for all trades.
 Cash_Positions	TradeID (FK), Currency, Amount	Specifics for the cash flow.
 Market_Maps	Currency, CurveName, ConfigID	To generate todaysmarket.xml.
-** 4. Why use std::string for dates? While ORE/QuantLib uses a Date object internally, for your system's data transfer layer, keeping dates as ISO 8601 Strings (YYYY-MM-DD) is highly recommended. It prevents time-zone "jitter" and is the native format ORE expects in its XML.
+** Why use std::string for dates? While ORE/QuantLib uses a Date object internally, for your system's data transfer layer, keeping dates as ISO 8601 Strings (YYYY-MM-DD) is highly recommended. It prevents time-zone "jitter" and is the native format ORE expects in its XML.
 
 Next Step: Now that we have a C++ sketch, would you like to see how these structs translate into the marketdata.txt (the CSV-like file) where the actual prices live? This is what your C++ system would need to export to make ORE "run."
 
@@ -301,7 +301,7 @@ Here is a refined domain model using higher-level abstractions.
 
 Refined Domain Model: ORE Entities
 
-** 1. The Core Abstractions We can break the system down into three main pillars:
+** The Core Abstractions We can break the system down into three main pillars:
 
 Trade/Deal: The high-level container (ID, Book, Counterparty).
 
@@ -311,7 +311,7 @@ Market Factor: The actual data point (a quote or a curve).
 
 Market Map (Configuration): The logic that says "To price instrument X, look for market factor Y."
 
-** 2. C++ Domain Objects
+** C++ Domain Objects
 
 #+BEGIN_SRC cpp #include <string> #include <vector> #include <memory>
 
@@ -335,7 +335,7 @@ std::vector<std::pair<std::string, std::string>> attributes;
 
 // --------------------------------------------------------- // 4. MARKET RESOLVER: The Mapping logic // --------------------------------------------------------- struct MarketMap { // Maps a Currency/RiskFactor to a MarketDataItem Key // This is essentially what 'todaysmarket.xml' represents. std::string factorName; // e.g., "EUR_Discount_Curve" std::string marketItemKey; // e.g., "Yield/EUR/EUR-ZERO" }; #+END_SRC
 
-** 3. Clarifying the Mappings The confusion usually stems from the "Double Indirection" ORE uses. Let's define the terms:
+** Clarifying the Mappings The confusion usually stems from the "Double Indirection" ORE uses. Let's define the terms:
 
 Market Item Key: The global unique ID for a piece of data (e.g., FX/RATE/EUR/USD).
 
@@ -345,7 +345,7 @@ Resolver/Map: The link between the two.
 
 Why this matters for your "Historic Cash" example: Your system will have many CashFlowInstruments. Instead of hardcoding "EUR-ZERO" into every trade, the trades just say "I am in EUR." Your Market Resolver then looks at a central configuration and says: "For all EUR instruments, use the market item 'Yield/EUR/EUR-ZERO' for discounting."
 
-** 4. Summary Table for your DB/System
+** Summary Table for your DB/System
 
 Domain Term	ORE Equivalent	System Responsibility
 Deal	Trade + Envelope	Storage of IDs, Books, and Legal Entity info.
@@ -364,13 +364,13 @@ Here is how to evolve the domain model to support curves while keeping the termi
 
 Advanced Domain Model: Market Data Tensors
 
-** 1. Market Quotes vs. Market Objects Instead of a single scalar, we should think of Market Quotes as the building blocks for Market Objects (like Curves).
+** Market Quotes vs. Market Objects Instead of a single scalar, we should think of Market Quotes as the building blocks for Market Objects (like Curves).
 
 Market Quote (Scalar): A single observable point (e.g., a 6M EURIBOR rate or a 10Y Swap rate).
 
 Market Object (Tensor): A collection of quotes that define a structure (e.g., a Yield Curve).
 
-** 2. Refined C++ Structs We can model this by allowing a "Market Item" to be either a single value or a collection keyed by Tenor (time).
+** Refined C++ Structs We can model this by allowing a "Market Item" to be either a single value or a collection keyed by Tenor (time).
 
 #+BEGIN_SRC cpp #include <map> #include <string>
 
@@ -384,7 +384,7 @@ std::map<std::string, MarketQuote> termStructure;
 
 // The "Reference": How we map a trade to a specific curve struct MarketReference { std::string qualifier; // e.g., "Discounting", "Forwarding" std::string objectId; // Points to a MarketCurve::curveId }; #+END_SRC
 
-** 3. How ORE Handles the Tensor You do not bind the trade to a specific point in the curve. Instead:
+** How ORE Handles the Tensor You do not bind the trade to a specific point in the curve. Instead:
 
 The Trade points to a Currency (EUR).
 
@@ -394,7 +394,7 @@ The Engine (QuantLib) looks into the market data file and collects all quotes st
 
 The Bootstrapper interpolates between those points (e.g., 1M, 2M, 5Y) to find the exact discount factor for your specific cash flow date.
 
-** 4. Supporting Your Trivial Example For your "Historic Cash" test, your "Curve Tensor" will be very simple. Even though it's a tensor, it might only have one point:
+** Supporting Your Trivial Example For your "Historic Cash" test, your "Curve Tensor" will be very simple. Even though it's a tensor, it might only have one point:
 
 Quote Key: Yield/EUR/EUR-ZERO/10Y
 
@@ -402,7 +402,7 @@ Value: 0.0
 
 By providing a 0% quote at a 10Y tenor, ORE’s "Flat Forward" or "Linear" interpolation will treat the entire curve as 0% for any date between today and 10 years out.
 
-** 5. Summary of the Mapping Hierarchy
+** Summary of the Mapping Hierarchy
 
 Layer	Entity	Data Type	ORE Equivalent
 Trade	CashFlowInstrument	Scalar (Amount)	portfolio.xml
@@ -417,7 +417,7 @@ To move toward a professional, high-performance C++ implementation, we should ad
 
 Domain Model: High-Performance Term Structures
 
-** 1. Architectural Strategy To ensure efficiency when scaling to thousands of curves:
+** Architectural Strategy To ensure efficiency when scaling to thousands of curves:
 
 Contiguous Memory: Use std::vector instead of std::map for the points within a Term Structure to improve cache locality.
 
@@ -425,7 +425,7 @@ String Interning / Hashing: Avoid passing raw strings for "EUR-ZERO" or "10Y" du
 
 Flat Market Data: Store the "Atoms" (Quotes) in a flat, searchable structure.
 
-** 2. Optimized C++ Structs
+** Optimized C++ Structs
 
 #+BEGIN_SRC cpp #include <vector> #include <string> #include <algorithm>
 
@@ -445,7 +445,7 @@ void sortPoints() {
 
 public: const TermStructure* getYieldCurve(uint32_t curveId) const; double getFxSpot(uint32_t fxPairId) const; }; #+END_SRC
 
-** 3. Handling Efficiency at Scale
+** Handling Efficiency at Scale
 
 *** Memory Layout By using std::vector<RatePoint>, all the quotes for a specific TermStructure are stored side-by-side in memory. When the engine interpolates between a 1Y and 2Y rate, the CPU doesn't have to jump to a different memory page to find the second value.
 
@@ -455,13 +455,13 @@ Approach: Perform the "6M" → 0.5 conversion once during data ingestion.
 
 Store the floating-point tenorInYears so the math during valuation is purely numerical.
 
-** 4. Domain Mapping with Term Structures In ORE, the todaysmarket.xml is effectively a Registry. Your system should reflect this:
+** Domain Mapping with Term Structures In ORE, the todaysmarket.xml is effectively a Registry. Your system should reflect this:
 
 Term	Domain Concept	Efficiency Optimization
 Market Object	TermStructure	Packed std::vector of POD (Plain Old Data).
 Market Map	Registry	Hash-map of CcyID → TermStructureIndex.
 Market Item	Quote	Float/Double primitives stored in the structure.
-** 5. Why this works for your Historic Cash Test Even if you only have one "0%" rate, this architecture allows you to scale. When you move from 10 cash positions to 100,000 trades with complex volatility surfaces, the MarketState remains a compact, index-based lookup system.
+** Why this works for your Historic Cash Test Even if you only have one "0%" rate, this architecture allows you to scale. When you move from 10 cash positions to 100,000 trades with complex volatility surfaces, the MarketState remains a compact, index-based lookup system.
 
 Next Step: Should we move to the marketdata.txt? This file is the bridge between your high-performance C++ MarketState and the ORE engine's input requirement.
 
@@ -548,33 +548,33 @@ Here is how we close the loop by looking at the actual data that ORE needs to se
 
 File 3: marketdata.txt (The Serialized Snapshot)
 
-** 1. Structure and Purpose The marketdata.txt file is a flat CSV-style file. If your MarketSnapshot is the C++ memory representation, this file is its disk-based manifestation. ORE reads this to populate its internal curves.
+** Structure and Purpose The marketdata.txt file is a flat CSV-style file. If your MarketSnapshot is the C++ memory representation, this file is its disk-based manifestation. ORE reads this to populate its internal curves.
 
-** 2. Sample Data for Historic Cash To support your EUR and GBP positions with a USD base currency, your system would export the following (assuming an AsOfDate of 2026-01-07):
+** Sample Data for Historic Cash To support your EUR and GBP positions with a USD base currency, your system would export the following (assuming an AsOfDate of 2026-01-07):
 
 #+BEGIN_SRC text
 
 Date TermStructure_Key Value
 2026-01-07 FX/RATE/EUR/USD 1.0945 2026-01-07 FX/RATE/GBP/USD 1.2720 2026-01-07 Yield/EUR/EUR-ZERO/10Y 0.0000 2026-01-07 Yield/GBP/GBP-ZERO/10Y 0.0000 2026-01-07 Yield/USD/USD-ZERO/10Y 0.0000 #+END_SRC
 
-** 3. Linking C++ to the File Your MarketSnapshot logic would handle the export like this:
+** Linking C++ to the File Your MarketSnapshot logic would handle the export like this:
 
 C++ Component	marketdata.txt Mapping	Note
 AsOfDate	Column 1	All rows share the same date.
 TermStructure::label	Column 2 (Prefix)	e.g., Yield/EUR/EUR-ZERO
 MarketPoint::tenor	Column 2 (Suffix)	Appended after the label: /10Y
 MarketPoint::value	Column 3	The raw double.
-** 4. Why the "10Y" for a 0% Curve? Even if you want no discounting, ORE's bootstrapper needs at least one point to anchor the Term Structure.
+** Why the "10Y" for a 0% Curve? Even if you want no discounting, ORE's bootstrapper needs at least one point to anchor the Term Structure.
 
 By providing a 10Y point at 0.0, ORE creates a flat line from Day 0 to Year 10.
 
 Since your historic cash positions are set to the AsOfDate, ORE will look at the very beginning of this curve, find 0.0, and calculate a DiscountFactor=1.0.
 
-** 5. C++ Snapshot Export Logic Here is a conceptual look at how your MarketSnapshot translates its internal "Tensors" into ORE's expected "Atoms":
+** C++ Snapshot Export Logic Here is a conceptual look at how your MarketSnapshot translates its internal "Tensors" into ORE's expected "Atoms":
 
 #+BEGIN_SRC cpp void exportToORE(const MarketSnapshot& snapshot, std::ostream& out) { for (const auto& [label, ts] : snapshot.getStructures()) { for (const auto& point : ts.points) { out << snapshot.asOfDate() << " " << label; if (ts.type == TermStructure::Type::Yield) { out << "/" << point.tenor; // Yields need a tenor } out << " " << point.value << "\n"; } } } #+END_SRC
 
-** 6. Observations on Temporal Patterns Since you mentioned temporal patterns:
+** Observations on Temporal Patterns Since you mentioned temporal patterns:
 
 Versioning: You can store multiple MarketSnapshot objects in your system, each representing a different "Time Slice" or "Scenario."
 
@@ -590,7 +590,7 @@ In ORE (and the broader industry), there isn't one single "global" URN standard,
 
 Market Data as a Resource: URN & Resolution
 
-** 1. The Two Layers of Addressing To borrow from your DNS analogy, we can split the market data identification into two distinct layers:
+** The Two Layers of Addressing To borrow from your DNS analogy, we can split the market data identification into two distinct layers:
 
 *** A. The Logical Resource (The URN) This is the "Abstract Address." It defines what the instrument needs without knowing where the data comes from.
 
@@ -604,16 +604,16 @@ Notation Example: yield/eur/eur-eonia-zero or yield/eur/eurib-6m-curve
 
 Purpose: This identifies the specific Term Structure (the tensor) in your database or market data file.
 
-** 2. The Resolver (The DNS Role) The Registry acts as the Resolver. It maps the URN to the Concrete ID based on the "Context" (e.g., the date, the business unit, or the risk scenario).
+** The Resolver (The DNS Role) The Registry acts as the Resolver. It maps the URN to the Concrete ID based on the "Context" (e.g., the date, the business unit, or the risk scenario).
 
-** 3. Proposed URN Notation for your System Using URN principles makes your C++ code highly readable and allows for easy string-based lookups.
+** Proposed URN Notation for your System Using URN principles makes your C++ code highly readable and allows for easy string-based lookups.
 
 URN Part	Segment	Description
 Scheme	urn:market	Identifies this as a market data resource.
 Class	yield, fx, vol	The type of the Term Structure.
 Qualifier	eur, gbp, eurusd	The currency or pair.
 Instance	discount, forward-6m	The specific role the resource plays.
-** 4. C++ Implementation with Resolver Pattern
+** C++ Implementation with Resolver Pattern
 
 By using a Resolver class, you decouple your trades from your market data.
 
@@ -634,7 +634,7 @@ MarketLocator resolve(const MarketURN& urn) const {
 }
 }; #+END_SRC
 
-** 5. Why this is superior for Historic Cash
+** Why this is superior for Historic Cash
 
 Abstraction: Your CashFlow trade doesn't need to know that your 0% curve is named "EUR-ZERO." It just asks for urn:market:yield:eur:discount.
 
@@ -642,7 +642,7 @@ Dynamic Switching: If you decide later to use a real EUR curve instead of a 0% c
 
 Temporal Consistency: Since your MarketSnapshot contains the concrete data, and your MarketResolver contains the map, you can store both together to perfectly recreate the "World State" for any past date.
 
-** 6. Existing Industry Standards While there is no "Official URN RFC" for market data, there are two common frameworks:
+** Existing Industry Standards While there is no "Official URN RFC" for market data, there are two common frameworks:
 
 FpML (Financial products Markup Language): Uses a similar scheme for identifying "Business Centers" and "Floating Rate Indexes."
 
@@ -658,13 +658,13 @@ The distinction between "Abstract" and "Concrete" is essentially a distinction b
 
 URN Architecture: Abstract vs. Concrete
 
-** 1. Defining the Namespace To distinguish them, we can use a "Sub-Namespace" or "Category" within the URN NID (Namespace Identifier).
+** Defining the Namespace To distinguish them, we can use a "Sub-Namespace" or "Category" within the URN NID (Namespace Identifier).
 
 Abstract URNs (The "What"): These describe the role the data plays in a valuation.
 
 Concrete URNs (The "How"): These describe the source or the specific instance of the data.
 
-** 2. Suggested Notation
+** Suggested Notation
 
 Type	Structure	Example
 Abstract	urn:market:req:<ccy>:<role>	urn:market:req:eur:discount
@@ -677,7 +677,7 @@ The MarketSnapshot contains Concrete URNs (src).
 
 The MarketResolver maps req → src.
 
-** 3. How do we know which is which? In C++, you can handle this through Type Safety or Naming Conventions.
+** How do we know which is which? In C++, you can handle this through Type Safety or Naming Conventions.
 
 *** Option A: The "Discriminator" Field (Metadata) Add a property to your TermStructure or MarketPoint that explicitly defines its "Resolution Level."
 
@@ -700,7 +700,7 @@ The Portfolio is a container of needs (Abstract).
 
 The Resolution is the bridge.
 
-** 4. The Resolution Workflow for Historic Cash
+** The Resolution Workflow for Historic Cash
 
 The Deal: "I have a EUR CashFlow. I need urn:market:req:eur:discount."
 
@@ -710,9 +710,9 @@ The Snapshot: "Searching my tensor storage... I found urn:market:src:internal:eu
 
 The Engine: Calculates NPV using that value.
 
-** 5. Why this is powerful for temporal patterns If you are looking at Historic Cash from 2024, you can keep the Abstract URN the same, but the Resolver will point to a different Concrete URN (e.g., urn:market:src:internal:eur-historic-2024) representing the rates that actually existed then.
+** Why this is powerful for temporal patterns If you are looking at Historic Cash from 2024, you can keep the Abstract URN the same, but the Resolver will point to a different Concrete URN (e.g., urn:market:src:internal:eur-historic-2024) representing the rates that actually existed then.
 
-** 6. Summary of Terms
+** Summary of Terms
 
 Concept	URN Category	ORE File Equivalent
 Requirement	urn:market:req:...	todaysmarket.xml (Keys)
@@ -730,14 +730,14 @@ To address the opacity of req and src, we can adopt terms that describe the Life
 
 Market Data URIs: Logical vs. Physical
 
-** 1. Refined Naming Convention Instead of "req" and "src", let's use terms that imply intent vs. manifestation.
+** Refined Naming Convention Instead of "req" and "src", let's use terms that imply intent vs. manifestation.
 
 Type	URI Segment	Domain Meaning	Example
 Logical	logical	The intended role in a valuation.	mkt://logical/yield/eur/discounting
 Physical	physical	The specific instance of data found in a snapshot.	mkt://physical/curve/internal/eur-zero-flat
 By using mkt (or your system's name) as the scheme, boost::url can parse these instantly.
 
-** 2. C++ Implementation with boost::url boost::url_view allows you to inspect these URIs without allocating new strings, which maintains the efficiency we discussed for your MarketSnapshot.
+** C++ Implementation with boost::url boost::url_view allows you to inspect these URIs without allocating new strings, which maintains the efficiency we discussed for your MarketSnapshot.
 
 #+BEGIN_SRC cpp #include <boost/url.hpp> #include <iostream>
 
@@ -759,7 +759,7 @@ static std::string_view get_currency(const boost::urls::url_view& url) {
 }
 }; #+END_SRC
 
-** 3. The Resolver as a "Router" Using URLs turns your Registry into a router.
+** The Resolver as a "Router" Using URLs turns your Registry into a router.
 
 The Trade requests a resource at a logical URL.
 
@@ -767,7 +767,7 @@ The Resolver maps that logical URL to a physical URL.
 
 The MarketSnapshot is a collection of resources indexed by their physical URLs.
 
-** 4. Why URLs are better for Temporal Patterns Because URLs support Query Parameters, you can encode temporal or versioning metadata directly into the Physical URL without breaking the primary path.
+** Why URLs are better for Temporal Patterns Because URLs support Query Parameters, you can encode temporal or versioning metadata directly into the Physical URL without breaking the primary path.
 
 Logical: mkt://logical/yield/eur/discounting
 
@@ -775,7 +775,7 @@ Physical (Live): mkt://physical/curve/internal/eur-zero-flat?version=latest
 
 Physical (Historic): mkt://physical/curve/internal/eur-zero-flat?asof=2024-01-01&source_id=102
 
-** 5. Applying to the ORE Workflow This architecture maps perfectly to ORE's configuration files:
+** Applying to the ORE Workflow This architecture maps perfectly to ORE's configuration files:
 
 portfolio.xml: The trade points to a logical URL.
 
@@ -783,7 +783,7 @@ todaysmarket.xml: This is your "Route Table" mapping logical → physical.
 
 marketdata.txt: This is the serialized dump of all resources found at the physical URLs.
 
-** 6. Closing the Loop: pricingengine.xml Now that we have the "Wiring" (URIs) and the "Data" (Snapshot), ORE needs to know which math library to invoke.
+** Closing the Loop: pricingengine.xml Now that we have the "Wiring" (URIs) and the "Data" (Snapshot), ORE needs to know which math library to invoke.
 
 For your Historic Cash (CashFlow trade type), the pricingengine.xml is very simple. It tells ORE: "For any trade of type CashFlow, use the DiscountingCashFlowEngine."
 
@@ -801,13 +801,13 @@ By applying this "Logical vs. Physical" duality across the entire stack, you mov
 
 The Universal Resource Pattern: Deal, Engine, and Market
 
-** 1. The Deal: Always Physical You are correct—a Deal is an immutable physical event (e.g., "I held 1M EUR on 2026-01-07").
+** The Deal: Always Physical You are correct—a Deal is an immutable physical event (e.g., "I held 1M EUR on 2026-01-07").
 
 Physical URI: mkt://physical/deal/ledger_001/hist_cash_eur
 
 Data: Contains the fixed economics (Currency, Amount, Date).
 
-** 2. The Pricing Engine: Logical Mapping The "Mapping" you suspected for engines is exactly how ORE operates. A Trade Type (like CashFlow) is a Logical Interface. The Pricing Engine is the Physical Implementation.
+** The Pricing Engine: Logical Mapping The "Mapping" you suspected for engines is exactly how ORE operates. A Trade Type (like CashFlow) is a Logical Interface. The Pricing Engine is the Physical Implementation.
 
 Logical Engine URI: val://logical/engine/cashflow
 
@@ -815,13 +815,13 @@ Physical Engine URI: val://physical/engine/quantlib/discounting_cash_flow_engine
 
 The "Mapping" happens in pricingengine.xml. This allows you to say: "For this risk run, map the logical cashflow engine to a discounting engine; but for a different run, map it to an accrual engine."
 
-** 3. The Trinity of Valuation We can now define the three pillars of your system using the same URL-based resolution pattern:
+** The Trinity of Valuation We can now define the three pillars of your system using the same URL-based resolution pattern:
 
 Pillar	Physical Entity (The "What")	Logical Requirement (The "Role")
 Market	mkt://physical/curve/eur-zero	mkt://logical/yield/eur/discounting
 Trade	mkt://physical/deal/12345	val://logical/product/cashflow
 Engine	val://physical/lib/ql/disc_engine	val://logical/valuation/standard
-** 4. The Resolver as the "Context" This is the "Temporal Pattern" you mentioned earlier. A MarketSnapshot isn't just data; it's a Resolution Context.
+** The Resolver as the "Context" This is the "Temporal Pattern" you mentioned earlier. A MarketSnapshot isn't just data; it's a Resolution Context.
 
 When you run ORE for a historic date, you load a Resolution Context that says:
 
@@ -829,13 +829,13 @@ Map logical/yield/eur/discounting → physical/curve/2024_01_01/eur_eonia.
 
 Map logical/valuation/standard → physical/engine/quantlib/discounting.
 
-** 5. C++ Architecture: The Valuation Request In your system, a "Valuation Task" becomes a set of URIs:
+** C++ Architecture: The Valuation Request In your system, a "Valuation Task" becomes a set of URIs:
 
 #+BEGIN_SRC cpp struct ValuationTask { boost::urls::url deal_url; // physical/deal/123 boost::urls::url engine_url; // logical/engine/cashflow boost::urls::url context_url; // logical/context/historic_risk }; #+END_SRC
 
 This is incredibly efficient. To run the same trade through 10 different scenarios (e.g., "What if I used a different curve?"), you keep the deal_url fixed and just swap the context_url.
 
-** 6. Why this "Historic Cash" example is no longer trivial Even though the math is just NPV=Cash, you have built a Generic Valuation Router.
+** Why this "Historic Cash" example is no longer trivial Even though the math is just NPV=Cash, you have built a Generic Valuation Router.
 
 To ORE, you will provide a portfolio.xml where the trade points to these logical requirements.
 
@@ -861,13 +861,13 @@ Here is the updated brainstorm, applying the ores:// scheme to the entire stack:
 
 The ORE Protocol: ores:// Resource Architecture
 
-** 1. Unified URI Design By using specific paths for different resource types, we can maintain the "Logical vs. Physical" distinction while keeping the scheme consistent.
+** Unified URI Design By using specific paths for different resource types, we can maintain the "Logical vs. Physical" distinction while keeping the scheme consistent.
 
 Category	URI Pattern	Logical (Abstract Role)	Physical (Concrete Instance)
 Trades	ores://trade/...	ores://trade/type/cashflow	ores://trade/inst/ledger_001/eur_cash
 Market	ores://market/...	ores://market/logical/yield/eur/discount	ores://market/physical/curve/internal/zero_flat
 Engines	ores://engine/...	ores://engine/logical/discounting	ores://engine/physical/ql/discounting_cashflow
-** 2. C++ Implementation with Boost.URL With boost::url, you can easily switch resolution logic based on the "host" part of the URI (logical vs. physical).
+** C++ Implementation with Boost.URL With boost::url, you can easily switch resolution logic based on the "host" part of the URI (logical vs. physical).
 
 #+BEGIN_SRC cpp #include <boost/url.hpp> #include <string_view>
 
@@ -884,7 +884,7 @@ static std::string_view get_asset_class(boost::urls::url_view u) {
 }
 }; #+END_SRC
 
-** 3. Mapping Deals to Engines As you suggested, the Trade Type is the logical view. When your system prepares a "Historic Cash" position for ORE, it performs a double-resolution:
+** Mapping Deals to Engines As you suggested, the Trade Type is the logical view. When your system prepares a "Historic Cash" position for ORE, it performs a double-resolution:
 
 Trade Instance (ores://trade/inst/123) is of Logical Type (ores://trade/type/cashflow).
 
@@ -892,13 +892,13 @@ The Registry maps ores://trade/type/cashflow → ores://engine/logical/discounti
 
 The Valuation Context (the ORE config) maps ores://engine/logical/discounting → ores://engine/physical/ql/discounting_cashflow.
 
-** 4. The Resolver as a "Resource Linker" In your C++ system, you can model the ORE configuration files as Linker Tables.
+** The Resolver as a "Resource Linker" In your C++ system, you can model the ORE configuration files as Linker Tables.
 
 *** The Market Linker (todaysmarket.xml) | Logical URI (The Requirement) | Physical URI (The Source) | | :--- | :--- | | ores://market/logical/yield/EUR/discount | ores://market/physical/curve/EUR-ZERO |
 
 *** The Engine Linker (pricingengine.xml) | Logical Product URI | Physical Engine URI | | :--- | :--- | | ores://trade/type/cashflow | ores://engine/physical/ql/discounting_cf |
 
-** 5. Why this works for Historic Cash When you process your "Historic Cash" example:
+** Why this works for Historic Cash When you process your "Historic Cash" example:
 
 Your Physical Trade (ores://trade/inst/EUR_BAL_001) has a date in the past.
 
@@ -906,7 +906,7 @@ The Logical Engine (ores://engine/logical/discounting) is told to "PreserveValue
 
 The Physical Market (ores://market/physical/curve/EUR-ZERO) provides the 0% anchor.
 
-** 6. Temporal Versioning with Query Parameters Since these are now full URLs, your temporal patterns become metadata.
+** Temporal Versioning with Query Parameters Since these are now full URLs, your temporal patterns become metadata.
 
 ores://market/physical/curve/EUR-ZERO?asof=2026-01-10&version=2
 
@@ -935,17 +935,17 @@ Here is how you can handle this without creating a messy URL-to-URL mapping.
 
 Resource Resolution and Grid Orchestration
 
-** 1. The "Valuation Manifest" Approach Instead of making the grid node "browse" the web, you send a single JSON Manifest to the HTTP endpoint (the worker). This manifest acts as the "Instruction Manual" for the task.
+** The "Valuation Manifest" Approach Instead of making the grid node "browse" the web, you send a single JSON Manifest to the HTTP endpoint (the worker). This manifest acts as the "Instruction Manual" for the task.
 
 Content: The JSON contains the list of all ores:// URIs required for the calculation.
 
 Resolution: The worker node receives the JSON, looks at the ores:// URIs, and asks a central Resource Coordinator (via a single HTTP POST) for the payload.
 
-** 2. Manifest Structure Your JSON document would act as the bridge between the logical request and the physical data.
+** Manifest Structure Your JSON document would act as the bridge between the logical request and the physical data.
 
 #+BEGIN_SRC json { "task_id": "val_2026_01_10_001", "as_of_date": "2026-01-10", "resources": { "trades": [ "ores://trade/physical/inst/ledger_001/eur_cash_01", "ores://trade/physical/inst/ledger_001/gbp_cash_01" ], "market": [ "ores://market/physical/curve/internal/eur-zero", "ores://market/physical/fx/eurusd-spot" ], "logic": { "ores://market/logical/yield/EUR/discount": "ores://market/physical/curve/internal/eur-zero", "ores://trade/type/cashflow": "ores://engine/physical/ql/discounting_cf" } } } #+END_SRC
 
-** 3. Avoiding the HTTP URL Mess You don't need to transform ores://market/physical/curve/eur-zero into http://server/api/curves/eur-zero.
+** Avoiding the HTTP URL Mess You don't need to transform ores://market/physical/curve/eur-zero into http://server/api/curves/eur-zero.
 
 Instead, use a Blob Store Pattern:
 
@@ -961,7 +961,7 @@ Body: ["ores://market/physical/curve/internal/eur-zero", ...]
 
 The Data Service returns a Multipart/Related or a ZIP/Protobuf stream containing the actual data for those URIs.
 
-** 4. Building ORE Inputs "On the Fly" Once the Worker node has the Manifest and the downloaded data:
+** Building ORE Inputs "On the Fly" Once the Worker node has the Manifest and the downloaded data:
 
 portfolio.xml: Generated by iterating over the trades resources.
 
@@ -969,7 +969,7 @@ todaysmarket.xml: Generated by looking at the logic section of the JSON.
 
 marketdata.txt: Generated by flattening the market resources.
 
-** 5. Why this is better than HTTP Mapping
+** Why this is better than HTTP Mapping
 
 Batching: You don't make 1,000 HTTP calls for 1,000 curves. You make one call for the entire batch of ores:// resources.
 
@@ -977,7 +977,7 @@ Security: You don't expose individual market data items as public URLs. The ores
 
 Immutability: The Manifest creates a "Closed World." Even if the market data changes in the database 5 seconds later, the Worker node is locked into the specific versions defined in the Manifest.
 
-** 6. Dealing with the "Grid Engine" Logic Your Grid Engine (the orchestrator) is the only one that needs to know "where" the data is.
+** Dealing with the "Grid Engine" Logic Your Grid Engine (the orchestrator) is the only one that needs to know "where" the data is.
 
 It translates the user's high-level request into the Physical Manifest.
 
@@ -1209,7 +1209,7 @@ Here is a refined version of your conceptual model, addressing some minor incons
 
 Conceptual Domain Model: ORE-Integration Requirements
 
-** 1. Refined Taxonomy: Priceables We clarify the distinction between the "Event" and the "State."
+** Refined Taxonomy: Priceables We clarify the distinction between the "Event" and the "State."
 
 Priceable: Anything that can be assigned a value.
 
@@ -1219,7 +1219,7 @@ Position: A point-in-time snapshot of an asset. For Historic Cash, the Position 
 
 Instrument: The "Economic DNA." A Trade contains an Instrument. A Position is defined by an Instrument.
 
-** 2. The Functional Pipeline (MOF Mapping) The primary inconsistency in the original draft was at the M0 (Instance) level. In a risk system, M0 shouldn't just repeat M1; M0 is where Temporal Context and Specific Identity are injected.
+** The Functional Pipeline (MOF Mapping) The primary inconsistency in the original draft was at the M0 (Instance) level. In a risk system, M0 shouldn't just repeat M1; M0 is where Temporal Context and Specific Identity are injected.
 
 Layer	Domain Term	Description	Requirements Function Output
 M2	Meta-Family	The Instrument Class (e.g., Cashflow).	A set of Abstract Types (e.g., "Yield Curve").
@@ -1243,7 +1243,7 @@ n
 
  ."
 
-** 3. Formalizing the Functional Chain To make this documentable for implementation, we define the chain as follows:
+** Formalizing the Functional Chain To make this documentable for implementation, we define the chain as follows:
 
 Requirement Mapping (M
 1
@@ -1299,7 +1299,7 @@ n
 
  .
 
-** 4. Key Improvements and Redundancy Removal
+** Key Improvements and Redundancy Removal
 
 *** A. Decoupling Time Point (T
 n
@@ -1331,7 +1331,7 @@ n
 
   of the historic cash to "Now," ensuring the ORE engine sees it as an immediate NPV.
 
-** 5. Summary Table for Implementation Requirements
+** Summary Table for Implementation Requirements
 
 Entity	Level	Definition	Responsibility
 Instrument Family	M

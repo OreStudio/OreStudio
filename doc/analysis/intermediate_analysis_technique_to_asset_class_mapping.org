@@ -9,7 +9,7 @@
 #+created: 2026-06-25
 #+updated: 2026-06-25
 
-* 1. Scope and methodology
+* Scope and methodology
 
 This document synthesises three research papers summarised in sprint 21 —
 the Gaussian GenAI GMM paper (Kienitz 2024), the mixture-preserving
@@ -24,7 +24,7 @@ environment; and proposes a dependency-ordered generation stack that
 respects all constraints.  It is an input to the final approach document
 and deliberately leaves certain design choices open (see section 7).
 
-* 2. The three techniques — brief recap
+* The three techniques — brief recap
 
 ** Gaussian GenAI GMM (Kienitz 2024, SSRN 5050372)
 
@@ -68,7 +68,7 @@ underliers, bypassing the need to generate a P-measure path first and then
 run a separate calibration.  It does not cover swaption, cap/floor, or
 credit vol surfaces.
 
-* 3. Technique coverage table
+* Technique coverage table
 
 Rows are ORE market data type groups.  Columns are the three techniques.
 "Direct" means the technique covers the group without material adaptation.
@@ -97,7 +97,7 @@ Notes on Partial entries:
 - Swaption/capfloor: GMM generates pillar implied vols; frozen pool requires them as mixture densities, not as SABR parameters. The SABR-to-mixture conversion (fit a Gaussian mixture to ∂²C_SABR/∂K²) is an unresolved implementation step.
 - FX option delta conventions: ORE quotes FX vol as ATM + 25Δ/10Δ risk-reversal + butterfly. The frozen pool and GJR-GARCH NN work in strike space. A delta-to-strike conversion using the generated FX forward and domestic/foreign rates is required before populating =FX_OPTION/RATE_LNVOL= quote keys.
 
-* 4. Coverage gaps
+* Coverage gaps
 
 This section lists every ORE market data type for which none of the three
 papers provides a complete, production-ready generation method.
@@ -245,7 +245,7 @@ required for a narrow product set; skip for the initial generation scope.
 /Proper solution/: Econometric prepayment model depending on rate level
 and spread. Out of scope for this sprint.
 
-* 5. Cross-asset consistency constraints
+* Cross-asset consistency constraints
 
 This section reproduces and extends the constraints from the ORE market
 data catalogue, adding detail on which generation technique is involved on
@@ -271,7 +271,7 @@ a post-generation enforcement step.
 | 15 | Capfloor shift consistency  | =CAPFLOOR/SHIFT= must exceed =|min forward rate|= at each currency / tenor | GMM generates IR curve first | Post-generation: bootstrap the IR curve, compute minimum forward rate, set shift ≥ |min_forward| before populating capfloor vols. |
 | 16 | Correlation-vol consistency | Implied correlation from basket option prices must match =CORRELATION/RATE= | Correlation derived from jointly generated asset returns (section 6, step 12); individual vol surfaces from GJR-GARCH NN or frozen pool | Not automatically enforced. For products with explicit correlation inputs, compute the correlation coefficient from the generated joint return distribution and use it as the =CORRELATION/RATE= value. |
 
-* 6. Candidate generation stack — ordered by dependency
+* Candidate generation stack — ordered by dependency
 
 This is the proposed step-by-step generation order for a complete ORE
 market data environment. Earlier steps are consumed as inputs by later
@@ -398,7 +398,7 @@ steps; the order must not be reversed.
 | Inputs   | CDS spreads from step 2; seniority structure from ORE portfolio configuration                          |
 | Constraint validated | =hazard_rate ≈ CDS_spread / (1 − R)=: ensure recovery and CDS spread are not sampled independently. |
 
-* 7. What remains for the final approach document
+* What remains for the final approach document
 
 The following design decisions are not resolved by this analysis and must
 be addressed in the final approach document:
@@ -456,7 +456,7 @@ be addressed in the final approach document:
    spot + equity option vol as the first milestone) and a phased plan for
    the gap types.
 
-* 8. See also
+* See also
 
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure generation technique.

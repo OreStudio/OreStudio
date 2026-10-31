@@ -274,6 +274,13 @@ export function AuthorisationQueuePage(): ReactNode {
             columns={columns}
             pathOf={(row) => authorisationRequestPath(row.requestId)}
             keyOf={(row) => `${row.requestId}:${row.tradeId}`}
+            rowStyle={(row) => {
+                const palette = paletteOf(row);
+                return {
+                    backgroundColor: palette.wash,
+                    boxShadow: `inset 3px 0 0 ${palette.edge}`,
+                };
+            }}
             actions={
                 <div className="flex flex-wrap items-center gap-2">
                     <button

@@ -125,13 +125,20 @@ describe('the cards', () => {
         }
     });
 
-    it('are drawn by no area twice, except the configurations a report binds', () => {
+    it('are drawn by no area twice, except the ones a second area shares', () => {
         // A configuration's home is the area that authors it; the reporting area
         // repeats the ones a report binds, so a person reads them where a report
-        // is read. Every other card has one home.
-        const repeated = new Set(['conventions']);
+        // is read. The authorisation queue is an Operations control that Trading
+        // repeats, because a trader works it where they read their deals.
+        const repeated = new Set(['conventions', 'authorisationQueue']);
+        const sharedWith: Readonly<Record<string, string>> = { authorisationQueue: 'trading' };
         const drawn = Object.entries(AREA_CARDS).flatMap(([area, ids]) =>
-            [...ids].filter((id) => (area === 'reporting' && repeated.has(id) ? false : true)),
+            [...ids].filter((id) =>
+                (area === 'reporting' && repeated.has(id)) ||
+                (area === sharedWith[id] && repeated.has(id))
+                    ? false
+                    : true,
+            ),
         );
 
         expect(drawn.length + repeated.size).toBeGreaterThan(0);

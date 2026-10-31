@@ -24,6 +24,7 @@ import {
     useEffect,
     useRef,
     useState,
+    type CSSProperties,
     type KeyboardEvent,
     type MouseEvent,
     type ReactNode,
@@ -312,6 +313,7 @@ export function RecordList<Row>({
     actions,
     addLabel,
     onAdd,
+    rowStyle,
 }: {
     readonly source: ListSource<Row>;
     readonly title: string;
@@ -326,6 +328,8 @@ export function RecordList<Row>({
     readonly actions?: ReactNode;
     readonly addLabel?: string;
     readonly onAdd?: () => void;
+    /** The colour a row is drawn in, where a row's colour carries meaning. */
+    readonly rowStyle?: (row: Row) => CSSProperties | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
@@ -351,14 +355,19 @@ export function RecordList<Row>({
                     title={title}
                     description={lead}
                     actions={
-                        <div className="flex gap-2">
-                            <RefreshButton onClick={refresh} load={load} news={news} />
+                        /*
+                         * The refresh is always the right-hand action, so a person
+                         * finds it in the same place on every list, and it pulses
+                         * while the screen holds news it has not shown.
+                         */
+                        <div className="flex flex-wrap items-center justify-end gap-2">
                             {actions}
                             {add !== undefined && (
                                 <Button variant="primary" icon="add" onClick={add.onAdd}>
                                     {add.label}
                                 </Button>
                             )}
+                            <RefreshButton onClick={refresh} load={load} news={news} />
                         </div>
                     }
                 />
@@ -371,6 +380,7 @@ export function RecordList<Row>({
                 {...(keyOf === undefined ? {} : { keyOf })}
                 {...(notes === undefined ? {} : { notes })}
                 {...(add === undefined ? {} : { add })}
+                {...(rowStyle === undefined ? {} : { rowStyle })}
                 heard={news.heard}
             />
         </div>
@@ -444,6 +454,7 @@ export function RecordTable<Row>({
     notes = [],
     add,
     heard = NOTHING_HEARD,
+    rowStyle,
 }: {
     readonly source: ListSource<Row>;
     /** The records' plural, as the empty states name them. */
@@ -456,6 +467,15 @@ export function RecordTable<Row>({
     readonly add?: { readonly label: string; readonly onAdd: () => void };
     /** What the screen has heard change since it loaded; the table marks the rows and says what it cannot point at. */
     readonly heard?: Heard;
+    /**
+     * The colour a row is drawn in, where a row's colour carries meaning.
+     *
+     * A list whose rows differ by a state — a queue of authorisations, a ledger
+     * of findings — reads by colour before it reads by word, and the state's
+     * colour belongs on the row rather than on one cell of it. A source that
+     * states none draws every row the table's own way.
+     */
+    readonly rowStyle?: (row: Row) => CSSProperties | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
     const navigate = useNavigate();
@@ -697,6 +717,7 @@ export function RecordTable<Row>({
                         {(data?.rows ?? []).map((row, index) => (
                             <tr
                                 key={rowKey(row, index)}
+                                style={rowStyle?.(row)}
                                 {...(open === undefined
                                     ? {
                                           className: `border-b border-line-subtle last:border-b-0${changed.has(rowKey(row, index)) ? ' row-changed' : news.rows.has(index) ? ' row-news' : ''}`,

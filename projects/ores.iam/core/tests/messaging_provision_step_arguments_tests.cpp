@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
+#include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -444,4 +445,194 @@ TEST_CASE("a trade generation step refuses a count per book of zero", "[provisio
 TEST_CASE("a trade generation step that states no config is refused", "[provision_step]") {
     CHECK_THROWS_WITH(parse_trade_generation_assignments(R"({"configs": []})"),
                       "The step names no config in its 'configs' argument.");
+}
+
+namespace {
+
+using ores::iam::messaging::apply_population_knobs;
+using ores::iam::messaging::population_knobs;
+using ores::iam::messaging::read_population_knobs;
+using ores::iam::workflow::provision_tenant_parameter;
+
+/// The codes each class's planner cycles, as the handler resolves them.
+std::size_t codes_of(const std::string& asset_class) {
+    if (asset_class == "bond")
+        return 10;
+    if (asset_class == "commodity")
+        return 25;
+    if (asset_class == "interest_rates")
+        return 9;
+    if (asset_class == "fx")
+        return 16;
+    if (asset_class == "equity")
+        return 17;
+    if (asset_class == "credit")
+        return 5;
+    if (asset_class == "inflation")
+        return 1;
+    return 3;
+}
+
+std::vector<ores::iam::messaging::trade_generation_assignment> four_configs(const std::string& asset_class) {
+    std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
+    for (int i = 0; i < 4; ++i) {
+        ores::iam::messaging::trade_generation_assignment entry;
+        entry.name = asset_class + std::to_string(i);
+        entry.party = "Acme Corporation Plc";
+        entry.asset_class_code = asset_class;
+        entry.book = "Book";
+        entry.trades_per_book = 1;
+        assignments.push_back(std::move(entry));
+    }
+    return assignments;
+}
+
+}
+
+namespace {
+
+/// The configs a demonstration run records: one per book the class books into.
+std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
+    const std::vector<std::pair<std::string, int>> classes{
+        {"bond", 4},        {"commodity", 1}, {"credit", 1}, {"equity", 1},
+        {"fx", 4},          {"inflation", 1}, {"interest_rates", 3}, {"scripted", 1}};
+
+    std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
+    for (const auto& [asset_class, configs] : classes)
+        for (int i = 0; i < configs; ++i) {
+            auto entry = four_configs(asset_class).front();
+            entry.name = asset_class + std::to_string(i);
+            assignments.push_back(std::move(entry));
+        }
+    return assignments;
+}
+
+/// The counts the configs of one class state, in order.
+std::vector<std::uint32_t> counts_of(
+    const std::vector<ores::iam::messaging::trade_generation_assignment>& assignments,
+    const std::string& asset_class) {
+    std::vector<std::uint32_t> counts;
+    for (const auto& entry : assignments)
+        if (entry.asset_class_code == asset_class)
+            counts.push_back(*entry.trades_per_book);
+    return counts;
+}
+
+/// The page's mix, with one class stated over it.
+std::vector<provision_tenant_parameter> page_mix(std::uint32_t total,
+                                                 const std::string& name,
+                                                 std::uint32_t value) {
+    const std::vector<std::pair<std::string, std::uint32_t>> weights{
+        {"population_interest_rates_percent", 42},
+        {"population_fx_percent", 25},
+        {"population_equity_percent", 12},
+        {"population_credit_percent", 6},
+        {"population_commodity_percent", 5},
+        {"population_bond_percent", 4},
+        {"population_inflation_percent", 3},
+        {"population_scripted_percent", 3}};
+
+    std::vector<provision_tenant_parameter> parameters{{"population_size", std::to_string(total)}};
+    for (const auto& [declared, stated] : weights)
+        parameters.push_back({declared, std::to_string(declared == name ? value : stated)});
+    return parameters;
+}
+
+}
+
+TEST_CASE("a run that states no size keeps the counts its recipe states", "[population_knobs]") {
+    auto assignments = all_configs();
+    apply_population_knobs(assignments, read_population_knobs({}), codes_of);
+
+    for (const auto& entry : assignments)
+        CHECK(entry.trades_per_book == 1);
+}
+
+TEST_CASE("a mix states each class's share of the total, remainder first", "[population_knobs]") {
+    auto assignments = all_configs();
+    apply_population_knobs(assignments,
+                           read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
+                           codes_of);
+
+    // Forty bond trades over four configs is ten each.
+    for (const auto count : counts_of(assignments, "bond"))
+        CHECK(count == 10);
+
+    // Two hundred and fifty fx trades over four configs is sixty-two with two
+    // spare, and the spare goes to the first configs.
+    const auto fx = counts_of(assignments, "fx");
+    REQUIRE(fx.size() == 4);
+    CHECK(fx[0] == 63);
+    CHECK(fx[1] == 63);
+    CHECK(fx[2] == 62);
+    CHECK(fx[3] == 62);
+}
+
+TEST_CASE("a mix that does not sum to a hundred is refused", "[population_knobs]") {
+    auto assignments = all_configs();
+
+    CHECK_THROWS_WITH(apply_population_knobs(assignments,
+                                             read_population_knobs(
+                                                 page_mix(1000, "population_fx_percent", 24)),
+                                             codes_of),
+                      Catch::Matchers::ContainsSubstring("sums to 99 per cent"));
+}
+
+TEST_CASE("a class whose share cannot hold its codes is refused with the total that would",
+          "[population_knobs]") {
+    auto assignments = all_configs();
+
+    /*
+     * Four per cent of a hundred is four trades over four configs, and each
+     * config states ten codes, so the smallest total is a thousand.
+     */
+    CHECK_THROWS_WITH(apply_population_knobs(assignments,
+                                             read_population_knobs(
+                                                 page_mix(100, "population_bond_percent", 4)),
+                                             codes_of),
+                      Catch::Matchers::ContainsSubstring("A total of 1000 is the smallest"));
+}
+
+TEST_CASE("a class the run books nothing for is refused", "[population_knobs]") {
+    /*
+     * A mix that names a class the run records no config for would take a share
+     * of the population and book none of it, so it is refused by name.
+     */
+    auto assignments = all_configs();
+    std::erase_if(assignments, [](const auto& entry) {
+        return entry.asset_class_code == "equity";
+    });
+
+    CHECK_THROWS_WITH(apply_population_knobs(assignments,
+                                             read_population_knobs(
+                                                 page_mix(1000, "population_fx_percent", 25)),
+                                             codes_of),
+                      Catch::Matchers::ContainsSubstring("states 'equity'"));
+}
+
+TEST_CASE("a size stated alone leaves the mix as the recipe states it", "[population_knobs]") {
+    auto assignments = all_configs();
+    assignments.front().trades_per_book = 7;
+    const std::vector<provision_tenant_parameter> parameters{{"population_size", "5000"}};
+
+    apply_population_knobs(assignments, read_population_knobs(parameters), codes_of);
+
+    CHECK(assignments.front().trades_per_book == 7);
+}
+
+TEST_CASE("a share of zero books nothing of that class", "[population_knobs]") {
+    /*
+     * The bonds' four per cent moves to the rates, so the mix still sums to a
+     * hundred and the class that gives up its share books nothing.
+     */
+    auto parameters = page_mix(1000, "population_bond_percent", 0);
+    for (auto& parameter : parameters)
+        if (parameter.name == "population_interest_rates_percent")
+            parameter.value = "46";
+
+    auto assignments = all_configs();
+    apply_population_knobs(assignments, read_population_knobs(parameters), codes_of);
+
+    for (const auto count : counts_of(assignments, "bond"))
+        CHECK(count == 0);
 }

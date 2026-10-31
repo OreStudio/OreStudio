@@ -8,12 +8,12 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/expose-the-populations-size-and-mix-to-the-operator
-#+pr: 4265
+#+pr: 4274
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Let an operator size the trade population and set its asset-class mix from the p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -82,7 +82,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The probe tenant's mix, stated as rates 44 and equity 10 | 1000 trades: interest rates 440 (44%), equity 100 (10%), the rest as the page states | =select ... where tenant_id = '<probe>' and trade_type like 'Equity%'= summed, and the same over the nine rate codes | branch head |
+| The default tenant | still 1000 trades at the page's mix, because the declared defaults are that mix | =select count(distinct id) from ores_trading_trades_tbl= | branch head |
+| The knob cases | 7 cases, 33 assertions | =publish/bin/ores.iam.core.tests "[population_knobs]"= | branch head |
+| Suites | iam.core 1185/315, synthetic.core 2451/98 | =publish/bin/<suite>= | branch head |
+| The refusal a bad mix gets | a hundred trades refused for the bonds' share, naming 1000 as the smallest total that holds them | =provision tenant ... --param population_size=100 ...= | branch head |
 
 * Notes
 
@@ -101,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4274][#4274]] | [iam] Let a run state the population's size and mix |
 | [[https://github.com/OreStudio/OreStudio/pull/4265][#4265]] | [agile] Point the population knobs at the surface that starts a run |
 
 * Review
@@ -111,5 +116,33 @@ via its "Verifies task" field.
 
 * Result
 
-The task is not delivered. Its plan was corrected before work started, so that the
-knob is placed where a run starts rather than where a run's data happens to live.
+An operator states the population a run writes: a total and a percentage per
+class, and the run books that.
+
+The knobs are profile parameters, which is what makes the screen free. The
+provisioning form renders every parameter a profile declares, so the nine rows
+this profile gains — a size and eight shares — appear as fields with no screen
+code at all, and the server is the only place the arithmetic lives.
+
+What a run does with them: a class's trades are its share of the total, spread
+over the configs that class books into, with the remainder going to the first
+configs so the class states its share exactly rather than a rounded-down version
+of it. Nothing is applied when the run states no size, so the seeded counts stand.
+
+Three refusals, each naming what the operator can do about it:
+
+- A mix that does not sum to a hundred says what it summed to.
+- A class the run records no config for is refused by name, because its share
+  would be taken and nothing booked against it.
+- A class whose share cannot hold its codes is refused with the smallest total
+  that would hold them, which is the floor the planner states: the codes it
+  cycles, multiplied by the configs it books into.
+
+Measured end to end on a probe tenant with the mix stated as rates 44 and equity
+10: a thousand trades, 440 of them rate trades and 100 equity, which is what the
+operator asked for and not what the page states. The demonstration tenant is
+untouched at the page's mix.
+
+One decision worth keeping: the size is a knob on its own. A run that states a
+total and no mix keeps the mix its recipe states, so an operator can make the
+book bigger without restating the page.

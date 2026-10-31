@@ -252,6 +252,10 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     return *entry->second;
 }
 
+std::size_t routed_code_count(std::string_view asset_class_code) {
+    return planner_for(std::string(asset_class_code)).code_count();
+}
+
 std::uint32_t slot_count(const domain::trade_generation_scope& scope) {
     return scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
 }
@@ -286,6 +290,7 @@ domain::trade_population_slot common_slot(const domain::trade_generation_scope& 
 std::string_view bond_trade_planner::asset_class_code() const {
     return "bond";
 }
+
 
 /*
  * The bond family states its security before it states its instrument: a trade
@@ -405,6 +410,10 @@ constexpr std::string_view bond_types[] = {"Bond",
                                            "ConvertibleBond",
                                            "Ascot"};
 constexpr std::size_t bond_type_count = sizeof(bond_types) / sizeof(bond_types[0]);
+
+std::size_t bond_trade_planner::code_count() const {
+    return bond_type_count;
+}
 
 constexpr std::string_view bond_futures[] = {"FGBL", "FGBM", "ZN", "ZB"};
 
@@ -859,6 +868,10 @@ std::string_view commodity_trade_planner::asset_class_code() const {
     return "commodity";
 }
 
+std::size_t commodity_trade_planner::code_count() const {
+    return commodity_type_count;
+}
+
 domain::trade_population_plan
 commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -1288,6 +1301,10 @@ std::string_view rate_trade_planner::asset_class_code() const {
     return "interest_rates";
 }
 
+std::size_t rate_trade_planner::code_count() const {
+    return rate_type_count;
+}
+
 domain::trade_population_plan
 rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -1436,6 +1453,10 @@ std::string pair_name(const domain::currency_pair_reference& pair) {
 
 std::string_view fx_trade_planner::asset_class_code() const {
     return "fx";
+}
+
+std::size_t fx_trade_planner::code_count() const {
+    return fx_type_count;
 }
 
 /*
@@ -1723,9 +1744,43 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 }
 
 
+namespace {
+
+constexpr std::string_view equity_types[] = {"EquityAccumulator",
+                                             "EquityAsianOption",
+                                             "EquityBarrierOption",
+                                             "EquityCliquetOption",
+                                             "EquityDigitalOption",
+                                             "EquityDoubleBarrierOption",
+                                             "EquityEuropeanBarrierOption",
+                                             "EquityForward",
+                                             "EquityOption",
+                                             "EquityOptionPosition",
+                                             "EquityPosition",
+                                             "EquitySwap",
+                                             "EquityTaRF",
+                                             "EquityTouchOption",
+                                             "EquityVarianceSwap",
+                                             "EquityWorstOfBasketSwap"};
+/*
+ * EquityOutperformanceOption is routed to the option table and that table's
+ * check admits EquityOption and EquityCliquetOption only, so no outperformance
+ * row can satisfy it. The type stays out until the check admits it, and the
+ * gap is recorded rather than worked around by booking it as an option.
+ */
+
+constexpr std::size_t equity_type_count = std::size(equity_types);
+
+}
+
 std::string_view equity_trade_planner::asset_class_code() const {
     return "equity";
 }
+
+std::size_t equity_trade_planner::code_count() const {
+    return equity_type_count;
+}
+
 
 /*
  * The credit codes a population draws. A synthetic CDO needs a qualifier the
@@ -1742,6 +1797,10 @@ constexpr std::size_t credit_type_count = std::size(credit_types);
 
 std::string_view credit_trade_planner::asset_class_code() const {
     return "credit";
+}
+
+std::size_t credit_trade_planner::code_count() const {
+    return credit_type_count;
 }
 
 /*
@@ -1936,6 +1995,10 @@ std::string_view scripted_trade_planner::asset_class_code() const {
     return "scripted";
 }
 
+std::size_t scripted_trade_planner::code_count() const {
+    return scripted_type_count;
+}
+
 domain::trade_population_plan
 scripted_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -2063,6 +2126,10 @@ std::string_view inflation_trade_planner::asset_class_code() const {
     return "inflation";
 }
 
+std::size_t inflation_trade_planner::code_count() const {
+    return std::size(inflation_types);
+}
+
 domain::trade_population_plan
 inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -2116,30 +2183,7 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
 
 namespace {
 
-constexpr std::string_view equity_types[] = {"EquityAccumulator",
-                                             "EquityAsianOption",
-                                             "EquityBarrierOption",
-                                             "EquityCliquetOption",
-                                             "EquityDigitalOption",
-                                             "EquityDoubleBarrierOption",
-                                             "EquityEuropeanBarrierOption",
-                                             "EquityForward",
-                                             "EquityOption",
-                                             "EquityOptionPosition",
-                                             "EquityPosition",
-                                             "EquitySwap",
-                                             "EquityTaRF",
-                                             "EquityTouchOption",
-                                             "EquityVarianceSwap",
-                                             "EquityWorstOfBasketSwap"};
-/*
- * EquityOutperformanceOption is routed to the option table and that table's
- * check admits EquityOption and EquityCliquetOption only, so no outperformance
- * row can satisfy it. The type stays out until the check admits it, and the
- * gap is recorded rather than worked around by booking it as an option.
- */
 
-constexpr std::size_t equity_type_count = std::size(equity_types);
 
 /// The underlying the slot draws, cycling the catalogue the tenant published.
 const domain::equity_underlying_reference& equity_for(const domain::trade_generation_scope& scope,

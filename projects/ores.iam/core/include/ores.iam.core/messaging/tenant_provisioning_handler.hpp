@@ -35,6 +35,7 @@
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/account_service.hpp"
@@ -1642,7 +1643,21 @@ private:
     void generate_trades_step(const ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
-        const auto assignments = parse_trade_generation_assignments(command.arguments_json);
+        auto assignments = parse_trade_generation_assignments(command.arguments_json);
+
+        /*
+         * A run may state the population it wants rather than take the counts
+         * its recipe states: a total and a percentage per class, which become
+         * the count each config books. The floor is the codes the class's
+         * planner cycles, because a config shorter than its code list states a
+         * prefix and drops the rest.
+         */
+        apply_population_knobs(
+            assignments,
+            read_population_knobs(command.parameters),
+            [](const std::string& asset_class) {
+                return ores::synthetic::service::routed_code_count(asset_class);
+            });
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 

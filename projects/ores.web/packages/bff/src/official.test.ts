@@ -150,10 +150,10 @@ describe('the official rates routes', () => {
                     provider('bloomberg', ''),
                 ],
             },
-            'marketdata.v1.market_data_sources.list': {
+            'marketdata.v1.feeds.list': {
                 result: ok,
-                sources: [
-                    { id: 's', name: 'ecb-frankfurter', provider_code: 'ecb', kind: 'vendor' },
+                running_feeds: [
+                    { id: 's', name: 'ecb-frankfurter', publisher_code: 'ecb', service: 'ecb' },
                 ],
             },
             'marketdata.v1.market_series.list': {

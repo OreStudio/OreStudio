@@ -192,7 +192,7 @@ const PUT_SUBSCRIPTION = 'marketdata.v1.subscriptions.put';
 const DELETE_SUBSCRIPTION = 'marketdata.v1.subscriptions.delete';
 const PUT_ROUTE = 'marketdata.v1.routes.put';
 const LIST_PROVIDERS = 'marketdata.v1.providers.list';
-const LIST_SOURCES = 'marketdata.v1.market_data_sources.list';
+const LIST_FEEDS = 'marketdata.v1.feeds.list';
 
 const ok = { result: { outcome: 'ok', code: '', message: '', fields: [] } };
 
@@ -279,17 +279,17 @@ describe('the catalogue read', () => {
             description: '',
             display_order: 1,
         };
-        const source = {
+        const feed = {
             id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
             name: 'bloomberg-a',
-            provider_code: 'bloomberg',
-            kind: 'simulated',
+            publisher_code: 'bloomberg',
+            service: 'simulated',
             is_default: true,
             description: '',
         };
         const { server, sessionId } = buildTestServer({
             [LIST_PROVIDERS]: { ...ok, providers: [provider], total: 1 },
-            [LIST_SOURCES]: { ...ok, sources: [source], total: 1 },
+            [LIST_FEEDS]: { ...ok, running_feeds: [feed], total: 1 },
         });
         const response = await send(server, sessionId, 'GET', '/api/marketdata/catalogue');
         expect(response.statusCode).toBe(200);

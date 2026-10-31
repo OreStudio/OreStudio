@@ -69,8 +69,9 @@ public:
      * @brief Raises a request for the trade when it awaits authorisation.
      *
      * An actual trade awaits it once it is live. A
-     * draft, a test or a hypothetical trade does not. The write joins the
-     * caller's transaction, and the request is not announced here.
+     * draft, a test or a hypothetical trade does not, and neither does a trade
+     * that already has a request waiting. The write joins the caller's
+     * transaction, and the request is not announced here.
      *
      * @return The request raised, or nothing when the trade awaits none.
      */

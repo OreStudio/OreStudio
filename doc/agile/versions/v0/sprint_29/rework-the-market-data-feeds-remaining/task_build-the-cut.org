@@ -87,3 +87,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The cut data model is built, reviewed and repaired.
+
+- The cut kinds: the family, resolution-rule and kind lookups, the seven types
+  (EOD, EOM, EOY, SOD, IPV, FLASH, LIVE), the two signed approval kinds and the
+  per-kind retention. The kind's approval is a nullable FK to the inbox approval
+  kinds; the signed-or-not is derived from it.
+- The report's selection on the definition (cut_kind_code, cut_id) and the run's
+  resolved cut (cut_id, cut_label, cut_kind_code, cut_timepoint).
+- The cut entity: the body references, the gaps, the acts, the indicative mark
+  and the retention copy; the state derived and stored nowhere; supersession
+  computed in production.
+- The resolution operation for EOD (with the month-end and year-end fallbacks),
+  EOM, EOY, SOD, IPV, LIVE (minted at the run) and a pinned cut, serving the
+  preview and the run. The report-instance trigger resolves and records the cut
+  where the covered date, scope and centre are stated.
+- The widened unique index (tenant, kind, party, scope, centre, timepoint,
+  ordinal), and the cut's generic writes removed with client_read_only, so
+  nothing bypasses the copy rule.
+- The two-axis review (Standards and Spec) was run; every finding was closed:
+  the permissions seeded and granted (the gate passes), the indicative mark on
+  the cut and in the resolution, supersession in production, the permission
+  inversion, the unique index, the copy bypass, the ER diagrams, the test
+  conventions and coverage, the cut_book claim and the grammar.
+- Checks: the handler-permission gate, lint, the codegen, the SQL validators,
+  the ER diagram check, and the reporting core/api/service and scheduler suites
+  (213 + 69 + 10 + 24 cases) passing on the rebased tree.
+
+Left deliberately: a scheduled firing records no resolved cut (the covered
+date, scope and centre are the run's and the schedule does not carry them); the
+take raises no inbox approval request (the hand-take surface does not exist in
+this component); the configuration_market_binding retirement is deferred because
+the run document still builds its market data from those rows.

@@ -57,6 +57,7 @@ KIND_OF = {
 }
 
 _CACHE = {}
+_ENUMS = {}
 
 
 def _elements(node):
@@ -114,7 +115,44 @@ def declared(name, xpath):
 
 
 def rule(name, xpath):
-    """The kind one leaf's value has, and the schema type that states it, if any."""
+    """The kind one leaf's value has, and the schema type that states it, if any.
+
+    An enumerated type states a kind of its own: the schema lists the values, so
+    the rule is a set of them rather than a shape one value must have.
+    """
     found = declared(name, xpath)
     kind = KIND_OF.get(found)
-    return (kind, found) if kind else None
+    if kind:
+        return (kind, found)
+    if found in _load_enums():
+        return ("enumerated", found)
+    return None
+
+
+def _load_enums():
+    """The simple types the schemas enumerate, with the values and where they sit."""
+    if _ENUMS:
+        return _ENUMS
+    for name in sorted(os.listdir(XSD)):
+        if not name.endswith(".xsd"):
+            continue
+        path = os.path.join(XSD, name)
+        root = ET.parse(path).getroot()
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        for node in root.findall(XS + "simpleType"):
+            values = [item.get("value") for item in node.iter(XS + "enumeration")
+                      if item.get("value") is not None]
+            if values:
+                _ENUMS[node.get("name")] = {
+                    "values": values,
+                    "file": name,
+                    "line": text[:text.find(f'name="{node.get("name")}"')].count("\n") + 1,
+                }
+    return _ENUMS
+
+
+def enumeration(type_name):
+    """The values the schema enumerates for one simple type, and where it states them."""
+    found = _load_enums().get(type_name)
+    return (found["values"], found["file"], found["line"]) if found else None

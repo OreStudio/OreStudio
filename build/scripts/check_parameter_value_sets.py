@@ -210,8 +210,9 @@ def main() -> int:
     for key, set_code in sorted(data["links"].items()):
         if set_code not in data["sets"]:
             problems.append(f"{key}: names the set {set_code}, which no set states")
+    generated = data.get("generated", set())
     for code in sorted(data["sets"]):
-        if code not in set(linked.values()):
+        if code not in set(linked.values()) and code not in generated:
             problems.append(f"{code}: no parameter names it")
     problems += set_problems(data)
 

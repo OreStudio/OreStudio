@@ -76,6 +76,13 @@ combination, and a screen would have to read a name to know how to draw a
 control. A screen reads the kind for the control and the cardinality for whether
 the control repeats.
 
+A set that states its values may have been written from a source rather than by a
+person. The ORE parser's map is one such source: =parseVolatilityType= accepts
+three spellings and the set lists them. The ORE schema is the other: a simple type
+such as =dimensionType= enumerates =ATM=, =ATMTriangulated=, =Smile= and
+=Constant=, and the set states those four. Both are read at seed time, so a
+spelling ORE adds arrives with a regeneration rather than a second edit.
+
 A list need not say what one item is. =curve.list= is the set that says the leaf
 holds many values and admits any item, and it is used for the three leaves whose
 items no authority states: a delta written =25D=, an expiry that may be a date or

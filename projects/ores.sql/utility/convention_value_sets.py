@@ -202,6 +202,21 @@ def override_of(element, term):
     return found
 
 
+_DRAWN = None
+
+
+def is_drawn(term):
+    """Whether a convention mapper carries this term, so a generated set is used."""
+    global _DRAWN
+    if _DRAWN is None:
+        import generate_convention_kind_terms as kinds
+        rows, problems = kinds.rows()
+        if problems:
+            raise ValueError("\n".join(problems))
+        _DRAWN = {row["xpath"] for row in rows}
+    return address_of(term) in _DRAWN
+
+
 def set_of(term, parsers, element=None):
     """The set code of one term, and the parser whose list it is, if any."""
     override, _ = override_of(element, term)
@@ -212,9 +227,11 @@ def set_of(term, parsers, element=None):
         return TYPE_SETS[kind], None
     parser = LIST_OF.get(kind, term["parser"])
     if parser and parser in parsers:
-        return parser_set_code(parser), parser
+        return parser_set_code(parser), parser_set(parser, parsers[parser])
     if kind in WITHOUT_LIST:
         stated = schema_rule(term)
+        if stated == "enumerated":
+            return schema_enum_set(term) if is_drawn(term) else ("text", None)
         if stated:
             return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
         return WITHOUT_LIST[kind], None
@@ -229,12 +246,39 @@ def schema_rule(term):
     reads a term as a plain string without saying more, the schema still declares
     a type, and a term declared xs:integer or bool is not free text.
     """
+    found = schema_types.rule("conventions.xsd", address_of(term))
+    return found[0] if found else None
+
+
+def address_of(term):
+    """The term's address in the conventions schema."""
     leaf = term["name"]
     if term.get("list_item"):
         leaf = f"{term['name']}/{term['list_item']}"
-    found = schema_types.rule("conventions.xsd",
-                              "/Conventions/" + "/".join(term["path"] + [leaf]))
-    return found[0] if found else None
+    return "/Conventions/" + "/".join(term["path"] + [leaf])
+
+
+def schema_enum_set(term):
+    """The enumerated set the ORE schema states for one term's type."""
+    _, type_name = schema_types.rule("conventions.xsd", address_of(term))
+    values, file, line = schema_types.enumeration(type_name)
+    # The schema lists the empty string where a leaf may be left unset. The guard
+    # treats a value that is not written as absent rather than as a choice, so the
+    # set states the choices and the unset case stays an empty field.
+    values = [value for value in values if value != ""]
+    code = "convention." + re.sub(r"(?<!^)(?=[A-Z])", "_", type_name).lower()
+    return code, {
+        "name": words(type_name),
+        "description": f"The values the ORE schema states for {type_name}, from "
+                       f"external/ore/xsd/{file}:{line}.",
+        "source_kind": "enumerated",
+        "is_ordered": False,
+        "values": [{"value": value, "label": value,
+                    "description": f"{value} is one of the values the ORE schema "
+                                   f"states for {type_name}.",
+                    "order": order}
+                   for order, value in enumerate(values)],
+    }
 
 
 def set_of_leaf(term, element):
@@ -265,12 +309,14 @@ def data():
             "catalogue_code": catalogue,
             "is_ordered": False,
         }
-    links = {}
+    links, built = {}, set()
     for element, convention in sorted(extracted["conventions"].items()):
         for term in convention["terms"]:
-            code, parser = set_of(term, parsers, element)
-            if parser and code not in sets:
-                sets[code] = parser_set(parser, parsers[parser])
+            code, generated = set_of(term, parsers, element)
+            if generated:
+                built.add(code)
+                if code not in sets:
+                    sets[code] = generated
             key = f"{element}|{term['name']}"
             if links.get(key, code) != code:
                 raise ValueError(f"{key} would take two sets, {links[key]} and {code}")
@@ -279,4 +325,5 @@ def data():
     sets = {code: entry for code, entry in sets.items() if code in named}
     catalogues = {code: entry for code, entry in CATALOGUES.items()
                   if any(s.get("catalogue_code") == code for s in sets.values())}
-    return {"catalogues": catalogues, "sets": sets, "links": links}
+    return {"catalogues": catalogues, "sets": sets, "links": links,
+            "generated": built}

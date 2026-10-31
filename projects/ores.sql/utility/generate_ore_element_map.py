@@ -213,6 +213,12 @@ def describe(code, entry, term, address, overridden=None):
         stated = curve_sets.LIST_ITEM[element]
         reason = stated["reason"]
         source, source_ref = stated["source"], stated["source_ref"]
+    elif spelling == "text" and schema and schema[0] == "enumerated":
+        values, file, line = schema_types.enumeration(schema[1])
+        reason = (f"The ORE parser reads {element} as a string and the ORE schema "
+                  f"enumerates {len(values)} values for {schema[1]}, so the set lists "
+                  f"them.")
+        source, source_ref = "ore_xsd", f"external/ore/xsd/{file}:{line}"
     elif spelling == "text" and schema:
         reason = (f"The ORE parser reads {element} as a string and the ORE schema "
                   f"declares it {schema[1]}, so the value is {SCHEMA_WORDS[schema[0]]}.")
@@ -261,6 +267,20 @@ def schema_only_rule(row, sets):
     found = schema_types.rule(row["schema"], row["xpath"])
     if not found:
         return None
+    if found[0] == "enumerated":
+        code, entry = curve_sets.schema_enum_set(
+            {"name": row["element"],
+             "path": row["xpath"].strip("/").split("/")[1:]})
+        values, file, line = schema_types.enumeration(found[1])
+        return {
+            "set": code,
+            "name": entry["name"],
+            "source": "ore_xsd",
+            "source_ref": f"external/ore/xsd/{file}:{line}",
+            "reason": (f"No ORE source read names {row['element']} in a form the "
+                       f"extractor knows, and the ORE schema enumerates {len(values)} "
+                       f"values for {found[1]}, so the set lists them."),
+        }
     code = curve_sets.TYPE_SETS[curve_sets.SCHEMA_TYPE_SETS[found[0]]]
     return {
         "set": code,

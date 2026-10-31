@@ -22,12 +22,14 @@
 import { useMemo, type ReactNode } from 'react';
 import type { CutRecord, CutRow, CutStateWord } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../../i18n/Provider.js';
+import { badgeFor, useLabelCatalogue } from '../../refdata/shared.js';
 import { useBadge } from '../../ui/AccountLockBadge.js';
 import { Label } from '../../ui/Label.js';
 
 /**
  * The parts the cut screens share: the state as the catalogue paints it, the
- * basis under it, the indicative mark, and the grouping a type's cuts read by.
+ * basis under it, the marks the DQ label catalogue gives the words a kind holds,
+ * and the grouping a type's cuts read by.
  *
  * A cut states no state and no label, and the server derives both. These parts
  * therefore print the word they were given and derive nothing about the cut:
@@ -53,9 +55,6 @@ const STATE_BADGES: Readonly<Record<CutStateWord, string>> = {
     superseded: 'inactive',
 };
 
-/** The badge an indicative value wears, which is the kind's fact and not the state's. */
-const INDICATIVE_BADGE = 'nature_estimated';
-
 /** The catalogue's fallback badge code, drawn for a value with no definition of its own. */
 const UNMAPPED = '__unmapped__';
 
@@ -70,6 +69,83 @@ export function CutStateTag({ state }: { readonly state: CutStateWord }): ReactN
     const stateName = useStateName();
     const badge = useBadge(STATE_BADGES[state] ?? UNMAPPED);
     return <Label text={stateName(state)} badge={badge} />;
+}
+
+/**
+ * The words a cut kind's four decisions are read with, as DQ code domains.
+ *
+ * The platform states these words in its data quality catalogue and not in a
+ * screen: a code domain holds the codes the rows carry, a badge definition
+ * holds the paint, and a badge mapping joins the two. The domain is the same
+ * code the lookup row carries, so a kind's family code and the words a report
+ * prints about it are read from one place.
+ */
+const FAMILY_DOMAIN = 'cut_family';
+const VALUES_DOMAIN = 'cut_values';
+const AUTHORISATION_DOMAIN = 'cut_authorisation';
+
+/**
+ * One word of a kind's rules, painted by the DQ label catalogue.
+ *
+ * The catalogue owns the paint and the mapping from the code the row holds;
+ * the word is this interface's, keyed on the same code, so it reads in the
+ * language the person chose. A code the catalogue has not mapped is still
+ * written, in its interface's words and with no pill, because hiding it would
+ * hide the gap in the deployment's labels rather than show it.
+ */
+function CatalogueWord({
+    domain,
+    code,
+    words,
+}: {
+    /** The code domain that owns the word, such as `cut_family`. */
+    readonly domain: string;
+    /** The code the row carries, which is the domain's entity code. */
+    readonly code: string;
+    /** The interface key the word is written under, in every language offered. */
+    readonly words: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const catalogue = useLabelCatalogue();
+    const badge = badgeFor(catalogue, domain, code);
+    const key = `${words}.${code}`;
+    const word = t(key);
+    // The translator echoes the key when nobody wrote the word, so a kind whose
+    // code the interface does not know still reads as the catalogue names it.
+    return <Label text={word === key ? (badge?.label ?? code) : word} badge={badge} />;
+}
+
+/** The family a kind of cut belongs to, as the label catalogue paints it. */
+export function CutFamilyLabel({ code }: { readonly code: string }): ReactNode {
+    return <CatalogueWord domain={FAMILY_DOMAIN} code={code} words="cuts.family" />;
+}
+
+/**
+ * Whether a kind's values are official or indicative, as the catalogue paints it.
+ *
+ * The kind holds a boolean and the catalogue holds the two words, so the screen
+ * names the value and never invents the tag that stands for it.
+ */
+export function CutValuesLabel({ indicative }: { readonly indicative: boolean }): ReactNode {
+    return (
+        <CatalogueWord
+            domain={VALUES_DOMAIN}
+            code={indicative ? 'indicative' : 'official'}
+            words="cuts.values"
+        />
+    );
+}
+
+/**
+ * The word a kind with no approver reads with, as the catalogue paints it.
+ *
+ * A kind that names an approval kind prints that kind's own name, which is the
+ * lookup's; this word stands only for the absence of one.
+ */
+export function CutAuthorisationLabel(): ReactNode {
+    return (
+        <CatalogueWord domain={AUTHORISATION_DOMAIN} code="unsigned" words="cuts.authorisation" />
+    );
 }
 
 /**
@@ -149,12 +225,11 @@ export function StateBasis({ facts }: { readonly facts: StateFacts }): ReactNode
  * The mark is the kind's and not the state's: a flash cut is in use and carries
  * it, while the start of day kind requires no authorisation either and carries
  * none. A mark that stood in the state column would say the two cuts stand
- * differently, and they do not.
+ * differently, and they do not. The word and the paint are the catalogue's, so
+ * the mark reads the same as the values column that states it.
  */
 export function IndicativeTag(): ReactNode {
-    const { t } = useTranslation();
-    const badge = useBadge(INDICATIVE_BADGE);
-    return <Label text={t('cuts.indicative')} badge={badge} />;
+    return <CutValuesLabel indicative />;
 }
 
 /** The state and its basis, stacked, as a list row draws them. */

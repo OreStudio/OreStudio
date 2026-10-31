@@ -50,7 +50,7 @@ import {
 import { RecordStoreProvider } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { cutTypePath } from '../../shell/paths.js';
-import { IndicativeTag } from './shared.js';
+import { CutAuthorisationLabel, CutFamilyLabel, CutValuesLabel } from './shared.js';
 import { CUT_KIND_RESOURCE, cutKindStore } from './cutKindStore.js';
 
 /**
@@ -81,9 +81,8 @@ function useCutTypeSource(): ListSource<CutKindRow> {
 
 /** Who signs a cut of this type, or the fact that nobody does. */
 function Authorisation({ row }: { readonly row: CutKindRow }): ReactNode {
-    const { t } = useTranslation();
     if (!row.signed) {
-        return <span className="text-ink-muted">{t('cuts.types.unsigned')}</span>;
+        return <CutAuthorisationLabel />;
     }
     return (
         <span className="flex flex-col gap-0.5">
@@ -133,7 +132,7 @@ function useColumns(): readonly ListColumn<CutKindRow>[] {
             id: 'family',
             sort: 'family',
             header: t('cuts.columns.family'),
-            cell: (row) => row.familyName,
+            cell: (row) => <CutFamilyLabel code={row.familyCode} />,
         },
         {
             id: 'signed',
@@ -143,12 +142,7 @@ function useColumns(): readonly ListColumn<CutKindRow>[] {
         {
             id: 'indicative',
             header: t('cuts.columns.indicative'),
-            cell: (row) =>
-                row.outputIsIndicative ? (
-                    <IndicativeTag />
-                ) : (
-                    <span className="text-ink-muted">{t('cuts.types.official')}</span>
-                ),
+            cell: (row) => <CutValuesLabel indicative={row.outputIsIndicative} />,
         },
         {
             id: 'retention',

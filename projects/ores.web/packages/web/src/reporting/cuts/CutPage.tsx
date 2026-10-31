@@ -51,6 +51,7 @@ import { RelativeTime } from '../../ui/Time.js';
 import { HealthTag } from '../shared.js';
 import {
     Absent,
+    CutAuthorisationLabel,
     CutStateTag,
     IndicativeTag,
     Reference,
@@ -341,13 +342,15 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                     <div className="min-w-0">
                         <dt className="text-xs text-ink-faint">{t('cuts.auth.decider')}</dt>
                         <dd className="mt-0.5 text-sm">
-                            {kind.signed
-                                ? `${kind.approvalKindName ?? kind.approvalKindCode ?? ''}${
-                                      kind.decidePermissionCode === null
-                                          ? ''
-                                          : ` · ${kind.decidePermissionCode}`
-                                  }`
-                                : t('cuts.types.unsigned')}
+                            {kind.signed ? (
+                                `${kind.approvalKindName ?? kind.approvalKindCode ?? ''}${
+                                    kind.decidePermissionCode === null
+                                        ? ''
+                                        : ` · ${kind.decidePermissionCode}`
+                                }`
+                            ) : (
+                                <CutAuthorisationLabel />
+                            )}
                         </dd>
                     </div>
                 </dl>

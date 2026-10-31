@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuts — prototype</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--line-strong:#4a5568;
+  --ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;
+  --accent:#58a6ff;--accent-bright:#8ab4f8;--accent-dim:#202835;
+  --ok:#22c55e;--warn:#eab308;--stale:#e3b341;--bad:#ef4444;--info:#3b82f6;--violet:#a855f7;--inactive:#6b7280;
+  --radius:8px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit}
+a{color:var(--accent-bright);text-decoration:none}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+.dash{color:var(--ink-faint)}
+.nowrap{white-space:nowrap}
+
+/* Prototype chrome, deliberately unlike the design on trial. */
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:4px 16px;background:#2a2113;border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px;max-width:96vw;padding:4px 8px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;font-size:12px}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:4px 8px;border-radius:999px;cursor:pointer}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}
+.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px;color:var(--ink-faint);white-space:nowrap}
+.proto-bar .sep{color:var(--line)}
+
+/* A gap the screen draws because the server does not answer yet. */
+.gap{margin-top:16px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:12px;color:var(--ink-dim)}
+.gap b{color:var(--warn)}
+body.nogaps .gap{display:none}
+
+/* The application shell, as the product draws it. */
+.shell-head{position:fixed;top:26px;left:0;right:0;z-index:50;height:44px;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line);font-size:13px}
+.shell-head .brand{font-weight:600;letter-spacing:-.01em}
+.shell-head nav{display:flex;gap:4px;flex-wrap:wrap}
+.shell-head nav span{color:var(--ink-dim);padding:4px 8px;border-radius:6px}
+.shell-head nav span.on{color:var(--ink);background:var(--panel-2)}
+.shell-head .who{margin-left:auto;color:var(--ink-dim);white-space:nowrap}
+.shell-head .who b{color:var(--ink);font-weight:500}
+
+.page{padding:86px 24px 110px;max-width:1180px;margin:0 auto}
+.crumbs{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.crumbs .sep{padding:0 4px}
+.crumbs a{color:var(--ink-dim)}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.pagehead{display:flex;align-items:flex-start;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.pagehead h1{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.pagehead .lead{margin:4px 0 0;color:var(--ink-dim);font-size:13px}
+.pagehead .actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons, marks, badges, notices. */
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:var(--panel-2);border-radius:var(--radius);padding:8px 16px;font-size:13px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim)}
+.btn.ghost:hover:not(:disabled){color:var(--ink);background:var(--panel-2)}
+.btn.small{padding:4px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap}
+.badge.ok{color:var(--ok)}
+.badge.pending{color:var(--info)}
+.badge.caution{color:var(--warn)}
+.badge.bad{color:var(--bad)}
+.badge.inactive{color:var(--inactive)}
+.badge.indicative{color:var(--violet)}
+.badge.mono{font-family:var(--mono);font-size:11px}
+.access{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink-dim)}
+.notice{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin:0 0 16px;border:1px solid}
+.notice.info{background:#12161f;border-color:#24344d}
+.notice.success{background:#12281d;border-color:#23543a;color:#a8e6c4}
+.notice.warn{background:#2a2113;border-color:#4a3a17;color:#efd39a}
+.notice.error{background:#2b1614;border-color:#5c2a24;color:#f0b7ae}
+.notice b{font-weight:600}
+.notice .acts{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Cards and panels. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.card h2{font-size:18px;font-weight:600;margin:0 0 4px}
+.card .lede{margin:0 0 24px;color:var(--ink-dim);font-size:13px}
+.card h3{font-size:13px;font-weight:600;margin:24px 0 8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.panel h2{font-size:13px;font-weight:600;margin:0 0 12px}
+.panel h2 .sub{font-weight:400;color:var(--ink-faint)}
+.panel .nums{margin:4px 0 0;color:var(--ink-dim);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin:0 0 16px}
+.fact .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);margin:0 0 2px}
+.fact .v{font-size:13px}
+
+/* Tabs, as the record page draws them. */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;flex-wrap:wrap}
+.tabs span,.tabs a{padding:8px 12px;font-size:13px;color:var(--ink-dim);border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-block}
+.tabs .on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* The rail of the take flow. */
+.rail{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.rail .step{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius);font-size:12px;color:var(--ink-dim)}
+.rail .step .n{width:18px;height:18px;border-radius:999px;border:1px solid var(--line-strong);display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.rail .step.on{border-color:var(--accent);color:var(--ink)}
+.rail .step.on .n{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+.rail .step.done .n{border-color:var(--ok);color:var(--ok)}
+
+/* Lists: tools, tables, pager. */
+.listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.searchbox{position:relative;flex:1 1 240px;max-width:360px}
+.searchbox input{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+select{background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-dim);border:1px solid var(--line);border-radius:var(--radius);padding:6px 12px}
+.toggle.on{color:var(--ink);border-color:var(--accent)}
+.listnote{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.rows{width:100%;border-collapse:collapse;font-size:13px}
+.rows th{text-align:left;color:var(--ink-faint);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.rows td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.rows tr.pick{cursor:pointer}
+.rows tr.pick:hover td{background:#1e1e23}
+.rows tr.sel td{background:#1b2333}
+.rows tr.ended td{background:#161619}
+.rows tr.open td{background:#17171b}
+.rows .key{font-family:var(--mono);color:var(--ink)}
+.rows .num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.rows .sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+.rows .same{color:var(--ink-faint)}
+.rows .acts{white-space:nowrap;text-align:right}
+.tblstate{padding:40px 24px;text-align:center;color:var(--ink-dim);font-size:13px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.tblstate b{color:var(--ink);display:block;margin-bottom:8px;font-size:14px}
+.tblstate .btn{margin-top:16px}
+.pager{display:flex;gap:8px;align-items:center;margin:12px 0 0;font-size:12px;color:var(--ink-faint);flex-wrap:wrap}
+.pager .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* The dialog, as the record standard draws it: one scrolling card. */
+.backdrop{position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.62)}
+.dialog{position:fixed;z-index:45;top:9vh;left:50%;transform:translateX(-50%);width:min(960px,94vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.dialog .head{padding:20px 24px 0}
+.dialog .head h2{font-size:16px}
+.dialog .head .note{font-size:12px;color:var(--ink-faint);margin-top:4px}
+.dialog .body{padding:16px 24px}
+.dialog .foot{padding:16px 24px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--panel)}
+.footrow{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.pickline{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;margin:0 0 12px;font-size:13px}
+.pickline .k{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.sentence{margin:0 0 16px;font-size:13px;color:var(--ink-dim)}
+.sentence b{color:var(--ink);font-weight:500}
+.rule{font-size:12px;color:var(--ink-faint);margin:8px 0 0}
+.savebar{display:flex;gap:8px;align-items:center;margin:24px 0 0;padding:16px 0 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.savebar .right{margin-left:auto;display:flex;gap:8px}
+code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.spacer{height:16px}
+
+/* The gaps of a body that could not be assembled. */
+.gaps{margin:16px 0 0;border:1px solid #4a3a17;border-radius:var(--radius);background:#241d10}
+.gaps .head{padding:12px 16px;border-bottom:1px solid #4a3a17;font-size:13px;color:#efd39a}
+.gaps .head b{color:var(--warn)}
+.gaps table{width:100%;border-collapse:collapse;font-size:13px}
+.gaps th{text-align:left;font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#c9a75f;padding:8px 16px;border-bottom:1px solid #4a3a17}
+.gaps td{padding:10px 16px;border-bottom:1px solid #3a2f15;color:#e8dcc0;vertical-align:top}
+.gaps tr:last-child td{border-bottom:none}
+
+/* A verdict on the reproduction of a result. */
+.verdict{border-radius:var(--radius);border:1px solid var(--line);padding:16px;margin:0 0 16px}
+.verdict h3{font-size:13px;margin:0 0 4px}
+.verdict p{margin:0;font-size:13px;color:var(--ink-dim)}
+.verdict.ok{border-color:#23543a;background:#12281d}
+.verdict.ok h3{color:#a8e6c4}
+.verdict.bad{border-color:#5c2a24;background:#2b1614}
+.verdict.bad h3{color:#f0b7ae}
+.verdict.caution{border-color:#4a3a17;background:#2a2113}
+.verdict.caution h3{color:#efd39a}
+.diff{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0 0}
+.diff th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 8px 0;border-bottom:1px solid var(--line)}
+.diff td{padding:8px 12px 8px 0;border-bottom:1px solid var(--line-soft)}
+.diff td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.diff td.moved{color:var(--warn);font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="proto-note">Prototype &middot; mock data &middot; reads no server &middot; doc/prototypes/cuts/the-cut</div>
+<header class="shell-head" id="shell"></header>
+<main class="page" id="app"></main>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ---------------------------------------------------------------- */
+    /* The query string is the state, as every prototype here does.       */
+    /* ---------------------------------------------------------------- */
+
+    var Q = new URLSearchParams(location.search);
+    var S = {
+        surface: Q.get('surface') || 'list',
+        fcase: Q.get('case') || '',
+        tab: Q.get('tab') || 'body',
+        cut: Q.get('cut') || '',
+        report: Q.get('report') || '',
+        type: Q.get('type') || '',
+        sel: Q.get('sel') || '',
+        pin: Q.get('pin') || '',
+        step: Q.get('step') || '',
+        verdict: Q.get('verdict') || '',
+        q: Q.get('q') || ''
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* The fixtures. Everything on the page is one of these.              */
+    /* The mock tenant's clock is 07 October 2026, 09:00 UTC.             */
+    /* ---------------------------------------------------------------- */
+
+    var NOW = Date.parse('2026-10-07T09:00:00Z');
+    var PARTY = 'ACME London';
+    var SCOPE = 'LDN-RATES';
+    var SCOPE_LONG = 'ACME London \u00b7 LDN rates books';
+
+    /* The kind's declaration: what the take reads and the gate answers from. */
+    var KIND_DECL = {
+        EOD:   { name: 'End of day', requires_auth: true,  indicative: false,
+                 resolves: 'the close of the date the report covers' },
+        SOD:   { name: 'Start of day', requires_auth: false, indicative: false,
+                 resolves: 'the open of the date the report covers' },
+        IPV:   { name: 'Independent verification', requires_auth: true, indicative: false,
+                 resolves: 'the signed verification cut of that date' },
+        FLASH: { name: 'Flash', requires_auth: false, indicative: true,
+                 resolves: 'no rule: a report pins one of its cuts' },
+        LIVE:  { name: 'Live', requires_auth: false, indicative: true,
+                 resolves: 'the instant the run starts, and the run mints the cut' },
+        EOM:   { name: 'Month end', requires_auth: true, indicative: false, family: 'EOD',
+                 resolves: "the close of the month's last business day" },
+        EOY:   { name: 'Year end', requires_auth: true, indicative: false, family: 'EOD',
+                 resolves: "the close of the year's last business day" }
+    };
+
+    var CUTS = [
+        { id: 'c1', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-06',
+          instant: '2026-10-06T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'authorised',
+          taken_by: 'm.oduya', taken_at: '2026-10-06T16:41:00Z',
+          auth_by: 'a.reyes', auth_at: '2026-10-06T17:12:00Z', request: '4b7c1e02',
+          part: 'Finance', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 3 },
+        { id: 'c2', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-05',
+          instant: '2026-10-05T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'superseded',
+          taken_by: 'm.oduya', taken_at: '2026-10-05T16:38:00Z',
+          auth_by: 'a.reyes', auth_at: '2026-10-05T17:04:00Z', request: '2f90ba61',
+          part: 'Finance', ordinal: 1, deals: 1281, values: 3908, sets: 7, fixings: 146,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 2,
+          superseded_by: 'c1', superseded_at: '2026-10-06T17:12:00Z' },
+        { id: 'c3', code: 'FLASH', kind: 'Flash', label: 'FLASH.ACME-LONDON.2026-10-07',
+          instant: '2026-10-07T07:40:00Z', tz: 'UTC', cuttime: '',
+          scope: SCOPE, state: 'in_use',
+          taken_by: 'j.silva', taken_at: '2026-10-07T07:41:00Z',
+          auth_by: '', auth_at: '', request: '',
+          part: 'Market Risk', ordinal: 1, deals: 1287, values: 3920, sets: 7, fixings: 149,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 1 },
+        { id: 'c4', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-07',
+          instant: '2026-10-07T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'incomplete',
+          taken_by: 'm.oduya', taken_at: '2026-10-07T08:15:00Z',
+          auth_by: '', auth_at: '', request: '',
+          part: 'Finance', ordinal: 2, deals: 1284, values: 0, sets: 6, fixings: 149,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: '', runs: 0,
+          gaps: [
+            { part: 'Market data', item: 'USD-SOFR-3M \u00b7 ACME London',
+              why: 'The store holds no observation at or before 07 Oct 16:00Z for the series.',
+              remedy: 'Publish a set for the series, or state an instant at which the store holds one.' },
+            { part: 'Deals', item: 'IRS-2048-0117',
+              why: 'The population read returned the deal with no version current at the instant.',
+              remedy: 'Correct the deal, or state why it is absent from the day.' },
+            { part: 'Engine and code', item: 'the service build',
+              why: 'Nothing records the build of the services that assembled the body.',
+              remedy: 'Register the build, or name the version the run will use.' }
+          ] },
+        { id: 'c5', code: 'IPV', kind: 'Independent verification', label: 'IPV.ACME-LONDON.2026-10-06',
+          instant: '2026-10-06T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'taken',
+          taken_by: 'j.silva', taken_at: '2026-10-06T18:02:00Z',
+          auth_by: '', auth_at: '', request: '7a5e0b3f',
+          part: 'Market Risk', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 0 },
+        { id: 'c9', code: 'EOM', kind: 'Month end', label: 'EOM.ACME-LONDON.2026-09-30',
+          instant: '2026-09-30T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'authorised',
+          taken_by: 'm.oduya', taken_at: '2026-09-30T16:37:00Z',
+          auth_by: 'a.reyes', auth_at: '2026-09-30T17:02:00Z', request: '5c2a91bd',
+          part: 'Finance', ordinal: 1, deals: 1280, values: 3904, sets: 7, fixings: 145,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 2 },
+        { id: 'c8', code: 'LIVE', kind: 'Live', label: 'LIVE.ACME-LONDON.2026-10-07T08:31:00Z',
+          instant: '2026-10-07T08:31:00Z', tz: 'UTC', cuttime: '',
+          scope: SCOPE, state: 'in_use',
+          taken_by: 'system \u00b7 run #4820', taken_at: '2026-10-07T08:31:00Z',
+          auth_by: '', auth_at: '', request: '',
+          part: '', ordinal: 1, deals: 1287, values: 3921, sets: 7, fixings: 149,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 1 },
+        { id: 'c7', code: 'SOD', kind: 'Start of day', label: 'SOD.ACME-LONDON.2026-10-07',
+          instant: '2026-10-07T08:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-0800',
+          scope: SCOPE, state: 'in_use',
+          taken_by: 'm.oduya', taken_at: '2026-10-07T08:03:00Z',
+          auth_by: '', auth_at: '', request: '',
+          part: '', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 1 },
+        { id: 'c6', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-04',
+          instant: '2026-10-04T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+          scope: SCOPE, state: 'refused',
+          taken_by: 'm.oduya', taken_at: '2026-10-04T16:30:00Z',
+          auth_by: 'a.reyes', auth_at: '2026-10-04T17:20:00Z', request: '1c8d7a44',
+          part: 'Finance', ordinal: 1, deals: 1276, values: 3901, sets: 7, fixings: 145,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 0,
+          refused_reason: 'The population omits a deal the desk booked before the close. Take it again.' }
+    ];
+
+    /* The cut types: reference data a person maintains. Each carries the rules
+       that used to live as sentences, and the retention its cuts are kept for. */
+    var CUT_TYPES = [
+        { code: 'EOD', name: 'End of day', family: 'End of day', freq: 'daily',
+          desc: 'The body one valuation reads, fixed at the centre\u2019s close of the day.',
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
+          resolution: 'same_day_close',
+          months: 25, dest: 'warm', hold: false, order: 10 },
+        { code: 'EOM', name: 'Month end', family: 'End of day', freq: 'monthly',
+          desc: 'The same body as the end of day cut, fixed on the month\u2019s last business day ' +
+                'and kept for the monthly reports and their auditors.',
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
+          resolution: 'last_business_day_of_month_close',
+          months: 84, dest: 'archive', hold: false, order: 11 },
+        { code: 'EOY', name: 'Year end', family: 'End of day', freq: 'yearly',
+          desc: 'The same body as the end of day cut, fixed on the year\u2019s last business day ' +
+                'and kept longest of all.',
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
+          resolution: 'last_business_day_of_year_close',
+          months: 120, dest: 'archive', hold: true, order: 12 },
+        { code: 'SOD', name: 'Start of day', family: 'Start of day', freq: 'daily',
+          desc: 'The previous close carried forward to the centre\u2019s open.',
+          approval_kind: null, indicative: false, resolution: 'same_day_open',
+          months: 25, dest: 'warm', hold: false, order: 20 },
+        { code: 'IPV', name: 'Independent verification', family: 'Verification', freq: 'daily',
+          desc: 'The end of day body with selected values replaced by values the firm did not produce.',
+          approval_kind: 'reporting.ipv_cut_authorisation', indicative: false,
+          resolution: 'cut_it_is_built_on',
+          months: 84, dest: 'archive', hold: false, order: 30 },
+        { code: 'FLASH', name: 'Flash', family: 'Intraday', freq: 'on-demand',
+          desc: 'An indicative view taken at an instant a process names while the day moves.',
+          approval_kind: null, indicative: true, resolution: 'the_cut_named',
+          months: 3, dest: 'warm', hold: false, order: 40 },
+        { code: 'LIVE', name: 'Live', family: 'Consumer', freq: 'on-demand',
+          desc: 'The body at the instant a run starts; the run mints the cut and its values are indicative.',
+          approval_kind: null, indicative: true, resolution: 'run_instant',
+          months: 1, dest: 'warm', hold: false, order: 50 }
+    ];
+
+    /* The approval kinds, the inbox's own lookup. A type points at one of these
+       by code, and the words a screen draws come from the row it points at. */
+    var APPROVAL_KINDS = {
+        'reporting.eod_cut_authorisation': {
+            name: 'End of day cut authorisation',
+            decide: 'inbox::approvals:decide_finance', approvals: 1 },
+        'reporting.ipv_cut_authorisation': {
+            name: 'Verification cut authorisation',
+            decide: 'inbox::approvals:decide_market_risk', approvals: 1 }
+    };
+
+    function approvalKindOf(t) {
+        return t && t.approval_kind ? APPROVAL_KINDS[t.approval_kind] || null : null;
+    }
+
+    /* The function a decide permission belongs to, read from the permission's
+       own last word: inbox::approvals:decide_market_risk is Market Risk. */
+    function deciderWord(d) {
+        if (!d) return '';
+        var tail = d.split(':').pop().replace(/^decide_/, '').replace(/_/g, ' ');
+        return tail.replace(/\b[a-z]/g, function (ch) { return ch.toUpperCase(); });
+    }
+
+    /* The label a screen draws for a type's authorisation: derived from the
+       approval kind it points at, and never stored on the type. */
+    function authLabel(t, long) {
+        var k = approvalKindOf(t);
+        if (!k) return 'Not required';
+        return long ? k.name + ' \u00b7 ' + deciderWord(k.decide)
+                    : deciderWord(k.decide);
+    }
+
+    function typeByCode(code) {
+        var found = null;
+        CUT_TYPES.forEach(function (t) { if (t.code === code) found = t; });
+        return found;
+    }
+
+    /* The report definitions of the fixture, and the cut each selects. */
+    var REPORTS = [
+        { id: 'r1', name: 'Group Consolidated Exposure', type: 'risk', cycle: 'eod',
+          sel: 'EOD', pinned: '', last: '#4823', health: 'completed clean' },
+        { id: 'r2', name: 'Board Risk Dashboard', type: 'risk', cycle: 'eod',
+          sel: 'EOD', pinned: '', last: '#4819', health: 'completed clean' },
+        { id: 'r3', name: 'Intraday Risk Monitor', type: 'risk', cycle: 'intraday',
+          sel: 'LIVE', pinned: '', last: '#4820', health: 'completed clean' },
+        { id: 'r4', name: 'Headline Position', type: 'risk', cycle: 'eod',
+          sel: 'SOD', pinned: '', last: '#4818', health: 'completed with errors' },
+        { id: 'r5', name: 'NPV', type: 'risk', cycle: 'eod',
+          sel: '', pinned: '', last: '#4790', health: 'completed clean' },
+        { id: 'r6', name: 'CVA/DVA/FVA', type: 'risk', cycle: 'eod',
+          sel: 'EOD', pinned: 'c2', last: '#4771', health: 'completed clean' },
+        { id: 'r7', name: 'Large Exposures', type: 'risk', cycle: 'eod',
+          sel: 'IPV', pinned: '', last: '#4760', health: 'completed clean' },
+        { id: 'r8', name: 'Liquidity Coverage', type: 'risk', cycle: 'eod',
+          sel: 'EOD', pinned: '', date: '2026-10-04', last: '#4752', health: 'failed' },
+        { id: 'r10', name: 'FRTB SA Capital', type: 'risk', cycle: 'eod',
+          sel: 'EOM', pinned: '', date: '2026-09-30', last: '#4750', health: 'completed clean' }
+    ];
+
+    function reportById(id) {
+        var found = null;
+        REPORTS.forEach(function (r) { if (r.id === id) found = r; });
+        return found;
+    }
+
+    /* The cut the run settings of the fixture names. */
+    var CONFIG_CUT = 'c1';
+    var CONFIG = 'Acme official EOD run settings';
+    var DEFINITIONS = ['Group Consolidated Exposure', 'Board Risk Dashboard',
+                       'Headline Position', 'NPV'];
+
+    function byId(id) {
+        var found = null;
+        CUTS.forEach(function (c) { if (c.id === id) found = c; });
+        return found;
+    }
+
+    /* The kind's declaration of one cut, or the end of day one where the
+       fixture names no kind. A cut in use carries the declaration it was
+       admitted under. */
+    function decl(c) {
+        var code = (c && c.code) || 'EOD';
+        var t = typeByCode(code) || {};
+        var known = KIND_DECL[code] || {};
+        return { name: t.name || known.name || code,
+                 requires_auth: !!t.approval_kind,
+                 indicative: !!t.indicative,
+                 resolves: known.resolves || '' };
+    }
+
+    /* Whether a result priced from the cut carries the indicative mark: the
+       kind's own fact, and not the state's. */
+    function indicativeOutput(c) {
+        return decl(c).indicative;
+    }
+
+    /* A cut's consumability, as the run and the picker state it. The gate
+       follows the kind: a cut is refused only where its kind requires an
+       authorisation that has not been recorded. */
+    function consumable(c) {
+        if (!c) return { ok: false, why: 'The configuration names no cut, so a run has no body to value.' };
+        if (c.state === 'authorised' || c.state === 'in_use' || c.state === 'superseded')
+            return { ok: true, indicative: indicativeOutput(c) };
+        if (c.state === 'taken')
+            return { ok: false, why: 'That cut is taken and nobody has authorised it. ' +
+                'Its kind requires an authorisation, the body is fixed, and no run may price from ' +
+                'it. The request waits on ' + c.part + '.' };
+        if (c.state === 'incomplete')
+            return { ok: false, why: 'That cut holds no complete body. The gaps are on the cut\u2019s page, ' +
+                'and the take resumes once they are closed.' };
+        if (c.state === 'draft')
+            return { ok: false, why: 'That cut is a draft. No body is fixed, so there is nothing to price from.' };
+        return { ok: false, why: 'That cut was refused. ' + (c.refused_reason || '') +
+            ' A refusal is terminal, and the remedy is a new take.' };
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Small helpers.                                                     */
+    /* ---------------------------------------------------------------- */
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function dt(ts) {
+        if (!ts) return '';
+        var d = new Date(ts);
+        var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()];
+        function p(n) { return (n < 10 ? '0' : '') + n; }
+        return p(d.getUTCDate()) + ' ' + m + ' ' + d.getUTCFullYear() + ' ' +
+               p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + 'Z';
+    }
+
+    function rel(ts) {
+        if (!ts) return '';
+        var mins = Math.round((NOW - Date.parse(ts)) / 60000);
+        if (mins < 0) return 'in ' + Math.round(-mins / 60) + ' hours';
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' minutes ago';
+        var hours = Math.round(mins / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.round(hours / 24);
+        return days + (days === 1 ? ' day ago' : ' days ago');
+    }
+
+    function badge(word, cls) {
+        return '<span class="badge ' + cls + '">' + esc(word) + '</span>';
+    }
+
+    var STATE_WORD = { draft: 'Draft', incomplete: 'Incomplete', taken: 'Taken',
+                       in_use: 'In use', authorised: 'Authorised', refused: 'Refused',
+                       superseded: 'Superseded' };
+    var STATE_CLS = { draft: 'inactive', incomplete: 'bad', taken: 'pending',
+                      in_use: 'ok', authorised: 'ok', refused: 'bad', superseded: 'inactive' };
+
+    function stateBadge(c) {
+        return badge(STATE_WORD[c.state] || c.state, STATE_CLS[c.state] || 'inactive');
+    }
+
+    /* The sentence under a state that says why this cut stands where it does.
+       A kind that requires no authorisation states the basis, so a body nobody
+       signed is not read as a body somebody forgot. */
+    function basis(c) {
+        if (c.state === 'in_use')
+            return 'No authorisation is required by its kind';
+        if (c.state === 'superseded')
+            return c.auth_at ? 'Authorised before a later cut replaced it'
+                             : 'In use until a later cut replaced it';
+        if (c.state === 'authorised') return 'Authorised by ' + c.part;
+        if (c.state === 'taken') return 'waits on ' + (c.part || 'its kind');
+        return '';
+    }
+
+    /* The report's badge: the selection's kind, and the fact that qualifies it.
+       It is a classification of the report and not a status, so it borrows no
+       green, amber or red. */
+    function selectionBadge(r) {
+        if (!r.sel)
+            return '<span class="badge inactive">No cut</span>' +
+                '<span class="sub">no cut selected</span>';
+        var d = KIND_DECL[r.sel] || { indicative: false };
+        var out = '<span class="badge mono" style="color:var(--ink-dim)">' + esc(r.sel) + '</span>';
+        if (r.pinned) out += ' <span class="badge caution">Pinned</span>';
+        if (d.indicative) out += ' <span class="badge indicative">Indicative</span>';
+        out += '<span class="sub">' + (r.pinned
+            ? 'one specific cut'
+            : (r.sel === 'LIVE' ? 'no body until a run' : esc((KIND_DECL[r.sel] || {}).resolves || ''))) +
+            '</span>';
+        return out;
+    }
+
+    function indicativeTag(c) {
+        return indicativeOutput(c) && (c.state === 'in_use' || c.state === 'authorised' ||
+                                       c.state === 'superseded' || c.state === 'taken')
+            ? ' ' + badge('Indicative output', 'indicative') : '';
+    }
+
+    function kindBadge(c) {
+        return '<span class="mono">' + esc(c.code) + '</span>';
+    }
+
+    function link(href, text) {
+        return '<a href="' + href + '">' + esc(text) + '</a>';
+    }
+
+    function q(params) {
+        var base = { surface: S.surface, fcase: S.fcase, tab: S.tab,
+                     cut: S.cut, report: S.report, sel: S.sel, pin: S.pin,
+                     type: S.type, step: S.step, verdict: S.verdict };
+        Object.keys(params || {}).forEach(function (k) {
+            var v = params[k];
+            if (v === undefined || v === null || v === '') delete base[k];
+            else base[k] = v;
+        });
+        var parts = [];
+        Object.keys(base).forEach(function (k) {
+            var key = k === 'fcase' ? 'case' : k;
+            if (base[k]) parts.push(key + '=' + encodeURIComponent(base[k]));
+        });
+        return '?' + parts.join('&');
+    }
+
+    function lastChanged(who, when, reason) {
+        return '<p class="rule">Last changed: ' + esc(who) + ' \u00b7 ' + dt(when) + ' \u00b7 ' + esc(reason) + '</p>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The shell and the bar.                                             */
+    /* ---------------------------------------------------------------- */
+
+    var AREAS = ['Home', 'Reference data', 'Organisation', 'Market data', 'Trades',
+                 'Requests', 'Operations', 'Reporting', 'Development', 'Tenants'];
+
+    function shell(area) {
+        return '<span class="brand">ORE Studio</span><nav>' +
+            AREAS.map(function (a) {
+                return '<span' + (a === area ? ' class="on"' : '') + '>' + a + '</span>';
+            }).join('') +
+            '</nav><span class="who">acting in <b>ACME London</b> &middot; <b>m.oduya</b></span>';
+    }
+
+    function bar() {
+        function b(label, params, on) {
+            return '<button class="' + (on ? 'on' : '') + '" data-go="' + q(params) + '">' +
+                   esc(label) + '</button>';
+        }
+        var surfaces = [['Reports', { surface: 'reports', fcase: '' }, 'reports'],
+                        ['The report', { surface: 'report', fcase: '', tab: 'definition' }, 'report'],
+                        ['The selection', { surface: 'select', fcase: '', tab: 'definition' }, 'select'],
+                        ['The run', { surface: 'run', fcase: '' }, 'run'],
+                        ['Cuts', { surface: 'list', fcase: '' }, 'list'],
+                        ['The cut', { surface: 'record', fcase: '', tab: 'body' }, 'record'],
+                        ['Take a cut', { surface: 'take', fcase: '', step: '1' }, 'take'],
+                        ['Cut times', { surface: 'times', fcase: '' }, 'times'],
+                        ['A cut time', { surface: 'time', fcase: '' }, 'time'],
+                        ['Cut types', { surface: 'types', fcase: '' }, 'types'],
+                        ['A cut type', { surface: 'type', fcase: '' }, 'type']];
+        var cases = [['EOD', 'eod'], ['EOM', 'eom'], ['EOY', 'eoy'],
+                     ['SOD', 'sod'], ['LIVE', 'live'],
+                     ['no selection', 'none'], ['pinned', 'pinned'],
+                     ['missing cut', 'missing'],
+                     ['taken', 'taken'], ['in use', 'in-use'],
+                     ['refused', 'refused'], ['superseded', 'superseded'],
+                     ['incomplete', 'incomplete'], ['draft', 'draft'],
+                     ['the flash kind', 'flash'],
+                     ['loading', 'loading'], ['error', 'error']];
+        return '<span class="label">Surface</span>' +
+            surfaces.map(function (s) { return b(s[0], s[1], S.surface === s[2]); }).join('') +
+            '<span class="sep">&middot;</span><span class="label">State</span>' +
+            cases.map(function (c) { return b(c[0], { fcase: c[1] }, S.fcase === c[1]); }).join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 1: the cuts list.                                          */
+    /* ---------------------------------------------------------------- */
+
+    function visibleCuts() {
+        if (S.fcase === 'none') return [];
+        var rows = CUTS.slice();
+        switch (S.fcase) {
+        case 'draft': rows = [draftCut()]; break;
+        case 'incomplete': rows = [byId('c4')]; break;
+        case 'taken': rows = [byId('c5')]; break;
+        case 'refused': rows = [byId('c6')]; break;
+        case 'superseded': rows = [byId('c2'), byId('c1')]; break;
+        case 'in-use': rows = [byId('c3'), byId('c7')]; break;
+        case 'flash': rows = [byId('c3')]; break;
+        }
+        if (S.q) {
+            var needle = S.q.toLowerCase();
+            rows = rows.filter(function (c) {
+                return (c.label + ' ' + c.kind).toLowerCase().indexOf(needle) >= 0;
+            });
+        }
+        return rows;
+    }
+
+    function draftCut() {
+        return { id: 'c9', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-08',
+                 instant: '2026-10-08T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
+                 scope: SCOPE, state: 'draft', taken_by: 'm.oduya', taken_at: '2026-10-07T08:52:00Z',
+                 auth_by: '', auth_at: '', request: '', part: 'Finance', ordinal: 1,
+                 deals: 0, values: 0, sets: 0, fixings: 0, engine: '', wrapper: '', build: '', runs: 0 };
+    }
+
+    function listRows(rows) {
+        return rows.map(function (c) {
+            var cls = 'pick';
+            if (c.state === 'superseded') cls += ' ended';
+            if (c.state === 'incomplete' || c.state === 'refused') cls += ' open';
+            return '<tr class="' + cls + '" data-cut="' + c.id + '">' +
+                '<td class="key">' + esc(c.label) +
+                '<span class="sub">' + esc(SCOPE_LONG) + '</span></td>' +
+                '<td>' + kindBadge(c) + '<span class="sub">' + esc(c.kind) + '</span></td>' +
+                '<td class="mono nowrap">' + dt(c.instant) + '<span class="sub">' + esc(c.tz) + '</span></td>' +
+                '<td>' + stateBadge(c) + indicativeTag(c) +
+                (basis(c) ? '<span class="sub">' + esc(basis(c)) + '</span>' : '') +
+                (c.state === 'superseded'
+                    ? '<span class="sub">replaced ' + rel(c.superseded_at) + '</span>' : '') +
+                '</td>' +
+                '<td>' + esc(c.taken_by) + '</td>' +
+                '<td>' + (c.auth_by ? esc(c.auth_by) +
+                    '<span class="sub">' + ({ authorised: 'Authorised', refused: 'Refused' }[c.state] || '') + '</span>'
+                    : '<span class="dash">&mdash;</span>') + '</td>' +
+                '<td class="num">' + c.runs + '</td></tr>';
+        }).join('');
+    }
+
+    function surfaceList() {
+        if (S.fcase === 'loading')
+            return listFrame('<div class="tblstate"><b>Loading&hellip;</b>Reading the cuts of this scope.</div>');
+        if (S.fcase === 'error')
+            return listFrame('<div class="notice error"><b>The cuts could not be read.</b> The server said: ' +
+                'reporting.v1.cuts.list answered with an error. <button class="btn small">Retry</button></div>');
+        var rows = visibleCuts();
+        if (!rows.length) {
+            return listFrame('<div class="tblstate"><b>There are no cuts for this scope yet.</b>' +
+                'A report that prices from this party has no fixed body to name, so its run is refused ' +
+                'before it starts. Take the end of day cut at the close.' +
+                '<div><button class="btn primary">Take a cut</button></div></div>' +
+                '<p class="rule">Nothing is wrong: a day with no cut is a day whose reports have not been run.</p>');
+        }
+        var table = '<div class="panel"><table class="rows"><thead><tr>' +
+            '<th>Cut</th><th>Kind</th><th>Timepoint</th><th>State</th><th>Taker</th>' +
+            '<th>Authoriser</th><th>Runs</th></tr></thead><tbody>' + listRows(rows) +
+            '</tbody></table>' +
+            '<div class="pager"><span>1\u2013' + rows.length + ' of ' + rows.length + '</span>' +
+            '<span class="right">Page size <span class="dash">15</span></span></div></div>' +
+            notes(rows);
+        return listFrame(table);
+    }
+
+    function notes(rows) {
+        var out = '';
+        var open = rows.filter(function (c) {
+            return c.state === 'taken' || c.state === 'incomplete' || c.state === 'refused';
+        });
+        if (open.length) {
+            out += '<div class="notice warn"><b>' + open.length + ' cut' +
+                (open.length === 1 ? ' is' : 's are') + ' not consumable.</b> ' +
+                'A run prices only from a body that is fixed and, where its kind requires one, ' +
+                'signed; the reports of this scope are refused until the body is signed or retaken. ' +
+                open.map(function (c) { return esc(c.label) + ' is ' + esc(STATE_WORD[c.state].toLowerCase()) + '.'; }).join(' ') +
+                '</div>';
+        }
+        var inUse = rows.filter(function (c) { return c.state === 'in_use'; });
+        if (inUse.length) {
+            out += '<div class="notice info"><b>' + inUse.length + ' cut' +
+                (inUse.length === 1 ? ' is' : 's are') + ' in use with no signature.</b> ' +
+                'Their kinds require no authorisation, so a run may price from them: ' +
+                inUse.map(function (c) {
+                    return esc(c.label) + ' (' + esc(c.code) + ')';
+                }).join(', ') + '. A result priced from a cut whose kind fixes indicative values ' +
+                'carries the indicative mark.</div>';
+        }
+        out += '<p class="sentence"><b>What a cut is.</b> It fixes the body one valuation reads — the deals, ' +
+            'the market data, the reference data, the engine and the code — and it records who took it — so that a later ' +
+            'run of the same cut with the same engine reproduces the result.</p>';
+        out += '<p class="rule"><b>The order.</b> The timepoint, newest first, so the cut in use is the first ' +
+            'row. A superseded cut sits under the one that replaced it and stays readable, because the runs ' +
+            'that priced from it still reproduce from it.</p>';
+        out += '<p class="rule"><b>Who may take one.</b> A person who holds <code>reporting::cuts:take</code> ' +
+            'on this party. Where the kind requires an authorisation, the take raises an approval request, ' +
+            'and the person who took the cut cannot decide it: four eyes is the inbox\u2019s rule and the ' +
+            'request is the inbox\u2019s record.</p>';
+        out += '<div class="gap"><b>Gap.</b> No cut component, table, read or screen exists. No BFF route ' +
+            'serves reporting. Every row, count and state on this page is a fixture.</div>';
+        return out;
+    }
+
+    function listFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting <span class="sep">&rsaquo;</span> Cuts</p>' +
+            '<div class="pagehead"><div><h1>Cuts</h1>' +
+            '<p class="lead">The bodies of data this party fixed, and who signed each one.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button>' +
+            '<button class="btn primary">Take a cut</button></div></div>' +
+            '<div class="listtools"><div class="searchbox"><input placeholder="Search the label or the scope"></div>' +
+            '<select><option>Kind: all</option><option>End of day</option>' +
+            '<option>Independent verification</option><option>Flash</option>' +
+            '<option>Start of day</option></select>' +
+            '<select><option>State: all</option><option>Authorised</option><option>Taken</option>' +
+            '<option>Incomplete</option><option>Refused</option><option>Superseded</option></select>' +
+            '<select><option>Type: all</option>' +
+            CUT_TYPES.map(function (t) { return '<option>' + esc(t.code) + ' \u2014 ' + esc(t.name) +
+                '</option>'; }).join('') + '</select></div>' +
+            body;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 2: the cut's record page.                                  */
+    /* ---------------------------------------------------------------- */
+
+    function cutForRecord() {
+        if (S.cut) {
+            var picked = byId(S.cut);
+            if (picked) return picked;
+        }
+        switch (S.fcase) {
+        case 'none': return null;
+        case 'draft': return draftCut();
+        case 'incomplete': return byId('c4');
+        case 'taken': return byId('c5');
+        case 'refused': return byId('c6');
+        case 'superseded': return byId('c2');
+        case 'in-use': return byId('c7');
+        case 'flash': return byId('c3');
+        }
+        return byId(CONFIG_CUT);
+    }
+
+    function surfaceRecord() {
+        if (S.fcase === 'loading')
+            return recordFrame(null, '<div class="tblstate"><b>Loading&hellip;</b>Reading the cut.</div>');
+        if (S.fcase === 'error')
+            return recordFrame(null, '<div class="notice error"><b>The cut could not be read.</b> ' +
+                'reporting.v1.cuts.get answered with an error. <button class="btn small">Retry</button></div>');
+        var c = cutForRecord();
+        if (!c) {
+            return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+                '<span class="sep">&rsaquo;</span> Cuts</p>' +
+                '<div class="pagehead"><div><h1>Cuts</h1></div></div>' +
+                '<div class="tblstate"><b>No cut is chosen.</b>Pick a row of the cuts list to read one.</div>';
+        }
+        var body;
+        if (S.tab === 'auth') body = authTab(c);
+        else if (S.tab === 'runs') body = runsTab(c);
+        else if (S.tab === 'history') body = historyTab(c);
+        else body = bodyTab(c);
+        return recordFrame(c, body);
+    }
+
+    function recordFrame(c, body) {
+        var head;
+        if (!c) {
+            head = '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+                '<span class="sep">&rsaquo;</span> Cuts</p>' +
+                '<div class="pagehead"><div><h1>A cut</h1>' +
+                '<p class="lead">Reading the cut.</p></div></div>';
+            return head + body;
+        }
+        var acts = '';
+        if (c.state === 'incomplete' || c.state === 'draft')
+            acts = '<button class="btn">Resume the take</button>';
+        else if (c.state === 'taken')
+            acts = '<span class="faint">Waiting on ' + esc(c.part) + '</span>';
+        else if (c.state === 'refused')
+            acts = '<button class="btn">Take it again</button>';
+        else if (c.state === 'authorised' || c.state === 'in_use')
+            acts = '<button class="btn">Run it again</button>';
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+            '<span class="sep">&rsaquo;</span> Cuts <span class="sep">&rsaquo;</span> ' + esc(c.label) + '</p>' +
+            '<div class="pagehead"><div><h1>' + esc(c.label) + '</h1>' +
+            '<p class="lead">' + esc(c.kind) + ' &middot; ' + dt(c.instant) + ' &middot; ' +
+            esc(c.tz) + ' &middot; ' + esc(SCOPE_LONG) + '</p></div>' +
+            '<div class="actions"><span class="access">' +
+            (c.state === 'taken' || c.state === 'authorised' || c.state === 'in_use' ||
+             c.state === 'refused' || c.state === 'superseded' ? 'Read only' : 'Editable') + '</span>' +
+            (acts ? acts : '') +
+            '<button class="btn">Refresh</button></div></div>' +
+            '<div class="tabs">' +
+            ['body|The body', 'auth|Authorisation', 'runs|Runs', 'history|History'].map(function (t) {
+                var p = t.split('|');
+                return '<a class="' + (S.tab === p[0] ? 'on' : '') + '" href="' +
+                    q({ surface: 'record', tab: p[0], cut: c.id }) + '">' + p[1] + '</a>';
+            }).join('') + '</div>' +
+            body;
+    }
+
+    function bodyTab(c) {
+        var v = consumable(c);
+        var head = '';
+        if (c.state === 'authorised')
+            head = '<div class="notice success"><b>Authorised, so a run may price from it.</b> ' +
+                'A second person signed the body, and every figure in a run made from it is this body at ' +
+                dt(c.instant) + '.</div>';
+        else if (c.state === 'in_use')
+            head = '<div class="notice success"><b>In use, and no authorisation is required by its kind.</b> ' +
+                'The body is fixed and nothing is outstanding, so a run may price from it.' +
+                (indicativeOutput(c)
+                    ? ' The kind fixes indicative values, so every result priced from it carries the ' +
+                      'indicative mark.'
+                    : ' Its values are official, because they were approved when the body they carry ' +
+                      'forward was fixed.') + '</div>';
+        else if (c.state === 'superseded')
+            head = '<div class="notice warn"><b>Superseded, and still usable.</b> A later cut of the same ' +
+                'kind and scope replaced it on ' + dt(c.superseded_at) + '. ' +
+                (c.auth_at ? 'It was authorised before it was replaced. ' : 'Its kind required no authorisation. ') +
+                'A rerun reproduces an earlier result from it; a new run should normally name the cut ' +
+                'in use.</div>';
+        else if (c.state === 'taken')
+            head = '<div class="notice info"><b>Taken, and not yet authorised.</b> The body is fixed and ' +
+                'nobody has signed it, so no run may price from it. The request ' + esc(c.request) +
+                ' waits on ' + esc(c.part) + '.</div>';
+        else if (c.state === 'incomplete')
+            head = '<div class="notice error"><b>The body could not be assembled.</b> ' +
+                'It holds ' + c.gaps.length + ' gaps, and no run may price from it. The take resumes from ' +
+                'this page once they are closed.</div>';
+        else if (c.state === 'refused')
+            head = '<div class="notice error"><b>The authorisation was refused.</b> ' +
+                esc(c.refused_reason) + ' A refusal is terminal for this body: no second decision may be ' +
+                'taken on it, and the remedy is a new take.</div>';
+        else if (c.state === 'draft')
+            head = '<div class="notice info"><b>A draft, and not a cut yet.</b> The take began at ' +
+                dt(c.taken_at) + ' and no body is fixed. Nothing may price from it.</div>';
+
+        var parts = '<div class="grid2">' +
+            '<div class="panel"><h2>The deals</h2>' +
+            '<div class="facts">' +
+            fact('In the population', c.deals ? String(c.deals) : '\u2014') +
+            fact('Live', c.deals ? '1,196' : '\u2014') +
+            fact('Expired, fixed or settled', c.deals ? '88' : '\u2014') +
+            fact('Corrections inside the body', c.deals ? '3' : '\u2014') +
+            '</div><p class="rule">The books of the scope: LDN-RATES-FX, LDN-RATES-IRS, ' +
+            'LDN-RATES-BASIS. Every book revalues against the London centre.</p></div>' +
+            '<div class="panel"><h2>The market data</h2>' +
+            '<div class="facts">' +
+            fact('Published sets fixed', c.sets ? String(c.sets) : '\u2014') +
+            fact('Values in the snapshot', c.values ? c.values.toLocaleString('en-GB') : '\u2014') +
+            fact('Fixings in force', c.fixings ? String(c.fixings) : '\u2014') +
+            fact('Rates centre', 'London') +
+            '</div><p class="rule">A fixed snapshot: the sets are pinned to the as-of the profile resolved, ' +
+            'and a floating snapshot is not a cut.</p></div>' +
+            '</div>' +
+            '<div class="spacer"></div>' +
+            '<div class="grid2">' +
+            '<div class="panel"><h2>The reference data</h2>' +
+            '<p class="nums">Conventions 11,027 documents &middot; version 14<br>' +
+            'Holiday calendars 4 &middot; version 22<br>' +
+            'Curve configurations 7 &middot; version 31<br>' +
+            'Engine run settings &middot; version 9</p>' +
+            '<p class="rule">The versions in force at the timepoint, each a link to that version. ' +
+            'Whether the cut holds the version or the identifier is open.</p></div>' +
+            '<div class="panel"><h2>The engine and the code</h2>' +
+            '<div class="facts">' +
+            fact('Engine', c.engine || '\u2014') +
+            fact('Wrapper', c.wrapper || '\u2014') +
+            fact('Service build', c.build ? c.build : '\u2014') +
+            fact('Taken by', c.taken_by) +
+            '</div><p class="rule">A result reproduced from another build of the gathering code is not ' +
+            'reproduced from the same software.</p></div>' +
+            '</div>';
+
+        var gaps = '';
+        if (c.gaps) {
+            gaps = '<div class="gaps"><div class="head"><b>' + c.gaps.length + ' gaps stop this body.</b> ' +
+                'Each names the item, the reason and what would close it.</div><table><thead><tr>' +
+                '<th>Part</th><th>Item</th><th>Why it stands</th><th>What closes it</th></tr></thead><tbody>' +
+                c.gaps.map(function (g) {
+                    return '<tr><td>' + esc(g.part) + '</td><td class="key">' + esc(g.item) + '</td>' +
+                        '<td>' + esc(g.why) + '</td><td>' + esc(g.remedy) + '</td></tr>';
+                }).join('') + '</tbody></table></div>';
+        }
+
+        var identity = '<div class="spacer"></div><div class="panel"><h2>The identity</h2>' +
+            '<div class="facts">' +
+            fact('Label', '<span class="mono">' + esc(c.label) + '</span>') +
+            fact('Kind', esc(c.kind)) +
+            fact('Timepoint', '<span class="mono">' + dt(c.instant) + '</span>') +
+            fact('Timezone', esc(c.tz)) +
+            fact('Cut time', c.cuttime ? '<span class="mono">' + esc(c.cuttime) + '</span>' : '\u2014') +
+            fact('Take ordinal', String(c.ordinal)) +
+            '</div>' +
+            '<p class="rule"><b>Derived, never typed.</b> The label folds the kind, the scope and the date. ' +
+            'A retake of the same day carries the next ordinal, so no two cuts can carry one label.</p>' +
+            (v.ok ? '' : '<p class="rule" style="color:var(--warn)"><b>Not consumable.</b> ' + esc(v.why) + '</p>') +
+            '<div class="gap"><b>Gap.</b> No cut entity exists: these parts are drawn, and no table holds them. ' +
+            'The fixed snapshot and the deal copy are the two parts the repository cannot yet produce.</div>' +
+            '</div>';
+
+        return head + parts + gaps + identity;
+    }
+
+    function fact(k, v) {
+        return '<div class="fact"><p class="k">' + esc(k) + '</p><p class="v">' + v + '</p></div>';
+    }
+
+    function authTab(c) {
+        var d = decl(c);
+        /* A kind that requires no authorisation draws the basis where another
+           cut draws its decision. The record is the cut's; the request, if there
+           is one, is the inbox's. */
+        if (!d.requires_auth) {
+            var one = '<tr><td>Taken</td><td>' + esc(c.taken_by) + '</td>' +
+                '<td class="mono nowrap">' + dt(c.taken_at) + '</td>' +
+                '<td class="dim">The body was fixed. No request was raised, because the kind ' +
+                'requires none.</td></tr>';
+            return '<div class="notice info"><b>No authorisation is required by its kind.</b> ' +
+                'The ' + esc(d.name.toLowerCase()) + ' kind fixes a body that its occasion does not sign, ' +
+                'so the take writes the body and nothing else. The cut was usable as soon as it was taken' +
+                (d.indicative ? ', and every result priced from it is marked indicative.' : '.') + '</div>' +
+                '<div class="panel"><h2>The act</h2><table class="rows"><thead><tr>' +
+                '<th>Act</th><th>Account</th><th>Instant</th><th>What it did</th></tr></thead><tbody>' +
+                one + '</tbody></table></div>' +
+                '<p class="sentence"><b>The basis is a fact of the kind.</b> It is read from the kind\u2019s ' +
+                'declaration and not inferred from the absence of a signature, so a body nobody signed is ' +
+                'never taken for a body somebody forgot.</p>' +
+                '<p class="rule">Where a firm wanted a signature on this occasion, it changes the kind: ' +
+                'a declaration, a seeded approval kind and a row of the queue, and no screen.</p>' +
+                '<div class="gap"><b>Gap.</b> The declaration is stated in a knowledge page and no table ' +
+                'holds it, so this tab states a fact the server cannot yet answer.</div>';
+        }
+        var rows = '<tr><td>Taken</td><td>' + esc(c.taken_by) + '</td>' +
+            '<td class="mono nowrap">' + dt(c.taken_at) + '</td>' +
+            '<td class="dim">The body was fixed and the authorisation request raised in one act.</td></tr>';
+        if (c.state === 'authorised' || c.state === 'superseded') {
+            rows += '<tr><td>Approved</td><td>' + esc(c.auth_by) + '</td>' +
+                '<td class="mono nowrap">' + dt(c.auth_at) + '</td>' +
+                '<td class="dim">' + esc(c.part) + ' approved request ' + esc(c.request) +
+                ' in Approvals.</td></tr>';
+        } else if (c.state === 'refused') {
+            rows += '<tr><td>Refused</td><td>' + esc(c.auth_by) + '</td>' +
+                '<td class="mono nowrap">' + dt(c.auth_at) + '</td>' +
+                '<td class="dim">' + esc(c.part) + ' refused request ' + esc(c.request) +
+                ', with the reason the asker reads.</td></tr>';
+        } else if (c.state === 'incomplete' || c.state === 'draft') {
+            rows += '<tr><td>Authorisation</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td>' +
+                '<td class="dim">Not raised: a body with gaps is not offered for signature.</td></tr>';
+        } else {
+            rows += '<tr><td>Waiting</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td>' +
+                '<td class="dim">Request ' + esc(c.request) + ' waits on ' + esc(c.part) +
+                '. A hold parks the request and leaves the cut taken.</td></tr>';
+        }
+        var four = '<div class="notice info"><b>The taker cannot authorise.</b> ' +
+            'Four eyes is the inbox\u2019s rule: a decision by the person who raised the request is refused, ' +
+            'and one person approves a request once. Here the taker is <b>' + esc(c.taken_by) + '</b>, so ' +
+            'the decision needs another person who holds ' +
+            '<code>inbox::approvals:decide_' + esc((c.part || '').toLowerCase().replace(/ /g, '_')) +
+            '</code>.</div>';
+        var waiting = '';
+        if (c.state === 'taken')
+            waiting = '<div class="notice warn"><b>It waits on ' + esc(c.part) + '.</b> ' +
+                'The request is ' + esc(c.request) + ', and it is read and decided in Approvals. ' +
+                'One decision authorises it, and a refusal ends it.</div>';
+        var record = '<div class="panel"><h2>Where the request lives ' +
+            '<span class="sub">the inbox\u2019s record, not the cut\u2019s</span></h2>' +
+            '<div class="facts">' +
+            fact('Kind', '<span class="mono">reporting.cut_authorisation</span>') +
+            fact('Request', '<span class="mono">' + esc(c.request || '\u2014') + '</span>') +
+            fact('Decided by', esc(c.part || '\u2014')) +
+            fact('Queue', 'Approvals') +
+            '</div>' +
+            '<p class="rule">The request carries who asked, when, why, its state and its decision. The ' +
+            'cut\u2019s detail row hangs off it, keyed by the request, and holds the cut and the counts of ' +
+            'the body. This tab reads both and copies neither.</p></div>';
+        var label = '<p class="sentence"><b>What the label does not say.</b> The label names the kind, the ' +
+            'scope and the date. It says nothing about who signed the body, so the state and the authoriser ' +
+            'are read here as facts.</p>';
+        return four + waiting +
+            '<div class="panel"><h2>The acts</h2><table class="rows"><thead><tr>' +
+            '<th>Act</th><th>Account</th><th>Instant</th><th>What it did</th></tr></thead><tbody>' +
+            rows + '</tbody></table></div>' + record + label +
+            '<div class="gap"><b>Gap.</b> Approval requests exist and are queued in Approvals. The kind ' +
+            '<code>reporting.cut_authorisation</code> is not seeded, the cut\u2019s detail row does not ' +
+            'exist, and no web descriptor draws the body on the request page.</div>';
+    }
+
+    function runsTab(c) {
+        if (c.state === 'taken' || c.state === 'incomplete' || c.state === 'refused' || c.state === 'draft') {
+            return '<div class="panel"><h2>The runs that priced from this cut</h2>' +
+                '<p class="sentence">None. ' +
+                (c.state === 'taken'
+                    ? 'A run prices only from a body that is fixed and signed where its kind requires it, ' +
+                      'and this body is waiting on ' + esc(c.part) + '.'
+                    : 'No run can price from a body that is not fixed.') +
+                '</p></div>';
+        }
+        var runs = c.runs ? [
+            { id: '#4823', def: 'NPV', when: '2026-10-06T18:05:00Z', state: 'completed',
+              engine: c.engine, verdict: 'Reproduced with #4819', ok: true },
+            { id: '#4822', def: 'Headline Position', when: '2026-10-06T17:58:00Z', state: 'completed with errors',
+              engine: c.engine, verdict: 'Not compared: the run reported errors', ok: false },
+            { id: '#4819', def: 'Board Risk Dashboard', when: '2026-10-06T17:22:00Z', state: 'completed',
+              engine: c.engine, verdict: 'The original run', ok: true }
+        ] : [
+            { id: '#4791', def: 'NPV', when: '2026-10-05T18:02:00Z', state: 'completed',
+              engine: c.engine, verdict: 'Reproduced with #4790', ok: true },
+            { id: '#4790', def: 'Board Risk Dashboard', when: '2026-10-05T17:30:00Z', state: 'completed',
+              engine: c.engine, verdict: 'The original run', ok: true }
+        ];
+        var rows = runs.map(function (r) {
+            var st = r.state === 'completed' ? badge('Completed', 'ok') : badge('Completed with errors', 'caution');
+            return '<tr class="pick" data-run="' + r.id + '"><td class="key">' + r.id +
+                '<span class="sub">' + rel(r.when) + '</span></td>' +
+                '<td>' + esc(r.def) + '</td><td>' + st + '</td>' +
+                '<td class="mono">' + esc(r.engine) + '</td>' +
+                '<td>' + (r.ok ? esc(r.verdict) : '<span class="dim">' + esc(r.verdict) + '</span>') + '</td>' +
+                '<td class="acts">' + link(q({ surface: 'run', verdict: r.ok ? 'reproduced' : '', fcase: '' }),
+                    'Open the run') + '</td></tr>';
+        }).join('');
+        var notice = c.state === 'superseded'
+            ? '<div class="notice warn"><b>' + runs.length + ' runs rest on this body.</b> ' +
+              'The cut was superseded on ' + dt(c.superseded_at) + ' by ' +
+              esc((byId(c.superseded_by) || {}).label || '') + '. Every one of them still reproduces ' +
+              'from this cut, and none of them names the later one.</div>'
+            : '';
+        return notice + '<div class="panel"><h2>The runs that priced from this cut</h2>' +
+            '<table class="rows"><thead><tr><th>Run</th><th>Report</th><th>State</th>' +
+            '<th>Engine version</th><th>Comparison</th><th class="acts"></th></tr></thead><tbody>' +
+            rows + '</tbody></table></div>' +
+            '<p class="rule">A run refused before the engine is not in this list, because a refusal is not ' +
+            'a result.</p>' +
+            '<div class="gap"><b>Gap.</b> Nothing reads runs by cut, and a run does not record its cut or its ' +
+            'engine version. Both are needed before this tab has a source.</div>';
+    }
+
+    function historyTab(c) {
+        var entries = [
+            { when: c.taken_at, who: c.taken_by, what: 'Took the cut',
+              why:  decl(c).requires_auth
+                  ? 'The body was fixed and the authorisation request raised, in one act.'
+                  : 'The body was fixed. The kind requires no authorisation, so no request was raised.' }
+        ];
+        if (c.auth_at)
+            entries.unshift({ when: c.auth_at, who: c.auth_by,
+                what: c.state === 'refused' ? 'Refused the cut' : 'Authorised the cut',
+                why: c.state === 'refused' ? c.refused_reason
+                    : esc(c.part) + ' approved request ' + esc(c.request) + '.' });
+        if (c.superseded_at)
+            entries.unshift({ when: c.superseded_at, who: 'a.reyes',
+                what: 'Superseded by ' + ((byId(c.superseded_by) || {}).label || ''),
+                why: 'A later cut of the same kind and scope was authorised and took this one\u2019s place.' });
+        var rows = entries.map(function (e) {
+            return '<tr><td class="mono nowrap">' + dt(e.when) + '</td><td>' + esc(e.who) + '</td>' +
+                '<td>' + esc(e.what) + '</td><td class="dim">' + esc(e.why) + '</td></tr>';
+        }).join('');
+        return '<div class="panel"><h2>History</h2><table class="rows"><thead><tr>' +
+            '<th>Instant</th><th>Account</th><th>Act</th><th>Why</th></tr></thead><tbody>' + rows +
+            '</tbody></table></div>' +
+            '<p class="rule"><b>The body is immutable once taken.</b> The history of a taken cut has two ' +
+            'entries and no more: a change to the body would make every result read from it unreadable.</p>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 3: the take flow.                                          */
+    /* ---------------------------------------------------------------- */
+
+    var KINDS = [
+        { code: 'EOD', name: 'End of day', instant: 'The centre\u2019s close, 16:00 Europe/London',
+          why: 'The day\u2019s official revaluation of the scope, and the reports built on it', on: true },
+        { code: 'SOD', name: 'Start of day', instant: 'The centre\u2019s open, 08:00 Europe/London',
+          why: 'Opening a day from a known reference, carried forward from the previous end of day cut', on: false },
+        { code: 'IPV', name: 'Independent verification',
+          instant: 'The close of the cut it is built on, 16:00 Europe/London',
+          why: 'Testing our own marks against values the firm did not produce', on: false },
+        { code: 'FLASH', name: 'Flash', instant: 'An instant the process names',
+          why: 'An indicative view of value while the day is still moving', on: false }
+    ];
+
+    function surfaceTake() {
+        var step = S.step || '1';
+        if (S.fcase === 'none') {
+            return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+                '<span class="sep">&rsaquo;</span> Cuts <span class="sep">&rsaquo;</span> Take a cut</p>' +
+                '<div class="pagehead"><div><h1>Take a cut</h1></div></div>' +
+                '<div class="tblstate"><b>This party holds no centre.</b>' +
+                'A cut fixes a body against a rates centre, and no centre answers for this party yet. ' +
+                'Ask a tenant administrator to give the books their centre.</div>';
+        }
+        var body = step === '2' ? takeAssembly()
+                 : step === '3' ? takeReview()
+                 : step === '4' ? takePress()
+                 : takeKind();
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+            '<span class="sep">&rsaquo;</span> Cuts <span class="sep">&rsaquo;</span> Take a cut</p>' +
+            '<div class="pagehead"><div><h1>Take a cut</h1>' +
+            '<p class="lead">Four steps over one body. Nothing is fixed until the last press, and the ' +
+            'press raises the authorisation with the body where the kind requires one.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span></div></div>' +
+            rail(step) + body;
+    }
+
+    function rail(step) {
+        var steps = ['Kind and timepoint', 'The body', 'Review', 'Take the cut'];
+        return '<div class="rail">' + steps.map(function (s, i) {
+            var n = String(i + 1);
+            var cls = 'step' + (n === step ? ' on' : (Number(step) > i + 1 ? ' done' : ''));
+            return '<span class="' + cls + '"><span class="n">' + n + '</span>' + esc(s) + '</span>';
+        }).join('') + '</div>';
+    }
+
+    function takeKind() {
+        var flash = S.fcase === 'flash';
+        var instant = flash
+            ? '<div class="panel"><h2>The instant this cut fixes</h2>' +
+              '<div class="facts">' +
+              fact('Instant', '<span class="mono">07 Oct 2026 07:40Z</span>') +
+              fact('Timezone', 'UTC') +
+              fact('Cut time', '\u2014, the process names the instant') +
+              '</div><p class="rule">A process may fix a body at an instant that answers to no schedule ' +
+              'and no centre. The instant is stated with its clock, and it may not be in the future.</p></div>'
+            : '<div class="panel"><h2>The instant this cut fixes</h2>' +
+              '<div class="facts">' +
+              fact('Close of the London centre', '<span class="mono">06 Oct 2026 16:00Z</span>') +
+              fact('Timezone', 'Europe/London') +
+              fact('Cut time', '<span class="mono">CUT-LONDON-1600</span>') +
+              '</div><p class="sentence">The close is read from the cut times reference data and drawn ' +
+              'so a person reads it. ' + link(q({ surface: 'times' }), 'Read the cut times') + '.</p>' +
+              '<p class="rule">A named cut time fixes the time of day on the centre\u2019s own clock, ' +
+              'so a clock change moves the instant and not the name.</p></div>';
+        return '<div class="card"><h2>What kind of cut is this?</h2>' +
+            '<p class="lede">The kind names the occasion. It fixes the instant, the recurrence and the ' +
+            'centre, and it declares whether a cut of the occasion is signed before it is used, and ' +
+            'whether its values are indicative.</p>' +
+            '<div class="panel"><table class="rows"><thead><tr><th>Kind</th><th>What it fixes</th>' +
+            '<th>What it is for</th><th>Authorisation</th></tr></thead><tbody>' +
+            KINDS.map(function (k) {
+                var d = KIND_DECL[k.code];
+                return '<tr class="pick' + (k.on ? ' sel' : '') + '" data-kind="' + k.code + '">' +
+                    '<td class="key">' + esc(k.code) + '<span class="sub">' + esc(k.name) + '</span></td>' +
+                    '<td>' + esc(k.instant) + '</td><td class="dim">' + esc(k.why) + '</td>' +
+                    '<td>' + (d.requires_auth
+                        ? badge('Required', 'pending') + '<span class="sub">approval kind reporting.cut_authorisation</span>'
+                        : badge('Not required', 'inactive') + '<span class="sub">the take raises no request</span>') +
+                    (d.indicative ? '<span class="sub">its values are indicative</span>' : '') +
+                    '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<p class="rule">The basis is the kind\u2019s declaration, not a choice made at the take. Two ' +
+            'kinds require an authorisation and two do not, and the take reads the row rather than asking.</p>' +
+            '<div class="spacer"></div>' + instant +
+            '<div class="spacer"></div><div class="panel"><h2>The label this cut will carry</h2>' +
+            '<p class="mono" style="font-size:15px">' + (flash ? 'FLASH.ACME-LONDON.2026-10-07' :
+                'EOD.ACME-LONDON.2026-10-06') + '</p>' +
+            '<p class="rule"><b>Derived, never typed.</b> The kind, the scope and the date fold into the ' +
+            'label, and a retake of the same day carries the next ordinal.</p></div>' +
+            '<div class="spacer"></div><div class="panel"><h2>The scope, and what it decides</h2>' +
+            '<p class="nums">' + esc(SCOPE_LONG) + ' &middot; 3 books &middot; London centre</p>' +
+            '<p class="rule">A scope is the set of books that revalue together. A scope spanning two centres ' +
+            'is refused here rather than discovered at the assembly.</p></div>' +
+            '<div class="savebar"><span class="faint">Step 1 of 4</span>' +
+            '<div class="right"><button class="btn">Cancel</button>' +
+            '<button class="btn primary">Assemble the body</button></div></div></div>';
+    }
+
+    function takeAssembly() {
+        var incomplete = S.fcase === 'incomplete' || S.fcase === 'draft';
+        var c = incomplete ? byId('c4') : byId(CONFIG_CUT);
+        var parts = [
+            { name: 'The deals', state: 'Closed', cls: 'ok',
+              nums: c.deals + ' deals \u00b7 1,196 live \u00b7 88 expired, fixed or settled \u00b7 3 corrections',
+              note: 'The population at 06 Oct 16:00Z, copied from the versioned store.' },
+            { name: 'The market data', state: incomplete ? 'Open' : 'Closed', cls: incomplete ? 'bad' : 'ok',
+              nums: incomplete ? '6 of 7 sets resolved \u00b7 0 values' :
+                  c.sets + ' published sets \u00b7 ' + c.values.toLocaleString('en-GB') + ' values \u00b7 ' +
+                  c.fixings + ' fixings',
+              note: 'A fixed snapshot: every market role resolved to one published set at its as-of.' },
+            { name: 'The reference data', state: 'Closed', cls: 'ok',
+              nums: 'Conventions v14 \u00b7 calendars v22 \u00b7 curve configurations v31 \u00b7 settings v9',
+              note: 'The versions in force at the timepoint, each a link to that version.' },
+            { name: 'The engine and the code', state: incomplete ? 'Open' : 'Closed',
+              cls: incomplete ? 'bad' : 'ok',
+              nums: 'ORE-Studio-7.1 \u00b7 wrapper v1.2.0 \u00b7 build ' + (incomplete ? '\u2014' : 'a1f3c9e'),
+              note: 'The engine the work will run and the build of the services that assembled the body.' },
+            { name: 'The taking identity', state: 'Closed', cls: 'ok',
+              nums: 'm.oduya \u00b7 ACME London \u00b7 07 Oct 2026 08:15Z',
+              note: 'Who fixed the body, for whom, and at what instant.' }
+        ];
+        var rows = parts.map(function (p) {
+            return '<tr><td class="key">' + esc(p.name) + '</td>' +
+                '<td>' + badge(p.state, p.cls) + '</td>' +
+                '<td class="dim">' + esc(p.nums) + '</td>' +
+                '<td class="dim">' + esc(p.note) + '</td></tr>';
+        }).join('');
+        var gaps = '';
+        if (incomplete) {
+            gaps = '<div class="gaps"><div class="head"><b>' + c.gaps.length + ' gaps stop this body.</b> ' +
+                'They do not fail the take: the draft keeps them, and the list is the record.</div>' +
+                '<table><thead><tr><th>Part</th><th>Item</th><th>Why it stands</th><th>What closes it</th>' +
+                '</tr></thead><tbody>' + c.gaps.map(function (g) {
+                    return '<tr><td>' + esc(g.part) + '</td><td class="key">' + esc(g.item) + '</td>' +
+                        '<td>' + esc(g.why) + '</td><td>' + esc(g.remedy) + '</td></tr>';
+                }).join('') + '</tbody></table></div>';
+        }
+        var foot = incomplete
+            ? '<div class="savebar"><span class="faint">Step 2 of 4</span>' +
+              '<div class="right"><button class="btn">Cancel</button>' +
+              '<button class="btn">Save as a draft</button></div></div>' +
+              '<p class="rule">No <b>Take the cut</b> is drawn while a gap stands: a decider would be asked ' +
+              'to sign a body that does not meet the definition.</p>'
+            : '<div class="savebar"><span class="faint">Step 2 of 4</span>' +
+              '<div class="right"><button class="btn">Cancel</button>' +
+              '<button class="btn primary">Review the body</button></div></div>';
+        return '<div class="card"><h2>The body, assembled</h2>' +
+            '<p class="lede">Every part of the body, what the assembly resolved, and its state. The assembly ' +
+            'writes nothing until the last press.</p>' +
+            '<div class="panel"><table class="rows"><thead><tr><th>Part</th><th>State</th>' +
+            '<th>What it holds</th><th>What it is</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            gaps + foot + '</div>';
+    }
+
+    function takeReview() {
+        var c = byId(CONFIG_CUT);
+        var diffs = [
+            ['Deals in the population', '1,281', '1,284', '+3'],
+            ['Deals that left', '\u2014', '2', '+2'],
+            ['Deals whose state moved', '\u2014', '17', '+17'],
+            ['Published sets fixed', '7', '7', '\u2014'],
+            ['Market data values', '3,908', '3,912', '+4'],
+            ['Fixings in force', '146', '148', '+2'],
+            ['Curve configurations', 'v30', 'v31', 'moved'],
+            ['Engine version', 'ORE-Studio-7.1', 'ORE-Studio-7.1', '\u2014']
+        ];
+        var rows = diffs.map(function (d) {
+            var moved = d[3] !== '\u2014';
+            return '<tr><td>' + esc(d[0]) + '</td><td class="num">' + esc(d[1]) + '</td>' +
+                '<td class="num">' + esc(d[2]) + '</td>' +
+                '<td class="' + (moved ? 'moved' : 'num same') + '">' + esc(d[3]) + '</td></tr>';
+        }).join('');
+        return '<div class="card"><h2>What this cut holds, against the previous cut</h2>' +
+            '<p class="lede">A cut is read against its predecessor, because the movement between two cuts is ' +
+            'what the day\u2019s reports state.</p>' +
+            '<div class="facts">' +
+            fact('Deals', '1,284') + fact('Market data values', '3,912') +
+            fact('Published sets', '7') + fact('Gaps', '0') + '</div>' +
+            '<div class="panel"><h2>The difference from EOD.ACME-LONDON.2026-10-05</h2>' +
+            '<table class="diff"><thead><tr><th>What</th><th>Previous cut</th><th>This cut</th>' +
+            '<th>Movement</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            '<div class="spacer"></div><div class="panel"><h2>What it decides, and what it does not</h2>' +
+            '<p class="sentence"><b>It decides</b> which body one valuation reads, and it records the engine ' +
+            'and the code, so a later run of the same cut with the same engine reproduces its result.</p>' +
+            '<p class="sentence"><b>It does not decide</b> the day\u2019s prices, the conventions, or how a ' +
+            'product is priced: it records what was in force at ' + dt(c.instant) + '.</p></div>' +
+            '<div class="spacer"></div><div class="panel"><h2>The authorisation this press will raise</h2>' +
+            '<div class="facts">' +
+            fact('Part that decides', 'Finance') +
+            fact('Raised by', 'm.oduya') +
+            fact('Four eyes', 'The taker cannot decide it') +
+            '</div><p class="rule">The body is frozen at the press, so what the decider reads is what gets ' +
+            'authorised.</p></div>' +
+            '<div class="savebar"><span class="faint">Step 3 of 4</span>' +
+            '<div class="right"><button class="btn">Back to the body</button>' +
+            '<button class="btn primary">Take the cut</button></div></div></div>';
+    }
+
+    function takePress() {
+        var c = byId(CONFIG_CUT);
+        var flash = S.fcase === 'flash';
+        if (flash) {
+            return '<div class="card"><h2>The cut is taken, and its kind requires no authorisation</h2>' +
+                '<p class="lede">The body is frozen. No field changes from here, and no request is raised, ' +
+                'because the kind says none is needed.</p>' +
+                '<div class="notice success"><b>In use.</b> The body is fixed, the kind requires no ' +
+                'authorisation, and a run may price from it now. The cut is <b>' +
+                esc(byId('c3').label) + '</b>.</div>' +
+                '<div class="panel"><h2>What the press did</h2><table class="rows"><thead><tr>' +
+                '<th>Fact</th><th>Value</th></tr></thead><tbody>' +
+                '<tr><td>Body frozen at</td><td class="mono">07 Oct 2026 07:41Z</td></tr>' +
+                '<tr><td>Authorisation</td><td>None raised: the flash kind requires none</td></tr>' +
+                '<tr><td>Cut state</td><td>' + badge('In use', 'ok') +
+                ' ' + badge('Indicative output', 'indicative') + '</td></tr>' +
+                '<tr><td>What a result carries</td><td>The indicative mark, because the kind fixes ' +
+                'indicative values</td></tr></tbody></table></div>' +
+                '<div class="spacer"></div>' +
+                '<div class="notice info"><b>Why no signature.</b> The occasion is a decision taken while ' +
+                'the day moves, and a signature would arrive after the decision it serves. The body is ' +
+                'still complete and still reproducible; it is the values that are indicative, and the ' +
+                'mark says so wherever the cut is named.</div>' +
+                '<div class="savebar"><span class="faint">Step 4 of 4</span>' +
+                '<div class="right"><button class="btn">Open the cut</button>' +
+                '<button class="btn">Back to the cuts</button></div></div></div>';
+        }
+        return '<div class="card"><h2>The cut is taken, and the authorisation is raised</h2>' +
+            '<p class="lede">The body is frozen. No field changes from here, and the request is with the ' +
+            'deciders.</p>' +
+            '<div class="notice success"><b>Taken.</b> The body is fixed, the request <b>4b7c1e02</b> was ' +
+            'raised for the kind\u2019s deciding permission, and the cut is <b>' + esc(c.label) + '</b>. ' +
+            'No run may price from it until the request is approved.</div>' +
+            '<div class="panel"><h2>What the press did</h2><table class="rows"><thead><tr>' +
+            '<th>Fact</th><th>Value</th></tr></thead><tbody>' +
+            '<tr><td>Body frozen at</td><td class="mono">07 Oct 2026 09:01Z</td></tr>' +
+            '<tr><td>Approval request</td><td class="mono">4b7c1e02 &middot; kind ' +
+            'reporting.cut_authorisation</td></tr>' +
+            '<tr><td>Decided by</td><td>Finance &middot; <code>inbox::approvals:decide_finance</code></td></tr>' +
+            '<tr><td>Cut state</td><td>' + badge('Taken', 'pending') + '</td></tr>' +
+            '<tr><td>Previous cut of the same kind and scope</td><td>' +
+            'EOD.ACME-LONDON.2026-10-05 &middot; stays Authorised, becomes Superseded when this one is ' +
+            'approved</td></tr></tbody></table></div>' +
+            '<div class="spacer"></div>' +
+            '<div class="notice info"><b>You cannot authorise this cut.</b> Four eyes is the inbox\u2019s ' +
+            'rule: you raised the request, so the decision needs another person who holds ' +
+            '<code>inbox::approvals:decide_finance</code>. The screen does not draw the button, and the ' +
+            'inbox would refuse the decision.</div>' +
+            '<div class="savebar"><span class="faint">Step 4 of 4</span>' +
+            '<div class="right"><button class="btn">Open the cut</button>' +
+            '<button class="btn">Back to the cuts</button></div></div></div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 4: the picker that consumes a cut.                         */
+    /* ---------------------------------------------------------------- */
+
+    /* ---------------------------------------------------------------- */
+    /* Surfaces 4 to 6: the report, its selection, and the run.           */
+    /* There is no pricing surface: a cut is selected where a report is    */
+    /* defined, and a price is read where a run is recorded.              */
+    /* ---------------------------------------------------------------- */
+
+    /* The date a report covers. A definition states a cycle, and the run
+       settings state the date; the fixture reads the one from the other. */
+    function coverDate(r) {
+        return r.date || '2026-10-06';
+    }
+
+    /* What a selection resolves to now: the cut, or the sentence that refuses
+       it. One operation answers this for a preview and for a run. */
+    function resolve(r) {
+        if (!r.sel)
+            return { ok: false, why: 'This report has no cut selection, so a run has no body to value. ' +
+                'Select a kind of cut, or one of the cuts the party holds.' };
+        if (r.pinned) {
+            var c = byId(r.pinned);
+            if (!c) return { ok: false, why: 'The cut this report names no longer exists.' };
+            var v = consumable(c);
+            if (!v.ok) return { ok: false, cut: c, why: v.why };
+            return { ok: true, cut: c, indicative: indicativeOutput(c) };
+        }
+        if (r.sel === 'LIVE')
+            return { ok: true, live: true,
+                     why: null };
+        var date = coverDate(r);
+        var match = null;
+        CUTS.forEach(function (c) {
+            if (r.sel === 'EOD') {
+                /* the end of day family: a plain close, or the month end or year
+                   end body of the same day */
+                if (c.instant.slice(0, 10) === date && (c.code === 'EOD' || c.code === 'EOM' ||
+                        c.code === 'EOY')) match = c.code === 'EOD' ? c : (match || c);
+                return;
+            }
+            if (r.sel === 'EOM' || r.sel === 'EOY') {
+                /* the occasion's own kind, in the month or the year covered */
+                if (c.code !== r.sel) return;
+                if (c.instant.slice(0, 7) === date.slice(0, 7)) match = c;
+                return;
+            }
+            if (c.code === r.sel && c.instant.slice(0, 10) === date) match = c;
+        });
+        if (!match) {
+            var want = r.sel === 'EOD' || r.sel === 'EOM' || r.sel === 'EOY'
+                ? (r.sel === 'EOD' ? 'end of day family' :
+                   (r.sel === 'EOM' ? 'month end' : 'year end'))
+                : (KIND_DECL[r.sel] || {}).name.toLowerCase();
+            return { ok: false, why: 'No ' + want + ' cut covers ' +
+                (r.sel === 'EOM' ? 'the month of ' : (r.sel === 'EOY' ? 'the year of ' : '')) +
+                date + ' for these books. Somebody must take one.' };
+        }
+        var verdict = consumable(match);
+        if (!verdict.ok) return { ok: false, cut: match, why: verdict.why };
+        return { ok: true, cut: match, indicative: indicativeOutput(match) };
+    }
+
+    function surfaceReports() {
+        if (S.fcase === 'loading')
+            return reportsFrame('<div class="tblstate"><b>Loading&hellip;</b>Reading the reports.</div>');
+        if (S.fcase === 'error')
+            return reportsFrame('<div class="notice error"><b>The reports could not be read.</b> ' +
+                'The server said: reporting.v1.report_definitions.list answered with an error. ' +
+                '<button class="btn small">Retry</button></div>');
+        var rows = REPORTS.map(function (r) {
+            return '<tr class="pick" data-report="' + r.id + '">' +
+                '<td class="key">' + esc(r.name) + '<span class="sub">' + esc(r.type) + '</span></td>' +
+                '<td>' + selectionBadge(r) + '</td>' +
+                '<td class="mono">' + esc(r.cycle) + '</td>' +
+                '<td>' + esc(r.last) + '</td>' +
+                '<td>' + badge(r.health === 'completed clean' ? 'Completed clean' :
+                    (r.health === 'failed' ? 'Failed' : 'Completed with errors'),
+                    r.health === 'completed clean' ? 'ok' : (r.health === 'failed' ? 'bad' : 'caution')) +
+                '</td></tr>';
+        }).join('');
+        return reportsFrame('<div class="panel"><table class="rows"><thead><tr>' +
+            '<th>Report</th><th>Cut</th><th>Cycle</th><th>Latest run</th><th>Health</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<div class="pager"><span>1\u2013' + REPORTS.length + ' of ' + REPORTS.length + '</span>' +
+            '<span class="right">Page size <span class="dash">15</span></span></div></div>' +
+            '<p class="sentence"><b>What the badge is.</b> It names the cut the report selects: the ' +
+            'close of the date it covers, the open of that date, a verification, or the instant the run ' +
+            'starts. It is a classification of the report and not a status, so it borrows no green, amber ' +
+            'or red; the health of the last run stands in its own column.</p>' +
+            '<p class="rule"><b>One body per run.</b> The run resolves the selection to one cut and prices ' +
+            'from that body. A report that names a specific cut prices from that body whatever the date, ' +
+            'which is how a result is reproduced on purpose.</p>' +
+            '<div class="gap"><b>Gap.</b> The definition carries no cut selection, so the list has no ' +
+            'badge to draw. <code>reporting.v1.ops.resolve_cut</code> does not exist, so the resolution ' +
+            'this column promises cannot be computed.</div>');
+    }
+
+    function reportsFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+            '<span class="sep">&rsaquo;</span> Reports</p>' +
+            '<div class="pagehead"><div><h1>Reports</h1>' +
+            '<p class="lead">The definitions this party runs, what each selects to price from, and how ' +
+            'its latest run went.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button>' +
+            '<button class="btn primary">Create a report</button></div></div>' + body;
+    }
+
+    function reportForRecord() {
+        if (S.report) { var p = reportById(S.report); if (p) return p; }
+        switch (S.fcase) {
+        case 'none': return reportById('r5');
+        case 'sod': return reportById('r4');
+        case 'live': return reportById('r3');
+        case 'pinned': return reportById('r6');
+        case 'taken': return reportById('r7');
+        case 'refused': return reportById('r8');
+        case 'eom': return reportById('r10');
+        case 'missing': return { id: 'r9', name: 'Stressed VaR', type: 'risk', cycle: 'eod',
+                                 sel: 'EOD', pinned: '', date: '2026-10-08',
+                                 last: '\u2014', health: 'never run' };
+        }
+        return reportById('r1');
+    }
+
+    function surfaceReport() {
+        var r = reportForRecord();
+        var body = S.tab === 'market' ? reportMarketTab(r) : reportDefinitionTab(r);
+        return reportFrame(r, body, '');
+    }
+
+    function reportFrame(r, body, overlay) {
+        var crumbs = '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+            '<span class="sep">&rsaquo;</span> Reports <span class="sep">&rsaquo;</span> ' +
+            esc(r.name) + '</p>';
+        var head = '<div class="pagehead"><div><h1>' + esc(r.name) + '</h1>' +
+            '<p class="lead">' + esc(r.type) + ' &middot; ' + esc(r.cycle) + ' &middot; on-demand ' +
+            '&middot; party ACME London &middot; ' + selectionBadge(r) + '</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Run now</button></div></div>';
+        var tabs = '<div class="tabs">' +
+            ['definition|Definition', 'scope|Scope', 'analytics|Analytics',
+             'market|Market', 'history|History'].map(function (t) {
+                var x = t.split('|');
+                return '<a class="' + (S.tab === x[0] ? 'on' : '') + '" href="' +
+                    q({ surface: 'report', tab: x[0], fcase: '', report: r.id }) + '">' + x[1] + '</a>';
+            }).join('') + '</div>';
+        return crumbs + head + tabs + body + overlay;
+    }
+
+    function reportDefinitionTab(r) {
+        var v = resolve(r);
+        var panel = '<div class="panel"><h2>What this report prices from</h2>' +
+            '<div class="facts">' +
+            fact('Cut selection', r.sel
+                ? '<span class="mono">' + esc(r.sel) + '</span>' + (r.pinned ? ' &middot; pinned' : '')
+                : '<span class="dash">&mdash;</span>') +
+            fact('Kind', r.sel ? esc((KIND_DECL[r.sel] || {}).name || r.sel) : '\u2014') +
+            fact('Resolves against', r.sel ? esc((KIND_DECL[r.sel] || {}).resolves || '') : '\u2014') +
+            fact('Date the report covers', r.sel === 'LIVE'
+                ? '<span class="dash">\u2014, the run supplies the instant</span>'
+                : '<span class="mono">' + coverDate(r) + '</span>') +
+            '</div>' +
+            '<p class="sentence"><b>It decides</b> which fixed body this report values, by naming a kind ' +
+            'of cut or one cut. <b>It does not decide</b> the valuation date, which the run settings hold, ' +
+            'nor which published set each market role resolves to, which is a fact of the body.</p>' +
+            '<div class="savebar"><span class="faint">Written with the definition</span>' +
+            '<div class="right"><button class="btn">Edit</button></div></div></div>';
+        return panel + '<div class="spacer"></div>' + previewPanel(r, v, false) +
+            '<p class="rule">A change to the selection is a version of the definition, with an account ' +
+            'and a reason. A run already produced keeps the cut it recorded, so the history explains a ' +
+            'difference between two runs rather than relabelling them.</p>';
+    }
+
+    function previewPanel(r, v, live) {
+        if (!r.sel)
+            return '<div class="notice warn"><b>No cut selected.</b> ' + esc(v.why) + '</div>';
+        if (!v.ok)
+            return '<div class="notice error"><b>The selection resolves to nothing usable.</b> ' +
+                esc(v.why) + ' The run would be refused before the engine is reached, in this sentence.' +
+                '</div>';
+        if (v.live)
+            return '<div class="notice info"><b>LIVE resolves at the run.</b> ' +
+                'It will fix a body at the instant the run starts, from the values the store holds then, ' +
+                'and the run mints the cut. Every result it prices is marked indicative, and it is ' +
+                'reproducible only by naming the cut the run recorded.</div>';
+        var c = v.cut;
+        return '<div class="panel"><h2>What the selection resolves to now</h2>' +
+            '<div class="facts">' +
+            fact('Cut', '<span class="mono">' + esc(c.label) + '</span>') +
+            fact('Timepoint', '<span class="mono">' + dt(c.instant) + '</span>') +
+            fact('State', stateBadge(c) + indicativeTag(c)) +
+            fact('Basis', c.auth_by ? esc(c.auth_by) + ' authorised it' : 'No authorisation required') +
+            fact('Holdings', c.deals.toLocaleString('en-GB') + ' deals \u00b7 ' +
+                c.values.toLocaleString('en-GB') + ' values') +
+            fact('Runs resting on it', String(c.runs)) +
+            '</div>' +
+            '<p class="rule">The preview is the resolution the run will make, computed by the same ' +
+            'operation against the same store, so a stale selection is visible before a run discovers it.' +
+            '</p></div>';
+    }
+
+    function reportMarketTab(r) {
+        var v = resolve(r);
+        var resolved = v.ok && v.cut ? v.cut : (v.ok && v.live ? byId('c8') : null);
+        var rows = resolved
+            ? '<tr class="pick" data-cut="' + resolved.id + '">' +
+              '<td class="key">' + esc(resolved.label) + '</td>' +
+              '<td class="mono nowrap">' + dt(resolved.instant) + '</td>' +
+              '<td>' + stateBadge(resolved) + indicativeTag(resolved) + '</td>' +
+              '<td>' + esc(resolved.taken_by) + '</td>' +
+              '<td class="num">' + resolved.deals.toLocaleString('en-GB') + '</td></tr>'
+            : '<tr><td colspan="5" class="dash">The selection resolves to nothing. No run can price.</td></tr>';
+        return '<div class="panel"><h2>The selection, and the cut the last run resolved</h2>' +
+            '<div class="facts">' +
+            fact('Selection', r.sel ? '<span class="mono">' + esc(r.sel) + '</span>' +
+                (r.pinned ? ' &middot; pinned' : '') : '<span class="dash">&mdash;</span>') +
+            fact('Last run', esc(r.last)) +
+            fact('Last run\u2019s cut', resolved ? '<span class="mono">' + esc(resolved.label) + '</span>'
+                : '<span class="dash">&mdash;</span>') +
+            '</div>' +
+            '<p class="sentence">The two are different facts. The selection is what the next run will ' +
+            'resolve; the cut is what the last one used, and it may be a body the selection no longer ' +
+            'points at.</p>' +
+            '<table class="rows"><thead><tr><th>Cut the last run priced from</th><th>Timepoint</th>' +
+            '<th>State</th><th>Taken by</th><th>Deals</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<p class="rule">The run records the cut it resolved, so a result names its body even after ' +
+            'the selection moves.</p>' +
+            '<div class="gap"><b>Gap.</b> <code>report_instance</code> carries <code>priced_at</code> and ' +
+            '<code>price_note</code> and nothing that names a cut, so this tab has no source today.</div>' +
+            '</div>';
+    }
+
+    function surfaceSelect() {
+        var r = reportForRecord();
+        var chosen = S.sel || r.sel || '';
+        var pinned = S.pin || r.pinned || '';
+        /* Only the kinds a rule can resolve are offered here. A flash cut or one
+           an ad-hoc process names answers to no schedule, so a report reaches it by
+           pinning one of its cuts. */
+        var kinds = CUT_TYPES.filter(function (t) { return t.resolution !== 'the_cut_named'; })
+            .map(function (t) { return t.code; }).map(function (k) {
+            var d = KIND_DECL[k];
+            return '<tr class="pick' + (chosen === k && !pinned ? ' sel' : '') + '" data-sel="' + k + '">' +
+                '<td class="key">' + esc(k) + '<span class="sub">' + esc(d.name) + '</span></td>' +
+                '<td>' + esc(d.resolves) + '</td>' +
+                '<td>' + (d.requires_auth ? badge('Signed', 'pending') : badge('Not signed', 'inactive')) +
+                '<span class="sub">' + esc(authLabel(typeByCode(k))) + '</span>' +
+                (d.indicative ? ' ' + badge('Indicative', 'indicative') : '') + '</td></tr>';
+        }).join('');
+        var cuts = CUTS.filter(function (c) { return c.state !== 'draft'; }).slice(0, 5).map(function (c) {
+            return '<tr class="pick' + (pinned === c.id ? ' sel' : '') + '" data-pin-cut="' + c.id + '">' +
+                '<td class="key">' + esc(c.label) + '<span class="sub">' + esc(SCOPE_LONG) + '</span></td>' +
+                '<td>' + stateBadge(c) + '</td><td>' + esc(c.auth_by || '\u2014') + '</td></tr>';
+        }).join('');
+        var preview = (function () {
+            var probe = { sel: chosen, pinned: pinned, date: r.date };
+            var v = resolve(probe);
+            return previewPanel(probe, v, true);
+        })();
+        return reportFrame(r, S.tab === 'market' ? reportMarketTab(r) : reportDefinitionTab(r),
+            '<div class="backdrop"></div><div class="dialog">' +
+            '<div class="head"><h2>What this report prices from</h2>' +
+            '<p class="note">A kind of cut, or one cut. The run resolves it before it gathers anything, ' +
+            'and records the cut it resolved.</p></div>' +
+            '<div class="body">' +
+            '<div class="panel"><table class="rows"><thead><tr><th>Selection kind</th>' +
+            '<th>Resolves to</th><th>Authorisation</th></tr></thead><tbody>' + kinds + '</tbody></table></div>' +
+            '<p class="rule">A selection names an occasion, and the rows here are the kinds whose rule ' +
+            'can resolve one: the three end of day types, the open, the verification and the live view. ' +
+            'LIVE is the one whose instant comes from the run, so its cut does not exist until a run ' +
+            'mints it. A flash cut, or one an ad-hoc process names, answers to no schedule, so it is ' +
+            'pinned below instead of selected by kind.' +
+            '</p>' +
+            '<div class="spacer"></div>' +
+            '<div class="panel"><h2>Or one specific cut <span class="sub">pin the report to a body</span></h2>' +
+            '<table class="rows"><thead><tr><th>Cut</th><th>State</th><th>Authoriser</th></tr></thead>' +
+            '<tbody>' + cuts + '</tbody></table>' +
+            '<p class="rule">A pinned report prices from that body whatever the date, which is the one way ' +
+            'to reproduce an earlier result on purpose.</p></div>' +
+            '<div class="spacer"></div>' + preview +
+            '<div class="gap"><b>Gap.</b> The definition has no field for the selection, the kinds have no ' +
+            'vocabulary in the store, and <code>reporting.v1.ops.resolve_cut</code> does not exist, so ' +
+            'neither the list\u2019s badge nor this preview has a source.</div>' +
+            '</div>' +
+            '<div class="foot"><div class="footrow"><button class="btn">Cancel</button>' +
+            '<button class="btn primary">Save the selection</button></div>' +
+            '<p class="rule">The selection is written with the definition, in one version, with a change ' +
+            'reason. It moves what the report prices from and not how the engine runs.</p>' +
+            '</div></div>');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 5: the run that names the cut.                             */
+    /* ---------------------------------------------------------------- */
+
+    function surfaceRun() {
+        var verdict = S.verdict || (S.fcase === 'refused' ? 'refused'
+            : S.fcase === 'taken' ? 'refused-taken'
+            : S.fcase === 'missing' ? 'refused-missing'
+            : S.fcase === 'live' ? 'cannot-retake'
+            : S.fcase === 'incomplete' ? 'refused-incomplete' : 'reproduced');
+        /* A run of a LIVE report minted its own body; a run of the other kinds
+           resolved a selection to a cut that already existed. */
+        var live = S.fcase === 'live';
+        var cut = live ? byId('c8')
+            : (S.fcase === 'in-use' || S.fcase === 'flash') ? byId('c3')
+            : byId(CONFIG_CUT);
+        var report = live ? reportById('r3') : reportById('r1');
+        if (S.fcase === 'missing') report = reportForRecord();
+        var refused = verdict.indexOf('refused') === 0;
+        var head = refused ? runRefused(verdict, cut, report) : runPriced(verdict, cut, report);
+        var runId = refused ? '#4831' : (live ? '#4820' : '#4823');
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
+            '<span class="sep">&rsaquo;</span> Reports <span class="sep">&rsaquo;</span> ' +
+            esc(report.name) + ' <span class="sep">&rsaquo;</span> Runs ' +
+            '<span class="sep">&rsaquo;</span> ' + runId + '</p>' +
+            '<div class="pagehead"><div><h1>Run ' + runId + '</h1>' +
+            '<p class="lead">' + esc(report.name) + ' &middot; on-demand &middot; ' +
+            (refused ? 'refused' : 'completed clean') + ' &middot; ' +
+            (refused ? 'just now' : (live ? '28 minutes ago' : '1 day ago')) + '</p></div>' +
+            '<div class="actions"><button class="btn">Refresh</button></div></div>' +
+            resolvedFrom(report, cut, live, refused) +
+            comparisonStrip(verdict) + head;
+    }
+
+    /* The sentence that says what the run resolved, before the card says what it
+       priced from: the selection is what the person set, the cut is what the run
+       did with it. */
+    function resolvedFrom(report, cut, live, refused) {
+        var sel = report.sel || '';
+        if (!sel)
+            return '<div class="notice warn"><b>This report selects no cut.</b> ' +
+                'Its run has no body to value, and the refusal above says so.</div>';
+        if (refused)
+            return '<div class="notice error"><b>The selection resolved to nothing usable.</b> ' +
+                'It selected <span class="mono">' + esc(sel) + '</span>' + (report.pinned ? ', pinned' : '') +
+                ', and the run was refused before the engine was reached. The sentence is the one the ' +
+                'report page shows before the press.</div>';
+        return '<div class="notice info"><b>Resolved from the report\u2019s selection.</b> ' +
+            'The report selected <span class="mono">' + esc(sel) + '</span>' +
+            (report.pinned ? ', pinned to one cut' : '') + ', and the run resolved it to ' +
+            '<span class="mono">' + esc(cut.label) + '</span>' +
+            (live ? ', which this run minted at its own instant.' : '.') +
+            ' The run records the cut, so the result names its body even after the selection moves.</div>';
+    }
+
+    /* Every comparison verdict is one link away, so a reviewer reads all five. */
+    function comparisonStrip(current) {
+        var opts = [['Reproduced', 'reproduced'], ['Differs', 'differs'],
+                    ['Cannot: engine version', 'cannot-engine'],
+                    ['Cannot: a part is gone', 'cannot-part'],
+                    ['Cannot: retaken body', 'cannot-retake'],
+                    ['Refused: a cut not authorised', 'refused-taken'],
+                    ['Refused: an incomplete body', 'refused-incomplete'],
+                    ['Refused: no cut named', 'refused']];
+        return '<div class="listtools"><span class="faint" style="font-size:12px">Compare with:</span>' +
+            opts.map(function (o) {
+                var on = o[1] === current;
+                return '<a href="' + q({ surface: 'run', verdict: o[1], fcase: '' }) + '"' +
+                    (on ? ' style="color:var(--ink);border-color:var(--accent)"' : '') +
+                    ' class="' + (on ? 'toggle on' : 'toggle') + '">' + esc(o[0]) + '</a>';
+            }).join('') + '</div>';
+    }
+
+    function runRefused(verdict, cut, report) {
+        var why, market;
+        if (verdict === 'refused-missing') {
+            why = 'No ' + (report && report.sel ? KIND_DECL[report.sel].name.toLowerCase() : 'cut') +
+                ' cut of ' + (report ? coverDate(report) : '') + ' exists for these books. ' +
+                'Somebody must take one.';
+            market = 'nothing: no such cut';
+        } else if (verdict === 'refused-taken') {
+            why = 'The cut is taken and nobody has authorised it. The body is fixed and no run may price ' +
+                'from it. The request waits on Finance.';
+            market = 'the cut ' + byId('c5').label + ', taken';
+        } else if (verdict === 'refused-incomplete') {
+            why = 'The cut holds no complete body. It has 3 gaps, and the take resumes once they are closed.';
+            market = 'the cut ' + byId('c4').label + ', incomplete';
+        } else {
+            why = 'The configuration names no cut, so a run has no body to value.';
+            market = 'no cut named';
+        }
+        return '<div class="notice error"><b>This run was refused, and it says why.</b> ' + esc(why) +
+            ' <b>It was refused before the engine was reached</b>, so nothing was priced and no result ' +
+            'exists.</div>' +
+            '<div class="panel"><h2>The runs of this report, and the body each met</h2>' +
+            '<table class="rows"><thead><tr><th>Run</th><th>What the run resolves</th><th>State</th>' +
+            '<th>What happened</th></tr></thead><tbody>' +
+            '<tr><td class="key">#4831<span class="sub">just now</span></td><td>' + esc(market) + '</td>' +
+            '<td>' + badge('Refused', 'bad') + '</td><td>' + esc(why) + '</td></tr>' +
+            '<tr><td class="key">#4823<span class="sub">1 day ago</span></td>' +
+            '<td>' + esc(byId(CONFIG_CUT).label) + '</td><td>' + badge('Completed', 'ok') + '</td>' +
+            '<td>Priced from the cut named beside it</td></tr>' +
+            '</tbody></table></div>' +
+            '<div class="spacer"></div>' +
+            '<div class="panel"><h2>The cut it priced from</h2><p class="sentence">This run never reached ' +
+            'the body. A run that was refused has no cut to name, and that is the answer.</p></div>' +
+            '<div class="gap"><b>Gap.</b> The gathering steps read the store, not a cut, so the refusal ' +
+            'cannot be raised by the server today. <code>reporting.v1.ops.check_cut_consumable</code> is ' +
+            'missing.</div>';
+    }
+
+    function runPriced(verdict, cut, report) {
+        var live = !!(report && report.sel === 'LIVE');
+        var v = verdictBox(verdict, cut, live);
+        return '<div class="notice success"><b>The run priced from the cut its selection resolved.</b> ' +
+            'The run, its package and its numbers are that body at ' + dt(cut.instant) + '.</div>' +
+            '<div class="panel"><h2>The runs of this report, and the body each met</h2>' +
+            '<table class="rows"><thead><tr><th>Run</th><th>Body the run resolves</th><th>State</th>' +
+            '<th>Comparison</th></tr></thead><tbody>' +
+            (live
+                ? '<tr><td class="key">#4820<span class="sub">28 minutes ago</span></td>' +
+                  '<td class="mono">' + esc(cut.label) + '</td><td>' + badge('Completed', 'ok') + '</td>' +
+                  '<td>Not compared: a later body</td></tr>' +
+                  '<tr><td class="key">#4818<span class="sub">2 hours ago</span></td>' +
+                  '<td class="mono">LIVE.ACME-LONDON.2026-10-07T07:12:00Z</td>' +
+                  '<td>' + badge('Completed', 'ok') + '</td>' +
+                  '<td class="dim">Another body: the report ran again</td></tr>' + ''
+                : '<tr><td class="key">#4823<span class="sub">1 day ago</span></td>' +
+                  '<td class="mono">' + esc(cut.label) + '</td><td>' + badge('Completed', 'ok') + '</td>' +
+                  '<td>Compared with #4819</td></tr>') +
+            '<tr><td class="key">#4822<span class="sub">1 day ago</span></td>' +
+            '<td class="mono">' + esc(cut.label) + '</td>' +
+            '<td>' + badge('Completed with errors', 'caution') + '</td>' +
+            '<td class="dim">Not compared: the run reported errors</td></tr>' +
+            '<tr><td class="key">#4819<span class="sub">1 day ago</span></td>' +
+            '<td class="mono">' + esc(cut.label) + '</td><td>' + badge('Completed', 'ok') + '</td>' +
+            '<td class="dim">The original run</td></tr>' +
+            '</tbody></table></div>' +
+            '<div class="spacer"></div>' + cutCard(cut) + '<div class="spacer"></div>' + v;
+    }
+
+    function cutCard(c) {
+        return '<div class="panel"><h2>The cut it priced from ' +
+            '<span class="sub">run #4823 &middot; read from the run, never from the configuration</span></h2>' +
+            '<div class="facts">' +
+            fact('Cut', '<span class="mono">' + esc(c.label) + '</span>') +
+            fact('Kind', esc(c.kind)) +
+            fact('Timepoint', '<span class="mono">' + dt(c.instant) + '</span>') +
+            fact('Scope', esc(SCOPE_LONG)) +
+            fact('Deals valued', c.deals.toLocaleString('en-GB')) +
+            fact('Market data values read', c.values.toLocaleString('en-GB')) +
+            fact('Taken by', esc(c.taken_by)) +
+            (decl(c).requires_auth
+                ? fact('Authorised by', esc(c.auth_by) + ' on ' + dt(c.auth_at))
+                : fact('Basis', 'No authorisation required by its kind')) +
+            fact('Engine version', '<span class="mono">' + esc(c.engine) + '</span>') +
+            '</div>' +
+            (indicativeOutput(c)
+                ? '<p class="sentence">' + badge('Indicative output', 'indicative') + ' The kind fixes ' +
+                  'indicative values, so every figure this run produced is marked indicative. ' +
+                  'The body is complete and reproduces; the values are not official.</p>'
+                : '') +
+            '<p class="sentence">The market roles inside the body: pricing resolves to ' +
+            '<b>USD-SOFR-3M &middot; ACME London</b> at <b>' + dt(c.instant) + '</b>, publish record ' +
+            '<b>8f2a4c19</b>, and simulation to <b>EUR-ESTR-6M</b> at the same as-of, publish record ' +
+            '<b>2c40f8d1</b>.</p>' +
+            '<p class="rule">The run names the cut it used, not the cut the configuration names today: the ' +
+            'configuration may move, and a result that moved with it would be unreadable.</p>' +
+            '<div class="gap"><b>Gap.</b> <code>report_instance</code> carries <code>priced_at</code> and ' +
+            '<code>price_note</code> and nothing that names a cut or an engine version. A run cannot answer ' +
+            'this card\u2019s question today.</div></div>';
+    }
+
+    function verdictBox(verdict, c, live) {
+        if (verdict === 'differs') {
+            return '<div class="verdict bad"><h3>Differs: the body and the engine are the same, and the result moved</h3>' +
+                '<p>Run #4823 and the run it is compared with priced from ' + esc(c.label) + ' with ' +
+                esc(c.engine) + '. One figure differs, which is a defect in the engine or in the code and ' +
+                'not a movement of the market.</p>' +
+                '<table class="diff"><thead><tr><th>Figure</th><th>#4819</th><th>#4823</th>' +
+                '<th>Difference</th></tr></thead><tbody>' +
+                '<tr><td>NPV &middot; total</td><td class="n">12,481,902.44</td>' +
+                '<td class="n">12,481,903.11</td><td class="moved">+0.67</td></tr>' +
+                '<tr><td>Delta &middot; USD</td><td class="n">-1,882,441.00</td>' +
+                '<td class="n">-1,882,441.00</td><td class="n same">&mdash;</td></tr>' +
+                '</tbody></table></div>';
+        }
+        if (verdict.indexOf('cannot') === 0) {
+            var reason = (verdict === 'cannot-retake' && live)
+                ? { t: 'Cannot be compared: the report was run twice on LIVE',
+                    p: 'Each run minted a cut at its own instant, ' + dt(c.instant) + ' and ' +
+                       '07 Oct 2026 07:12Z, so the two share no body at all. The first result is ' +
+                       'reproduced by naming the cut the first run recorded, which is a selection of ' +
+                       'that specific cut.' }
+                : verdict === 'cannot-engine'
+                ? { t: 'Cannot be compared: the engine version differs',
+                    p: 'The original run used ORE-Studio-7.0 and today serves ORE-Studio-7.1. The body is the ' +
+                       'same and the software is not, so the two are not one result computed twice. ' +
+                       'A rerun on a host still serving 7.0 would reproduce it.' }
+                : verdict === 'cannot-part'
+                ? { t: 'Cannot be compared: a part of the body is no longer served',
+                    p: 'The body records a fixed snapshot of USD-SOFR-3M at 06 Oct 16:00Z, and the store no ' +
+                       'longer serves a series it resolved. The cut kept the identity of a snapshot nothing ' +
+                       'materialised, so the values cannot be read back.' }
+                : { t: 'Cannot be compared: the body was retaken',
+                    p: 'The original run priced from EOD.ACME-LONDON.2026-10-06 and the comparison names ' +
+                       'EOD.ACME-LONDON.2026-10-06.2. A retaken body is a different body, and its figures are ' +
+                       'comparable only as a movement.' };
+            return '<div class="verdict caution"><h3>' + esc(reason.t) + '</h3><p>' + esc(reason.p) + '</p>' +
+                '<p style="margin-top:8px">The statement is what an auditor writes down: the body, the two ' +
+                'runs and the reason the same number cannot be produced.</p></div>';
+        }
+        return '<div class="verdict ok"><h3>Reproduced: one result computed twice</h3>' +
+            '<p>Run #4823 and run #4819 priced from ' + esc(c.label) + ' with ' + esc(c.engine) +
+            ', and every figure is equal. The cut is the body in both, and the engine is the same software, ' +
+            'which is the definition the cluster quotes.</p>' +
+            '<table class="diff"><thead><tr><th>Figure</th><th>#4819</th><th>#4823</th>' +
+            '<th>Difference</th></tr></thead><tbody>' +
+            '<tr><td>NPV &middot; total</td><td class="n">12,481,902.44</td>' +
+            '<td class="n">12,481,902.44</td><td class="n same">&mdash;</td></tr>' +
+            '<tr><td>Delta &middot; USD</td><td class="n">-1,882,441.00</td>' +
+            '<td class="n">-1,882,441.00</td><td class="n same">&mdash;</td></tr>' +
+            '</tbody></table></div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surfaces 7 and 8: the cut types, as reference data.                */
+    /* ---------------------------------------------------------------- */
+
+    /* The cuts of a type, grouped. The group is the period one step above the
+       type's frequency, so a daily type reads by month, a monthly one by year,
+       a yearly one as a single group, and an on-demand one by day. */
+    function groupFor(t, c) {
+        var day = c.instant.slice(0, 10);
+        var month = c.instant.slice(0, 7);
+        var year = c.instant.slice(0, 4);
+        if (t.freq === 'daily') return { key: month, label: mon(month) };
+        if (t.freq === 'monthly') return { key: year, label: 'Year ' + year };
+        if (t.freq === 'yearly') return { key: 'all', label: 'Every year' };
+        return { key: day, label: dt(day + 'T00:00:00Z').slice(0, 11) };
+    }
+
+    function mon(m) {
+        var names = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                     'August', 'September', 'October', 'November', 'December'];
+        return names[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(0, 4);
+    }
+
+    function cutsOfType(code) {
+        return CUTS.filter(function (c) { return c.code === code; })
+            .sort(function (a, b) { return a.instant < b.instant ? 1 : -1; });
+    }
+
+    function surfaceTypes() {
+        var rows = CUT_TYPES.map(function (t) {
+            return '<tr class="pick" data-type="' + t.code + '">' +
+                '<td class="key">' + esc(t.code) + '<span class="sub">' + esc(t.name) + '</span></td>' +
+                '<td>' + esc(t.family) + '</td>' +
+                '<td>' + (t.approval_kind ? badge('Signed', 'pending') : badge('Not signed', 'inactive')) +
+                '<span class="sub">' + esc(authLabel(t)) + '</span></td>' +
+                '<td>' + (t.indicative ? badge('Indicative', 'indicative')
+                    : badge('Official', 'inactive')) + '</td>' +
+                '<td class="num">' + t.months + ' months<span class="sub">' + esc(t.dest) + '</span></td>' +
+                '<td class="num">' + cutsOfType(t.code).length + '</td></tr>';
+        }).join('');
+        return typesFrame('<div class="panel"><table class="rows"><thead><tr>' +
+            '<th>Type</th><th>Family</th><th>Authorisation</th><th>Values</th>' +
+            '<th>Retention</th><th>Cuts</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<div class="pager"><span>1\u2013' + CUT_TYPES.length + ' of ' + CUT_TYPES.length + '</span>' +
+            '<span class="right">Page size <span class="dash">15</span></span></div></div>' +
+            '<p class="sentence"><b>What a type is.</b> Reference data a person maintains: what the ' +
+            'occasion is for, whether a cut of it is signed, whether its values are indicative, the rule ' +
+            'by which a report resolves a selection of it, and how long its cuts are kept.</p>' +
+            '<p class="rule"><b>The family.</b> End of day, start of day, verification, intraday and ' +
+            'consumer. A family fixes the body rule and where the instant comes from; a type inside it ' +
+            'fixes the rest. The three end of day types share one body and differ in their occasion and ' +
+            'their retention.</p>' +
+            '<div class="gap"><b>Gap.</b> No cut type lookup exists, and no FK points at the inbox ' +
+            'approval kinds from one. The rules live in a knowledge page and in this fixture, and nothing ' +
+            'reads them at a take, at a resolution or at an archive.</div>');
+    }
+
+    function typesFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut types</p>' +
+            '<div class="pagehead"><div><h1>Cut types</h1>' +
+            '<p class="lead">The occasions a cut is taken for, the rules each carries, and the cuts ' +
+            'already taken of each.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button><button class="btn">Import</button>' +
+            '<button class="btn">Export</button><button class="btn primary">Add</button></div></div>' +
+            '<div class="listtools"><div class="searchbox"><input placeholder="Search the code or the name">' +
+            '</div><select><option>Family: all</option><option>End of day</option>' +
+            '<option>Start of day</option><option>Verification</option><option>Intraday</option>' +
+            '<option>Consumer</option></select></div>' + body;
+    }
+
+    function surfaceType() {
+        var t = typeByCode(S.type || 'EOD') || CUT_TYPES[0];
+        var cuts = cutsOfType(t.code);
+        var groups = [];
+        cuts.forEach(function (c) {
+            var g = groupFor(t, c);
+            var found = null;
+            groups.forEach(function (x) { if (x.key === g.key) found = x; });
+            if (!found) { found = { key: g.key, label: g.label, cuts: [] }; groups.push(found); }
+            found.cuts.push(c);
+        });
+        var body = '';
+        if (!groups.length) {
+            body = '<div class="tblstate"><b>No cuts of this type yet.</b>' +
+                'A cut of this type is taken on its occasion, and reported here once it exists.</div>';
+        } else {
+            body = groups.map(function (g) {
+                return '<div class="panel" style="margin:0 0 16px"><h2>' + esc(g.label) +
+                    ' <span class="sub">' + g.cuts.length + ' cut' + (g.cuts.length === 1 ? '' : 's') +
+                    '</span></h2><table class="rows"><thead><tr><th>Cut</th><th>Timepoint</th>' +
+                    '<th>State</th><th>Taker</th><th>Authoriser</th><th>Runs</th></tr></thead><tbody>' +
+                    g.cuts.map(function (c) {
+                        return '<tr class="pick" data-cut="' + c.id + '"><td class="key">' + esc(c.label) +
+                            '</td><td class="mono nowrap">' + dt(c.instant) + '</td>' +
+                            '<td>' + stateBadge(c) + indicativeTag(c) + '</td>' +
+                            '<td>' + esc(c.taken_by) + '</td>' +
+                            '<td>' + (c.auth_by || '<span class="dash">&mdash;</span>') + '</td>' +
+                            '<td class="num">' + c.runs + '</td></tr>';
+                    }).join('') + '</tbody></table></div>';
+            }).join('');
+        }
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut types <span class="sep">&rsaquo;</span> ' +
+            esc(t.code) + '</p>' +
+            '<div class="pagehead"><div><h1>' + esc(t.name) + '</h1>' +
+            '<p class="lead">' + esc(t.code) + ' &middot; version 4 &middot; family ' + esc(t.family) +
+            '</p></div><div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Edit</button><button class="btn">Delete</button></div></div>' +
+            '<div class="tabs"><span class="on">Details</span><span>Cuts</span><span>History</span></div>' +
+            '<div class="card"><p class="sentence">' + esc(t.desc) + '</p>' +
+            '<div class="facts">' +
+            fact('Family', esc(t.family)) +
+            fact('Repeats', esc(t.freq)) +
+            fact('Authorisation', t.approval_kind
+                ? badge('Signed', 'pending') + ' ' + esc(authLabel(t, true))
+                : badge('Not signed', 'inactive')) +
+            fact('Values', t.indicative ? 'Indicative' : 'Official') +
+            fact('Resolution rule', '<span class="mono" style="word-break:break-all">' +
+                esc(t.resolution) + '</span>') +
+            fact('Retention', t.months + ' months &middot; ' + esc(t.dest)) +
+            fact('Legal hold on take', t.hold ? 'Yes' : 'No') +
+            fact('Order', String(t.order)) +
+            '</div>' +
+            '<p class="rule"><b>The rules are the type\u2019s.</b> A cut copies its type\u2019s ' +
+            'authorisation and retention when it is taken, so a later change to the type does not move a ' +
+            'body already fixed. The resolution rule is read from the type at the moment of the ' +
+            'resolution, because a report must follow the rule in force when it runs.</p></div>' +
+            '<div class="spacer"></div>' +
+            '<p class="sentence"><b>The cuts of this type, grouped.</b> The group is the period one step ' +
+            'above the type\u2019s frequency: a daily type reads by month, a monthly type by year, a ' +
+            'yearly type as one group, and an on-demand type by day. ' + esc(t.name) + ' repeats ' +
+            esc(t.freq) + ', so its cuts are grouped ' +
+            (t.freq === 'daily' ? 'by month' : (t.freq === 'monthly' ? 'by year'
+                : (t.freq === 'yearly' ? 'as one group' : 'by day'))) + '.</p>' +
+            body +
+            '<p class="sentence"><b>The authorisation is a foreign key.</b> ' + (t.approval_kind
+                ? 'The type points at <span class="mono">' + esc(t.approval_kind) +
+                  '</span> in the inbox approval kinds, whose decider needs ' +
+                  '<span class="mono">' + esc(approvalKindOf(t).decide) + '</span>. The words above ' +
+                  'are derived from that row and stored nowhere.'
+                : 'The column is null, so a cut of this type raises no approval request and no screen ' +
+                  'can print a signer for it.') + '</p>' +
+            '<div class="gap"><b>Gap.</b> The type is a fixture. No lookup holds the rules, and nothing ' +
+            'reads a type\u2019s retention when a cut is taken or archived.</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surfaces 9 and 10: the named cut times, as reference data.        */
+    /* ---------------------------------------------------------------- */
+
+    var CUT_TIMES = [
+        { code: 'CUT-LONDON-1600', name: 'London close', time: '16:00', tz: 'Europe/London',
+          centre: 'London', kinds: 'End of day, Independent verification',
+          source: 'our convention', books: 3, pairs: 14, cuts: 8 },
+        { code: 'CUT-LONDON-0800', name: 'London open', time: '08:00', tz: 'Europe/London',
+          centre: 'London', kinds: 'Start of day', source: 'our convention', books: 3, pairs: 0, cuts: 3 },
+        { code: 'CUT-NEWYORK-1700', name: 'New York close', time: '17:00', tz: 'America/New_York',
+          centre: 'New York', kinds: 'End of day', source: 'our convention', books: 1, pairs: 6, cuts: 2 },
+        { code: 'CUT-TOKYO-1500', name: 'Tokyo close', time: '15:00', tz: 'Asia/Tokyo',
+          centre: 'Tokyo', kinds: 'End of day', source: 'our convention', books: 1, pairs: 4, cuts: 1 },
+        { code: 'EXPIRY-TOKYO-1500', name: 'Tokyo expiry cut', time: '15:00', tz: 'Asia/Tokyo',
+          centre: 'Tokyo', kinds: 'Option expiry', source: 'our convention', books: 0, pairs: 9, cuts: 0 },
+        { code: 'EXPIRY-NEWYORK-1000', name: 'New York expiry cut', time: '10:00', tz: 'America/New_York',
+          centre: 'New York', kinds: 'Option expiry', source: 'our convention', books: 0, pairs: 11, cuts: 0 }
+    ];
+
+    function surfaceTimes() {
+        if (S.fcase === 'loading')
+            return timesFrame('<div class="tblstate"><b>Loading&hellip;</b>Reading the cut times.</div>');
+        if (S.fcase === 'error')
+            return timesFrame('<div class="notice error"><b>The cut times could not be read.</b> ' +
+                'refdata.v1.cut_times.list answered with an error. <button class="btn small">Retry</button></div>');
+        var rows = CUT_TIMES.map(function (t) {
+            return '<tr class="pick" data-time="' + t.code + '">' +
+                '<td class="key">' + esc(t.code) + '<span class="sub">' + esc(t.name) + '</span></td>' +
+                '<td class="mono nowrap">' + esc(t.time) + '</td>' +
+                '<td class="mono">' + esc(t.tz) + '</td>' +
+                '<td>' + esc(t.centre) + '</td>' +
+                '<td class="dim">' + esc(t.kinds) + '</td>' +
+                '<td class="num">' + t.books + '</td>' +
+                '<td class="num">' + t.pairs + '</td></tr>';
+        }).join('');
+        return timesFrame('<div class="panel"><table class="rows"><thead><tr><th>Cut time</th>' +
+            '<th>Time of day</th><th>Timezone</th><th>Centre</th><th>Kinds it serves</th>' +
+            '<th>Books</th><th>Currency pairs</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<div class="pager"><span>1\u2013' + CUT_TIMES.length + ' of ' + CUT_TIMES.length + '</span>' +
+            '<span class="right">Page size <span class="dash">15</span></span></div></div>' +
+            '<p class="sentence"><b>What a cut time is.</b> A label for a time of day, with the clock that ' +
+            'reads it. The end of day kind reads the centre\u2019s close from here, and an option\u2019s expiry ' +
+            'reads a cut code from the same list, which is the second sense of the word.</p>' +
+            '<p class="rule"><b>Our convention, not a published fact.</b> The times on this page are ours. ' +
+            'No public source we verified fixes the close of a firm\u2019s business day or an option\u2019s ' +
+            'expiry instant, and the cluster records the same position.</p>' +
+            '<div class="gap"><b>Gap.</b> No cut time table exists. ' +
+            '<code>currency_pair.default_cut_code</code> is a field the pair\u2019s entity page plans and no ' +
+            'column holds, and the option expiry reads a list nothing holds either.</div>');
+    }
+
+    function timesFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut times</p>' +
+            '<div class="pagehead"><div><h1>Cut times</h1>' +
+            '<p class="lead">The times of day a cut is fixed at, with the clock that reads each one.</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button><button class="btn">Import</button>' +
+            '<button class="btn">Export</button><button class="btn primary">Add</button></div></div>' +
+            '<div class="listtools"><div class="searchbox"><input placeholder="Search the code or the name">' +
+            '</div><select><option>Centre: all</option><option>London</option><option>New York</option>' +
+            '<option>Tokyo</option></select></div>' + body;
+    }
+
+    function surfaceTime() {
+        var t = CUT_TIMES[0];
+        if (S.fcase === 'error')
+            return timesFrame('<div class="notice error"><b>The cut time could not be read.</b> ' +
+                'refdata.v1.cut_times.get answered with an error. <button class="btn small">Retry</button></div>');
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reference data ' +
+            '<span class="sep">&rsaquo;</span> Cut times <span class="sep">&rsaquo;</span> ' +
+            esc(t.code) + '</p>' +
+            '<div class="pagehead"><div><h1>' + esc(t.name) + '</h1>' +
+            '<p class="lead">' + esc(t.code) + ' &middot; version 3</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Edit</button><button class="btn">Delete</button></div></div>' +
+            '<div class="tabs"><span class="on">Details</span><span>Used by</span><span>History</span></div>' +
+            '<div class="card">' +
+            '<div class="facts">' +
+            fact('Code', '<span class="mono">' + esc(t.code) + '</span>') +
+            fact('Name', esc(t.name)) +
+            fact('Time of day', '<span class="mono">' + esc(t.time) + '</span>') +
+            fact('Timezone', '<span class="mono">' + esc(t.tz) + '</span>') +
+            fact('Centre', esc(t.centre)) +
+            fact('Kinds it serves', esc(t.kinds)) +
+            fact('Source of the time', esc(t.source)) +
+            fact('Daylight saving', 'Follows the timezone, so the instant moves and the name does not') +
+            '</div>' +
+            '<p class="sentence">A cut time fixes a time of day rather than an instant. The instant it ' +
+            'produces depends on the date, because the clock moves twice a year, and the name stays the same.</p>' +
+            '<h3>What uses it</h3>' +
+            '<div class="panel"><table class="rows"><thead><tr><th>What</th><th>How it uses the cut time</th>' +
+            '<th class="num">Count</th></tr></thead><tbody>' +
+            '<tr><td class="key">Books</td><td>The close their end of day cut is fixed at</td>' +
+            '<td class="num">' + t.books + '</td></tr>' +
+            '<tr><td class="key">Currency pairs</td><td>The default cut code their options inherit</td>' +
+            '<td class="num">' + t.pairs + '</td></tr>' +
+            '<tr><td class="key">Cuts taken</td><td>The instant each one fixed, on this date</td>' +
+            '<td class="num">' + t.cuts + '</td></tr>' +
+            '</tbody></table></div>' +
+            '<p class="rule">A cut time cannot be deleted while a book or a pair names it. The count is how ' +
+            'a person answers that question before pressing Delete.</p>' +
+            lastChanged('m.oduya', '2026-10-02T11:14:00Z', 'common.non_material_update') +
+            '<div class="gap"><b>Gap.</b> No such entity exists. The row is drawn from the pair\u2019s planned ' +
+            '<code>default_cut_code</code> and from the option-expiry page\u2019s description of the same row.</div>' +
+            '</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Render.                                                            */
+    /* ---------------------------------------------------------------- */
+
+    function render() {
+        var area = 'Reporting';
+        if (S.surface === 'times' || S.surface === 'time' ||
+            S.surface === 'types' || S.surface === 'type') area = 'Reference data';
+        document.getElementById('shell').innerHTML = shell(area);
+        document.getElementById('bar').innerHTML = bar();
+        var app = document.getElementById('app');
+        switch (S.surface) {
+        case 'reports': app.innerHTML = surfaceReports(); break;
+        case 'report': app.innerHTML = surfaceReport(); break;
+        case 'select': app.innerHTML = surfaceSelect(); break;
+        case 'record': app.innerHTML = surfaceRecord(); break;
+        case 'take': app.innerHTML = surfaceTake(); break;
+        case 'run': app.innerHTML = surfaceRun(); break;
+        case 'types': app.innerHTML = surfaceTypes(); break;
+        case 'type': app.innerHTML = surfaceType(); break;
+        case 'times': app.innerHTML = surfaceTimes(); break;
+        case 'time': app.innerHTML = surfaceTime(); break;
+        default: app.innerHTML = surfaceList();
+        }
+        window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+        var go = e.target.closest('[data-go]');
+        if (go) {
+            e.preventDefault();
+            location.search = go.getAttribute('data-go');
+            return;
+        }
+        var cut = e.target.closest('[data-cut]');
+        if (cut) {
+            e.preventDefault();
+            location.search = q({ surface: 'record', tab: 'body', cut: cut.getAttribute('data-cut'), fcase: '' });
+            return;
+        }
+        var rp = e.target.closest('[data-report]');
+        if (rp) {
+            e.preventDefault();
+            location.search = q({ surface: 'report', tab: 'definition', report: rp.getAttribute('data-report'),
+                fcase: '' });
+            return;
+        }
+        var sel = e.target.closest('[data-sel]');
+        if (sel) {
+            e.preventDefault();
+            location.search = q({ surface: 'select', tab: 'definition', sel: sel.getAttribute('data-sel'),
+                pin: '' });
+            return;
+        }
+        var pc = e.target.closest('[data-pin-cut]');
+        if (pc) {
+            e.preventDefault();
+            location.search = q({ surface: 'select', tab: 'definition',
+                sel: 'EOD', pin: pc.getAttribute('data-pin-cut') });
+            return;
+        }
+        var ty = e.target.closest('[data-type]');
+        if (ty) {
+            e.preventDefault();
+            location.search = q({ surface: 'type', fcase: '', type: ty.getAttribute('data-type') });
+            return;
+        }
+        var t = e.target.closest('[data-time]');
+        if (t) {
+            e.preventDefault();
+            location.search = q({ surface: 'time', fcase: '' });
+            return;
+        }
+        var k = e.target.closest('[data-kind]');
+        if (k) {
+            e.preventDefault();
+            location.search = q({ surface: 'take', step: '1',
+                fcase: k.getAttribute('data-kind') === 'FLASH' ? 'flash' : '' });
+            return;
+        }
+        var r = e.target.closest('[data-run]');
+        if (r) {
+            e.preventDefault();
+            location.search = q({ surface: 'run', fcase: '', verdict: 'reproduced' });
+        }
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>

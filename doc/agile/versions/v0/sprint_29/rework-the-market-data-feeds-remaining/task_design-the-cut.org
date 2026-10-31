@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 949A1AD7-D380-45DB-95A8-9F4F7C9E9552
+:END:
+#+title: Task: Design the cut's journeys and screens
+#+description: The cut is the report binding's foundation: the fixed body at a timepoint for a reproducible valuation. Design its journeys and screens before the data model.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/design-the-cut
+#+pr: 4171
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The journeys for taking, authorising, consuming and rerunning a cut, and prototypes for the cut screens, reviewed and signed off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A journey takes a cut: the kind and timepoint, the assembled body, the review and the authorisation.
+- A journey consumes a cut: a valuation names a cut and the run records it.
+- A prototype draws the cuts list, the cut record and its body, the take-cut flow, and the run that names the cut.
+- The pages are wired, registered, checked, and the review findings closed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4171][#4171]] | [doc] Design the cut and the report's selection of one |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The cut is designed end to end, and signed off.
+
+- The concept lives in the Cuts cluster: the hub, the kinds, the market data and
+  trade components, the option-expiry cut code and the naming decision.
+- The design note: doc/knowledge/architecture/the_cut_is_the_body_a_run_prices_from.org.
+  A cut records the body (the four inputs), the occasion, the gaps and the acts;
+  the state is derived and stored nowhere; the kind is reference data carrying
+  the approval kind (a nullable FK to the inbox approval kinds), the indicative
+  declaration, the resolution rule and the retention.
+- The kind declares whether a cut is signed: end of day, month end and year end
+  point at the Finance approval kind, independent verification at Market Risk;
+  start of day, flash and LIVE point at none.
+- The report side: a report definition carries a cut selection (a kind or one
+  cut); the run resolves it (EOD, EOM, EOY, SOD, IPV, LIVE, or a pinned cut),
+  records the resolved cut and its timepoint, and prices from its body. LIVE
+  mints a cut at the run instant, needs no authorisation and is indicative.
+  The report shows a badge of its selection kind. The market bindings retire in
+  favour of the cut; the earlier decision is marked superseded in part.
+- Retention: the kind states the period and destination; a cut copies it when
+  taken; retention is a floor and a legal hold outranks it. EOM and EOY are
+  kinds in the end-of-day family with longer retention.
+- The journeys: give a report its cut, take a cut, and rerun and audit a cut.
+- The prototype: eleven surfaces and every state, rendered and read.
+- Checks: lint valid, org links 0 unresolved, structure notes green (25),
+  prototype inventory 99 in 23 groups, site pages published with no failures.
+
+The implementation is the next work: the cut entity, the kind lookup with its
+approval FK, the report's selection field, the resolution operation, the
+retention copy, and the removal of configuration_market_binding.

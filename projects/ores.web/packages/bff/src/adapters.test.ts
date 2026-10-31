@@ -137,17 +137,38 @@ function served(provider: string, demanded: number): Record<string, unknown> {
 }
 
 const SUBJECT = 'marketdata.v1.ops.list_adapter_status';
+const FEEDS = 'marketdata.v1.feeds.list';
+const SESSIONS = 'marketdata.v1.sessions.list';
 
 describe('the adapter status route', () => {
     it('proxies the state of every adapter the service tracks', async () => {
         const adapters = [served('bloomberg', 13), { ...served('ore', 0), state: 'ready' }];
         const { server, sessionId, calls } = buildTestServer({
             [SUBJECT]: { success: true, message: '', adapters },
+            [FEEDS]: {
+                result: { outcome: 'ok', code: '', message: '', fields: [] },
+                feeds: [
+                    { name: 'bloomberg-sim', session_code: 'bloomberg-sim' },
+                    { name: 'ore-sim', session_code: 'ore-sim' },
+                ],
+                total: 2,
+            },
+            [SESSIONS]: {
+                result: { outcome: 'ok', code: '', message: '', fields: [] },
+                sessions: [
+                    { code: 'bloomberg-sim', environment: 'simulated' },
+                    { code: 'ore-sim', environment: 'production' },
+                ],
+                total: 2,
+            },
         });
         const response = await send(server, sessionId);
         expect(response.statusCode).toBe(200);
         expect(response.json().success).toBe(true);
-        expect(response.json().adapters).toEqual(adapters);
+        expect(response.json().adapters).toEqual([
+            { ...adapters[0], kind: 'simulated' },
+            { ...adapters[1], kind: 'production' },
+        ]);
         expect(calls[0]?.subject).toBe(SUBJECT);
         expect(calls[0]?.body).toEqual({});
     });

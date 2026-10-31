@@ -291,10 +291,9 @@ internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32
  * and never about a book or a trade, so any book that keeps its currency may
  * hold it and every trade of it states the same maturity.
  */
-ORES_SYNTHETIC_CORE_EXPORT std::string
-security_id_for(const domain::trade_generation_scope& scope,
-                std::uint32_t tenor_years,
-                std::string_view product);
+ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
+                                                       std::uint32_t tenor_years,
+                                                       std::string_view product);
 
 /**
  * @brief The counterparty that issued the security with the given original

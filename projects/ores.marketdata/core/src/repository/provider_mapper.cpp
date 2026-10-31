@@ -54,7 +54,7 @@ domain::provider provider_mapper::map(const provider_entity& v) {
     r.allows_storage = v.allows_storage;
     r.credential_ref = v.credential_ref;
     r.terms_accepted_digest = v.terms_accepted_digest;
-    r.terms_accepted_by = v.terms_accepted_by;
+    r.terms_accepted_by = v.terms_accepted_by.value_or("");
     r.terms_accepted_at = v.terms_accepted_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -82,7 +82,8 @@ provider_entity provider_mapper::map(const domain::provider& v) {
     r.allows_storage = v.allows_storage;
     r.credential_ref = v.credential_ref;
     r.terms_accepted_digest = v.terms_accepted_digest;
-    r.terms_accepted_by = v.terms_accepted_by;
+    r.terms_accepted_by =
+        v.terms_accepted_by.empty() ? std::nullopt : std::optional(v.terms_accepted_by);
     r.terms_accepted_at = v.terms_accepted_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

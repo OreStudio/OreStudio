@@ -185,12 +185,10 @@ std::string()
 :PROPERTIES:
 :type:          text
 :cpp_type:      std::string
-:nullable:      false
-:default:       ''
-:default_value: ""
+:nullable:      true
 :END:
 
-Who accepted the terms. Empty when they were never accepted.
+Who accepted the terms. NULL when they were never accepted.
 
 #+begin_src cpp :name generator
 std::string()
@@ -221,7 +219,7 @@ When the terms were accepted. Empty when they never were.
 | "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
 | "kind" in ('data_vendor', 'exchange', 'broker', 'reference')         |
 | "name" <> ''                                                        |
-| "terms_accepted_digest" = '' or ("terms_accepted_by" <> '' and "terms_accepted_at" is not null) |
+| "terms_accepted_digest" = '' or (coalesce("terms_accepted_by", '') <> '' and "terms_accepted_at" is not null) |
 
 ** Extra drops
 
@@ -241,6 +239,19 @@ drop function if exists ores_marketdata_validate_provider_fn;
 | column             | validation_function               |
 |--------------------+-----------------------------------|
 | change_reason_code | ores_dq_validate_change_reason_fn |
+
+#+begin_src sql :name provider_checks :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- The person who accepted the terms is an account of the deployment. The
+    -- column is empty until somebody accepts, so only a stated name is checked.
+    if coalesce(NEW.terms_accepted_by, '') <> '' and not exists (
+        select 1 from ores_iam_accounts_tbl
+        where username = NEW.terms_accepted_by
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid terms_accepted_by: %. Must be an account username.',
+            NEW.terms_accepted_by using errcode = '23503';
+    end if;
+#+end_src
 
 * C++
 

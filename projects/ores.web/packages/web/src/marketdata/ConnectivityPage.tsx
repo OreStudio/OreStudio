@@ -19,6 +19,7 @@
  */
 
 import { useMemo, useState, type ReactNode } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
     api,
@@ -32,6 +33,7 @@ import {
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { PATHS } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
@@ -50,6 +52,51 @@ import {
     supplierMatches,
     type Selected,
 } from './connectivity.js';
+
+/**
+ * The node the address names. Every view is a link, so a record can be shared
+ * and the back button walks the tree.
+ */
+function selectionOf(params: URLSearchParams): Selected {
+    if (params.get('view') === 'adapters') return { kind: 'adapters' };
+    const supplier = params.get('supplier') ?? '';
+    if (supplier !== '') return { kind: 'supplier', code: supplier };
+    const publisher = params.get('publisher') ?? '';
+    if (publisher !== '') return { kind: 'publisher', code: publisher };
+    const session = params.get('session') ?? '';
+    if (session !== '') return { kind: 'session', code: session };
+    const feed = params.get('feed') ?? '';
+    if (feed !== '') return { kind: 'feed', id: feed };
+    return { kind: 'overview' };
+}
+
+/** The address of a view. */
+function searchOf(selected: Selected): Record<string, string> {
+    switch (selected.kind) {
+        case 'overview':
+            return {};
+        case 'adapters':
+            return { view: 'adapters' };
+        case 'supplier':
+            return { supplier: selected.code };
+        case 'publisher':
+            return { publisher: selected.code };
+        case 'session':
+            return { session: selected.code };
+        case 'feed':
+            return { feed: selected.id };
+    }
+}
+
+/** A scope item as a link to the page that shows it, or as text when no page names it. */
+function ItemLink({ uri }: { readonly uri: string }): ReactNode {
+    const to = `/market-data/fixings?uri=${encodeURIComponent(uri)}`;
+    return (
+        <Link to={to} className="font-mono text-xs text-accent hover:underline">
+            {uri}
+        </Link>
+    );
+}
 
 function Field({ label, value }: { readonly label: string; readonly value: ReactNode }): ReactNode {
     return (
@@ -715,7 +762,9 @@ function FeedView({ feed }: { readonly feed: ConnectivityFeed }): ReactNode {
                         <tbody>
                             {feed.scopes.map((scope) => (
                                 <tr key={scope.item} className="border-t border-line-subtle">
-                                    <td className="py-1 font-mono text-xs">{scope.item}</td>
+                                    <td className="py-1">
+                                        <ItemLink uri={scope.item} />
+                                    </td>
                                     <td className="py-1 font-mono text-xs">{scope.asset_class}</td>
                                 </tr>
                             ))}
@@ -773,7 +822,9 @@ function FeedView({ feed }: { readonly feed: ConnectivityFeed }): ReactNode {
 export function ConnectivityPage(): ReactNode {
     const { t } = useTranslation();
     const catalogue = useQuery({ queryKey: ['connectivity'], queryFn: api.connectivity });
-    const [selected, setSelected] = useState<Selected>({ kind: 'overview' });
+    const [params, setParams] = useSearchParams();
+    const selected = selectionOf(params);
+    const select = (next: Selected): void => setParams(searchOf(next));
     const [search, setSearch] = useState('');
     const load = { dataUpdatedAt: catalogue.dataUpdatedAt, isFetching: catalogue.isFetching };
     const news = useEntityChanges(
@@ -854,228 +905,253 @@ export function ConnectivityPage(): ReactNode {
                     }
                 />
             </div>
-            <div className="grid gap-6 lg:grid-cols-[330px_minmax(0,1fr)]">
-                <aside className="card space-y-4 p-4 lg:sticky lg:top-4 lg:self-start">
-                    <input
-                        type="search"
-                        aria-label={t('marketdata.connectivity.search')}
-                        placeholder={t('marketdata.connectivity.search')}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full rounded-control border border-line bg-surface px-2 py-1 text-sm"
-                    />
-                    <div className="space-y-2">
-                        <h2 className="text-xs uppercase tracking-wide text-ink-faint">
-                            {t('marketdata.connectivity.delivery')}
-                        </h2>
-                        {suppliers.length === 0 ? (
-                            <p className="text-xs text-ink-faint">
-                                {t('marketdata.connectivity.noMatch')}
-                            </p>
-                        ) : (
+            <nav
+                className="flex flex-wrap gap-1"
+                aria-label={t('marketdata.connectivity.tabs.label')}
+            >
+                <Link
+                    to={PATHS.connectivity}
+                    className={
+                        selected.kind === 'adapters'
+                            ? 'rounded-control border border-line px-3 py-1 text-sm text-ink-muted hover:text-ink'
+                            : 'rounded-control border border-accent bg-accent-dim px-3 py-1 text-sm text-accent'
+                    }
+                >
+                    {t('marketdata.connectivity.tabs.delivery')}
+                </Link>
+                <Link
+                    to="?view=adapters"
+                    className={
+                        selected.kind === 'adapters'
+                            ? 'rounded-control border border-accent bg-accent-dim px-3 py-1 text-sm text-accent'
+                            : 'rounded-control border border-line px-3 py-1 text-sm text-ink-muted hover:text-ink'
+                    }
+                >
+                    {t('marketdata.connectivity.tabs.adapters')}
+                </Link>
+            </nav>
+            {selected.kind === 'adapters' ? (
+                <AdapterCatalogue catalogue={data} />
+            ) : (
+                <div className="grid gap-6 lg:grid-cols-[330px_minmax(0,1fr)]">
+                    <aside className="card space-y-4 p-4 lg:sticky lg:top-4 lg:self-start">
+                        <input
+                            type="search"
+                            aria-label={t('marketdata.connectivity.search')}
+                            placeholder={t('marketdata.connectivity.search')}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full rounded-control border border-line bg-surface px-2 py-1 text-sm"
+                        />
+                        <div className="space-y-2">
+                            <h2 className="text-xs uppercase tracking-wide text-ink-faint">
+                                {t('marketdata.connectivity.delivery')}
+                            </h2>
+                            {suppliers.length === 0 ? (
+                                <p className="text-xs text-ink-faint">
+                                    {t('marketdata.connectivity.noMatch')}
+                                </p>
+                            ) : (
+                                <ul className="space-y-2 text-sm">
+                                    {suppliers.map((entry) => {
+                                        const entrySessions = sessionsOfSupplier(data, entry.code);
+                                        const entryFeeds = feedsOfSupplier(data, entry.code);
+                                        return (
+                                            <li key={entry.code}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        select({
+                                                            kind: 'supplier',
+                                                            code: entry.code,
+                                                        })
+                                                    }
+                                                    className={
+                                                        isSelected('supplier', entry.code)
+                                                            ? 'w-full text-left font-medium text-accent'
+                                                            : 'w-full text-left font-medium hover:text-accent'
+                                                    }
+                                                >
+                                                    {entry.name}
+                                                </button>
+                                                <p className="text-xs text-ink-faint">
+                                                    {t('marketdata.connectivity.supplier.line', {
+                                                        kind: entry.kind,
+                                                        sessions: String(entrySessions.length),
+                                                        feeds: String(entryFeeds.length),
+                                                    })}
+                                                </p>
+                                                <ul className="ml-3 space-y-1 border-l border-line-subtle pl-2">
+                                                    {entrySessions.length === 0 ? (
+                                                        <li className="text-xs text-ink-faint">
+                                                            {t('marketdata.connectivity.noSession')}
+                                                        </li>
+                                                    ) : (
+                                                        entrySessions.map((sessionRow) => (
+                                                            <li key={sessionRow.code}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        select({
+                                                                            kind: 'session',
+                                                                            code: sessionRow.code,
+                                                                        })
+                                                                    }
+                                                                    className={
+                                                                        isSelected(
+                                                                            'session',
+                                                                            sessionRow.code,
+                                                                        )
+                                                                            ? 'w-full text-left text-xs text-accent'
+                                                                            : 'w-full text-left text-xs hover:text-accent'
+                                                                    }
+                                                                >
+                                                                    {sessionRow.code}
+                                                                </button>
+                                                                <p className="text-xs text-ink-faint">
+                                                                    {t(
+                                                                        'marketdata.connectivity.session.line',
+                                                                        {
+                                                                            adapter:
+                                                                                sessionRow.adapter_code,
+                                                                            environment:
+                                                                                sessionRow.environment,
+                                                                        },
+                                                                    )}
+                                                                </p>
+                                                                <ul className="ml-2 space-y-0.5">
+                                                                    {feedsOfSession(
+                                                                        data,
+                                                                        sessionRow.code,
+                                                                    ).map((feedRow) => (
+                                                                        <li key={feedRow.id}>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    select({
+                                                                                        kind: 'feed',
+                                                                                        id: feedRow.id,
+                                                                                    })
+                                                                                }
+                                                                                className={
+                                                                                    isSelected(
+                                                                                        'feed',
+                                                                                        feedRow.id,
+                                                                                    )
+                                                                                        ? 'w-full text-left text-xs text-accent'
+                                                                                        : 'w-full text-left text-xs text-ink-muted hover:text-accent'
+                                                                                }
+                                                                            >
+                                                                                {feedRow.name}
+                                                                            </button>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </li>
+                                                        ))
+                                                    )}
+                                                </ul>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-xs uppercase tracking-wide text-ink-faint">
+                                {t('marketdata.connectivity.publishers')}
+                            </h2>
                             <ul className="space-y-2 text-sm">
-                                {suppliers.map((entry) => {
-                                    const entrySessions = sessionsOfSupplier(data, entry.code);
-                                    const entryFeeds = feedsOfSupplier(data, entry.code);
-                                    return (
-                                        <li key={entry.code}>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setSelected({
-                                                        kind: 'supplier',
-                                                        code: entry.code,
-                                                    })
-                                                }
-                                                className={
-                                                    isSelected('supplier', entry.code)
-                                                        ? 'w-full text-left font-medium text-accent'
-                                                        : 'w-full text-left font-medium hover:text-accent'
-                                                }
-                                            >
-                                                {entry.name}
-                                            </button>
-                                            <p className="text-xs text-ink-faint">
-                                                {t('marketdata.connectivity.supplier.line', {
-                                                    kind: entry.kind,
-                                                    sessions: String(entrySessions.length),
-                                                    feeds: String(entryFeeds.length),
-                                                })}
-                                            </p>
-                                            <ul className="ml-3 space-y-1 border-l border-line-subtle pl-2">
-                                                {entrySessions.length === 0 ? (
-                                                    <li className="text-xs text-ink-faint">
-                                                        {t('marketdata.connectivity.noSession')}
-                                                    </li>
-                                                ) : (
-                                                    entrySessions.map((sessionRow) => (
-                                                        <li key={sessionRow.code}>
+                                {publishers.map((entry) => (
+                                    <li key={entry.code}>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                select({ kind: 'publisher', code: entry.code })
+                                            }
+                                            className={
+                                                isSelected('publisher', entry.code)
+                                                    ? 'w-full text-left font-medium text-accent'
+                                                    : 'w-full text-left font-medium hover:text-accent'
+                                            }
+                                        >
+                                            {entry.name}
+                                        </button>
+                                        <p className="text-xs text-ink-faint">
+                                            {t('marketdata.connectivity.publisher.line', {
+                                                classes:
+                                                    classesOfPublisher(data, entry.code).join(
+                                                        ', ',
+                                                    ) || '—',
+                                                feeds: String(
+                                                    feedsOfPublisher(data, entry.code).length,
+                                                ),
+                                            })}
+                                        </p>
+                                        <ul className="ml-3 space-y-0.5 border-l border-line-subtle pl-2">
+                                            {feedsOfPublisher(data, entry.code).length === 0 ? (
+                                                <li className="text-xs text-ink-faint">
+                                                    {t('marketdata.connectivity.noFeed')}
+                                                </li>
+                                            ) : (
+                                                feedsOfPublisher(data, entry.code).map(
+                                                    (feedRow) => (
+                                                        <li key={feedRow.id}>
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    setSelected({
-                                                                        kind: 'session',
-                                                                        code: sessionRow.code,
+                                                                    select({
+                                                                        kind: 'feed',
+                                                                        id: feedRow.id,
                                                                     })
                                                                 }
                                                                 className={
-                                                                    isSelected(
-                                                                        'session',
-                                                                        sessionRow.code,
-                                                                    )
+                                                                    isSelected('feed', feedRow.id)
                                                                         ? 'w-full text-left text-xs text-accent'
-                                                                        : 'w-full text-left text-xs hover:text-accent'
+                                                                        : 'w-full text-left text-xs text-ink-muted hover:text-accent'
                                                                 }
                                                             >
-                                                                {sessionRow.code}
+                                                                {feedRow.name}
                                                             </button>
-                                                            <p className="text-xs text-ink-faint">
-                                                                {t(
-                                                                    'marketdata.connectivity.session.line',
-                                                                    {
-                                                                        adapter:
-                                                                            sessionRow.adapter_code,
-                                                                        environment:
-                                                                            sessionRow.environment,
-                                                                    },
-                                                                )}
-                                                            </p>
-                                                            <ul className="ml-2 space-y-0.5">
-                                                                {feedsOfSession(
-                                                                    data,
-                                                                    sessionRow.code,
-                                                                ).map((feedRow) => (
-                                                                    <li key={feedRow.id}>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                setSelected({
-                                                                                    kind: 'feed',
-                                                                                    id: feedRow.id,
-                                                                                })
-                                                                            }
-                                                                            className={
-                                                                                isSelected(
-                                                                                    'feed',
-                                                                                    feedRow.id,
-                                                                                )
-                                                                                    ? 'w-full text-left text-xs text-accent'
-                                                                                    : 'w-full text-left text-xs text-ink-muted hover:text-accent'
-                                                                            }
-                                                                        >
-                                                                            {feedRow.name}
-                                                                        </button>
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
                                                         </li>
-                                                    ))
-                                                )}
-                                            </ul>
-                                        </li>
-                                    );
-                                })}
+                                                    ),
+                                                )
+                                            )}
+                                        </ul>
+                                    </li>
+                                ))}
                             </ul>
+                        </div>
+                    </aside>
+                    <section className="min-w-0 space-y-4">
+                        {selected.kind === 'overview' && (
+                            <Overview
+                                catalogue={data}
+                                onAdapters={() => select({ kind: 'adapters' })}
+                            />
                         )}
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-xs uppercase tracking-wide text-ink-faint">
-                            {t('marketdata.connectivity.publishers')}
-                        </h2>
-                        <ul className="space-y-2 text-sm">
-                            {publishers.map((entry) => (
-                                <li key={entry.code}>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setSelected({ kind: 'publisher', code: entry.code })
-                                        }
-                                        className={
-                                            isSelected('publisher', entry.code)
-                                                ? 'w-full text-left font-medium text-accent'
-                                                : 'w-full text-left font-medium hover:text-accent'
-                                        }
-                                    >
-                                        {entry.name}
-                                    </button>
-                                    <p className="text-xs text-ink-faint">
-                                        {t('marketdata.connectivity.publisher.line', {
-                                            classes:
-                                                classesOfPublisher(data, entry.code).join(', ') ||
-                                                '—',
-                                            feeds: String(
-                                                feedsOfPublisher(data, entry.code).length,
-                                            ),
-                                        })}
-                                    </p>
-                                    <ul className="ml-3 space-y-0.5 border-l border-line-subtle pl-2">
-                                        {feedsOfPublisher(data, entry.code).length === 0 ? (
-                                            <li className="text-xs text-ink-faint">
-                                                {t('marketdata.connectivity.noFeed')}
-                                            </li>
-                                        ) : (
-                                            feedsOfPublisher(data, entry.code).map((feedRow) => (
-                                                <li key={feedRow.id}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setSelected({
-                                                                kind: 'feed',
-                                                                id: feedRow.id,
-                                                            })
-                                                        }
-                                                        className={
-                                                            isSelected('feed', feedRow.id)
-                                                                ? 'w-full text-left text-xs text-accent'
-                                                                : 'w-full text-left text-xs text-ink-muted hover:text-accent'
-                                                        }
-                                                    >
-                                                        {feedRow.name}
-                                                    </button>
-                                                </li>
-                                            ))
-                                        )}
-                                    </ul>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setSelected({ kind: 'adapters' })}
-                        className="text-sm text-accent hover:underline"
-                    >
-                        {t('marketdata.connectivity.adaptersLink')}
-                    </button>
-                </aside>
-                <section className="min-w-0 space-y-4">
-                    {selected.kind === 'overview' && (
-                        <Overview
-                            catalogue={data}
-                            onAdapters={() => setSelected({ kind: 'adapters' })}
-                        />
-                    )}
-                    {selected.kind === 'adapters' && <AdapterCatalogue catalogue={data} />}
-                    {supplier !== undefined && (
-                        <SupplierDashboard catalogue={data} supplier={supplier} />
-                    )}
-                    {publisher !== undefined && (
-                        <PublisherView catalogue={data} publisher={publisher} />
-                    )}
-                    {session !== undefined && <SessionView catalogue={data} session={session} />}
-                    {feed !== undefined && <FeedView feed={feed} />}
-                    {selected.kind !== 'overview' &&
-                        selected.kind !== 'adapters' &&
-                        supplier === undefined &&
-                        publisher === undefined &&
-                        session === undefined &&
-                        feed === undefined && (
-                            <p className="text-sm text-ink-muted">
-                                {t('marketdata.connectivity.missing')}
-                            </p>
+                        {supplier !== undefined && (
+                            <SupplierDashboard catalogue={data} supplier={supplier} />
                         )}
-                </section>
-            </div>
+                        {publisher !== undefined && (
+                            <PublisherView catalogue={data} publisher={publisher} />
+                        )}
+                        {session !== undefined && (
+                            <SessionView catalogue={data} session={session} />
+                        )}
+                        {feed !== undefined && <FeedView feed={feed} />}
+                        {selected.kind !== 'overview' &&
+                            supplier === undefined &&
+                            publisher === undefined &&
+                            session === undefined &&
+                            feed === undefined && (
+                                <p className="text-sm text-ink-muted">
+                                    {t('marketdata.connectivity.missing')}
+                                </p>
+                            )}
+                    </section>
+                </div>
+            )}
         </div>
     );
 }

@@ -161,9 +161,8 @@ series_classifier::series_classifier(std::vector<domain::series_classification_r
                                         *rule.asset_class_code +
                                         "'; a reader would not know which of the two to record.");
 
-        if (index &&
-            (rule.asset_class_source != k_index_authority_source ||
-             rule.series_subclass_code != k_index_subclass))
+        if (index && (rule.asset_class_source != k_index_authority_source ||
+                      rule.series_subclass_code != k_index_subclass))
             throw std::invalid_argument(
                 "series classification rule " + describe(rule) +
                 " is keyed by an index, so it reads its class from the index family and names "
@@ -175,17 +174,16 @@ series_classifier::series_classifier(std::vector<domain::series_classification_r
                                         " is keyed by a datum, so no index family's authority "
                                         "speaks for it.");
 
-        by_kind_[static_cast<std::uint8_t>(*kind)][rule.instrument][rule.quote] =
-            std::move(rule);
+        by_kind_[static_cast<std::uint8_t>(*kind)][rule.instrument][rule.quote] = std::move(rule);
     }
 }
 
 series_classification series_classifier::classify(const classification_key& key) const {
     const auto result = try_classify(key);
     if (!result)
-        throw std::invalid_argument("No classification rule for market series identity: " +
-                                    std::string(name_of(key.kind)) + "/" + key.instrument +
-                                    (key.quote.empty() ? std::string() : "/" + key.quote));
+        throw std::invalid_argument(
+            "No classification rule for market series identity: " + std::string(name_of(key.kind)) +
+            "/" + key.instrument + (key.quote.empty() ? std::string() : "/" + key.quote));
     return *result;
 }
 
@@ -225,8 +223,8 @@ series_classifier::try_classify(const classification_key& key) const {
         const auto family = datum::index_family_named(key.instrument);
         if (!family)
             return series_classification{{}, row.series_subclass_code};
-        const auto code = domain::asset_class_for_authority(
-            datum::name_of(datum::index_row_of(*family).asset));
+        const auto code =
+            domain::asset_class_for_authority(datum::name_of(datum::index_row_of(*family).asset));
         if (!code)
             return series_classification{{}, row.series_subclass_code};
         return series_classification{{std::string(*code)}, row.series_subclass_code};

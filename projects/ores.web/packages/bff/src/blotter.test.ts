@@ -69,6 +69,7 @@ const subjects = {
     tradeTypes: 'trading.v1.trade_types.list',
     instrumentCodes: 'refdata.v1.instrument_codes.list',
     summaries: 'trading.v1.trade_summaries.list',
+    assetClasses: 'refdata.v1.asset_class_codes.list',
 };
 
 interface SummaryRow {
@@ -213,6 +214,14 @@ function replies(): Readonly<Record<string, unknown>> {
                 { trade_id: LEG_EQUITY, structure_id: SINGLE },
             ],
             total: 3,
+        },
+        [subjects.assetClasses]: {
+            result: ok,
+            asset_classes: [
+                { code: 'fx', name: 'Foreign Exchange' },
+                { code: 'ir', name: 'Interest Rates' },
+            ],
+            total: 2,
         },
         [subjects.identifiers]: {
             result: ok,

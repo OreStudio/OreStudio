@@ -47,7 +47,7 @@ const publisherSchema = z.looseObject({
     terms_url: z.string().default(''),
     terms_credit: z.string().default(''),
     terms_accepted_digest: z.string().default(''),
-    terms_accepted_by: z.string().default(''),
+    terms_accepted_by: z.string().nullable().default(null),
     terms_accepted_at: z.string().nullable().default(null),
 });
 
@@ -190,7 +190,7 @@ export function registerConnectivityRoutes(
                     terms_url: publisher.terms_url,
                     terms_credit: publisher.terms_credit,
                     terms_accepted: publisher.terms_accepted_digest !== '',
-                    terms_accepted_by: publisher.terms_accepted_by,
+                    terms_accepted_by: publisher.terms_accepted_by ?? '',
                     terms_accepted_at: publisher.terms_accepted_at,
                 }))
                 .sort((left, right) => left.name.localeCompare(right.name)),

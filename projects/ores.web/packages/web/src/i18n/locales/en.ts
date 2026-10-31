@@ -1600,6 +1600,13 @@ export const en: SourceCatalogue = {
             description:
                 'Every source the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
             updated: 'Read {at}',
+            record: {
+                crumb: 'Source',
+                description:
+                    'What this source is doing, the ids it accepted and refused, and how long ago it last ticked.',
+                back: 'Back to the sources',
+                missing: 'The registry no longer tracks this source.',
+            },
             tag: {
                 lead: 'A source is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
                 noDemand: '{count} with no demand',
@@ -2505,6 +2512,7 @@ export const en: SourceCatalogue = {
                 fieldsHint: 'One name=value per line, such as ccy=PLN.',
                 from: 'From',
                 to: 'To',
+                chart: 'The fixings of {item}',
                 provenance: 'Show where each value came from',
                 submit: 'Watch',
             },
@@ -4723,6 +4731,28 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        fixingSeries: {
+            title: 'Fixing series',
+            lead: 'The stored fixings of one item, the series they belong to, and the feeds that carried them.',
+            noUri: 'Open this page from an oresmd link, so it knows which item to show.',
+            notStored: 'The store holds nothing for {uri}.',
+            noValues: 'No fixing is stored for this item yet.',
+            provenance: 'Feeds that carry this item',
+            noFeeds: 'No feed names this item.',
+            back: 'Back to market data',
+            columns: {
+                provider: 'Publisher',
+                first: 'First fixing',
+                last: 'Last fixing',
+                count: 'Fixings held',
+                date: 'Date',
+                value: 'Value',
+                feed: 'Feed',
+                service: 'Service',
+                session: 'Session',
+                supplier: 'Supplier',
+            },
+        },
         curveBlueprints: {
             title: 'Curve blueprints',
             lead: 'The recipes each curve is built from: its pillars, its conventions and the sets it fed.',
@@ -5038,6 +5068,10 @@ export const en: SourceCatalogue = {
                 compare: 'Compare — how far apart they are',
                 fetch: 'Fetch — ask for data now',
             },
+            reads: {
+                title: 'Reads',
+                lead: 'The feed this publisher’s values arrive through: its class, supplier, session and service.',
+            },
             providers: {
                 title: 'Publishers',
                 lead: 'One row for each publisher on each class. A publisher is read only once its terms are accepted.',
@@ -5053,6 +5087,8 @@ export const en: SourceCatalogue = {
                 value: 'Value',
                 route: 'How',
                 supplier: 'Supplier',
+                class: 'Class',
+                session: 'Session',
                 first: 'First',
                 last: 'Last',
                 values: 'Values',
@@ -5071,6 +5107,10 @@ export const en: SourceCatalogue = {
                 read: 'Read the terms',
             },
             detail: {
+                crumb: 'Publisher',
+                lead: 'The terms this publisher sets and the rates it publishes.',
+                back: 'Back to Public rates',
+                missing: 'No public publisher is named {publisher}.',
                 title: 'The rates of {provider}',
                 series: 'Series',
                 empty: 'The publisher fills no series.',
@@ -5114,6 +5154,11 @@ export const en: SourceCatalogue = {
         connectivity: {
             title: 'Connectivity',
             lead: 'Who publishes, who supplies, the sessions we configure, and the feeds that come off them.',
+            tabs: {
+                label: 'Connectivity views',
+                delivery: 'Delivery',
+                adapters: 'Adapters catalogue',
+            },
             search: 'Find a supplier, publisher, session or feed',
             delivery: 'Delivery',
             publishers: 'Publishers',

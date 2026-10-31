@@ -29,12 +29,14 @@
  * are stated as gaps, never filled from another screen's read.
  */
 
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { marketDataSourcePath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Metric } from '../ui/Metric.js';
-import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { Sparkline } from '../ui/Sparkline.js';
 import { RelativeTime } from '../ui/Time.js';
@@ -43,60 +45,18 @@ import { readTime } from './ServicesPage.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 import {
     formatTickAge,
-    formatVendorId,
     sourceFigures,
     sourceRows,
-    stateTone,
     useAdapterStatuses,
     useTickTrends,
-    type SourceRow,
 } from './marketDataSources.js';
+import { SourceStateTag } from './MarketDataSourcePage.js';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = ['D46E4DEF-7431-419B-BA88-476AA7B98D24'];
 
-/** The state of one source, in the registry's own words, painted by what it means. */
-function SourceStateTag({ state }: { readonly state: string }): ReactNode {
-    const { t } = useTranslation();
-    const labels: Readonly<Record<string, string>> = {
-        announced: t('operations.sources.state.announced'),
-        ready: t('operations.sources.state.ready'),
-        serving: t('operations.sources.state.serving'),
-        stale: t('operations.sources.state.stale'),
-        rejected: t('operations.sources.state.rejected'),
-    };
-    return <Tag tone={stateTone(state)}>{labels[state] ?? state}</Tag>;
-}
-
-/** The rejected ids of one source, with the reason the adapter gave for each. */
-export function RejectedIds({ row }: { readonly row: SourceRow }): ReactNode {
-    const { t } = useTranslation();
-    if (row.rejectedIds.length === 0) {
-        return <p className="text-sm text-ink-muted">{t('operations.sources.rejected.none')}</p>;
-    }
-    return (
-        <table className="w-full text-sm">
-            <thead className="text-left text-xs text-ink-faint">
-                <tr>
-                    <th className="py-1 font-normal">{t('operations.sources.rejected.id')}</th>
-                    <th className="py-1 font-normal">{t('operations.sources.rejected.reason')}</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-line-subtle">
-                {row.rejectedIds.map((entry) => (
-                    <tr key={`${formatVendorId(entry.id)}-${entry.reason}`}>
-                        <td className="py-1.5 font-mono text-xs">{formatVendorId(entry.id)}</td>
-                        <td className="py-1.5 font-mono text-xs">{entry.reason}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
-
 export function MarketDataSourcesPage(): ReactNode {
     const { t } = useTranslation();
-    const [selected, setSelected] = useState('');
     const adapters = useAdapterStatuses();
     const trends = useTickTrends(adapters.data);
     const trail = <AreaTrail area="operations" screen={t('operations.screens.sources')} />;
@@ -119,13 +79,7 @@ export function MarketDataSourcesPage(): ReactNode {
 
     const rows = sourceRows(adapters.data);
     const figures = sourceFigures(rows);
-    const chosen = rows.find((row) => row.name === selected) ?? rows[0];
     const gaps: readonly ScreenGap[] = [
-        {
-            title: t('operations.sources.gap.kind.title'),
-            body: t('operations.sources.gap.kind.body'),
-            journey: t('operations.journeys.sources'),
-        },
         {
             title: t('operations.sources.gap.drops.title'),
             body: t('operations.sources.gap.drops.body'),
@@ -270,23 +224,19 @@ export function MarketDataSourcesPage(): ReactNode {
                             </thead>
                             <tbody className="divide-y divide-line-subtle">
                                 {rows.map((row) => (
-                                    <tr
-                                        key={row.name}
-                                        className={
-                                            row.name === chosen?.name ? 'bg-surface-hover' : ''
-                                        }
-                                    >
+                                    <tr key={row.name}>
                                         <td className="py-2">
-                                            <button
-                                                type="button"
+                                            <Link
+                                                to={marketDataSourcePath(row.name)}
                                                 className="font-mono text-accent hover:text-accent-bright"
-                                                onClick={() => setSelected(row.name)}
                                             >
                                                 {row.name}
-                                            </button>
+                                            </Link>
                                         </td>
                                         <td className="py-2 font-mono text-xs">{row.provider}</td>
-                                        <td className="py-2 font-mono text-ink-faint">—</td>
+                                        <td className="py-2 font-mono text-xs text-ink-muted">
+                                            {row.kind === '' ? '—' : row.kind}
+                                        </td>
                                         <td className="py-2">
                                             <SourceStateTag state={row.state} />
                                         </td>
@@ -330,85 +280,6 @@ export function MarketDataSourcesPage(): ReactNode {
                 )}
                 <p className="text-xs text-ink-faint">{t('operations.sources.table.note')}</p>
             </section>
-
-            {chosen !== undefined && (
-                <section className="card space-y-4 p-6">
-                    <header className="flex flex-wrap items-baseline justify-between gap-2">
-                        <h2 className="text-lg font-medium">
-                            {t('operations.sources.detail.title', { source: chosen.name })}
-                        </h2>
-                        <SourceStateTag state={chosen.state} />
-                    </header>
-                    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <Detail
-                            label={t('operations.sources.columns.source')}
-                            value={chosen.name}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.provider')}
-                            value={chosen.provider}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.detail.heartbeatCounter')}
-                            value={chosen.heartbeatCounter.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.routes')}
-                            value={chosen.routes.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.demanded')}
-                            value={chosen.demanded.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.accepted')}
-                            value={chosen.accepted.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.rejected')}
-                            value={chosen.rejected.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.detail.notServed')}
-                            value={chosen.notServed.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.detail.served')}
-                            value={chosen.served.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.detail.unknown')}
-                            value={chosen.unknown.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.ticks')}
-                            value={chosen.ticksPerMinute.toLocaleString()}
-                            mono
-                        />
-                        <Detail
-                            label={t('operations.sources.columns.lastTick')}
-                            value={formatTickAge(chosen.lastTickAgeMs, t)}
-                            mono
-                        />
-                    </dl>
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-medium">
-                            {t('operations.sources.rejected.title')}
-                        </h3>
-                        <RejectedIds row={chosen} />
-                    </div>
-                </section>
-            )}
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

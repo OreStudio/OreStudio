@@ -176,7 +176,7 @@ const REPLIES = {
             is_default: true,
         },
     ]),
-    'marketdata.v1.feed_scopes.list': page('feed_scopes', [
+    'marketdata.v1.feed_scopes.list': page('scopes', [
         {
             feed_id: FEED_ID,
             asset_class: 'fx',

@@ -59,6 +59,7 @@ export const PATHS = {
     curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
     connectivity: '/market-data/connectivity',
+    fixingSeries: '/market-data/fixings',
     publicRates: '/market-data/public-rates',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
@@ -71,6 +72,16 @@ export const PATHS = {
     curveConfigurations: '/reporting/curve-configurations',
     sensitivityTemplates: '/reporting/sensitivity-templates',
 } as const;
+
+/** The address of one public publisher's record. */
+export function publicRatesPublisherPath(code: string): string {
+    return `${PATHS.publicRates}/${encodeURIComponent(code)}`;
+}
+
+/** The address of one market data source's record. */
+export function marketDataSourcePath(name: string): string {
+    return `${PATHS.marketDataSources}/${encodeURIComponent(name)}`;
+}
 
 /** The address of the documents of one convention kind. */
 export function conventionPath(family: string): string {

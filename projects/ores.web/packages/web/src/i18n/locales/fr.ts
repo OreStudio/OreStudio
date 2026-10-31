@@ -1619,6 +1619,13 @@ const fr: SourceCatalogue = {
             description:
                 "Chaque source que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
             updated: 'Lu à {at}',
+            record: {
+                crumb: 'Source',
+                description:
+                    'Ce que cette source fait, les identifiants acceptés et refusés, et depuis combien de temps elle a tické.',
+                back: 'Retour aux sources',
+                missing: 'Le registre ne suit plus cette source.',
+            },
             tag: {
                 lead: "Une source est silencieuse quand elle sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
                 noDemand: '{count} sans demande',
@@ -2529,6 +2536,7 @@ const fr: SourceCatalogue = {
                 fieldsHint: 'Un nom=valeur par ligne, par exemple ccy=PLN.',
                 from: 'Du',
                 to: 'Au',
+                chart: 'Les fixings de {item}',
                 provenance: 'Montrer l’origine de chaque valeur',
                 submit: 'Suivre',
             },
@@ -4790,6 +4798,28 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        fixingSeries: {
+            title: 'Série de fixings',
+            lead: 'Les fixings stockés d’un instrument, la série à laquelle ils appartiennent et les flux qui les ont apportés.',
+            noUri: 'Ouvrez cette page depuis un lien oresmd pour qu’elle sache quel instrument afficher.',
+            notStored: 'Le stock ne détient rien pour {uri}.',
+            noValues: 'Aucun fixing n’est encore stocké pour cet instrument.',
+            provenance: 'Flux qui apportent cet instrument',
+            noFeeds: 'Aucun flux ne nomme cet instrument.',
+            back: 'Retour aux données de marché',
+            columns: {
+                provider: 'Publisher',
+                first: 'Premier fixing',
+                last: 'Dernier fixing',
+                count: 'Fixings détenus',
+                date: 'Date',
+                value: 'Valeur',
+                feed: 'Flux',
+                service: 'Service',
+                session: 'Session',
+                supplier: 'Fournisseur',
+            },
+        },
         curveBlueprints: {
             title: 'Plans de courbe',
             lead: "Les recettes dont chaque courbe est construite : ses piliers, ses conventions et les ensembles qu'elle a alimentés.",
@@ -5107,6 +5137,10 @@ const fr: SourceCatalogue = {
                 compare: 'Comparer — l’écart entre eux',
                 fetch: 'Récupérer — demander des données',
             },
+            reads: {
+                title: 'Lectures',
+                lead: 'Le flux par lequel arrivent les valeurs de ce publisher : sa classe, son fournisseur, sa session et son service.',
+            },
             providers: {
                 title: 'Publishers',
                 lead: 'Une ligne par publisher et par classe. Un publisher est lu seulement si ses conditions sont acceptées.',
@@ -5122,6 +5156,8 @@ const fr: SourceCatalogue = {
                 value: 'Valeur',
                 route: 'Méthode',
                 supplier: 'Fournisseur',
+                class: 'Classe',
+                session: 'Session',
                 first: 'Premier',
                 last: 'Dernier',
                 values: 'Valeurs',
@@ -5140,6 +5176,10 @@ const fr: SourceCatalogue = {
                 read: 'Lire les conditions',
             },
             detail: {
+                crumb: 'Publisher',
+                lead: 'Les conditions de ce publisher et les taux qu’il publie.',
+                back: 'Retour aux taux publics',
+                missing: 'Aucun publisher public ne s’appelle {publisher}.',
                 title: 'Les taux de {provider}',
                 series: 'Séries',
                 empty: 'Le publisher ne remplit aucune série.',
@@ -5183,6 +5223,11 @@ const fr: SourceCatalogue = {
         connectivity: {
             title: 'Connectivité',
             lead: 'Qui publie, qui fournit, les sessions que nous configurons, et les flux qui en sortent.',
+            tabs: {
+                label: 'Vues de la connectivité',
+                delivery: 'Livraison',
+                adapters: 'Catalogue des adaptateurs',
+            },
             search: 'Trouver un fournisseur, publisher, session ou flux',
             delivery: 'Livraison',
             publishers: 'Publishers',

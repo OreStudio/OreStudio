@@ -102,9 +102,9 @@ public:
      * under -- its booking nature, its origin and the person it is entered by --
      * are stated in one place that a test can read without a session.
      */
-    [[nodiscard]] static ores::trading::messaging::book_trade_request book_request_for(
-        const domain::trade_population_slot& slot,
-        const domain::trade_generation_scope& scope);
+    [[nodiscard]] static ores::trading::messaging::book_trade_request
+    book_request_for(const domain::trade_population_slot& slot,
+                     const domain::trade_generation_scope& scope);
 
 private:
     /**

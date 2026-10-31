@@ -120,9 +120,9 @@ struct provider final {
     std::string terms_accepted_digest = "";
 
     /**
-     * @brief Who accepted the terms. Empty when they were never accepted.
+     * @brief Who accepted the terms. NULL when they were never accepted.
      */
-    std::string terms_accepted_by = "";
+    std::string terms_accepted_by;
 
     /**
      * @brief When the terms were accepted. Empty when they never were.

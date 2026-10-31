@@ -111,13 +111,13 @@ const CATALOGUE: Connectivity = {
     ],
 };
 
-function render(): string {
+function render(entry = '/market-data/connectivity'): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['connectivity'], CATALOGUE);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[entry]}>
                     <ConnectivityPage />
                 </MemoryRouter>
             </TranslationProvider>
@@ -139,5 +139,23 @@ describe('the connectivity screen', () => {
         const html = render();
         expect(html).toContain('Delivery overview');
         expect(html).toContain('Adapters catalogue');
+        expect(html).toContain('href="/market-data/connectivity?view=adapters"');
+        expect(html).toContain('Delivery');
+        expect(html).toContain('Adapters catalogue');
+    });
+
+    it('opens the adapter catalogue on its own tab', () => {
+        const html = render('/market-data/connectivity?view=adapters');
+
+        expect(html).toContain('Adapter catalogue');
+        expect(html).toContain('frankfurter');
+        expect(html).not.toContain('Find a supplier, publisher, session or feed');
+    });
+
+    it('links a feed scope item to the page that shows it', () => {
+        const html = render('/market-data/connectivity?feed=f0000000-0000-0000-0000-000000000001');
+        expect(html).toContain(
+            'href="/market-data/fixings?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dfixing%26index%3Dfx%26source%3DECB%26ccy%3DUSD"',
+        );
     });
 });

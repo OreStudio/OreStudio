@@ -562,8 +562,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
         domain::bond_terms terms;
         terms.tenor_years = std::clamp(drawn, min_years, max_years);
-        terms.security_id = security_id_for(
-            scope, terms.tenor_years, bond_types[slot % bond_type_count]);
+        terms.security_id =
+            security_id_for(scope, terms.tenor_years, bond_types[slot % bond_type_count]);
         terms.issue_id = issue_id_for_security(terms.security_id);
         terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
         terms.reference_curve_id = scope.reference_curve_id;

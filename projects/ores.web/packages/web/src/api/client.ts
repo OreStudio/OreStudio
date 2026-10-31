@@ -703,6 +703,8 @@ const adapterStatusSchema = z.object({
     last_tick_age_ms: z.number(),
     accepted: z.array(vendorIdSchema).default([]),
     rejected: z.array(z.object({ id: vendorIdSchema, reason: z.string().default('') })).default([]),
+    /** The session environment the source's feed runs in, such as simulated. */
+    kind: z.string().default(''),
 });
 
 export type AdapterStatus = z.infer<typeof adapterStatusSchema>;
@@ -2412,6 +2414,14 @@ export const api = {
             .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
     },
 
+    /** One stored item, named by its oresmd URI. */
+    async fixingSeries(uri: string): Promise<FixingSeries> {
+        const query = new URLSearchParams({ uri });
+        return fixingSeriesSchema.parse(
+            await request(`/api/marketdata/fixing-series?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
     /** The public publishers, with their terms, their feeds and their fixing series. */
     async publicRates(): Promise<readonly PublicRatesProvider[]> {
         return publicRatesSchema.parse(
@@ -4102,3 +4112,38 @@ export const api = {
 };
 
 export { ApiFailure };
+
+const fixingSeriesSchema = z.object({
+    series: z
+        .object({
+            id: z.string(),
+            oresmd_uri: z.string(),
+            provider_code: z.string(),
+            version: z.number(),
+        })
+        .nullable(),
+    publisher: z.object({ code: z.string(), name: z.string() }).nullable().optional(),
+    values: z
+        .object({
+            first: z.string(),
+            last: z.string(),
+            count: z.number(),
+            rows: z.array(z.object({ date: z.string(), value: z.string() })),
+        })
+        .optional(),
+    feeds: z
+        .array(
+            z.object({
+                id: z.string(),
+                name: z.string(),
+                service: z.string(),
+                session_code: z.string(),
+                environment: z.string().default(''),
+                supplier_name: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
+/** One stored item, named by its oresmd URI: the series, its fixings and the feeds that carry it. */
+export type FixingSeries = z.infer<typeof fixingSeriesSchema>;

@@ -17,8 +17,8 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -41,9 +41,8 @@ trade_population_slot a_slot() {
     slot.trader.username = "diane.kay";
     slot.trade_type_code = "COMMFWD";
     slot.internal_identifier = "POP-000001";
-    slot.trade_date = std::chrono::year_month_day{std::chrono::year{2026},
-                                                  std::chrono::month{10},
-                                                  std::chrono::day{31}};
+    slot.trade_date = std::chrono::year_month_day{
+        std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
     slot.instruments.commodity_instruments.push_back(ores::trading::domain::commodity_instrument{});
     return slot;
 }
@@ -64,8 +63,7 @@ TEST_CASE("a_generated_trade_books_without_asking_for_authorisation", "[writer]"
     CHECK(request.anchor.booking_nature == ores::trading::domain::booking_nature::test);
 }
 
-TEST_CASE("a_generated_trade_states_the_person_it_was_entered_by_and_its_own_origin",
-          "[writer]") {
+TEST_CASE("a_generated_trade_states_the_person_it_was_entered_by_and_its_own_origin", "[writer]") {
     const auto slot = a_slot();
     const auto scope = a_scope();
 
@@ -96,14 +94,11 @@ TEST_CASE("a_generated_trade_states_the_rows_its_slot_carries", "[writer]") {
 TEST_CASE("a_wire_round_trip_keeps_a_variance_swaps_dates", "[writer]") {
     using ores::trading::domain::fx_variance_swap_terms;
 
-    const auto start = std::chrono::year_month_day{std::chrono::year{2026},
-                                                   std::chrono::month{10},
-                                                   std::chrono::day{31}};
-    const auto end = std::chrono::year_month_day{std::chrono::year{2027},
-                                                 std::chrono::month{10},
-                                                 std::chrono::day{31}};
-    fx_variance_swap_terms terms{start,          end,      "USD", "AAPL",
-                                 "Long",         16.0,     {},    "Variance"};
+    const auto start = std::chrono::year_month_day{
+        std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
+    const auto end = std::chrono::year_month_day{
+        std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
+    fx_variance_swap_terms terms{start, end, "USD", "AAPL", "Long", 16.0, {}, "Variance"};
     terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
 
     ores::trading::messaging::book_trade_request request;

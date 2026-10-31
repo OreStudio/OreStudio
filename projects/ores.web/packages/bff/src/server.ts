@@ -49,6 +49,7 @@ import { registerCurveConfigurationRoutes } from './curve-configuration.js';
 import { registerAdapterRoutes } from './adapters.js';
 import { registerPublicRatesRoutes } from './public-rates.js';
 import { registerConnectivityRoutes } from './connectivity.js';
+import { registerFixingSeriesRoutes } from './fixing-series.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerOresmdRoutes } from './oresmd.js';
 import { registerSeriesRoutes } from './series.js';
@@ -2690,6 +2691,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerSubscriptionRoutes(server, requireSession);
     registerPublicRatesRoutes(server, requireSession);
     registerConnectivityRoutes(server, requireSession);
+    registerFixingSeriesRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);

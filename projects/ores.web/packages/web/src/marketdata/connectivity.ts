@@ -192,3 +192,20 @@ export function publisherMatches(
         ...feedsOfPublisher(catalogue, publisher.code).map((feed) => feed.name),
     );
 }
+
+/**
+ * The pair an FX fixing item names: =oresmd://fx/<BASE>?type=fixing&index=fx&source=<KEY>&ccy=<QUOTE>=.
+ * A URI of another shape names no pair, and the screen draws it as text.
+ */
+export function fixingPairOf(
+    uri: string,
+): { readonly base: string; readonly quote: string } | null {
+    const match =
+        /^oresmd:\/\/fx\/([A-Z]{3})\?type=fixing&index=fx&source=[A-Z0-9]+&ccy=([A-Z]{3})$/.exec(
+            uri,
+        );
+    if (match === null) {
+        return null;
+    }
+    return { base: match[1] ?? '', quote: match[2] ?? '' };
+}

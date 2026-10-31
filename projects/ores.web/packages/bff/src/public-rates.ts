@@ -50,7 +50,7 @@ const publicProviderSchema = z.looseObject({
     terms_credit: z.string().default(''),
     allows_storage: z.boolean().default(false),
     terms_accepted_digest: z.string().default(''),
-    terms_accepted_by: z.string().default(''),
+    terms_accepted_by: z.string().nullable().default(null),
     terms_accepted_at: z.string().nullable().default(null),
 });
 
@@ -259,7 +259,7 @@ export function registerPublicRatesRoutes(
                         terms_credit: provider.terms_credit,
                         allows_storage: provider.allows_storage,
                         terms_accepted: provider.terms_accepted_digest !== '',
-                        terms_accepted_by: provider.terms_accepted_by,
+                        terms_accepted_by: provider.terms_accepted_by ?? '',
                         terms_accepted_at: provider.terms_accepted_at,
                         feeds: feeds.map((feed) => {
                             const session = sessionById.get(feed.session_code);

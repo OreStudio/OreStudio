@@ -63,7 +63,7 @@ struct provider_entity {
     bool allows_storage = false;
     std::string credential_ref = "";
     std::string terms_accepted_digest = "";
-    std::string terms_accepted_by = "";
+    std::optional<std::string> terms_accepted_by;
     std::optional<db_timestamp> terms_accepted_at;
     std::string modified_by;
     std::string performed_by;

@@ -22,14 +22,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { AdapterStatus } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { createTranslator } from '../i18n/translate.js';
 import { ADAPTERS_KEY } from '../marketdata/synthetic/adapterStatus.js';
-import { MarketDataSourcesPage, RejectedIds } from './MarketDataSourcesPage.js';
+import { MarketDataSourcePage, RejectedIds } from './MarketDataSourcePage.js';
+import { MarketDataSourcesPage } from './MarketDataSourcesPage.js';
 import {
     QUIET_AFTER_MS,
     formatTickAge,
@@ -66,6 +67,7 @@ function adapter(overrides: Partial<AdapterStatus> = {}): AdapterStatus {
         last_tick_age_ms: 400,
         accepted: [{ id_scheme: 'bbg', external_id: 'AUD AONIA', field: 'MID' }],
         rejected: [],
+        kind: 'production',
         ...overrides,
     };
 }
@@ -168,10 +170,11 @@ describe('the board', () => {
         );
     });
 
-    it('states the kind of a source as a gap rather than inventing one', () => {
+    it('states the environment of the session that serves the source', () => {
         const html = render(<MarketDataSourcesPage />);
 
-        expect(html).toContain('The kind of a source');
+        expect(html).toContain('production');
+        expect(html).not.toContain('The kind of a source');
         expect(html).toContain('The quality drops');
         expect(html).toContain('The parties routed to a source');
         expect(html).toContain('The history of a source');
@@ -179,13 +182,13 @@ describe('the board', () => {
 });
 
 /** The board, with the one read it makes already answered. */
-function render(element: ReactNode): string {
+function render(element: ReactNode, entry = '/'): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(ADAPTERS_KEY, [adapter(), quiet, stale]);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter>{element}</MemoryRouter>
+                <MemoryRouter initialEntries={[entry]}>{element}</MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
     );
@@ -207,7 +210,7 @@ describe('the rejected ids of a source', () => {
 });
 
 describe('the sources board on a server', () => {
-    it('draws the tiles, the alert, the table and the detail panel', () => {
+    it('draws the tiles, the alert and the table, with each source as a link', () => {
         const html = render(<MarketDataSourcesPage />);
 
         expect(html).toContain('Market data sources');
@@ -215,7 +218,25 @@ describe('the sources board on a server', () => {
         expect(html).toContain('29 demanded ids are not being served');
         expect(html).toContain('ore-import');
         expect(html).toContain('lseg-a');
-        expect(html).toContain('Source · ore-import');
+        expect(html).toContain('href="/operations/market-data-sources/ore-import"');
+        expect(html).not.toContain('Source · ore-import');
         expect(html).toContain('never');
+    });
+
+    it('draws one source on its own screen, with the way back', () => {
+        const html = render(
+            <Routes>
+                <Route
+                    path="/operations/market-data-sources/:sourceName"
+                    element={<MarketDataSourcePage />}
+                />
+            </Routes>,
+            '/operations/market-data-sources/lseg-a',
+        );
+
+        expect(html).toContain('Source · lseg-a');
+        expect(html).toContain('Back to the sources');
+        expect(html).toContain('href="/operations/market-data-sources"');
+        expect(html).toContain('production');
     });
 });

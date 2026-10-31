@@ -76,11 +76,10 @@ struct pillar_quote final {
  * @throws std::invalid_argument if a spot pillar's end date does not lie after
  *         its start date.
  */
-ORES_MARKETDATA_CORE_EXPORT std::string
-pillar_term_text(const std::string& start_tenor_code,
-                 const std::string& end_tenor_code,
-                 std::chrono::year_month_day start_date,
-                 std::chrono::year_month_day end_date);
+ORES_MARKETDATA_CORE_EXPORT std::string pillar_term_text(const std::string& start_tenor_code,
+                                                         const std::string& end_tenor_code,
+                                                         std::chrono::year_month_day start_date,
+                                                         std::chrono::year_month_day end_date);
 
 /**
  * @brief The market datum a pillar's quote is, built from the market data model.

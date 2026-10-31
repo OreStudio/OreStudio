@@ -463,9 +463,8 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", "[marketdata][classific
 
     // One index rule serves every family, so the taxonomy has a single row that
     // is not a datum, and no row for ORE's wrapper that nothing can reach.
-    const auto indexes = std::count_if(rules.begin(), rules.end(), [](const auto& rule) {
-        return rule.key_kind == "index";
-    });
+    const auto indexes = std::count_if(
+        rules.begin(), rules.end(), [](const auto& rule) { return rule.key_kind == "index"; });
     CHECK(indexes == 1);
 
     // Every instrument is keyed by the spelling a URI writes: lower case, with
@@ -572,8 +571,7 @@ TEST_CASE("classifier_rejects_an_index_rule_that_names_a_datum_source", unit_tag
 TEST_CASE("classifier_takes_a_correlations_classes_from_its_operands", unit_tags) {
     const series_classifier classifier(fixture());
 
-    const auto cross =
-        classifier.classify(correlation_key({"EQ-RIC:.SPX", "FX-GENERIC-USD-EUR"}));
+    const auto cross = classifier.classify(correlation_key({"EQ-RIC:.SPX", "FX-GENERIC-USD-EUR"}));
     CHECK(cross.asset_classes == std::vector<std::string>{"equity", "fx"});
     CHECK(cross.series_subclass == "correlation");
 

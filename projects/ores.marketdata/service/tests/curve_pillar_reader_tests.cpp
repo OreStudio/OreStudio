@@ -94,18 +94,12 @@ const std::string first_second = "2Y";
 ores::marketdata::core::pillar_quote pillar_quote_of(const curve_republish_refdata_context& ctx,
                                                      const std::string& start,
                                                      const std::string& end) {
-    return {"USD",
-            "1D",
-            start,
-            end,
-            resolve_tenor_date(ctx, start),
-            resolve_tenor_date(ctx, end)};
+    return {"USD", "1D", start, end, resolve_tenor_date(ctx, start), resolve_tenor_date(ctx, end)};
 }
 
-ores::marketdata::datum::market_datum
-quote_datum(const curve_republish_refdata_context& ctx,
-            const std::string& start,
-            const std::string& end) {
+ores::marketdata::datum::market_datum quote_datum(const curve_republish_refdata_context& ctx,
+                                                  const std::string& start,
+                                                  const std::string& end) {
     const auto made = ores::marketdata::core::pillar_quote_datum(pillar_quote_of(ctx, start, end));
     if (!made)
         throw std::runtime_error("no datum for the pillar " + start + " to " + end + ": " +

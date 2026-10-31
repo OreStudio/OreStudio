@@ -1026,9 +1026,8 @@ TEST_CASE("a_security_is_named_by_its_product", "[trade_population]") {
         const auto bond = bond_of(slot);
         products_of[bond.security_id].insert(slot.trade_type_code);
     }
-    const auto two_products = std::ranges::any_of(products_of, [](const auto& entry) {
-        return entry.second.size() > 1u;
-    });
+    const auto two_products = std::ranges::any_of(
+        products_of, [](const auto& entry) { return entry.second.size() > 1u; });
     REQUIRE_FALSE(two_products);
 
     const auto term = plan.slots.front();

@@ -20,6 +20,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, useSearchParams } from 'react-router';
 import {
     api,
     type PublicRatesFeed,
@@ -31,23 +32,37 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { PATHS } from '../shell/paths.js';
+import { PATHS, publicRatesPublisherPath } from '../shell/paths.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
-import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { SERIES_COLOURS } from './LineChart.js';
+import { SeriesChart } from './PublicRatesDetail.js';
 import { currenciesOf, pairValues, planPair, pivotOf, seriesOf } from './publicRates.js';
-
-/** How many of a series' latest fixings the table lists. */
-const LATEST = 15;
 
 /** The tabs of the screen, in the order the prototype states them. */
 type RatesTab = 'publishers' | 'availability' | 'compare' | 'fetch';
 
+/** The tab a link names, or none for a tab the screen does not have. */
+function ratesTabOf(value: string | null): RatesTab | undefined {
+    return value === 'publishers' ||
+        value === 'availability' ||
+        value === 'compare' ||
+        value === 'fetch'
+        ? value
+        : undefined;
+}
+
 /** How a publisher is arriving, from the last fixing it holds. */
 type Freshness = 'fresh' | 'late' | 'no-data';
 
-function dateLabel(epoch: number): string {
-    return new Date(epoch).toISOString().slice(0, 10);
+function FreshnessTag({ state }: { readonly state: Freshness }): ReactNode {
+    const { t } = useTranslation();
+    const tone = state === 'fresh' ? 'up' : state === 'late' ? 'warn' : 'muted';
+    return (
+        <Tag tone={tone} small>
+            {t(`marketdata.publicRates.freshness.${state}`)}
+        </Tag>
+    );
 }
 
 function today(): string {
@@ -79,16 +94,6 @@ function freshnessOf(last: string, now: string): Freshness {
         return 'no-data';
     }
     return last >= daysBefore(now, 1) ? 'fresh' : 'late';
-}
-
-function FreshnessTag({ state }: { readonly state: Freshness }): ReactNode {
-    const { t } = useTranslation();
-    const tone = state === 'fresh' ? 'up' : state === 'late' ? 'warn' : 'muted';
-    return (
-        <Tag tone={tone} small>
-            {t(`marketdata.publicRates.freshness.${state}`)}
-        </Tag>
-    );
 }
 
 function TermsCell({
@@ -132,138 +137,6 @@ function TermsCell({
     );
 }
 
-function SeriesChart({
-    series,
-    label,
-}: {
-    readonly series: readonly {
-        readonly name: string;
-        readonly values: ReadonlyMap<string, number>;
-    }[];
-    readonly label: string;
-}): ReactNode {
-    const dates = [...new Set(series.flatMap((s) => [...s.values.keys()]))].sort();
-    if (dates.length === 0) {
-        return null;
-    }
-    return (
-        <LineChart
-            label={label}
-            xs={dates.map((d) => Date.parse(`${d}T12:00:00Z`))}
-            xFormat={dateLabel}
-            format={(v) => (Math.abs(v) >= 100 ? v.toFixed(2) : v.toPrecision(5))}
-            series={series.map((s, index) => ({
-                points: dates.map((d) => s.values.get(d) ?? null),
-                colour: SERIES_COLOURS[index % SERIES_COLOURS.length] ?? 'var(--color-accent)',
-                strong: series.length === 1,
-                fill: series.length === 1,
-            }))}
-        />
-    );
-}
-
-/** One publisher's series: pick one, see its fixings drawn and its latest listed. */
-function ProviderDetail({ provider }: { readonly provider: PublicRatesProvider }): ReactNode {
-    const { t } = useTranslation();
-    const [chosen, setChosen] = useState<string | undefined>(provider.series[0]?.id);
-    const series = provider.series.find((s) => s.id === chosen) ?? provider.series[0];
-    const fixings = useQuery({
-        queryKey: ['public-rates-fixings', series?.id],
-        queryFn: () => api.publicRatesFixings(series === undefined ? [] : [series.id]),
-        enabled: series !== undefined,
-    });
-    const rows = series === undefined ? [] : (fixings.data?.[series.id] ?? []);
-    const values = new Map(rows.map((r) => [r.date, Number(r.value)]));
-    return (
-        <section className="card space-y-4 p-6" aria-label={provider.name}>
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">
-                    {t('marketdata.publicRates.detail.title', { provider: provider.name })}
-                </h2>
-                <span className="text-xs text-ink-faint">{provider.terms_credit}</span>
-            </header>
-            {provider.series.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('marketdata.publicRates.detail.empty')}</p>
-            ) : (
-                <>
-                    <div
-                        className="flex flex-wrap gap-1.5"
-                        role="radiogroup"
-                        aria-label={t('marketdata.publicRates.detail.series')}
-                    >
-                        {provider.series.map((s) => (
-                            <button
-                                key={s.id}
-                                type="button"
-                                role="radio"
-                                aria-checked={s.id === series?.id}
-                                onClick={() => setChosen(s.id)}
-                                className={
-                                    s.id === series?.id
-                                        ? 'rounded-chip border border-accent bg-accent-dim px-2 py-0.5 font-mono text-xs text-accent'
-                                        : 'rounded-chip border border-line px-2 py-0.5 font-mono text-xs text-ink-muted hover:text-ink'
-                                }
-                            >
-                                {`${s.base}/${s.quote}`}
-                            </button>
-                        ))}
-                    </div>
-                    {series !== undefined && (
-                        <p className="font-mono text-xs text-ink-faint">{series.oresmd_uri}</p>
-                    )}
-                    {fixings.isError ? (
-                        <Notice tone="error">{fixings.error.message}</Notice>
-                    ) : fixings.isPending ? (
-                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-                    ) : rows.length === 0 ? (
-                        <p className="text-sm text-ink-muted">
-                            {t('marketdata.publicRates.detail.noFixings')}
-                        </p>
-                    ) : (
-                        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                            <SeriesChart
-                                label={t('marketdata.publicRates.detail.chart', {
-                                    pair: `${series?.base ?? ''}/${series?.quote ?? ''}`,
-                                })}
-                                series={[{ name: provider.code, values }]}
-                            />
-                            <table className="w-full text-sm">
-                                <thead className="text-left text-xs text-ink-faint">
-                                    <tr>
-                                        <th className="py-1 font-normal">
-                                            {t('marketdata.publicRates.columns.date')}
-                                        </th>
-                                        <th className="py-1 text-right font-normal">
-                                            {t('marketdata.publicRates.columns.value')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rows
-                                        .slice(-LATEST)
-                                        .reverse()
-                                        .map((r) => (
-                                            <tr
-                                                key={r.date}
-                                                className="border-t border-line-subtle"
-                                            >
-                                                <td className="py-1 font-mono text-xs">{r.date}</td>
-                                                <td className="py-1 text-right font-mono text-xs tabular-nums">
-                                                    {r.value}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </>
-            )}
-        </section>
-    );
-}
-
-/** One pair from every publisher that gives it, drawn together. */
 function PairCompare({
     providers,
 }: {
@@ -418,13 +291,14 @@ function routedFeed(provider: PublicRatesProvider): PublicRatesFeed | undefined 
     return provider.feeds.find((feed) => feed.is_default) ?? provider.feeds[0];
 }
 
-/** One item, every publisher that fixes it, and how far back each one goes. */
 function Availability({
     providers,
     coverage,
+    initialPair,
 }: {
     readonly providers: readonly PublicRatesProvider[];
     readonly coverage: Readonly<Record<string, SeriesCoverage>>;
+    readonly initialPair: string;
 }): ReactNode {
     const { t } = useTranslation();
     const pairs = useMemo(() => {
@@ -436,7 +310,9 @@ function Availability({
         }
         return [...all].sort();
     }, [providers]);
-    const [pair, setPair] = useState(pairs[0] ?? '');
+    const [pair, setPair] = useState(
+        initialPair !== '' && pairs.includes(initialPair) ? initialPair : (pairs[0] ?? ''),
+    );
     const [base, quote] = pair.split('/');
     const holders = providers.flatMap((provider) => {
         const series = provider.series.find((s) => s.base === base && s.quote === quote);
@@ -673,8 +549,9 @@ export function PublicRatesPage(): ReactNode {
         queryKey: ['public-rates-coverage'],
         queryFn: api.publicRatesCoverage,
     });
-    const [tab, setTab] = useState<RatesTab>('publishers');
-    const [chosen, setChosen] = useState<string | undefined>(undefined);
+    const [params] = useSearchParams();
+    const [tab, setTab] = useState<RatesTab>(ratesTabOf(params.get('tab')) ?? 'publishers');
+
     const accept = useMutation({
         mutationFn: (provider: PublicRatesProvider) =>
             api.acceptProviderTerms(provider.code, provider.version),
@@ -702,7 +579,7 @@ export function PublicRatesPage(): ReactNode {
     const seriesCoverage = coverage.data ?? {};
     const now = today();
     const mayAccept = holds('marketdata::providers:accept_terms');
-    const selected = list.find((p) => p.code === chosen) ?? list[0];
+
     const tabs: readonly { readonly id: RatesTab; readonly label: string }[] = [
         { id: 'publishers', label: t('marketdata.publicRates.tabs.publishers') },
         { id: 'availability', label: t('marketdata.publicRates.tabs.availability') },
@@ -778,9 +655,6 @@ export function PublicRatesPage(): ReactNode {
                                             {t('marketdata.publicRates.columns.terms')}
                                         </th>
                                         <th className="py-1 font-normal">
-                                            {t('marketdata.publicRates.columns.feed')}
-                                        </th>
-                                        <th className="py-1 font-normal">
                                             {t('marketdata.publicRates.columns.last')}
                                         </th>
                                         <th className="py-1 font-normal">
@@ -794,24 +668,18 @@ export function PublicRatesPage(): ReactNode {
                                 <tbody>
                                     {list.map((p) => {
                                         const last = lastFixingOf(p, seriesCoverage);
-                                        const feed = routedFeed(p);
                                         return (
                                             <tr
                                                 key={p.code}
-                                                className={
-                                                    p.code === selected?.code
-                                                        ? 'border-t border-line-subtle bg-accent-dim'
-                                                        : 'border-t border-line-subtle'
-                                                }
+                                                className="border-t border-line-subtle"
                                             >
                                                 <td className="py-2 align-top">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setChosen(p.code)}
-                                                        className="text-left font-medium hover:text-accent"
+                                                    <Link
+                                                        to={publicRatesPublisherPath(p.code)}
+                                                        className="text-left font-medium text-accent underline decoration-line-strong underline-offset-2 hover:decoration-accent"
                                                     >
                                                         {p.name}
-                                                    </button>
+                                                    </Link>
                                                     <p className="max-w-md text-xs text-ink-faint">
                                                         {p.description}
                                                     </p>
@@ -835,13 +703,6 @@ export function PublicRatesPage(): ReactNode {
                                                         onAccept={() => accept.mutate(p)}
                                                     />
                                                 </td>
-                                                <td className="py-2 align-top text-xs">
-                                                    <p className="font-mono">{feed?.name ?? '—'}</p>
-                                                    <p className="text-ink-faint">
-                                                        {feed?.supplier_name ?? '—'} ·{' '}
-                                                        {feed?.service ?? '—'}
-                                                    </p>
-                                                </td>
                                                 <td className="py-2 align-top font-mono text-xs">
                                                     {last || '—'}
                                                 </td>
@@ -858,12 +719,15 @@ export function PublicRatesPage(): ReactNode {
                             </table>
                         )}
                     </section>
-                    {selected !== undefined && (
-                        <ProviderDetail key={selected.code} provider={selected} />
-                    )}
                 </>
             )}
-            {tab === 'availability' && <Availability providers={list} coverage={seriesCoverage} />}
+            {tab === 'availability' && (
+                <Availability
+                    providers={list}
+                    coverage={seriesCoverage}
+                    initialPair={params.get('pair') ?? ''}
+                />
+            )}
             {tab === 'compare' && <PairCompare providers={list} />}
             {tab === 'fetch' && (
                 <Fetch
@@ -872,13 +736,6 @@ export function PublicRatesPage(): ReactNode {
                         void providers.refetch();
                     }}
                 />
-            )}
-            {selected !== undefined && tab === 'publishers' && (
-                <p className="text-xs text-ink-faint">
-                    <a href={PATHS.connectivity} className="text-accent hover:underline">
-                        {t('marketdata.publicRates.configure')}
-                    </a>
-                </p>
             )}
         </div>
     );

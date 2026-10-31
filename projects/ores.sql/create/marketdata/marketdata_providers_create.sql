@@ -48,7 +48,7 @@ create table if not exists "ores_marketdata_providers_tbl" (
     "allows_storage" boolean not null default false,
     "credential_ref" text not null default '',
     "terms_accepted_digest" text not null default '',
-    "terms_accepted_by" text not null default '',
+    "terms_accepted_by" text null,
     "terms_accepted_at" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -67,7 +67,7 @@ create table if not exists "ores_marketdata_providers_tbl" (
     check ("code" ~ '^[a-z][a-z0-9_-]*$'),
     check ("kind" in ('data_vendor', 'exchange', 'broker', 'reference')),
     check ("name" <> ''),
-    check ("terms_accepted_digest" = '' or ("terms_accepted_by" <> '' and "terms_accepted_at" is not null))
+    check ("terms_accepted_digest" = '' or (coalesce("terms_accepted_by", '') <> '' and "terms_accepted_at" is not null))
 );
 
 -- Unique name for active records
@@ -99,6 +99,16 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The person who accepted the terms is an account of the deployment. The
+    -- column is empty until somebody accepts, so only a stated name is checked.
+    if coalesce(NEW.terms_accepted_by, '') <> '' and not exists (
+        select 1 from ores_iam_accounts_tbl
+        where username = NEW.terms_accepted_by
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid terms_accepted_by: %. Must be an account username.',
+            NEW.terms_accepted_by using errcode = '23503';
+    end if;
     -- The actor is validated before the version management and any parent
     -- touch below: the validator accepts a username only while a current
     -- account row holds it, and a self write retires that row.

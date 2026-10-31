@@ -1611,6 +1611,13 @@ const pt: SourceCatalogue = {
             description:
                 'Cada fonte que o serviço de dados de mercado executa: o estado do seu adaptador, os identificadores aceites e recusados, e há quanto tempo deu o último tick.',
             updated: 'Lido às {at}',
+            record: {
+                crumb: 'Fonte',
+                description:
+                    'O que esta fonte está a fazer, os identificadores aceites e recusados, e há quanto tempo tickou.',
+                back: 'Voltar às fontes',
+                missing: 'O registo já não acompanha esta fonte.',
+            },
             tag: {
                 lead: 'Uma fonte está silenciosa quando serve, o serviço lhe pede identificadores e nada deu tick nos últimos cinco minutos.',
                 noDemand: '{count} sem procura',
@@ -2521,6 +2528,7 @@ const pt: SourceCatalogue = {
                 fieldsHint: 'Um nome=valor por linha, por exemplo ccy=PLN.',
                 from: 'De',
                 to: 'Até',
+                chart: 'Os fixings de {item}',
                 provenance: 'Mostrar a origem de cada valor',
                 submit: 'Acompanhar',
             },
@@ -4753,6 +4761,28 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        fixingSeries: {
+            title: 'Série de fixings',
+            lead: 'Os fixings guardados de um instrumento, a série a que pertencem e os feeds que os trouxeram.',
+            noUri: 'Abra esta página a partir de uma ligação oresmd para saber que instrumento mostrar.',
+            notStored: 'O armazém não detém nada para {uri}.',
+            noValues: 'Ainda não há fixing guardado para este instrumento.',
+            provenance: 'Feeds que trazem este instrumento',
+            noFeeds: 'Nenhum feed nomeia este instrumento.',
+            back: 'Voltar aos dados de mercado',
+            columns: {
+                provider: 'Publisher',
+                first: 'Primeiro fixing',
+                last: 'Último fixing',
+                count: 'Fixings detidos',
+                date: 'Data',
+                value: 'Valor',
+                feed: 'Feed',
+                service: 'Serviço',
+                session: 'Sessão',
+                supplier: 'Fornecedor',
+            },
+        },
         curveBlueprints: {
             title: 'Plantas de curva',
             lead: 'As receitas a partir das quais cada curva e construida: os seus pilares, as suas convencoes e os conjuntos que alimentou.',
@@ -5070,6 +5100,10 @@ const pt: SourceCatalogue = {
                 compare: 'Comparar — a distância entre eles',
                 fetch: 'Obter — pedir dados agora',
             },
+            reads: {
+                title: 'Leituras',
+                lead: 'O feed por onde chegam os valores deste publisher: a classe, o fornecedor, a sessão e o serviço.',
+            },
             providers: {
                 title: 'Publishers',
                 lead: 'Uma linha por publisher e por classe. Um publisher só é lido depois de os seus termos serem aceites.',
@@ -5085,6 +5119,8 @@ const pt: SourceCatalogue = {
                 value: 'Valor',
                 route: 'Método',
                 supplier: 'Fornecedor',
+                class: 'Classe',
+                session: 'Sessão',
                 first: 'Primeiro',
                 last: 'Último',
                 values: 'Valores',
@@ -5103,6 +5139,10 @@ const pt: SourceCatalogue = {
                 read: 'Ler os termos',
             },
             detail: {
+                crumb: 'Publisher',
+                lead: 'Os termos deste publisher e as taxas que publica.',
+                back: 'Voltar às taxas públicas',
+                missing: 'Nenhum publisher público se chama {publisher}.',
                 title: 'As taxas de {provider}',
                 series: 'Séries',
                 empty: 'O publisher não preenche nenhuma série.',
@@ -5146,6 +5186,11 @@ const pt: SourceCatalogue = {
         connectivity: {
             title: 'Conetividade',
             lead: 'Quem publica, quem fornece, as sessões que configuramos, e os feeds que delas saem.',
+            tabs: {
+                label: 'Vistas da conetividade',
+                delivery: 'Entrega',
+                adapters: 'Catálogo de adaptadores',
+            },
             search: 'Encontrar um fornecedor, publisher, sessão ou feed',
             delivery: 'Entrega',
             publishers: 'Publishers',

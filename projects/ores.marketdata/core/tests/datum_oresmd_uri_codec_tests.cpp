@@ -204,9 +204,8 @@ TEST_CASE("a_datum_the_schema_admits_and_ore_cannot_spell_is_still_a_uri",
     // A CDS naming no seniority is a datum the row admits: the field may be
     // none. ORE has no key for it, and that is no longer a reason to refuse the
     // datum its identity.
-    const std::string text =
-        "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread"
-        "&ccy=USD&doc_clause=XR14&term=5Y";
+    const std::string text = "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread"
+                             "&ccy=USD&doc_clause=XR14&term=5Y";
     const auto datum = oresmd_uri_codec::read(text);
     REQUIRE(datum.has_value());
     CHECK(oresmd_uri_codec::write(*datum) == text);

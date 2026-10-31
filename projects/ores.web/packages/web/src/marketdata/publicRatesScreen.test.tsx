@@ -20,11 +20,12 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { PublicRatesFixings, PublicRatesProvider } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { PublicRatesPage } from './PublicRatesPage.js';
+import { PublicRatesPublisherPage } from './PublicRatesPublisherPage.js';
 
 const TODAY = new Date().toISOString().slice(0, 10);
 const YESTERDAY = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
@@ -126,8 +127,6 @@ describe('the public rates screen', () => {
         expect(html).toContain('European Central Bank');
         expect(html).toContain('By super_admin on 2026-10-28');
         expect(html).toContain('Not accepted');
-        expect(html).toContain('ecb-frankfurter');
-        expect(html).toContain('Frankfurter');
         expect(html).toContain('Fresh');
         expect(html).toContain('Late');
     });
@@ -139,10 +138,11 @@ describe('the public rates screen', () => {
         ).toContain('Accept terms');
     });
 
-    it('lists the first publisher’s latest fixings, newest first', () => {
+    it('opens each publisher on its own record', () => {
         const html = render(['marketdata::providers:read']);
-        expect(html).toContain('The rates of European Central Bank');
-        expect(html.indexOf('1.1500')).toBeLessThan(html.indexOf('1.1600'));
+        expect(html).toContain('href="/market-data/public-rates/boc"');
+        expect(html).toContain('href="/market-data/public-rates/ecb"');
+        expect(html).not.toContain('The rates of European Central Bank');
     });
 
     it('shows the tabs of the screen', () => {
@@ -150,5 +150,47 @@ describe('the public rates screen', () => {
         expect(html).toContain('Availability — who holds this underlying');
         expect(html).toContain('Compare — how far apart they are');
         expect(html).toContain('Fetch — ask for data now');
+    });
+});
+
+describe('the public publisher record', () => {
+    it('draws the rates of the publisher the address names', () => {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        client.setQueryData(['my-access'], {
+            roles: [
+                {
+                    roleId: 'r',
+                    name: 'System administrator',
+                    description: '',
+                    permissionCodes: ['marketdata::providers:read'],
+                    givenBy: 'system',
+                    givenAt: '2026-10-28 09:00:00Z',
+                    reasonCode: 'access.initial',
+                    commentary: '',
+                },
+            ],
+        });
+        client.setQueryData(['public-rates'], PROVIDERS);
+        client.setQueryData(['public-rates-coverage'], COVERAGE);
+        client.setQueryData(['public-rates-fixings', 'ecb-USD'], { 'ecb-USD': FIXINGS['ecb-USD'] });
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter initialEntries={['/market-data/public-rates/ecb']}>
+                        <Routes>
+                            <Route
+                                path="/market-data/public-rates/:publisher"
+                                element={<PublicRatesPublisherPage />}
+                            />
+                        </Routes>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+        expect(html).toContain('The rates of European Central Bank');
+        expect(html).toContain('Back to Public rates');
+        expect(html).toContain('ecb-frankfurter');
+        expect(html).toContain('Frankfurter');
+        expect(html).toContain('1.1500');
     });
 });

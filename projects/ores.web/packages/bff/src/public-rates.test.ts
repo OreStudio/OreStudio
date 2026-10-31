@@ -154,7 +154,7 @@ function catalogue(extra: Readonly<Record<string, unknown>> = {}): Record<string
         },
         'marketdata.v1.feed_scopes.list': {
             result: ok,
-            feed_scopes: [{ feed_id: FEED, asset_class: 'fx' }],
+            scopes: [{ feed_id: FEED, asset_class: 'fx' }],
         },
         'marketdata.v1.sessions.list': {
             result: ok,

@@ -68,6 +68,7 @@ import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
+import { MarketDataSourcePage } from './operations/MarketDataSourcePage.js';
 import { MarketDataSourcesPage } from './operations/MarketDataSourcesPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
@@ -110,7 +111,9 @@ import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
 import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
+import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
 import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
+import { PublicRatesPublisherPage } from './marketdata/PublicRatesPublisherPage.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -579,6 +582,18 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path="/operations/market-data-sources/:sourceName"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <MarketDataSourcePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path={PATHS.marketDataSources}
                 element={signedIn(
                     gate.version,
@@ -694,6 +709,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ConnectivityPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.publicRates}/:publisher`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublicRatesPublisherPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.fixingSeries}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FixingSeriesPage />
                     ),
                     'workspace',
                 )}

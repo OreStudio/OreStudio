@@ -28,9 +28,9 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | The store and the writer are built: a market-state file is indexed, compressed and kept, and the post-processor hands the run's archives to marketdata, which reads them with the run's own token. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | A whole run through the grid, so the hand-off is proved against a live engine rather than against its samples. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -45,6 +45,23 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+* Plan
+
+The cube is stored as the file the engine wrote, not as rows. A row for each
+value would be millions per run and a read that wants one factor would unpack
+all of them, so the payload is one compressed blob and the index beside it is
+what a reader asks first.
+
+The index is the distinct values of the family's *key* columns, which the
+catalogue already states, so the dates, scenarios, factors and market objects an
+index names need no list of their own.
+
+The file cannot travel in a message: NATS carries a megabyte and a production
+cube is tens of megabytes. The reporting service therefore names the run's output
+archives and lends the run's own token, and this component downloads, unpacks and
+stores what it finds. Both components read the same archive and each keeps what
+it owns: reporting the results, marketdata the state.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -57,7 +74,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE core suite | 447 cases, 484 620 assertions | `ores.ore.core.tests` | |
+| Marketdata core suite | 343 cases, 21 690 assertions | `ores.marketdata.core.tests` | |
+| Reporting core suite | 213 cases, 1 173 assertions | `ores.reporting.core.tests` | |
+| Payload index limit | 1 000 values for each key | `results_payload_index_tests` | |
 
 * Notes
 
@@ -71,6 +91,27 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 |          |       |       |
+
+* Result
+
+The market state a run priced against is read, indexed and stored, and the run's
+own post-processor hands it over.
+
+- =ores_marketdata_market_state_payloads_tbl= takes the file as the engine wrote
+  it, gzipped and held as base64 text, with the headings, the row count, the
+  distinct values of each key, the compressed size and the digest beside it. It is
+  a hypertable on the observation date and RLS-scoped like the tables it sits by.
+- =read_market_state= reads every market-state file of a run out of its archive
+  and leaves the results alone, naming them back to the caller.
+- =marketdata.v1.ops.store_market_state= takes the run's ids, the date it priced
+  at, the storage token and the archive locations, and answers what it stored and
+  what it left alone. It reads the archives rather than receiving them, because a
+  cube does not fit in a message.
+- The post-processor calls it once per run, after its figures are loaded. A state
+  that is not stored is logged and stated in the step's message rather than
+  failing the run.
+- The families that are market state are stated once, in the catalogue, so the
+  store and the corpus gate cannot disagree.
 
 * PRs
 

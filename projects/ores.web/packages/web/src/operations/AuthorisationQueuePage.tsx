@@ -81,37 +81,37 @@ const GROUPS: readonly {
     {
         key: 'awaiting',
         label: 'Awaiting authorisation',
-        wash: 'rgba(250, 204, 21, 0.10)',
-        edge: '#eab308',
-        ink: '#a16207',
+        wash: 'rgba(255, 255, 186, 0.16)',
+        edge: '#ffffba',
+        ink: '#ffffba',
     },
     {
         key: 'changed',
         label: 'Changed since requested',
-        wash: 'rgba(168, 85, 247, 0.10)',
-        edge: '#a855f7',
-        ink: '#7e22ce',
+        wash: 'rgba(255, 223, 186, 0.16)',
+        edge: '#ffdfba',
+        ink: '#ffdfba',
     },
     {
         key: 'held',
         label: 'Held over',
-        wash: 'rgba(56, 189, 248, 0.10)',
-        edge: '#38bdf8',
-        ink: '#0369a1',
+        wash: 'rgba(186, 225, 255, 0.16)',
+        edge: '#bae1ff',
+        ink: '#bae1ff',
     },
     {
         key: 'authorised',
         label: 'Authorised',
-        wash: 'rgba(52, 211, 153, 0.10)',
-        edge: '#34d399',
-        ink: '#047857',
+        wash: 'rgba(186, 255, 201, 0.16)',
+        edge: '#baffc9',
+        ink: '#baffc9',
     },
     {
         key: 'denied',
         label: 'Denied',
-        wash: 'rgba(251, 113, 133, 0.10)',
-        edge: '#fb7185',
-        ink: '#be123c',
+        wash: 'rgba(255, 179, 186, 0.16)',
+        edge: '#ffb3ba',
+        ink: '#ffb3ba',
     },
 ];
 
@@ -232,23 +232,12 @@ export function AuthorisationQueuePage(): ReactNode {
             cell: (row) => row.tradeDate,
         },
         {
-            id: 'state',
-            header: 'State',
-            cell: (row) => {
-                const palette = paletteOf(row);
-                return (
-                    <span
-                        className="inline-block rounded-full border px-2 py-0.5 text-[11px] leading-tight"
-                        style={{
-                            borderColor: palette.edge,
-                            color: palette.ink,
-                            backgroundColor: palette.wash,
-                        }}
-                    >
-                        {stateWord(row)}
-                    </span>
-                );
-            },
+            /* The queue is worked newest first, so the time a deal arrived is on
+             * the row rather than in a tooltip: it is the order the list is in. */
+            id: 'raisedAt',
+            header: 'Raised',
+            mono: true,
+            cell: (row) => row.requestedAt.replace('T', ' ').slice(0, 16),
         },
     ];
 

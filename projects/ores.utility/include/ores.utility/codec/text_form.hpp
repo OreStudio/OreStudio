@@ -29,9 +29,11 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
+#include <magic_enum/magic_enum.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::utility::codec {
 
@@ -50,6 +52,32 @@ namespace ores::utility::codec {
  */
 template <typename T>
 struct text_form;
+
+/**
+ * @brief An enumerator is its own name.
+ *
+ * A value of an enumerated type travels as the enumerator's name, which is the
+ * spelling the reflector wrote for it before the codec carried it, so a message
+ * an older build sent reads back here and the other way round. A name this build
+ * does not know is refused with the text that arrived.
+ */
+template <typename T>
+    requires std::is_enum_v<T>
+struct text_form<T> {
+    static constexpr std::string_view wire_name = "an enumerator";
+
+    static std::string to_text(T v) {
+        return std::string(magic_enum::enum_name(v));
+    }
+
+    static T from_text(std::string_view text) {
+        const auto v = magic_enum::enum_cast<T>(text);
+        if (!v)
+            throw std::invalid_argument("Not an enumerator: " + std::string(text) +
+                                        " is not one of this type's names");
+        return *v;
+    }
+};
 
 /**
  * @brief A string is its own text form.

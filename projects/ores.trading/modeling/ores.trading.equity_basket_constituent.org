@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: C4451E5A-20F0-4B69-B141-A84CE0BA8C6E
 :END:
 #+title: ores.trading.equity_basket_constituent

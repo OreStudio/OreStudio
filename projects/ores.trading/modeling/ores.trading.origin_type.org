@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 26bebfb2-f49b-4d4f-9a26-5fc24281d5b2
 :END:
 #+title: ores.trading.origin_type

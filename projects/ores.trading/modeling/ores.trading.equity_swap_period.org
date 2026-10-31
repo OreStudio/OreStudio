@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: cd7bbd2d-6591-40f4-820e-4237ec32cfde
 :END:
 #+title: ores.trading.equity_swap_period

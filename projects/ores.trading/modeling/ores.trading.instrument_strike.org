@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D4B2F23D-EC19-4D19-A478-3DD068044E16
 :END:
 #+title: ores.trading.instrument_strike

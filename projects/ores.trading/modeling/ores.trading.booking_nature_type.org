@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 735BC0F4-EC7A-4F70-AE47-5C9DA0013F78
 :END:
 #+title: ores.trading.booking_nature_type

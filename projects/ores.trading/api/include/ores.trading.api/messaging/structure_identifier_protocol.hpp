@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_STRUCTURE_IDENTIFIER_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/structure_identifier.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -301,7 +307,855 @@ inline constexpr std::string_view created = "trading.v1.structure_identifiers_ev
 inline constexpr std::string_view updated = "trading.v1.structure_identifiers_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.structure_identifiers_events.deleted";
 }
+/**
+ * @brief The members of structure_identifier_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_key&) {
+    return std::tuple{
+        utility::codec::field{"structure_id", &structure_identifier_key::structure_id},
+        utility::codec::field{"id_type", &structure_identifier_key::id_type},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_write&) {
+    return std::tuple{
+        utility::codec::field{"structure_id", &structure_identifier_write::structure_id},
+        utility::codec::field{"id_type", &structure_identifier_write::id_type},
+        utility::codec::field{"id_value", &structure_identifier_write::id_value},
+        utility::codec::field{"issuing_party_id", &structure_identifier_write::issuing_party_id},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &structure_identifier_change::write},
+        utility::codec::field{"precondition", &structure_identifier_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &structure_identifier_removal::key},
+        utility::codec::field{"precondition", &structure_identifier_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &structure_identifier_lookup::key},
+        utility::codec::field{"structure_identifier",
+                              &structure_identifier_lookup::structure_identifier},
+    };
+}
+
+/**
+ * @brief The members of structure_identifiers_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifiers_filter&) {
+    return std::tuple{
+        utility::codec::field{"structure_id", &structure_identifiers_filter::structure_id},
+        utility::codec::field{"structure_id_one_of",
+                              &structure_identifiers_filter::structure_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &structure_identifier_event::event_id},
+        utility::codec::field{"key", &structure_identifier_event::key},
+        utility::codec::field{"action", &structure_identifier_event::action},
+        utility::codec::field{"version", &structure_identifier_event::version},
+        utility::codec::field{"occurred_at", &structure_identifier_event::occurred_at},
+        utility::codec::field{"correlation_id", &structure_identifier_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_version_key&) {
+    return std::tuple{
+        utility::codec::field{"structure_identifier",
+                              &structure_identifier_version_key::structure_identifier},
+        utility::codec::field{"version", &structure_identifier_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of structure_identifier_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const structure_identifier_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &structure_identifier_versions_filter::version},
+        utility::codec::field{"from_version", &structure_identifier_versions_filter::from_version},
+        utility::codec::field{"to_version", &structure_identifier_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_structure_identifiers_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_structure_identifiers_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_structure_identifiers_request::offset},
+        utility::codec::field{"limit", &list_structure_identifiers_request::limit},
+        utility::codec::field{"order", &list_structure_identifiers_request::order},
+        utility::codec::field{"filter", &list_structure_identifiers_request::filter},
+        utility::codec::field{"as_of", &list_structure_identifiers_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_structure_identifiers_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_structure_identifiers_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_structure_identifiers_response::result},
+        utility::codec::field{"identifiers", &list_structure_identifiers_response::identifiers},
+        utility::codec::field{"total", &list_structure_identifiers_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_structure_identifier_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_structure_identifier_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_structure_identifier_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_structure_identifier_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_structure_identifier_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_structure_identifier_response::result},
+        utility::codec::field{"structure_identifier",
+                              &get_structure_identifier_response::structure_identifier},
+    };
+}
+
+/**
+ * @brief The members of get_many_structure_identifiers_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_structure_identifiers_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_structure_identifiers_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_structure_identifiers_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_structure_identifiers_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_structure_identifiers_response::result},
+        utility::codec::field{"entries", &get_many_structure_identifiers_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_structure_identifier_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_structure_identifier_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_structure_identifier_request::change},
+        utility::codec::field{"intent", &put_structure_identifier_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_structure_identifier_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_structure_identifier_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_structure_identifier_response::result},
+        utility::codec::field{"structure_identifier",
+                              &put_structure_identifier_response::structure_identifier},
+    };
+}
+
+/**
+ * @brief The members of put_many_structure_identifiers_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_structure_identifiers_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_structure_identifiers_request::changes},
+        utility::codec::field{"intent", &put_many_structure_identifiers_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_structure_identifiers_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_structure_identifiers_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_structure_identifiers_response::result},
+        utility::codec::field{"identifiers", &put_many_structure_identifiers_response::identifiers},
+    };
+}
+
+/**
+ * @brief The members of delete_structure_identifier_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_structure_identifier_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_structure_identifier_request::removal},
+        utility::codec::field{"intent", &delete_structure_identifier_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_structure_identifier_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_structure_identifier_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_structure_identifier_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_structure_identifiers_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_structure_identifiers_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_structure_identifiers_request::removals},
+        utility::codec::field{"intent", &delete_many_structure_identifiers_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_structure_identifiers_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_structure_identifiers_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_structure_identifiers_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_structure_id_structure_identifiers_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_structure_id_structure_identifiers_request&) {
+    return std::tuple{
+        utility::codec::field{"structure_id",
+                              &list_by_structure_id_structure_identifiers_request::structure_id},
+        utility::codec::field{"scope", &list_by_structure_id_structure_identifiers_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_structure_id_structure_identifiers_request::offset},
+        utility::codec::field{"limit", &list_by_structure_id_structure_identifiers_request::limit},
+        utility::codec::field{"order", &list_by_structure_id_structure_identifiers_request::order},
+        utility::codec::field{"filter",
+                              &list_by_structure_id_structure_identifiers_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_structure_id_structure_identifiers_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_structure_id_structure_identifiers_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_structure_id_structure_identifiers_response::result},
+        utility::codec::field{"identifiers",
+                              &list_by_structure_id_structure_identifiers_response::identifiers},
+        utility::codec::field{"total", &list_by_structure_id_structure_identifiers_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_structure_identifier_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_structure_identifier_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_structure_identifier_versions_request::key},
+        utility::codec::field{"offset", &list_structure_identifier_versions_request::offset},
+        utility::codec::field{"limit", &list_structure_identifier_versions_request::limit},
+        utility::codec::field{"order", &list_structure_identifier_versions_request::order},
+        utility::codec::field{"filter", &list_structure_identifier_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_structure_identifier_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_structure_identifier_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_structure_identifier_versions_response::result},
+        utility::codec::field{"versions", &list_structure_identifier_versions_response::versions},
+        utility::codec::field{"total", &list_structure_identifier_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_structure_identifier_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_structure_identifier_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_structure_identifier_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_structure_identifier_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_structure_identifier_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_structure_identifier_version_response::result},
+        utility::codec::field{"version", &get_structure_identifier_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_key& v);
+    static ores::trading::messaging::structure_identifier_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::structure_identifier_key& v);
+    static ores::trading::messaging::structure_identifier_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_write& v);
+    static ores::trading::messaging::structure_identifier_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::structure_identifier_write& v);
+    static ores::trading::messaging::structure_identifier_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_change& v);
+    static ores::trading::messaging::structure_identifier_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifier_change& v);
+    static ores::trading::messaging::structure_identifier_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_removal& v);
+    static ores::trading::messaging::structure_identifier_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifier_removal& v);
+    static ores::trading::messaging::structure_identifier_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_lookup& v);
+    static ores::trading::messaging::structure_identifier_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifier_lookup& v);
+    static ores::trading::messaging::structure_identifier_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifiers_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifiers_filter& v);
+    static ores::trading::messaging::structure_identifiers_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifiers_filter& v);
+    static ores::trading::messaging::structure_identifiers_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::structure_identifier_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::structure_identifier_event& v);
+    static ores::trading::messaging::structure_identifier_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::structure_identifier_event& v);
+    static ores::trading::messaging::structure_identifier_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::structure_identifier_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::structure_identifier_version_key& v);
+    static ores::trading::messaging::structure_identifier_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifier_version_key& v);
+    static ores::trading::messaging::structure_identifier_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::structure_identifier_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::structure_identifier_versions_filter& v);
+    static ores::trading::messaging::structure_identifier_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::structure_identifier_versions_filter& v);
+    static ores::trading::messaging::structure_identifier_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_structure_identifiers_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_structure_identifiers_request& v);
+    static ores::trading::messaging::list_structure_identifiers_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_structure_identifiers_request& v);
+    static ores::trading::messaging::list_structure_identifiers_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_structure_identifiers_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_structure_identifiers_response& v);
+    static ores::trading::messaging::list_structure_identifiers_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_structure_identifiers_response& v);
+    static ores::trading::messaging::list_structure_identifiers_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_structure_identifier_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_structure_identifier_request& v);
+    static ores::trading::messaging::get_structure_identifier_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_structure_identifier_request& v);
+    static ores::trading::messaging::get_structure_identifier_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_structure_identifier_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_structure_identifier_response& v);
+    static ores::trading::messaging::get_structure_identifier_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_structure_identifier_response& v);
+    static ores::trading::messaging::get_structure_identifier_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_structure_identifiers_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_structure_identifiers_request& v);
+    static ores::trading::messaging::get_many_structure_identifiers_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_structure_identifiers_request& v);
+    static ores::trading::messaging::get_many_structure_identifiers_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_structure_identifiers_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_structure_identifiers_response& v);
+    static ores::trading::messaging::get_many_structure_identifiers_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_structure_identifiers_response& v);
+    static ores::trading::messaging::get_many_structure_identifiers_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_structure_identifier_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_structure_identifier_request& v);
+    static ores::trading::messaging::put_structure_identifier_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_structure_identifier_request& v);
+    static ores::trading::messaging::put_structure_identifier_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_structure_identifier_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_structure_identifier_response& v);
+    static ores::trading::messaging::put_structure_identifier_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_structure_identifier_response& v);
+    static ores::trading::messaging::put_structure_identifier_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_structure_identifiers_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_structure_identifiers_request& v);
+    static ores::trading::messaging::put_many_structure_identifiers_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_structure_identifiers_request& v);
+    static ores::trading::messaging::put_many_structure_identifiers_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_structure_identifiers_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_structure_identifiers_response& v);
+    static ores::trading::messaging::put_many_structure_identifiers_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_structure_identifiers_response& v);
+    static ores::trading::messaging::put_many_structure_identifiers_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_structure_identifier_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_structure_identifier_request& v);
+    static ores::trading::messaging::delete_structure_identifier_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_structure_identifier_request& v);
+    static ores::trading::messaging::delete_structure_identifier_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_structure_identifier_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_structure_identifier_response& v);
+    static ores::trading::messaging::delete_structure_identifier_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_structure_identifier_response& v);
+    static ores::trading::messaging::delete_structure_identifier_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_structure_identifiers_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_structure_identifiers_request& v);
+    static ores::trading::messaging::delete_many_structure_identifiers_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_structure_identifiers_request& v);
+    static ores::trading::messaging::delete_many_structure_identifiers_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_structure_identifiers_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_structure_identifiers_response& v);
+    static ores::trading::messaging::delete_many_structure_identifiers_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_structure_identifiers_response& v);
+    static ores::trading::messaging::delete_many_structure_identifiers_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_structure_id_structure_identifiers_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_by_structure_id_structure_identifiers_request& v);
+    static ores::trading::messaging::list_by_structure_id_structure_identifiers_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_by_structure_id_structure_identifiers_request& v);
+    static ores::trading::messaging::list_by_structure_id_structure_identifiers_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_structure_id_structure_identifiers_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_by_structure_id_structure_identifiers_response& v);
+    static ores::trading::messaging::list_by_structure_id_structure_identifiers_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_by_structure_id_structure_identifiers_response& v);
+    static ores::trading::messaging::list_by_structure_id_structure_identifiers_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_structure_identifier_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_structure_identifier_versions_request& v);
+    static ores::trading::messaging::list_structure_identifier_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_structure_identifier_versions_request& v);
+    static ores::trading::messaging::list_structure_identifier_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_structure_identifier_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_structure_identifier_versions_response& v);
+    static ores::trading::messaging::list_structure_identifier_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_structure_identifier_versions_response& v);
+    static ores::trading::messaging::list_structure_identifier_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_structure_identifier_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_structure_identifier_version_request& v);
+    static ores::trading::messaging::get_structure_identifier_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_structure_identifier_version_request& v);
+    static ores::trading::messaging::get_structure_identifier_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_structure_identifier_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_structure_identifier_version_response& v);
+    static ores::trading::messaging::get_structure_identifier_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_structure_identifier_version_response& v);
+    static ores::trading::messaging::get_structure_identifier_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

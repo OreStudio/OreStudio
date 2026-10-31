@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8B390608-5BA2-4625-8B23-3765E45C0061
 :END:
 #+title: ores.trading.equity_cliquet_option_instrument

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8785793f-8e77-4a3a-a925-66e89b3eee58
 :END:
 #+title: ores.trading.ascot

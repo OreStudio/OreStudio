@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D0FE23D4-5138-4770-8DED-FFF702338F70
 :END:
 #+title: ores.trading.counterparty_scope_type

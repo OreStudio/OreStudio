@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5CBC0229-58F4-498D-B60D-0B12978C5B0B
 :END:
 #+title: ores.trading.equity_outperformance_option_instrument

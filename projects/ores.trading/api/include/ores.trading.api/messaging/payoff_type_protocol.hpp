@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_PAYOFF_TYPE_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/payoff_type.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -270,7 +276,729 @@ inline constexpr std::string_view created = "trading.v1.payoff_types_events.crea
 inline constexpr std::string_view updated = "trading.v1.payoff_types_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.payoff_types_events.deleted";
 }
+/**
+ * @brief The members of payoff_type_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &payoff_type_key::code},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &payoff_type_write::code},
+        utility::codec::field{"description", &payoff_type_write::description},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &payoff_type_change::write},
+        utility::codec::field{"precondition", &payoff_type_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &payoff_type_removal::key},
+        utility::codec::field{"precondition", &payoff_type_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &payoff_type_lookup::key},
+        utility::codec::field{"payoff_type", &payoff_type_lookup::payoff_type},
+    };
+}
+
+/**
+ * @brief The members of payoff_types_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_types_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &payoff_types_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &payoff_type_event::event_id},
+        utility::codec::field{"key", &payoff_type_event::key},
+        utility::codec::field{"action", &payoff_type_event::action},
+        utility::codec::field{"version", &payoff_type_event::version},
+        utility::codec::field{"occurred_at", &payoff_type_event::occurred_at},
+        utility::codec::field{"correlation_id", &payoff_type_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_version_key&) {
+    return std::tuple{
+        utility::codec::field{"payoff_type", &payoff_type_version_key::payoff_type},
+        utility::codec::field{"version", &payoff_type_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of payoff_type_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const payoff_type_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &payoff_type_versions_filter::version},
+        utility::codec::field{"from_version", &payoff_type_versions_filter::from_version},
+        utility::codec::field{"to_version", &payoff_type_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_payoff_types_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_payoff_types_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_payoff_types_request::offset},
+        utility::codec::field{"limit", &list_payoff_types_request::limit},
+        utility::codec::field{"order", &list_payoff_types_request::order},
+        utility::codec::field{"filter", &list_payoff_types_request::filter},
+        utility::codec::field{"as_of", &list_payoff_types_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_payoff_types_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_payoff_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_payoff_types_response::result},
+        utility::codec::field{"payoff_types", &list_payoff_types_response::payoff_types},
+        utility::codec::field{"total", &list_payoff_types_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_payoff_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_payoff_type_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_payoff_type_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_payoff_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_payoff_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_payoff_type_response::result},
+        utility::codec::field{"payoff_type", &get_payoff_type_response::payoff_type},
+    };
+}
+
+/**
+ * @brief The members of get_many_payoff_types_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_payoff_types_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_payoff_types_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_payoff_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_payoff_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_payoff_types_response::result},
+        utility::codec::field{"entries", &get_many_payoff_types_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_payoff_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_payoff_type_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_payoff_type_request::change},
+        utility::codec::field{"intent", &put_payoff_type_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_payoff_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_payoff_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_payoff_type_response::result},
+        utility::codec::field{"payoff_type", &put_payoff_type_response::payoff_type},
+    };
+}
+
+/**
+ * @brief The members of put_many_payoff_types_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_payoff_types_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_payoff_types_request::changes},
+        utility::codec::field{"intent", &put_many_payoff_types_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_payoff_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_payoff_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_payoff_types_response::result},
+        utility::codec::field{"payoff_types", &put_many_payoff_types_response::payoff_types},
+    };
+}
+
+/**
+ * @brief The members of delete_payoff_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_payoff_type_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_payoff_type_request::removal},
+        utility::codec::field{"intent", &delete_payoff_type_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_payoff_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_payoff_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_payoff_type_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_payoff_types_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_payoff_types_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_payoff_types_request::removals},
+        utility::codec::field{"intent", &delete_many_payoff_types_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_payoff_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_payoff_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_payoff_types_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_payoff_type_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_payoff_type_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_payoff_type_versions_request::key},
+        utility::codec::field{"offset", &list_payoff_type_versions_request::offset},
+        utility::codec::field{"limit", &list_payoff_type_versions_request::limit},
+        utility::codec::field{"order", &list_payoff_type_versions_request::order},
+        utility::codec::field{"filter", &list_payoff_type_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_payoff_type_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_payoff_type_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_payoff_type_versions_response::result},
+        utility::codec::field{"versions", &list_payoff_type_versions_response::versions},
+        utility::codec::field{"total", &list_payoff_type_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_payoff_type_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_payoff_type_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_payoff_type_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_payoff_type_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_payoff_type_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_payoff_type_version_response::result},
+        utility::codec::field{"version", &get_payoff_type_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_key& v);
+    static ores::trading::messaging::payoff_type_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_key& v);
+    static ores::trading::messaging::payoff_type_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_write& v);
+    static ores::trading::messaging::payoff_type_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_write& v);
+    static ores::trading::messaging::payoff_type_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_change& v);
+    static ores::trading::messaging::payoff_type_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_change& v);
+    static ores::trading::messaging::payoff_type_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_removal& v);
+    static ores::trading::messaging::payoff_type_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_removal& v);
+    static ores::trading::messaging::payoff_type_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_lookup& v);
+    static ores::trading::messaging::payoff_type_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_lookup& v);
+    static ores::trading::messaging::payoff_type_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_types_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_types_filter& v);
+    static ores::trading::messaging::payoff_types_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_types_filter& v);
+    static ores::trading::messaging::payoff_types_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_event& v);
+    static ores::trading::messaging::payoff_type_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_event& v);
+    static ores::trading::messaging::payoff_type_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_version_key& v);
+    static ores::trading::messaging::payoff_type_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::payoff_type_version_key& v);
+    static ores::trading::messaging::payoff_type_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::payoff_type_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::payoff_type_versions_filter& v);
+    static ores::trading::messaging::payoff_type_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::payoff_type_versions_filter& v);
+    static ores::trading::messaging::payoff_type_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_payoff_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_payoff_types_request& v);
+    static ores::trading::messaging::list_payoff_types_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_payoff_types_request& v);
+    static ores::trading::messaging::list_payoff_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_payoff_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_payoff_types_response& v);
+    static ores::trading::messaging::list_payoff_types_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_payoff_types_response& v);
+    static ores::trading::messaging::list_payoff_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_payoff_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_payoff_type_request& v);
+    static ores::trading::messaging::get_payoff_type_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_payoff_type_request& v);
+    static ores::trading::messaging::get_payoff_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_payoff_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_payoff_type_response& v);
+    static ores::trading::messaging::get_payoff_type_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_payoff_type_response& v);
+    static ores::trading::messaging::get_payoff_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_payoff_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_payoff_types_request& v);
+    static ores::trading::messaging::get_many_payoff_types_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_payoff_types_request& v);
+    static ores::trading::messaging::get_many_payoff_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_payoff_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_payoff_types_response& v);
+    static ores::trading::messaging::get_many_payoff_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_payoff_types_response& v);
+    static ores::trading::messaging::get_many_payoff_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_payoff_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_payoff_type_request& v);
+    static ores::trading::messaging::put_payoff_type_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_payoff_type_request& v);
+    static ores::trading::messaging::put_payoff_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_payoff_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_payoff_type_response& v);
+    static ores::trading::messaging::put_payoff_type_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_payoff_type_response& v);
+    static ores::trading::messaging::put_payoff_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_payoff_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_payoff_types_request& v);
+    static ores::trading::messaging::put_many_payoff_types_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_payoff_types_request& v);
+    static ores::trading::messaging::put_many_payoff_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_payoff_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_payoff_types_response& v);
+    static ores::trading::messaging::put_many_payoff_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_payoff_types_response& v);
+    static ores::trading::messaging::put_many_payoff_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_payoff_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_payoff_type_request& v);
+    static ores::trading::messaging::delete_payoff_type_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_payoff_type_request& v);
+    static ores::trading::messaging::delete_payoff_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_payoff_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_payoff_type_response& v);
+    static ores::trading::messaging::delete_payoff_type_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_payoff_type_response& v);
+    static ores::trading::messaging::delete_payoff_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_payoff_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_payoff_types_request& v);
+    static ores::trading::messaging::delete_many_payoff_types_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_payoff_types_request& v);
+    static ores::trading::messaging::delete_many_payoff_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_payoff_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_payoff_types_response& v);
+    static ores::trading::messaging::delete_many_payoff_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_payoff_types_response& v);
+    static ores::trading::messaging::delete_many_payoff_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_payoff_type_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_payoff_type_versions_request& v);
+    static ores::trading::messaging::list_payoff_type_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_payoff_type_versions_request& v);
+    static ores::trading::messaging::list_payoff_type_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_payoff_type_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_payoff_type_versions_response& v);
+    static ores::trading::messaging::list_payoff_type_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_payoff_type_versions_response& v);
+    static ores::trading::messaging::list_payoff_type_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_payoff_type_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_payoff_type_version_request& v);
+    static ores::trading::messaging::get_payoff_type_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_payoff_type_version_request& v);
+    static ores::trading::messaging::get_payoff_type_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_payoff_type_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_payoff_type_version_response& v);
+    static ores::trading::messaging::get_payoff_type_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_payoff_type_version_response& v);
+    static ores::trading::messaging::get_payoff_type_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

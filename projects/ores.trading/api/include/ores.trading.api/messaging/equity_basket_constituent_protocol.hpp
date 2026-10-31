@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_EQUITY_BASKET_CONSTITUENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -276,7 +282,787 @@ inline constexpr std::string_view created = "trading.v1.equity_basket_constituen
 inline constexpr std::string_view updated = "trading.v1.equity_basket_constituents_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.equity_basket_constituents_events.deleted";
 }
+/**
+ * @brief The members of equity_basket_constituent_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &equity_basket_constituent_key::trade_id},
+        utility::codec::field{"sequence_number", &equity_basket_constituent_key::sequence_number},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &equity_basket_constituent_write::trade_id},
+        utility::codec::field{"sequence_number", &equity_basket_constituent_write::sequence_number},
+        utility::codec::field{"trade_activity_id",
+                              &equity_basket_constituent_write::trade_activity_id},
+        utility::codec::field{"underlying_name", &equity_basket_constituent_write::underlying_name},
+        utility::codec::field{"underlying_kind", &equity_basket_constituent_write::underlying_kind},
+        utility::codec::field{"weight", &equity_basket_constituent_write::weight},
+        utility::codec::field{"initial_price", &equity_basket_constituent_write::initial_price},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &equity_basket_constituent_change::write},
+        utility::codec::field{"precondition", &equity_basket_constituent_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &equity_basket_constituent_removal::key},
+        utility::codec::field{"precondition", &equity_basket_constituent_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &equity_basket_constituent_lookup::key},
+        utility::codec::field{"equity_basket_constituent",
+                              &equity_basket_constituent_lookup::equity_basket_constituent},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &equity_basket_constituent_event::event_id},
+        utility::codec::field{"key", &equity_basket_constituent_event::key},
+        utility::codec::field{"action", &equity_basket_constituent_event::action},
+        utility::codec::field{"version", &equity_basket_constituent_event::version},
+        utility::codec::field{"occurred_at", &equity_basket_constituent_event::occurred_at},
+        utility::codec::field{"correlation_id", &equity_basket_constituent_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_version_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_version_key&) {
+    return std::tuple{
+        utility::codec::field{"equity_basket_constituent",
+                              &equity_basket_constituent_version_key::equity_basket_constituent},
+        utility::codec::field{"version", &equity_basket_constituent_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of equity_basket_constituent_versions_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const equity_basket_constituent_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &equity_basket_constituent_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &equity_basket_constituent_versions_filter::from_version},
+        utility::codec::field{"to_version", &equity_basket_constituent_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_equity_basket_constituents_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_equity_basket_constituents_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_equity_basket_constituents_request::offset},
+        utility::codec::field{"limit", &list_equity_basket_constituents_request::limit},
+        utility::codec::field{"order", &list_equity_basket_constituents_request::order},
+        utility::codec::field{"as_of", &list_equity_basket_constituents_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_equity_basket_constituents_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_equity_basket_constituents_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_equity_basket_constituents_response::result},
+        utility::codec::field{
+            "equity_basket_constituents",
+            &list_equity_basket_constituents_response::equity_basket_constituents},
+        utility::codec::field{"total", &list_equity_basket_constituents_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_equity_basket_constituent_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_equity_basket_constituent_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_equity_basket_constituent_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_equity_basket_constituent_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_equity_basket_constituent_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_equity_basket_constituent_response::result},
+        utility::codec::field{"equity_basket_constituent",
+                              &get_equity_basket_constituent_response::equity_basket_constituent},
+    };
+}
+
+/**
+ * @brief The members of get_many_equity_basket_constituents_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_equity_basket_constituents_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_equity_basket_constituents_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_equity_basket_constituents_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_equity_basket_constituents_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_equity_basket_constituents_response::result},
+        utility::codec::field{"entries", &get_many_equity_basket_constituents_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_equity_basket_constituent_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_equity_basket_constituent_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_equity_basket_constituent_request::change},
+        utility::codec::field{"intent", &put_equity_basket_constituent_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_equity_basket_constituent_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_equity_basket_constituent_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_equity_basket_constituent_response::result},
+        utility::codec::field{"equity_basket_constituent",
+                              &put_equity_basket_constituent_response::equity_basket_constituent},
+    };
+}
+
+/**
+ * @brief The members of put_many_equity_basket_constituents_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_equity_basket_constituents_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_equity_basket_constituents_request::changes},
+        utility::codec::field{"intent", &put_many_equity_basket_constituents_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_equity_basket_constituents_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_equity_basket_constituents_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_equity_basket_constituents_response::result},
+        utility::codec::field{
+            "equity_basket_constituents",
+            &put_many_equity_basket_constituents_response::equity_basket_constituents},
+    };
+}
+
+/**
+ * @brief The members of delete_equity_basket_constituent_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_equity_basket_constituent_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_equity_basket_constituent_request::removal},
+        utility::codec::field{"intent", &delete_equity_basket_constituent_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_equity_basket_constituent_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_equity_basket_constituent_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_equity_basket_constituent_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_equity_basket_constituents_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_basket_constituents_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_equity_basket_constituents_request::removals},
+        utility::codec::field{"intent", &delete_many_equity_basket_constituents_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_equity_basket_constituents_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_basket_constituents_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_equity_basket_constituents_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_equity_basket_constituent_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_equity_basket_constituent_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_equity_basket_constituent_versions_request::key},
+        utility::codec::field{"offset", &list_equity_basket_constituent_versions_request::offset},
+        utility::codec::field{"limit", &list_equity_basket_constituent_versions_request::limit},
+        utility::codec::field{"order", &list_equity_basket_constituent_versions_request::order},
+        utility::codec::field{"filter", &list_equity_basket_constituent_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_equity_basket_constituent_versions_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_equity_basket_constituent_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_equity_basket_constituent_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_equity_basket_constituent_versions_response::versions},
+        utility::codec::field{"total", &list_equity_basket_constituent_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_equity_basket_constituent_version_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_equity_basket_constituent_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_equity_basket_constituent_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_equity_basket_constituent_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_equity_basket_constituent_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_equity_basket_constituent_version_response::result},
+        utility::codec::field{"version", &get_equity_basket_constituent_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::equity_basket_constituent_key& v);
+    static ores::trading::messaging::equity_basket_constituent_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_key& v);
+    static ores::trading::messaging::equity_basket_constituent_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_write& v);
+    static ores::trading::messaging::equity_basket_constituent_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_write& v);
+    static ores::trading::messaging::equity_basket_constituent_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_change& v);
+    static ores::trading::messaging::equity_basket_constituent_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_change& v);
+    static ores::trading::messaging::equity_basket_constituent_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_removal& v);
+    static ores::trading::messaging::equity_basket_constituent_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_removal& v);
+    static ores::trading::messaging::equity_basket_constituent_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_lookup& v);
+    static ores::trading::messaging::equity_basket_constituent_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_lookup& v);
+    static ores::trading::messaging::equity_basket_constituent_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_event& v);
+    static ores::trading::messaging::equity_basket_constituent_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_event& v);
+    static ores::trading::messaging::equity_basket_constituent_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_version_key& v);
+    static ores::trading::messaging::equity_basket_constituent_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_version_key& v);
+    static ores::trading::messaging::equity_basket_constituent_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::equity_basket_constituent_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::equity_basket_constituent_versions_filter& v);
+    static ores::trading::messaging::equity_basket_constituent_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::equity_basket_constituent_versions_filter& v);
+    static ores::trading::messaging::equity_basket_constituent_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_equity_basket_constituents_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_equity_basket_constituents_request& v);
+    static ores::trading::messaging::list_equity_basket_constituents_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_equity_basket_constituents_request& v);
+    static ores::trading::messaging::list_equity_basket_constituents_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_equity_basket_constituents_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_equity_basket_constituents_response& v);
+    static ores::trading::messaging::list_equity_basket_constituents_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_equity_basket_constituents_response& v);
+    static ores::trading::messaging::list_equity_basket_constituents_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_equity_basket_constituent_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_equity_basket_constituent_request& v);
+    static ores::trading::messaging::get_equity_basket_constituent_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_equity_basket_constituent_request& v);
+    static ores::trading::messaging::get_equity_basket_constituent_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_equity_basket_constituent_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_equity_basket_constituent_response& v);
+    static ores::trading::messaging::get_equity_basket_constituent_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_equity_basket_constituent_response& v);
+    static ores::trading::messaging::get_equity_basket_constituent_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_equity_basket_constituents_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::get_many_equity_basket_constituents_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::get_many_equity_basket_constituents_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_equity_basket_constituents_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::get_many_equity_basket_constituents_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::get_many_equity_basket_constituents_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_equity_basket_constituent_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_equity_basket_constituent_request& v);
+    static ores::trading::messaging::put_equity_basket_constituent_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_equity_basket_constituent_request& v);
+    static ores::trading::messaging::put_equity_basket_constituent_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_equity_basket_constituent_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_equity_basket_constituent_response& v);
+    static ores::trading::messaging::put_equity_basket_constituent_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_equity_basket_constituent_response& v);
+    static ores::trading::messaging::put_equity_basket_constituent_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_equity_basket_constituents_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::put_many_equity_basket_constituents_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::put_many_equity_basket_constituents_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_equity_basket_constituents_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::put_many_equity_basket_constituents_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::put_many_equity_basket_constituents_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_equity_basket_constituent_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_equity_basket_constituent_request& v);
+    static ores::trading::messaging::delete_equity_basket_constituent_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_equity_basket_constituent_request& v);
+    static ores::trading::messaging::delete_equity_basket_constituent_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_equity_basket_constituent_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_equity_basket_constituent_response& v);
+    static ores::trading::messaging::delete_equity_basket_constituent_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_equity_basket_constituent_response& v);
+    static ores::trading::messaging::delete_equity_basket_constituent_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_equity_basket_constituents_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::delete_many_equity_basket_constituents_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_equity_basket_constituents_request& v);
+    static ores::trading::messaging::delete_many_equity_basket_constituents_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_equity_basket_constituents_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::delete_many_equity_basket_constituents_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_equity_basket_constituents_response& v);
+    static ores::trading::messaging::delete_many_equity_basket_constituents_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_equity_basket_constituent_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_equity_basket_constituent_versions_request& v);
+    static ores::trading::messaging::list_equity_basket_constituent_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_equity_basket_constituent_versions_request& v);
+    static ores::trading::messaging::list_equity_basket_constituent_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_equity_basket_constituent_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_equity_basket_constituent_versions_response& v);
+    static ores::trading::messaging::list_equity_basket_constituent_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_equity_basket_constituent_versions_response& v);
+    static ores::trading::messaging::list_equity_basket_constituent_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_equity_basket_constituent_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_equity_basket_constituent_version_request& v);
+    static ores::trading::messaging::get_equity_basket_constituent_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_equity_basket_constituent_version_request& v);
+    static ores::trading::messaging::get_equity_basket_constituent_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_equity_basket_constituent_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_equity_basket_constituent_version_response& v);
+    static ores::trading::messaging::get_equity_basket_constituent_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_equity_basket_constituent_version_response& v);
+    static ores::trading::messaging::get_equity_basket_constituent_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: B3CAACD1-4697-46D9-BA63-EE864AC9F6CB
 :END:
 #+title: ores.trading.bond_floating_leg_data

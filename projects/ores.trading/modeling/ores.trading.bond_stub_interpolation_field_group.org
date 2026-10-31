@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 08FA2BF0-5DB1-4F53-8C93-980CE96BC1B9
 :END:
 #+title: ores.trading.bond_stub_interpolation

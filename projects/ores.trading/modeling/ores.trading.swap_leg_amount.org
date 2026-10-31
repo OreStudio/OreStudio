@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: CE925DD6-311E-47EE-A9B9-D124F3610E65
 :END:
 #+title: ores.trading.swap_leg_amount

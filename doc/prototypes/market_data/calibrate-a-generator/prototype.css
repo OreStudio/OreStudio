@@ -431,3 +431,16 @@ svg.spark .area { fill: rgba(88, 166, 255, .12); }
 }
 .measure-list li:last-child { border-bottom: 0; }
 .measure-list .badge { flex: 0 0 auto; }
+
+.filter-bar { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+
+/* --- Feed record tabs --------------------------------------------------- */
+.record-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.record-head h2 { font-size: 1.05rem; font-weight: 600; }
+.tabs { display: flex; gap: 2px; margin: 4px 0 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button {
+  background: transparent; border: 0; border-bottom: 2px solid transparent;
+  padding: 7px 12px; color: var(--ink-muted); font-size: .82rem;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }

@@ -39,32 +39,30 @@ person fix an exception and see what the policy does to every feed.
 
 * The variants
 
-** A — Policy first
+** A — Class list
 
-The card opens in automatic mode with the defaults a person can accept without
-touching anything, and a *Customise this class* action reveals the window, the
-inverse rule, the provider order and the fallback. Under it, the coverage
-table resolves every feed and counts what came from a fixing, what kept a
-level and what is blocked. This variant argues that the market's calibration
-can be one decision when wanted, and needs no decision at all.
+The screen a person lands on: the policy in automatic or custom mode, and
+every feed of the class with its start, its source and its state. The filters
+split all, needs attention and overridden. This screen argues that calibration
+is a state to read, not a queue of feeds to visit.
 
-** B — Feed inherits
+** B — Feed record
 
-The feed page opens on automatic calibration, the resolved start and the
-derived candidate list, each candidate with its reason. Two selects pin an
-item or a window for this feed only, and the banner turns from automatic to
-override. This variant argues that adding a feed is reading what the defaults
-did, and the exception is the rare act.
+Opened from a row of the class list, and back to it with one action. It shows
+the resolved start, the derived candidates with their reasons, the measures
+behind them, and the three exceptions: a pin, a window, or an explicit list.
+This screen argues that a feed is read, not calibrated by hand.
 
-** C — Flow
+** C — Resolution flow
 
 The policy, the candidates for one pair, the resolver and the feed as one
-path, over the recalculation record and the class coverage. This variant
-argues that the policy is a pipeline a person can trace, and every
-recalculation is the proof that it ran.
+path, over the recalculation record and the class coverage. This is a
+diagnostic view, not a daily screen: it argues that a person can trace how a
+value was chosen, and that every recalculation is the proof that it ran.
 
 Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
-=a=).
+=a=). A and B are two screens of the product; C is the explanation beside
+them.
 
 * What it settles
 
@@ -85,7 +83,12 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
   value is the one a run on 30 October took.
 - **A recalculation leaves a record.** The button appends a row with the
   policy's scope, how many feeds resolved and how many kept a level.
-- **Coverage is the point of the policy screen.** How many feeds resolve, keep
+- **The list is the landing, and it is exhaustive.** Every feed appears with
+  its state; nothing is chosen for calibration. Recalculation is class-wide;
+  a feed's own record may recalculate it alone.
+- **The record has two tabs.** *This feed* carries the calibration of one
+  feed; *Inherits the policy* carries the shared policy and its coverage.
+- **Coverage is the point of the class screen.** How many feeds resolve, keep
   a level or are blocked is the number a person governs, and a recalculation
   records every start.
 - **The fallback is a policy choice.** Keep the fixed level or refuse to start;
@@ -93,6 +96,28 @@ Switch with the bottom bar, or with =?variant= (=a=, =b= or =c=; the default is
 - **The volatility is measured.** The daily spread, the hourly it implies, the
   window and the factor are shown with the start.
 - **Vintage is absent.** No vintage control, field or wording offers one.
+
+* Two screens, and the record's two tabs
+
+The class screen is the landing. It lists **every feed of the class**, not a
+subset chosen for calibration: every feed is calibrated on start and on
+recalculation, and the list is how a person sees where each one landed. The
+filters (all, needs attention, overridden) narrow the list; they do not choose
+what to calibrate.
+
+The feed screen is a record, opened from a row and closed with *All FX feeds*.
+It has two tabs:
+
+- *This feed* — the resolved start, the derived candidates, the measures, and
+  the three exceptions (pin, window, explicit list).
+- *Inherits the policy* — the shared class policy, what it means for this
+  feed, and the coverage of the class, with a warning that a change here
+  affects every feed.
+
+The flow view is a diagnostic, not a third screen of the product.
+
+Recalculation is class-wide from the class screen. A record may also ask for
+its own recalculation, which is the same resolution for one feed.
 
 * The measures
 
@@ -120,8 +145,11 @@ never blocks a start; a pair with no series says it has nothing to measure.
 - When a recalculation runs: on a config save, on every start, daily, or only
   when a person asks. The prototype offers the button and shows the record.
 - Where the policy lives in the product: a market data settings page, the feed
-  class page, or the feed screen itself. The prototype draws it as a class
+  class page, or the feed screen itself. The prototype draws it on the class
   screen.
+- Whether the class screen is one screen with an asset-class switch or one
+  screen per class, and whether the filters need more than all, attention and
+  overridden.
 - The explicit list keeps the derived order: a person includes and excludes
   items but does not reorder them. The product may or may not need the extra
   freedom.

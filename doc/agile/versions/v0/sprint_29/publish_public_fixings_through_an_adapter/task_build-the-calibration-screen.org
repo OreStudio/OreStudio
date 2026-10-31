@@ -37,6 +37,14 @@ volatility it measured.
 
 * Acceptance
 
+- The class screen lists every feed of the asset class with its start, source
+  and state, filters by all, needs attention and overridden, and opens a feed's
+  record; it never selects a subset for calibration.
+- The feed record has two tabs, with a way back to the class screen: *This
+  feed* carries the start, the candidates, the measures and the exceptions;
+  *Inherits the policy* carries the shared policy, what it means for this
+  feed, and the class coverage, with a warning that a change affects every
+  feed.
 - With no configuration the screens state automatic calibration and the
   defaults, and every feed resolves.
 - The class screen optionally states the policy: window, inverse allowed,

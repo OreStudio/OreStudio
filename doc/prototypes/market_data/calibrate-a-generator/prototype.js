@@ -71,7 +71,9 @@ let state = {
   policy: { ...DEFAULT_POLICY, providerOrder: [...DEFAULT_POLICY.providerOrder] },
   feeds: FEEDS.map((feed) => ({ ...feed, overrideItem: null, overrideWindow: null, explicit: null })),
   recalc: [...RECALCULATIONS],
+  filter: 'all',
   feedName: 'synthetic-eur-usd',
+  feedTab: 'feed',
   selectedCandidate: null,
 };
 
@@ -371,8 +373,23 @@ function policyCard() {
   });
 }
 
+function needsAttention(result) {
+  return !result.fromFixing || result.feed.overrideItem || result.feed.overrideWindow || result.feed.explicit !== null;
+}
+
+function isOverridden(result) {
+  return Boolean(result.feed.overrideItem || result.feed.overrideWindow || result.feed.explicit !== null);
+}
+
+function visibleFeeds(results) {
+  if (state.filter === 'attention') return results.filter(needsAttention);
+  if (state.filter === 'overridden') return results.filter(isOverridden);
+  return results;
+}
+
 function feedTable(results) {
-  const rows = results
+  const shown = visibleFeeds(results);
+  const rows = shown
     .map((result) => {
       const stateBadge = result.fromFixing
         ? badge('ok', 'from a fixing')
@@ -394,7 +411,7 @@ function feedTable(results) {
     .join('');
   return `<table class="list">
     <thead><tr><th>Feed</th><th>Start</th><th>Source</th><th>State</th><th></th></tr></thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows || '<tr><td colspan="5" class="note">No feed matches this filter.</td></tr>'}</tbody>
   </table>`;
 }
 
@@ -466,14 +483,21 @@ function feedControls(result) {
 function renderA(results) {
   const sample = results.find((result) => result.feed.name === state.feedName) ?? results[0];
   const addable = EXTRA_FEEDS.some((candidate) => !state.feeds.some((feed) => feed.pair === candidate.pair));
+  const attention = results.filter(needsAttention).length;
+  const overrides = results.filter(isOverridden).length;
+  const filters = `<span class="filter-bar">
+    <button class="act ${state.filter === 'all' ? 'primary' : ''}" data-act="filter" data-filter="all">All ${results.length}</button>
+    <button class="act ${state.filter === 'attention' ? 'primary' : ''}" data-act="filter" data-filter="attention">Needs attention ${attention}</button>
+    <button class="act ${state.filter === 'overridden' ? 'primary' : ''}" data-act="filter" data-filter="overridden">Overridden ${overrides}</button>
+  </span>`;
   const body = card({
-    title: 'Feed coverage',
-    sub: 'resolved from the policy, or the defaults, at the market clock',
-    aside: `<button class="act" data-act="add-feed" ${addable ? '' : 'disabled'}>Add a feed</button>`,
-    body: `${metrics(results)}${feedTable(results)}<p class="note" style="margin-top:10px">A new feed enters with its pair only; the policy or the defaults calibrate it on the next start.</p>`,
+    title: 'All FX feeds',
+    sub: 'every feed is calibrated; the list shows where it landed',
+    aside: `${filters}<button class="act" data-act="add-feed" ${addable ? '' : 'disabled'}>Add a feed</button>`,
+    body: `${metrics(results)}${feedTable(results)}<p class="note" style="margin-top:10px">A new feed enters with its pair only; the policy or the defaults calibrate it on the next start. Nothing on this screen selects feeds for calibration.</p>`,
   });
   return `
-  <p class="thesis"><b>A · Policy first.</b> A person may set the market's calibration once; with nothing set, the defaults calibrate every feed.</p>
+  <p class="thesis"><b>A · Class list.</b> Every feed of the class, what it resolved to, and the policy. This is the screen a person lands on; the policy is the optional part.</p>
   <div class="grid-a">
     <div class="stack">${policyCard()}${body}</div>
     <div class="stack">
@@ -488,35 +512,57 @@ function renderA(results) {
 
 function renderB(results) {
   const result = results.find((entry) => entry.feed.name === state.feedName) ?? results[0];
-  const overridden = Boolean(result.feed.overrideItem || result.feed.overrideWindow);
+  const overridden = Boolean(result.feed.overrideItem || result.feed.overrideWindow || result.feed.explicit !== null);
+  const tab = state.feedTab;
+  const feedBody = `
+    ${feedControls(result)}
+    <div class="grid-a">
+      <div class="stack">
+        ${startCard(result)}
+        ${card({
+          title: 'Derived candidates',
+          sub: state.policy.providerOrder.join(' → ') + ` · window ${windowOf(result.feed)} days`,
+          body: `${candidateTable(result)}<p class="note" style="margin-top:10px">The list is derived from the pair and the order. Nothing here is authored per feed unless it is overridden.</p>`,
+        })}
+      </div>
+      <div class="stack">
+        ${card({ title: 'Resolution trail', body: trailList(result) })}
+        ${measuresCard(result)}
+        ${card({
+          title: 'This feed',
+          body: `<div class="kv">
+            <span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span>
+            <span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span>
+            <span class="k">Process</span><span class="v">${esc(result.feed.process)}</span>
+            <span class="k">Ticks</span><span class="v mono">${result.feed.ticks}/hour</span>
+            <span class="k">Fixed level</span><span class="v mono">${fmt(Number(result.feed.fixedLevel), 4)}</span>
+            <span class="k">Policy</span><span class="v">${overridden ? 'overridden on this feed' : state.policyMode === 'automatic' ? 'defaults' : 'inherited'}</span>
+          </div>`,
+        })}
+      </div>
+    </div>`;
+  const policyBody = `
+    <div class="banner">
+      <span class="badge off">shared</span>
+      <span>This policy applies to every feed of the FX class. A change here changes all of them.</span>
+      <span class="inline-actions"><button class="act" data-act="back-to-list">Open the class list</button></span>
+    </div>
+    <div class="grid-a">
+      <div class="stack">${policyCard()}</div>
+      <div class="stack">${card({ title: 'What it means for ' + esc(result.feed.pair), body: trailList(result) })}</div>
+    </div>
+    ${card({ title: 'Coverage under this policy', sub: 'every feed of the class', body: `${metrics(results)}${feedTable(results)}` })}`;
   return `
-  <p class="thesis"><b>B · Feed inherits.</b> The feed page shows what the defaults or the policy derived; an exception is optional.</p>
-  <div class="grid-a">
-    <div class="stack">
-      ${feedControls(result)}
-      ${startCard(result)}
-      ${card({
-        title: 'Derived candidates',
-        sub: state.policy.providerOrder.join(' → ') + ` · window ${windowOf(result.feed)} days`,
-        body: `${candidateTable(result)}<p class="note" style="margin-top:10px">The list is derived from the pair and the provider order. Nothing here is authored per feed unless it is overridden.</p>`,
-      })}
-    </div>
-    <div class="stack">
-      ${card({ title: 'Resolution trail', body: trailList(result) })}
-      ${measuresCard(result)}
-      ${card({
-        title: 'This feed',
-        body: `<div class="kv">
-          <span class="k">Pair</span><span class="v mono">${esc(result.feed.pair)}</span>
-          <span class="k">Feed</span><span class="v mono">${esc(result.feed.name)}</span>
-          <span class="k">Process</span><span class="v">${esc(result.feed.process)}</span>
-          <span class="k">Ticks</span><span class="v mono">${result.feed.ticks}/hour</span>
-          <span class="k">Fixed level</span><span class="v mono">${fmt(Number(result.feed.fixedLevel), 4)}</span>
-          <span class="k">Policy</span><span class="v">${overridden ? 'overridden on this feed' : state.policyMode === 'automatic' ? 'defaults' : 'inherited'}</span>
-        </div>`,
-      })}
-    </div>
-  </div>`;
+  <p style="margin-bottom:8px"><button class="act" data-act="back-to-list">← All FX feeds</button></p>
+  <div class="record-head">
+    <h2>${esc(result.feed.pair)}</h2>
+    <span class="note mono">${esc(result.feed.name)}</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Feed detail">
+    <button role="tab" data-act="feed-tab" data-tab="feed" aria-selected="${tab === 'feed'}">This feed</button>
+    <button role="tab" data-act="feed-tab" data-tab="policy" aria-selected="${tab === 'policy'}">Inherits the policy</button>
+  </nav>
+  ${tab === 'policy' ? policyBody : feedBody}`;
 }
 
 /* ---------------------------------------------------------------- variant C */
@@ -532,7 +578,7 @@ function renderC(results) {
     (run) => `<tr><td class="num">${esc(run.at)}</td><td>${esc(run.scope)}</td><td>${esc(run.resolved)}</td><td>${esc(run.fallback)}</td><td class="note">${esc(run.actor)}</td></tr>`,
   ).join('');
   return `
-  <p class="thesis"><b>C · Flow.</b> The policy derives candidates, the resolver takes one, and every feed is recorded against the run.</p>
+  <p class="thesis"><b>C · Resolution flow.</b> How one feed resolves, as a diagnostic view rather than a daily screen.</p>
   ${metrics(results)}
   <div class="flow">
     <div class="stack">
@@ -587,6 +633,24 @@ function act(kind, target) {
   if (kind === 'order-up') reorderProvider(target, -1);
   if (kind === 'order-down') reorderProvider(target, 1);
   if (kind === 'open-feed') setScope(target);
+  if (kind === 'back-to-list') {
+    setVariant('a');
+    return;
+  }
+  if (kind === 'feed-tab') {
+    state.feedTab = target;
+    const url = new URL(window.location.href);
+    url.searchParams.set('variant', 'b');
+    url.searchParams.set('tab', target);
+    window.history.replaceState({}, '', url);
+    render();
+    return;
+  }
+  if (kind === 'filter') {
+    state.filter = target;
+    render();
+    return;
+  }
   if (kind === 'add-feed') {
     const next = EXTRA_FEEDS.find((candidate) => !state.feeds.some((feed) => feed.pair === candidate.pair));
     if (next) {
@@ -656,6 +720,8 @@ function render() {
       clock: state.clock,
       policy: state.policy,
       recalculationCount: state.recalc.length,
+      filter: state.filter,
+      feedTab: state.feedTab,
       feeds: state.feeds.map((feed) => {
         const result = results.find((entry) => entry.feed.name === feed.name);
         return {
@@ -695,7 +761,7 @@ function onClick(event) {
   const button = event.target.closest('[data-act]');
   if (!button) return;
   const kind = button.dataset.act;
-  const target = button.dataset.provider ?? button.dataset.feed;
+  const target = button.dataset.provider ?? button.dataset.feed ?? button.dataset.filter ?? button.dataset.tab;
   if (kind === 'include') {
     const feed = feedOf(state.feedName);
     if (feed.explicit !== null) {
@@ -707,7 +773,7 @@ function onClick(event) {
     }
     return;
   }
-  if (['order-up', 'order-down', 'open-feed', 'customise', 'reset-policy', 'add-feed', 'recalculate', 'toggle-explicit'].includes(kind)) {
+  if (['order-up', 'order-down', 'open-feed', 'customise', 'reset-policy', 'add-feed', 'recalculate', 'toggle-explicit', 'back-to-list', 'filter', 'feed-tab'].includes(kind)) {
     act(kind, target);
   }
 }
@@ -716,6 +782,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const variant = params.get('variant');
   if (['a', 'b', 'c'].includes(variant)) state.variant = variant;
+  const tab = params.get('tab');
+  if (['feed', 'policy'].includes(tab)) state.feedTab = tab;
   document.body.addEventListener('click', onClick);
   document.body.addEventListener('change', onChange);
   document.getElementById('resolve').addEventListener('click', () => act('recalculate'));

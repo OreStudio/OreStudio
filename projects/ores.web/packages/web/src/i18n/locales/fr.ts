@@ -3037,7 +3037,7 @@ const fr: SourceCatalogue = {
             },
             leiNoMatch: 'Aucune entité ne correspond.',
             leiReadFailed: "Les entités juridiques n'ont pas pu être lues. {message}",
-            changeSettings: 'Modifier les paramètres',
+            changeSettings: 'Modifier',
             noCreatingPassword:
                 "L'administrateur qui crée le locataire doit d'abord définir un mot de passe.",
             rows: {

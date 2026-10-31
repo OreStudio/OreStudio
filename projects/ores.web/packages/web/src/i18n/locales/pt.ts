@@ -3026,7 +3026,7 @@ const pt: SourceCatalogue = {
             },
             leiNoMatch: 'Nenhuma entidade corresponde.',
             leiReadFailed: 'Não foi possível ler as entidades jurídicas. {message}',
-            changeSettings: 'Alterar definições',
+            changeSettings: 'Editar',
             noCreatingPassword:
                 'O administrador que cria o inquilino tem de definir primeiro uma palavra-passe.',
             rows: {

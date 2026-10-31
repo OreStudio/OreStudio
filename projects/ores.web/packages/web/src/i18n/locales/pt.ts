@@ -6547,17 +6547,14 @@ const pt: SourceCatalogue = {
         },
         basis: {
             draft: 'A tentativa está guardada e nenhuma tomada se verifica ainda.',
-            incomplete:
-                'O corpo não pôde ser montado; as lacunas dizem o que o fecharia.',
+            incomplete: 'O corpo não pôde ser montado; as lacunas dizem o que o fecharia.',
             taken: 'O corpo está fixado e aguarda uma pessoa.',
             inUse: 'O seu tipo não exige autorização, pelo que era utilizável na tomada.',
             authorised: 'A autorização está registada.',
             authorisedBy: 'Autorizado por {who}.',
             refused: 'A autorização foi recusada, o que é terminal para este corpo.',
-            supersededAuthorised:
-                'Autorizado antes de um corte posterior o substituir.',
-            supersededInUse:
-                'Em uso até um corte posterior o substituir.',
+            supersededAuthorised: 'Autorizado antes de um corte posterior o substituir.',
+            supersededInUse: 'Em uso até um corte posterior o substituir.',
             replacedBy: 'Substituído por {label}.',
         },
         notice: {

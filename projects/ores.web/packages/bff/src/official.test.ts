@@ -152,7 +152,7 @@ describe('the official rates routes', () => {
             },
             'marketdata.v1.feeds.list': {
                 result: ok,
-                feeds: [
+                running_feeds: [
                     {
                         id: '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
                         name: 'ecb-frankfurter',

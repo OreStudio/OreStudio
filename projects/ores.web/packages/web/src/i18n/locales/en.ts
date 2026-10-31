@@ -6613,7 +6613,8 @@ export const en: SourceCatalogue = {
             openRequest: 'Open the request',
             request: 'Approval request',
             decider: 'Who decides',
-            refusal: 'The refusal says: {reason}. A refusal is terminal for this body, so the remedy is a new take.',
+            refusal:
+                'The refusal says: {reason}. A refusal is terminal for this body, so the remedy is a new take.',
             fourEyes:
                 'Four eyes is the inbox’s rule: a decision by the person who asked is refused, and one person counts once.',
             inboxGap:

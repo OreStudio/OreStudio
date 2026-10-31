@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:build_the_connectivity_screens:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4276
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4276][#4276]] | [chore] Bring the generated bookkeeping back in step |
 
 * Review
 

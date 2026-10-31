@@ -96,15 +96,8 @@ const cutsQuerySchema = z.object({
     kind_code: z.string().trim().max(100).default(''),
     month: z.string().trim().max(7).default(''),
     search: z.string().trim().max(256).default(''),
-    state: z.enum([
-        'draft',
-        'incomplete',
-        'taken',
-        'in_use',
-        'authorised',
-        'refused',
-        'superseded',
-    ])
+    state: z
+        .enum(['draft', 'incomplete', 'taken', 'in_use', 'authorised', 'refused', 'superseded'])
         .or(z.literal(''))
         .default(''),
 });
@@ -213,10 +206,15 @@ async function lookupNames(
 async function approvalKinds(session: LiveSession): Promise<Map<string, ApprovalKind>> {
     let entries: readonly Read[];
     try {
-        entries = await readAll(session, approvalKindSubjects.list_approval_kinds_request, 'kinds', {
-            filter: null,
-            as_of: null,
-        });
+        entries = await readAll(
+            session,
+            approvalKindSubjects.list_approval_kinds_request,
+            'kinds',
+            {
+                filter: null,
+                as_of: null,
+            },
+        );
     } catch (failure) {
         if (failure instanceof HttpFailure && failure.status === 403) {
             return new Map();
@@ -358,14 +356,12 @@ function kindRowOf(kind: Read, lookups: KindLookups, cutsCount: number): KindRow
         name: text(kind['name']),
         description: text(kind['description']),
         familyCode: text(kind['family_code']),
-        familyName:
-            lookups.families.get(text(kind['family_code'])) ?? text(kind['family_code']),
+        familyName: lookups.families.get(text(kind['family_code'])) ?? text(kind['family_code']),
         // The signed-or-not a person reads is the approval kind's, and the
         // column that names it is the whole of the rule.
         signed: approvalKindCode !== null,
         approvalKindCode,
-        approvalKindName:
-            approvalKindCode === null ? null : (approval?.name ?? approvalKindCode),
+        approvalKindName: approvalKindCode === null ? null : (approval?.name ?? approvalKindCode),
         approvalsRequired: approval?.approvalsRequired ?? null,
         decidePermissionCode: approval?.decidePermissionCode ?? null,
         outputIsIndicative: flag(kind['output_is_indicative']),
@@ -418,7 +414,8 @@ async function kindRows(
 
     const rows = kinds.map((kind) => kindRowOf(kind, lookups, counts.get(text(kind['code'])) ?? 0));
     rows.sort(
-        (left, right) => left.displayOrder - right.displayOrder || left.code.localeCompare(right.code),
+        (left, right) =>
+            left.displayOrder - right.displayOrder || left.code.localeCompare(right.code),
     );
     return { rows, partial: cuts.partial };
 }
@@ -491,8 +488,7 @@ async function kindPage(
                 return left.familyName.localeCompare(right.familyName);
             default:
                 return (
-                    left.displayOrder - right.displayOrder ||
-                    left.code.localeCompare(right.code)
+                    left.displayOrder - right.displayOrder || left.code.localeCompare(right.code)
                 );
         }
     });
@@ -759,10 +755,7 @@ function kindOfItself(cut: Read): KindRow {
  * therefore cannot blank the retention destination, which no lookup of tiers
  * states yet, whatever the browser sends.
  */
-function kindWriteOf(
-    kind: Read,
-    change: z.infer<typeof kindWriteSchema>,
-): Record<string, unknown> {
+function kindWriteOf(kind: Read, change: z.infer<typeof kindWriteSchema>): Record<string, unknown> {
     return {
         code: text(kind['code']),
         name: change.name,

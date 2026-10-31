@@ -62,9 +62,6 @@ KNOWN: dict[str, tuple[int, str]] = {
     "projects/ores.ore/core/src/domain/conventions_diff.cpp": (
         3,
         "the three tenor basis swap families are one document element, compared together"),
-    "projects/ores.refdata/core/src/service/conventions_bundle_service.cpp": (
-        3,
-        "the three tenor basis swap families are one document element, applied together"),
 }
 
 _DOMAIN_TYPE = re.compile(r'"ores::refdata::domain::([a-z_0-9]+)"')

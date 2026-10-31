@@ -292,7 +292,7 @@ describe('the catalogue read', () => {
         };
         const { server, sessionId, calls } = buildTestServer({
             [LIST_PROVIDERS]: { ...ok, providers: [provider], total: 1 },
-            [LIST_FEEDS]: { ...ok, feeds: [feed], total: 1 },
+            [LIST_FEEDS]: { ...ok, running_feeds: [feed], total: 1 },
         });
         const response = await send(server, sessionId, 'GET', '/api/marketdata/catalogue');
         expect(response.statusCode).toBe(200);

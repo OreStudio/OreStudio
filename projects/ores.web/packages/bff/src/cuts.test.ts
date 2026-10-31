@@ -298,7 +298,12 @@ const BASIS = {
 describe('GET /api/reporting/cut-kinds', () => {
     it('derives the signed-or-not from the approval kind and counts the cuts of each type', async () => {
         const { server, sessionId } = buildTestServer(BASIS);
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=0&limit=15');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=0&limit=15',
+        );
         expect(answer.statusCode).toBe(200);
         const page = answer.json() as {
             rows: readonly Record<string, unknown>[];
@@ -346,13 +351,23 @@ describe('GET /api/reporting/cut-kinds', () => {
                 total: 0,
             },
         });
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=0&limit=15');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=0&limit=15',
+        );
         expect(answer.statusCode).toBe(200);
     });
 
     it('answers one page of the kinds, with the server’s total beside it', async () => {
         const { server, sessionId } = buildTestServer(BASIS);
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cut-kinds?offset=1&limit=1');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cut-kinds?offset=1&limit=1',
+        );
         expect(answer.statusCode).toBe(200);
         const page = answer.json() as { rows: readonly Record<string, unknown>[]; total: number };
         // The read answers the row the person's page holds and the count of
@@ -519,11 +534,14 @@ describe('DELETE /api/reporting/cut-kinds/:code', () => {
             intent: { reason_code: 'common.retired', commentary: 'Superseded by the close.' },
         });
         expect(answer.statusCode).toBe(204);
-        expect(calls.find((call) => call.subject === 'reporting.v1.cut_kinds.delete')?.body).toMatchObject(
-            {
-                removal: { key: { code: 'FLASH' }, precondition: { kind: 'must_match_version', version: 1 } },
+        expect(
+            calls.find((call) => call.subject === 'reporting.v1.cut_kinds.delete')?.body,
+        ).toMatchObject({
+            removal: {
+                key: { code: 'FLASH' },
+                precondition: { kind: 'must_match_version', version: 1 },
             },
-        );
+        });
     });
 });
 
@@ -548,7 +566,10 @@ describe('GET /api/reporting/cuts', () => {
             offset: 30,
             limit: 15,
         });
-        const page = answer.json() as { rows: readonly Record<string, unknown>[]; partial: boolean };
+        const page = answer.json() as {
+            rows: readonly Record<string, unknown>[];
+            partial: boolean;
+        };
         expect(page.rows[0]).toMatchObject({
             label: 'EOD.ACME-LONDON.2026-10-06',
             state: 'authorised',
@@ -562,9 +583,18 @@ describe('GET /api/reporting/cuts', () => {
     it('says when the rows are one page of a scope that is larger', async () => {
         const { server, sessionId } = buildTestServer({
             ...BASIS,
-            [CUT_ROWS]: { result: ok, rows: [cutRow(), cutRow({ label: 'EOD.ACME-LONDON.2026-10-05' })], total: 40 },
+            [CUT_ROWS]: {
+                result: ok,
+                rows: [cutRow(), cutRow({ label: 'EOD.ACME-LONDON.2026-10-05' })],
+                total: 40,
+            },
         });
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts?offset=0&limit=15',
+        );
         expect((answer.json() as { partial: boolean }).partial).toBe(true);
     });
 
@@ -572,14 +602,25 @@ describe('GET /api/reporting/cuts', () => {
         const { server, sessionId } = buildTestServer(BASIS);
         expect((await send(server, sessionId, 'GET', '/api/reporting/cuts')).statusCode).toBe(400);
         expect(
-            (await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15&sort=label'))
-                .statusCode,
+            (
+                await send(
+                    server,
+                    sessionId,
+                    'GET',
+                    '/api/reporting/cuts?offset=0&limit=15&sort=label',
+                )
+            ).statusCode,
         ).toBe(400);
     });
 
     it('refuses a state the design does not word', async () => {
         const { server, sessionId } = buildTestServer(BASIS);
-        const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts?offset=0&limit=15&state=happy');
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts?offset=0&limit=15&state=happy',
+        );
         expect(answer.statusCode).toBe(400);
     });
 
@@ -678,7 +719,9 @@ describe('GET /api/reporting/cuts/:id/runs', () => {
 
         // The filter is the read's own: a run names the cut it resolved to, so
         // the tab reads the runs by that column and nothing else.
-        const listCall = calls.find((call) => call.subject === 'reporting.v1.report_instances.list');
+        const listCall = calls.find(
+            (call) => call.subject === 'reporting.v1.report_instances.list',
+        );
         expect(listCall?.body).toMatchObject({
             filter: { cut_id_one_of: ['11111111-1111-4111-8111-111111111111'] },
         });
@@ -823,7 +866,12 @@ describe('GET /api/reporting/cuts/:id', () => {
         const { server, sessionId } = buildTestServer({
             ...BASIS,
             [CUT_RECORD]: {
-                result: { outcome: 'missing', code: 'not_found', message: 'The cut does not exist.', fields: [] },
+                result: {
+                    outcome: 'missing',
+                    code: 'not_found',
+                    message: 'The cut does not exist.',
+                    fields: [],
+                },
                 cut: null,
                 kind: null,
                 label: '',

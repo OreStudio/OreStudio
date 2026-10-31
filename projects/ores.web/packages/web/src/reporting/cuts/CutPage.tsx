@@ -197,9 +197,7 @@ function BodyTab({ record }: { readonly record: CutRecord }): ReactNode {
                 <Reference label={t('cuts.body.population')} value={body.dealPopulationId} />
                 <div className="min-w-0">
                     <dt className="text-xs text-ink-faint">{t('cuts.body.dealCount')}</dt>
-                    <dd className="mt-0.5 text-sm text-ink-faint">
-                        {t('cuts.body.dealCountGap')}
-                    </dd>
+                    <dd className="mt-0.5 text-sm text-ink-faint">{t('cuts.body.dealCountGap')}</dd>
                 </div>
             </Card>
 
@@ -450,7 +448,10 @@ function RunLine({ run }: { readonly run: CutRun }): ReactNode {
     return (
         <tr className="border-t border-line">
             <td className="py-1 pr-3">
-                <Link to={reportRunPath(run.id)} className="font-mono text-xs text-accent break-all">
+                <Link
+                    to={reportRunPath(run.id)}
+                    className="font-mono text-xs text-accent break-all"
+                >
                     {run.id}
                 </Link>
             </td>

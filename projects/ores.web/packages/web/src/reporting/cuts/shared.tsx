@@ -180,7 +180,13 @@ export function Absent(): ReactNode {
 }
 
 /** A figure stated where the screen draws one, with the words it means. */
-export function Reference({ label, value }: { readonly label: string; readonly value: string | null }): ReactNode {
+export function Reference({
+    label,
+    value,
+}: {
+    readonly label: string;
+    readonly value: string | null;
+}): ReactNode {
     const { t } = useTranslation();
     return (
         <div className="min-w-0">
@@ -257,10 +263,7 @@ function groupKeyOf(instant: string, frequency: CutFrequency): string {
  * first inside it, so the cut in use leads. The grouping is the screen's: the
  * read answers the cuts and states no period of its own.
  */
-export function groupsOf(
-    rows: readonly CutRow[],
-    frequency: CutFrequency,
-): readonly CutGroup[] {
+export function groupsOf(rows: readonly CutRow[], frequency: CutFrequency): readonly CutGroup[] {
     const groups = new Map<string, CutRow[]>();
     for (const row of rows) {
         const key = groupKeyOf(row.timepoint, frequency);

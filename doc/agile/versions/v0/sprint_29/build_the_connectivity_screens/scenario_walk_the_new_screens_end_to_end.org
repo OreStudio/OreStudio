@@ -30,8 +30,9 @@ The tester opens the client on a ready environment. Do this yourself before hand
   shows no data for a publisher that has never delivered.
 - The environment serves the screens at the address =compass services status=
   prints, on the paths =/market-data/connectivity= and =/market-data/public-rates=.
-- Have a system administrator account, =super_admin= or a tenant administrator
-  who may accept terms, and its password.
+- Have the tenant administrator account the provisioning printed,
+  =tenant_admin@acme_corporation=, and its password. It works in a party of
+  Acme Corporation, which the sign-in asks for.
 
 * Scenario Info
 
@@ -49,10 +50,12 @@ Each step is its own heading. Its body is a checklist: what to click, what to
 type, and what confirms the step passed. Record the outcome in a =*** Result=
 child as PASS, FAIL or PENDING with one line of evidence.
 
-** Log in as super_admin
+** Log in as tenant_admin
 
 - Open the client at the address the environment prints.
-- Log in as =super_admin= with the password from the provisioning run.
+- Log in as =tenant_admin@acme_corporation= with the password from the
+  provisioning run.
+- If the sign-in asks for a party, choose =Acme Corporation Plc=.
 - Confirm the shell opens on the home screen and the Market data area appears.
 
 *** Result

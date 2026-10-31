@@ -21,6 +21,7 @@
 
 import type { SessionMode } from '@ores/wire-protocol/browser';
 import { DEPLOYMENT_READ } from '@ores/contracts';
+import { PERMISSION } from '../access/permissions.js';
 import { PATHS } from './paths.js';
 
 /** One entry of the shell's menu: an area, named for what a person does there. */
@@ -78,7 +79,7 @@ export const MENU: readonly MenuItem[] = [
         to: PATHS.reporting,
         permission: [
             'reporting::report_definitions:read',
-            'reporting::cuts:read',
+            PERMISSION.cutsRead,
             'analytics::pricing_model_configs:read',
             'analytics::sensitivity_templates:read',
             'reporting::engine_settings:read',

@@ -21,6 +21,7 @@
 
 import type { IconName } from '../ui/Icon.js';
 import { DEPLOYMENT_READ } from '@ores/contracts';
+import { PERMISSION } from '../access/permissions.js';
 import { PATHS } from './paths.js';
 import type { MenuItem } from './areas.js';
 
@@ -350,7 +351,7 @@ export const CARDS = {
         bodyKey: 'reporting.area.screens.cutsBody',
         to: PATHS.cuts,
         icon: 'record',
-        permission: 'reporting::cuts:read',
+        permission: PERMISSION.cutsRead,
         screenTitleKey: 'cuts.title',
     },
     cutTypes: {
@@ -358,7 +359,7 @@ export const CARDS = {
         bodyKey: 'refdata.area.screens.cutTypesBody',
         to: PATHS.cutTypes,
         icon: 'apps',
-        permission: 'reporting::cut_kinds:read',
+        permission: PERMISSION.cutKindsRead,
         screenTitleKey: 'cuts.types.title',
     },
     engineSettings: {

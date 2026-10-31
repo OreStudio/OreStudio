@@ -179,18 +179,6 @@ export function Absent(): ReactNode {
     );
 }
 
-/** A key that is an identifier, or whichever of two texts is present. */
-export function Identity({ value }: { readonly value: string | null }): ReactNode {
-    if (value === null || value === '') {
-        return (
-            <span className="text-ink-faint" aria-hidden="true">
-                —
-            </span>
-        );
-    }
-    return <span className="font-mono text-xs break-all">{value}</span>;
-}
-
 /** A figure stated where the screen draws one, with the words it means. */
 export function Reference({ label, value }: { readonly label: string; readonly value: string | null }): ReactNode {
     const { t } = useTranslation();

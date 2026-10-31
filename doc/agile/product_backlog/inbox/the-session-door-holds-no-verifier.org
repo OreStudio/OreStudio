@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7550D48A-AD0F-49C8-90FE-38B351DAD237
+:END:
+#+title: The session door holds no verifier
+#+description: Signing in over HTTP answers 'Authentication is not configured' on a running deployment, because the door copies the server's verifier before the service runner installs it. Every browser session, and so the only client of the change stream, is blocked until the door asks for the verifier when it needs it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

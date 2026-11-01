@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/stop-generating-the-reflectors-include
-#+pr:
+#+pr: 4330
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4330][#4330]] | [codegen] Write the reflectors include only where no codec is generated |
 
 * Review
 

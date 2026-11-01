@@ -231,8 +231,7 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
 // failure, and a nightly job re-runs it over a directory that grew. A second run
 // that named the trades afresh would book every one of them again, so the plan is
 // the same plan twice.
-TEST_CASE("the_same_import_planned_twice_names_the_same_trades",
-          "[ore][planner][import_planner]") {
+TEST_CASE("the_same_import_planned_twice_names_the_same_trades", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::ore_path("examples/Legacy/Example_1");

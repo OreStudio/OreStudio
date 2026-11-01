@@ -60,9 +60,9 @@ boost::uuids::uuid imported_id(const boost::uuids::uuid& party_id,
                                const std::string& name) {
     static const auto name_space =
         boost::uuids::string_generator()("6f1c1f34-0d5e-4f7a-9a3c-2b8e4d1a7c90");
-    const auto full = boost::uuids::to_string(party_id) + "/" +
-                      (sandbox_id ? boost::uuids::to_string(*sandbox_id) : std::string("official")) +
-                      "/" + name;
+    const auto full =
+        boost::uuids::to_string(party_id) + "/" +
+        (sandbox_id ? boost::uuids::to_string(*sandbox_id) : std::string("official")) + "/" + name;
     const boost::uuids::name_generator_sha1 generate(name_space);
     return generate(full.c_str(), full.size());
 }
@@ -87,9 +87,8 @@ std::string node_name(const std::vector<hierarchy::import_node>& nodes, std::siz
  * An ORE document need not state an id, so a trade without one takes the
  * position it holds in its file.
  */
-std::string traded_name(const std::string& source_file,
-                        std::size_t index,
-                        const std::string& ore_id) {
+std::string
+traded_name(const std::string& source_file, std::size_t index, const std::string& ore_id) {
     return source_file + "/" + (ore_id.empty() ? "#" + std::to_string(index) : ore_id);
 }
 
@@ -192,9 +191,9 @@ ore_import_plan ore_import_planner::plan() {
                 const auto named = imported_file_name(scan_result_.root, source_file);
                 std::size_t index = 0;
                 for (auto& item : items) {
-                    const auto trade_id = imported_id(
-                        choices_.party_id, choices_.sandbox_id,
-                        traded_name(named, index++, item.ore_id));
+                    const auto trade_id = imported_id(choices_.party_id,
+                                                      choices_.sandbox_id,
+                                                      traded_name(named, index++, item.ore_id));
                     place_trade(item, trade_id, choices_.party_id, target_book_id, defs);
                     result.trades.push_back(std::move(item));
                 }
@@ -222,8 +221,8 @@ ore_import_plan ore_import_planner::plan() {
         // Use a pre-existing portfolio — no new portfolio is created.
         parent_portfolio_id = choices_.existing_parent_portfolio_id;
     } else if (choices_.create_parent_portfolio && !choices_.parent_portfolio_name.empty()) {
-        const auto parent_uuid = imported_id(choices_.party_id, choices_.sandbox_id,
-                                             choices_.parent_portfolio_name);
+        const auto parent_uuid =
+            imported_id(choices_.party_id, choices_.sandbox_id, choices_.parent_portfolio_name);
         parent_portfolio_id = parent_uuid;
 
         refdata::domain::portfolio parent_p;
@@ -319,9 +318,9 @@ ore_import_plan ore_import_planner::plan() {
 
             std::size_t index = 0;
             for (auto& item : items) {
-                const auto trade_id =
-                    imported_id(choices_.party_id, choices_.sandbox_id,
-                                traded_name(named, index++, item.ore_id));
+                const auto trade_id = imported_id(choices_.party_id,
+                                                  choices_.sandbox_id,
+                                                  traded_name(named, index++, item.ore_id));
                 place_trade(item, trade_id, choices_.party_id, b.id, defs);
                 result.trades.push_back(std::move(item));
             }

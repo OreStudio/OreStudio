@@ -56,8 +56,7 @@ using ores::service::messaging::reply;
 using namespace ores::logging;
 
 /** @brief An instant as the wire states it, or empty where the cut holds none. */
-inline std::string instant_of(
-    const std::optional<std::chrono::system_clock::time_point>& at) {
+inline std::string instant_of(const std::optional<std::chrono::system_clock::time_point>& at) {
     if (!at)
         return {};
     return ores::platform::time::datetime::to_iso8601_utc(*at);
@@ -151,9 +150,8 @@ public:
                 BOOST_LOG_SEV(report_cut_read_handler_lg(), warn)
                     << msg.subject << ": " << page.error();
                 response.result.outcome = ores::utility::domain::outcome::invalid;
-                response.result.code = std::string(
-                    ores::database::domain::to_string(
-                        ores::database::domain::outcome_code::filter_range_invalid));
+                response.result.code = std::string(ores::database::domain::to_string(
+                    ores::database::domain::outcome_code::filter_range_invalid));
                 response.result.message = page.error();
                 reply(nats_, msg, response);
                 return;

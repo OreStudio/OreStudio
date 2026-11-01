@@ -118,8 +118,7 @@ inline constexpr auto barrier_types = std::to_array<std::string_view>({"UpAndOut
      * holds products whose names begin with a vowel and products whose names do
      * not, and "The" is right for both.
      */
-    throw rate_product_error("The " + std::string(product) + " states " + std::string(fact) +
-                             ".");
+    throw rate_product_error("The " + std::string(product) + " states " + std::string(fact) + ".");
 }
 
 inline void
@@ -491,17 +490,17 @@ construct_rate_inflation_swap(const rate_inflation_swap_terms& terms) {
     const auto& fixed = terms.common.fixed;
     const auto& cpi = terms.common.floating;
     require_text("inflation swap", "a currency on its fixed leg", fixed.currency);
-    require_text("inflation swap", "a day count fraction on its fixed leg",
-                 fixed.day_count_fraction_code);
-    require_text("inflation swap", "a payment frequency on its fixed leg",
-                 fixed.payment_frequency_code);
+    require_text(
+        "inflation swap", "a day count fraction on its fixed leg", fixed.day_count_fraction_code);
+    require_text(
+        "inflation swap", "a payment frequency on its fixed leg", fixed.payment_frequency_code);
     require_amount("inflation swap", "a positive notional on its fixed leg", fixed.notional);
     require_not_negative("inflation swap", "a non-negative fixed rate", fixed.value);
     require_text("inflation swap", "a currency on its CPI leg", cpi.currency);
-    require_text("inflation swap", "a day count fraction on its CPI leg",
-                 cpi.day_count_fraction_code);
-    require_text("inflation swap", "a payment frequency on its CPI leg",
-                 cpi.payment_frequency_code);
+    require_text(
+        "inflation swap", "a day count fraction on its CPI leg", cpi.day_count_fraction_code);
+    require_text(
+        "inflation swap", "a payment frequency on its CPI leg", cpi.payment_frequency_code);
     require_amount("inflation swap", "a positive notional on its CPI leg", cpi.notional);
 
     rate_product built;

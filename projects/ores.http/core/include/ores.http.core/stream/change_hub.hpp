@@ -158,9 +158,8 @@ public:
         std::vector<std::shared_ptr<change_subscription>> open;
         {
             const std::lock_guard lock(mu_);
-            std::erase_if(subscriptions_, [](const auto& subscription) {
-                return subscription->closed();
-            });
+            std::erase_if(subscriptions_,
+                          [](const auto& subscription) { return subscription->closed(); });
             open = subscriptions_;
         }
         for (auto& subscription : open)
@@ -222,8 +221,7 @@ public:
             timer.expires_after(keep_alive_);
             subscription_->set_waker([&timer] { timer.cancel(); });
             boost::system::error_code ec;
-            co_await timer.async_wait(
-                boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             subscription_->clear_waker();
 
             if (!subscription_->closed() && subscription_->size() == 0)

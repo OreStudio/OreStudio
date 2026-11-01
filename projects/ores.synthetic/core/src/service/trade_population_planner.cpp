@@ -554,15 +554,13 @@ construct_bond_product(const domain::bond_terms& terms,
          * from the slot, which would let two trades of one security disagree.
          */
         const auto target_draw = draw(terms.security_id, 10);
-        const auto position =
-            static_cast<std::size_t>(target_draw *
-                                     static_cast<double>(scope.equity_underlyings.size()));
+        const auto position = static_cast<std::size_t>(
+            target_draw * static_cast<double>(scope.equity_underlyings.size()));
         tdom::convertible_bond_terms convertible;
         convertible.common = common;
         convertible.targets.push_back(
             {.underlying_id =
-                 scope.equity_underlyings[std::min(position,
-                                                   scope.equity_underlyings.size() - 1)]
+                 scope.equity_underlyings[std::min(position, scope.equity_underlyings.size() - 1)]
                      .code,
              .conversion_ratio =
                  std::round((5.0 + 10.0 * draw(terms.security_id, 11)) * 100.0) / 100.0});
@@ -597,10 +595,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         domain::bond_terms terms;
         terms.tenor_years = std::clamp(drawn, min_years, max_years);
         terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
-        terms.security_id = security_id_for(scope,
-                                            terms.tenor_years,
-                                            bond_types[slot % bond_type_count],
-                                            terms.issuer_id);
+        terms.security_id = security_id_for(
+            scope, terms.tenor_years, bond_types[slot % bond_type_count], terms.issuer_id);
         terms.issue_id = issue_id_for_security(terms.security_id);
         terms.reference_curve_id = scope.reference_curve_id;
 
@@ -1901,9 +1897,8 @@ namespace {
  * deliberately: the ORE projection has no writer for its data element, so a
  * trade of it would book and then export as an empty product.
  */
-constexpr std::string_view scripted_types[] = {"ScriptedTrade",
-                                               "DoubleDigitalOption",
-                                               "PerformanceOption_01"};
+constexpr std::string_view scripted_types[] = {
+    "ScriptedTrade", "DoubleDigitalOption", "PerformanceOption_01"};
 constexpr std::size_t scripted_type_count = std::size(scripted_types);
 
 /*
@@ -1981,16 +1976,15 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
      */
     const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
-    const auto underlyings = trade_type == "PerformanceOption_01"
-                                 ? std::format(R"(["{}","{}"])", first.code, second.code)
-                                 : std::format(R"(["{}"])", first.code);
+    const auto underlyings = trade_type == "PerformanceOption_01" ?
+                                 std::format(R"(["{}","{}"])", first.code, second.code) :
+                                 std::format(R"(["{}"])", first.code);
 
     tdom::scripted_instrument row;
     row.identity.trade_type_code = std::string(trade_type);
     row.script_name = std::string(script_of(trade_type));
     row.underlyings_json = underlyings;
-    row.parameters_json =
-        parameters_of(trade_type, scope.currency_code, end, notional, strike);
+    row.parameters_json = parameters_of(trade_type, scope.currency_code, end, notional, strike);
     row.description = "Generated scripted trade.";
 
     tdom::instrument_batch batch;
@@ -2043,8 +2037,7 @@ scripted_trade_planner::plan(const domain::trade_generation_scope& scope) const 
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
-        entry.instruments =
-            construct_scripted_batch(scope, type, slot, end, notional, strike);
+        entry.instruments = construct_scripted_batch(scope, type, slot, end, notional, strike);
 
         plan.slots.push_back(std::move(entry));
     }
@@ -2167,8 +2160,7 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
         terms.currency = scope.currency_code;
         terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         terms.maturity_date =
-            add_years(terms.start_date,
-                      static_cast<int>(std::clamp(drawn, min_years, max_years)));
+            add_years(terms.start_date, static_cast<int>(std::clamp(drawn, min_years, max_years)));
         terms.notional =
             price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
         terms.fixed_rate = std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0;
@@ -2176,7 +2168,8 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
          * The index cycles the tenant's curves rather than being drawn, so a
          * population longer than the list states every index the tenant holds.
          */
-        terms.inflation_index_code = scope.inflation_index_codes[slot % scope.inflation_index_codes.size()];
+        terms.inflation_index_code =
+            scope.inflation_index_codes[slot % scope.inflation_index_codes.size()];
         terms.base_cpi = base_cpi_from(name);
 
         auto entry = common_slot(scope, slot);
@@ -2191,7 +2184,6 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
 }
 
 namespace {
-
 
 
 /// The underlying the slot draws, cycling the catalogue the tenant published.

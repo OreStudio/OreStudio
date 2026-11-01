@@ -42,8 +42,7 @@ namespace ores::http::server::routes {
  */
 class ORES_HTTP_CORE_EXPORT change_routes final {
 public:
-    change_routes(std::shared_ptr<stream::change_hub> hub,
-                  std::chrono::milliseconds keep_alive);
+    change_routes(std::shared_ptr<stream::change_hub> hub, std::chrono::milliseconds keep_alive);
 
     /**
      * @brief Registers the change routes with the router.
@@ -60,8 +59,7 @@ private:
         return instance;
     }
 
-    boost::asio::awaitable<domain::http_response>
-    handle_changes(const domain::http_request& req);
+    boost::asio::awaitable<domain::http_response> handle_changes(const domain::http_request& req);
 
     std::shared_ptr<stream::change_hub> hub_;
     std::chrono::milliseconds keep_alive_;

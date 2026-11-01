@@ -165,7 +165,9 @@ struct cut_resolution {
      */
     std::string refusal;
 
-    [[nodiscard]] bool ok() const { return cut.has_value() || mint.has_value(); }
+    [[nodiscard]] bool ok() const {
+        return cut.has_value() || mint.has_value();
+    }
 };
 
 /**

@@ -63,7 +63,8 @@ namespace detail {
 inline std::optional<std::string> class_of_parameter(std::string_view name) {
     constexpr std::string_view prefix = "population_";
     constexpr std::string_view suffix = "_percent";
-    if (!name.starts_with(prefix) || !name.ends_with(suffix) || name.size() <= prefix.size() + suffix.size())
+    if (!name.starts_with(prefix) || !name.ends_with(suffix) ||
+        name.size() <= prefix.size() + suffix.size())
         return std::nullopt;
     return std::string(name.substr(prefix.size(), name.size() - prefix.size() - suffix.size()));
 }
@@ -121,10 +122,10 @@ read_population_knobs(const std::vector<workflow::provision_tenant_parameter>& p
  *         class's share cannot hold its codes, or when the knobs name a class
  *         the run books nothing for.
  */
-inline void apply_population_knobs(std::vector<trade_generation_assignment>& assignments,
-                                   const population_knobs& knobs,
-                                   const std::function<std::size_t(const std::string&)>&
-                                       code_count) {
+inline void
+apply_population_knobs(std::vector<trade_generation_assignment>& assignments,
+                       const population_knobs& knobs,
+                       const std::function<std::size_t(const std::string&)>& code_count) {
     if (!knobs.states_any())
         return;
 
@@ -182,9 +183,9 @@ inline void apply_population_knobs(std::vector<trade_generation_assignment>& ass
     while (spare > 0) {
         auto largest = shares.end();
         for (auto candidate = shares.begin(); candidate != shares.end(); ++candidate)
-            if (candidate->second > 0 && (largest == shares.end() ||
-                                          remainders.at(candidate->first) >
-                                              remainders.at(largest->first)))
+            if (candidate->second > 0 &&
+                (largest == shares.end() ||
+                 remainders.at(candidate->first) > remainders.at(largest->first)))
                 largest = candidate;
         if (largest == shares.end())
             break;

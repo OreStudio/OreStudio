@@ -22,10 +22,10 @@
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
-#include <algorithm>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <vector>
 
 namespace ores::reporting::service {
@@ -43,11 +43,10 @@ namespace {
  */
 std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>
 covered_year_window(const std::chrono::system_clock::time_point& covered_date) {
-    const std::chrono::year_month_day covered(
-        std::chrono::floor<std::chrono::days>(covered_date));
+    const std::chrono::year_month_day covered(std::chrono::floor<std::chrono::days>(covered_date));
     const auto first = std::chrono::sys_days(covered.year() / std::chrono::January / 1);
-    const auto after = std::chrono::sys_days((covered.year() + std::chrono::years(1)) /
-                                             std::chrono::January / 1);
+    const auto after =
+        std::chrono::sys_days((covered.year() + std::chrono::years(1)) / std::chrono::January / 1);
     return {std::chrono::system_clock::time_point(first),
             std::chrono::system_clock::time_point(after)};
 }
@@ -57,9 +56,8 @@ covered_year_window(const std::chrono::system_clock::time_point& covered_date) {
 cut_resolution_service::cut_resolution_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-cut_resolution
-cut_resolution_service::preview(const cut_selection& selection,
-                                const cut_resolution_context& ctx) {
+cut_resolution cut_resolution_service::preview(const cut_selection& selection,
+                                               const cut_resolution_context& ctx) {
     return run(selection, ctx, true);
 }
 
@@ -98,8 +96,7 @@ cut_resolution cut_resolution_service::run(const cut_selection& selection,
     return resolved;
 }
 
-domain::cut cut_resolution_service::mint(const cut_take_plan& plan,
-                                         const domain::cut_kind& kind) {
+domain::cut cut_resolution_service::mint(const cut_take_plan& plan, const domain::cut_kind& kind) {
     repository::cut_repository cuts_repo;
 
     // The takes are read over the whole natural key of the cut: the kind, the

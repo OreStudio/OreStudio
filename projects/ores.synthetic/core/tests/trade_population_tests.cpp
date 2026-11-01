@@ -157,13 +157,12 @@ domain::trade_generation_scope rate_scope() {
 domain::trade_generation_scope scripted_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "scripted";
-    scope.equity_underlyings = {
-        domain::equity_underlying_reference{
-            .code = "GB0005405286", .kind = "share", .currency = "GBP"},
-        domain::equity_underlying_reference{
-            .code = "US0378331005", .kind = "share", .currency = "USD"},
-        domain::equity_underlying_reference{
-            .code = "DE0007164600", .kind = "share", .currency = "EUR"}};
+    scope.equity_underlyings = {domain::equity_underlying_reference{
+                                    .code = "GB0005405286", .kind = "share", .currency = "GBP"},
+                                domain::equity_underlying_reference{
+                                    .code = "US0378331005", .kind = "share", .currency = "USD"},
+                                domain::equity_underlying_reference{
+                                    .code = "DE0007164600", .kind = "share", .currency = "EUR"}};
     return scope;
 }
 
@@ -976,8 +975,7 @@ TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_popula
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes",
-          "[trade_population]") {
+TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[trade_population]") {
     const auto scope = scripted_scope();
     const auto plan = plan_of(scope);
 
@@ -1062,9 +1060,8 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
          * leg, so the population states one and its fixed counterpart.
          */
         REQUIRE(slot.instruments.swap_legs.size() == 2u);
-        const auto cpi = std::ranges::find_if(slot.instruments.swap_legs, [](const auto& leg) {
-            return leg.leg_type_code == "CPI";
-        });
+        const auto cpi = std::ranges::find_if(
+            slot.instruments.swap_legs, [](const auto& leg) { return leg.leg_type_code == "CPI"; });
         REQUIRE(cpi != slot.instruments.swap_legs.end());
         /*
          * The leg states the index family rather than the index: the leg's own
@@ -1160,8 +1157,7 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", "[trade_pop
     REQUIRE(term_of.size() >= terms.size());
 }
 
-TEST_CASE("a_securitys_own_rows_do_not_depend_on_the_slot_that_wrote_them",
-          "[trade_population]") {
+TEST_CASE("a_securitys_own_rows_do_not_depend_on_the_slot_that_wrote_them", "[trade_population]") {
     /*
      * Two trades of one security state one issue, so the security's own rows are
      * a function of the security and not of the slot. A band of one term over
@@ -1219,10 +1215,8 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_po
     dollar.currency_code = "USD";
 
     const auto issuer = issuer_id_for(euro, 5);
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) !=
-            security_id_for(dollar, 5, "Bond", issuer));
-    REQUIRE(security_id_for(euro, 5, "Bond", issuer) ==
-            security_id_for(euro, 5, "Bond", issuer));
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer) != security_id_for(dollar, 5, "Bond", issuer));
+    REQUIRE(security_id_for(euro, 5, "Bond", issuer) == security_id_for(euro, 5, "Bond", issuer));
 }
 
 TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {

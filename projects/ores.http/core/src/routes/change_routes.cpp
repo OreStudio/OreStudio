@@ -30,9 +30,8 @@ change_routes::change_routes(std::shared_ptr<stream::change_hub> hub,
     BOOST_LOG_SEV(lg(), debug) << "Change routes initialized";
 }
 
-void change_routes::register_routes(
-    std::shared_ptr<http::net::router> router,
-    std::shared_ptr<http::openapi::endpoint_registry> registry) {
+void change_routes::register_routes(std::shared_ptr<http::net::router> router,
+                                    std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
     BOOST_LOG_SEV(lg(), info) << "Registering the change stream";
 

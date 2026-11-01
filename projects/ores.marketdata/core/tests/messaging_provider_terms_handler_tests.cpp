@@ -82,6 +82,10 @@ struct terms_fixture {
         auto generation = ores::testing::make_generation_context(db);
         auto account = ores::iam::generators::generate_synthetic_account(generation);
         account.username = reader;
+        // A user account would end the suite tenant's bootstrap, after which the
+        // store refuses every later test's write that names no actor. The store
+        // accepts any account's name as the acceptor, so a service account does.
+        account.account_type = "service";
         account.change_reason_code = "system.test";
         ores::iam::repository::account_repository{}.write(db.context(), account);
 

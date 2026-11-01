@@ -71,6 +71,14 @@ struct export_tenant {
     }
 };
 
+/// The series the export tenant holds. A tenant also reads the system tenant's
+/// rows, and the running fleet writes series there.
+std::vector<ores::marketdata::domain::market_series> own_series(const export_tenant& t) {
+    auto series = ores::marketdata::repository::market_series_repository{}.read_latest(t.ctx);
+    std::erase_if(series, [&](const auto& s) { return s.tenant_id != t.ctx.tenant_id(); });
+    return series;
+}
+
 /// Splits a market data file into its data lines' fields, comma or whitespace
 /// separated, dropping comments and blanks.
 std::vector<std::string> file_keys(const std::string& content) {
@@ -307,7 +315,7 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     req.source = "test.ore_export";
     REQUIRE(importer.import(req).success);
 
-    const auto series = ores::marketdata::repository::market_series_repository{}.read_latest(t.ctx);
+    const auto series = own_series(t);
     REQUIRE(series.size() == 1);
     const auto& s = series.front();
     const auto stored =
@@ -378,7 +386,7 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     req.source = "test.ore_export";
     REQUIRE(importer.import(req).success);
 
-    const auto series = ores::marketdata::repository::market_series_repository{}.read_latest(t.ctx);
+    const auto series = own_series(t);
     REQUIRE(series.size() == 3);
     ores::marketdata::repository::market_observation_repository observations;
 

@@ -5970,6 +5970,16 @@ const fr: SourceCatalogue = {
                 inverted:
                     "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
+                measures: {
+                    volatility:
+                        "Volatilité réalisée {daily} par jour, {hourly} par heure : elle a changé le calibrage, car elle met le mélange à l'échelle.",
+                    recorded: "Enregistré pour une politique future, non utilisé aujourd'hui :",
+                    drift: 'Dérive annualisée : {value}',
+                    range: 'Rendements journaliers de {min} à {max}',
+                    age: 'Le fixing date de {days} jour(s)',
+                    jumps: 'Mouvements au-delà de trois écarts : {count}',
+                    dispersion: '{provider} est à {bp} pb',
+                },
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",

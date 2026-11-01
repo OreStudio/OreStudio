@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/complete-a-structure-in-one-unit
-#+pr: 4310
+#+pr: 4311
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4311][#4311]] | [agile] Close the structure completion task |
 | [[https://github.com/OreStudio/OreStudio/pull/4310][#4310]] | [trading] Complete a structure in one unit |
 
 * Review

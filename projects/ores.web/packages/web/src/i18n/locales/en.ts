@@ -2999,7 +2999,7 @@ export const en: SourceCatalogue = {
             },
             leiNoMatch: 'No entity matches that.',
             leiReadFailed: 'The legal entities could not be read. {message}',
-            changeSettings: 'Change settings',
+            changeSettings: 'Edit',
             noCreatingPassword:
                 'The administrator who creates the tenant must set a password first.',
             rows: {

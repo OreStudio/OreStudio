@@ -20,16 +20,20 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/system_setting_codec.cpp"
     "domain/system_setting_json_io.cpp"
     "domain/system_setting_table.cpp"
     "domain/system_setting_table_io.cpp"
     "generators/system_setting_generator.cpp"
+    "messaging/operations_protocol_codec.cpp"
+    "messaging/system_setting_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/ores.variability.api.domain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.variability.api/domain/system_setting_table_io.hpp"

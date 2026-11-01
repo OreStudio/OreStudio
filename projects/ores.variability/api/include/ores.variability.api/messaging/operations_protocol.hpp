@@ -25,8 +25,16 @@
 #ifndef ORES_VARIABILITY_API_MESSAGING_OPERATIONS_PROTOCOL_HPP
 #define ORES_VARIABILITY_API_MESSAGING_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.variability.api/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
+#include <span>
+#include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::variability::messaging {
 
@@ -119,6 +127,224 @@ struct get_setting_response {
     std::string data_type;
 };
 
+/**
+ * @brief The members of clear_bootstrap_mode_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const clear_bootstrap_mode_request&) {
+    return std::tuple{};
 }
+
+/**
+ * @brief The members of clear_bootstrap_mode_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const clear_bootstrap_mode_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &clear_bootstrap_mode_response::result},
+    };
+}
+
+/**
+ * @brief The members of complete_system_onboarding_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const complete_system_onboarding_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of complete_system_onboarding_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const complete_system_onboarding_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &complete_system_onboarding_response::result},
+    };
+}
+
+/**
+ * @brief The members of complete_party_onboarding_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const complete_party_onboarding_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"party_id", &complete_party_onboarding_request::party_id},
+    };
+}
+
+/**
+ * @brief The members of complete_party_onboarding_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const complete_party_onboarding_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &complete_party_onboarding_response::result},
+    };
+}
+
+/**
+ * @brief The members of get_setting_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_setting_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"name", &get_setting_request::name},
+    };
+}
+
+/**
+ * @brief The members of get_setting_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_setting_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_setting_response::result},
+        ::ores::utility::codec::field{"value", &get_setting_response::value},
+        ::ores::utility::codec::field{"data_type", &get_setting_response::data_type},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::clear_bootstrap_mode_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::clear_bootstrap_mode_request& v);
+    static ores::variability::messaging::clear_bootstrap_mode_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::clear_bootstrap_mode_request& v);
+    static ores::variability::messaging::clear_bootstrap_mode_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::clear_bootstrap_mode_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::clear_bootstrap_mode_response& v);
+    static ores::variability::messaging::clear_bootstrap_mode_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::clear_bootstrap_mode_response& v);
+    static ores::variability::messaging::clear_bootstrap_mode_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::complete_system_onboarding_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::complete_system_onboarding_request& v);
+    static ores::variability::messaging::complete_system_onboarding_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::complete_system_onboarding_request& v);
+    static ores::variability::messaging::complete_system_onboarding_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::complete_system_onboarding_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::complete_system_onboarding_response& v);
+    static ores::variability::messaging::complete_system_onboarding_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::complete_system_onboarding_response& v);
+    static ores::variability::messaging::complete_system_onboarding_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::complete_party_onboarding_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::complete_party_onboarding_request& v);
+    static ores::variability::messaging::complete_party_onboarding_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::complete_party_onboarding_request& v);
+    static ores::variability::messaging::complete_party_onboarding_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT
+    wire_traits<ores::variability::messaging::complete_party_onboarding_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::variability::messaging::complete_party_onboarding_response& v);
+    static ores::variability::messaging::complete_party_onboarding_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::variability::messaging::complete_party_onboarding_response& v);
+    static ores::variability::messaging::complete_party_onboarding_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT wire_traits<ores::variability::messaging::get_setting_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::get_setting_request& v);
+    static ores::variability::messaging::get_setting_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::get_setting_request& v);
+    static ores::variability::messaging::get_setting_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VARIABILITY_API_EXPORT wire_traits<ores::variability::messaging::get_setting_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::variability::messaging::get_setting_response& v);
+    static ores::variability::messaging::get_setting_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::variability::messaging::get_setting_response& v);
+    static ores::variability::messaging::get_setting_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

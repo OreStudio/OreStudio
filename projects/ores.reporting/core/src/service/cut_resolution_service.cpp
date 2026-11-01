@@ -99,23 +99,18 @@ cut_resolution cut_resolution_service::run(const cut_selection& selection,
 domain::cut cut_resolution_service::mint(const cut_take_plan& plan, const domain::cut_kind& kind) {
     repository::cut_repository cuts_repo;
 
-    // The takes are read over the whole natural key of the cut: the kind, the
-    // party, the scope, the centre and the instant. The read is party-filtered,
-    // so the party is stated here beside the index's own columns rather than
-    // left to whatever the session may see: a count narrower than the unique
-    // index would number a take another row already holds.
-    auto same_occasion = cuts_repo.read_by_kind_and_month(
-        ctx_, plan.kind_code, plan.timepoint, plan.timepoint + std::chrono::seconds(1));
-    same_occasion.erase(std::remove_if(same_occasion.begin(),
-                                       same_occasion.end(),
-                                       [&plan](const auto& cut) {
-                                           return cut.party_id != plan.party_id ||
-                                                  cut.scope_code != plan.scope_code ||
-                                                  cut.business_centre_code !=
-                                                      plan.business_centre_code ||
-                                                  cut.timepoint != plan.timepoint;
-                                       }),
-                        same_occasion.end());
+    // The takes of the occasion are read whole: the kind, the party, the scope
+    // and the centre, over the day the ordinal counts. The read states each of
+    // them, so a count narrower than the store's own cannot number a take
+    // another row already holds.
+    const auto day = day_of(plan.timepoint);
+    const auto same_occasion = cuts_repo.read_for_occasion_in_window(ctx_,
+                                                                    plan.party_id,
+                                                                    plan.kind_code,
+                                                                    plan.scope_code,
+                                                                    plan.business_centre_code,
+                                                                    day.from,
+                                                                    day.to);
 
     boost::uuids::random_generator rg;
     const auto cut = plan_take(plan, kind, rg(), next_take_ordinal(same_occasion));

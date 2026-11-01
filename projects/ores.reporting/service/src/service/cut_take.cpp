@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.service/service/cut_take.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -34,7 +35,6 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <chrono>
 #include <format>
 #include <stdexcept>
@@ -46,6 +46,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 namespace db = ores::database::repository;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 using ores::platform::time::datetime;
 using ores::utility::domain::outcome;
 
@@ -83,9 +85,40 @@ instant_of(const std::string& text) {
     return at;
 }
 
-/** A refusal as the caller reads it: the outcome and one sentence. */
-ores::utility::domain::result refuse_with(outcome o, std::string message) {
-    return {.outcome = o, .code = std::string{}, .message = std::move(message), .fields = {}};
+/**
+ * @brief The answer a take gives when it did what it was asked.
+ *
+ * The default result states @c ok with no code and no sentence, because a call
+ * that answered the body is not a refusal.
+ */
+ores::utility::domain::result answered() {
+    return {};
+}
+
+/**
+ * @brief The answer a take gives when it refuses a body.
+ *
+ * The coarse outcome and the code are the outcome catalogue's, so the take
+ * states which outcome it reached and never how to spell it. The sentence is
+ * the take's own, because a refused body names a cut and what closes it, and
+ * the catalogue's sentences name a table.
+ */
+ores::utility::domain::result answer(outcome_code code, std::string sentence) {
+    auto r = refuse(code);
+    r.message = std::move(sentence);
+    return r;
+}
+
+/**
+ * @brief The answer a take gives when it refuses something the catalogue holds
+ * no entry for.
+ *
+ * The catalogue holds the refusals of a store's rows. A take the operation does
+ * not serve at all is none of them, so the code is named here beside the
+ * sentence a person reads.
+ */
+ores::utility::domain::result answer(outcome o, std::string code, std::string sentence) {
+    return {.outcome = o, .code = std::move(code), .message = std::move(sentence), .fields = {}};
 }
 
 /** The party the take fixes a body for, or a refusal when the session names none. */
@@ -110,54 +143,64 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     // The refusals that need no read are answered first, so a typo costs no
     // database work and the person reads what to state instead.
     if (request.kind_code.empty()) {
-        response.result = refuse_with(outcome::invalid, "Choose the kind of cut to take.");
+        response.result = answer(outcome_code::missing_field, "Choose the kind of cut to take.");
         return response;
     }
     if (request.scope_code.empty()) {
-        response.result = refuse_with(outcome::invalid,
-                                      "Name the scope the body fixes, so the cut states books.");
+        response.result = answer(outcome_code::missing_field,
+                                 "Name the scope the body fixes, so the cut states books.");
         return response;
     }
     if (request.business_centre_code.empty()) {
-        response.result = refuse_with(outcome::invalid,
-                                      "Name the rates centre the scope revalues against, so the "
-                                      "market data half denotes one centre.");
+        response.result = answer(outcome_code::missing_field,
+                                 "Name the rates centre the scope revalues against, so the "
+                                 "market data half denotes one centre.");
         return response;
     }
     const auto party = party_of(ctx_);
     if (!party) {
-        response.result = refuse_with(outcome::invalid, party.error());
+        response.result = answer(outcome_code::party_required, party.error());
         return response;
     }
     const auto instant = instant_of(request.timepoint);
     if (!instant) {
-        response.result = refuse_with(outcome::invalid, instant.error());
+        response.result = answer(outcome_code::as_of_invalid, instant.error());
         return response;
     }
 
     repository::cut_kind_repository kinds_repo;
     const auto kinds = kinds_repo.read_latest(ctx_, request.kind_code);
     if (kinds.empty()) {
-        response.result = refuse_with(
-            outcome::missing,
+        response.result = answer(
+            outcome_code::not_found,
             "No kind of cut is called " + request.kind_code +
                 ", so there is no retention and no authorisation basis to take the body under.");
         return response;
     }
     const auto& kind = kinds.front();
     if (kind.family_code == "consumer") {
-        response.result = refuse_with(
+        response.result = answer(
             outcome::invalid,
+            "kind_not_takeable",
             "A " + kind.code +
                 " cut is minted by the run that consumes it, so there is no take to press.");
         return response;
     }
 
+    // The account the body is fixed as, and the instant it is fixed at, are what
+    // the taking identity names. Both are the session's and this call's, so they
+    // stand before the assembly rather than being read from anywhere.
+    const auto taken_at = at_store_precision(std::chrono::system_clock::now());
+    const auto actor = ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor();
+
     // The assembly reads what the store answers and records what it cannot.
-    const auto facts =
-        reader_.read(cut_body_query{.party_id = *party,
-                                    .business_centre_code = request.business_centre_code,
-                                    .timepoint = *instant});
+    auto facts = reader_.read(cut_body_query{.party_id = *party,
+                                             .business_centre_code = request.business_centre_code,
+                                             .timepoint = *instant});
+    facts.taking_account = actor;
+    facts.taking_party = boost::uuids::to_string(*party);
+    if (!request.preview)
+        facts.taking_instant = taken_at;
     const auto assembly = assemble_cut_body(kind, facts);
 
     response.parts = assembly.parts;
@@ -195,7 +238,7 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     // A preview answers the same parts and gaps and writes nothing, so the
     // person who reviews the body reads the body the press would fix.
     if (request.preview) {
-        response.result = refuse_with(outcome::ok, {});
+        response.result = answered();
         return response;
     }
 
@@ -203,64 +246,17 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     // a reason for the decider to read.
     const auto needs_reason = kind.approval_kind_code.has_value() && assembly.complete();
     if (needs_reason && request.reason.empty()) {
-        response.result =
-            refuse_with(outcome::invalid,
-                        "Say why the body is being fixed: a cut of the kind " + kind.code +
-                            " waits on a signature, and the decider reads the reason.");
+        response.result = answer(outcome_code::missing_field,
+                                 "Say why the body is being fixed: a cut of the kind " + kind.code +
+                                     " waits on a signature, and the decider reads the reason.");
         return response;
     }
-
-    const auto taken_at = at_store_precision(std::chrono::system_clock::now());
-    const auto actor = ctx_.actor().empty() ? ctx_.service_account() : ctx_.actor();
-
-    // The takes of the occasion are read over the whole natural key, because a
-    // retake of the same instant is its own body and its own ordinal.
-    repository::cut_repository cuts_repo;
-    auto same_occasion = cuts_repo.read_by_kind_and_month(
-        ctx_, kind.code, *instant, *instant + std::chrono::seconds(1));
-    same_occasion.erase(std::remove_if(same_occasion.begin(),
-                                       same_occasion.end(),
-                                       [&](const auto& cut) {
-                                           return cut.party_id != *party ||
-                                                  cut.scope_code != request.scope_code ||
-                                                  cut.business_centre_code !=
-                                                      request.business_centre_code ||
-                                                  cut.timepoint != *instant;
-                                       }),
-                        same_occasion.end());
-
-    cut_take_plan plan;
-    plan.kind_code = kind.code;
-    plan.scope_code = request.scope_code;
-    plan.business_centre_code = request.business_centre_code;
-    plan.party_id = *party;
-    plan.timepoint = *instant;
-    plan.timepoint_timezone = request.timepoint_timezone;
-    plan.cut_time_code =
-        request.cut_time_code.empty() ? std::nullopt : std::optional{request.cut_time_code};
-    plan.deal_population_id = std::nullopt;
-    plan.market_data_snapshot_id = std::nullopt;
-    plan.reference_data_version = facts.reference_data_version;
-    plan.engine_version = facts.engine_version;
-    plan.code_version = facts.code_version;
-    plan.taken_by = actor;
-    plan.taken_at = taken_at;
-    plan.change_reason_code = "system.new_record";
-    plan.change_commentary = request.reason.empty() ? "Cut taken by hand" : request.reason;
-
-    auto cut =
-        plan_take(plan, kind, boost::uuids::random_generator{}(), next_take_ordinal(same_occasion));
-    cut.tenant_id = ctx_.tenant_id();
-    cut.modified_by = actor;
-    cut.performed_by = ctx_.service_account();
 
     // A gap keeps the attempt as a draft: the body is not fixed, so no taking
     // instant holds and no request is raised. The retention, the indicative
     // mark and the authorisation basis are still copied, because they are what
     // the draft promises when the gaps are closed.
-    if (!assembly.complete())
-        cut.taken_at = std::nullopt;
-
+    domain::cut cut;
     std::string request_id;
     {
         // The body, its gaps, the request and the cut's detail land together or
@@ -268,6 +264,48 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
         // request would leave a cut nobody is asked to sign.
         db::unit_of_work uow(ctx_);
         const auto& ctx = uow.ctx();
+
+        // The takes of the occasion are counted inside the write's own unit of
+        // work, so two takes of one occasion cannot read one count and write one
+        // ordinal. The occasion is the day, the kind, the party, the scope and
+        // the centre: a retake of that day is the second cut of it.
+        const auto day = day_of(*instant);
+        const auto same_occasion = repository::cut_repository{}.read_for_occasion_in_window(
+            ctx,
+            *party,
+            kind.code,
+            request.scope_code,
+            request.business_centre_code,
+            day.from,
+            day.to);
+
+        cut_take_plan plan;
+        plan.kind_code = kind.code;
+        plan.scope_code = request.scope_code;
+        plan.business_centre_code = request.business_centre_code;
+        plan.party_id = *party;
+        plan.timepoint = *instant;
+        plan.timepoint_timezone = request.timepoint_timezone;
+        plan.cut_time_code =
+            request.cut_time_code.empty() ? std::nullopt : std::optional{request.cut_time_code};
+        plan.deal_population_id = std::nullopt;
+        plan.market_data_snapshot_id = std::nullopt;
+        plan.reference_data_version = facts.reference_data_version;
+        plan.engine_version = facts.engine_version;
+        plan.code_version = facts.code_version;
+        plan.taken_by = actor;
+        plan.taken_at = taken_at;
+        plan.change_reason_code = "system.new_record";
+        plan.change_commentary = request.reason.empty() ? "Cut taken by hand" : request.reason;
+
+        cut = plan_take(
+            plan, kind, boost::uuids::random_generator{}(), next_take_ordinal(same_occasion));
+        cut.tenant_id = ctx.tenant_id();
+        cut.modified_by = actor;
+        cut.performed_by = ctx.service_account();
+
+        if (!assembly.complete())
+            cut.taken_at = std::nullopt;
 
         if (assembly.complete() && kind.approval_kind_code) {
             ores::inbox::service::approval_lifecycle lifecycle(ctx);
@@ -356,7 +394,7 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
         BOOST_LOG_SEV(lg(), info) << "Took cut " << response.cut_id << " of kind " << cut.kind_code
                                   << " for scope " << cut.scope_code;
     }
-    response.result = refuse_with(outcome::ok, {});
+    response.result = answered();
     return response;
 }
 

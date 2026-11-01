@@ -1934,7 +1934,9 @@ raised.
 :END:
 
 Outcome of the operation. An assembly that answers gaps is a successful call: the
-gaps are the answer, and the sentence that refuses a take is in =refusal=.
+gaps are the answer. A take that refuses answers with the outcome's code and one
+sentence, and both travel here, because a refusal is the call's answer and not a
+field beside it.
 
 *** cut_id
 :PROPERTIES:
@@ -2090,15 +2092,6 @@ The engine version the body was assembled for, or empty.
 
 The code revision the body records, or empty where nothing records the service
 build.
-
-*** refusal
-:PROPERTIES:
-:cpp_type: std::string
-:default: ""
-:END:
-
-One sentence saying why the take was refused, or empty. A refused take writes
-nothing, and the sentence names the reason the person acts on.
 
 * See also
 

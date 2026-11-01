@@ -704,9 +704,12 @@ TEST_CASE("a body the assembly could not fix refuses the run and mints nothing",
     CHECK_FALSE(resolution.ok());
     CHECK(resolution.refusal.contains("market data snapshot"));
 
-    const auto held = repository::cut_repository{}.read_by_kind_and_month(
+    const auto held = repository::cut_repository{}.read_for_occasion_in_window(
         h.context(),
+        occasion.party_id,
         occasion.kind_code,
+        "ACME-LONDON",
+        occasion.business_centre_code,
         dt::from_iso8601_utc("2026-10-07T07:39:00Z"),
         dt::from_iso8601_utc("2026-10-07T07:41:00Z"));
     CHECK(held.empty());
@@ -790,9 +793,12 @@ TEST_CASE("a preview answers the mark and writes nothing", "[cut][resolution][in
     CHECK(response.cut_kind_code == occasion.kind_code);
     CHECK(response.cut_id.empty());
 
-    const auto held = repository::cut_repository{}.read_by_kind_and_month(
+    const auto held = repository::cut_repository{}.read_for_occasion_in_window(
         h.context(),
+        occasion.party_id,
         occasion.kind_code,
+        "ACME-LONDON",
+        occasion.business_centre_code,
         dt::from_iso8601_utc("2026-10-01T00:00:00Z"),
         dt::from_iso8601_utc("2026-10-31T00:00:00Z"));
     CHECK(held.empty());

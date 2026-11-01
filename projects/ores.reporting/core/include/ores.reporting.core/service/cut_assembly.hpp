@@ -23,6 +23,7 @@
 #include "ores.reporting.api/domain/cut_kind.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -63,7 +64,13 @@ struct cut_gap_candidate {
  * make every hand take impossible, and the design refuses a take on a gap.
  */
 struct cut_body_facts {
-    /** @brief How many deals the store held at the instant, or nothing. */
+    /**
+     * @brief How many deals the store held at the instant, or nothing.
+     *
+     * Zero is a quiet day and a body of its own: the read answered, and the
+     * count it answered is what the body records. An absent count is a read
+     * that answered nothing, which is the only way this part gaps.
+     */
     std::optional<int> deal_count;
 
     /** @brief Why the deal population read answered nothing, where it did not. */
@@ -98,6 +105,25 @@ struct cut_body_facts {
 
     /** @brief The revision of the code that assembled the body, or nothing. */
     std::optional<std::string> code_version;
+
+    /**
+     * @brief The account the body is fixed as.
+     *
+     * The taking identity is the session's and the call's, so it is never read
+     * from a store: the take states who acts and for which party.
+     */
+    std::string taking_account;
+
+    /** @brief The party whose books and market data the body fixes. */
+    std::string taking_party;
+
+    /**
+     * @brief The instant the body was fixed, or nothing where the call previews.
+     *
+     * A preview fixes no instant, so the row states the account and the party
+     * and says the instant is the press's.
+     */
+    std::optional<std::chrono::system_clock::time_point> taking_instant;
 };
 
 /**
@@ -119,6 +145,12 @@ struct cut_assembly {
     [[nodiscard]] bool complete() const {
         return gaps.empty() && !parts.empty();
     }
+
+    /**
+     * @brief The part and the gap candidate one part that could not close
+     * answers, so a part and its gap are stated once.
+     */
+    void gap(std::string code, std::string item, std::string reason, std::string remedy);
 };
 
 /**
@@ -128,7 +160,7 @@ struct cut_assembly {
  * stands with the item, the reason and the remedy the person chases when the
  * read answered nothing. The kind is always closed -- a take of an unknown kind
  * is refused before it reaches here -- and so is the taking identity, which the
- * take itself is.
+ * take itself is: the account, the party and the instant the press records.
  *
  * Nothing about the store is read here: the facts are the caller's, so the rule
  * that a gap stands is stated once and tested without a database.

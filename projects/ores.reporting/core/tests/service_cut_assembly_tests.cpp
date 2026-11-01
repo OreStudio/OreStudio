@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/service/cut_assembly.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -67,6 +68,9 @@ cut_body_facts a_full_store() {
     facts.reference_data_version = "4 report configuration(s) in force, newest version 7";
     facts.engine_version = "1.8.17.0";
     facts.wrapper_version = "1.0.0";
+    facts.taking_account = "a.reyes";
+    facts.taking_party = "8f2a4c19-0000-4000-8000-000000000010";
+    facts.taking_instant = ores::platform::time::datetime::from_iso8601_utc("2026-10-06T16:02:00Z");
     return facts;
 }
 
@@ -88,7 +92,7 @@ TEST_CASE("a store that answers every part closes the whole body", "[cut_assembl
 
     REQUIRE(assembly.gaps.empty());
     REQUIRE(assembly.complete());
-    REQUIRE(assembly.parts.size() == 5);
+    REQUIRE(assembly.parts.size() == 6);
     REQUIRE(assembly.deal_count == 1284);
     REQUIRE(assembly.market_data_set_count == 7);
     for (const auto& part : assembly.parts)
@@ -107,8 +111,7 @@ TEST_CASE("the kind's retention and basis are stated in the body", "[cut_assembl
     REQUIRE(kind.snapshot_note.find("25 months") != std::string::npos);
 }
 
-TEST_CASE("an empty population is a gap with the item, the reason and the remedy",
-          "[cut_assembly]") {
+TEST_CASE("a quiet day closes the deals part with a count of zero", "[cut_assembly]") {
 
     auto lg(ores::logging::make_logger(test_suite));
     auto facts = a_full_store();
@@ -116,10 +119,30 @@ TEST_CASE("an empty population is a gap with the item, the reason and the remedy
 
     const auto assembly = assemble_cut_body(a_signed_kind(), facts);
 
+    // A day nothing traded is a body and not a hole: the read answered, so the
+    // part is closed and the body records the count it answered.
+    REQUIRE(assembly.complete());
+    REQUIRE(assembly.gaps.empty());
+    REQUIRE(assembly.deal_count == 0);
+
+    const auto part = part_of(assembly, "deal_population");
+    REQUIRE(part.state == "closed");
+    REQUIRE(part.summary == "0 deals held at the instant");
+}
+
+TEST_CASE("a deal population read that answered nothing is a gap", "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    auto facts = a_full_store();
+    facts.deal_count = std::nullopt;
+    facts.deals_refusal = "The deal population read refused the instant.";
+
+    const auto assembly = assemble_cut_body(a_signed_kind(), facts);
+
     REQUIRE_FALSE(assembly.complete());
     REQUIRE(assembly.gaps.size() == 1);
     REQUIRE(assembly.gaps.front().part_code == "deal_population");
-    REQUIRE(assembly.gaps.front().reason.find("no deal at the instant") != std::string::npos);
+    REQUIRE(assembly.gaps.front().reason == "The deal population read refused the instant.");
 
     const auto part = part_of(assembly, "deal_population");
     REQUIRE(part.state == "gapped");
@@ -181,4 +204,30 @@ TEST_CASE("a kind that requires no authorisation closes the same body", "[cut_as
 
     REQUIRE(assembly.complete());
     REQUIRE(part_of(assembly, "kind").summary.find("no authorisation") != std::string::npos);
+}
+
+TEST_CASE("the taking identity names the account, the party and the instant the press records",
+          "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    const auto assembly = assemble_cut_body(a_signed_kind(), a_full_store());
+
+    const auto row = part_of(assembly, "taking_identity");
+    REQUIRE(row.state == "closed");
+    REQUIRE(row.summary == "a.reyes for party 8f2a4c19-0000-4000-8000-000000000010");
+    REQUIRE(row.snapshot_note.find("16:02:00") != std::string::npos);
+}
+
+TEST_CASE("a preview's taking identity names the instant it will record and no instant of its own",
+          "[cut_assembly]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    auto facts = a_full_store();
+    facts.taking_instant = std::nullopt;
+
+    const auto assembly = assemble_cut_body(a_signed_kind(), facts);
+
+    const auto row = part_of(assembly, "taking_identity");
+    REQUIRE(row.state == "closed");
+    REQUIRE(row.snapshot_note.find("the press records") != std::string::npos);
 }

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/cut_assembly.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <format>
 #include <string>
 #include <utility>
@@ -34,6 +35,7 @@ constexpr std::string_view deals_part = "deal_population";
 constexpr std::string_view market_data_part = "market_data";
 constexpr std::string_view reference_data_part = "reference_data";
 constexpr std::string_view engine_part = "engine_code";
+constexpr std::string_view taking_identity_part = "taking_identity";
 
 /** A part the assembly filled, with what it resolved and what it cannot state. */
 cut_body_part
@@ -58,7 +60,21 @@ cut_body_part gapped(std::string code, std::string item, std::string reason, std
     return part;
 }
 
+/** The reason a part stands gapped: the read's own sentence where it gave one. */
+std::string reason_of(const std::string& refusal, std::string fallback) {
+    return refusal.empty() ? std::move(fallback) : refusal;
+}
+
 } // namespace
+
+void cut_assembly::gap(std::string code,
+                       std::string item,
+                       std::string reason,
+                       std::string remedy) {
+    parts.push_back(gapped(std::move(code), std::move(item), std::move(reason), std::move(remedy)));
+    const auto& part = parts.back();
+    gaps.push_back({part.part_code, part.item, part.reason});
+}
 
 cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_facts& facts) {
     cut_assembly out;
@@ -81,7 +97,11 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
     // The deals: the population the store held at the instant, by count. The
     // store holds no copy of a population and no read materialises one, so the
     // count is what the body records and the note says so.
-    if (facts.deal_count && *facts.deal_count > 0) {
+    //
+    // A quiet day is a body and not a hole: the read answered, and a count of
+    // zero is what it answered. Only a read that answered nothing leaves the
+    // part open, because only then is the body smaller than the day it fixes.
+    if (facts.deal_count) {
         out.deal_count = *facts.deal_count;
         out.parts.push_back(closed(
             std::string(deals_part),
@@ -90,17 +110,12 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
             "the store answers the population at the instant and holds no copy of it, so the "
             "body records the count and no population reference"));
     } else {
-        const auto reason =
-            facts.deals_refusal.empty() ?
-                std::string("The store holds no deal at the instant, so the body would fix an "
-                            "empty population.") :
-                facts.deals_refusal;
-        out.parts.push_back(gapped(std::string(deals_part),
-                                   "the deal population",
-                                   reason,
-                                   "Correct the deal population, or state an instant at which "
-                                   "the store holds one."));
-        out.gaps.push_back({std::string(deals_part), "the deal population", reason});
+        out.gap(std::string(deals_part),
+                "the deal population",
+                reason_of(facts.deals_refusal,
+                          "The deal population read answered nothing at the instant, so the body "
+                          "cannot count the deals it fixes."),
+                "Correct the deal population, or state an instant at which the read answers.");
     }
 
     // The market data: the published sets in use at the instant. A candidate
@@ -119,30 +134,19 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
             "nothing in the store resolves every market role to one fixed snapshot, so the body "
             "names the sets in use and no snapshot reference"));
     } else if (facts.market_data_candidate_count > 0) {
-        const auto reason =
-            std::format("The store holds {} candidate set(s) and no published set in use, so a "
-                        "valuation cannot price from the body.",
-                        facts.market_data_candidate_count);
-        out.parts.push_back(gapped(std::string(market_data_part),
-                                   "a curve in the candidate state",
-                                   reason,
-                                   "Ask for a publish to be approved."));
-        out.gaps.push_back(
-            {std::string(market_data_part), "a curve in the candidate state", reason});
+        out.gap(std::string(market_data_part),
+                "a curve in the candidate state",
+                std::format("The store holds {} candidate set(s) and no published set in use, so a "
+                            "valuation cannot price from the body.",
+                            facts.market_data_candidate_count),
+                "Ask for a publish to be approved.");
     } else {
-        const auto reason =
-            facts.market_data_refusal.empty() ?
-                std::string("The store holds no published set in use at or before the instant, so "
-                            "the snapshot would carry a hole.") :
-                facts.market_data_refusal;
-        out.parts.push_back(gapped(std::string(market_data_part),
-                                   "a series with no value at or before the instant",
-                                   reason,
-                                   "Publish a set for the series, or state an instant at which "
-                                   "the store holds one."));
-        out.gaps.push_back({std::string(market_data_part),
-                            "a series with no value at or before the instant",
-                            reason});
+        out.gap(std::string(market_data_part),
+                "a series with no value at or before the instant",
+                reason_of(facts.market_data_refusal,
+                          "The store holds no published set in use at or before the instant, so "
+                          "the snapshot would carry a hole."),
+                "Publish a set for the series, or state an instant at which the store holds one.");
     }
 
     // The reference data: the versions in force of the configuration the run
@@ -152,18 +156,12 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
                                    *facts.reference_data_version,
                                    *facts.reference_data_version));
     } else {
-        const auto reason =
-            facts.reference_data_refusal.empty() ?
-                std::string("Nothing names the configuration in force at the instant, so the body "
-                            "would record no settings.") :
-                facts.reference_data_refusal;
-        out.parts.push_back(gapped(std::string(reference_data_part),
-                                   "the configuration in force",
-                                   reason,
-                                   "Bind a configuration to a report, or name the version the run "
-                                   "will use."));
-        out.gaps.push_back(
-            {std::string(reference_data_part), "the configuration in force", reason});
+        out.gap(std::string(reference_data_part),
+                "the configuration in force",
+                reason_of(facts.reference_data_refusal,
+                          "Nothing names the configuration in force at the instant, so the body "
+                          "would record no settings."),
+                "Bind a configuration to a report, or name the version the run will use.");
     }
 
     // The engine and the code. The engine version is required: a body that
@@ -185,18 +183,27 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
                             "body, so the part names the engine and the wrapper and no code "
                             "revision")));
     } else {
-        const auto reason =
-            facts.engine_refusal.empty() ?
-                std::string("No engine version recorded: nothing in the store names the version "
-                            "that would compute the result.") :
-                facts.engine_refusal;
-        out.parts.push_back(gapped(std::string(engine_part),
-                                   "the engine version",
-                                   reason,
-                                   "Register the app version, or name the version the run will "
-                                   "use."));
-        out.gaps.push_back({std::string(engine_part), "the engine version", reason});
+        out.gap(std::string(engine_part),
+                "the engine version",
+                reason_of(facts.engine_refusal,
+                          "No engine version recorded: nothing in the store names the version "
+                          "that would compute the result."),
+                "Register the app version, or name the version the run will use.");
     }
+
+    // The taking identity: the account the body is fixed as, the party it is
+    // fixed for and, once the press lands, the instant it was fixed. A preview
+    // fixes no instant, so the row says which instant it will record rather than
+    // naming one this call never wrote.
+    out.parts.push_back(closed(
+        std::string(taking_identity_part),
+        std::format("{} for party {}", facts.taking_account, facts.taking_party),
+        {},
+        facts.taking_instant ?
+            std::format("the instant the body was fixed is {}",
+                        ores::platform::time::datetime::to_iso8601_utc(*facts.taking_instant)) :
+            std::string("the instant the body was fixed is the one the press records, and this "
+                        "call fixed none")));
 
     return out;
 }

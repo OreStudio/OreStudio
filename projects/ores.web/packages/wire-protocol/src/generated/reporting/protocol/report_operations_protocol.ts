@@ -500,7 +500,6 @@ export interface TakeCutResponse {
     reference_data_version: string;
     engine_version: string;
     code_version: string;
-    refusal: string;
 }
 
 export const subjects = {

@@ -88,6 +88,20 @@ ores::reporting::service::cut_body_facts full_answers() {
     return facts;
 }
 
+/** A request to take a cut of one kind at one instant, fixed a day ago so it is never ahead. */
+ores::reporting::messaging::take_cut_request
+a_take_at(const std::string& kind_code,
+          const std::chrono::system_clock::time_point& instant) {
+    return {.kind_code = kind_code,
+            .scope_code = "ACME-LONDON",
+            .business_centre_code = "GBLO",
+            .timepoint = datetime::to_iso8601_utc(instant),
+            .timepoint_timezone = "Europe/London",
+            .cut_time_code = "",
+            .reason = "The day is closed and the reports wait on the body",
+            .preview = false};
+}
+
 world seed_world(ores::testing::scoped_database_helper& h, const std::string& suffix) {
     auto gen = ores::testing::make_generation_context(h);
     auto& base = h.context();
@@ -124,15 +138,7 @@ world seed_world(ores::testing::scoped_database_helper& h, const std::string& su
 
 /** A request to take a cut of one kind, fixed a day ago so it is never ahead. */
 ores::reporting::messaging::take_cut_request a_take(const std::string& kind_code) {
-    return {.kind_code = kind_code,
-            .scope_code = "ACME-LONDON",
-            .business_centre_code = "GBLO",
-            .timepoint =
-                datetime::to_iso8601_utc(std::chrono::system_clock::now() - std::chrono::hours(24)),
-            .timepoint_timezone = "Europe/London",
-            .cut_time_code = "",
-            .reason = "The day is closed and the reports wait on the body",
-            .preview = false};
+    return a_take_at(kind_code, std::chrono::system_clock::now() - std::chrono::hours(24));
 }
 
 std::size_t cut_count(const ores::database::context& ctx) {
@@ -211,7 +217,8 @@ TEST_CASE("a take whose body has a gap writes a draft and raises nothing", "[cut
 
     stub_reader reader;
     reader.answer = full_answers();
-    reader.answer.deal_count = 0; // the store holds no population at the instant
+    reader.answer.market_data_set_count = std::nullopt; // the sets read answered nothing
+    reader.answer.market_data_refusal = "The published sets read refused the party.";
     service::cut_take_service take(w.ctx, reader);
 
     const auto answer = take.take(a_take("EOD"));
@@ -219,7 +226,7 @@ TEST_CASE("a take whose body has a gap writes a draft and raises nothing", "[cut
     REQUIRE(answer.cut_id != "");
     REQUIRE(answer.cut_state == "incomplete");
     REQUIRE(answer.gaps.size() == 1);
-    REQUIRE(answer.gaps.front().part_code == "deal_population");
+    REQUIRE(answer.gaps.front().part_code == "market_data");
     REQUIRE(answer.approval_request_id == "");
 
     const auto rows = repository::cut_repository{}.read_latest(w.ctx, answer.cut_id);
@@ -235,8 +242,8 @@ TEST_CASE("a take whose body has a gap writes a draft and raises nothing", "[cut
     const auto written =
         gaps.read_latest_by_cut_id(w.ctx, boost::uuids::to_string(rows.front().id), 0, 100);
     REQUIRE(written.size() == 1);
-    REQUIRE(written.front().part_code == "deal_population");
-    REQUIRE(written.front().reason.find("no deal at the instant") != std::string::npos);
+    REQUIRE(written.front().part_code == "market_data");
+    REQUIRE(written.front().reason == "The published sets read refused the party.");
 }
 
 TEST_CASE("a take of a kind that requires none is in use when the press lands", "[cut_take]") {
@@ -286,7 +293,7 @@ TEST_CASE("a preview answers the body and writes nothing", "[cut_take]") {
     REQUIRE(answer.result.outcome == ores::utility::domain::outcome::ok);
     REQUIRE(answer.cut_id == "");
     REQUIRE(answer.cut_state == "");
-    REQUIRE(answer.parts.size() == 5);
+    REQUIRE(answer.parts.size() == 6);
     REQUIRE(answer.gaps.empty());
     REQUIRE(cut_count(w.ctx) == before);
 }
@@ -309,9 +316,30 @@ TEST_CASE("a take of an instant that has not happened writes nothing", "[cut_tak
     const auto answer = take.take(request);
 
     REQUIRE(answer.result.outcome == ores::utility::domain::outcome::invalid);
+    REQUIRE(answer.result.code == "as_of_invalid");
     REQUIRE(answer.result.message.find("future") != std::string::npos);
     REQUIRE(answer.cut_id == "");
     REQUIRE(cut_count(w.ctx) == before);
+}
+
+TEST_CASE("a take that states no kind names the field it did not state", "[cut_take]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    const auto suffix = boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8);
+    const auto w = seed_world(h, suffix);
+
+    stub_reader reader;
+    reader.answer = full_answers();
+    service::cut_take_service take(w.ctx, reader);
+
+    auto request = a_take("EOD");
+    request.kind_code.clear();
+    const auto answer = take.take(request);
+
+    REQUIRE(answer.result.outcome == ores::utility::domain::outcome::invalid);
+    REQUIRE(answer.result.code == "missing_field");
+    REQUIRE(answer.result.message == "Choose the kind of cut to take.");
 }
 
 TEST_CASE("a take of a kind the store does not hold is refused", "[cut_take]") {
@@ -328,6 +356,26 @@ TEST_CASE("a take of a kind the store does not hold is refused", "[cut_take]") {
 
     const auto answer = take.take(a_take("NO-SUCH-KIND"));
     REQUIRE(answer.result.outcome == ores::utility::domain::outcome::missing);
+    REQUIRE(answer.result.code == "not_found");
+    REQUIRE(cut_count(w.ctx) == before);
+}
+
+TEST_CASE("a take of the kind a run mints is refused with its own code", "[cut_take]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    const auto suffix = boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8);
+    const auto w = seed_world(h, suffix);
+    const auto before = cut_count(w.ctx);
+
+    stub_reader reader;
+    reader.answer = full_answers();
+    service::cut_take_service take(w.ctx, reader);
+
+    const auto answer = take.take(a_take("LIVE"));
+    REQUIRE(answer.result.outcome == ores::utility::domain::outcome::invalid);
+    REQUIRE(answer.result.code == "kind_not_takeable");
+    REQUIRE(answer.result.message.find("minted by the run") != std::string::npos);
     REQUIRE(cut_count(w.ctx) == before);
 }
 
@@ -358,4 +406,42 @@ TEST_CASE("a retake of one instant is the second body of that occasion", "[cut_t
     REQUIRE(second.cut_label.ends_with(".2"));
     REQUIRE_FALSE(first.cut_label.ends_with(".2"));
     REQUIRE(first.cut_label == second.cut_label.substr(0, second.cut_label.size() - 2));
+}
+
+TEST_CASE("two instants of one day are the first and the second cuts of that day", "[cut_take]") {
+
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    const auto suffix = boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8);
+    const auto w = seed_world(h, suffix);
+
+    stub_reader reader;
+    reader.answer = full_answers();
+    service::cut_take_service take(w.ctx, reader);
+
+    // Two instants of one UTC day, two days back, so both lie in the past
+    // whatever the clock says. The ordinal numbers a retake of the same day,
+    // kind and scope, so the second instant is the second cut of the day and not
+    // the first cut of a second occasion.
+    const auto day = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()) -
+                     std::chrono::days{2};
+    const auto morning = day + std::chrono::hours{1};
+    const auto afternoon = day + std::chrono::hours{13};
+
+    const auto first = take.take(a_take_at("EOD", morning));
+    REQUIRE(first.result.outcome == ores::utility::domain::outcome::ok);
+    const auto second = take.take(a_take_at("EOD", afternoon));
+    REQUIRE(second.result.outcome == ores::utility::domain::outcome::ok);
+
+    const auto first_row = repository::cut_repository{}.read_latest(w.ctx, first.cut_id);
+    const auto second_row = repository::cut_repository{}.read_latest(w.ctx, second.cut_id);
+    REQUIRE(first_row.size() == 1);
+    REQUIRE(second_row.size() == 1);
+    REQUIRE(first_row.front().take_ordinal == 1);
+    REQUIRE(second_row.front().take_ordinal == 2);
+
+    // Two cuts of one occasion cannot share a label.
+    REQUIRE(first.cut_label != second.cut_label);
+    REQUIRE_FALSE(first.cut_label.ends_with(".2"));
+    REQUIRE(second.cut_label.ends_with(".2"));
 }

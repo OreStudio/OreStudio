@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/cut_take_plan.hpp"
 #include <algorithm>
+#include <chrono>
 
 namespace ores::reporting::service {
 
@@ -59,6 +60,11 @@ domain::cut plan_take(const cut_take_plan& plan,
     cut.change_reason_code = plan.change_reason_code;
     cut.change_commentary = plan.change_commentary;
     return cut;
+}
+
+take_day day_of(const std::chrono::system_clock::time_point& at) {
+    const auto day = std::chrono::floor<std::chrono::days>(at);
+    return {.from = day, .to = day + std::chrono::days{1}};
 }
 
 int next_take_ordinal(const std::vector<domain::cut>& same_occasion) {

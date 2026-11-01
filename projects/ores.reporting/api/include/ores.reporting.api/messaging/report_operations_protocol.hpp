@@ -750,7 +750,6 @@ struct take_cut_response {
     std::string reference_data_version = "";
     std::string engine_version = "";
     std::string code_version = "";
-    std::string refusal = "";
 };
 
 }

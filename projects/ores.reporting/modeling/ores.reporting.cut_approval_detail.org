@@ -1,0 +1,470 @@
+:PROPERTIES:
+:ID: 5E0C7A24-6B93-4F18-9D2A-7C4E1B8F3A61
+:END:
+#+title: ores.reporting.cut_approval_detail
+#+description: Codegen entity model for the reporting =cut_approval_detail= table; the subject a reporting cut authorisation request names, the counts of the body's parts, and the facts its apply records.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+entity_singular: cut_approval_detail
+#+entity_plural: cut_approval_details
+#+entity_title: Cut Approval Detail
+#+brief: The cut an approval request authorises, with the counts of the body's parts.
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The detail row of one =reporting.eod_cut_authorisation= or
+=reporting.ipv_cut_authorisation= approval request: the cut the request
+authorises, and the counts of the body the decider is asked to sign.
+
+A request is a header. What it is about lives here, keyed by the request's own
+id, exactly as a proposed published set lives in
+=ores.marketdata.curve_publish= and is keyed by its request. The subject is one
+fact and no more: the cut whose body was frozen. The counts travel beside it
+because the decider reads them before answering and the cut's own record states
+them only by reading the body's parts one at a time: the deals the population
+held at the instant, the published sets in use at it, and the gaps that would
+have stopped the take, which is zero for any body a request was raised for.
+
+=applied_at= and =applied_by= are the record of the apply. Both are empty while
+the request waits, and both are written in one act when the approved request is
+applied to the cut: the instant the authorisation was stamped and the account
+that stamped it. The row is bitemporal, so the applied version is a new version
+of the same row and the history holds the unapplied subject beside it.
+=request_id= is the natural key, so a request authorises one cut and no second
+apply can find a row to write.
+
+The row is not a client's to write: the take writes it with the body, and the
+apply stamps it. A client reads it to decide a request or to audit a cut.
+
+* Flags
+:PROPERTIES:
+:schema:            public
+:product:           ores
+:component:         reporting
+:profile:           uuid-identified-lookup
+:client_read_only:  true
+:END:
+
+The take is the write: a client that could save this row could name a cut as the
+subject of a request the cut does not know about, so the derived write surface is
+dropped and the take writes through the repository from the take service.
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate UUID identifying this detail row.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable:  true
+:END:
+
+The approval request this row is the subject of.
+
+One request, one cut: the row is written when the request is raised and stamped
+when it is applied, so a request that authorised one body has no second row to
+authorise another.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
+:nullable:   false
+:filterable: true
+:END:
+
+The party whose body the cut fixed.
+
+The subject names it because the same cut label in two parties is two bodies,
+and a decision on one must not authorise the other.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** cut_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:filterable:  true
+:END:
+
+The cut whose body the request authorises.
+
+The cut is named and not copied: the body is the cut's own record, so the
+decider's page reads the body through this key and the two records cannot
+disagree about the instant the body was frozen at.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** deal_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many deals the population held at the cut's instant.
+
+The count is the assembly's, taken when the body was frozen, so a decider reads
+the size of the population the take fixed rather than the store's size today.
+
+#+begin_src cpp :name generator
+1284
+#+end_src
+
+** market_data_set_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many published sets were in use at the cut's instant.
+
+The count is the assembly's, taken when the body was frozen. A body with none is
+a body whose valuation has no curve to price from, so a request names none only
+when the take recorded it as a gap and raised nothing.
+
+#+begin_src cpp :name generator
+7
+#+end_src
+
+** gap_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many parts of the body the assembly could not fill.
+
+Zero for every body a request was raised for, because the take raises no request
+while a gap stands. The column is held anyway: a decider reads that the question
+of completeness was asked and answered, and not that nobody asked it.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** applied_by
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+The account that applied the approved request to the cut, or empty while it
+waits.
+
+The account is the applier, which is not necessarily the decider: the approval
+records who answered, and this records who stamped the cut.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** applied_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:sortable: true
+:END:
+
+When the approved request was applied to the cut, or null while it waits.
+
+This is the applied marker: a request is applied when a detail row for it holds
+an instant here, and the apply is idempotent because a row that already holds
+one is a row whose work is done.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_reporting_cut_approval_details_tbl
+:rls_tenant_isolation: true
+:END:
+
+The record is tenant-scoped and not party-scoped: the decider of a cut is a
+tenant function -- Finance for the close, Market Risk for the verification -- so
+hiding the subject behind the party a decider does not work in would hide the
+request's own subject from the person who decides it. The subject names its party
+instead, so a reader always knows whose body it is.
+
+** Checks
+
+| expression                                             |
+|--------------------------------------------------------|
+| ("applied_at" is null) = ("applied_by" = '')           |
+| "deal_count" >= 0                                      |
+| "market_data_set_count" >= 0                           |
+| "gap_count" >= 0                                       |
+
+A detail row is either waiting or applied, and never half of each: the first
+check states the rule the apply follows, so a reader never finds an instant with
+no account behind it.
+
+** Indexes
+
+| name                     | columns           | unique | current_only |
+|--------------------------+-------------------+--------+--------------|
+| cut_approval_details_cut | tenant_id, cut_id | false  | true         |
+
+The unique index the natural key generates on =request_id= is the inbox's one
+open request per subject: a decision authorises one body, so two rows cannot
+name one request. This one reads the row of a cut, so the cut's own page finds
+the request that authorises it without scanning the requests in flight.
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the row is the subject of. The take raises the request and writes
+this row in the same act, so a row that names a request the store does not hold
+authorises nothing.
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** cut_id
+:PROPERTIES:
+:table:                 ores_reporting_cuts_tbl
+:target_column:         id
+:parent_entity:         cut
+:seed_parent_party_id:  true
+:nullable:              false
+:list_by:               true
+:error_message:         Invalid cut_id: %. No active cut found with this id.
+:END:
+
+The cut the request authorises.
+
+The detail is tenant-scoped and not party-scoped, so its session names no party
+to hand its parents. The cut it seeds therefore carries the party the detail
+names, which is the party the take fixed the body for.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.refdata.api/generators/business_centre_generator.hpp"
+#include "ores.refdata.core/repository/business_centre_repository.hpp"
+#include "ores.reporting.api/generators/cut_family_generator.hpp"
+#include "ores.reporting.api/generators/cut_generator.hpp"
+#include "ores.reporting.api/generators/cut_kind_generator.hpp"
+#include "ores.reporting.api/generators/cut_resolution_rule_generator.hpp"
+#include "ores.reporting.core/repository/cut_family_repository.hpp"
+#include "ores.reporting.core/repository/cut_kind_repository.hpp"
+#include "ores.reporting.core/repository/cut_repository.hpp"
+#include "ores.reporting.core/repository/cut_resolution_rule_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    auto cut_id_parent = ores::reporting::generators::generate_synthetic_cut(ctx);
+    // The detail is tenant-scoped, so the session names no party: the cut the
+    // detail names carries the party the detail itself names, and no other.
+    cut_id_parent.party_id = v.party_id;
+    auto cut_id_parent_cut_kind_parent_cut_family_parent =
+        ores::reporting::generators::generate_synthetic_cut_family(ctx);
+    auto cut_id_parent_cut_kind_parent_cut_resolution_rule_parent =
+        ores::reporting::generators::generate_synthetic_cut_resolution_rule(ctx);
+    auto cut_id_parent_cut_kind_parent =
+        ores::reporting::generators::generate_synthetic_cut_kind(ctx);
+    auto cut_id_parent_business_centre_parent =
+        ores::refdata::generators::generate_synthetic_business_centre(ctx);
+    ores::reporting::repository::cut_family_repository
+        cut_id_parent_cut_kind_parent_cut_family_parent_repo;
+    cut_id_parent_cut_kind_parent_cut_family_parent_repo.write(
+        party_ctx, cut_id_parent_cut_kind_parent_cut_family_parent);
+    cut_id_parent_cut_kind_parent.family_code =
+        cut_id_parent_cut_kind_parent_cut_family_parent.code;
+    ores::reporting::repository::cut_resolution_rule_repository
+        cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo;
+    cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo.write(
+        party_ctx, cut_id_parent_cut_kind_parent_cut_resolution_rule_parent);
+    cut_id_parent_cut_kind_parent.resolution_rule_code =
+        cut_id_parent_cut_kind_parent_cut_resolution_rule_parent.code;
+    ores::reporting::repository::cut_kind_repository cut_id_parent_cut_kind_parent_repo;
+    cut_id_parent_cut_kind_parent_repo.write(party_ctx, cut_id_parent_cut_kind_parent);
+    cut_id_parent.kind_code = cut_id_parent_cut_kind_parent.code;
+    ores::refdata::repository::business_centre_repository cut_id_parent_business_centre_parent_repo;
+    cut_id_parent_business_centre_parent_repo.write(party_ctx,
+                                                    cut_id_parent_business_centre_parent);
+    cut_id_parent.business_centre_code = cut_id_parent_business_centre_parent.code;
+    ores::reporting::repository::cut_repository cut_id_repo;
+    cut_id_repo.write(party_ctx, cut_id_parent);
+    v.cut_id = cut_id_parent.id;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: detail
+:entity_plural_short:   details
+:entity_singular_words: cut approval detail
+:entity_plural_words:   cut approval details
+:END:
+
+*** read_latest_by_request
+:PROPERTIES:
+:ID: 8C31D9F0-2A46-4B87-9E15-6D3C0A8B7F52
+:END:
+
+Reads the detail of one request, if the store holds one. The apply and the cut's
+own page ask here: the body a request authorises and whether it is applied are
+one row.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::cut_approval_detail>
+read_latest_by_request(context ctx, const std::string& request_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::cut_approval_detail>
+cut_approval_detail_repository::read_latest_by_request(context ctx,
+                                                       const std::string& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of request: " << request_id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cut_approval_detail_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                             "valid_to"_c == max);
+
+    auto rows = query_builder::execute_read_query<cut_approval_detail_entity,
+                                                  domain::cut_approval_detail>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_approval_detail_mapper::map(entities); },
+        lg(),
+        "Reading the cut approval detail of a request.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+*** read_latest_by_cut
+:PROPERTIES:
+:ID: B0F27C58-3E19-4A62-8D74-5C1B9E0A6F83
+:END:
+
+Reads the detail of one cut, if the store holds one. The cut's own page asks
+here, so the request that authorises a body is read from the record and never
+inferred from the cut's state.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::cut_approval_detail>
+read_latest_by_cut(context ctx, const std::string& cut_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::cut_approval_detail>
+cut_approval_detail_repository::read_latest_by_cut(context ctx, const std::string& cut_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of cut: " << cut_id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cut_approval_detail_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "cut_id"_c == cut_id &&
+                             "valid_to"_c == max);
+
+    auto rows = query_builder::execute_read_query<cut_approval_detail_entity,
+                                                  domain::cut_approval_detail>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_approval_detail_mapper::map(entities); },
+        lg(),
+        "Reading the cut approval detail of a cut.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: d
+:END:
+
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| cut_id              | Cut          |
+| deal_count          | Deals        |
+| market_data_set_count | Sets       |
+| gap_count           | Gaps         |
+| applied_by          | Applied By   |
+| applied_at          | Applied At   |
+
+* See also
+
+- [[id:4A81F2C6-9D37-42E0-B5A8-0C61D94E7B23][ores.reporting.cut]] — the body this record is the subject of.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the header this record is the detail of.
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the detail row this one is shaped after.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

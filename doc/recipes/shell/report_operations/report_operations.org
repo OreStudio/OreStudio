@@ -432,3 +432,24 @@ It is addressed at =reporting.v1.ops.get_cut_record=.
 report_operations get-cut-record 00000000-0000-0000-0000-000000000000
 #+end_src
 
+** =take-cut=
+:PROPERTIES:
+:ID: D1576E30-AFF8-5CE9-BDB6-E0DC4344064C
+:END:
+
+Sends =take_cut_request= and prints =take_cut_response=, so the shape is the protocol's and the meaning is the service's. It reads =kind_code=, =scope_code=, =business_centre_code=, =timepoint=, =timepoint_timezone=, =reason=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations take-cut <kind_code> <scope_code> <business_centre_code> <timepoint> <timepoint_timezone> <reason> [--cut_time_code <v>] [--preview <v>]
+#+end_example
+
+It is addressed at =reporting.v1.ops.take_cut=.
+
+#+name: report_operations-take-cut
+#+begin_src ores-shell :tangle report_operations-take-cut.ores :exports none
+report_operations take-cut __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+

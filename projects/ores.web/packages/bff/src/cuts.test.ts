@@ -277,8 +277,14 @@ const THE_CUT = {
     recorded_at: '2026-10-06 16:02:00.000000Z',
 };
 
+const CENTRES = [
+    { code: 'GBLO', name: 'London', version: 1 },
+    { code: 'USNY', name: 'New York', version: 1 },
+];
+
 const BASIS = {
     'reporting.v1.cut_kinds.list': KINDS,
+    'refdata.v1.business_centres.list': { result: ok, centres: CENTRES, total: 2 },
     'reporting.v1.cut_families.list': FAMILIES,
     'reporting.v1.cut_resolution_rules.list': RULES,
     'inbox.v1.approval_kinds.list': APPROVAL_KINDS,
@@ -292,6 +298,17 @@ const BASIS = {
         superseded_by_id: '',
         gaps: [],
         run_count: 4,
+        detail: {
+            id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4',
+            request_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3',
+            cut_id: '11111111-1111-4111-8111-111111111111',
+            party_id: '77777777-7777-4777-8777-777777777777',
+            deal_count: 1284,
+            market_data_set_count: 7,
+            gap_count: 0,
+            applied_by: '',
+            applied_at: null,
+        },
     },
 };
 
@@ -436,6 +453,12 @@ describe('GET /api/reporting/cut-kind-choices', () => {
         ]);
         // The kinds both keep their cuts cold, so the store knows one tier.
         expect(choices.retentionDestinations).toEqual(['cold']);
+        // The take fixes the scope's books against one centre, so the choices
+        // name the centres a person may state.
+        expect(choices.businessCentres).toEqual([
+            { code: 'GBLO', name: 'London' },
+            { code: 'USNY', name: 'New York' },
+        ]);
     });
 
     it('names every tier the kinds hold, once each and in order', async () => {
@@ -755,6 +778,163 @@ describe('GET /api/reporting/cuts/:id/runs', () => {
         const { server, sessionId } = buildTestServer(BASIS);
         const answer = await send(server, sessionId, 'GET', '/api/reporting/cuts/not-an-id/runs');
         expect(answer.statusCode).toBe(400);
+    });
+});
+
+const TAKE_CUT = 'reporting.v1.ops.take_cut';
+
+/** What the take answers for a body the store could assemble whole. */
+const A_TAKEN_BODY = {
+    result: ok,
+    cut_id: '11111111-1111-4111-8111-111111111111',
+    cut_label: 'EOD.ACME-LONDON.2026-10-06',
+    cut_state: 'taken',
+    requires_authorisation: true,
+    output_is_indicative: false,
+    retention_months: 25,
+    retention_destination_code: 'cold',
+    approval_request_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3',
+    approval_kind_code: 'reporting.eod_cut_authorisation',
+    approval_kind_name: 'End of day cut authorisation',
+    decide_permission_code: 'inbox::approvals:decide_finance',
+    parts: [
+        {
+            part_code: 'kind',
+            state: 'closed',
+            summary: 'EOD · End of day cut · signed by reporting.eod_cut_authorisation',
+            reference: '',
+            item: '',
+            reason: '',
+            remedy: '',
+            snapshot_note: 'kept 25 months in the cold tier',
+        },
+        {
+            part_code: 'deal_population',
+            state: 'closed',
+            summary: '1284 deals held at the instant',
+            reference: '',
+            item: '',
+            reason: '',
+            remedy: '',
+            snapshot_note: 'the store holds no copy of the population',
+        },
+    ],
+    gaps: [],
+    deal_count: 1284,
+    market_data_set_count: 7,
+    reference_data_version: '4 report configuration(s) in force',
+    engine_version: '1.8.17.0',
+    code_version: '',
+};
+
+/** What a person states when they take a cut, as the screen sends it. */
+const A_TAKE = {
+    kindCode: 'EOD',
+    scopeCode: 'ACME-LONDON',
+    businessCentreCode: 'GBLO',
+    timepoint: '2026-10-06T16:00:00.000000Z',
+    timepointTimezone: 'Europe/London',
+    cutTimeCode: '',
+    reason: 'The day is closed and the reports wait on the body',
+    preview: false,
+};
+
+describe('POST /api/reporting/cuts/take', () => {
+    it('answers the body part by part and the press it wrote', async () => {
+        const { server, sessionId } = buildTestServer({ ...BASIS, [TAKE_CUT]: A_TAKEN_BODY });
+        const answer = await send(server, sessionId, 'POST', '/api/reporting/cuts/take', A_TAKE);
+        expect(answer.statusCode).toBe(200);
+        expect(answer.json()).toMatchObject({
+            cutId: '11111111-1111-4111-8111-111111111111',
+            cutLabel: 'EOD.ACME-LONDON.2026-10-06',
+            cutState: 'taken',
+            requiresAuthorisation: true,
+            retentionMonths: 25,
+            retentionDestinationCode: 'cold',
+            approvalRequestId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3',
+            approvalKindName: 'End of day cut authorisation',
+            decidePermissionCode: 'inbox::approvals:decide_finance',
+            dealCount: 1284,
+            marketDataSetCount: 7,
+        });
+        const body = answer.json() as {
+            parts: readonly { partCode: string; state: string; snapshotNote: string }[];
+        };
+        expect(body.parts[0]).toMatchObject({
+            partCode: 'kind',
+            state: 'closed',
+            snapshotNote: 'kept 25 months in the cold tier',
+        });
+    });
+
+    it('answers the gaps of a body it could not assemble, and the draft it kept', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...BASIS,
+            [TAKE_CUT]: {
+                ...A_TAKEN_BODY,
+                cut_state: 'incomplete',
+                approval_request_id: '',
+                parts: [
+                    {
+                        part_code: 'deal_population',
+                        state: 'gapped',
+                        summary: '',
+                        reference: '',
+                        item: 'the deal population',
+                        reason: 'The store holds no deal at the instant.',
+                        remedy: 'Correct the deal population, or state an instant at which one is held.',
+                        snapshot_note: '',
+                    },
+                ],
+                gaps: [
+                    {
+                        id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5',
+                        part_code: 'deal_population',
+                        item: 'the deal population',
+                        reason: 'The store holds no deal at the instant.',
+                    },
+                ],
+                deal_count: 0,
+            },
+        });
+        const answer = await send(server, sessionId, 'POST', '/api/reporting/cuts/take', A_TAKE);
+        expect(answer.statusCode).toBe(200);
+        expect(answer.json()).toMatchObject({
+            cutState: 'incomplete',
+            approvalRequestId: '',
+            gaps: [{ partCode: 'deal_population', item: 'the deal population' }],
+        });
+    });
+
+    it('refuses a body that names no kind', async () => {
+        const { server, sessionId } = buildTestServer(BASIS);
+        const answer = await send(server, sessionId, 'POST', '/api/reporting/cuts/take', {
+            ...A_TAKE,
+            kindCode: '',
+        });
+        expect(answer.statusCode).toBe(400);
+    });
+
+    it('answers the sentence that refused the take', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...BASIS,
+            [TAKE_CUT]: {
+                result: {
+                    outcome: 'invalid',
+                    code: 'as_of_invalid',
+                    message: 'A body cannot be fixed at an instant that has not happened.',
+                    fields: [],
+                },
+            },
+        });
+        const answer = await send(server, sessionId, 'POST', '/api/reporting/cuts/take', {
+            ...A_TAKE,
+            timepoint: '2030-10-06T16:00:00.000000Z',
+        });
+        expect(answer.statusCode).toBe(400);
+        expect(answer.json()).toMatchObject({
+            message: 'A body cannot be fixed at an instant that has not happened.',
+        });
     });
 });
 

@@ -122,12 +122,13 @@ struct cut final {
 
     /**
      * @brief Which take of this occasion the row is: 1 for the first body fixed for the kind,
-     * party, scope, centre and timepoint, 2 for a retake.
+     * party, scope and centre on that day, 2 for a retake.
      *
      * A retake of the same day, kind and scope is the second cut of that day, and the label states
-     * the ordinal so a person reads which body is meant. The ordinal counts within the whole
-     * natural key, because two parties or two centres fixing the same instant fix two different
-     * bodies.
+     * the ordinal so a person reads which body is meant. Two bodies of one day cannot share a label
+     * even where the two instants differ, so the ordinal counts the day and not the instant. The
+     * party and the centre are part of the occasion, because two parties or two centres fixing one
+     * instant fix two different bodies.
      */
     int take_ordinal = 0;
 

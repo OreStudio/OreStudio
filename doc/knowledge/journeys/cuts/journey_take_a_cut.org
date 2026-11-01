@@ -377,17 +377,35 @@ record, the rules and the queue, so neither reimplements the other.
 7. *No route and no screen.* No BFF route serves reporting, and no reporting screen
    exists in the web application, so the cuts list, the take flow and the record
    are all new.
-8. *The cut's approval detail row and its web descriptor do not exist.* The inbox
-   draws a kind through a detail row keyed by the request and, on the web, through
-   a =KindDescriptor= that names the kind, its words and its own section. A cut
-   has neither, so the queue would draw a request named by its code, and the
-   request page would draw no body. Both are the cut's to add, and the apply that
-   writes the cut's authorisation on approval is the third.
+8. *The cut's approval detail row and its descriptor exist; the subject link and the
+   apply do not.* The inbox draws a kind through a detail row keyed by the request
+   and, on the web, through a =KindDescriptor= that names the kind, its words and
+   its own section. The cut carries both: its detail row is keyed by the request,
+   and its descriptor names the close's ask and the verification cut's. Two things
+   are still missing. Nothing answers a cut by the request that raised it, so the
+   request page says where the body is read and links it not, rather than offering
+   a link that leads nowhere. And the apply that writes the cut's authorisation on
+   approval is not built, so the record states that instead of drawing an apply
+   nobody made.
 9. *The cut times reference data does not exist.* The close of a centre's business
    day is a fact a person needs and no table holds it for our centres. The
    prototype draws the reference data the take reads, and the
    [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][option-expiry cut code]] page
-   states the row the expiry sense needs from the same list.
+   states the row the expiry sense needs from the same list. The take therefore
+   asks a person to type the instant and says on the step that it does, because
+   a field that looked up nothing would read as a fault.
+10. *No read compares two bodies.* Step 11 asks the review for the differences
+    from the previous cut of the same kind and scope, and no read answers them:
+    the deal population, the market data and the reference data are each read at
+    one instant and nothing reads two instants and states the movement between
+    them. The take's review step states what the body holds and says the
+    comparison is not read, rather than drawing an empty list of differences.
+11. *No read answers the books of a scope.* Step 7 states the books a scope
+    holds and the centre they revalue against, and `reporting.v1.cuts.read_scope`
+    is missing: nothing reads a book's classification, so nothing can refuse a
+    scope that spans two centres before the assembly meets it. The take asks a
+    person to type the scope and the centre and says on the step that the two are
+    not checked against the books.
 
 * Related journeys
 

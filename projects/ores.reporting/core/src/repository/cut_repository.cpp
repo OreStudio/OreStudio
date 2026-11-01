@@ -464,16 +464,23 @@ cut_repository::read_for_party_in_window(context ctx,
 }
 
 std::vector<domain::cut>
-cut_repository::read_by_kind_and_month(context ctx,
-                                       const std::string& kind_code,
-                                       std::chrono::system_clock::time_point from,
-                                       std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of kind: " << kind_code;
+cut_repository::read_for_occasion_in_window(context ctx,
+                                            const boost::uuids::uuid& party_id,
+                                            const std::string& kind_code,
+                                            const std::string& scope_code,
+                                            const std::string& business_centre_code,
+                                            std::chrono::system_clock::time_point from,
+                                            std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
+                               << scope_code << " " << business_centre_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(party_id);
     const auto query =
         query_builder::read<std::vector<cut_entity>> |
-        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                             "kind_code"_c == kind_code && "scope_code"_c == scope_code &&
+                             "business_centre_code"_c == business_centre_code &&
                              "timepoint"_c >= from && "timepoint"_c < to && "valid_to"_c == max) |
         query_builder::order_by("timepoint"_c.desc());
 
@@ -482,7 +489,7 @@ cut_repository::read_by_kind_and_month(context ctx,
         query,
         [](const auto& entities) { return cut_mapper::map(entities); },
         lg(),
-        "Reading the cuts of a kind and month.");
+        "Reading the cuts of one occasion.");
 }
 
 std::vector<domain::cut>

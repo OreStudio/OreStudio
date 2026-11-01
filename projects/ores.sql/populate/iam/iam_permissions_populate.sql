@@ -1104,6 +1104,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_resolution_rules:write', 'Create and modify cut resolution rules');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_resolution_rules:delete', 'Delete cut resolution rules');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:read', 'View the parts of a cut body the assembly could not fill');
+    -- The subject a cut's approval request names. The take writes it and the
+    -- apply stamps it, so the read is the only code a client may hold.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_approval_details:read', 'View the cut an approval request names, and the counts of its body');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:write', 'Record the parts of a cut body the assembly could not fill');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:delete', 'Delete the recorded gaps of a cut body');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_metrics:read', 'View the metrics a run produced');

@@ -20,6 +20,7 @@
 #include "ores.reporting.core/service/cut_read_service.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
 #include "ores.reporting.core/repository/cut_gap_repository.hpp"
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
@@ -315,6 +316,12 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
                                   << cut.kind_code << ", which the store does not hold.";
 
     record.run_count = run_count(cut.id);
+
+    // The subject the take raised its request about, where it raised one. It is
+    // read by the cut and not by the request, so the page states who waits
+    // without reading an inbox it may not see.
+    repository::cut_approval_detail_repository detail_repo;
+    record.detail = detail_repo.read_latest_by_cut(ctx_, boost::uuids::to_string(cut.id));
     return record;
 }
 

@@ -352,7 +352,7 @@ export function registerBlotterRoutes(
                 (row) =>
                     [
                         text(row['code']),
-                        text(row['description']) || humanise(text(row['code'])),
+                        text(row['name']) || text(row['description']) || humanise(text(row['code'])),
                     ] as const,
             ),
         );

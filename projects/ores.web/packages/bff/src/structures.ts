@@ -29,6 +29,7 @@ import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as marketSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_asset_class_protocol';
 import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -428,20 +429,34 @@ async function catalogueOf(
     const types = await readAll(session, productTypeSubjects.list_product_types_request, 'types', {
         filter: { code_one_of: null },
     });
+    const markets = await readAll(
+        session,
+        marketSubjects.list_product_type_asset_classes_request,
+        'product_type_asset_classes',
+        { filter: { product_type_code_one_of: null } },
+    );
+    /* The market the catalogue groups a type under is the one it marks home. */
+    const homeOf = new Map<string, string>();
+    for (const market of markets) {
+        if (market['is_home'] === true) {
+            homeOf.set(text(market['product_type_code']), text(market['asset_class_code']));
+        }
+    }
     return {
         names: new Map(
-            types.map((entry) => [text(entry['code']), text(entry['description'])] as const),
+            types.map(
+                (entry) =>
+                    [text(entry['code']), text(entry['name']) || text(entry['description'])] as const,
+            ),
         ),
-        classes: new Map(
-            types.map((entry) => [text(entry['code']), text(entry['product_type'])] as const),
-        ),
+        classes: new Map(types.map((entry) => [text(entry['code']), homeOf.get(text(entry['code'])) ?? ''] as const)),
     };
 }
 
 /** The asset class's own name, as the desk says it. */
 function assetClassOf(code: string): string {
     switch (code) {
-        case 'swap':
+        case 'interest_rates':
             return 'Rates';
         case 'fx':
             return 'FX';

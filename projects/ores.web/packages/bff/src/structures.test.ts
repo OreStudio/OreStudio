@@ -119,7 +119,8 @@ const lists = {
     counterparties: 'refdata.v1.counterparties.list',
     summaries: 'trading.v1.trade_summaries.list',
     trades: 'trading.v1.trades.list',
-    tradeTypes: 'trading.v1.trade_types.list',
+    productTypes: 'trading.v1.product_types.list',
+    markets: 'trading.v1.product_type_asset_classes.list',
     kinds: 'trading.v1.structure_kinds.list',
     putStructure: 'trading.v1.structures.put',
     deleteMember: 'trading.v1.structure_members.delete',
@@ -186,9 +187,28 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
          * the response carries the array as `types`, and a name that only
          * repeats the code leaves the class empty.
          */
-        [lists.tradeTypes]: {
+        [lists.markets]: {
             result: ok,
-            types: [{ code: 'Swap', description: 'Interest Rate Swap', product_type: 'swap' }],
+            product_type_asset_classes: [
+                { product_type_code: 'Swap', asset_class_code: 'interest_rates', is_home: true },
+            ],
+        },
+        [lists.productTypes]: {
+            result: ok,
+            types: [
+                {
+                    code: 'Swap',
+                    name: 'Interest Rate Swap',
+                    description: 'A single-currency interest rate swap.',
+                    product_family_code: 'swap',
+                    construction: 'native',
+                    has_options: false,
+                    has_extension: false,
+                    instrument_table: 'rate_instrument',
+                    display_order: 1,
+                    version: 1,
+                },
+            ],
         },
         ...extra,
     };

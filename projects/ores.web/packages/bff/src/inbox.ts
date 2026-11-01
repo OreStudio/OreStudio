@@ -386,7 +386,10 @@ async function dealtWithByRequests(
     );
     const summaryOf = new Map(summaries.map((row) => [text(row['id']), row]));
     const typeNameOf = new Map(
-        types.map((row) => [text(row['code']), text(row['description'])] as const),
+        types.map(
+            (row) =>
+                [text(row['code']), text(row['name']) || text(row['description'])] as const,
+        ),
     );
 
     for (const trade of trades) {

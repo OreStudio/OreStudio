@@ -40,6 +40,13 @@ Step 6 of 7, one component. ores.trading encodes and decodes without reflect-cpp
 - Nothing in ores.trading includes reflect-cpp.
 - ores.trading's suites pass, and its wire bytes match the bytes before the move.
 
+None of the four is met in full, and the task stays STARTED rather than claiming
+otherwise. The first two are met for every type that states its shape. The third
+is not: seven files still include reflect-cpp, each for a reason the Notes state.
+The fourth is met where the suites can be run: the component's own three pass,
+and ores.refdata.core's one failure is the trunk's, reproduced with this branch's
+refdata changes stashed.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
@@ -58,17 +65,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Production files in ores.trading naming reflect-cpp, tests excluded | 7 | =git grep -lE '\brfl::\vert{}#include <rfl\vert{}ores\.utility/rfl' HEAD -- 'projects/ores.trading/**'= then =grep -v /tests/ \vert{} wc -l= | 3db590e93a |
-| The same at the merge base | 254 | the same command, at =418fe076d0= | 418fe076d0 |
-| Models in ores.trading stating =:ores.cpp.wire-codec.enabled:= | 148 | =grep -rl 'wire-codec.enabled: true' projects/ores.trading/modeling/*.org \vert{} wc -l= | 3db590e93a |
-| .cpp files estate-wide calling =rfl::enum_to_string= or =rfl::string_to_enum= | 0 | =grep -rl 'rfl::enum_to_string\vert{}rfl::string_to_enum' --include=*.cpp projects/ \vert{} wc -l= | 661231beb3 |
-| Operation models estate-wide stating the wire codec | 0 of 73 | =grep -l '#+type: ores.codegen.operation' projects/*/modeling/*.org \vert{} wc -l= | 3db590e93a |
+| Production C++ files in ores.trading naming reflect-cpp, tests excluded | 7 | =git grep -lE '\brfl::\vert{}#include <rfl\vert{}ores\.utility/rfl' 753170ab71 -- 'projects/ores.trading/**/*.cpp' 'projects/ores.trading/**/*.hpp'= then =grep -v /tests/ \vert{} wc -l= | 753170ab71 |
+| The same at the branch's original base | 254 | the same command, at =418fe076d0= | 418fe076d0 |
+| Models in ores.trading stating =:ores.cpp.wire-codec.enabled:= | 148 | =grep -rl 'wire-codec.enabled: true' projects/ores.trading/modeling/*.org \vert{} wc -l= | 753170ab71 |
+| .cpp files estate-wide calling =rfl::enum_to_string= or =rfl::string_to_enum= | 0 | =grep -rl 'rfl::enum_to_string\vert{}rfl::string_to_enum' --include=*.cpp projects/ \vert{} wc -l= | 753170ab71 |
+| Operation models estate-wide stating the wire codec | 0 of 73 | =grep -l '#+type: ores.codegen.operation' projects/*/modeling/*.org \vert{} xargs grep -l 'wire-codec.enabled' \vert{} wc -l=, against =grep -l '#+type: ores.codegen.operation' projects/*/modeling/*.org \vert{} wc -l= | 753170ab71 |
 
 * Notes
 
 **The sweep, and the facet it forgot.** 148 models were opted in and the
 wire-codec, protocol, nats-eventing and domain facets regenerated, which took the
-component's production files naming reflect-cpp from 254 to 8. The eighth error
+component's production C++ files naming reflect-cpp from 254 to 7. The eighth error
 then named =text_form<instrument_identity>= though the type had a shape, because
 a field group states its shape under its own facet, and that facet was never
 regenerated. Regenerating =ores.cpp.field-group= wrote all 26 of them from the
@@ -88,7 +95,11 @@ Where a type states its own text form the mapper's spelling can differ from
 rfl's. =product_type= spells =unknown= as the empty string, which is what its own
 header documents and what the wire already wrote; the mapper was the odd one out.
 =codec_product_type_tests.cpp= compares the codec against =rfl::json::write= for
-every enumerator, so the two agree by test and not by argument.
+three of the nine enumerators, including =unknown=, which is the one that states
+its own form, so the two agree by test and not by argument.
+=message_codec_tests.cpp= does the same for a trade and a trade type in both
+formats: the generated codec is asserted to write the reflector's bytes, which is
+what the trade's acceptance criterion asks for.
 
 **Five refdata mappers the regeneration surfaces.** Regenerating the repository
 facet is what the enum change requires, and it rewrote five refdata mappers

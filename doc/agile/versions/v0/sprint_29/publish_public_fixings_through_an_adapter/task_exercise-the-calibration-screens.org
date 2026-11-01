@@ -28,11 +28,11 @@ accepted prototype, and every oresmd URI on them opens its market data.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Built and tested; the C++ build waits for a build slot. |
-| Waiting on   | A build slot.                          |
-| Next         | Build, run the scenario, raise the PR. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -79,7 +79,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| FX calibration read, 51 feeds, 28 from a fixing, before | 16.3 to 26.3 s | =curl -w '%{time_total}' /api/synthetic/calibration/fx= | 458177a454 |
+| The same read, after | 3.2 to 3.6 s | the same | d525606767 |
+| One feed's calibration read | 0.20 to 0.28 s | =curl -w '%{time_total}' '/api/synthetic/calibration/fx?configId=...'= | d525606767 |
+| Latest fixing query, unbounded, as the marketdata role | 108 ms (98 planning) | =explain (analyze, summary)= | 458177a454 |
+| The same query bounded to 31 days | 3.4 ms | the same | 2b03d0c50b |
+| Table grants to the owner, rw and ro roles, old and new setup_schema.sql | 7678, identical | =information_schema.role_table_grants= diff | 3615bd4b57 |
 
 * Notes
 
@@ -98,7 +103,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:CEBFDA90-F42A-4278-87A3-6305FDE59A6B][Exercise the calibration screens end to end]] | PENDING | The user walked the screens on 2026-11-01; the defects found are fixed on this branch. |
 
 * PRs
 
@@ -110,6 +115,28 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: an applied calibration needed only the read permission, and the services it writes through check none | feed_config_handler.hpp | Accept | An applied calibration now needs the config and component write permissions; a test refuses a read-only token and still answers its read. |
+| 2 | Local review: the shared FX build rows could go stale where offers are kept and built later | feed_kind_registry.cpp | Decline | The runner rebuilds its offers on each apply and builds inside that pass, so the rows live for one pass. |
+| 3 | Local review: a calibration writes the components, then the level; a failed level write leaves the components written | feed_config_handler.hpp | Decline | Each write claims the version it read and the outcome names what was not written; a second run converges, as =change_of= writes only what moved. |
+| 4 | Local review: misspell-fixer flags "existant" and "sucesso" in fr.ts and pt.ts | i18n locales | Decline | Words of those languages, on lines this branch does not touch. |
 
 * Result
+
+Calibration is now an event in the feed's history. A run calibrates the feeds one
+at a time and each row shows the server's words as it finishes; an applied
+calibration writes what moved as a new version under =system.calibration=, and a
+second run writes nothing. The feed page follows the prototype, its Flow tab
+lists the recent calibrations, the History tab filters to them, and a fixing URI
+opens its series.
+
+Walking the screens found faults that kept them from working at all: the
+calibration policy, provider order and fallback subjects had no handler, the BFF
+read their lists from the wrong fields, the calibrate read sent too few fields,
+and accepting terms sent no content type. All are fixed. The reads were slow:
+the list took up to 26 s and now takes about 3.4 s, a feed's page 0.2 s.
+
+The database now creates without a warning, pg_stat_statements is installed
+when the server preloads it, and the official catalogue no longer ends the
+populate transaction early. Accepting the public terms at setup is the follow-on
+task; a stale pooled connection after a postgres restart and a gate for unwired
+registrars are captured.

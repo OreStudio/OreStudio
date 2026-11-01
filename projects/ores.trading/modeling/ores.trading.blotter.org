@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 662d60e0-4740-4fff-a4de-a32eaf711eca
+:ores.cpp.wire-codec.enabled: true
+:ores.ts.protocol.enabled: nil
+:END:
+#+title: ores.trading.blotter
+#+description: Codegen operation model for the blotter's two reads: one page of rows, keyed by the sort key and the row id, and one rail of counts per node.
+#+type: ores.codegen.operation
+#+component: trading
+#+subcomponent: api
+#+entity_singular: blotter
+#+namespace: ores::trading::messaging
+#+brief: The blotter's page and rail, read as the two questions the screen asks.
+#+filetags: :model:operation:trading:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+The blotter asks two questions, and they are different questions. *Which rows
+do I show?* is one page of rows, and *how many rows are at each node?* is the
+rail. A single read answers both today and pays for the whole book to do it, so
+at ten thousand trades the screen takes a minute and the store is asked for the
+same views fifty times over.
+
+These operations separate them. Neither takes a list of ids drawn from a
+previous read: the filter is stated here, the page is keyed by the sort key and
+the row id, and the counts are grouped by the store.
+
+The TypeScript facet is off while the screen is served by the BFF. It turns on
+when ores.http serves these reads, and the filter it names is the summary
+protocol's own type, which that facet does not yet project.
+
+The handler stays hand-written beside this model, because an operation model
+generates no service handler. The store behind it is the summary view today and
+a projection later, and this contract does not move when that changes.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+#include "ores.trading.api/domain/trade_summary.hpp"
+#include "ores.trading.api/messaging/trade_summary_protocol.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/result.hpp"
+#+end_src
+
+* Messages
+
+** blotter_rail_node
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One node of a rail, and the rows a filter places on it.
+ */
+#+end_src
+
+*** dimension
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Which rail this node belongs to: portfolio, book, counterparty,
+ * asset class or state.
+ */
+#+end_src
+
+*** node_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node's own id, empty for the party at the head of a rail.
+ */
+#+end_src
+
+*** count
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the filter places on this node. A portfolio's figure
+ * counts every row below it, because that is what a person reading the tree
+ * takes it to mean.
+ */
+#+end_src
+
+** get_blotter_rail_request
+:PROPERTIES:
+:subject:  trading.v1.blotter.rail
+:response: get_blotter_rail_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rail's counts for one filter, every dimension in one answer.
+ *
+ * One read rather than one per rail: the counts come from the same scan of the
+ * same rows, and a screen that asks five times pays five times for it.
+ */
+#+end_src
+
+*** filter
+:PROPERTIES:
+:cpp_type: std::optional<ores::trading::messaging::trade_summaries_filter>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Which rows the rail counts. Absent counts every row of the party.
+ */
+#+end_src
+
+** get_blotter_rail_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The counts at each node of each rail.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Outcome of the operation.
+ */
+#+end_src
+
+*** nodes
+:PROPERTIES:
+:cpp_type: std::vector<blotter_rail_node>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The nodes, each stating its own dimension. The party's own totals
+ * come first, with an empty node id.
+ */
+#+end_src
+
+** get_blotter_page_request
+:PROPERTIES:
+:subject:  trading.v1.blotter.page
+:response: get_blotter_page_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of blotter rows, and where the next page starts.
+ *
+ * The page is keyed rather than offset: the caller states the last row it was
+ * given, and the store starts after it. Every page then costs what the first
+ * costs, which an offset cannot promise because it re-walks what it skips.
+ */
+#+end_src
+
+*** filter
+:PROPERTIES:
+:cpp_type: std::optional<ores::trading::messaging::trade_summaries_filter>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Which rows the page may hold. Absent states the whole party.
+ */
+#+end_src
+
+*** order
+:PROPERTIES:
+:cpp_type: ores::utility::domain::order
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The column the page is ordered by. The row id is the tie-break, so
+ * the order is total and a key is unambiguous.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the caller will accept. The service states its own
+ * ceiling, because a page is a page and not the book.
+ */
+#+end_src
+
+*** after
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The key to start after, as the previous answer stated it. Empty
+ * starts at the first row. It is the row's sort value and id together, and the
+ * caller does not read it: it is opaque, so the order can change without the
+ * client changing.
+ */
+#+end_src
+
+** get_blotter_page_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of rows, and the key the next page starts after.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Outcome of the operation.
+ */
+#+end_src
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::trade_summary>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The page, at most the limit asked for.
+ */
+#+end_src
+
+*** next
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The key the next page starts after, empty when this page is the
+ * last. A caller that reaches the end is told so rather than guessing from a
+ * short page, because a page may be short for a reason of its own.
+ */
+#+end_src
+
+* See also
+
+- [[id:60BD8367-892A-4521-8B25-25B9C722D32F][ores.trading.trade_summary]] — the row both operations read.

@@ -45,7 +45,7 @@ public:
     register_handlers(ores::nats::service::client& nats,
                       ores::security::jwt::jwt_authenticator verifier,
                       const std::string& base_url,
-                      stream::change_feed& feed);
+                      std::shared_ptr<stream::change_feed> feed);
 };
 
 } // namespace ores::http::server::messaging

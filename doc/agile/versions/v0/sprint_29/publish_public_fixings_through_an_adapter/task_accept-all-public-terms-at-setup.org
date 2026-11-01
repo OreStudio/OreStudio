@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: CDE59222-34A3-4C5B-B37F-7B56D1F274B0
+:END:
+#+title: Task: Accept all public terms at setup
+#+description: One server operation accepts a list of providers at the versions shown; the first run offers it as an accept-all tick box and bootstrap setup does it by default, so a new system fetches public fixings without a manual step.
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new system fetches public fixings as soon as it is set up: the administrator accepts every public source's terms in one step in the first run, and the shell's bootstrap setup accepts them by default.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- marketdata.v1.ops accepts a list of provider codes with the versions read and answers, per provider, accepted or refused with the reason; each acceptance records the digest, the session's account and the server's time, as the single accept does.
+- The first-run public sources step has an accept-all tick box that accepts every listed provider at the version shown; a provider can still be declined on its own card.
+- bootstrap setup accepts every public provider's terms after it signs in as the administrator and prints one line per provider; --no-accept-terms skips it.
+- A shell command accepts all public terms on a system already set up.
+- No seed or profile step writes an acceptance.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Why: the adapter fetches no public provider until its terms are accepted
+  (since 10-28). Nothing in setup accepts them, so after a database recreate
+  every feed kept its fixed level until someone accepted the terms on the
+  Public rates page. The earlier tests had accepted them by hand.
+- The acceptance stays with the signed-in system administrator rather than a
+  tenant provisioning step: terms belong to the system, and the record must
+  name a real account.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

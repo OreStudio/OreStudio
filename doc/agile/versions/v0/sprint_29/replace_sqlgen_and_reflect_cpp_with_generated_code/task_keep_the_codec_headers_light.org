@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/keep-the-codec-headers-light
-#+pr:
+#+pr: 4347
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4347][#4347]] | [agile] Abandon the codec header task on measurement |
 
 * Review
 

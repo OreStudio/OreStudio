@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 1DBC0C39-809C-4083-8180-311F2ED02C5B
 :END:
 #+title: ores.trading.balance_guaranteed_swap_tranche_notional

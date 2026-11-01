@@ -117,7 +117,8 @@ TEST_CASE("an authorised body is usable and states its authorisation", "[service
     CHECK(is_usable(derive_state(cut, 0)));
 }
 
-TEST_CASE("a body of a kind that requires none is in use the moment it is taken", "[service][cut]") {
+TEST_CASE("a body of a kind that requires none is in use the moment it is taken",
+          "[service][cut]") {
 
     auto lg(make_logger(test_suite));
     auto cut = taken_cut("SOD");

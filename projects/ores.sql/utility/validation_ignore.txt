@@ -277,6 +277,15 @@ TEMPORAL_006 ores_marketdata_market_fixings_tbl
 TENANT_002 ores_marketdata_market_observations_tbl
 TENANT_002 ores_marketdata_market_fixings_tbl
 
+# The market state a run priced against -- a hypertable on the observation date,
+# written once per run, with no audit columns for the same reason the result
+# tables have none.
+TEMPORAL_003 ores_marketdata_market_state_payloads_tbl
+TEMPORAL_004 ores_marketdata_market_state_payloads_tbl
+TEMPORAL_005 ores_marketdata_market_state_payloads_tbl
+TEMPORAL_006 ores_marketdata_market_state_payloads_tbl
+TENANT_002 ores_marketdata_market_state_payloads_tbl
+
 # Tick tables. ores_marketdata_ticks_tbl is an append-only hypertable with no
 # primary key: an index on every row would cost the bulk copy, and a correction
 # is a new row that the reader orders by time. ores_marketdata_tick_coords_tbl

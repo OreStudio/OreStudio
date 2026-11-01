@@ -170,7 +170,15 @@ describe('the feed an engine change writes', () => {
         expect(write['ticks_per_hour']).toBe(3600);
         expect(write).not.toHaveProperty('version');
         expect(write).not.toHaveProperty('modified_by');
-        expect(Object.keys(write)).toHaveLength(13);
+        expect(Object.keys(write)).toHaveLength(14);
+    });
+
+    it("keeps the feed's own calibration window, so an engine change does not reset it", () => {
+        const write = feedWrite(
+            { ...feed, calibration_window_days: 30 },
+            { process_type: 'arithmetic' },
+        );
+        expect(write['calibration_window_days']).toBe(30);
     });
 });
 

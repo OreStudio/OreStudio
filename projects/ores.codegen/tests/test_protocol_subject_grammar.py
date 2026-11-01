@@ -146,6 +146,18 @@ def test_a_create_keeps_its_key_because_the_caller_supplies_it():
         == ["id", "code"]
 
 
+def test_a_provider_write_cannot_state_an_acceptance_and_an_edit_keeps_it():
+    """Only the terms operation records an acceptance; a provider edit keeps it."""
+    acceptance = ["terms_accepted_digest", "terms_accepted_by", "terms_accepted_at"]
+    entity = {
+        "primary_key": {"columns": [{"column": "code"}]},
+        "columns": _columns("code", "terms_url", *acceptance),
+    }
+    written = [c["name"] for c in write_record_fields(entity["columns"])]
+    assert written == ["code", "terms_url"]
+    assert [f["name"] for f in service_preserved_fields(entity)] == acceptance
+
+
 def test_the_declared_order_is_preserved():
     entity = _columns("zeta", "alpha", "version", "mu")
     assert [c["name"] for c in write_record_fields(entity)] == \

@@ -55,8 +55,7 @@ authoring of the generators; this one begins after they exist.
    person also reads which catalogue ids have no generator.
 5. *Check the generators.* The person chooses *Validate*. The system checks each
    generator: that its vendor instrument exists in the catalogue, that no other
-   generator serves it, and for a vintage-priced generator that the vintage data is
-   available. The summary says how many pass and which fail, with the reason. See
+   generator serves it. The summary says how many pass and which fail, with the reason. See
    [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]].
 6. *Offer the collection.* The person enables it. The simulator adds the
    collection's instruments to the universe it announces. The service checks the
@@ -81,9 +80,9 @@ wireframe is still to be drawn.
 |--------+---------------------|
 | =market_data_generation_config= | The collection row: name, description, enabled, dataset of origin |
 | =folder= | The tree node of the collection and of its asset classes |
-| =fx_spot_generation_config= | One FX generator: pair, vendor instrument, price source, cadence, GMM starting price, vintage, folder |
+| =fx_spot_generation_config= | One FX generator: pair, vendor instrument, price source, cadence, GMM starting price, folder |
 | =gmm_component= | The weighted Gaussian components of an FX generator's price process |
-| =ir_curve_generation_config= | One IR curve generator: currency, index family, tenor, role, provider, process type, cadence, vintage, folder |
+| =ir_curve_generation_config= | One IR curve generator: currency, index family, tenor, role, provider, process type, cadence, folder |
 | =ir_curve_generation_config_process_parameter_value= | The process parameters of an IR curve |
 | =yield_curve_process_type= | The short-rate model an IR curve generator names |
 | =ir_curve_template_entry= | The tenor and instrument grid of an IR curve, each entry with its vendor instrument |

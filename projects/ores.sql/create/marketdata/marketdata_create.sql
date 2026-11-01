@@ -34,6 +34,10 @@
 \ir ./marketdata_series_axis_values_create.sql
 \ir ./marketdata_series_identity_views_create.sql
 \ir ./marketdata_market_observations_create.sql
+-- The market state a run priced against, kept as the file the engine wrote with
+-- an index of what it covers.
+\ir ./marketdata_market_state_payloads_create.sql
+\ir ./marketdata_market_state_payloads_notify_trigger_create.sql
 \ir ./marketdata_ticks_create.sql
 \ir ./marketdata_tick_coords_create.sql
 \ir ./marketdata_observation_lineages_create.sql

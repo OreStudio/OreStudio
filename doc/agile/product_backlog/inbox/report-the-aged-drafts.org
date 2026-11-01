@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 025EA107-987D-47B2-BE0D-BA250EE22994
+:END:
+#+title: Report the drafts and who is late
+#+description: A draft states why it is not live and which desk owns the reason. Nothing reports that: an aged draft is invisible, so the desk that should be chasing it cannot see how long it has sat or whose work it is.
+#+type: capture
+#+level: cross
+#+filetags: :trading:reporting:drafts:report:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A draft now says why it is not live, and the reason names the desk that owns it.
+A report of drafts would list each one with its age — how long it has sat since
+it was captured — its reason, and the desk responsible, oldest first.
+
+Nothing reports that today. A draft is a row in the blotter that has not moved,
+and the only way to find the ones that have sat too long is to read them.
+
+* Why
+
+The reason and the responsible desk exist so that an aged draft is somebody's
+work. Without a report they are two columns nobody reads: the desk that should be
+chasing a confirmation cannot see that a draft has waited a week, and the
+operations manager cannot see which desk is carrying them.
+
+The trading side already stores what the report needs. What is missing is the
+report itself, and the reporting side is where it belongs.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- A report definition over the drafts of a party or a tenant: the reference, the
+  kind, the trade date, the age, the draft reason and its responsible desk.
+- An age that means something: days since the trade was captured, counting
+  business days against a calendar the tenant already holds.
+- A group by desk, since the question the report answers is "who is late", not
+  "what is open".
+- Whether a draft that has sat past a threshold raises a notice, which the
+  approval side already knows how to do.
+
+* What done looks like
+
+A person can read how many drafts a tenant holds, how long the oldest has waited,
+and which desk owns each one, without opening a single deal.
+
+* References
+
+- =ores_trading_trades_tbl= — the draft reason the report reads, and the trade date
+  its age counts from.
+- [[id:8F2C41B7-9D3E-4A58-B1C0-5E7D2A6F9B43][ores.trading.draft_reason]] — the lookup that names the desk.
+
+* See also
+
+- [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] — the task that stores what
+  the report reads.

@@ -55,6 +55,7 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.source_name = v.source_name;
     r.oresmd_uri = v.oresmd_uri;
     r.price_source = v.price_source;
+    r.calibration_window_days = v.calibration_window_days;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;
@@ -91,6 +92,7 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.source_name = v.source_name;
     r.oresmd_uri = v.oresmd_uri;
     r.price_source = v.price_source;
+    r.calibration_window_days = v.calibration_window_days;
     r.gmm_initial_price = v.gmm_initial_price;
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;

@@ -67,14 +67,16 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
      * so an amendment raises its own.
      */
     ores::inbox::service::approval_lifecycle decisions(ctx_);
-    for (const auto& earlier : repository::trade_authorisation_request_repository()
-                                  .read_latest_by_trade_id(ctx_, id, 0, 100)) {
+    for (const auto& earlier :
+         repository::trade_authorisation_request_repository().read_latest_by_trade_id(
+             ctx_, id, 0, 100)) {
         const auto request = decisions.request(boost::uuids::to_string(earlier.request_id));
         if (!request)
             continue;
         if (request->state_code == "waiting" || request->state_code == "held") {
-            BOOST_LOG_SEV(lg(), debug) << "Trade " << id << " already awaits authorisation by request "
-                                       << boost::uuids::to_string(earlier.request_id);
+            BOOST_LOG_SEV(lg(), debug)
+                << "Trade " << id << " already awaits authorisation by request "
+                << boost::uuids::to_string(earlier.request_id);
             return std::nullopt;
         }
     }

@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: 5B2D9E14-6C3A-4F71-9D08-2E7A4C1B8F63
+:END:
+#+title: ores.marketdata.market_state_payload
+#+description: Codegen entity model for the marketdata =market_state_payloads= table. The market state a run saw, kept as the file the engine wrote, with an index of what it covers.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+brief: The market state a run saw, as one compressed payload with an index of its dates, scenarios and factors.
+#+entity_singular: market_state_payload
+#+entity_plural: market_state_payloads
+#+entity_title: Market State Payload
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The market state an engine run priced against, kept as the file the engine
+wrote. A cube states a column for every curve and tenor the run built — the
+widest checked-in sample states 789 — so a row for each value would be millions
+of rows per run, and a read that needs one factor would unpack all of them.
+
+The payload is therefore stored once, compressed, with an index beside it: the
+headings, the number of rows, and the distinct values of each key the catalogue
+names, which are the dates, the scenarios, the factors or the market objects the
+file covers. A reader that wants one slice asks the index first and unpacks only
+what it must.
+
+This is market state and not a run result: it says what the world looked like,
+it is what the engine read, and it belongs beside the series and the fixings the
+market data store already keeps.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this payload.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run the state came from.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run whose engine read this state.
+
+** result_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The compute result that wrote the file. A run split into trade sets runs the
+engine once for each set, and each run writes a file of the same name, so the
+result is what tells two of them apart.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's states are one query.
+
+** family
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The family the file belongs to, as the catalogue names it: stress_scenarios,
+scenariostatistics, rawcube, todaysmarketcalibration.
+
+** file_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The name the engine gave the file.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:natural_key:  true
+:END:
+
+The date the run priced at, which is the state's observation date.
+
+** row_count
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:END:
+
+How many rows the file states, not counting the heading.
+
+** column_count
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:END:
+
+How many columns the file states. It is the size of the index's column list and
+is carried beside it so a reader can size a read before parsing the list.
+
+** column_names
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The headings the file states, in its order, as a JSON array. A reader finds the
+columns it wants here rather than in the payload.
+
+** key_values
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The distinct values of each key the catalogue names, as a JSON object of key
+name to array, in the order the file states them. These are the dates, the
+scenarios, the factors or the market objects the file covers.
+
+** keys_truncated
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:END:
+
+Whether a key stated more values than the index records. A reader that needs the
+exact set of such a key reads the payload.
+
+** payload
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The file as the engine wrote it, gzipped and held as base64 text, because the
+store's columns are text and a binary column would be a second way to hold a
+blob.
+
+** payload_bytes
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:END:
+
+The size of the compressed file, so a reader sizes its read from the row rather
+than from the length of the text.
+
+** content_sha256
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The digest of the file as the engine wrote it, so two runs of the same state are
+one payload and a corrupted one is detected.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_marketdata_market_state_payloads_tbl
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:append_insert:                true
+:bitemporal_trigger:           soft_update_delete
+:no_audit_columns:             true
+:rls_tenant_isolation:         true
+:rls_party_isolation:          true
+:END:
+
+** Bitemporal natural keys
+
+A run's state is its own. The insert trigger closes the current row of the same
+key, and the key names the run, so one run never closes another run's payload.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| result_id          | false    |
+| as_of              | false    |
+| family             | false    |
+| file_name          | false    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: payload
+:entity_plural_short:   payloads
+:entity_singular_words: market state payload
+:entity_plural_words:   market state payloads
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| family       | Family       |
+| file_name    | File         |
+| row_count    | Rows         |
+| column_count | Columns      |
+| as_of        | As Of        |

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 9B02B021-D386-45D9-9C6A-C5BC96C2F5AF
 :END:
 #+title: ores.trading.instrument_option_exercise_price

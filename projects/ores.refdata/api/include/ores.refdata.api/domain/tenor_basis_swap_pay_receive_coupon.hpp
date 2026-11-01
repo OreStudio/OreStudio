@@ -40,9 +40,7 @@ namespace ores::refdata::domain {
  * applies. ORE writes these three beside the legs of both forms, so each form
  * declares them rather than the shared central row.
  *
- * Extracted as a plain nested sub-struct so that
- * rfl::internal::no_duplicate_field_names never instantiates a Literal
- * wider than 5 fields for this block. See the decomposition section of
+ * A plain nested sub-struct. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct tenor_basis_swap_pay_receive_coupon {

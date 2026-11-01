@@ -130,6 +130,38 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 
+** provider_dispersion
+#+begin_src cpp :name comment
+/**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The other provider. */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The other provider's item, as the oresmd URI that names it. */
+#+end_src
+
+*** basis_points
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The distance from the level the feed took, in basis points of that level. */
+#+end_src
+
 ** feed_start
 #+begin_src cpp :name comment
 /**
@@ -240,6 +272,62 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
 #+end_src
 
+*** age_days
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief How many days the fixing is older than the date the feed read on or before. */
+#+end_src
+
+*** daily_spread
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+#+end_src
+
+*** annual_drift
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The mean business-day log return, times 252. */
+#+end_src
+
+*** min_return
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The smallest business-day log return in the window. */
+#+end_src
+
+*** max_return
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The largest business-day log return in the window. */
+#+end_src
+
+*** jumps
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief How many returns lie more than three spreads from zero. */
+#+end_src
+
+*** dispersion
+:PROPERTIES:
+:cpp_type: std::vector<provider_dispersion>
+:END:
+#+begin_src cpp :name comment
+/** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+#+end_src
+
 ** running_feed
 #+begin_src cpp :name comment
 /**
@@ -299,3 +387,247 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The feeds that run, in source name order. */
 #+end_src
 
+
+** calibration_policy_summary
+#+begin_src cpp :name comment
+/**
+ * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
+ */
+#+end_src
+
+*** from_policy_row
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the class has a policy row; false when it calibrates on the defaults. */
+#+end_src
+
+*** window_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many calendar days of fixings measure the spread. */
+#+end_src
+
+*** allow_inverse
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when an item that quotes the pair the other way round is read as one over it. */
+#+end_src
+
+*** fallback_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
+#+end_src
+
+*** provider_order
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The accepted providers, first preferred. Empty means every provider, by code. */
+#+end_src
+
+** candidate_outcome
+#+begin_src cpp :name comment
+/**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The candidate's item, as the oresmd URI that names it. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider that publishes the item. */
+#+end_src
+
+*** inverted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the item quotes the pair the other way round. */
+#+end_src
+
+*** rank
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The candidate's place in the resolution, first tried first. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief chosen, skipped or not_reached. */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the candidate was chosen, skipped or not reached. */
+#+end_src
+
+** calibrated_feed
+#+begin_src cpp :name comment
+/**
+ * @brief How one feed of the class resolved: the item it starts from, or its fallback or
+ * refusal, and the exceptions it states against the policy.
+ */
+#+end_src
+
+*** config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's config id. */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The source name the feed publishes under. */
+#+end_src
+
+*** base_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The base currency of the feed's pair. */
+#+end_src
+
+*** quote_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The quote currency of the feed's pair. */
+#+end_src
+
+*** explicit_items
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the feed names its own items instead of deriving them from the policy. */
+#+end_src
+
+*** window_days_override
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's own window, when it overrides the policy's. */
+#+end_src
+
+*** refused
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when no candidate has a fixing and the policy refuses to start the feed. */
+#+end_src
+
+*** start
+:PROPERTIES:
+:cpp_type: feed_start
+:END:
+#+begin_src cpp :name comment
+/** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+#+end_src
+
+*** candidates
+:PROPERTIES:
+:cpp_type: std::vector<candidate_outcome>
+:END:
+#+begin_src cpp :name comment
+/** @brief Every candidate the feed read, in rank order, with its outcome. */
+#+end_src
+
+** calibrate_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.calibrate_feeds
+:response: calibrate_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Resolve every feed of one asset class under its policy, without starting any.
+ *
+ * Every feed of the class is resolved; no subset is selected.
+ */
+#+end_src
+
+*** asset_class_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The asset class to calibrate, as its refdata code. */
+#+end_src
+
+** calibrate_response
+#+begin_src cpp :name comment
+/**
+ * @brief The policy the class calibrated under and the outcome of each of its feeds.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** policy
+:PROPERTIES:
+:cpp_type: calibration_policy_summary
+:END:
+#+begin_src cpp :name comment
+/** @brief The policy the class calibrated under. */
+#+end_src
+
+*** feeds
+:PROPERTIES:
+:cpp_type: std::vector<calibrated_feed>
+:END:
+#+begin_src cpp :name comment
+/** @brief Every feed of the class, in source name order. */
+#+end_src

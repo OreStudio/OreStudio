@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 6B20EB71-A96C-4B55-BE8B-FC7B14A7B23F
 :END:
 #+title: ores.trading.bond_settlement_data

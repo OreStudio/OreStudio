@@ -27,8 +27,8 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.inbox.api/domain/notification_delivery.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 #include <string>
 #include <vector>
 
@@ -46,7 +46,9 @@ render_notification_delivery_fields(const domain::notification_delivery& v) {
     fields.push_back({.name = "Channel Code", .value = v.channel_code});
     fields.push_back({.name = "Attempted At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.attempted_at)});
-    fields.push_back({.name = "Outcome", .value = rfl::enum_to_string(v.outcome)});
+    fields.push_back(
+        {.name = "Outcome",
+         .value = ores::utility::codec::text_form<decltype(v.outcome)>::to_text(v.outcome)});
     fields.push_back({.name = "Failure Reason", .value = v.failure_reason.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

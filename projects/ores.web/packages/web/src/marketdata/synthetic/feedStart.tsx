@@ -65,7 +65,68 @@ export function FeedStartNotice({ start }: { readonly start: FeedStart }): React
                     })}
                 </p>
             )}
+            {start.from_fixing && <FeedStartMeasures start={start} />}
             {start.note !== '' && <p>{start.note}</p>}
         </Notice>
+    );
+}
+
+const percent = (value: number): string => `${(value * 100).toFixed(2)}%`;
+
+/**
+ * What the window's fixings did. Only the volatility changes the calibration today,
+ * since it scales the mixture; the rest are recorded for a later policy.
+ */
+export function FeedStartMeasures({ start }: { readonly start: FeedStart }): ReactNode {
+    const { t } = useTranslation();
+    const recorded: string[] = [];
+    if (start.annual_drift != null) {
+        recorded.push(
+            t('marketdata.fxFeeds.start.measures.drift', { value: percent(start.annual_drift) }),
+        );
+    }
+    if (start.min_return != null && start.max_return != null) {
+        recorded.push(
+            t('marketdata.fxFeeds.start.measures.range', {
+                min: percent(start.min_return),
+                max: percent(start.max_return),
+            }),
+        );
+    }
+    if (start.age_days != null) {
+        recorded.push(t('marketdata.fxFeeds.start.measures.age', { days: String(start.age_days) }));
+    }
+    if (start.jumps != null) {
+        recorded.push(t('marketdata.fxFeeds.start.measures.jumps', { count: String(start.jumps) }));
+    }
+    for (const other of start.dispersion ?? []) {
+        recorded.push(
+            t('marketdata.fxFeeds.start.measures.dispersion', {
+                provider: other.provider_code,
+                bp: other.basis_points.toFixed(1),
+            }),
+        );
+    }
+    return (
+        <div className="mt-2 space-y-1">
+            {start.daily_spread != null && start.hourly_spread != null && (
+                <p>
+                    {t('marketdata.fxFeeds.start.measures.volatility', {
+                        daily: percent(start.daily_spread),
+                        hourly: percent(start.hourly_spread),
+                    })}
+                </p>
+            )}
+            {recorded.length > 0 && (
+                <>
+                    <p className="font-medium">{t('marketdata.fxFeeds.start.measures.recorded')}</p>
+                    <ul className="list-disc pl-5">
+                        {recorded.map((line) => (
+                            <li key={line}>{line}</li>
+                        ))}
+                    </ul>
+                </>
+            )}
+        </div>
     );
 }

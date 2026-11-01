@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 391371A4-D9A8-45BC-893D-20B34EC655E0
 :END:
 #+title: ores.trading.bond_option_exercise

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 4c233e10-0d5e-4d1f-8d30-4e920ef262d5
 :END:
 #+title: ores.trading.bond_issue_call_date

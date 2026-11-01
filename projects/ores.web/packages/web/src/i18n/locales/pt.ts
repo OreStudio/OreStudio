@@ -2962,6 +2962,23 @@ const pt: SourceCatalogue = {
                 'O administrador não tem uma entidade de sistema onde iniciar sessão, por isso a instalação não pode ser aprovisionada.',
         },
 
+        sources: {
+            title: 'Ler as condições das fontes públicas',
+            lead: 'A instalação pode carregar taxas diárias de editores públicos. Leia as condições de cada um e aceite ou recuse; um editor recusado nunca é consultado, e pode mudar isto mais tarde no ecrã de taxas públicas.',
+            next: 'Continuar',
+            none: 'Nenhum editor público indica condições, por isso não há nada a aceitar.',
+            gives: 'Publica {count} séries de taxas diárias.',
+            terms: 'Condições',
+            credit: 'Crédito pedido',
+            storage: 'Armazenamento',
+            storageAllowed: 'Os seus valores podem ser guardados',
+            storageRefused: 'Os seus valores não podem ser guardados, por isso não é consultado',
+            accept: 'Aceitar',
+            decline: 'Recusar',
+            accepted: 'Aceite',
+            declined: 'Recusado',
+        },
+
         profile: {
             title: 'Escolher um ponto de partida',
             lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
@@ -3864,6 +3881,7 @@ const pt: SourceCatalogue = {
             kindLegByLeg: '{kind} — cada perna confirma sozinha',
             counterparty: 'Contraparte',
             allCounterparties: 'Todas as contrapartes',
+            trades: 'Transações',
             chosen: 'Escolhidas',
             noneChosen:
                 'Nenhuma transação escolhida. Pelo menos duas, e partilham uma contraparte.',
@@ -3978,6 +3996,8 @@ const pt: SourceCatalogue = {
             tradeDate: 'Data da transação',
             security: 'Título',
             notional: 'Nocional',
+            boughtSold: 'Comprado / vendido',
+            quantity: 'Quantidade',
             identifierType: 'Esquema de identificador',
             identifier: 'Identificador',
             identifierHint: 'O nome que a mesa dá a esta transação.',
@@ -4360,6 +4380,7 @@ const pt: SourceCatalogue = {
             columns: 'Colunas',
             noRecords: 'Ainda não há {plural}.',
             noMatchSearch: 'Nenhum elemento de {plural} corresponde à pesquisa.',
+            chooseAll: 'Escolher todas as linhas',
             clearSearch: 'Limpar a pesquisa',
             retry: 'Tentar de novo',
             showing: '{first}–{last} de {total}',
@@ -4495,6 +4516,7 @@ const pt: SourceCatalogue = {
             ticks_per_hour: 'Ticks por hora',
             price_source: 'Preço inicial a partir de',
             gmm_initial_price: 'Preço inicial',
+            calibration_window_days: 'Janela de calibração (dias)',
             enabled: 'Ativo',
             auto_start: 'Arranca com o serviço',
             mean: 'Média (μ)',
@@ -4843,6 +4865,129 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        calibration: {
+            title: 'Calibração',
+            lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
+            assetClass: 'Classe de ativos',
+            classes: {
+                fx: 'Câmbio à vista',
+            },
+            policyLine: {
+                automatic: 'Automática: janela de {window} dias, {inverse}, {order}, {fallback}.',
+                custom: 'Política da classe: janela de {window} dias, {inverse}, {order}, {fallback}.',
+                open: 'Ver a política',
+            },
+            inverse: {
+                allowed: 'inverso permitido',
+                refused: 'inverso não permitido',
+            },
+            order: {
+                everyProvider: 'todos os fornecedores, por código',
+            },
+            fallback: {
+                keep_fixed: 'manter o nível fixo',
+                refuse: 'recusar arrancar',
+            },
+            coverage: {
+                total: 'Fluxos',
+                fromFixing: 'De um fixing',
+                keptFixed: 'Nível mantido',
+                refused: 'Recusados',
+                overridden: 'Derrogam a política',
+            },
+            filter: {
+                label: 'Mostrar',
+                all: 'Todos',
+                attention: 'A rever',
+                overridden: 'Derrogações',
+            },
+            columns: {
+                feed: 'Fluxo',
+                start: 'Início',
+                source: 'Fonte',
+                state: 'Estado',
+            },
+            outcome: {
+                fixing: 'de um fixing',
+                fixed: 'nível mantido',
+                refused: 'recusado',
+            },
+            overrides: 'derroga',
+            empty: 'Nenhum fluxo corresponde a este filtro.',
+            candidateState: {
+                chosen: 'arranca aqui',
+                skipped: 'ignorado',
+                not_reached: 'não alcançado',
+            },
+            feed: {
+                title: 'Fluxo',
+                tabs: 'Calibração do fluxo',
+                tab: {
+                    record: 'Registo do fluxo',
+                    flow: 'Percurso',
+                },
+                back: 'Voltar à lista',
+                missing: 'Este fluxo não está na classe.',
+                start: 'Onde uma execução arranca agora',
+                level: 'Nível',
+                provider: 'Fornecedor',
+                date: 'Data do fixing',
+                invertedNote:
+                    'O item cota o par ao contrário, por isso o seu valor é lido como o inverso.',
+                candidates: 'Candidatos',
+                noCandidates: 'Nenhum candidato cobre este par.',
+                candidate: 'Candidato',
+                readAs: 'Lido como',
+                direct: 'direto',
+                inverse: '1/x',
+                pin: 'Fixar',
+                exceptions: 'Derrogações',
+                followsPolicy: 'Este fluxo segue a política da sua classe.',
+                overridesItems:
+                    'Este fluxo nomeia os seus próprios itens, por isso derroga a política da classe.',
+                overridesWindow:
+                    'Este fluxo mede sobre a sua própria janela de {days} dias, por isso derroga a política da classe.',
+                clearPin: 'Limpar os itens e seguir a política',
+                editWindow: 'Editar a janela do fluxo',
+                toPolicy: 'Ir para a política',
+            },
+            flow: {
+                policy: '1. Política',
+                candidates: '2. Candidatos',
+                resolver: '3. Resolução',
+                process: '4. Processo',
+                explicit: 'O fluxo nomeia os seus próprios {count} item(ns).',
+                derived: '{count} candidato(s) derivado(s) do par e da política.',
+                chosen: 'Arranca do fixing {provider} de {value} em {date}.',
+                fixed: 'Nenhum candidato tem fixing, por isso o fluxo mantém o nível fixo.',
+                refused: 'Nenhum candidato tem fixing, e a política recusa arrancar o fluxo.',
+                mixtureScaled: 'A volatilidade medida ajusta a escala dos desvios da mistura.',
+                mixtureKept: 'A mistura configurada é mantida.',
+            },
+            policy: {
+                title: 'Política de calibração',
+                affectsEvery: 'Uma alteração aqui afeta todos os fluxos da classe.',
+                automatic:
+                    'A classe não tem política, por isso calibra com os valores por omissão.',
+                custom: 'A classe tem a sua própria política.',
+                systemOnly:
+                    'A política pertence à instalação, por isso só o inquilino de sistema a altera.',
+                window: 'Janela (dias)',
+                windowRange: 'De 2 a 180 dias.',
+                inverse: 'Inverso',
+                fallback: 'Sem fixing',
+                order: 'Ordem dos fornecedores',
+                up: 'Subir {provider}',
+                down: 'Descer {provider}',
+                remove: 'Remover',
+                add: 'Adicionar um fornecedor',
+                addPrompt: 'Escolher um fornecedor',
+                save: 'Guardar a política',
+                reset: 'Voltar ao automático',
+                coverage: 'Cobertura',
+                record: 'Registo da calibração',
+            },
+        },
         publicRates: {
             title: 'Taxas públicas',
             lead: 'As taxas e curvas que as entidades públicas publicam, o que guardamos, e se estão a chegar.',
@@ -4889,6 +5034,7 @@ const pt: SourceCatalogue = {
                 acceptedBy: 'Por {who} em {when}',
                 notAccepted: 'Não aceites',
                 accept: 'Aceitar termos',
+                withdraw: 'Retirar a aceitação',
                 read: 'Ler os termos',
             },
             detail: {
@@ -5906,11 +6052,13 @@ const pt: SourceCatalogue = {
                 sensitivity:
                     'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
-                    fixed: 'O fluxo parte do preço inicial que indicar.',
+                    fixed: 'O fluxo parte do preço inicial que indicar. Use-o só para um par que nenhuma fonte pública fixa; o caminho do fixing é o padrão.',
                     fixing: 'O fluxo parte do fixing público mais recente do par e tira a volatilidade dos fixings; sem fixing, mantém o preço inicial.',
                 },
                 enabled: 'Um fluxo que não está ativo não pode arrancar.',
                 auto_start: 'O fluxo arranca quando o serviço sintético arranca.',
+                calibration_window_days:
+                    'A janela própria do fluxo, de 2 a 180 dias, em vez da política da sua classe. Deixe vazio para seguir a política.',
             },
             start: {
                 title: 'De onde arrancou esta execução',
@@ -5923,6 +6071,16 @@ const pt: SourceCatalogue = {
                 inverted:
                     'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
                 window: '{used} fixings em {days} dias mediram a sua dispersão.',
+                measures: {
+                    volatility:
+                        'Volatilidade realizada {daily} por dia, {hourly} por hora: esta mudou a calibração, pois ajusta a escala da mistura.',
+                    recorded: 'Registado para uma política futura, não usado hoje:',
+                    drift: 'Deriva anualizada: {value}',
+                    range: 'Retornos diários de {min} a {max}',
+                    age: 'O fixing tem {days} dia(s)',
+                    jumps: 'Movimentos acima de três desvios: {count}',
+                    dispersion: '{provider} está a {bp} pb',
+                },
             },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',

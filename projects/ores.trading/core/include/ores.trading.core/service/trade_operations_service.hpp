@@ -25,6 +25,7 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/book_status_port.hpp"
+#include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include <string_view>
 
 namespace ores::trading::service {
@@ -82,7 +83,21 @@ public:
      * live without one. A trade that is not a draft, or that moved since the
      * caller read it, is answered with a conflict and writes nothing.
      */
-    messaging::execute_trade_response execute_trade(const messaging::execute_trade_request& request);
+    messaging::execute_trade_response
+    execute_trade(const messaging::execute_trade_request& request);
+
+    /**
+     * @brief Completes a structure: its anchor, its legs, and each leg executed,
+     * in one transaction.
+     *
+     * Every leg must be a draft in a real book when the request arrives. A
+     * completion that is refused leaves every leg a draft and writes no member,
+     * because the structure, the members and the executions are one unit of
+     * work. A structure that already exists answers a conflict coded
+     * already_exists.
+     */
+    messaging::complete_structure_response
+    complete_structure(const messaging::complete_structure_request& request);
 
     /**
      * @brief Creates a bond issue with its legs and their child rows, in one
@@ -97,6 +112,21 @@ public:
     put_bond_issue_composite(const messaging::put_bond_issue_composite_request& request);
 
 private:
+    /**
+     * @brief Takes one draft live inside the caller's transaction.
+     *
+     * The activity, the state and the authorisation request, without a
+     * transaction of its own: an execution that a booking or a completion needs
+     * must join that write rather than commit beside it.
+     *
+     * @return The request raised, when the trade started waiting on Operations.
+     */
+    std::optional<raised_authorisation> execute_within(context ctx,
+                                                       const boost::uuids::uuid& trade_id,
+                                                       const std::string& change_reason_code,
+                                                       const std::string& change_commentary,
+                                                       boost::uuids::uuid* activity_id = nullptr);
+
     context ctx_;
     const book_status_port* books_;
 };

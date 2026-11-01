@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: DCF13DDB-49F2-424F-B42A-010582728835
 :END:
 #+title: ores.trading.bond_instrument_data

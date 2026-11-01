@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_STUB_INTERPOLATION_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_STUB_INTERPOLATION_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -67,6 +69,22 @@ struct bond_stub_interpolation {
     friend bool operator==(const bond_stub_interpolation&,
                            const bond_stub_interpolation&) = default;
 };
+/**
+ * @brief The members of bond_stub_interpolation, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_stub_interpolation&) {
+    return std::tuple{
+        utility::codec::field{"short_index", &bond_stub_interpolation::short_index},
+        utility::codec::field{"long_index", &bond_stub_interpolation::long_index},
+        utility::codec::field{"rounding_type", &bond_stub_interpolation::rounding_type},
+        utility::codec::field{"rounding_precision", &bond_stub_interpolation::rounding_precision},
+    };
+}
 
 }
 

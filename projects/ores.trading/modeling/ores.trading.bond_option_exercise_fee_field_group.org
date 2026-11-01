@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: FF543C14-59CB-49BB-B3EE-0F072C7B47E0
 :END:
 #+title: ores.trading.bond_option_exercise_fee

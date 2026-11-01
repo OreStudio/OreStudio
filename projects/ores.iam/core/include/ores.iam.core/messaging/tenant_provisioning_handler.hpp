@@ -34,8 +34,8 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/population_knobs.hpp"
+#include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/account_service.hpp"
@@ -1652,12 +1652,11 @@ private:
          * planner cycles, because a config shorter than its code list states a
          * prefix and drops the rest.
          */
-        apply_population_knobs(
-            assignments,
-            read_population_knobs(command.parameters),
-            [](const std::string& asset_class) {
-                return ores::synthetic::service::routed_code_count(asset_class);
-            });
+        apply_population_knobs(assignments,
+                               read_population_knobs(command.parameters),
+                               [](const std::string& asset_class) {
+                                   return ores::synthetic::service::routed_code_count(asset_class);
+                               });
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 

@@ -684,9 +684,78 @@ export const feedStartSchema = z.object({
     used: z.int(),
     hourly_spread: z.number().nullish(),
     note: z.string(),
+    age_days: z.int().nullish(),
+    daily_spread: z.number().nullish(),
+    annual_drift: z.number().nullish(),
+    min_return: z.number().nullish(),
+    max_return: z.number().nullish(),
+    jumps: z.int().nullish(),
+    dispersion: z
+        .array(z.object({ provider_code: z.string(), item: z.string(), basis_points: z.number() }))
+        .default([]),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
+
+/** One candidate a feed read when it resolved, and what became of it. */
+const calibrationCandidateSchema = z.object({
+    item: z.string(),
+    provider_code: z.string(),
+    inverted: z.boolean(),
+    rank: z.int(),
+    state: z.enum(['chosen', 'skipped', 'not_reached']),
+    reason: z.string(),
+});
+
+export type CalibrationCandidate = z.infer<typeof calibrationCandidateSchema>;
+
+/** How one feed of a class resolves under the policy, and what it states against it. */
+const calibratedFeedSchema = z.object({
+    config_id: z.string(),
+    source_name: z.string(),
+    base_currency_code: z.string(),
+    quote_currency_code: z.string(),
+    explicit_items: z.boolean(),
+    window_days_override: z.int().nullish(),
+    refused: z.boolean(),
+    start: feedStartSchema,
+    candidates: z.array(calibrationCandidateSchema).default([]),
+});
+
+export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
+
+/** A class's calibration: the policy, or the defaults, and every feed's resolution. */
+const calibrationSchema = z.object({
+    assetClass: z.string(),
+    policy: z.object({
+        from_policy_row: z.boolean(),
+        window_days: z.int(),
+        allow_inverse: z.boolean(),
+        fallback_code: z.string(),
+        provider_order: z.array(z.string()),
+        version: z.int().nullable(),
+    }),
+    policyWritable: z.boolean(),
+    feeds: z.array(calibratedFeedSchema),
+    coverage: z.object({
+        total: z.int(),
+        fromFixing: z.int(),
+        keptFixed: z.int(),
+        refused: z.int(),
+        overridden: z.int(),
+    }),
+});
+
+export type Calibration = z.infer<typeof calibrationSchema>;
+
+/** The policy a person states for a class. */
+export interface CalibrationPolicyInput {
+    readonly version: number | null;
+    readonly windowDays: number;
+    readonly allowInverse: boolean;
+    readonly fallbackCode: 'keep_fixed' | 'refuse';
+    readonly providerOrder: readonly string[];
+}
 
 /**
  * One feed as its page reads it: the record, with the provider of the collection
@@ -2349,6 +2418,81 @@ export const api = {
         );
     },
 
+    /** How every feed of a class resolves under its policy; nothing starts. */
+    async calibration(assetClass: string): Promise<Calibration> {
+        return calibrationSchema.parse(
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** States a class's calibration policy. Only the system tenant may. */
+    async saveCalibrationPolicy(
+        assetClass: string,
+        policy: CalibrationPolicyInput,
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}/policy`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+                version: policy.version,
+                window_days: policy.windowDays,
+                allow_inverse: policy.allowInverse,
+                fallback_code: policy.fallbackCode,
+                provider_order: policy.providerOrder,
+            }),
+        });
+    },
+
+    /** Returns a class to automatic calibration. */
+    async resetCalibrationPolicy(
+        assetClass: string,
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}/policy`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+            }),
+        });
+    },
+
+    /** Pins one candidate on a feed, as the exception to its class policy. */
+    async pinCalibrationItem(
+        configId: string,
+        pin: { readonly item: string; readonly providerCode: string; readonly windowDays: number },
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/calibration/feeds/${encodeURIComponent(configId)}/pin`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+                item: pin.item,
+                provider_code: pin.providerCode,
+                window_days: pin.windowDays,
+            }),
+        });
+    },
+
+    /** Clears a feed's own items, so it follows its class policy again. */
+    async clearCalibrationPin(
+        configId: string,
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/calibration/feeds/${encodeURIComponent(configId)}/pin`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                intent: { reason_code: intent.reasonCode, commentary: intent.commentary },
+            }),
+        });
+    },
+
     /** The public publishers, with their terms, their feeds and their fixing series. */
     async publicRates(): Promise<readonly PublicRatesProvider[]> {
         return publicRatesSchema.parse(
@@ -2407,6 +2551,13 @@ export const api = {
         await request(`/api/marketdata/public-rates/${encodeURIComponent(code)}/accept-terms`, {
             method: 'POST',
             body: JSON.stringify({ version }),
+        });
+    },
+
+    /** Withdraws a publisher's acceptance, so it is no longer fetched. */
+    async withdrawProviderTerms(code: string): Promise<void> {
+        await request(`/api/marketdata/public-rates/${encodeURIComponent(code)}/withdraw-terms`, {
+            method: 'POST',
         });
     },
 

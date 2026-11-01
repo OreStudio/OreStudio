@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B
+:END:
+#+title: Task: Land the market inputs in the market data store
+#+description: A run states the market it read in marketdata.csv, fixings.csv and dividends.csv, and the catalogue names none of them, so no reader serves them and the store keeps nothing. Catalogue the three from the writers, read them with the declaration-driven reader, and land them in the shapes ores.marketdata already holds: market observations for the quotes and market fixings for the fixings and dividends. Also decide whether todaysmarketcalibration_cashflows is a run result or market state, and record the decision in the story.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:marketdata:ore:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data a run read lands in the market data store as observations and fixings, not as a payload.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- The catalogue names marketdata, fixings and dividends, with their keys and measures read from the writers.
+- marketdata's ingest reads the three through the ores.ore reader and writes them to the observation and fixing tables.
+- The story records which component owns todaysmarketcalibration_cashflows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

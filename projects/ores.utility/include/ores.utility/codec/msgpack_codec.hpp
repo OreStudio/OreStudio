@@ -25,6 +25,7 @@
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstddef>
 #include <limits>
+#include <map>
 #include <msgpack.h>
 #include <optional>
 #include <span>
@@ -277,6 +278,41 @@ struct msgpack_codec<std::vector<T>> {
         out.reserve(v.via.array.size);
         for (std::uint32_t i = 0; i < v.via.array.size; ++i)
             out.push_back(msgpack_codec<T>::read(v.via.array.ptr[i]));
+        return out;
+    }
+};
+
+/**
+ * @brief A map from names to values is a MessagePack map: each key is a
+ * string, in the map's order, and each value is in its element's form.
+ *
+ * A key that appears twice on read keeps its first value. The writer never
+ * writes a key twice, so only a foreign sender can produce one.
+ */
+template <typename T>
+struct msgpack_codec<std::map<std::string, T>> {
+    static void write(msgpack_packer* pk, const std::map<std::string, T>& v) {
+        if (msgpack_pack_map(pk, v.size()) != 0)
+            throw std::runtime_error("Could not pack a map");
+        for (const auto& [name, value] : v) {
+            if (msgpack_pack_str(pk, name.size()) != 0 ||
+                msgpack_pack_str_body(pk, name.data(), name.size()) != 0)
+                throw std::runtime_error("Could not pack the key " + name);
+            msgpack_codec<T>::write(pk, value);
+        }
+    }
+
+    static std::map<std::string, T> read(const msgpack_object& v) {
+        if (v.type != MSGPACK_OBJECT_MAP)
+            throw std::invalid_argument("Not a map: the MessagePack value is not one");
+        std::map<std::string, T> out;
+        for (std::uint32_t i = 0; i < v.via.map.size; ++i) {
+            const auto& entry = v.via.map.ptr[i];
+            if (entry.key.type != MSGPACK_OBJECT_STR)
+                throw std::invalid_argument("Not a map of names: a key is not a string");
+            out.emplace(std::string(entry.key.via.str.ptr, entry.key.via.str.size),
+                        msgpack_codec<T>::read(entry.val));
+        }
         return out;
     }
 };

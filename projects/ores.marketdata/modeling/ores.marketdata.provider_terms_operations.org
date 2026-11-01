@@ -3,13 +3,13 @@
 :ID: 7E2B91D4-3C58-4F0A-8D61-2A9E5B7C4F13
 :END:
 #+title: ores.marketdata.provider_terms_operations
-#+description: Codegen operation model for accepting a provider's terms: the one write that records an acceptance.
+#+description: Codegen operation model for accepting a provider's terms and withdrawing the acceptance: the one write that records either.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
 #+entity_singular: provider_terms_operations
 #+namespace: ores::marketdata::messaging
-#+brief: Accepting a provider's terms.
+#+brief: Accepting a provider's terms, and withdrawing the acceptance.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-10-28
 #+updated: 2026-10-28
@@ -120,6 +120,60 @@ time from its own clock, so a caller states only which provider it accepts.
 #+begin_src cpp :name comment
 /**
  * @brief When the acceptance was recorded.
+ */
+#+end_src
+
+** withdraw_provider_terms_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.withdraw_provider_terms
+:response: withdraw_provider_terms_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Withdraws the acceptance of a provider's terms, so the adapter no longer fetches it.
+ *
+ * A system administrator who declines a provider, or changes their mind, withdraws its
+ * acceptance. The service clears the digest, the account and the time; a provider that was
+ * never accepted is left as it is.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider whose acceptance is withdrawn.
+ */
+#+end_src
+
+** withdraw_provider_terms_response
+:PROPERTIES:
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the provider is now not accepted.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, or what was recorded.
  */
 #+end_src
 

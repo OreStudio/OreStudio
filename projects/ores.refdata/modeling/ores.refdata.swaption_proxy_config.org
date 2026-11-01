@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 8F1D2C74-5A3B-4E96-B0C8-2D7E4A91C6F3
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.swaption_proxy_config
 #+description: Codegen entity model for the refdata =swaption_proxy_config= part: the ProxyConfig element a swaption volatility entry may state.

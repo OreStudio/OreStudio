@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-664 tables in 21 groups.
+672 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -163,7 +163,10 @@ entity "refdata" as refdata {
   ores_refdata_curve_volatility_curves_tbl
   ores_refdata_curve_volatility_delta_surfaces_tbl
   ores_refdata_curve_volatility_kinds_tbl
+  ores_refdata_curve_volatility_moneyness_surfaces_tbl
   ores_refdata_curve_volatility_proxy_surfaces_tbl
+  ores_refdata_curve_volatility_smile_parameters_tbl
+  ores_refdata_curve_volatility_smiles_tbl
   ores_refdata_curve_volatility_strike_surfaces_tbl
   ores_refdata_day_count_fraction_types_tbl
   ores_refdata_day_counters_tbl
@@ -255,7 +258,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-180 tables — ores_schema.refdata.puml
+183 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -526,6 +529,7 @@ entity "trading" as trading {
   ores_trading_credit_basket_constituents_tbl
   ores_trading_credit_instruments_tbl
   ores_trading_credit_linked_swap_instruments_tbl
+  ores_trading_draft_reasons_tbl
   ores_trading_entry_channel_types_tbl
   ores_trading_equity_accumulator_instruments_tbl
   ores_trading_equity_asian_option_instruments_tbl
@@ -609,7 +613,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-121 tables — ores_schema.trading.puml
+122 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -742,6 +746,7 @@ entity "marketdata" as marketdata {
   ores_marketdata_market_series_asset_classes_tbl
   ores_marketdata_market_series_identity_tbl
   ores_marketdata_market_series_tbl
+  ores_marketdata_market_state_payloads_tbl
   ores_marketdata_observation_lineages_tbl
   ores_marketdata_providers_tbl
   ores_marketdata_rate_card_components_tbl
@@ -758,7 +763,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-28 tables — ores_schema.marketdata.puml
+29 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {
@@ -796,6 +801,9 @@ Analytics & Pricing Configuration
 end note
 
 entity "synthetic" as synthetic {
+  ores_synthetic_calibration_fallbacks_tbl
+  ores_synthetic_calibration_policies_tbl
+  ores_synthetic_calibration_provider_orders_tbl
   ores_synthetic_config_process_parameter_values_tbl
   ores_synthetic_folders_tbl
   ores_synthetic_fx_spot_fixing_items_tbl
@@ -813,7 +821,7 @@ entity "synthetic" as synthetic {
 }
 note bottom of synthetic
 Synthetic Data Generation
-14 tables — ores_schema.synthetic.puml
+17 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {

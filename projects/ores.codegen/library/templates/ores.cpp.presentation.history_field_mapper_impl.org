@@ -31,7 +31,7 @@ flat =v.x=). Primary key supports =string= and =uuid= only; natural
 keys support =string=, =uuid=, =date=, =timestamp=, and =int=. Natural
 keys are not identity-group-aware (mirroring the mapper facet's same
 carve-out — an entity with natural keys inside the identity group
-would need this extended). Enum columns render via =rfl::enum_to_string=
+would need this extended). Enum columns render via the codec's =text_form=
 (=render_is_enum=, derived from the raw =is_enum= flag rather than the
 nullable-narrowed =is_enum= column flag, matching every other
 =render_is_*= flag's ground-truth-over-derived-flag rule above) --
@@ -75,7 +75,7 @@ The full template source. Edit here and re-tangle with
 #include <format>
 {{/has_date_natural_keys}}
 {{#has_enum_columns}}
-#include <rfl/enums.hpp>
+#include "ores.utility/codec/text_form.hpp"
 {{/has_enum_columns}}
 
 namespace ores::{{component}}::presentation {
@@ -181,7 +181,10 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{{group_prefix}}}{{name}})});
 {{/render_is_double}}
 {{#render_is_enum}}
-    fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.{{{group_prefix}}}{{name}})});
+    fields.push_back(
+        {.name = "{{render_label}}",
+         .value = ores::utility::codec::text_form<decltype(v.{{{group_prefix}}}{{name}})>::to_text(
+             v.{{{group_prefix}}}{{name}})});
 {{/render_is_enum}}
 {{/no_wire}}
 {{/sql_only}}

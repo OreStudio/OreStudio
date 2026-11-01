@@ -640,11 +640,10 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
     const auto streamed = resp.body_stream != nullptr || resp.body_awaitable != nullptr;
     if (counters_ != nullptr) {
         counters_->record_response(static_cast<unsigned>(resp.status));
-        const auto bytes = resp.body_stream != nullptr
-                               ? resp.body_stream->size().value_or(0)
-                               : resp.body_awaitable != nullptr
-                                     ? resp.body_awaitable->size().value_or(0)
-                                     : resp.body.size();
+        const auto bytes = resp.body_stream != nullptr ? resp.body_stream->size().value_or(0) :
+                           resp.body_awaitable != nullptr ?
+                                                         resp.body_awaitable->size().value_or(0) :
+                                                         resp.body.size();
         counters_->response_bytes.fetch_add(bytes, std::memory_order_relaxed);
     }
 
@@ -668,8 +667,8 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
     for (const auto& [name, value] : resp.headers)
         head.set(name, value);
 
-    const auto declared = resp.body_stream != nullptr ? resp.body_stream->size()
-                                                      : resp.body_awaitable->size();
+    const auto declared =
+        resp.body_stream != nullptr ? resp.body_stream->size() : resp.body_awaitable->size();
     if (declared.has_value())
         head.content_length(*declared);
     else

@@ -421,6 +421,30 @@ flags, and it links to the shared =flag= set, which cannot become many without
 turning every boolean parameter into a list. That is curation work, not a schema
 change, and it is recorded here rather than guessed at.
 
+** The form a configuration holds is a form a document may write
+
+The store's form and a document's spelling were two different things for four
+facts: =ACT/360 (incl. last)=, =ACT/365 (Canadian Bond)=, =ACT/365 (JGB)= and
+=Nearest= were forms no document could write, so the codec held a second table to
+spell them on the way out. Each now takes the spelling the schema states:
+=ACT/360 (Incl Last)=, =Act/365 (Canadian Bond)=, =Actual/365 (JGB)= and
+=NEAREST=.
+
+With that, =day_counter_spellings=, =bdc_spelling= and both helpers are gone, and
+=put_day_counter= and =put_bdc= write the stored form as it stands. The generator
+holds the invariant: a table that makes a form no rendering writes stops the run,
+so the write direction cannot come back.
+
+The export changes for the 20 forms the old table rewrote into another spelling: a
+document that says =A365= exports =ACT/365.FIXED= where it used to export =A365F=.
+The 72 pinned corpus digests moved once, written by the case itself under
+=ORES_REGEN_CONVENTIONS_DIGESTS=, and the rendering counts fall from 52 and 20 to
+49 and 19 because three forms became renderings of themselves.
+
+The reader still converts: a document read has to reach a column. Deleting that
+table leaves the guard as the only converter, and it waits on the sets being
+authored rather than generated from the table.
+
 ** One authority over a day counter column
 
 A curve's =day_counter= was ruled by two things at once: the value set, which

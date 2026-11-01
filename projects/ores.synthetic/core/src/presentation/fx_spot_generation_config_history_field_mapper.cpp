@@ -46,6 +46,10 @@ render_fx_spot_generation_config_fields(const domain::fx_spot_generation_config&
     fields.push_back({.name = "Source Name", .value = v.source_name});
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Price Source", .value = v.price_source});
+    fields.push_back({.name = "Calibration Window Days",
+                      .value = v.calibration_window_days ?
+                                   std::to_string(*v.calibration_window_days) :
+                                   std::string{}});
     fields.push_back({.name = "Gmm Initial Price", .value = std::to_string(v.gmm_initial_price)});
     fields.push_back({.name = "Ticks Per Hour", .value = std::to_string(v.ticks_per_hour)});
     fields.push_back({.name = "Process Type", .value = v.process_type});

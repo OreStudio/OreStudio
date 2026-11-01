@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8C63F8CB-EA20-4C25-BCC5-6DC25D8E41A9
 :END:
 #+title: ores.refdata.product_family_code

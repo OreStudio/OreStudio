@@ -2973,6 +2973,23 @@ const fr: SourceCatalogue = {
                 "L'administrateur n'a pas d'entité système à laquelle se connecter ; l'installation ne peut donc pas être amorcée.",
         },
 
+        sources: {
+            title: 'Lire les conditions des sources publiques',
+            lead: 'L’installation peut charger les taux quotidiens d’éditeurs publics. Lisez les conditions de chacun, puis acceptez-les ou refusez-les ; un éditeur refusé n’est jamais interrogé, et vous pouvez changer d’avis plus tard sur l’écran des taux publics.',
+            next: 'Continuer',
+            none: 'Aucun éditeur public n’énonce de conditions, donc il n’y a rien à accepter.',
+            gives: 'Publie {count} séries de taux quotidiens.',
+            terms: 'Conditions',
+            credit: 'Mention demandée',
+            storage: 'Stockage',
+            storageAllowed: 'Ses valeurs peuvent être stockées',
+            storageRefused: 'Ses valeurs ne peuvent pas être stockées, donc il n’est pas interrogé',
+            accept: 'Accepter',
+            decline: 'Refuser',
+            accepted: 'Accepté',
+            declined: 'Refusé',
+        },
+
         profile: {
             title: 'Choisir un point de départ',
             lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
@@ -3881,6 +3898,7 @@ const fr: SourceCatalogue = {
             kindLegByLeg: '{kind} — chaque jambe confirme seule',
             counterparty: 'Contrepartie',
             allCounterparties: 'Toutes les contreparties',
+            trades: 'Transactions',
             chosen: 'Choisies',
             noneChosen:
                 'Aucune transaction choisie. Au moins deux, et elles partagent une contrepartie.',
@@ -4002,6 +4020,8 @@ const fr: SourceCatalogue = {
             tradeDate: 'Date de la transaction',
             security: 'Titre',
             notional: 'Notionnel',
+            boughtSold: 'Acheté / vendu',
+            quantity: 'Quantité',
             identifierType: "Schéma d'identifiant",
             identifier: 'Identifiant',
             identifierHint: 'Le nom que le desk donne à cette transaction.',
@@ -4395,6 +4415,7 @@ const fr: SourceCatalogue = {
             columns: 'Colonnes',
             noRecords: "Il n'y a pas encore de {plural}.",
             noMatchSearch: 'Aucun élément de {plural} ne correspond à la recherche.',
+            chooseAll: 'Choisir toutes les lignes',
             clearSearch: 'Effacer la recherche',
             retry: 'Réessayer',
             showing: '{first}–{last} sur {total}',
@@ -4530,6 +4551,7 @@ const fr: SourceCatalogue = {
             ticks_per_hour: 'Ticks par heure',
             price_source: 'Prix initial depuis',
             gmm_initial_price: 'Prix initial',
+            calibration_window_days: 'Fenêtre de calibrage (jours)',
             enabled: 'Activé',
             auto_start: 'Démarre avec le service',
             mean: 'Moyenne (μ)',
@@ -4881,6 +4903,131 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        calibration: {
+            title: 'Calibrage',
+            lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
+            assetClass: "Classe d'actifs",
+            classes: {
+                fx: 'Change au comptant',
+            },
+            policyLine: {
+                automatic:
+                    'Automatique : fenêtre de {window} jours, {inverse}, {order}, {fallback}.',
+                custom: 'Politique de la classe : fenêtre de {window} jours, {inverse}, {order}, {fallback}.',
+                open: 'Voir la politique',
+            },
+            inverse: {
+                allowed: 'inverse permis',
+                refused: 'inverse non permis',
+            },
+            order: {
+                everyProvider: 'chaque fournisseur, par code',
+            },
+            fallback: {
+                keep_fixed: 'garder le niveau fixe',
+                refuse: 'refuser de démarrer',
+            },
+            coverage: {
+                total: 'Flux',
+                fromFixing: "D'un fixing",
+                keptFixed: 'Niveau gardé',
+                refused: 'Refusés',
+                overridden: 'Dérogent à la politique',
+            },
+            filter: {
+                label: 'Afficher',
+                all: 'Tous',
+                attention: 'À examiner',
+                overridden: 'Dérogations',
+            },
+            columns: {
+                feed: 'Flux',
+                start: 'Départ',
+                source: 'Source',
+                state: 'État',
+            },
+            outcome: {
+                fixing: "d'un fixing",
+                fixed: 'niveau gardé',
+                refused: 'refusé',
+            },
+            overrides: 'déroge',
+            empty: 'Aucun flux ne correspond à ce filtre.',
+            candidateState: {
+                chosen: 'démarre ici',
+                skipped: 'écarté',
+                not_reached: 'non atteint',
+            },
+            feed: {
+                title: 'Flux',
+                tabs: 'Calibrage du flux',
+                tab: {
+                    record: 'Fiche du flux',
+                    flow: 'Parcours',
+                },
+                back: 'Retour à la liste',
+                missing: "Ce flux n'est pas dans la classe.",
+                start: 'Où un lancement démarre maintenant',
+                level: 'Niveau',
+                provider: 'Fournisseur',
+                date: 'Date du fixing',
+                invertedNote:
+                    "L'élément cote la paire dans l'autre sens, donc sa valeur est lue comme son inverse.",
+                candidates: 'Candidats',
+                noCandidates: 'Aucun candidat ne couvre cette paire.',
+                candidate: 'Candidat',
+                readAs: 'Lu comme',
+                direct: 'direct',
+                inverse: '1/x',
+                pin: 'Épingler',
+                exceptions: 'Dérogations',
+                followsPolicy: 'Ce flux suit la politique de sa classe.',
+                overridesItems:
+                    'Ce flux nomme ses propres éléments, donc il déroge à la politique de la classe.',
+                overridesWindow:
+                    'Ce flux mesure sur sa propre fenêtre de {days} jours, donc il déroge à la politique de la classe.',
+                clearPin: 'Effacer les éléments et suivre la politique',
+                editWindow: 'Modifier la fenêtre du flux',
+                toPolicy: 'Aller à la politique',
+            },
+            flow: {
+                policy: '1. Politique',
+                candidates: '2. Candidats',
+                resolver: '3. Résolution',
+                process: '4. Processus',
+                explicit: 'Le flux nomme ses propres {count} élément(s).',
+                derived: '{count} candidat(s) dérivé(s) de la paire et de la politique.',
+                chosen: 'Démarre du fixing {provider} de {value} au {date}.',
+                fixed: "Aucun candidat n'a de fixing, donc le flux garde son niveau fixe.",
+                refused:
+                    "Aucun candidat n'a de fixing, et la politique refuse de démarrer le flux.",
+                mixtureScaled: 'La volatilité mesurée met à l’échelle les écarts du mélange.',
+                mixtureKept: 'Le mélange configuré est gardé.',
+            },
+            policy: {
+                title: 'Politique de calibrage',
+                affectsEvery: 'Un changement ici touche chaque flux de la classe.',
+                automatic:
+                    "La classe n'a pas de politique, donc elle se calibre sur les valeurs par défaut.",
+                custom: 'La classe a sa propre politique.',
+                systemOnly:
+                    "La politique appartient à l'installation, donc seul le locataire système la change.",
+                window: 'Fenêtre (jours)',
+                windowRange: 'De 2 à 180 jours.',
+                inverse: 'Inverse',
+                fallback: 'Sans fixing',
+                order: 'Ordre des fournisseurs',
+                up: 'Monter {provider}',
+                down: 'Descendre {provider}',
+                remove: 'Retirer',
+                add: 'Ajouter un fournisseur',
+                addPrompt: 'Choisir un fournisseur',
+                save: 'Enregistrer la politique',
+                reset: "Revenir à l'automatique",
+                coverage: 'Couverture',
+                record: 'Registre du calibrage',
+            },
+        },
         publicRates: {
             title: 'Taux publics',
             lead: 'Les taux et courbes que les organismes publics publient, ce que nous détenons, et s’ils arrivent.',
@@ -4927,6 +5074,7 @@ const fr: SourceCatalogue = {
                 acceptedBy: 'Par {who} le {when}',
                 notAccepted: 'Non acceptées',
                 accept: 'Accepter les conditions',
+                withdraw: 'Retirer l’acceptation',
                 read: 'Lire les conditions',
             },
             detail: {
@@ -5950,11 +6098,13 @@ const fr: SourceCatalogue = {
                 sensitivity:
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
-                    fixed: 'Le flux part du prix initial que vous donnez.',
+                    fixed: 'Le flux part du prix initial que vous donnez. À réserver à une paire qu’aucune source publique ne fixe ; le chemin du fixing est le défaut.',
                     fixing: 'Le flux part du fixing public le plus récent de la paire et en tire sa volatilité ; sans fixing, il garde le prix initial.',
                 },
                 enabled: 'Un flux non activé ne peut pas démarrer.',
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
+                calibration_window_days:
+                    'La fenêtre propre au flux, de 2 à 180 jours, à la place de celle de la politique de sa classe. Laissez vide pour suivre la politique.',
             },
             start: {
                 title: "D'où part cette exécution",
@@ -5966,6 +6116,16 @@ const fr: SourceCatalogue = {
                 inverted:
                     "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
                 window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
+                measures: {
+                    volatility:
+                        "Volatilité réalisée {daily} par jour, {hourly} par heure : elle a changé le calibrage, car elle met le mélange à l'échelle.",
+                    recorded: "Enregistré pour une politique future, non utilisé aujourd'hui :",
+                    drift: 'Dérive annualisée : {value}',
+                    range: 'Rendements journaliers de {min} à {max}',
+                    age: 'Le fixing date de {days} jour(s)',
+                    jumps: 'Mouvements au-delà de trois écarts : {count}',
+                    dispersion: '{provider} est à {bp} pb',
+                },
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",

@@ -42,9 +42,6 @@ export interface ProviderWrite {
     terms_credit: string;
     allows_storage: boolean;
     credential_ref: string;
-    terms_accepted_digest: string;
-    terms_accepted_by: string;
-    terms_accepted_at: string | null;
 }
 
 export interface ProviderChange {

@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_SWAP_LEG_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -305,7 +311,779 @@ inline constexpr std::string_view created = "trading.v1.swap_legs_events.created
 inline constexpr std::string_view updated = "trading.v1.swap_legs_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.swap_legs_events.deleted";
 }
+/**
+ * @brief The members of swap_leg_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &swap_leg_key::trade_id},
+        utility::codec::field{"leg_number", &swap_leg_key::leg_number},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &swap_leg_write::trade_id},
+        utility::codec::field{"leg_number", &swap_leg_write::leg_number},
+        utility::codec::field{"trade_activity_id", &swap_leg_write::trade_activity_id},
+        utility::codec::field{"payer", &swap_leg_write::payer},
+        utility::codec::field{"leg_type_code", &swap_leg_write::leg_type_code},
+        utility::codec::field{"day_count_fraction_code", &swap_leg_write::day_count_fraction_code},
+        utility::codec::field{"business_day_convention_code",
+                              &swap_leg_write::business_day_convention_code},
+        utility::codec::field{"payment_frequency_code", &swap_leg_write::payment_frequency_code},
+        utility::codec::field{"floating_index_code", &swap_leg_write::floating_index_code},
+        utility::codec::field{"currency", &swap_leg_write::currency},
+        utility::codec::field{"leg_group", &swap_leg_write::leg_group},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &swap_leg_change::write},
+        utility::codec::field{"precondition", &swap_leg_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &swap_leg_removal::key},
+        utility::codec::field{"precondition", &swap_leg_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &swap_leg_lookup::key},
+        utility::codec::field{"swap_leg", &swap_leg_lookup::swap_leg},
+    };
+}
+
+/**
+ * @brief The members of swap_legs_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_legs_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &swap_legs_filter::trade_id},
+        utility::codec::field{"trade_id_one_of", &swap_legs_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &swap_leg_event::event_id},
+        utility::codec::field{"key", &swap_leg_event::key},
+        utility::codec::field{"action", &swap_leg_event::action},
+        utility::codec::field{"version", &swap_leg_event::version},
+        utility::codec::field{"occurred_at", &swap_leg_event::occurred_at},
+        utility::codec::field{"correlation_id", &swap_leg_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_version_key&) {
+    return std::tuple{
+        utility::codec::field{"swap_leg", &swap_leg_version_key::swap_leg},
+        utility::codec::field{"version", &swap_leg_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of swap_leg_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const swap_leg_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &swap_leg_versions_filter::version},
+        utility::codec::field{"from_version", &swap_leg_versions_filter::from_version},
+        utility::codec::field{"to_version", &swap_leg_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_swap_legs_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_swap_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_swap_legs_request::offset},
+        utility::codec::field{"limit", &list_swap_legs_request::limit},
+        utility::codec::field{"order", &list_swap_legs_request::order},
+        utility::codec::field{"filter", &list_swap_legs_request::filter},
+        utility::codec::field{"as_of", &list_swap_legs_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_swap_legs_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_swap_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_swap_legs_response::result},
+        utility::codec::field{"swap_legs", &list_swap_legs_response::swap_legs},
+        utility::codec::field{"total", &list_swap_legs_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_swap_leg_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_swap_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_swap_leg_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_swap_leg_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_swap_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_swap_leg_response::result},
+        utility::codec::field{"swap_leg", &get_swap_leg_response::swap_leg},
+    };
+}
+
+/**
+ * @brief The members of get_many_swap_legs_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_swap_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_swap_legs_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_swap_legs_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_swap_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_swap_legs_response::result},
+        utility::codec::field{"entries", &get_many_swap_legs_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_swap_leg_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_swap_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_swap_leg_request::change},
+        utility::codec::field{"intent", &put_swap_leg_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_swap_leg_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_swap_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_swap_leg_response::result},
+        utility::codec::field{"swap_leg", &put_swap_leg_response::swap_leg},
+    };
+}
+
+/**
+ * @brief The members of put_many_swap_legs_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_swap_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_swap_legs_request::changes},
+        utility::codec::field{"intent", &put_many_swap_legs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_swap_legs_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_swap_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_swap_legs_response::result},
+        utility::codec::field{"swap_legs", &put_many_swap_legs_response::swap_legs},
+    };
+}
+
+/**
+ * @brief The members of delete_swap_leg_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_swap_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_swap_leg_request::removal},
+        utility::codec::field{"intent", &delete_swap_leg_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_swap_leg_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_swap_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_swap_leg_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_swap_legs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_swap_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_swap_legs_request::removals},
+        utility::codec::field{"intent", &delete_many_swap_legs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_swap_legs_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_swap_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_swap_legs_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_swap_legs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_trade_id_swap_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &list_by_trade_id_swap_legs_request::trade_id},
+        utility::codec::field{"scope", &list_by_trade_id_swap_legs_request::scope},
+        utility::codec::field{"offset", &list_by_trade_id_swap_legs_request::offset},
+        utility::codec::field{"limit", &list_by_trade_id_swap_legs_request::limit},
+        utility::codec::field{"order", &list_by_trade_id_swap_legs_request::order},
+        utility::codec::field{"filter", &list_by_trade_id_swap_legs_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_swap_legs_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_trade_id_swap_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_trade_id_swap_legs_response::result},
+        utility::codec::field{"swap_legs", &list_by_trade_id_swap_legs_response::swap_legs},
+        utility::codec::field{"total", &list_by_trade_id_swap_legs_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_swap_leg_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_swap_leg_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_swap_leg_versions_request::key},
+        utility::codec::field{"offset", &list_swap_leg_versions_request::offset},
+        utility::codec::field{"limit", &list_swap_leg_versions_request::limit},
+        utility::codec::field{"order", &list_swap_leg_versions_request::order},
+        utility::codec::field{"filter", &list_swap_leg_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_swap_leg_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_swap_leg_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_swap_leg_versions_response::result},
+        utility::codec::field{"versions", &list_swap_leg_versions_response::versions},
+        utility::codec::field{"total", &list_swap_leg_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_swap_leg_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_swap_leg_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_swap_leg_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_swap_leg_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_swap_leg_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_swap_leg_version_response::result},
+        utility::codec::field{"version", &get_swap_leg_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_key& v);
+    static ores::trading::messaging::swap_leg_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_key& v);
+    static ores::trading::messaging::swap_leg_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_write& v);
+    static ores::trading::messaging::swap_leg_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_write& v);
+    static ores::trading::messaging::swap_leg_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_change& v);
+    static ores::trading::messaging::swap_leg_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_change& v);
+    static ores::trading::messaging::swap_leg_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_removal& v);
+    static ores::trading::messaging::swap_leg_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_removal& v);
+    static ores::trading::messaging::swap_leg_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_lookup& v);
+    static ores::trading::messaging::swap_leg_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_lookup& v);
+    static ores::trading::messaging::swap_leg_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_legs_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_legs_filter& v);
+    static ores::trading::messaging::swap_legs_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_legs_filter& v);
+    static ores::trading::messaging::swap_legs_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_event& v);
+    static ores::trading::messaging::swap_leg_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_event& v);
+    static ores::trading::messaging::swap_leg_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_version_key& v);
+    static ores::trading::messaging::swap_leg_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_version_key& v);
+    static ores::trading::messaging::swap_leg_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::swap_leg_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::swap_leg_versions_filter& v);
+    static ores::trading::messaging::swap_leg_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::swap_leg_versions_filter& v);
+    static ores::trading::messaging::swap_leg_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_swap_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_swap_legs_request& v);
+    static ores::trading::messaging::list_swap_legs_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_swap_legs_request& v);
+    static ores::trading::messaging::list_swap_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_swap_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_swap_legs_response& v);
+    static ores::trading::messaging::list_swap_legs_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_swap_legs_response& v);
+    static ores::trading::messaging::list_swap_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_swap_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_swap_leg_request& v);
+    static ores::trading::messaging::get_swap_leg_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_swap_leg_request& v);
+    static ores::trading::messaging::get_swap_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_swap_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_swap_leg_response& v);
+    static ores::trading::messaging::get_swap_leg_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_swap_leg_response& v);
+    static ores::trading::messaging::get_swap_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_many_swap_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_swap_legs_request& v);
+    static ores::trading::messaging::get_many_swap_legs_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_many_swap_legs_request& v);
+    static ores::trading::messaging::get_many_swap_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_many_swap_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_swap_legs_response& v);
+    static ores::trading::messaging::get_many_swap_legs_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_swap_legs_response& v);
+    static ores::trading::messaging::get_many_swap_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_swap_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_swap_leg_request& v);
+    static ores::trading::messaging::put_swap_leg_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_swap_leg_request& v);
+    static ores::trading::messaging::put_swap_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_swap_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_swap_leg_response& v);
+    static ores::trading::messaging::put_swap_leg_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_swap_leg_response& v);
+    static ores::trading::messaging::put_swap_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_many_swap_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_swap_legs_request& v);
+    static ores::trading::messaging::put_many_swap_legs_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_many_swap_legs_request& v);
+    static ores::trading::messaging::put_many_swap_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_many_swap_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_swap_legs_response& v);
+    static ores::trading::messaging::put_many_swap_legs_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_swap_legs_response& v);
+    static ores::trading::messaging::put_many_swap_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_swap_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_swap_leg_request& v);
+    static ores::trading::messaging::delete_swap_leg_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_swap_leg_request& v);
+    static ores::trading::messaging::delete_swap_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_swap_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_swap_leg_response& v);
+    static ores::trading::messaging::delete_swap_leg_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_swap_leg_response& v);
+    static ores::trading::messaging::delete_swap_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_swap_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_many_swap_legs_request& v);
+    static ores::trading::messaging::delete_many_swap_legs_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_swap_legs_request& v);
+    static ores::trading::messaging::delete_many_swap_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_swap_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_swap_legs_response& v);
+    static ores::trading::messaging::delete_many_swap_legs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_swap_legs_response& v);
+    static ores::trading::messaging::delete_many_swap_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_trade_id_swap_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_by_trade_id_swap_legs_request& v);
+    static ores::trading::messaging::list_by_trade_id_swap_legs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_by_trade_id_swap_legs_request& v);
+    static ores::trading::messaging::list_by_trade_id_swap_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_trade_id_swap_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_by_trade_id_swap_legs_response& v);
+    static ores::trading::messaging::list_by_trade_id_swap_legs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_by_trade_id_swap_legs_response& v);
+    static ores::trading::messaging::list_by_trade_id_swap_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_swap_leg_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_swap_leg_versions_request& v);
+    static ores::trading::messaging::list_swap_leg_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_swap_leg_versions_request& v);
+    static ores::trading::messaging::list_swap_leg_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_swap_leg_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_swap_leg_versions_response& v);
+    static ores::trading::messaging::list_swap_leg_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_swap_leg_versions_response& v);
+    static ores::trading::messaging::list_swap_leg_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_swap_leg_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_swap_leg_version_request& v);
+    static ores::trading::messaging::get_swap_leg_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_swap_leg_version_request& v);
+    static ores::trading::messaging::get_swap_leg_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_swap_leg_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_swap_leg_version_response& v);
+    static ores::trading::messaging::get_swap_leg_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_swap_leg_version_response& v);
+    static ores::trading::messaging::get_swap_leg_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

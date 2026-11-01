@@ -25,6 +25,7 @@
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstdint>
 #include <limits>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -282,6 +283,38 @@ struct json_codec<std::vector<T>> {
         yyjson_arr_iter iter = yyjson_arr_iter_with(v);
         while ((e = yyjson_arr_iter_next(&iter)) != nullptr)
             out.push_back(json_codec<T>::read(e));
+        return out;
+    }
+};
+
+/**
+ * @brief A map from names to values is an object: each key is a member name,
+ * in the map's order, and each value is in its element's form.
+ *
+ * A key that appears twice on read keeps its first value. The writer never
+ * writes a key twice, so only a foreign sender can produce one.
+ */
+template <typename T>
+struct json_codec<std::map<std::string, T>> {
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const std::map<std::string, T>& v) {
+        auto* object = yyjson_mut_obj(doc);
+        for (const auto& [name, value] : v) {
+            auto* key = yyjson_mut_strncpy(doc, name.data(), name.size());
+            if (!yyjson_mut_obj_add(object, key, json_codec<T>::write(doc, value)))
+                throw std::runtime_error("Could not add " + name + " to a JSON object");
+        }
+        return object;
+    }
+
+    static std::map<std::string, T> read(yyjson_val* v) {
+        if (!yyjson_is_obj(v))
+            throw std::invalid_argument("Not an object: the JSON value is not one");
+        std::map<std::string, T> out;
+        yyjson_val* key = nullptr;
+        yyjson_obj_iter iter = yyjson_obj_iter_with(v);
+        while ((key = yyjson_obj_iter_next(&iter)) != nullptr)
+            out.emplace(std::string(yyjson_get_str(key), yyjson_get_len(key)),
+                        json_codec<T>::read(yyjson_obj_iter_get_val(key)));
         return out;
     }
 };

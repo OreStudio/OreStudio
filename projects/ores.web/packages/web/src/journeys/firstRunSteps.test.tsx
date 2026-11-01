@@ -70,6 +70,9 @@ function fakeServer(): JourneyServer {
         createAdministrator: vi.fn(async () => undefined),
         recheckBootstrap: vi.fn(async () => undefined),
         completeSystemOnboarding: vi.fn(async () => undefined),
+        publicSources: vi.fn(async () => []),
+        acceptSourceTerms: vi.fn(async () => undefined),
+        declineSourceTerms: vi.fn(async () => undefined),
         tenantSetupRun: vi.fn(async () => ({ instanceId: '', status: '', error: '' })),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
         chooseParty: vi.fn(async () => undefined),
@@ -137,6 +140,8 @@ function steps(
         readonly onAdministratorEntered?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
         readonly onFinished?: () => void;
+        /** Whether every public source has been accepted or declined. */
+        readonly sourcesDecided?: boolean;
     } = {},
 ) {
     return firstRunSteps({
@@ -156,6 +161,8 @@ function steps(
         },
         creatingPassword: overrides.creatingPassword ?? 'Issued-Password-1',
         welcome: 'Welcome body',
+        publicSources: 'Public sources body',
+        sourcesDecided: overrides.sourcesDecided ?? true,
         administratorForm: 'Administrator body',
         administratorExists: overrides.administratorExists ?? false,
         administratorSignIn: 'Administrator sign-in body',
@@ -174,6 +181,7 @@ describe('the first run rail', () => {
         expect(steps().map((step) => step.id)).toEqual([
             'welcome',
             'administrator',
+            'sources',
             'profile',
             'details',
             'review',
@@ -186,6 +194,7 @@ describe('the first run rail', () => {
         expect(steps().map((step) => step.title)).toEqual([
             'Welcome to ORE Studio',
             'Create the administrator',
+            'Read the public sources\u2019 terms',
             'Choose a starting point',
             'Describe the tenant',
             'Review',
@@ -216,7 +225,7 @@ describe('the first run rail', () => {
     });
 
     it('will not describe a tenant before a starting point is chosen', () => {
-        const [, , , details] = steps();
+        const [, , , , details] = steps();
 
         expect(details?.next?.enabled).toBe(false);
     });
@@ -227,7 +236,7 @@ describe('the first run rail', () => {
             details: { ...detailsFor(profile), adminPassword: 'Abcdefgh123!' },
             passwordAcceptable: true,
         });
-        const [, , profileStep, details] = steps({ tenant });
+        const [, , , profileStep, details] = steps({ tenant });
 
         expect(profileStep?.next?.enabled).toBe(true);
         expect(details?.next?.enabled).toBe(true);
@@ -261,7 +270,7 @@ function newTenantStepsIds(): readonly string[] {
 
 describe('a step with no state behind it', () => {
     it('renders nothing rather than inventing a form nobody filled in', () => {
-        const [, , , details] = steps();
+        const [, , , , details] = steps();
 
         expect(details?.body).toBeNull();
     });
@@ -316,6 +325,7 @@ describe('an installation that keeps the system tenant alone', () => {
         expect(systemOnly().map((step) => step.id)).toEqual([
             'welcome',
             'administrator',
+            'sources',
             'profile',
             'ready',
         ]);
@@ -325,7 +335,7 @@ describe('an installation that keeps the system tenant alone', () => {
         const tenant = steps({ choice: 'first-tenant' }).map((step) => step.id);
         const system = systemOnly().map((step) => step.id);
 
-        expect(tenant).toHaveLength(7);
+        expect(tenant).toHaveLength(8);
         expect(tenant.filter((id) => !system.includes(id))).toEqual([
             'details',
             'review',
@@ -451,5 +461,20 @@ describe('an installation that already has its administrator', () => {
         const [, administrator] = steps({ administratorExists: true, acceptable: false });
 
         expect(administrator?.next?.enabled).toBe(true);
+    });
+});
+
+describe('the public sources step', () => {
+    it('follows the administrator, so the account that accepts is the one just made', () => {
+        const ids = steps().map((step) => step.id);
+        expect(ids.indexOf('sources')).toBe(ids.indexOf('administrator') + 1);
+        expect(steps({ choice: 'system-only' }).map((step) => step.id)).toContain('sources');
+    });
+
+    it('lets the person on only once every publisher is accepted or declined', () => {
+        const step = (decided: boolean) =>
+            steps({ sourcesDecided: decided }).find((s) => s.id === 'sources');
+        expect(step(false)?.next?.enabled).toBe(false);
+        expect(step(true)?.next?.enabled).toBe(true);
     });
 });

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 121
+Tables: 122
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1683,6 +1683,34 @@ package "trading" #E8F5E9 {
     ores.trading.credit_instrument, holds the trade type code, the party, the
     instrument's start and maturity dates and its description; this table holds
     only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_draft_reasons_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+          responsible_role : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_draft_reasons_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Draft Reason Table
+    A trade that is not live is a draft, and a draft with no stated reason is a deal
+    nobody can pick up: the desk sees a row that has not moved and cannot tell whether
+    it waits on the customer, on a confirmation, or on the rest of a structure.
+    The lookup states the reason, and the desk that owns it. The reason is a code the
+    booking names, so a draft's reason is reference data rather than free text, and
+    the responsible desk is what a report groups drafts by when it asks who is late.
     end note
 
     entity ores_trading_entry_channel_types_tbl <<temporal>> #C6F0D8 {
@@ -4511,6 +4539,7 @@ package "trading" #E8F5E9 {
         * origin : text <<FK>>
           origin_reference : text
         * external_version : integer
+          draft_reason_code : text
           economic_digest : text
         * modified_by : text
         * performed_by : text

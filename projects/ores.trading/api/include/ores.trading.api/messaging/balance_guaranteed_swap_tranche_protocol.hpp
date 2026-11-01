@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_BALANCE_GUARANTEED_SWAP_TRANCHE_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -319,7 +325,930 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "trading.v1.balance_guaranteed_swap_tranches_events.deleted";
 }
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &balance_guaranteed_swap_tranche_key::trade_id},
+        utility::codec::field{"sequence_number",
+                              &balance_guaranteed_swap_tranche_key::sequence_number},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_write, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &balance_guaranteed_swap_tranche_write::trade_id},
+        utility::codec::field{"sequence_number",
+                              &balance_guaranteed_swap_tranche_write::sequence_number},
+        utility::codec::field{"trade_activity_id",
+                              &balance_guaranteed_swap_tranche_write::trade_activity_id},
+        utility::codec::field{"description", &balance_guaranteed_swap_tranche_write::description},
+        utility::codec::field{"security_id", &balance_guaranteed_swap_tranche_write::security_id},
+        utility::codec::field{"seniority", &balance_guaranteed_swap_tranche_write::seniority},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_change, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &balance_guaranteed_swap_tranche_change::write},
+        utility::codec::field{"precondition",
+                              &balance_guaranteed_swap_tranche_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_removal, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &balance_guaranteed_swap_tranche_removal::key},
+        utility::codec::field{"precondition",
+                              &balance_guaranteed_swap_tranche_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_lookup, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &balance_guaranteed_swap_tranche_lookup::key},
+        utility::codec::field{
+            "balance_guaranteed_swap_tranche",
+            &balance_guaranteed_swap_tranche_lookup::balance_guaranteed_swap_tranche},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranches_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranches_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &balance_guaranteed_swap_tranches_filter::trade_id},
+        utility::codec::field{"trade_id_one_of",
+                              &balance_guaranteed_swap_tranches_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_event, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &balance_guaranteed_swap_tranche_event::event_id},
+        utility::codec::field{"key", &balance_guaranteed_swap_tranche_event::key},
+        utility::codec::field{"action", &balance_guaranteed_swap_tranche_event::action},
+        utility::codec::field{"version", &balance_guaranteed_swap_tranche_event::version},
+        utility::codec::field{"occurred_at", &balance_guaranteed_swap_tranche_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &balance_guaranteed_swap_tranche_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_version_key, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "balance_guaranteed_swap_tranche",
+            &balance_guaranteed_swap_tranche_version_key::balance_guaranteed_swap_tranche},
+        utility::codec::field{"version", &balance_guaranteed_swap_tranche_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of balance_guaranteed_swap_tranche_versions_filter, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const balance_guaranteed_swap_tranche_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &balance_guaranteed_swap_tranche_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &balance_guaranteed_swap_tranche_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &balance_guaranteed_swap_tranche_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_balance_guaranteed_swap_tranches_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_balance_guaranteed_swap_tranches_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_balance_guaranteed_swap_tranches_request::offset},
+        utility::codec::field{"limit", &list_balance_guaranteed_swap_tranches_request::limit},
+        utility::codec::field{"order", &list_balance_guaranteed_swap_tranches_request::order},
+        utility::codec::field{"filter", &list_balance_guaranteed_swap_tranches_request::filter},
+        utility::codec::field{"as_of", &list_balance_guaranteed_swap_tranches_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_balance_guaranteed_swap_tranches_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_balance_guaranteed_swap_tranches_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_balance_guaranteed_swap_tranches_response::result},
+        utility::codec::field{
+            "balance_guaranteed_swap_tranches",
+            &list_balance_guaranteed_swap_tranches_response::balance_guaranteed_swap_tranches},
+        utility::codec::field{"total", &list_balance_guaranteed_swap_tranches_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_balance_guaranteed_swap_tranche_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_balance_guaranteed_swap_tranche_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_balance_guaranteed_swap_tranche_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_balance_guaranteed_swap_tranche_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_balance_guaranteed_swap_tranche_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_balance_guaranteed_swap_tranche_response::result},
+        utility::codec::field{
+            "balance_guaranteed_swap_tranche",
+            &get_balance_guaranteed_swap_tranche_response::balance_guaranteed_swap_tranche},
+    };
+}
+
+/**
+ * @brief The members of get_many_balance_guaranteed_swap_tranches_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_balance_guaranteed_swap_tranches_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_balance_guaranteed_swap_tranches_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_balance_guaranteed_swap_tranches_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_many_balance_guaranteed_swap_tranches_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_many_balance_guaranteed_swap_tranches_response::result},
+        utility::codec::field{"entries",
+                              &get_many_balance_guaranteed_swap_tranches_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_balance_guaranteed_swap_tranche_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_balance_guaranteed_swap_tranche_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_balance_guaranteed_swap_tranche_request::change},
+        utility::codec::field{"intent", &put_balance_guaranteed_swap_tranche_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_balance_guaranteed_swap_tranche_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_balance_guaranteed_swap_tranche_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_balance_guaranteed_swap_tranche_response::result},
+        utility::codec::field{
+            "balance_guaranteed_swap_tranche",
+            &put_balance_guaranteed_swap_tranche_response::balance_guaranteed_swap_tranche},
+    };
+}
+
+/**
+ * @brief The members of put_many_balance_guaranteed_swap_tranches_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_balance_guaranteed_swap_tranches_request&) {
+    return std::tuple{
+        utility::codec::field{"changes",
+                              &put_many_balance_guaranteed_swap_tranches_request::changes},
+        utility::codec::field{"intent", &put_many_balance_guaranteed_swap_tranches_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_balance_guaranteed_swap_tranches_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const put_many_balance_guaranteed_swap_tranches_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &put_many_balance_guaranteed_swap_tranches_response::result},
+        utility::codec::field{
+            "balance_guaranteed_swap_tranches",
+            &put_many_balance_guaranteed_swap_tranches_response::balance_guaranteed_swap_tranches},
+    };
+}
+
+/**
+ * @brief The members of delete_balance_guaranteed_swap_tranche_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_balance_guaranteed_swap_tranche_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_balance_guaranteed_swap_tranche_request::removal},
+        utility::codec::field{"intent", &delete_balance_guaranteed_swap_tranche_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_balance_guaranteed_swap_tranche_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_balance_guaranteed_swap_tranche_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_balance_guaranteed_swap_tranche_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_balance_guaranteed_swap_tranches_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_balance_guaranteed_swap_tranches_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_balance_guaranteed_swap_tranches_request::removals},
+        utility::codec::field{"intent",
+                              &delete_many_balance_guaranteed_swap_tranches_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_balance_guaranteed_swap_tranches_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_balance_guaranteed_swap_tranches_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_balance_guaranteed_swap_tranches_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_balance_guaranteed_swap_tranches_request, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranches_request&) {
+    return std::tuple{
+        utility::codec::field{"trade_id",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::trade_id},
+        utility::codec::field{"scope",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::limit},
+        utility::codec::field{"order",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::order},
+        utility::codec::field{"filter",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_balance_guaranteed_swap_tranches_response, named as the
+ * wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_trade_id_balance_guaranteed_swap_tranches_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_response::result},
+        utility::codec::field{"balance_guaranteed_swap_tranches",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_response::
+                                  balance_guaranteed_swap_tranches},
+        utility::codec::field{"total",
+                              &list_by_trade_id_balance_guaranteed_swap_tranches_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_balance_guaranteed_swap_tranche_versions_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_balance_guaranteed_swap_tranche_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_balance_guaranteed_swap_tranche_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_balance_guaranteed_swap_tranche_versions_request::offset},
+        utility::codec::field{"limit",
+                              &list_balance_guaranteed_swap_tranche_versions_request::limit},
+        utility::codec::field{"order",
+                              &list_balance_guaranteed_swap_tranche_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_balance_guaranteed_swap_tranche_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_balance_guaranteed_swap_tranche_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_balance_guaranteed_swap_tranche_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_balance_guaranteed_swap_tranche_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_balance_guaranteed_swap_tranche_versions_response::versions},
+        utility::codec::field{"total",
+                              &list_balance_guaranteed_swap_tranche_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_balance_guaranteed_swap_tranche_version_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_balance_guaranteed_swap_tranche_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_balance_guaranteed_swap_tranche_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_balance_guaranteed_swap_tranche_version_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_balance_guaranteed_swap_tranche_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_balance_guaranteed_swap_tranche_version_response::result},
+        utility::codec::field{"version",
+                              &get_balance_guaranteed_swap_tranche_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_key& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_key& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_write& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_write& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_change& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_change& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_removal& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_removal& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_lookup& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_lookup& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranches_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranches_filter& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranches_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranches_filter& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranches_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_event& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_event& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_version_key& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::balance_guaranteed_swap_tranche_version_key& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::balance_guaranteed_swap_tranche_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::balance_guaranteed_swap_tranche_versions_filter& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_versions_filter
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::balance_guaranteed_swap_tranche_versions_filter& v);
+    static ores::trading::messaging::balance_guaranteed_swap_tranche_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_balance_guaranteed_swap_tranches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranches_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_balance_guaranteed_swap_tranches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranches_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_balance_guaranteed_swap_tranche_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_balance_guaranteed_swap_tranche_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_balance_guaranteed_swap_tranche_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::put_balance_guaranteed_swap_tranche_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::put_balance_guaranteed_swap_tranche_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_balance_guaranteed_swap_tranche_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::put_balance_guaranteed_swap_tranche_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::put_balance_guaranteed_swap_tranche_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request& v);
+    static ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response& v);
+    static ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request& v);
+    static ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response& v);
+    static ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<
+    ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request&
+            v);
+    static ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request&
+            v);
+    static ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<
+    ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response&
+            v);
+    static ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response&
+            v);
+    static ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response& v);
+    static ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response& v);
+    static ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

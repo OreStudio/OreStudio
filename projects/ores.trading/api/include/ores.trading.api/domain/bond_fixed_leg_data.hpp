@@ -26,8 +26,10 @@
 #define ORES_TRADING_API_DOMAIN_BOND_FIXED_LEG_DATA_HPP
 
 #include "ores.trading.api/domain/bond_float_data.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <span>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -53,6 +55,19 @@ struct bond_fixed_leg_data {
      */
     friend bool operator==(const bond_fixed_leg_data&, const bond_fixed_leg_data&) = default;
 };
+/**
+ * @brief The members of bond_fixed_leg_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_fixed_leg_data&) {
+    return std::tuple{
+        utility::codec::field{"rates", &bond_fixed_leg_data::rates},
+    };
+}
 
 /**
  * @brief The members of bond_fixed_leg_data the customer agreed to.

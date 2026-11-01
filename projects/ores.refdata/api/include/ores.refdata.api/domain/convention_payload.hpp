@@ -39,9 +39,7 @@ namespace ores::refdata::domain {
  * market data it needs, when its kind names one index. Everything kind-specific
  * lives in a part table, so this is all a central row holds beyond its identity.
  *
- * Extracted as a plain nested sub-struct so that
- * rfl::internal::no_duplicate_field_names never instantiates a Literal
- * wider than 5 fields for this block. See the decomposition section of
+ * A plain nested sub-struct. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct convention_payload {

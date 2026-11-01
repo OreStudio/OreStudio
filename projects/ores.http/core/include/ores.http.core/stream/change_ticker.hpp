@@ -42,8 +42,7 @@ namespace ores::http::stream {
  */
 class ORES_HTTP_CORE_EXPORT change_ticker final {
 public:
-    change_ticker(change_coalescer& coalescer, change_hub& hub,
-                  std::chrono::milliseconds interval)
+    change_ticker(change_coalescer& coalescer, change_hub& hub, std::chrono::milliseconds interval)
         : pump_(coalescer, hub)
         , interval_(interval) {}
 

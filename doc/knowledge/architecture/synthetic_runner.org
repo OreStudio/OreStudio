@@ -36,9 +36,9 @@ the adapter knows only vendor ids.
 
 ** Start results
 
-A start reports =started=, =already_running=, =id_conflict= or
-=vintage_data_missing=. The last value covers a curve generator that resolves its
-vintage price at construction and finds none.
+A start reports =started=, =already_running= or =id_conflict=. A feed whose
+calibration policy refuses to start it without a fixing is skipped with the
+reason.
 
 ** Three facts the code shape does not show
 

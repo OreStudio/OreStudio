@@ -268,6 +268,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             sensitivity: z.number().positive().default(1),
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
+            calibration_window_days: z.int().min(2).max(180).nullable().default(null),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {
@@ -566,6 +567,21 @@ export const feedStartSchema = z.object({
     used: z.int().default(0),
     hourly_spread: z.number().nullish(),
     note: z.string().default(''),
+    age_days: z.int().nullish(),
+    daily_spread: z.number().nullish(),
+    annual_drift: z.number().nullish(),
+    min_return: z.number().nullish(),
+    max_return: z.number().nullish(),
+    jumps: z.int().nullish(),
+    dispersion: z
+        .array(
+            z.object({
+                provider_code: z.string(),
+                item: z.string().default(''),
+                basis_points: z.number(),
+            }),
+        )
+        .default([]),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;

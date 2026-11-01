@@ -28,7 +28,9 @@
 #include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
 #include "ores.trading.api/domain/bond_floating_leg_data.hpp"
 #include "ores.trading.api/domain/bond_formula_based_leg_data.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -66,6 +68,21 @@ struct bond_leg_rate_data {
      */
     friend bool operator==(const bond_leg_rate_data&, const bond_leg_rate_data&) = default;
 };
+/**
+ * @brief The members of bond_leg_rate_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_leg_rate_data&) {
+    return std::tuple{
+        utility::codec::field{"fixed", &bond_leg_rate_data::fixed},
+        utility::codec::field{"floating", &bond_leg_rate_data::floating},
+        utility::codec::field{"formula_based", &bond_leg_rate_data::formula_based},
+    };
+}
 
 }
 

@@ -21,6 +21,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <map>
 #include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
@@ -74,6 +75,19 @@ inline constexpr auto wire_fields(const outer&) {
                       field{"many", &outer::many},
                       field{"maybe", &outer::maybe},
                       field{"note", &outer::note}};
+}
+
+/**
+ * @brief A type whose members map names to values, as an operation message's
+ * version table does.
+ */
+struct tally {
+    std::map<std::string, int> counts;
+    std::map<std::string, inner> parts;
+};
+
+inline constexpr auto wire_fields(const tally&) {
+    return std::tuple{field{"counts", &tally::counts}, field{"parts", &tally::parts}};
 }
 
 }
@@ -130,6 +144,30 @@ TEST_CASE("a member that is itself a type with a shape recurses", "[codec][objec
     CHECK(back_msgpack.one.count == v.one.count);
     CHECK(back_msgpack.many.size() == v.many.size());
     CHECK(back_msgpack.note == v.note);
+}
+
+TEST_CASE("a map from names to values is written as reflect-cpp writes it and reads back",
+          "[codec][object]") {
+    using wire_form_probe::inner;
+    using wire_form_probe::tally;
+
+    const auto full = tally{{{"b", 2}, {"a", 1}}, {{"x", inner{9, "nine"}}}};
+    const auto empty = tally{};
+
+    for (const auto& v : {full, empty}) {
+        const auto json = ores::utility::codec::json::write(v);
+        CHECK(json == rfl::json::write(v));
+        CHECK(ores::utility::codec::msgpack::write(v) == their_msgpack(v));
+
+        const auto back = ores::utility::codec::json::read<tally>(json);
+        CHECK(back.counts == v.counts);
+        CHECK(back.parts.size() == v.parts.size());
+
+        const auto back_msgpack = ores::utility::codec::msgpack::read<tally>(
+            text_of(ores::utility::codec::msgpack::write(v)));
+        CHECK(back_msgpack.counts == v.counts);
+    }
+    CHECK(ores::utility::codec::json::write(full).contains("\"counts\":{\"a\":1,\"b\":2}"));
 }
 
 TEST_CASE("a nested member that is absent is omitted from JSON and nil in MessagePack",

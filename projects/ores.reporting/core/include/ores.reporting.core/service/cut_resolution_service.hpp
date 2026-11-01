@@ -85,9 +85,8 @@ private:
      */
     domain::cut mint(const cut_take_plan& plan, const domain::cut_kind& kind);
 
-    cut_resolution run(const cut_selection& selection,
-                       const cut_resolution_context& ctx,
-                       bool preview_only);
+    cut_resolution
+    run(const cut_selection& selection, const cut_resolution_context& ctx, bool preview_only);
 
     context ctx_;
 };

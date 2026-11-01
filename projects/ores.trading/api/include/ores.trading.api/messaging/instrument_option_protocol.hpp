@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_INSTRUMENT_OPTION_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -301,7 +307,807 @@ inline constexpr std::string_view created = "trading.v1.instrument_options_event
 inline constexpr std::string_view updated = "trading.v1.instrument_options_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.instrument_options_events.deleted";
 }
+/**
+ * @brief The members of instrument_option_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &instrument_option_key::trade_id},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &instrument_option_write::trade_id},
+        utility::codec::field{"trade_activity_id", &instrument_option_write::trade_activity_id},
+        utility::codec::field{"long_short", &instrument_option_write::long_short},
+        utility::codec::field{"option_type", &instrument_option_write::option_type},
+        utility::codec::field{"payoff_type", &instrument_option_write::payoff_type},
+        utility::codec::field{"payoff_type_2", &instrument_option_write::payoff_type_2},
+        utility::codec::field{"style", &instrument_option_write::style},
+        utility::codec::field{"notice_period", &instrument_option_write::notice_period},
+        utility::codec::field{"notice_calendar", &instrument_option_write::notice_calendar},
+        utility::codec::field{"notice_convention", &instrument_option_write::notice_convention},
+        utility::codec::field{"mid_coupon_exercise", &instrument_option_write::mid_coupon_exercise},
+        utility::codec::field{"settlement", &instrument_option_write::settlement},
+        utility::codec::field{"settlement_method", &instrument_option_write::settlement_method},
+        utility::codec::field{"pay_off_at_expiry", &instrument_option_write::pay_off_at_expiry},
+        utility::codec::field{"premium_amount", &instrument_option_write::premium_amount},
+        utility::codec::field{"premium_currency", &instrument_option_write::premium_currency},
+        utility::codec::field{"premium_pay_date", &instrument_option_write::premium_pay_date},
+        utility::codec::field{"exercise_fee_settlement_period",
+                              &instrument_option_write::exercise_fee_settlement_period},
+        utility::codec::field{"exercise_fee_settlement_calendar",
+                              &instrument_option_write::exercise_fee_settlement_calendar},
+        utility::codec::field{"exercise_fee_settlement_convention",
+                              &instrument_option_write::exercise_fee_settlement_convention},
+        utility::codec::field{"automatic_exercise", &instrument_option_write::automatic_exercise},
+        utility::codec::field{"has_exercise_data", &instrument_option_write::has_exercise_data},
+        utility::codec::field{"exercise_date", &instrument_option_write::exercise_date},
+        utility::codec::field{"exercise_price", &instrument_option_write::exercise_price},
+        utility::codec::field{"has_payment_data", &instrument_option_write::has_payment_data},
+        utility::codec::field{"payment_lag", &instrument_option_write::payment_lag},
+        utility::codec::field{"payment_calendar", &instrument_option_write::payment_calendar},
+        utility::codec::field{"payment_convention", &instrument_option_write::payment_convention},
+        utility::codec::field{"payment_relative_to", &instrument_option_write::payment_relative_to},
+        utility::codec::field{"has_settlement_data", &instrument_option_write::has_settlement_data},
+        utility::codec::field{"settlement_pay_currency",
+                              &instrument_option_write::settlement_pay_currency},
+        utility::codec::field{"settlement_fx_index", &instrument_option_write::settlement_fx_index},
+        utility::codec::field{"settlement_fixing_date",
+                              &instrument_option_write::settlement_fixing_date},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &instrument_option_change::write},
+        utility::codec::field{"precondition", &instrument_option_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &instrument_option_removal::key},
+        utility::codec::field{"precondition", &instrument_option_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &instrument_option_lookup::key},
+        utility::codec::field{"instrument_option", &instrument_option_lookup::instrument_option},
+    };
+}
+
+/**
+ * @brief The members of instrument_options_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_options_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id_one_of", &instrument_options_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &instrument_option_event::event_id},
+        utility::codec::field{"key", &instrument_option_event::key},
+        utility::codec::field{"action", &instrument_option_event::action},
+        utility::codec::field{"version", &instrument_option_event::version},
+        utility::codec::field{"occurred_at", &instrument_option_event::occurred_at},
+        utility::codec::field{"correlation_id", &instrument_option_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_version_key&) {
+    return std::tuple{
+        utility::codec::field{"instrument_option",
+                              &instrument_option_version_key::instrument_option},
+        utility::codec::field{"version", &instrument_option_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of instrument_option_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_option_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &instrument_option_versions_filter::version},
+        utility::codec::field{"from_version", &instrument_option_versions_filter::from_version},
+        utility::codec::field{"to_version", &instrument_option_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_instrument_options_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_instrument_options_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_instrument_options_request::offset},
+        utility::codec::field{"limit", &list_instrument_options_request::limit},
+        utility::codec::field{"order", &list_instrument_options_request::order},
+        utility::codec::field{"filter", &list_instrument_options_request::filter},
+        utility::codec::field{"as_of", &list_instrument_options_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_instrument_options_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_instrument_options_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_instrument_options_response::result},
+        utility::codec::field{"instrument_options",
+                              &list_instrument_options_response::instrument_options},
+        utility::codec::field{"total", &list_instrument_options_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_instrument_option_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_instrument_option_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_instrument_option_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_instrument_option_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_instrument_option_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_instrument_option_response::result},
+        utility::codec::field{"instrument_option",
+                              &get_instrument_option_response::instrument_option},
+    };
+}
+
+/**
+ * @brief The members of get_many_instrument_options_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_instrument_options_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_instrument_options_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_instrument_options_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_instrument_options_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_instrument_options_response::result},
+        utility::codec::field{"entries", &get_many_instrument_options_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_instrument_option_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_instrument_option_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_instrument_option_request::change},
+        utility::codec::field{"intent", &put_instrument_option_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_instrument_option_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_instrument_option_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_instrument_option_response::result},
+        utility::codec::field{"instrument_option",
+                              &put_instrument_option_response::instrument_option},
+    };
+}
+
+/**
+ * @brief The members of put_many_instrument_options_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_instrument_options_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_instrument_options_request::changes},
+        utility::codec::field{"intent", &put_many_instrument_options_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_instrument_options_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_instrument_options_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_instrument_options_response::result},
+        utility::codec::field{"instrument_options",
+                              &put_many_instrument_options_response::instrument_options},
+    };
+}
+
+/**
+ * @brief The members of delete_instrument_option_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_instrument_option_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_instrument_option_request::removal},
+        utility::codec::field{"intent", &delete_instrument_option_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_instrument_option_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_instrument_option_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_instrument_option_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_instrument_options_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_instrument_options_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_instrument_options_request::removals},
+        utility::codec::field{"intent", &delete_many_instrument_options_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_instrument_options_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_instrument_options_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_instrument_options_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_instrument_option_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_instrument_option_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_instrument_option_versions_request::key},
+        utility::codec::field{"offset", &list_instrument_option_versions_request::offset},
+        utility::codec::field{"limit", &list_instrument_option_versions_request::limit},
+        utility::codec::field{"order", &list_instrument_option_versions_request::order},
+        utility::codec::field{"filter", &list_instrument_option_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_instrument_option_versions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_instrument_option_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_instrument_option_versions_response::result},
+        utility::codec::field{"versions", &list_instrument_option_versions_response::versions},
+        utility::codec::field{"total", &list_instrument_option_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_instrument_option_version_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_instrument_option_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_instrument_option_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_instrument_option_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_instrument_option_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_instrument_option_version_response::result},
+        utility::codec::field{"version", &get_instrument_option_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_key& v);
+    static ores::trading::messaging::instrument_option_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_key& v);
+    static ores::trading::messaging::instrument_option_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_write& v);
+    static ores::trading::messaging::instrument_option_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_write& v);
+    static ores::trading::messaging::instrument_option_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_change& v);
+    static ores::trading::messaging::instrument_option_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_change& v);
+    static ores::trading::messaging::instrument_option_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_removal& v);
+    static ores::trading::messaging::instrument_option_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_removal& v);
+    static ores::trading::messaging::instrument_option_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_lookup& v);
+    static ores::trading::messaging::instrument_option_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_lookup& v);
+    static ores::trading::messaging::instrument_option_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_options_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_options_filter& v);
+    static ores::trading::messaging::instrument_options_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_options_filter& v);
+    static ores::trading::messaging::instrument_options_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::instrument_option_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_event& v);
+    static ores::trading::messaging::instrument_option_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::instrument_option_event& v);
+    static ores::trading::messaging::instrument_option_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::instrument_option_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::instrument_option_version_key& v);
+    static ores::trading::messaging::instrument_option_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::instrument_option_version_key& v);
+    static ores::trading::messaging::instrument_option_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::instrument_option_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::instrument_option_versions_filter& v);
+    static ores::trading::messaging::instrument_option_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::instrument_option_versions_filter& v);
+    static ores::trading::messaging::instrument_option_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_instrument_options_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_instrument_options_request& v);
+    static ores::trading::messaging::list_instrument_options_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_instrument_options_request& v);
+    static ores::trading::messaging::list_instrument_options_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_instrument_options_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_instrument_options_response& v);
+    static ores::trading::messaging::list_instrument_options_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_instrument_options_response& v);
+    static ores::trading::messaging::list_instrument_options_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_instrument_option_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_instrument_option_request& v);
+    static ores::trading::messaging::get_instrument_option_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_instrument_option_request& v);
+    static ores::trading::messaging::get_instrument_option_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_instrument_option_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_instrument_option_response& v);
+    static ores::trading::messaging::get_instrument_option_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_instrument_option_response& v);
+    static ores::trading::messaging::get_instrument_option_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_instrument_options_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_instrument_options_request& v);
+    static ores::trading::messaging::get_many_instrument_options_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_instrument_options_request& v);
+    static ores::trading::messaging::get_many_instrument_options_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_instrument_options_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_instrument_options_response& v);
+    static ores::trading::messaging::get_many_instrument_options_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_instrument_options_response& v);
+    static ores::trading::messaging::get_many_instrument_options_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_instrument_option_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_instrument_option_request& v);
+    static ores::trading::messaging::put_instrument_option_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_instrument_option_request& v);
+    static ores::trading::messaging::put_instrument_option_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_instrument_option_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_instrument_option_response& v);
+    static ores::trading::messaging::put_instrument_option_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_instrument_option_response& v);
+    static ores::trading::messaging::put_instrument_option_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_instrument_options_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_instrument_options_request& v);
+    static ores::trading::messaging::put_many_instrument_options_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_instrument_options_request& v);
+    static ores::trading::messaging::put_many_instrument_options_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_instrument_options_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_instrument_options_response& v);
+    static ores::trading::messaging::put_many_instrument_options_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_instrument_options_response& v);
+    static ores::trading::messaging::put_many_instrument_options_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_instrument_option_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_instrument_option_request& v);
+    static ores::trading::messaging::delete_instrument_option_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_instrument_option_request& v);
+    static ores::trading::messaging::delete_instrument_option_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_instrument_option_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_instrument_option_response& v);
+    static ores::trading::messaging::delete_instrument_option_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_instrument_option_response& v);
+    static ores::trading::messaging::delete_instrument_option_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_instrument_options_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_instrument_options_request& v);
+    static ores::trading::messaging::delete_many_instrument_options_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_instrument_options_request& v);
+    static ores::trading::messaging::delete_many_instrument_options_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_instrument_options_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_instrument_options_response& v);
+    static ores::trading::messaging::delete_many_instrument_options_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_instrument_options_response& v);
+    static ores::trading::messaging::delete_many_instrument_options_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_instrument_option_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_instrument_option_versions_request& v);
+    static ores::trading::messaging::list_instrument_option_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_instrument_option_versions_request& v);
+    static ores::trading::messaging::list_instrument_option_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_instrument_option_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_instrument_option_versions_response& v);
+    static ores::trading::messaging::list_instrument_option_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_instrument_option_versions_response& v);
+    static ores::trading::messaging::list_instrument_option_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_instrument_option_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_instrument_option_version_request& v);
+    static ores::trading::messaging::get_instrument_option_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_instrument_option_version_request& v);
+    static ores::trading::messaging::get_instrument_option_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_instrument_option_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_instrument_option_version_response& v);
+    static ores::trading::messaging::get_instrument_option_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_instrument_option_version_response& v);
+    static ores::trading::messaging::get_instrument_option_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

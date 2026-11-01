@@ -35,24 +35,17 @@ using ores::ore::results::family_of_file;
 using ores::ore::results::output_families;
 using ores::ore::results::output_family;
 using ores::ore::results::is_cashflow_family;
+using ores::ore::results::is_market_state;
 using ores::ore::results::read_cashflows;
 using ores::ore::results::read_metrics;
 
 enum class shape { metric, cashflow, payload };
 
-// The families whose shape is a market state rather than a result. They are
-// stored as a payload by the marketdata task, so no reader in this component
-// claims them, and the gate says so instead of skipping them silently.
-const std::vector<std::string> payload_families = {"rawcube",
-                                                   "netcube",
-                                                   "stress_scenarios",
-                                                   "scenariostatistics",
-                                                   "todaysmarketcalibration",
-                                                   "scenario",
-                                                   "scenario_fullSurface"};
-
 shape shape_of(const output_family& family) {
-    if (std::ranges::find(payload_families, family.code) != payload_families.end())
+    // A market state is stored as one payload by the market data store, so no
+    // reader in this component claims it, and the gate says so rather than
+    // skipping it silently.
+    if (is_market_state(family))
         return shape::payload;
     // A family whose key names a payment states a cashflow, and every other
     // family states figures about a subject.
@@ -90,13 +83,9 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
                 CHECK_FALSE(family.measure_columns.empty());
                 ++metrics;
                 break;
-            case shape::payload: {
-                const auto is_payload =
-                    std::ranges::find(payload_families, family.code) != payload_families.end();
-                CHECK(is_payload);
+            case shape::payload:
                 ++payloads;
                 break;
-            }
             case shape::cashflow:
                 // A cashflow family states the numbering of a payment, or its
                 // reader could not tell one payment from another.
@@ -109,7 +98,7 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
 
     CHECK(metrics == 50);
     CHECK(cashflows == 3);
-    CHECK(payloads == payload_families.size());
+    CHECK(payloads == 7);
 }
 
 TEST_CASE("the checked-in corpus reads whole with the reader each family states", gate_tags) {

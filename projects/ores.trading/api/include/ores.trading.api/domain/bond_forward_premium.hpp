@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORWARD_PREMIUM_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_PREMIUM_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -58,6 +60,20 @@ struct bond_forward_premium {
      */
     friend bool operator==(const bond_forward_premium&, const bond_forward_premium&) = default;
 };
+/**
+ * @brief The members of bond_forward_premium, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_forward_premium&) {
+    return std::tuple{
+        utility::codec::field{"amount", &bond_forward_premium::amount},
+        utility::codec::field{"date", &bond_forward_premium::date},
+    };
+}
 
 }
 

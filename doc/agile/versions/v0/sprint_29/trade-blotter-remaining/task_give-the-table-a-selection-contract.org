@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-table-a-selection-contract
+#+pr: 4319
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Let RecordTable carry an optional selection, so a screen that chooses rows uses 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-28                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
@@ -42,9 +42,14 @@ Let RecordTable carry an optional selection, so a screen that chooses rows uses 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The contract is one optional prop. Three fields and no more: what is chosen,
+how a row is toggled, and, only where the screen offers it, whether the whole set
+may be chosen at once. A table that states no selection draws exactly what it drew
+before, which is what makes this safe to add to a component every list uses.
+
+What stays outside the table is the part that is not drawing: the count the screen
+shows, the rule that refuses a mixed counterparty, and the act the choice is for.
+The table reports keys and draws boxes; it decides nothing.
 
 * Measurements
 
@@ -58,7 +63,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The suite still draws | 2384 of 2385 web cases, the one failure being the tenant form case that fails on the tree without this branch | =npm test --workspace @ores/web= | this branch |
+| The grouping screen | the hand-rolled table is gone; the picker is =RecordTable= with a selection | =grep -c "<table" projects/ores.web/packages/web/src/trading/GroupStructuresPage.tsx= (0) | this branch |
 
 * Notes
 
@@ -77,7 +83,9 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4319][#4319]] | [agile] Close the trade blotter arc, and record what it leaves behind |
+| [[https://github.com/OreStudio/OreStudio/pull/4318][#4318]] | [agile] Close the selection contract task |
+| [[https://github.com/OreStudio/OreStudio/pull/4317][#4317]] | [web] Let the shared table take a selection, and draw the picker with it |
 
 * Review
 
@@ -86,3 +94,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=RecordTable= takes an opt-in selection, and the grouping screen draws its picker
+through it.
+
+| Piece | Where |
+|-------|-------|
+| The contract | =selection={{ chosen, onToggle, all? }}=, three fields and nothing else |
+| The drawing | a leading box on each row, and a leading box in the header only where the screen offers the whole set |
+| The label | =refdata.records.chooseAll=, in three languages |
+| The caller | the grouping screen, which no longer hand-rolls a table |
+
+* What stayed the screen's
+
+The count it shows, the rule that refuses a mixed counterparty, and the fact that
+a grouping needs two trades at least. The table reports a key when a row is
+toggled and draws the box that is in the state the screen states; it holds no
+opinion about what may be chosen.
+
+* What a screen that does not choose sees
+
+Nothing different. The prop is optional, and every other table in the product
+passes none.
+

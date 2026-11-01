@@ -68,6 +68,13 @@ public:
     static void process_accept_provider_terms(std::ostream& out,
                                               ores::nats::service::nats_client& session,
                                               const std::vector<std::string>& args);
+
+    /**
+     * @brief withdraw-provider-terms <provider_code>
+     */
+    static void process_withdraw_provider_terms(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
 };
 
 }

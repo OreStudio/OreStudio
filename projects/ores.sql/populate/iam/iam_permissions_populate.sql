@@ -605,9 +605,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:read',   'View curve volatility delta surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:write',  'Create and modify curve volatility delta surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_delta_surfaces:delete', 'Delete curve volatility delta surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:read',   'View curve volatility moneyness surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:write',  'Create and modify curve volatility moneyness surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_moneyness_surfaces:delete', 'Delete curve volatility moneyness surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:read',   'View curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:write',  'Create and modify curve volatility proxy surfaces');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_proxy_surfaces:delete', 'Delete curve volatility proxy surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:read',   'View curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:write',  'Create and modify curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smiles:delete', 'Delete curve volatility parametric smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:read',   'View curve volatility parametric smile parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:write',  'Create and modify curve volatility parametric smile parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_volatility_smile_parameters:delete', 'Delete curve volatility parametric smile parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:read', 'View inflation cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:write', 'Create and modify inflation cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_cap_floor_volatility_configs:delete', 'Delete inflation cap floor volatilities');
@@ -1595,6 +1604,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:read',   'View product type markets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:write',  'Create and modify product type markets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::product_type_asset_classes:delete', 'Delete product type markets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:read',   'View draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:write',  'Create and modify draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:delete', 'Delete draft reasons');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:read',                                'View trades');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:write',                               'Create and modify trades');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trades:write_service_origin', 'Write a trade that states a service origin, such as the synthetic population or the ORE import');
@@ -1689,6 +1701,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:read',           'View market data observations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:write',          'Create and modify market data observations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_observations:delete',         'Delete market data observations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:read',        'View the market state a run priced against');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:write',       'Store the market state a run priced against');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_state_payloads:delete',      'Delete stored market state');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:read',                'View market data fixings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:write',               'Create and modify market data fixings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_fixings:delete',              'Delete market data fixings');

@@ -43,6 +43,7 @@ import { registerEngineSettingsRoutes } from './engine-settings.js';
 import { registerPricingEngineRoutes } from './pricing-engines.js';
 import { registerSensitivityTemplateRoutes } from './sensitivity-templates.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
+import { registerCalibrationRoutes } from './calibration.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerMarketRegimeRoutes } from './market-regime.js';
 import { registerCurveRoutes } from './curves.js';
@@ -2929,6 +2930,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         eventClient.client.subscribeToMessages(subject, marketTickSchema, onTick),
     );
     registerSyntheticRoutes(server, requireSession, feedTicks);
+    registerCalibrationRoutes(server, requireSession);
     registerMarketRegimeRoutes(server, requireSession, feedTicks);
 
     server.get('/api/events', async (request, reply) => {

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch: feature/move-ores-refdata-hand-written-json-off-reflect-cpp
-#+pr: 4273
+#+branch: feature/finish-ores-refdata-codecs-off-reflect-cpp
+#+pr: 4328
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-31
+#+updated: 2026-11-01
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,19 +26,24 @@ Step 6 of 7, one component. ores.refdata encodes and decodes without reflect-cpp
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | The generated JSON paths, the convention payloads and the storage-row printer read and write through the codec. Five production files still name reflect-cpp, each holding a hand-written type with no shape. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Give shapes to the four hand-written types behind the last five sites. |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
 - ores.refdata's generated types use the generated codecs.
 - ores.refdata's hand-written JSON uses the generated codecs or yyjson.
-- Nothing in ores.refdata includes reflect-cpp.
+- No production file in ores.refdata includes reflect-cpp unless a task in
+  this story owns its removal.
 - ores.refdata's suites pass, and its wire bytes match the bytes before the move.
+
+The third criterion first asked for no reflect-cpp at all. Two production files
+and the tests cannot meet that inside one component, so the criterion names the
+boundary, as the trading task's does. "What is left" names the owner of each.
 
 * Plan
 
@@ -278,6 +283,35 @@ own object writer leaves it out, and the members come out in the order
 =columns()= binds them, which is why the test compares documents rather than
 text.
 
+** The last hand-written sites (2026-11-01)
+
+Main added three curve volatility models after the sweep. They now opt in, and
+their facets are regenerated. Nine convention field group models explained
+their split by a reflect-cpp limit that no longer applies to them, so that
+sentence is gone. Two generated headers with no model and no includer,
+=tenor_basis_swap_long_short_legs.hpp= and
+=tenor_basis_swap_pay_receive_legs.hpp=, are deleted.
+
+The book and counterparty apply workflows read their start request and wrote
+the step command with =rfl::json=. Both requests, and inbox's
+=apply_step_command=, now state their one member as a wire shape, and the
+workflows use the struct codec. The party handler writes =put_party_response=
+through its generated =wire_traits=, which the party model's paste block now
+states. =application.cpp= loses an unused reflectors include.
+
+**What is left, and which task owns each one.**
+- =publish_from_dq_handler.cpp= reads =publish_from_dq_command= and writes its
+  result. Both come from a dq operation model. Owner:
+  [[id:5891DD57-4FDE-4C99-9009-8299E4479AA1][Generate codecs for the operation messages]].
+- =service/src/config/options.cpp= prints the service configuration. Owner:
+  [[id:BE89C669-2CBF-477D-B87B-1C6996187585][Print every options type through the codec]].
+- 151 generated NATS integration tests and the generated client caches include
+  the reflectors header, because =cpp_nats_integration_test.cpp.mustache= and
+  =cpp_nats_event_cache.hpp.mustache= write it for every entity. That is one
+  template change each, for every component. Owner: the next PR in this story.
+- 30 hand-written tests compare with =rfl::json= or read through it. Owner:
+  [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]], which replaces the reflector comparisons.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -293,6 +327,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4328][#4328]] | [refdata] Finish moving the component's codecs off reflect-cpp |
 | [[https://github.com/OreStudio/OreStudio/pull/4273][#4273]] | [refdata] Opt the models the trunk added into the wire codec |
 | [[https://github.com/OreStudio/OreStudio/pull/4259][#4259]] | [codegen] Print a storage row from the columns it already states |
 | [[https://github.com/OreStudio/OreStudio/pull/4236][#4236]] | [docs] Record why the storage entity printer cannot be deleted |
@@ -318,6 +353,13 @@ via its "Verifies task" field.
 | 12 | Two acceptance lines are deferred and the page did not say so | task page | Fixed | Status and Acceptance now say which lines wait for the JSON task, and the seven hand-written headers are named |
 | 13 | Commit =9ea273feff= states the suites pass and then names the one that does not | commit message | Accepted | The tree is right and the finding is fair; rewriting a pushed commit adds noise, so the correction is in the review-round commit and here |
 | 14 | The Measurements table breaks its own rule: no commits, no sweep row | task page | Fixed | Every row names a command and a commit, and the sweep, the file count, the suites and the byte comparison are rows |
+| L1 | Local review: a start request with no request_id | =*_apply_workflow.hpp= | Accepted | rfl refused the read; the codec leaves the member empty. Both build no steps. |
+| L2 | Local review: two generated headers were edited by hand | =party_handler.hpp=, =currency_pair_convention_cache.hpp= | Fixed | The drift check refused them. The party model now states the change; the cache waits for its template. |
+| R1 | Share the try-read block between the two workflows | =*_apply_workflow.hpp= | Declined | Two callers. Reporting's engine settings workflow is the third, and its task moves it; that is the time for a helper. |
+| R2 | Default-constructed request before the read | =*_apply_workflow.hpp= | Declined | One string member. Same reason as R1. |
+| R3 | Long line in the party model | =ores.refdata.party.org= | Dismissed | The generated header is formatted, and format passes. |
+| R4 | Test the refusal path | workflow tests | Already covered | =a_start_that_names_no_request_builds_no_steps= checks an empty id and input that is not JSON, in both suites, and passes. |
+| R5 | Let CI confirm MSVC, macOS and the failure set | (whole PR) | Noted | No PR CI runs here. The nightly builds cover MSVC and macOS. |
 
 * Result
 
@@ -351,3 +393,8 @@ The curve-configuration round trip that was red when #4182 landed is green on
 current main, because the owning story wired the canonicalisation the inbox
 capture described. All four refdata suites pass.
 
+ores.refdata encodes through the generated codecs. Every model opts in, the
+hand-written JSON uses the codec or yyjson, and the storage rows print from
+their own column lists. Two production files still name reflect-cpp, and each
+has an owning task. The tests still include the reflector, and the Notes name
+the owner of each group.

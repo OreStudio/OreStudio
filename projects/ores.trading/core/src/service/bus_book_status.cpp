@@ -22,7 +22,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 
 namespace {

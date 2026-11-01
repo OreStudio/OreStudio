@@ -100,6 +100,18 @@ struct stop_feed_response {
 };
 
 /**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+struct provider_dispersion {
+    /** @brief The other provider. */
+    std::string provider_code;
+    /** @brief The other provider's item, as the oresmd URI that names it. */
+    std::string item;
+    /** @brief The distance from the level the feed took, in basis points of that level. */
+    double basis_points = 0.0;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -130,6 +142,20 @@ struct feed_start {
     std::optional<double> hourly_spread;
     /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
     std::string note;
+    /** @brief How many days the fixing is older than the date the feed read on or before. */
+    std::optional<int> age_days;
+    /** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+    std::optional<double> daily_spread;
+    /** @brief The mean business-day log return, times 252. */
+    std::optional<double> annual_drift;
+    /** @brief The smallest business-day log return in the window. */
+    std::optional<double> min_return;
+    /** @brief The largest business-day log return in the window. */
+    std::optional<double> max_return;
+    /** @brief How many returns lie more than three spreads from zero. */
+    std::optional<int> jumps;
+    /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+    std::vector<provider_dispersion> dispersion;
 };
 
 /**
@@ -168,6 +194,96 @@ struct list_feeds_response {
     bool success = false;
     /** @brief The feeds that run, in source name order. */
     std::vector<running_feed> running_feeds;
+};
+
+/**
+ * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
+ */
+struct calibration_policy_summary {
+    /** @brief True when the class has a policy row; false when it calibrates on the defaults. */
+    bool from_policy_row = false;
+    /** @brief How many calendar days of fixings measure the spread. */
+    int window_days = 0;
+    /** @brief True when an item that quotes the pair the other way round is read as one over it. */
+    bool allow_inverse = false;
+    /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
+    std::string fallback_code;
+    /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
+    std::vector<std::string> provider_order;
+};
+
+/**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+struct candidate_outcome {
+    /** @brief The candidate's item, as the oresmd URI that names it. */
+    std::string item;
+    /** @brief The provider that publishes the item. */
+    std::string provider_code;
+    /** @brief True when the item quotes the pair the other way round. */
+    bool inverted = false;
+    /** @brief The candidate's place in the resolution, first tried first. */
+    int rank = 0;
+    /** @brief chosen, skipped or not_reached. */
+    std::string state;
+    /** @brief Why the candidate was chosen, skipped or not reached. */
+    std::string reason;
+};
+
+/**
+ * @brief How one feed of the class resolved: the item it starts from, or its fallback or
+ * refusal, and the exceptions it states against the policy.
+ */
+struct calibrated_feed {
+    /** @brief The feed's config id. */
+    std::string config_id;
+    /** @brief The source name the feed publishes under. */
+    std::string source_name;
+    /** @brief The base currency of the feed's pair. */
+    std::string base_currency_code;
+    /** @brief The quote currency of the feed's pair. */
+    std::string quote_currency_code;
+    /** @brief True when the feed names its own items instead of deriving them from the policy. */
+    bool explicit_items = false;
+    /** @brief The feed's own window, when it overrides the policy's. */
+    std::optional<int> window_days_override;
+    /** @brief True when no candidate has a fixing and the policy refuses to start the feed. */
+    bool refused = false;
+    /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+    feed_start start;
+    /** @brief Every candidate the feed read, in rank order, with its outcome. */
+    std::vector<candidate_outcome> candidates;
+};
+
+/**
+ * @brief Resolve every feed of one asset class under its policy, without starting any.
+ *
+ * Every feed of the class is resolved; no subset is selected.
+ */
+struct calibrate_request {
+    using response_type = struct calibrate_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.calibrate_feeds";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The asset class to calibrate, as its refdata code. */
+    std::string asset_class_code;
+};
+
+/**
+ * @brief The policy the class calibrated under and the outcome of each of its feeds.
+ */
+struct calibrate_response {
+    bool success = false;
+    std::string message;
+    /** @brief The policy the class calibrated under. */
+    calibration_policy_summary policy;
+    /** @brief Every feed of the class, in source name order. */
+    std::vector<calibrated_feed> feeds;
 };
 
 }

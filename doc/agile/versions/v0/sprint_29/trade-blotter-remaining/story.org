@@ -35,11 +35,11 @@ authorisation queue (see =* Decisions=).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Started: the prototype and the plan are settled, the screens are next. Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]], which closed in sprint 28 with its done tasks. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Triage into a sprint. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -63,11 +63,11 @@ authorisation queue (see =* Decisions=).
 | [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] | DONE | 2026-10-31 | 2026-10-31 | Build the Operations screen that works the operational authorisation queue. |
 | [[id:BB607AAF-4438-4A99-A539-A7822A0224A2][Raise an authorisation request when a draft is executed]] | DONE | 2026-10-31 | 2026-10-31 | A draft that goes live through the Execute transition raises the operational authorisation request, as a booking does. |
 | [[id:BA9F70BA-4521-47F5-B5D1-835B01265D52][Keep seeded trades out of the authorisation queue]] | ABANDONED | | | The synthetic population books actual trades into real books, so each raises an authorisation request. Seeded data must not fill the Operations queue. |
-| [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
-| [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
+| [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | DONE | 2026-10-31 | 2026-11-01 | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
+| [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | DONE | 2026-11-01 | 2026-11-01 | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
 | [[id:C3D61F4A-C71A-4884-A35A-2F10ADCD8D44][Grant the Trade Blotter its reads and writes]] | DONE | 2026-10-25 | 2026-10-25 | Every code each Trade Blotter screen needs is seeded and granted to no human role, so each screen would open dark. Decide which human role owns the blotter, grant it the reads and writes the arc needs, and add the check that would have caught the gap. |
-| [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] | BACKLOG | | | A notional column was drawn on the structure screens because the prototype draws one. It states a bond's convention for every family, and an FX trade has no such number at all, so the column read as a fault. This task settles what a screen states as a trade's size, if anything. |
-| [[id:2B6C808D-88CE-46D0-B1E1-65339BAD6650][Give the embedded table a selection contract]] | BACKLOG | | | The grouping screen needs a table whose rows can be chosen: a chosen count, a mixed-counterparty guard and a submit that enables with the choice. RecordTable carries no selection, so that screen hand-rolls a table — the copy-paste the standard components exist to prevent. |
+| [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] | DONE | 2026-11-01 | 2026-11-01 | A notional column was drawn on the structure screens because the prototype draws one. It states a bond's convention for every family, and an FX trade has no such number at all, so the column read as a fault. This task settles what a screen states as a trade's size, if anything. |
+| [[id:2B6C808D-88CE-46D0-B1E1-65339BAD6650][Give the embedded table a selection contract]] | DONE | 2026-11-01 | 2026-11-01 | The grouping screen needs a table whose rows can be chosen: a chosen count, a mixed-counterparty guard and a submit that enables with the choice. RecordTable carries no selection, so that screen hand-rolls a table — the copy-paste the standard components exist to prevent. |
 | [[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]] | DONE | 2026-10-29 | 2026-10-30 | Analysis: should a structure be a row in the trade blotter rather than a screen beside it, and how does one screen hold the portfolio, counterparty and book perspectives at once? |
 | [[id:1B9D54E6-9BC8-4ED0-93A9-1A52C1F107C8][Give the blotter its instrument grouping]] | DONE | 2026-10-30 | 2026-10-31 | The third perspective the signed-off prototype draws: the same rows read by asset class. The instrument-code catalogue the list already reads states each type's class, so the rail can be built without a schema change. |
 | [[id:707C8B23-7847-4587-BF38-883E68A52D14][Regenerate the trade summary wire protocol]] | DONE | 2026-10-31 | 2026-10-31 | structure_id and is_leg reached the trade summary model but never the TypeScript the wire protocol generates from it, so the drift gate reports the client two fields behind its server. |
@@ -98,7 +98,33 @@ Every screen of this story reads and writes =ores.trading=, and the story is whe
 - The authorisation queue's class is derived from the trade type in the BFF, and the division belongs on the trade type as configuration. The screen reads it as it stands;
   [[id:73921707-CE11-41AD-923D-ED5B36D7FF09][Classify a product type as flow or non-flow]] carries the work.
 - The queue states a request by the state the inbox holds it in. A withdrawn, expired or approved-but-unapplied request reads as closed rather than as a denial nobody gave.
+- Size is not one fact. A bond states a notional, an FX trade two amounts, a commodity a quantity, and a rate swap a schedule per leg; a composition screen therefore states what is grouped and never a total, and a trade page states its family's own fact or nothing. [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] holds the enumeration.
 - Valuation is out of this arc. The structure page's Price tab is a valuation of the deal against a market snapshot, and the product has no valuation at all, so the tab says the deal has not been valued and the work is captured as [[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]]. A tab that waits on a capability is not a screen with a gap to fill later.
+
+* Result
+
+The arc closed on 2026-11-01 with every task done or abandoned. What it shipped:
+
+| Piece | What it does |
+|-------+--------------|
+| The trade list and the trade page | the blotter's two screens |
+| Book a trade | a deal and its first leg, with the structure card |
+| The structure page | the tree, the legs, the history, and a leg that moves for a stated reason |
+| The authorisation queue | the Operations screen: the flow and non-flow division, the states the inbox holds, and a decision that always carries a comment |
+| The queue's data | a request per live actual trade, raised by the booking and by an execution, one per waiting and never two |
+| Import and export | an ORE import that books into a real book and raises a request per new live trade, planned from the document so a second run books nothing twice |
+| Complete a structure | one unit that writes the structure, its members and takes every leg live, refusing all of it or none |
+| The draft reason | why a draft is not live and the desk that unblocks it, required by the booking and refused on a live trade |
+| The size analysis | four shapes of size across the families, and a trade page that states its own family's or nothing |
+
+* What the arc leaves behind
+
+- [[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]] — the Price tab's valuation, waiting on a capability the product does not have.
+- [[id:31C413BC-DB0B-41E4-B76B-DA6246DAC6FE][The structure completion has no caller]] — the operation that ships without a screen calling it.
+- [[id:025EA107-987D-47B2-BE0D-BA250EE22994][Report the drafts and who is late]] — the report of aged drafts.
+- [[id:8276D0CF-A711-4FED-B073-574821E13167][Page the authorisation queue and count it on the server]] — the counts the queue's buttons state.
+- [[id:C3830177-46FC-46A1-83A0-1660C4742E82][Finish the authorisation queue's specification]] — expiry, the operational error flag, the changed fields, the package's legs.
+- [[id:73921707-CE11-41AD-923D-ED5B36D7FF09][Classify a product type as flow or non-flow]] — the division as configuration rather than a constant.
 
 * Out of scope
 

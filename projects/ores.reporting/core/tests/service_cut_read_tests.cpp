@@ -96,7 +96,8 @@ TEST_CASE("a month that ends a year reads into the next one", "[cut_read_service
     REQUIRE(datetime::to_iso8601_utc(window->second) == "2027-01-01 00:00:00.000000Z");
 }
 
-TEST_CASE("a month a person stated wrongly is a refusal, and not an exception", "[cut_read_service]") {
+TEST_CASE("a month a person stated wrongly is a refusal, and not an exception",
+          "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
 
@@ -123,10 +124,10 @@ TEST_CASE("the body that replaced a cut is the earliest later body a run may pri
           "[cut_read_service]") {
 
     auto lg(make_logger(test_suite));
-    const auto later = authorised(a_cut("33333333-3333-4333-8333-333333333333",
-                                        "2026-10-08T16:00:00Z"));
-    const auto later_still = authorised(
-        a_cut("44444444-4444-4444-8444-444444444444", "2026-10-09T16:00:00Z"));
+    const auto later =
+        authorised(a_cut("33333333-3333-4333-8333-333333333333", "2026-10-08T16:00:00Z"));
+    const auto later_still =
+        authorised(a_cut("44444444-4444-4444-8444-444444444444", "2026-10-09T16:00:00Z"));
 
     const auto replacement =
         service::replacement_of(first, {later, later_still, authorised(second)});
@@ -160,20 +161,20 @@ TEST_CASE("a later body of another kind, scope or centre holds no place", "[cut_
 
     auto lg(make_logger(test_suite));
     REQUIRE_FALSE(service::replacement_of(
-        first, {authorised(a_cut("33333333-3333-4333-8333-333333333333",
-                                 "2026-10-08T16:00:00Z",
-                                 "FLASH"))}));
-    REQUIRE_FALSE(service::replacement_of(
-        first, {authorised(a_cut("33333333-3333-4333-8333-333333333333",
-                                 "2026-10-08T16:00:00Z",
-                                 "EOD",
-                                 "ACME-NEW-YORK"))}));
-    REQUIRE_FALSE(service::replacement_of(
-        first, {authorised(a_cut("33333333-3333-4333-8333-333333333333",
-                                 "2026-10-08T16:00:00Z",
-                                 "EOD",
-                                 "ACME-LONDON",
-                                 "NEW-YORK"))}));
+        first,
+        {authorised(
+            a_cut("33333333-3333-4333-8333-333333333333", "2026-10-08T16:00:00Z", "FLASH"))}));
+    REQUIRE_FALSE(service::replacement_of(first,
+                                          {authorised(a_cut("33333333-3333-4333-8333-333333333333",
+                                                            "2026-10-08T16:00:00Z",
+                                                            "EOD",
+                                                            "ACME-NEW-YORK"))}));
+    REQUIRE_FALSE(service::replacement_of(first,
+                                          {authorised(a_cut("33333333-3333-4333-8333-333333333333",
+                                                            "2026-10-08T16:00:00Z",
+                                                            "EOD",
+                                                            "ACME-LONDON",
+                                                            "NEW-YORK"))}));
 }
 
 TEST_CASE("a supersession leaves the body's other states as they were", "[cut_read_service]") {
@@ -188,10 +189,8 @@ TEST_CASE("a supersession leaves the body's other states as they were", "[cut_re
     refused.refused_at = refused.timepoint;
 
     REQUIRE(service::derive_state(refused, 0, true) == service::cut_state::refused);
-    REQUIRE(service::derive_state(authorised(second), 0, true) ==
-            service::cut_state::superseded);
-    REQUIRE(service::derive_state(authorised(second), 0, false) ==
-            service::cut_state::authorised);
+    REQUIRE(service::derive_state(authorised(second), 0, true) == service::cut_state::superseded);
+    REQUIRE(service::derive_state(authorised(second), 0, false) == service::cut_state::authorised);
 
     auto in_use = authorised(second);
     in_use.requires_authorisation = false;

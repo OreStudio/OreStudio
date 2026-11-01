@@ -49,9 +49,6 @@ struct provider_write {
     std::string terms_credit;
     bool allows_storage;
     std::string credential_ref;
-    std::string terms_accepted_digest;
-    std::string terms_accepted_by;
-    std::optional<std::chrono::system_clock::time_point> terms_accepted_at;
 };
 
 struct provider_change {

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: BDDF2F96-6207-4EDE-AF09-2614386DCF66
+:END:
+#+title: Read the covering series once per start batch
+#+description: A feed with no fixing items reads every series on each start to derive its candidates; a demand start of many feeds repeats the full read once per feed.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:calibration:performance:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

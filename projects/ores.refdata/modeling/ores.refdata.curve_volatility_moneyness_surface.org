@@ -1,0 +1,248 @@
+:PROPERTIES:
+:ID: 724C65BA-1D8B-4849-8C81-50233EFDA776
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.refdata.curve_volatility_moneyness_surface
+#+description: Codegen entity model for the refdata curve_volatility_moneyness_surface part: the fields ORE's MoneynessSurface states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_volatility_moneyness_surface
+#+entity_plural: curve_volatility_moneyness_surfaces
+#+entity_title: Curve Volatility Moneyness Surface
+#+brief: The moneyness grid a MoneynessSurface kind states.
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+ORE's =volatilityMoneynessSurfaceConfig= states a grid of moneyness levels
+against expiries, how it interpolates each way and how it extrapolates past the
+grid, exactly as the strike and delta surfaces do with their own axes. Those are
+the kind's own fields: the four terms every kind states and the =priority= are on
+=curve_volatility_kind=, and a row of this part exists only when the entry holds
+a kind of this type.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The kind this surface belongs to. One surface per kind, so the generated table
+adds the unique index on the live rows of =(tenant_id, curve_volatility_kind_id)=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this kind belongs to. Carried so row level security
+can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** moneyness_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the levels are measured from the spot or the forward, as ORE spells it:
+=Spot= or =Fwd=.
+
+#+begin_src cpp :name generator
+std::string("Spot")
+#+end_src
+
+** moneyness_levels
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The moneyness levels the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The expiries the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface interpolates along time.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** strike_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface interpolates across its levels.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the surface is extrapolated at all.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** time_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface extrapolates along time.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** time_extrapolation_variance
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the variance rather than the volatility is extrapolated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface extrapolates across its levels.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** future_price_correction
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the future price is corrected for the shape, when the document states it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_moneyness_surfaces_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_volatility_moneyness_surface
+:entity_plural_short:   curve_volatility_moneyness_surfaces
+:entity_singular_words: curve volatility moneyness surface
+:entity_plural_words:   curve volatility moneyness surfaces
+:END:
+
+* Foreign keys
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:table:         ores_refdata_curve_volatility_kinds_tbl
+:target_column: id
+:parent_entity: curve_volatility_kind
+:nullable:      false
+:error_message: Invalid curve_volatility_kind_id: %. No active volatility kind found with this id.
+:END:
+
+* See also
+
+- [[id:DB2C3AFB-777A-405F-A208-B97B25B9C93C][Model the volatility smile configuration and the moneyness surface]] — the task that introduced it.

@@ -46,7 +46,8 @@ inline auto& provider_terms_handler_lg() {
 }
 
 /**
- * @brief Records the acceptance of a provider's terms, the one write that does.
+ * @brief Records the acceptance of a provider's terms, or its withdrawal: the one writer of
+ * either.
  *
  * The caller names the provider. The terms accepted are the ones the service holds, the
  * account is the session's and the time is the service's clock, so no caller can state an
@@ -108,6 +109,58 @@ public:
                 resp.accepted_at = accepted.terms_accepted_at;
                 BOOST_LOG_SEV(provider_terms_handler_lg(), info)
                     << actor << " accepted the terms of provider '" << req->provider_code << "'";
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(provider_terms_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        ores::service::messaging::reply(nats_, msg, resp);
+    }
+
+    void withdraw(ores::nats::message msg) {
+        using namespace ores::logging;
+        using ores::service::messaging::error_reply;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!ores::service::messaging::has_permission(req_ctx,
+                                                      "marketdata::providers:accept_terms")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = ores::service::messaging::decode<withdraw_provider_terms_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        withdraw_provider_terms_response resp;
+        try {
+            repository::provider_repository repo;
+            auto found = repo.read_latest(req_ctx, req->provider_code);
+            if (found.empty()) {
+                resp.message = "No provider '" + req->provider_code + "'.";
+            } else if (found.front().terms_accepted_digest.empty()) {
+                resp.success = true;
+                resp.message = "The terms of '" + req->provider_code + "' were not accepted.";
+            } else {
+                const auto& actor = req_ctx.actor();
+                auto withdrawn = terms::withdraw_terms(found.front());
+                withdrawn.modified_by = actor;
+                withdrawn.performed_by = req_ctx.service_account();
+                withdrawn.change_reason_code = "system.update";
+                withdrawn.change_commentary = "Withdrew the acceptance of the terms";
+                repo.write(req_ctx, withdrawn);
+                resp.success = true;
+                resp.message = "Withdrew the acceptance of '" + req->provider_code + "'.";
+                BOOST_LOG_SEV(provider_terms_handler_lg(), info)
+                    << actor << " withdrew the acceptance of provider '" << req->provider_code
+                    << "'";
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(provider_terms_handler_lg(), error)

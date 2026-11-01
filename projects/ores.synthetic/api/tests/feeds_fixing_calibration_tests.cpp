@@ -119,3 +119,177 @@ TEST_CASE("a_mixture_that_cannot_be_scaled_is_an_error", tags) {
     CHECK_FALSE(scaled_stdevs({{0.0, 0.001, 1.0}}, 0.01, 0).has_value());
     CHECK_FALSE(scaled_stdevs({{0.01, 0.001, 0.5}, {-0.01, 0.001, 0.5}}, 0.000001, 60).has_value());
 }
+
+TEST_CASE("a policy derives the items in provider order, direct before inverted", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/USD?type=fixing&index=fx&source=ECB&ccy=EUR",
+         .provider_code = "ecb",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=BOC&ccy=USD",
+         .provider_code = "boc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    calibration_policy policy;
+    policy.provider_order = {"ecb", "imf"};
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 3);
+    CHECK(items[0].provider_code == "ecb");
+    CHECK(items[0].item == "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD");
+    CHECK(items[1].provider_code == "ecb");
+    CHECK(items[1].item == "oresmd://fx/USD?type=fixing&index=fx&source=ECB&ccy=EUR");
+    CHECK(items[2].provider_code == "imf");
+    CHECK(items[0].rank == 1);
+    CHECK(items[1].rank == 2);
+    CHECK(items[2].rank == 3);
+    CHECK(items[0].policy == "latest_on_or_before_clock");
+}
+
+TEST_CASE("an empty provider order keeps every provider, ordered by code", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=BOC&ccy=USD",
+         .provider_code = "boc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    const calibration_policy policy;
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 3);
+    CHECK(items[0].provider_code == "boc");
+    CHECK(items[1].provider_code == "ecb");
+    CHECK(items[2].provider_code == "imf");
+}
+
+TEST_CASE("a policy that forbids an inverse leaves the reversed item out", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    calibration_policy policy;
+    policy.allow_inverse = false;
+    policy.window_days = 30;
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].provider_code == "ecb");
+    CHECK(items[0].window_days == 30);
+}
+
+TEST_CASE("a candidate of another pair is left out", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=GBP",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "GBP"},
+    };
+
+    const auto items = derive_fixing_items(calibration_policy{}, "EUR", "USD", candidates);
+
+    CHECK(items.empty());
+}
+
+TEST_CASE("an fx fixing names its base and quote currencies", tags) {
+    const auto pair = pair_of_item(ecb_eur_usd);
+    REQUIRE(pair.has_value());
+    CHECK(pair->first == "EUR");
+    CHECK(pair->second == "USD");
+}
+
+TEST_CASE("an item that is not an fx fixing names no pair", tags) {
+    CHECK_FALSE(pair_of_item("oresmd://fx/EUR?type=spot&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("oresmd://ir/EUR?type=fixing&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("").has_value());
+}
+
+TEST_CASE("an empty provider order breaks ties by provider code, not by item", tags) {
+    // The item names sort the other way round from the provider codes.
+    const std::vector<calibration_candidate> candidates = {
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=AAA&ccy=USD",
+         .provider_code = "zed",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ZZZ&ccy=USD",
+         .provider_code = "abc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+
+    const auto items = derive_fixing_items(calibration_policy{}, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].provider_code == "abc");
+    CHECK(items[1].provider_code == "zed");
+}
+
+TEST_CASE("a window's measures are its returns' spread, drift, range and jumps", tags) {
+    // Returns of log(1.01), log(1/1.01), log(1.02): the middle one is the smallest.
+    const std::vector<double> values{1.0, 1.01, 1.0, 1.02};
+    const auto m = measure_window(values, false);
+    REQUIRE(m.has_value());
+    const double up = std::log(1.01);
+    const double big = std::log(1.02);
+    CHECK(m->daily_spread == Approx(*business_day_log_return_spread(values)));
+    CHECK(m->annual_drift == Approx((up - up + big) / 3.0 * 252.0));
+    CHECK(m->min_return == Approx(-up));
+    CHECK(m->max_return == Approx(big));
+    CHECK(m->jumps == 0);
+}
+
+TEST_CASE("an inverted window turns the drift and the range round", tags) {
+    const std::vector<double> values{1.0, 1.01, 1.0, 1.02};
+    const auto direct = measure_window(values, false);
+    const auto inverted = measure_window(values, true);
+    REQUIRE(direct.has_value());
+    REQUIRE(inverted.has_value());
+    CHECK(inverted->daily_spread == Approx(direct->daily_spread));
+    CHECK(inverted->annual_drift == Approx(-direct->annual_drift));
+    CHECK(inverted->min_return == Approx(-direct->max_return));
+    CHECK(inverted->max_return == Approx(-direct->min_return));
+}
+
+TEST_CASE("a return more than three spreads from zero is a jump", tags) {
+    std::vector<double> values{1.0};
+    for (int i = 0; i < 40; ++i)
+        values.push_back(values.back() * (i % 2 == 0 ? 1.001 : 0.999));
+    values.push_back(values.back() * 1.05);
+    const auto m = measure_window(values, false);
+    REQUIRE(m.has_value());
+    CHECK(m->jumps == 1);
+}
+
+TEST_CASE("a window too short to have a spread has no measures", tags) {
+    CHECK_FALSE(measure_window({1.0, 1.01}, false).has_value());
+}
+
+TEST_CASE("a distance is in basis points of the level", tags) {
+    CHECK(basis_points_from(1.25, 1.2525) == Approx(20.0));
+    CHECK(basis_points_from(1.25, 1.2475) == Approx(20.0));
+}

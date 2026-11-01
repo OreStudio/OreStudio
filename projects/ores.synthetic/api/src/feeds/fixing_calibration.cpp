@@ -18,21 +18,30 @@
  *
  */
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
+#include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <optional>
 #include <regex>
 
 namespace ores::synthetic::feed {
 
-std::expected<item_orientation, std::string>
-orientation_of(const std::string& item, const std::string& base, const std::string& quote) {
+std::optional<std::pair<std::string, std::string>> pair_of_item(const std::string& item) {
     static const std::regex fx_fixing(
         R"(^oresmd://fx/([A-Z]{3})\?(?:.*&)?ccy=([A-Z]{3})(?:&.*)?$)");
     std::smatch m;
     if (!std::regex_match(item, m, fx_fixing) || item.find("type=fixing") == std::string::npos)
+        return std::nullopt;
+    return std::make_pair(m[1].str(), m[2].str());
+}
+
+std::expected<item_orientation, std::string>
+orientation_of(const std::string& item, const std::string& base, const std::string& quote) {
+    const auto pair = pair_of_item(item);
+    if (!pair)
         return std::unexpected("'" + item + "' is not an FX fixing item.");
-    const auto item_base = m[1].str();
-    const auto item_quote = m[2].str();
+    const auto item_base = pair->first;
+    const auto item_quote = pair->second;
     if (item_base == base && item_quote == quote)
         return item_orientation::direct;
     if (item_base == quote && item_quote == base)
@@ -56,6 +65,25 @@ std::optional<double> business_day_log_return_spread(const std::vector<double>& 
     for (const double r : returns)
         squares += (r - mean) * (r - mean);
     return std::sqrt(squares / static_cast<double>(returns.size() - 1));
+}
+
+std::optional<window_measures> measure_window(const std::vector<double>& values, bool inverted) {
+    const auto spread = business_day_log_return_spread(values);
+    if (!spread)
+        return std::nullopt;
+    std::vector<double> returns;
+    for (std::size_t i = 1; i < values.size(); ++i)
+        returns.push_back(std::log(values[i] / values[i - 1]) * (inverted ? -1.0 : 1.0));
+    const auto [lo, hi] = std::ranges::minmax(returns);
+    window_measures out;
+    out.daily_spread = *spread;
+    out.annual_drift = std::accumulate(returns.begin(), returns.end(), 0.0) /
+                       static_cast<double>(returns.size()) * business_days_per_year;
+    out.min_return = lo;
+    out.max_return = hi;
+    out.jumps = static_cast<int>(
+        std::ranges::count_if(returns, [&](double r) { return std::abs(r) > 3.0 * *spread; }));
+    return out;
 }
 
 std::expected<std::vector<double>, std::string> scaled_stdevs(
@@ -95,6 +123,71 @@ std::expected<std::vector<double>, std::string> scaled_stdevs(
     for (const auto& c : components)
         out.push_back(c.stdev * k);
     return out;
+}
+
+namespace {
+
+/// The rank of @p provider in @p order, or nothing when a stated order leaves it out.
+std::optional<int> provider_rank(const std::vector<std::string>& order,
+                                 const std::string& provider) {
+    if (order.empty())
+        return 0;
+    for (std::size_t i = 0; i < order.size(); ++i)
+        if (order[i] == provider)
+            return static_cast<int>(i);
+    return std::nullopt;
+}
+
+} // namespace
+
+std::vector<ores::synthetic::domain::fx_spot_fixing_item>
+derive_fixing_items(const calibration_policy& policy,
+                    const std::string& base,
+                    const std::string& quote,
+                    const std::vector<calibration_candidate>& candidates) {
+    struct ranked final {
+        int provider = 0;
+        int direction = 0;
+        std::string item;
+        std::string provider_code;
+    };
+    std::vector<ranked> kept;
+    for (const auto& candidate : candidates) {
+        const bool direct = candidate.base_currency == base && candidate.quote_currency == quote;
+        const bool inverted = candidate.base_currency == quote && candidate.quote_currency == base;
+        if (!direct && !(inverted && policy.allow_inverse))
+            continue;
+        const auto rank = provider_rank(policy.provider_order, candidate.provider_code);
+        if (!rank)
+            continue;
+        kept.push_back({.provider = *rank,
+                        .direction = direct ? 0 : 1,
+                        .item = candidate.item,
+                        .provider_code = candidate.provider_code});
+    }
+    std::ranges::sort(kept, [](const ranked& a, const ranked& b) {
+        if (a.provider != b.provider)
+            return a.provider < b.provider;
+        if (a.provider_code != b.provider_code)
+            return a.provider_code < b.provider_code;
+        if (a.direction != b.direction)
+            return a.direction < b.direction;
+        return a.item < b.item;
+    });
+
+    std::vector<ores::synthetic::domain::fx_spot_fixing_item> items;
+    items.reserve(kept.size());
+    int rank = 0;
+    for (const auto& entry : kept) {
+        ores::synthetic::domain::fx_spot_fixing_item item;
+        item.rank = ++rank;
+        item.item = entry.item;
+        item.provider_code = entry.provider_code;
+        item.policy = "latest_on_or_before_clock";
+        item.window_days = policy.window_days;
+        items.push_back(std::move(item));
+    }
+    return items;
 }
 
 }

@@ -37,13 +37,14 @@ signature serve every kind and puts the input check inside =make=.
 ** The context
 
 =generator_build_context= holds the raw NATS client and the service client. The
-client reads vintage prices from the market data service as the system. See
+client reads the fixings a feed starts from in the market data service, as the
+system. See
 [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
 
 ** The registry beside the factory
 
 Construction is one of the things a kind needs. The config read permission, the
-config rows, the loader, the vintage anchor and the simulate payload also vary by
+config rows, the loader, the calibration inputs and the simulate payload also vary by
 kind. =generator_kind_registry= holds them. A registration there refuses a kind the
 factory cannot build, so the two cannot drift.
 

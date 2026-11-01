@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3DE90726-CC38-4410-8A41-B262FA59F577
 :END:
 #+title: ores.trading.balance_guaranteed_swap_tranche

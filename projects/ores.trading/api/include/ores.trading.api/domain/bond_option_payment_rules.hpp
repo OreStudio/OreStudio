@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_OPTION_PAYMENT_RULES_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_OPTION_PAYMENT_RULES_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -67,6 +69,22 @@ struct bond_option_payment_rules {
     friend bool operator==(const bond_option_payment_rules&,
                            const bond_option_payment_rules&) = default;
 };
+/**
+ * @brief The members of bond_option_payment_rules, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_option_payment_rules&) {
+    return std::tuple{
+        utility::codec::field{"lag", &bond_option_payment_rules::lag},
+        utility::codec::field{"calendar", &bond_option_payment_rules::calendar},
+        utility::codec::field{"convention", &bond_option_payment_rules::convention},
+        utility::codec::field{"relative_to", &bond_option_payment_rules::relative_to},
+    };
+}
 
 }
 

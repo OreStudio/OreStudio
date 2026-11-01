@@ -25,14 +25,12 @@
 
 namespace ores::http::stream {
 
-boost::asio::awaitable<void>
-change_ticker::run(boost::asio::any_io_executor executor) {
+boost::asio::awaitable<void> change_ticker::run(boost::asio::any_io_executor executor) {
     while (!stopped_) {
         boost::asio::steady_timer timer(executor);
         timer.expires_after(interval_);
         boost::system::error_code ec;
-        co_await timer.async_wait(
-            boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+        co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
         if (stopped_)
             break;
         pump_.pump();

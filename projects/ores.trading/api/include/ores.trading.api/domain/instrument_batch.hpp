@@ -25,81 +25,106 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 
-#include "ores.trading.api/domain/ascot.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
-#include "ores.trading.api/domain/bond_forward.hpp"
-#include "ores.trading.api/domain/bond_future.hpp"
+#include "ores.trading.api/domain/ascot_codec.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_codec.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional_codec.hpp"
+#include "ores.trading.api/domain/bond_amortization_data.hpp"
+#include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
+#include "ores.trading.api/domain/bond_float_data.hpp"
+#include "ores.trading.api/domain/bond_floating_leg_data.hpp"
+#include "ores.trading.api/domain/bond_formula_based_leg_data.hpp"
+#include "ores.trading.api/domain/bond_forward_codec.hpp"
+#include "ores.trading.api/domain/bond_forward_premium.hpp"
+#include "ores.trading.api/domain/bond_forward_settlement.hpp"
+#include "ores.trading.api/domain/bond_future_codec.hpp"
+#include "ores.trading.api/domain/bond_instrument_codec.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
-#include "ores.trading.api/domain/bond_issue.hpp"
-#include "ores.trading.api/domain/bond_issue_call_date.hpp"
-#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
-#include "ores.trading.api/domain/bond_issue_leg.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
-#include "ores.trading.api/domain/bond_option.hpp"
-#include "ores.trading.api/domain/bond_repo.hpp"
-#include "ores.trading.api/domain/bond_trs.hpp"
-#include "ores.trading.api/domain/callable_swap_call_date.hpp"
-#include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/commodity_basket_constituent.hpp"
-#include "ores.trading.api/domain/commodity_instrument.hpp"
-#include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.api/domain/credit_basket_constituent.hpp"
-#include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
-#include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
-#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_basket_constituent.hpp"
-#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_forward_instrument.hpp"
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_position_instrument.hpp"
-#include "ores.trading.api/domain/equity_position_option_underlying.hpp"
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
-#include "ores.trading.api/domain/equity_swap_period.hpp"
-#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
-#include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
-#include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
-#include "ores.trading.api/domain/inflation_swap_instrument.hpp"
-#include "ores.trading.api/domain/instrument_option.hpp"
-#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
-#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
-#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
-#include "ores.trading.api/domain/instrument_option_premium.hpp"
-#include "ores.trading.api/domain/instrument_schedule.hpp"
-#include "ores.trading.api/domain/instrument_schedule_date.hpp"
-#include "ores.trading.api/domain/instrument_strike.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
-#include "ores.trading.api/domain/range_bound.hpp"
-#include "ores.trading.api/domain/rate_instrument.hpp"
-#include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.api/domain/swap_leg_amount.hpp"
-#include "ores.trading.api/domain/swap_leg_rate.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_codec.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_data.hpp"
+#include "ores.trading.api/domain/bond_leg_rate_data.hpp"
+#include "ores.trading.api/domain/bond_option_codec.hpp"
+#include "ores.trading.api/domain/bond_option_data.hpp"
+#include "ores.trading.api/domain/bond_option_exercise.hpp"
+#include "ores.trading.api/domain/bond_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/bond_option_payment_data.hpp"
+#include "ores.trading.api/domain/bond_option_payment_rules.hpp"
+#include "ores.trading.api/domain/bond_option_premium.hpp"
+#include "ores.trading.api/domain/bond_option_settlement.hpp"
+#include "ores.trading.api/domain/bond_repo_codec.hpp"
+#include "ores.trading.api/domain/bond_schedule_data.hpp"
+#include "ores.trading.api/domain/bond_schedule_dates.hpp"
+#include "ores.trading.api/domain/bond_schedule_rules.hpp"
+#include "ores.trading.api/domain/bond_settlement_data.hpp"
+#include "ores.trading.api/domain/bond_strike_data.hpp"
+#include "ores.trading.api/domain/bond_stub_interpolation.hpp"
+#include "ores.trading.api/domain/bond_trs_codec.hpp"
+#include "ores.trading.api/domain/callable_swap_call_date_codec.hpp"
+#include "ores.trading.api/domain/callable_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument_codec.hpp"
+#include "ores.trading.api/domain/commodity_basket_constituent_codec.hpp"
+#include "ores.trading.api/domain/commodity_instrument_codec.hpp"
+#include "ores.trading.api/domain/composite_instrument_codec.hpp"
+#include "ores.trading.api/domain/composite_leg_codec.hpp"
+#include "ores.trading.api/domain/credit_basket_constituent_codec.hpp"
+#include "ores.trading.api/domain/credit_default_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/credit_instrument_codec.hpp"
+#include "ores.trading.api/domain/credit_linked_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_accumulator_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_basket_constituent_codec.hpp"
+#include "ores.trading.api/domain/equity_digital_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_position_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_position_option_underlying_codec.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/equity_swap_period_codec.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/flexi_swap_lower_notional_codec.hpp"
+#include "ores.trading.api/domain/fra_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_option_instrument_codec.hpp"
+#include "ores.trading.api/domain/inflation_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/instrument_option_codec.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee_codec.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price_codec.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date_codec.hpp"
+#include "ores.trading.api/domain/instrument_option_premium_codec.hpp"
+#include "ores.trading.api/domain/instrument_schedule_codec.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date_codec.hpp"
+#include "ores.trading.api/domain/instrument_strike_codec.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/range_bound_codec.hpp"
+#include "ores.trading.api/domain/rate_instrument_codec.hpp"
+#include "ores.trading.api/domain/risk_participation_agreement_instrument_codec.hpp"
+#include "ores.trading.api/domain/scripted_instrument_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_rate_codec.hpp"
+#include "ores.trading.api/domain/swaption_instrument_codec.hpp"
+#include "ores.trading.api/domain/synthetic_cdo_instrument_codec.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -110,7 +135,7 @@ namespace ores::trading::domain {
  * array per entity.
  *
  * Generated from ores.trading.trade_type_catalogue. A std::variant cannot
- * cross the wire, because rfl names no alternative, and neither can a payload
+ * cross the wire, because the wire names no alternative, and neither can a payload
  * that encodes one in a string. The tag therefore lives on the container
  * instead of on every element: each element carries the trade id it belongs
  * to, and the array it sits in states its type. A receiver joins an array to a
@@ -973,6 +998,145 @@ template <typename T>
         if (trade_id_of(member) == trade_id)
             found.push_back(member);
     return found;
+}
+
+/**
+ * @brief The arrays of a batch, named as the wire names them and in the order
+ * the type declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_batch&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"bond_instruments", &instrument_batch::bond_instruments},
+        ::ores::utility::codec::field{"commodity_instruments",
+                                      &instrument_batch::commodity_instruments},
+        ::ores::utility::codec::field{"composite_instruments",
+                                      &instrument_batch::composite_instruments},
+        ::ores::utility::codec::field{"credit_instruments", &instrument_batch::credit_instruments},
+        ::ores::utility::codec::field{"equity_accumulator_instruments",
+                                      &instrument_batch::equity_accumulator_instruments},
+        ::ores::utility::codec::field{"equity_asian_option_instruments",
+                                      &instrument_batch::equity_asian_option_instruments},
+        ::ores::utility::codec::field{"equity_barrier_option_instruments",
+                                      &instrument_batch::equity_barrier_option_instruments},
+        ::ores::utility::codec::field{"equity_digital_option_instruments",
+                                      &instrument_batch::equity_digital_option_instruments},
+        ::ores::utility::codec::field{"equity_forward_instruments",
+                                      &instrument_batch::equity_forward_instruments},
+        ::ores::utility::codec::field{"equity_option_instruments",
+                                      &instrument_batch::equity_option_instruments},
+        ::ores::utility::codec::field{"equity_position_instruments",
+                                      &instrument_batch::equity_position_instruments},
+        ::ores::utility::codec::field{"equity_swap_instruments",
+                                      &instrument_batch::equity_swap_instruments},
+        ::ores::utility::codec::field{"equity_variance_swap_instruments",
+                                      &instrument_batch::equity_variance_swap_instruments},
+        ::ores::utility::codec::field{"fx_accumulator_instruments",
+                                      &instrument_batch::fx_accumulator_instruments},
+        ::ores::utility::codec::field{"fx_asian_forward_instruments",
+                                      &instrument_batch::fx_asian_forward_instruments},
+        ::ores::utility::codec::field{"fx_barrier_option_instruments",
+                                      &instrument_batch::fx_barrier_option_instruments},
+        ::ores::utility::codec::field{"fx_digital_option_instruments",
+                                      &instrument_batch::fx_digital_option_instruments},
+        ::ores::utility::codec::field{"fx_forward_instruments",
+                                      &instrument_batch::fx_forward_instruments},
+        ::ores::utility::codec::field{"fx_vanilla_option_instruments",
+                                      &instrument_batch::fx_vanilla_option_instruments},
+        ::ores::utility::codec::field{"fx_variance_swap_instruments",
+                                      &instrument_batch::fx_variance_swap_instruments},
+        ::ores::utility::codec::field{"rate_instruments", &instrument_batch::rate_instruments},
+        ::ores::utility::codec::field{"scripted_instruments",
+                                      &instrument_batch::scripted_instruments},
+        ::ores::utility::codec::field{"bond_issues", &instrument_batch::bond_issues},
+        ::ores::utility::codec::field{"bond_issue_call_dates",
+                                      &instrument_batch::bond_issue_call_dates},
+        ::ores::utility::codec::field{"bond_issue_conversion_targets",
+                                      &instrument_batch::bond_issue_conversion_targets},
+        ::ores::utility::codec::field{"bond_issue_legs", &instrument_batch::bond_issue_legs},
+        ::ores::utility::codec::field{"bond_issue_leg_amortizations",
+                                      &instrument_batch::bond_issue_leg_amortizations},
+        ::ores::utility::codec::field{"bond_issue_leg_amounts",
+                                      &instrument_batch::bond_issue_leg_amounts},
+        ::ores::utility::codec::field{"bond_issue_leg_rates",
+                                      &instrument_batch::bond_issue_leg_rates},
+        ::ores::utility::codec::field{"bond_issue_leg_schedules",
+                                      &instrument_batch::bond_issue_leg_schedules},
+        ::ores::utility::codec::field{"bond_issue_leg_schedule_dates",
+                                      &instrument_batch::bond_issue_leg_schedule_dates},
+        ::ores::utility::codec::field{"ascots", &instrument_batch::ascots},
+        ::ores::utility::codec::field{"bond_forwards", &instrument_batch::bond_forwards},
+        ::ores::utility::codec::field{"bond_futures", &instrument_batch::bond_futures},
+        ::ores::utility::codec::field{"bond_options", &instrument_batch::bond_options},
+        ::ores::utility::codec::field{"bond_repos", &instrument_batch::bond_repos},
+        ::ores::utility::codec::field{"bond_trs", &instrument_batch::bond_trs},
+        ::ores::utility::codec::field{"balance_guaranteed_swap_instruments",
+                                      &instrument_batch::balance_guaranteed_swap_instruments},
+        ::ores::utility::codec::field{"balance_guaranteed_swap_tranches",
+                                      &instrument_batch::balance_guaranteed_swap_tranches},
+        ::ores::utility::codec::field{"balance_guaranteed_swap_tranche_notionals",
+                                      &instrument_batch::balance_guaranteed_swap_tranche_notionals},
+        ::ores::utility::codec::field{"callable_swap_call_dates",
+                                      &instrument_batch::callable_swap_call_dates},
+        ::ores::utility::codec::field{"callable_swap_instruments",
+                                      &instrument_batch::callable_swap_instruments},
+        ::ores::utility::codec::field{"cap_floor_instruments",
+                                      &instrument_batch::cap_floor_instruments},
+        ::ores::utility::codec::field{"commodity_basket_constituents",
+                                      &instrument_batch::commodity_basket_constituents},
+        ::ores::utility::codec::field{"composite_legs", &instrument_batch::composite_legs},
+        ::ores::utility::codec::field{"credit_basket_constituents",
+                                      &instrument_batch::credit_basket_constituents},
+        ::ores::utility::codec::field{"credit_default_swap_instruments",
+                                      &instrument_batch::credit_default_swap_instruments},
+        ::ores::utility::codec::field{"credit_linked_swap_instruments",
+                                      &instrument_batch::credit_linked_swap_instruments},
+        ::ores::utility::codec::field{"equity_basket_constituents",
+                                      &instrument_batch::equity_basket_constituents},
+        ::ores::utility::codec::field{"equity_swap_periods",
+                                      &instrument_batch::equity_swap_periods},
+        ::ores::utility::codec::field{"equity_position_option_underlyings",
+                                      &instrument_batch::equity_position_option_underlyings},
+        ::ores::utility::codec::field{"flexi_swap_instruments",
+                                      &instrument_batch::flexi_swap_instruments},
+        ::ores::utility::codec::field{"flexi_swap_lower_notionals",
+                                      &instrument_batch::flexi_swap_lower_notionals},
+        ::ores::utility::codec::field{"fra_instruments", &instrument_batch::fra_instruments},
+        ::ores::utility::codec::field{"index_credit_default_swap_instruments",
+                                      &instrument_batch::index_credit_default_swap_instruments},
+        ::ores::utility::codec::field{
+            "index_credit_default_swap_option_instruments",
+            &instrument_batch::index_credit_default_swap_option_instruments},
+        ::ores::utility::codec::field{"inflation_swap_instruments",
+                                      &instrument_batch::inflation_swap_instruments},
+        ::ores::utility::codec::field{"instrument_options", &instrument_batch::instrument_options},
+        ::ores::utility::codec::field{"instrument_option_exercise_fees",
+                                      &instrument_batch::instrument_option_exercise_fees},
+        ::ores::utility::codec::field{"instrument_option_exercise_prices",
+                                      &instrument_batch::instrument_option_exercise_prices},
+        ::ores::utility::codec::field{"instrument_option_payment_dates",
+                                      &instrument_batch::instrument_option_payment_dates},
+        ::ores::utility::codec::field{"instrument_option_premiums",
+                                      &instrument_batch::instrument_option_premiums},
+        ::ores::utility::codec::field{"instrument_schedules",
+                                      &instrument_batch::instrument_schedules},
+        ::ores::utility::codec::field{"instrument_schedule_dates",
+                                      &instrument_batch::instrument_schedule_dates},
+        ::ores::utility::codec::field{"instrument_strikes", &instrument_batch::instrument_strikes},
+        ::ores::utility::codec::field{"knock_out_swap_instruments",
+                                      &instrument_batch::knock_out_swap_instruments},
+        ::ores::utility::codec::field{"range_bounds", &instrument_batch::range_bounds},
+        ::ores::utility::codec::field{"risk_participation_agreement_instruments",
+                                      &instrument_batch::risk_participation_agreement_instruments},
+        ::ores::utility::codec::field{"swap_legs", &instrument_batch::swap_legs},
+        ::ores::utility::codec::field{"swap_leg_amounts", &instrument_batch::swap_leg_amounts},
+        ::ores::utility::codec::field{"swap_leg_rates", &instrument_batch::swap_leg_rates},
+        ::ores::utility::codec::field{"swaption_instruments",
+                                      &instrument_batch::swaption_instruments},
+        ::ores::utility::codec::field{"synthetic_cdo_instruments",
+                                      &instrument_batch::synthetic_cdo_instruments},
+        ::ores::utility::codec::field{"vanilla_swap_instruments",
+                                      &instrument_batch::vanilla_swap_instruments},
+    };
 }
 
 }

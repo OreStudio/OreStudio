@@ -77,6 +77,11 @@ import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
 import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
 import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
 import { PublicRatesPublisherPage } from './marketdata/PublicRatesPublisherPage.js';
+import {
+    CalibrationFeedPage,
+    CalibrationPage,
+    CalibrationPolicyPage,
+} from './marketdata/calibration/CalibrationPages.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
@@ -620,6 +625,54 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PublicRatesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.calibration}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalibrationPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.calibration}/:assetClass`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalibrationPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.calibration}/:assetClass/feeds/:configId`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalibrationFeedPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.calibration}/:assetClass/policy`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalibrationPolicyPage />
                     ),
                     'workspace',
                 )}

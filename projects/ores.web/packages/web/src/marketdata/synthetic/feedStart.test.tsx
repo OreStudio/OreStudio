@@ -40,6 +40,7 @@ const START: FeedStart = {
     used: 261,
     hourly_spread: 0.0004,
     note: '',
+    dispersion: [],
 };
 
 function render(start: FeedStart): string {
@@ -83,5 +84,38 @@ describe('where a feed run started', () => {
     it('says the item quotes the pair the other way round when it was inverted', () => {
         const html = render({ ...START, inverted: true });
         expect(html).toContain('one over it');
+    });
+
+    it('says the volatility changed the calibration and records the rest for later', () => {
+        const html = render({
+            ...START,
+            daily_spread: 0.0042,
+            annual_drift: -0.031,
+            min_return: -0.012,
+            max_return: 0.0095,
+            age_days: 2,
+            jumps: 1,
+            dispersion: [
+                {
+                    provider_code: 'imf',
+                    item: 'oresmd://fx/USD?type=fixing&ccy=EUR',
+                    basis_points: 3.25,
+                },
+            ],
+        });
+        expect(html).toContain('Realised volatility 0.42% daily, 0.04% hourly');
+        expect(html).toContain('this changed the calibration');
+        expect(html).toContain('Recorded for a later policy, not used today:');
+        expect(html).toContain('Drift, annualised: -3.10%');
+        expect(html).toContain('Daily returns from -1.20% to 0.95%');
+        expect(html).toContain('The fixing is 2 day(s) old');
+        expect(html).toContain('Moves above three deviations: 1');
+        expect(html).toContain('imf stands 3.3 bp away');
+    });
+
+    it('records nothing when the window had no measures', () => {
+        const html = render(START);
+        expect(html).not.toContain('Realised volatility');
+        expect(html).not.toContain('Recorded for a later policy');
     });
 });

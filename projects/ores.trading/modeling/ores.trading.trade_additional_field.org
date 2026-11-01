@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: EDEBBAAB-C045-4D67-957C-C7F18497A8E6
 :END:
 #+title: ores.trading.trade_additional_field

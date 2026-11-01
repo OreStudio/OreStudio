@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 33453d64-863c-4f00-a93b-863b9b035fbb
 :END:
 #+title: ores.trading.bond_future

@@ -1479,6 +1479,17 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.market_state_payloads.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'family_one_of',
+        ],
+        rows: ['payloads'],
+    },
     'marketdata.v1.observation_lineages.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -2610,12 +2621,42 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.curve_volatility_moneyness_surfaces.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_moneyness_surfaces'],
+    },
+    'refdata.v1.curve_volatility_moneyness_surfaces_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.curve_volatility_proxy_surfaces.list': {
         asOf: true,
         filter: ['id_one_of'],
         rows: ['curve_volatility_proxy_surfaces'],
     },
     'refdata.v1.curve_volatility_proxy_surfaces_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_smile_parameters.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_smile_parameters'],
+    },
+    'refdata.v1.curve_volatility_smile_parameters_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.curve_volatility_smiles.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['curve_volatility_smiles'],
+    },
+    'refdata.v1.curve_volatility_smiles_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -4382,6 +4423,42 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['objects'],
     },
+    'synthetic.v1.calibration_fallbacks.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['fallbacks'],
+    },
+    'synthetic.v1.calibration_fallbacks_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.calibration_policies.list': {
+        asOf: true,
+        filter: ['fallback_code', 'id_one_of', 'fallback_code_one_of', 'search'],
+        rows: ['policies'],
+    },
+    'synthetic.v1.calibration_policies_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.calibration_provider_orders.list': {
+        asOf: true,
+        filter: [
+            'policy_id',
+            'provider_code',
+            'id_one_of',
+            'policy_id_one_of',
+            'provider_code_one_of',
+        ],
+        rows: ['provider_orders'],
+    },
+    'synthetic.v1.calibration_provider_orders_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'synthetic.v1.feed_configs.list': {
         asOf: false,
         filter: [],
@@ -5000,6 +5077,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['credit_linked_swap_instruments'],
     },
     'trading.v1.credit_linked_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.draft_reasons.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['draft_reasons'],
+    },
+    'trading.v1.draft_reasons_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

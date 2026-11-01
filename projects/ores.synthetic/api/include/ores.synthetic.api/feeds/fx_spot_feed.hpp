@@ -153,6 +153,71 @@ private:
 };
 
 /**
+ * @brief What became of one candidate when a feed resolved its start.
+ */
+enum class candidate_state { chosen, skipped, not_reached };
+
+/**
+ * @brief The wire name of @p state.
+ */
+[[nodiscard]] inline std::string_view to_string(candidate_state state) {
+    switch (state) {
+        case candidate_state::chosen:
+            return "chosen";
+        case candidate_state::skipped:
+            return "skipped";
+        case candidate_state::not_reached:
+            return "not_reached";
+    }
+    return "skipped";
+}
+
+/**
+ * @brief One candidate of a resolution, in rank order, and why it was or was not taken.
+ */
+struct candidate_outcome final {
+    std::string item;
+    std::string provider_code;
+    /// True when the item quotes the pair the other way round, as far as it was read.
+    bool inverted = false;
+    int rank = 0;
+    candidate_state state = candidate_state::skipped;
+    std::string reason;
+};
+
+/**
+ * @brief The level and the measured spread a fixing feed starts from, and the mixture's
+ * deviations scaled to it; or, when no item has a fixing, the record of the fallback.
+ */
+struct resolved_start final {
+    ores::marketdata::domain::feed_start source;
+    /// The level the mixture starts from, as the process reads it. The start records the value
+    /// as published; the process is the one boundary that holds it as a binary float.
+    double level = 0.0;
+    std::optional<std::vector<double>> stdevs;
+    /// The policy refuses to start a feed with no usable fixing.
+    bool refused = false;
+    /// Every candidate read, in rank order, with its outcome.
+    std::vector<candidate_outcome> candidates;
+};
+
+/**
+ * @brief Resolve where an FX feed starts, without building it.
+ *
+ * Reads @p items in rank order. A config that names no items derives them from @p policy and
+ * the series that cover its pair. The first item with a fixing sets the level and, when its
+ * window has a spread, the mixture's deviations. When none has one, the feed keeps
+ * gmm_initial_price, or is refused when the policy says so.
+ */
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock);
+
+/**
  * @brief Constructs an FX spot feed from a persisted fx_spot_generation_config and its
  * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
  * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
@@ -181,6 +246,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
+                  const calibration_policy& policy,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr);

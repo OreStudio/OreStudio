@@ -83,39 +83,71 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
                            "' is not latest_on_or_before_clock or exact:<date>");
 }
 
-/// The level and the measured spread a fixing feed starts from, and the mixture's deviations
-/// scaled to it; or, when no item has a fixing, the record that the feed kept its fixed level.
-struct resolved_start final {
-    ores::marketdata::domain::feed_start source;
-    /// The level the mixture starts from, as the process reads it. The start records the value
-    /// as published; the process is the one boundary that holds it as a binary float.
-    double level = 0.0;
-    std::optional<std::vector<double>> stdevs;
-};
+} // namespace
 
-resolved_start
-resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
-                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                     const std::vector<ores::synthetic::domain::gmm_component>& components,
-                     std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
-                     const ores::marketdata::domain::market_clock* clock) {
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock) {
     resolved_start out;
     out.level = cfg.gmm_initial_price;
-    std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
 
     auto delegated = auth_nats.with_delegation({});
     ores::marketdata::client::market_data_client md(delegated);
+
+    // A config that names no items is calibrated from its class policy: every series that
+    // covers the pair from a provider the policy keeps becomes an item, in the policy's order.
+    if (items.empty() && cfg.price_source == "fixing") {
+        const auto series = md.list_series();
+        if (!series) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Feed " << cfg.source_name
+                << " could not read the series that cover its pair: " << series.error();
+            out.source.note = "The series that cover the pair could not be read: " + series.error();
+            out.refused = policy.fallback_code == "refuse";
+            return out;
+        }
+        std::vector<calibration_candidate> candidates;
+        candidates.reserve(series->size());
+        for (const auto& s : *series) {
+            const auto pair = pair_of_item(s.oresmd_uri);
+            if (!pair)
+                continue;
+            candidates.push_back({.item = s.oresmd_uri,
+                                  .provider_code = s.provider_code,
+                                  .base_currency = pair->first,
+                                  .quote_currency = pair->second});
+        }
+        items = derive_fixing_items(
+            policy, cfg.base_currency_code, cfg.quote_currency_code, candidates);
+    }
+
+    std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
     std::vector<std::string> skipped;
-    for (const auto& item : items) {
+    for (std::size_t index = 0; index < items.size(); ++index) {
+        const auto& item = items[index];
         const auto orientation =
             orientation_of(item.item, cfg.base_currency_code, cfg.quote_currency_code);
+        const bool item_inverted = orientation && *orientation == item_orientation::inverted;
+        const auto skip = [&](const std::string& reason) {
+            skipped.push_back(item.item + ": " + reason);
+            out.candidates.push_back({.item = item.item,
+                                      .provider_code = item.provider_code,
+                                      .inverted = item_inverted,
+                                      .rank = item.rank,
+                                      .state = candidate_state::skipped,
+                                      .reason = reason});
+        };
         if (!orientation) {
-            skipped.push_back(orientation.error());
+            skip(orientation.error());
             continue;
         }
         const auto date = policy_date(item.policy, clock);
         if (!date) {
-            skipped.push_back(item.item + ": " + date.error());
+            skip(date.error());
             continue;
         }
         // The feed reads fixings for the party that owns its config: a fixing is entitled by
@@ -126,28 +158,26 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
                                            .party_id = party_id,
                                            .on_or_before = *date});
         if (!latest) {
-            skipped.push_back(item.item + ": " + latest.error());
+            skip(latest.error());
             continue;
         }
         // An exact policy names one date; the latest fixing on or before it is that date's or
         // none.
         const bool exact = item.policy != "latest_on_or_before_clock";
         if (!latest->fixing_date || (exact && *latest->fixing_date != *date)) {
-            skipped.push_back(item.item + ": no fixing on or before " +
-                              std::format("{:%F}", std::chrono::sys_days(*date)));
+            skip("no fixing on or before " + std::format("{:%F}", std::chrono::sys_days(*date)));
             continue;
         }
         const auto value = number_of(latest->value);
         if (!value) {
-            skipped.push_back(item.item + ": the fixing '" + latest->value + "' is not a price");
+            skip("the fixing '" + latest->value + "' is not a price");
             continue;
         }
         // The record keeps the publisher's value exactly; a spelling the decimal type cannot
         // hold is refused rather than rounded.
         const auto published = ores::utility::decimal::decimal::from_string(latest->value);
         if (!published) {
-            skipped.push_back(item.item + ": the fixing '" + latest->value +
-                              "' is not an exact decimal");
+            skip("the fixing '" + latest->value + "' is not an exact decimal");
             continue;
         }
 
@@ -162,6 +192,58 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
         s.received_at = latest->received_at;
         out.level = s.inverted ? 1.0 / *value : *value;
         s.window_days = item.window_days;
+        out.candidates.push_back({.item = item.item,
+                                  .provider_code = item.provider_code,
+                                  .inverted = s.inverted,
+                                  .rank = item.rank,
+                                  .state = candidate_state::chosen,
+                                  .reason = "the first candidate with a fixing"});
+        for (std::size_t later = index + 1; later < items.size(); ++later) {
+            const auto later_orientation =
+                orientation_of(items[later].item, cfg.base_currency_code, cfg.quote_currency_code);
+            out.candidates.push_back(
+                {.item = items[later].item,
+                 .provider_code = items[later].provider_code,
+                 .inverted = later_orientation && *later_orientation == item_orientation::inverted,
+                 .rank = items[later].rank,
+                 .state = candidate_state::not_reached,
+                 .reason = "a candidate ranked higher was chosen"});
+        }
+        // The read is on or before the date, so a fixing is never younger than it.
+        s.age_days = std::max(0,
+                              static_cast<int>((std::chrono::sys_days(*date) -
+                                                std::chrono::sys_days(*latest->fixing_date))
+                                                   .count()));
+
+        // The other providers' fixings of the pair, read on the same date and turned to the
+        // feed's orientation. Each provider is compared once, through its first candidate. They
+        // describe the start; a missing one never blocks it.
+        for (const auto& other : items) {
+            if (other.provider_code == latest->provider_code ||
+                std::ranges::any_of(s.dispersion, [&](const auto& d) {
+                    return d.provider_code == other.provider_code;
+                }))
+                continue;
+            const auto other_orientation =
+                orientation_of(other.item, cfg.base_currency_code, cfg.quote_currency_code);
+            if (!other_orientation)
+                continue;
+            const auto fixing = md.get_fixing({.item = other.item,
+                                               .provider_code = other.provider_code,
+                                               .party_id = party_id,
+                                               .on_or_before = *date});
+            if (!fixing)
+                continue;
+            const auto other_value = number_of(fixing->value);
+            if (!other_value || *other_value <= 0.0)
+                continue;
+            const double other_level = *other_orientation == item_orientation::inverted ?
+                                           1.0 / *other_value :
+                                           *other_value;
+            s.dispersion.push_back({.provider_code = other.provider_code,
+                                    .item = other.item,
+                                    .basis_points = basis_points_from(out.level, other_level)});
+        }
 
         const auto window = md.get_fixing_window({.item = item.item,
                                                   .provider_code = item.provider_code,
@@ -183,6 +265,13 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
             return out;
         }
         s.hourly_spread = hourly_spread_of(*spread);
+        if (const auto m = measure_window(values, s.inverted)) {
+            s.daily_spread = m->daily_spread;
+            s.annual_drift = m->annual_drift;
+            s.min_return = m->min_return;
+            s.max_return = m->max_return;
+            s.jumps = m->jumps;
+        }
         std::vector<mixture_component> mixture;
         for (const auto& c : components)
             mixture.push_back({.mean = c.mean, .stdev = c.stdev, .weight = c.weight});
@@ -194,13 +283,16 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
         out.stdevs = *scaled;
         return out;
     }
-    out.source.note = items.empty() ? "The config names no fixing item." : "No item has a fixing";
+    out.source.note = items.empty() ? "The config names no fixing item, and no series covers its "
+                                      "pair, so there is nothing to measure." :
+                                      "No item has a fixing, so there is nothing to measure";
     for (const auto& reason : skipped)
         out.source.note += "; " + reason;
+    out.refused = policy.fallback_code == "refuse";
+    if (out.refused)
+        out.source.note += "; the class policy refuses to start without a fixing.";
     return out;
 }
-
-} // namespace
 
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
 make_fx_spot_feed(ores::nats::service::client& nats,
@@ -208,6 +300,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
+                  const calibration_policy& policy,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter,
                   const ores::marketdata::domain::market_clock* clock) {
@@ -240,8 +333,11 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     ores::marketdata::domain::feed_start start;
     double initial_price = cfg.gmm_initial_price;
     if (cfg.price_source == "fixing") {
-        auto resolved = resolve_fixing_start(auth_nats, cfg, components, fixing_items, clock);
+        auto resolved = resolve_fx_start(auth_nats, cfg, components, fixing_items, policy, clock);
         start = std::move(resolved.source);
+        if (resolved.refused)
+            throw std::runtime_error("Feed " + cfg.source_name +
+                                     " did not start: " + resolved.source.note);
         initial_price = resolved.level;
         if (resolved.stdevs)
             stdevs = std::move(*resolved.stdevs);

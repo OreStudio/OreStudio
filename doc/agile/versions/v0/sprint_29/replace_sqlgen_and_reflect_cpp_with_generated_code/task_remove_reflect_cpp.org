@@ -68,6 +68,13 @@ task and name that file in the Command column.
 
 * Notes
 
+**The byte tests lose their reference.** =message_codec_tests.cpp= and the
+codec enum tests compare the generated codec with the reflector's output. When
+reflect-cpp goes, they have nothing to compare with. Before the dependency is
+dropped, replace them with a read-after-write round trip over every generated
+codec, generated from the same facet, so each shape is tested without the
+reflector. The PR #4278 review asked for this (finding 6).
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

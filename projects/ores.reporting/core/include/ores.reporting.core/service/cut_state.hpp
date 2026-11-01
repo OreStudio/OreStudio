@@ -61,8 +61,8 @@ enum class cut_state {
  * @param cut The record, as the store holds it.
  * @param open_gap_count How many parts the assembly could not fill.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_state
-derive_state(const domain::cut& cut, int open_gap_count);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_state derive_state(const domain::cut& cut,
+                                                                int open_gap_count);
 
 /**
  * @brief The state a reader sees, once a later cut's place is known.
@@ -74,8 +74,9 @@ derive_state(const domain::cut& cut, int open_gap_count);
  * @param later_cut_holds_its_place Whether a later cut of the same kind and
  * scope stands in this one's place.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_state
-derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_its_place);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_state derive_state(const domain::cut& cut,
+                                                                int open_gap_count,
+                                                                bool later_cut_holds_its_place);
 
 /**
  * @brief Whether one body stands in another's place.
@@ -87,8 +88,8 @@ derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_it
  * @param later The body whose place is in question.
  * @param cut The body it would replace.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT bool
-stands_in_the_place_of(const domain::cut& later, const domain::cut& cut);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT bool stands_in_the_place_of(const domain::cut& later,
+                                                                     const domain::cut& cut);
 
 /**
  * @brief Whether a later cut of the same kind, party, scope and centre replaced this one.
@@ -120,8 +121,8 @@ later_cut_holds_its_place(const domain::cut& cut, const std::vector<domain::cut>
  * @param cut The record the label names.
  * @param kind The kind the cut was taken under.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
-cut_label_of(const domain::cut& cut, const domain::cut_kind& kind);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string cut_label_of(const domain::cut& cut,
+                                                                  const domain::cut_kind& kind);
 
 }
 

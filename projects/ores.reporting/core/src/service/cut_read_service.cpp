@@ -24,10 +24,10 @@
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
-#include <algorithm>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <map>
@@ -53,8 +53,7 @@ namespace {
 constexpr std::uint32_t paging_cap = 1000;
 
 /** @brief The page a query asks for, bounded by the read's own cap. */
-std::pair<std::size_t, std::size_t> page_bounds(const cut_list_query& query,
-                                                std::size_t matched) {
+std::pair<std::size_t, std::size_t> page_bounds(const cut_list_query& query, std::size_t matched) {
     const auto offset = std::min<std::size_t>(query.offset, matched);
     const auto asked = query.limit == 0 ? paging_cap : std::min(query.limit, paging_cap);
     return {offset, std::min<std::size_t>(asked, matched - offset)};
@@ -62,9 +61,9 @@ std::pair<std::size_t, std::size_t> page_bounds(const cut_list_query& query,
 
 }
 
-std::expected<std::pair<std::chrono::system_clock::time_point,
-                        std::chrono::system_clock::time_point>,
-              std::string>
+std::expected<
+    std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>,
+    std::string>
 cut_window_of(const std::string& month) {
     if (month.empty()) {
         const auto from = std::chrono::system_clock::time_point(
@@ -93,11 +92,10 @@ cut_window_of(const std::string& month) {
         return refusal();
 
     const auto after = start + std::chrono::months{1};
-    return std::make_pair(
-        std::chrono::system_clock::time_point(
-            std::chrono::sys_days(start.year() / start.month() / 1)),
-        std::chrono::system_clock::time_point(
-            std::chrono::sys_days(after.year() / after.month() / 1)));
+    return std::make_pair(std::chrono::system_clock::time_point(
+                              std::chrono::sys_days(start.year() / start.month() / 1)),
+                          std::chrono::system_clock::time_point(
+                              std::chrono::sys_days(after.year() / after.month() / 1)));
 }
 
 namespace {
@@ -171,8 +169,8 @@ void cut_read_service::derive_rows(std::vector<cut_row_view>& rows,
     }
 }
 
-std::optional<boost::uuids::uuid>
-replacement_of(const domain::cut& cut, const std::vector<domain::cut>& candidates) {
+std::optional<boost::uuids::uuid> replacement_of(const domain::cut& cut,
+                                                 const std::vector<domain::cut>& candidates) {
     std::optional<boost::uuids::uuid> replacement;
     auto replacement_timepoint = std::chrono::system_clock::time_point::max();
     for (const auto& other : candidates) {
@@ -209,12 +207,12 @@ std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query
     // them so a body replaces the one before it inside the month too.
     std::vector<domain::cut> candidates = window;
     if (to < std::chrono::system_clock::now()) {
-        auto later = cuts_repo.read_for_party_in_window(
-            ctx_,
-            *party_id,
-            query.kind_code,
-            to,
-            std::chrono::system_clock::now() + std::chrono::hours(24));
+        auto later = cuts_repo.read_for_party_in_window(ctx_,
+                                                        *party_id,
+                                                        query.kind_code,
+                                                        to,
+                                                        std::chrono::system_clock::now() +
+                                                            std::chrono::hours(24));
         candidates.insert(candidates.end(), later.begin(), later.end());
     }
 
@@ -235,9 +233,9 @@ std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query
         if (found == kinds_by_code.end()) {
             const auto kind = kind_of(row.cut.kind_code);
             if (!kind) {
-                BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(row.cut.id)
-                                          << " names the kind " << row.cut.kind_code
-                                          << ", which the store does not hold.";
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Cut " << boost::uuids::to_string(row.cut.id) << " names the kind "
+                    << row.cut.kind_code << ", which the store does not hold.";
                 continue;
             }
             found = kinds_by_code.emplace(kind->code, *kind).first;
@@ -290,12 +288,12 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     // same kind, scope and centre. The read starts a day before the body, so the
     // body itself is in it, and ends a day past now, so a body fixed years ago is
     // still replaced by the one fixed since.
-    auto candidates = cuts_repo.read_for_party_in_window(
-        ctx_,
-        cut.party_id,
-        cut.kind_code,
-        cut.timepoint - std::chrono::hours(24),
-        std::chrono::system_clock::now() + std::chrono::hours(24));
+    auto candidates = cuts_repo.read_for_party_in_window(ctx_,
+                                                         cut.party_id,
+                                                         cut.kind_code,
+                                                         cut.timepoint - std::chrono::hours(24),
+                                                         std::chrono::system_clock::now() +
+                                                             std::chrono::hours(24));
 
     cut_record_view record;
     record.cut = cut;
@@ -313,9 +311,8 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     if (record.kind)
         record.label = cut_label_of(cut, *record.kind);
     else
-        BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(cut.id)
-                                  << " names the kind " << cut.kind_code
-                                  << ", which the store does not hold.";
+        BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(cut.id) << " names the kind "
+                                  << cut.kind_code << ", which the store does not hold.";
 
     record.run_count = run_count(cut.id);
     return record;

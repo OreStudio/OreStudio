@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 28
+Tables: 29
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -637,6 +637,48 @@ package "marketdata" #E3F2FD {
     keep two series, and a party that switches the source of a provider keeps one
     series and one history. The observations beneath it record the source that
     produced each one, for information; the source is never part of the key.
+    end note
+
+    entity ores_marketdata_market_state_payloads_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * family : text
+        * file_name : text
+        * report_definition_id : uuid <<FK>>
+        * row_count : integer
+        * column_count : integer
+        * column_names : text
+        * key_values : text
+        * keys_truncated : boolean
+        * payload : text
+        * payload_bytes : integer
+        * content_sha256 : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_state_payloads_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market State Payload Table
+    The market state an engine run priced against, kept as the file the engine
+    wrote. A cube states a column for every curve and tenor the run built — the
+    widest checked-in sample states 789 — so a row for each value would be millions
+    of rows per run, and a read that needs one factor would unpack all of them.
+    The payload is therefore stored once, compressed, with an index beside it: the
+    headings, the number of rows, and the distinct values of each key the catalogue
+    names, which are the dates, the scenarios, the factors or the market objects the
+    file covers. A reader that wants one slice asks the index first and unpacks only
+    what it must.
+    This is market state and not a run result: it says what the world looked like,
+    it is what the engine read, and it belongs beside the series and the fixings the
+    market data store already keeps.
     end note
 
     entity ores_marketdata_observation_lineages_tbl <<temporal>> #C6F0D8 {

@@ -3369,27 +3369,26 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
      * scripted trade survives the round trip rather than exporting as a name
      * with nothing behind it.
      */
-    const auto scripted_item = [](std::string trade_type,
-                                  std::string script_name,
-                                  std::string parameters) {
-        ores::ore::xml::trade_import_item item;
-        item.ore_id = "Scripted-1";
-        item.anchor.trade_type = trade_type;
-        ores::trading::domain::scripted_instrument row;
-        row.identity.trade_type_code = trade_type;
-        row.script_name = std::move(script_name);
-        row.underlyings_json = R"(["GB0005405286","US0378331005"])";
-        row.parameters_json = std::move(parameters);
-        item.instrument = std::move(row);
-        return item;
-    };
+    const auto scripted_item =
+        [](std::string trade_type, std::string script_name, std::string parameters) {
+            ores::ore::xml::trade_import_item item;
+            item.ore_id = "Scripted-1";
+            item.anchor.trade_type = trade_type;
+            ores::trading::domain::scripted_instrument row;
+            row.identity.trade_type_code = trade_type;
+            row.script_name = std::move(script_name);
+            row.underlyings_json = R"(["GB0005405286","US0378331005"])";
+            row.parameters_json = std::move(parameters);
+            item.instrument = std::move(row);
+            return item;
+        };
 
-    const auto generic = rebuild(scripted_item(
-        "ScriptedTrade",
-        "AsianBasketOption",
-        R"({"Notional":"1000000.00","PutCall":"Call","Strike":"1.0500"})"));
-    const auto* generic_row = std::get_if<ores::trading::domain::scripted_instrument>(
-        &generic.instrument);
+    const auto generic =
+        rebuild(scripted_item("ScriptedTrade",
+                              "AsianBasketOption",
+                              R"({"Notional":"1000000.00","PutCall":"Call","Strike":"1.0500"})"));
+    const auto* generic_row =
+        std::get_if<ores::trading::domain::scripted_instrument>(&generic.instrument);
     REQUIRE(generic_row != nullptr);
     CHECK(generic_row->script_name == "AsianBasketOption");
     CHECK(generic_row->underlyings_json == R"(["GB0005405286","US0378331005"])");
@@ -3399,8 +3398,8 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "DoubleDigitalOption",
         "DoubleDigitalOption",
         R"({"Type1":"Equity","Type2":"Equity","Expiry":"2029-10-31","Settlement":"2029-12-31","Position":"Long","PayCcy":"GBP","BinaryPayout":"1000000.00","BinaryLevel1":"1.0500","BinaryLevel2":"1.2000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* digital_row = std::get_if<ores::trading::domain::scripted_instrument>(
-        &digital.instrument);
+    const auto* digital_row =
+        std::get_if<ores::trading::domain::scripted_instrument>(&digital.instrument);
     REQUIRE(digital_row != nullptr);
     CHECK(digital_row->script_name == "DoubleDigitalOption");
     CHECK(digital_row->parameters_json.find("BinaryPayout") != std::string::npos);
@@ -3409,8 +3408,8 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "PerformanceOption_01",
         "PerformanceOption_01",
         R"({"NotionalAmount":"1000000.00","ParticipationRate":"1.0","Strike":"0.9000","ValuationDate":"2029-10-31","SettlementDate":"2029-12-31","Position":"Long","PayCcy":"GBP","StrikePrices":"0.9000,1.0000,1.1000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* performance_row = std::get_if<ores::trading::domain::scripted_instrument>(
-        &performance.instrument);
+    const auto* performance_row =
+        std::get_if<ores::trading::domain::scripted_instrument>(&performance.instrument);
     REQUIRE(performance_row != nullptr);
     CHECK(performance_row->script_name == "PerformanceOption_01");
     CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);

@@ -123,6 +123,9 @@ target_link_libraries(${lib_target_name}
         Boost::program_options
         yyjson::yyjson
         msgpack-c
+        # text_form.hpp names an enumerator through magic_enum, so every
+        # translation unit that includes the codec needs the headers.
+        magic_enum::magic_enum
     PRIVATE
         OpenSSL::Crypto
         faker-cxx::faker-cxx)

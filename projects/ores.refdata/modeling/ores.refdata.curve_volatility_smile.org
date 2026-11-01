@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 451DDCDA-306A-4B28-8ADD-9D4640913B3F
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.refdata.curve_volatility_smile
+#+description: Codegen entity model for the refdata curve_volatility_smile part: the parametric smile configuration a volatility kind states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_volatility_smile
+#+entity_plural: curve_volatility_smiles
+#+entity_title: Curve Volatility Smile
+#+brief: The calibration a strike, delta or moneyness kind states for its parametric smile.
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+ORE's =volatilityStrikeSurfaceConfig=, =volatilityDeltaSurfaceConfig= and
+=volatilityMoneynessSurfaceConfig= each state an optional
+=ParametricSmileConfiguration=: the calibration the surface's smile is fitted
+with. It belongs to the kind, not to one surface type, because the kind row is
+what the parts share -- a kind is one of the seven, and at most one of them
+states a smile. A kind that states none has no row, which is the conditional the
+schema cannot state.
+
+The parameters are a list the document writes in order, so they are a part of
+their own keyed by this row.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The kind this smile belongs to. One smile per kind, so the generated table adds
+the unique index on the live rows of =(tenant_id, curve_volatility_kind_id)=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this kind belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** max_calibration_attempts
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many times the fit is attempted before it gives up.
+
+#+begin_src cpp :name generator
+100
+#+end_src
+
+** exit_early_error_threshold
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The error below which the fit stops early.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** max_acceptable_error
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The error above which the fit is refused.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** residual_correction_dimension
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The dimension the fit's residual is corrected in, when the document states one:
+=AbsoluteStrike=, =StrikeMinusForward= or =StrikeOverForward=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_smiles_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "residual_correction_dimension" is null or "residual_correction_dimension" in ('AbsoluteStrike', 'StrikeMinusForward', 'StrikeOverForward') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_volatility_smile
+:entity_plural_short:   curve_volatility_smiles
+:entity_singular_words: curve volatility smile
+:entity_plural_words:   curve volatility smiles
+:END:
+
+* Foreign keys
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:table:         ores_refdata_curve_volatility_kinds_tbl
+:target_column: id
+:parent_entity: curve_volatility_kind
+:nullable:      false
+:error_message: Invalid curve_volatility_kind_id: %. No active volatility kind found with this id.
+:END:
+
+* See also
+
+- [[id:DB2C3AFB-777A-405F-A208-B97B25B9C93C][Model the volatility smile configuration and the moneyness surface]] — the task that introduced it.

@@ -29,12 +29,12 @@
 #include "ores.inbox.core/repository/notification_delivery_entity.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <rfl/enums.hpp>
 #include <string_view>
 #include <vector>
 
@@ -55,7 +55,7 @@ notification_delivery_mapper::map(const notification_delivery_entity& v) {
     r.account_id = v.account_id;
     r.channel_code = v.channel_code;
     r.attempted_at = v.attempted_at;
-    r.outcome = rfl::string_to_enum<domain::delivery_outcome>(v.outcome).value();
+    r.outcome = ores::utility::codec::text_form<domain::delivery_outcome>::from_text(v.outcome);
     r.failure_reason = v.failure_reason;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -79,7 +79,7 @@ notification_delivery_mapper::map(const domain::notification_delivery& v) {
     r.account_id = v.account_id;
     r.channel_code = v.channel_code;
     r.attempted_at = v.attempted_at;
-    r.outcome = rfl::enum_to_string(v.outcome);
+    r.outcome = ores::utility::codec::text_form<decltype(v.outcome)>::to_text(v.outcome);
     r.failure_reason = v.failure_reason;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

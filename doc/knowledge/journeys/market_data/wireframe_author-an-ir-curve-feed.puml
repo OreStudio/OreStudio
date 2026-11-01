@@ -30,8 +30,7 @@ salt
     Role | ^self_discounting^
     Fixed leg frequency | ^Annual^
     ORE key | synthetic.realistic.usdsofr
-    Price source | ^vintage^ | ore.samples.2016-02-05 | 2016-02-05
-    Vintage series | oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D
+    Price source | ^fixed^ | no public source fixes a short rate
     Description | Overnight RFR curve for USD; single-curve and self-discounting.
     Enabled | true | Auto start | false | Ticks per hour | 4
   }
@@ -69,7 +68,7 @@ salt
     Version | Written | By | Change from the one before
     v7 | 2026-07-24 09:41 | marco | Process parameters re-calibrated
     v6 | 2026-07-18 16:02 | marco | Curve Template: added IRS 10Y–30Y
-    v5 | 2026-07-14 11:27 | joey | Price source set to vintage ore.samples.2016-02-05
+    v5 | 2026-07-14 11:27 | joey | Initial rate set to 4.30 %
   }
   [ Save ] | [ Cancel ]
   --

@@ -152,7 +152,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+{{^has_generated_wire_codec}}
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
 {{#party_scoped_writes}}
 #include "ores.utility/generation/generation_context.hpp"
 {{/party_scoped_writes}}

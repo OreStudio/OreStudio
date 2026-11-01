@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORWARD_SETTLEMENT_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_SETTLEMENT_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -90,6 +92,29 @@ struct bond_forward_settlement {
     friend bool operator==(const bond_forward_settlement&,
                            const bond_forward_settlement&) = default;
 };
+/**
+ * @brief The members of bond_forward_settlement, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_forward_settlement&) {
+    return std::tuple{
+        utility::codec::field{"forward_maturity_date",
+                              &bond_forward_settlement::forward_maturity_date},
+        utility::codec::field{"forward_settlement_date",
+                              &bond_forward_settlement::forward_settlement_date},
+        utility::codec::field{"settlement", &bond_forward_settlement::settlement},
+        utility::codec::field{"amount", &bond_forward_settlement::amount},
+        utility::codec::field{"lock_rate", &bond_forward_settlement::lock_rate},
+        utility::codec::field{"dv01", &bond_forward_settlement::dv01},
+        utility::codec::field{"lock_rate_day_counter",
+                              &bond_forward_settlement::lock_rate_day_counter},
+        utility::codec::field{"settlement_dirty", &bond_forward_settlement::settlement_dirty},
+    };
+}
 
 }
 

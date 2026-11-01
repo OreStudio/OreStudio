@@ -2,7 +2,7 @@
 :ID: 7557BCCA-54B5-43C0-8B12-F0AD373813F4
 :END:
 #+title: The shell operation surface
-#+description: The synthetic command group in the shell, the folder and feed addressing rule, and the vintage check, all of it kind agnostic.
+#+description: The synthetic command group in the shell, the folder and feed addressing rule, all of it kind agnostic.
 #+type: knowledge
 #+level: cross
 #+filetags: :synthetic:shell:operations:
@@ -57,9 +57,6 @@ a request the caller assembles. =fx-spot= and =ir-paths= take =--ticks=,
 =synthetic start= and =synthetic stop= take one target, written as
 =folder <token>= or =feed <token>=.
 
-=synthetic validate-vintage= takes one feed token and reports whether the
-vintage data that feed needs is available.
-
 ** marketdata stream
 
 =marketdata stream <oresmd-uri>= watches one datum on the republished tick
@@ -112,19 +109,6 @@ the config id. Stop mirrors both with the stop requests.
 
 The client never derives a =source_name=. The per-feed request is keyed by
 =config_id= and the server resolves it to the config's own =source_name=.
-
-** The vintage check
-
-=synthetic validate-vintage= resolves the feed and then reads the live
-vintage validity entries from the marketdata service. The entries are keyed
-by FX config id, so only an FX feed matches one. The FX config entity is
-[[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]].
-The command reports three outcomes, the data is available, the data is
-missing, or the check does not apply because the feed takes its price from a
-fixed initial value rather than from a vintage.
-
-An IR curve feed matches no entry at all, and the command reports that it
-found no entry rather than that the data is missing.
 
 ** Facts the code shape does not show
 

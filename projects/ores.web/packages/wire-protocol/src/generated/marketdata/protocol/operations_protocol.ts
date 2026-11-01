@@ -1096,6 +1096,38 @@ export interface GetSeriesTicksResponse {
     values: number[];
 }
 
+/**
+ * @brief Asks this component to keep the market state a run priced against.
+ *
+ * The state is the output files the run left in its output archives, and those
+ * files are far too large for a message: a cube states a column for every curve
+ * and tenor the run built. The caller therefore names the archives and lends the
+ * token that reads them — the run's own, the same one the run's other steps use
+ * — and this reads the files rather than receiving them.
+ *
+ * The archives are named by their storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is left alone:
+ * the run's results belong to reporting.
+ */
+export interface StoreMarketStateRequest {
+    party_id: string;
+    report_instance_id: string;
+    report_definition_id: string;
+    as_of: string;
+    storage_token: string;
+    output_uris: string[];
+    result_ids: string[];
+}
+
+export interface StoreMarketStateResponse {
+    result: Result;
+    families: string[];
+    payloads: number;
+    payload_bytes: number;
+    left_alone: string[];
+    refusals: string[];
+}
+
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
     describe_oresmd_schema_request: 'marketdata.v1.ops.describe_oresmd_schema',
@@ -1119,6 +1151,7 @@ export const subjects = {
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
     get_series_ticks_request: 'marketdata.v1.ops.get_series_ticks',
+    store_market_state_request: 'marketdata.v1.ops.store_market_state',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -1148,4 +1181,5 @@ export const requiresSession = {
     export_market_data_request: true,
     market_tick: false,
     get_series_ticks_request: true,
+    store_market_state_request: true,
 } as const;

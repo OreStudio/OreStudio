@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: EB8E34A9-E206-46E3-BDF7-CFD18FB16C14
+:END:
+#+title: Four marketdata core tests fail on main against a fresh database
+#+description: On origin/main 36a94808aa, with a fresh database and the services up, ores.marketdata.core.tests fails four cases: export_with_a_date_keeps_the_history_and_writes_the_value_at_the_close_of_that_day (3 series where 1 is expected), the_reads_for_every_series_give_what_the_reads_for_each_series_give (5 where 3), and the two provider terms acceptance cases (the accept reply is not success). A second run on the same database adds five projection and backfill failures on an RLS refusal for market_series_identity, so the suite leaves rows behind that its next run reads.
+#+type: capture
+#+level: cross
+#+filetags: :testing:marketdata:main:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

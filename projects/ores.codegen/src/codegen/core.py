@@ -1814,6 +1814,56 @@ def _has_wire_codec(model_path):
     return _facet_enabled(model_path, "ores.cpp.wire-codec", WIRE_CODEC_ADDRESSES)
 
 
+def _batch_shape_includes(catalogue, model_path):
+    """The headers that declare the shape of every type an instrument batch holds.
+
+    An element that is an entity states its shape in its codec header. An
+    element that is a field group states its own shape, but its members are
+    entities whose shapes are in their codec headers, so a group contributes
+    the headers of its members as well, and so on down.
+    """
+    from .org_loader import _field_group_model_path, load_org_field_group_model
+    owner = {'component_include': f"{catalogue.get('component')}.api"}
+    _, groups = _model_member_names(model_path)
+    prefix = f"ores.{catalogue.get('component')}"
+    out = []
+    seen = set()
+
+    def visit(cpp_types):
+        for header in _member_headers(cpp_types, model_path, owner):
+            if header not in out:
+                out.append(header)
+        for cpp_type in cpp_types:
+            for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", str(cpp_type)):
+                if name not in groups or name in seen:
+                    continue
+                seen.add(name)
+                path = _field_group_model_path(f"{prefix}.{name}", Path(model_path))
+                group = load_org_field_group_model(path)['field_group']
+                visit([f.get('cpp_type', '') for f in group.get('fields') or []])
+
+    visit([item['cpp_type'] for item in catalogue.get('batch') or []])
+    return out
+
+
+def _project_wire_codec(model, model_path):
+    """The wire-codec facts an operation or family header renders from.
+
+    The same three an entity carries: whether the model states its own wire
+    shape, the codec headers its messages' member types are declared in, and
+    each message's name repeated so the field loop, whose fields shadow it,
+    can still reach it.
+    """
+    model['has_generated_wire_codec'] = _has_wire_codec(model_path)
+    # Only a model that opts in renders the includes, and resolving them can
+    # refuse a member type, so a model that has not opted in is not asked.
+    model['message_codec_includes'] = (
+        _message_codec_includes(model, model_path)
+        if model['has_generated_wire_codec'] else [])
+    for message in model.get('messages') or []:
+        message['struct_name'] = message['name']
+
+
 def _facet_enabled(model_path, facet, addresses):
     """Whether a model enables a facet, after its own overrides.
 
@@ -3060,6 +3110,12 @@ def _convention_family_row(entry):
         'is_party': entry.write_mode == 'party',
         'is_by_id': entry.write_mode == 'by_id',
         'is_world': entry.write_mode == 'world',
+        # A family whose model states the wire codec carries its payload
+        # through the generated codec rather than the reflector, the same
+        # rule every generated domain type follows.
+        'has_wire_codec': entry.has_wire_codec,
+        'codec_include': (f"ores.{entry.component}.api/domain/{entry.entity}_codec.hpp"
+                          if entry.has_wire_codec else ""),
     }
 
 
@@ -3787,7 +3843,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # the seed reads its rows and the routing header its instruments.
     if (model_type == 'trade_type_catalogue' and isinstance(model, dict)
             and 'trade_type_catalogue' in model):
-        data['trade_type_catalogue'] = model['trade_type_catalogue']
+        catalogue = model['trade_type_catalogue']
+        # The batch states its own wire shape, and encoding it recurses into
+        # each array's element, so the batch header includes the header that
+        # declares each element's shape.
+        catalogue['batch_shape_includes'] = _batch_shape_includes(
+            catalogue, model_path)
+        data['trade_type_catalogue'] = catalogue
 
     # The outcome catalogue renders at a top-level key of its own name: the C++
     # header and the PostgreSQL functions read the same entries, so the
@@ -6981,6 +7043,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 op['http_route'],
                 op.get('entity_singular', ''),
                 _menu)
+        _project_wire_codec(op, model_path)
         data['operation'] = op
 
     if is_family and isinstance(model, dict) and 'family' in model:
@@ -7007,6 +7070,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if target_template == 'ts_protocol.ts.mustache':
             from .org_loader import _reject_silent_ts_gap  # noqa: PLC0415
             _reject_silent_ts_gap(model_path, family['messages'], {})
+        _project_wire_codec(family, model_path)
         data['family'] = family
 
     # Special processing for enum models

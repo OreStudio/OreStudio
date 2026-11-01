@@ -70,6 +70,18 @@ export interface StopFeedResponse {
 }
 
 /**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+export interface ProviderDispersion {
+    /** @brief The other provider. */
+    provider_code: string;
+    /** @brief The other provider's item, as the oresmd URI that names it. */
+    item: string;
+    /** @brief The distance from the level the feed took, in basis points of that level. */
+    basis_points: number;
+}
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -100,6 +112,20 @@ export interface FeedStart {
     hourly_spread: number | null;
     /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
     note: string;
+    /** @brief How many days the fixing is older than the date the feed read on or before. */
+    age_days: number | null;
+    /** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+    daily_spread: number | null;
+    /** @brief The mean business-day log return, times 252. */
+    annual_drift: number | null;
+    /** @brief The smallest business-day log return in the window. */
+    min_return: number | null;
+    /** @brief The largest business-day log return in the window. */
+    max_return: number | null;
+    /** @brief How many returns lie more than three spreads from zero. */
+    jumps: number | null;
+    /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+    dispersion: ProviderDispersion[];
 }
 
 /**
@@ -130,10 +156,92 @@ export interface ListFeedsResponse {
     running_feeds: RunningFeed[];
 }
 
+/**
+ * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
+ */
+export interface CalibrationPolicySummary {
+    /** @brief True when the class has a policy row; false when it calibrates on the defaults. */
+    from_policy_row: boolean;
+    /** @brief How many calendar days of fixings measure the spread. */
+    window_days: number;
+    /** @brief True when an item that quotes the pair the other way round is read as one over it. */
+    allow_inverse: boolean;
+    /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
+    fallback_code: string;
+    /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
+    provider_order: string[];
+}
+
+/**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+export interface CandidateOutcome {
+    /** @brief The candidate's item, as the oresmd URI that names it. */
+    item: string;
+    /** @brief The provider that publishes the item. */
+    provider_code: string;
+    /** @brief True when the item quotes the pair the other way round. */
+    inverted: boolean;
+    /** @brief The candidate's place in the resolution, first tried first. */
+    rank: number;
+    /** @brief chosen, skipped or not_reached. */
+    state: string;
+    /** @brief Why the candidate was chosen, skipped or not reached. */
+    reason: string;
+}
+
+/**
+ * @brief How one feed of the class resolved: the item it starts from, or its fallback or
+ * refusal, and the exceptions it states against the policy.
+ */
+export interface CalibratedFeed {
+    /** @brief The feed's config id. */
+    config_id: string;
+    /** @brief The source name the feed publishes under. */
+    source_name: string;
+    /** @brief The base currency of the feed's pair. */
+    base_currency_code: string;
+    /** @brief The quote currency of the feed's pair. */
+    quote_currency_code: string;
+    /** @brief True when the feed names its own items instead of deriving them from the policy. */
+    explicit_items: boolean;
+    /** @brief The feed's own window, when it overrides the policy's. */
+    window_days_override: number | null;
+    /** @brief True when no candidate has a fixing and the policy refuses to start the feed. */
+    refused: boolean;
+    /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+    start: FeedStart;
+    /** @brief Every candidate the feed read, in rank order, with its outcome. */
+    candidates: CandidateOutcome[];
+}
+
+/**
+ * @brief Resolve every feed of one asset class under its policy, without starting any.
+ *
+ * Every feed of the class is resolved; no subset is selected.
+ */
+export interface CalibrateRequest {
+    /** @brief The asset class to calibrate, as its refdata code. */
+    asset_class_code: string;
+}
+
+/**
+ * @brief The policy the class calibrated under and the outcome of each of its feeds.
+ */
+export interface CalibrateResponse {
+    success: boolean;
+    message: string;
+    /** @brief The policy the class calibrated under. */
+    policy: CalibrationPolicySummary;
+    /** @brief Every feed of the class, in source name order. */
+    feeds: CalibratedFeed[];
+}
+
 export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
+    calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -144,4 +252,5 @@ export const requiresSession = {
     start_feed_request: true,
     stop_feed_request: true,
     list_feeds_request: true,
+    calibrate_request: true,
 } as const;

@@ -88,8 +88,7 @@ public:
 
     /**
      * @brief add <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit>
-     * <allows_storage> <credential_ref> <terms_accepted_digest> <terms_accepted_by>
-     * <terms_accepted_at> <reason> <commentary>
+     * <allows_storage> <credential_ref> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +96,7 @@ public:
 
     /**
      * @brief set <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit>
-     * <allows_storage> <credential_ref> <terms_accepted_digest> <terms_accepted_by>
-     * <terms_accepted_at> <reason> <commentary> [--version <n>]
+     * <allows_storage> <credential_ref> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <name> <kind> <description> <display_order> <terms_url>
-     * <terms_credit> <allows_storage> <credential_ref> <terms_accepted_digest> <terms_accepted_by>
-     * <terms_accepted_at> <reason> <commentary>
+     * <terms_credit> <allows_storage> <credential_ref> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

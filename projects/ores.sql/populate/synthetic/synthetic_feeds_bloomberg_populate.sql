@@ -38,8 +38,9 @@
  * annualised vol / 3970.9, at 1800 ticks an hour (sqrt(1800 * 24 * 365) ~=
  * 3970.9). The tail component has weight 0.05 and four times that stdev.
  *   - Every pair starts from the newest public fixing of its pair, read at
- *     feed start from the items synthetic_fx_spot_fixing_items_populate.sql
- *     ranks for it, and its mixture is sized to the spread of those fixings.
+ *     feed start from the candidates the FX calibration policy derives for
+ *     it (synthetic_calibration_policies_populate.sql), and its mixture is
+ *     sized to the spread of those fixings.
  *   - A pair no public source fixes keeps the level below: the Federal
  *     Reserve H.10 of 2026-05-05 for the 13 pairs that release quotes, and an
  *     illustrative level near the 2026 market for the others.

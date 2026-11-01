@@ -34,10 +34,10 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
-#include <rfl/msgpack.hpp>
 #include <string>
 
 namespace ores::trading::messaging {
@@ -163,6 +163,49 @@ public:
             BOOST_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             execute_trade_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves trading.v1.ops.complete_structure.
+     */
+    void complete_structure(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        BOOST_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        // Grouping trades and taking them live are both writes to the trade.
+        if (!has_permission(req_ctx, "trading::trades:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<complete_structure_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::trade_operations_service svc(req_ctx, books_);
+        try {
+            reply(nats_, msg, svc.complete_structure(*req));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            complete_structure_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();
@@ -299,7 +342,9 @@ public:
             const auto trade_count = static_cast<int>(payload.items.size());
             payload.message = "Exported " + std::to_string(trade_count) + " trades.";
 
-            const auto blob = rfl::msgpack::write(payload);
+            const auto blob =
+                ores::utility::codec::wire_traits<export_portfolio_response>::write_msgpack(
+                    payload);
             ores::storage::net::storage_transfer transfer(http_base_url_, extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 

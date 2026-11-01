@@ -42,6 +42,7 @@ export interface TradeWrite {
     origin: string;
     origin_reference: string;
     external_version: number;
+    draft_reason_code: string;
     economic_digest: string;
 }
 

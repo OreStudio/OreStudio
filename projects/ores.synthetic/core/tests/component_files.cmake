@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "calibration_fallback_eventing_integration_tests.cpp"
     "catalog_generator_service_tests.cpp"
     "feeds_fomc_curve_resolution_tests.cpp"
     "folder_eventing_integration_tests.cpp"

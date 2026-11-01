@@ -2,7 +2,7 @@
 :ID: 560D4814-B8AB-4136-A9C8-48B87FC3488B
 :END:
 #+title: A merge took an old tree over two merged increments
-#+description: Merging PR #4293 deleted 174 files from main and 37k lines, including two increments that had just merged, because the branch's tree predated them and the merge resolved whole files to the older side. The build still passes, so nothing announced it.
+#+description: Commit 1398383538 was meant to bring back three planner files. Its tree also reverted 174 files of main and 37k lines, because it was built from copies taken before those merges. The build still passed, so nothing announced it.
 #+type: capture
 #+level: cross
 #+filetags: :incident: :merge: :process:
@@ -13,59 +13,98 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-The merge of PR #4293 (=hotfix/let-the-rate-visit-state-the-inflation-row=,
-merged as =9e500a223f=) states one intent: restore three files of the synthetic
-trade population planner that an earlier merge dropped. Measured against its
-first parent it deletes 174 files and 37113 lines, and adds 1877:
+Commit =1398383538= ("[synthetic] Restore the planners a merge dropped") states
+one intent: bring back three files of the synthetic trade population planner that
+an earlier merge dropped. It was made a child of =6b28050821=, the main tip at the
+time, and its tree replaced 174 of that tree's files with copies taken before
+those merges. Merging PR #4293 brought it to main as =9e500a223f=:
 
 #+begin_src text
-$ git diff --shortstat 9e500a223f^1 9e500a223f
- 295 files changed, 1877 insertions(+), 37113 deletions(-)
-$ git diff --diff-filter=D --name-only 9e500a223f^1 9e500a223f | wc -l
+$ git diff --stat 1398383538^ 1398383538 | tail -1
+ 294 files changed, 1875 insertions(+), 37112 deletions(-)
+$ git diff --diff-filter=D --name-only 1398383538^ 1398383538 | wc -l
 174
 #+end_src
 
-What went with it, among the rest:
+What went with it:
 
 - Both increments of the streaming story, merged minutes earlier in #4287 and
   #4289: =change_feed=, the collection-shaped change, the ticker wiring and the
-  session door's verifier. Restored by
-  =hotfix/restore-the-feed-and-the-door=.
-- The volatility smile domain, protocol and recipe files.
-- The trade operations service and its modelling page.
+  session door's verifier.
+- The whole curve volatility smile family in refdata: domain, table, json, event,
+  generator, protocol, handler and history-provider files, with their models,
+  recipes, seeded conventions and SQL.
+- The shell's refdata commands, the generated TypeScript for those protocols, the
+  refdata conventions registrar, parts of the SQL schema and populate scripts,
+  and three work records.
 
-* Why
+* How it was found
 
-The branch was cut before those merges, and the merge resolved each conflicting
-file to the branch's side, which is the older tree. Nothing in the flow refuses
-that: the result compiles, the suites that matter to the new files still pass,
-and the deletions appear only in a diff nobody reads once the PR is green.
+By accident, and that is the point. The streaming work was blocked by a build
+error, and when main was fixed the increments were simply gone. Nothing in the
+flow says so: the merge compiles, the suites that matter to the surviving files
+pass, and the deletions sit in a diff nobody reads once the pull request is green.
 
-Two properties make this quiet and expensive:
+* How much was missing, measured
 
-- A file that main added and the branch never had is deleted by such a merge, and
-  no test names it.
-- The build still passes, because the deleted work was not referenced by the
-  files that survived. A build that fails would have been the cheaper outcome.
+=build/scripts/merge_loss_report.py= answers it for any suspect commit:
 
-The checks that would catch it are the ones that compare a whole tree: the drift
-sweep, the inventories, the route table. They read a diff of paths, and a
-deletion of a file no catalogue names is not drift to them.
+#+begin_src text
+$ build/scripts/merge_loss_report.py 1398383538 6b28050821 origin/main
+gone and not mentioned since: 168
+changed and not mentioned since: 87
+changed and touched later, so read the hunks: 63
+#+end_src
 
-* Candidate guards
+The third list matters because a later commit touching a file does not prove it
+restored what the revert removed. Reading those hunks found the day-counter change
+of =4ca29c3a00=, which explains all 32 files that still hold fewer lines than the
+baseline, and 31 files where later work added more.
 
-- A merge that deletes files the branch never touched is suspect by construction:
-  refuse it, or make the PR say so.
-- A post-merge check that every file present on the first parent is either still
-  present or was deleted by a commit that says it deleted it. Cheap, and it names
-  the loss.
-- A pull-request body that states the file count and the delete count, so a
-  one-line hotfix that changes 295 files reads as what it is.
+* How it was repaired
+
+=hotfix/restore-what-the-reverted-merge-dropped= reverts =1398383538= and
+re-applies the three planner files it meant to restore, so the intent survives
+and the collateral does not. Ten conflicts, each a path a later commit has since
+rewritten: the feed and its design, the streaming and door work records, the trade
+operations service and its case, and the canonical-form task. Each keeps the later
+version.
+
+The result is checked against the baseline, not against hope:
+
+#+begin_src text
+$ build/scripts/merge_loss_report.py 1398383538 6b28050821 HEAD --expected <the three planner files>
+gone and not mentioned since: 0
+changed and not mentioned since: 0
+kept from the suspect commit on purpose: 3
+changed and touched later, so read the hunks: 63   (all later work, or explained by 4ca29c3a00)
+#+end_src
+
+* Why it happened, and the guard that would catch it
+
+The habit that caused it is ordinary: to repair a lost file, take it from the
+commit that last had it. Run as =git checkout <old> -- <paths>= it is safe. Run
+across a directory, or with a pathspec that matches more than expected, it
+overwrites every newer file under it, and the diff is too large to read.
+
+Two guards are cheap and neither exists:
+
+- *A merge or commit that deletes files the branch never touched is suspect by
+  construction.* Refuse it, or make the pull request say so in its own words.
+- *A post-merge check that every path the first parent had is still present, or
+  was deleted by a commit that says it deleted it.* The report script is the
+  whole of it: =merge_loss_report.py <merge> --baseline <first parent>= and fail
+  when the first two lists are non-empty.
 
 * References
 
-- =9e500a223f=, the merge, and =1398383538=, the commit it brought.
+- =1398383538=, the commit, =9e500a223f=, the merge, and =6b28050821=, the tree
+  it took the old copies from.
+- =build/scripts/merge_loss_report.py=, the report.
 - [[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]], whose increments
-  were the part restored here.
+  were the part first noticed.
 
 * See also
+
+- [[id:6AA25394-9066-42C6-ADAE-FDAD2E78E45F][An events collection cannot be wildcarded]], found by the live run that only
+  became possible once the feed was back.

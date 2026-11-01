@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: DE00FE27-1C16-4D32-850B-FF4DCD608A36
 :END:
 #+title: ores.trading.bond_option_payment_rules

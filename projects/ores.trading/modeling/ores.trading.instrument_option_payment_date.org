@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5AE44339-6C49-4B28-BB37-B1B3A09C3D01
 :END:
 #+title: ores.trading.instrument_option_payment_date

@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_STRIKE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_STRIKE_DATA_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -81,6 +83,24 @@ struct bond_strike_data {
      */
     friend bool operator==(const bond_strike_data&, const bond_strike_data&) = default;
 };
+/**
+ * @brief The members of bond_strike_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_strike_data&) {
+    return std::tuple{
+        utility::codec::field{"price_value", &bond_strike_data::price_value},
+        utility::codec::field{"price_currency", &bond_strike_data::price_currency},
+        utility::codec::field{"yield_value", &bond_strike_data::yield_value},
+        utility::codec::field{"yield_compounding", &bond_strike_data::yield_compounding},
+        utility::codec::field{"bare_value", &bond_strike_data::bare_value},
+        utility::codec::field{"bare_currency", &bond_strike_data::bare_currency},
+    };
+}
 
 }
 

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: C407B4FF-9370-4C27-9A15-F428B9BE7C69
 :END:
 #+title: ores.trading.entry_channel_type

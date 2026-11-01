@@ -20,8 +20,8 @@
 #include "ores.reporting.core/service/cut_resolution_plan.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/service/cut_state.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -123,8 +123,8 @@ cut_resolution settle(const std::vector<candidate>& matches,
     }
 
     return refuse("No " + looked_for + " is held for scope " + ctx.scope_code +
-                  " at rates centre " + ctx.business_centre_code +
-                  " on " + date_text(ctx.covered_date) + ".");
+                  " at rates centre " + ctx.business_centre_code + " on " +
+                  date_text(ctx.covered_date) + ".");
 }
 
 /// The candidates whose kind names @p rule and whose instant falls on @p date.
@@ -141,9 +141,8 @@ std::vector<candidate> matching(const std::vector<candidate>& candidates,
 
 cut_resolution resolve_same_day_open(const std::vector<candidate>& candidates,
                                      const cut_resolution_context& ctx) {
-    return settle(matching(candidates, same_day_open, date_of(ctx.covered_date)),
-                  "start of day cut",
-                  ctx);
+    return settle(
+        matching(candidates, same_day_open, date_of(ctx.covered_date)), "start of day cut", ctx);
 }
 
 cut_resolution resolve_cut_it_is_built_on(const std::vector<candidate>& candidates,
@@ -153,8 +152,8 @@ cut_resolution resolve_cut_it_is_built_on(const std::vector<candidate>& candidat
                   ctx);
 }
 
-cut_resolution resolve_last_business_day_of_month_close(
-    const std::vector<candidate>& candidates, const cut_resolution_context& ctx) {
+cut_resolution resolve_last_business_day_of_month_close(const std::vector<candidate>& candidates,
+                                                        const cut_resolution_context& ctx) {
     const auto covered = date_of(ctx.covered_date);
     return settle(matching(candidates,
                            last_business_day_of_month_close,
@@ -164,8 +163,8 @@ cut_resolution resolve_last_business_day_of_month_close(
                   ctx);
 }
 
-cut_resolution resolve_last_business_day_of_year_close(
-    const std::vector<candidate>& candidates, const cut_resolution_context& ctx) {
+cut_resolution resolve_last_business_day_of_year_close(const std::vector<candidate>& candidates,
+                                                       const cut_resolution_context& ctx) {
     return settle(matching(candidates,
                            last_business_day_of_year_close,
                            last_business_day_of_year(date_of(ctx.covered_date).year())),
@@ -190,8 +189,8 @@ cut_resolution resolve_same_day_close(const std::vector<candidate>& candidates,
             !matches.empty())
             return settle(matches, looked_for, ctx);
     }
-    if (covered == last_business_day_of_month(
-                        std::chrono::year_month(covered.year(), covered.month()))) {
+    if (covered ==
+        last_business_day_of_month(std::chrono::year_month(covered.year(), covered.month()))) {
         if (auto matches = matching(candidates, last_business_day_of_month_close, covered);
             !matches.empty())
             return settle(matches, looked_for, ctx);
@@ -329,10 +328,9 @@ cut_resolution resolve_cut_selection(const cut_selection& selection,
                                      const std::vector<domain::cut_kind>& kinds,
                                      const std::vector<domain::cut>& cuts,
                                      const cut_resolution_context& ctx) {
-    const auto kind_it = std::find_if(
-        kinds.begin(), kinds.end(), [&selection](const auto& k) {
-            return k.code == selection.kind_code;
-        });
+    const auto kind_it = std::find_if(kinds.begin(), kinds.end(), [&selection](const auto& k) {
+        return k.code == selection.kind_code;
+    });
     if (kind_it == kinds.end())
         return refuse("The cut kind " + selection.kind_code + " is not held.");
 

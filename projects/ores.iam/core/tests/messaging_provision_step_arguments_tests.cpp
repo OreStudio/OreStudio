@@ -474,7 +474,8 @@ std::size_t codes_of(const std::string& asset_class) {
     return 3;
 }
 
-std::vector<ores::iam::messaging::trade_generation_assignment> four_configs(const std::string& asset_class) {
+std::vector<ores::iam::messaging::trade_generation_assignment>
+four_configs(const std::string& asset_class) {
     std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
     for (int i = 0; i < 4; ++i) {
         ores::iam::messaging::trade_generation_assignment entry;
@@ -494,9 +495,14 @@ namespace {
 
 /// The configs a demonstration run records: one per book the class books into.
 std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
-    const std::vector<std::pair<std::string, int>> classes{
-        {"bond", 4},        {"commodity", 1}, {"credit", 1}, {"equity", 1},
-        {"fx", 4},          {"inflation", 1}, {"interest_rates", 3}, {"scripted", 1}};
+    const std::vector<std::pair<std::string, int>> classes{{"bond", 4},
+                                                           {"commodity", 1},
+                                                           {"credit", 1},
+                                                           {"equity", 1},
+                                                           {"fx", 4},
+                                                           {"inflation", 1},
+                                                           {"interest_rates", 3},
+                                                           {"scripted", 1}};
 
     std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
     for (const auto& [asset_class, configs] : classes)
@@ -509,9 +515,9 @@ std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
 }
 
 /// The counts the configs of one class state, in order.
-std::vector<std::uint32_t> counts_of(
-    const std::vector<ores::iam::messaging::trade_generation_assignment>& assignments,
-    const std::string& asset_class) {
+std::vector<std::uint32_t>
+counts_of(const std::vector<ores::iam::messaging::trade_generation_assignment>& assignments,
+          const std::string& asset_class) {
     std::vector<std::uint32_t> counts;
     for (const auto& entry : assignments)
         if (entry.asset_class_code == asset_class)
@@ -520,9 +526,8 @@ std::vector<std::uint32_t> counts_of(
 }
 
 /// The page's mix, with one class stated over it.
-std::vector<provision_tenant_parameter> page_mix(std::uint32_t total,
-                                                 const std::string& name,
-                                                 std::uint32_t value) {
+std::vector<provision_tenant_parameter>
+page_mix(std::uint32_t total, const std::string& name, std::uint32_t value) {
     const std::vector<std::pair<std::string, std::uint32_t>> weights{
         {"population_interest_rates_percent", 42},
         {"population_fx_percent", 25},
@@ -551,9 +556,8 @@ TEST_CASE("a run that states no size keeps the counts its recipe states", "[popu
 
 TEST_CASE("a mix states each class's share of the total, remainder first", "[population_knobs]") {
     auto assignments = all_configs();
-    apply_population_knobs(assignments,
-                           read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
-                           codes_of);
+    apply_population_knobs(
+        assignments, read_population_knobs(page_mix(1000, "population_fx_percent", 25)), codes_of);
 
     // Forty bond trades over four configs is ten each.
     for (const auto count : counts_of(assignments, "bond"))
@@ -590,14 +594,12 @@ TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[popul
     };
 
     auto exact = all_configs();
-    apply_population_knobs(exact,
-                           read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
-                           codes_of);
+    apply_population_knobs(
+        exact, read_population_knobs(page_mix(1000, "population_fx_percent", 25)), codes_of);
 
     auto scaled = all_configs();
-    apply_population_knobs(scaled,
-                           read_population_knobs(page_mix(1000, "population_fx_percent", 24)),
-                           codes_of);
+    apply_population_knobs(
+        scaled, read_population_knobs(page_mix(1000, "population_fx_percent", 24)), codes_of);
 
     CHECK(everyone(exact) == 1000);
     CHECK(everyone(scaled) == 1000);
@@ -628,15 +630,13 @@ TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[popul
 TEST_CASE("a mix whose shares state nothing at all is refused", "[population_knobs]") {
     auto assignments = all_configs();
     std::vector<provision_tenant_parameter> parameters{{"population_size", "1000"}};
-    for (const auto* name : {"population_bond_percent",
-                             "population_fx_percent",
-                             "population_equity_percent"})
+    for (const auto* name :
+         {"population_bond_percent", "population_fx_percent", "population_equity_percent"})
         parameters.push_back({name, "0"});
 
-    CHECK_THROWS_WITH(apply_population_knobs(assignments,
-                                             read_population_knobs(parameters),
-                                             codes_of),
-                      Catch::Matchers::ContainsSubstring("no share at all"));
+    CHECK_THROWS_WITH(
+        apply_population_knobs(assignments, read_population_knobs(parameters), codes_of),
+        Catch::Matchers::ContainsSubstring("no share at all"));
 }
 
 TEST_CASE("a class whose share cannot hold its codes is refused with the total that would",
@@ -647,11 +647,11 @@ TEST_CASE("a class whose share cannot hold its codes is refused with the total t
      * Four per cent of a hundred is four trades over four configs, and each
      * config states ten codes, so the smallest total is a thousand.
      */
-    CHECK_THROWS_WITH(apply_population_knobs(assignments,
-                                             read_population_knobs(
-                                                 page_mix(100, "population_bond_percent", 4)),
-                                             codes_of),
-                      Catch::Matchers::ContainsSubstring("A total of 1000 is the smallest"));
+    CHECK_THROWS_WITH(
+        apply_population_knobs(assignments,
+                               read_population_knobs(page_mix(100, "population_bond_percent", 4)),
+                               codes_of),
+        Catch::Matchers::ContainsSubstring("A total of 1000 is the smallest"));
 }
 
 TEST_CASE("a class the run books nothing for is refused", "[population_knobs]") {
@@ -660,15 +660,14 @@ TEST_CASE("a class the run books nothing for is refused", "[population_knobs]") 
      * of the population and book none of it, so it is refused by name.
      */
     auto assignments = all_configs();
-    std::erase_if(assignments, [](const auto& entry) {
-        return entry.asset_class_code == "equity";
-    });
+    std::erase_if(assignments,
+                  [](const auto& entry) { return entry.asset_class_code == "equity"; });
 
-    CHECK_THROWS_WITH(apply_population_knobs(assignments,
-                                             read_population_knobs(
-                                                 page_mix(1000, "population_fx_percent", 25)),
-                                             codes_of),
-                      Catch::Matchers::ContainsSubstring("states 'equity'"));
+    CHECK_THROWS_WITH(
+        apply_population_knobs(assignments,
+                               read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
+                               codes_of),
+        Catch::Matchers::ContainsSubstring("states 'equity'"));
 }
 
 TEST_CASE("a size stated alone leaves the mix as the recipe states it", "[population_knobs]") {

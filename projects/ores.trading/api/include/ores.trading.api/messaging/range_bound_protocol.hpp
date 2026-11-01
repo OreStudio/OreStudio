@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_RANGE_BOUND_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/range_bound.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -303,7 +309,802 @@ inline constexpr std::string_view created = "trading.v1.range_bounds_events.crea
 inline constexpr std::string_view updated = "trading.v1.range_bounds_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.range_bounds_events.deleted";
 }
+/**
+ * @brief The members of range_bound_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &range_bound_key::trade_id},
+        utility::codec::field{"sequence_number", &range_bound_key::sequence_number},
+    };
+}
+
+/**
+ * @brief The members of range_bound_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &range_bound_write::trade_id},
+        utility::codec::field{"sequence_number", &range_bound_write::sequence_number},
+        utility::codec::field{"trade_activity_id", &range_bound_write::trade_activity_id},
+        utility::codec::field{"start_date", &range_bound_write::start_date},
+        utility::codec::field{"range_from", &range_bound_write::range_from},
+        utility::codec::field{"range_to", &range_bound_write::range_to},
+        utility::codec::field{"leverage", &range_bound_write::leverage},
+        utility::codec::field{"strike", &range_bound_write::strike},
+        utility::codec::field{"strike_adjustment", &range_bound_write::strike_adjustment},
+    };
+}
+
+/**
+ * @brief The members of range_bound_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &range_bound_change::write},
+        utility::codec::field{"precondition", &range_bound_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of range_bound_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &range_bound_removal::key},
+        utility::codec::field{"precondition", &range_bound_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of range_bound_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &range_bound_lookup::key},
+        utility::codec::field{"range_bound", &range_bound_lookup::range_bound},
+    };
+}
+
+/**
+ * @brief The members of range_bounds_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bounds_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &range_bounds_filter::trade_id},
+        utility::codec::field{"trade_id_one_of", &range_bounds_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of range_bound_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &range_bound_event::event_id},
+        utility::codec::field{"key", &range_bound_event::key},
+        utility::codec::field{"action", &range_bound_event::action},
+        utility::codec::field{"version", &range_bound_event::version},
+        utility::codec::field{"occurred_at", &range_bound_event::occurred_at},
+        utility::codec::field{"correlation_id", &range_bound_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of range_bound_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_version_key&) {
+    return std::tuple{
+        utility::codec::field{"range_bound", &range_bound_version_key::range_bound},
+        utility::codec::field{"version", &range_bound_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of range_bound_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const range_bound_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &range_bound_versions_filter::version},
+        utility::codec::field{"from_version", &range_bound_versions_filter::from_version},
+        utility::codec::field{"to_version", &range_bound_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_range_bounds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_range_bounds_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_range_bounds_request::offset},
+        utility::codec::field{"limit", &list_range_bounds_request::limit},
+        utility::codec::field{"order", &list_range_bounds_request::order},
+        utility::codec::field{"filter", &list_range_bounds_request::filter},
+        utility::codec::field{"as_of", &list_range_bounds_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_range_bounds_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_range_bounds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_range_bounds_response::result},
+        utility::codec::field{"range_bounds", &list_range_bounds_response::range_bounds},
+        utility::codec::field{"total", &list_range_bounds_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_range_bound_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_range_bound_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_range_bound_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_range_bound_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_range_bound_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_range_bound_response::result},
+        utility::codec::field{"range_bound", &get_range_bound_response::range_bound},
+    };
+}
+
+/**
+ * @brief The members of get_many_range_bounds_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_range_bounds_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_range_bounds_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_range_bounds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_range_bounds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_range_bounds_response::result},
+        utility::codec::field{"entries", &get_many_range_bounds_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_range_bound_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_range_bound_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_range_bound_request::change},
+        utility::codec::field{"intent", &put_range_bound_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_range_bound_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_range_bound_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_range_bound_response::result},
+        utility::codec::field{"range_bound", &put_range_bound_response::range_bound},
+    };
+}
+
+/**
+ * @brief The members of put_many_range_bounds_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_range_bounds_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_range_bounds_request::changes},
+        utility::codec::field{"intent", &put_many_range_bounds_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_range_bounds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_range_bounds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_range_bounds_response::result},
+        utility::codec::field{"range_bounds", &put_many_range_bounds_response::range_bounds},
+    };
+}
+
+/**
+ * @brief The members of delete_range_bound_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_range_bound_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_range_bound_request::removal},
+        utility::codec::field{"intent", &delete_range_bound_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_range_bound_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_range_bound_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_range_bound_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_range_bounds_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_range_bounds_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_range_bounds_request::removals},
+        utility::codec::field{"intent", &delete_many_range_bounds_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_range_bounds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_range_bounds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_range_bounds_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_range_bounds_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_trade_id_range_bounds_request&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &list_by_trade_id_range_bounds_request::trade_id},
+        utility::codec::field{"scope", &list_by_trade_id_range_bounds_request::scope},
+        utility::codec::field{"offset", &list_by_trade_id_range_bounds_request::offset},
+        utility::codec::field{"limit", &list_by_trade_id_range_bounds_request::limit},
+        utility::codec::field{"order", &list_by_trade_id_range_bounds_request::order},
+        utility::codec::field{"filter", &list_by_trade_id_range_bounds_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_trade_id_range_bounds_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_trade_id_range_bounds_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_trade_id_range_bounds_response::result},
+        utility::codec::field{"range_bounds",
+                              &list_by_trade_id_range_bounds_response::range_bounds},
+        utility::codec::field{"total", &list_by_trade_id_range_bounds_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_range_bound_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_range_bound_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_range_bound_versions_request::key},
+        utility::codec::field{"offset", &list_range_bound_versions_request::offset},
+        utility::codec::field{"limit", &list_range_bound_versions_request::limit},
+        utility::codec::field{"order", &list_range_bound_versions_request::order},
+        utility::codec::field{"filter", &list_range_bound_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_range_bound_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_range_bound_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_range_bound_versions_response::result},
+        utility::codec::field{"versions", &list_range_bound_versions_response::versions},
+        utility::codec::field{"total", &list_range_bound_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_range_bound_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_range_bound_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_range_bound_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_range_bound_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_range_bound_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_range_bound_version_response::result},
+        utility::codec::field{"version", &get_range_bound_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_key& v);
+    static ores::trading::messaging::range_bound_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_key& v);
+    static ores::trading::messaging::range_bound_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_write& v);
+    static ores::trading::messaging::range_bound_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_write& v);
+    static ores::trading::messaging::range_bound_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_change& v);
+    static ores::trading::messaging::range_bound_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_change& v);
+    static ores::trading::messaging::range_bound_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_removal& v);
+    static ores::trading::messaging::range_bound_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_removal& v);
+    static ores::trading::messaging::range_bound_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_lookup& v);
+    static ores::trading::messaging::range_bound_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_lookup& v);
+    static ores::trading::messaging::range_bound_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bounds_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bounds_filter& v);
+    static ores::trading::messaging::range_bounds_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bounds_filter& v);
+    static ores::trading::messaging::range_bounds_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_event& v);
+    static ores::trading::messaging::range_bound_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_event& v);
+    static ores::trading::messaging::range_bound_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_version_key& v);
+    static ores::trading::messaging::range_bound_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::range_bound_version_key& v);
+    static ores::trading::messaging::range_bound_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::range_bound_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::range_bound_versions_filter& v);
+    static ores::trading::messaging::range_bound_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::range_bound_versions_filter& v);
+    static ores::trading::messaging::range_bound_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_range_bounds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_range_bounds_request& v);
+    static ores::trading::messaging::list_range_bounds_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_range_bounds_request& v);
+    static ores::trading::messaging::list_range_bounds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_range_bounds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_range_bounds_response& v);
+    static ores::trading::messaging::list_range_bounds_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_range_bounds_response& v);
+    static ores::trading::messaging::list_range_bounds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_range_bound_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_range_bound_request& v);
+    static ores::trading::messaging::get_range_bound_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_range_bound_request& v);
+    static ores::trading::messaging::get_range_bound_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_range_bound_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_range_bound_response& v);
+    static ores::trading::messaging::get_range_bound_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_range_bound_response& v);
+    static ores::trading::messaging::get_range_bound_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_range_bounds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_range_bounds_request& v);
+    static ores::trading::messaging::get_many_range_bounds_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_range_bounds_request& v);
+    static ores::trading::messaging::get_many_range_bounds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_range_bounds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_range_bounds_response& v);
+    static ores::trading::messaging::get_many_range_bounds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_range_bounds_response& v);
+    static ores::trading::messaging::get_many_range_bounds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_range_bound_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_range_bound_request& v);
+    static ores::trading::messaging::put_range_bound_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_range_bound_request& v);
+    static ores::trading::messaging::put_range_bound_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_range_bound_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_range_bound_response& v);
+    static ores::trading::messaging::put_range_bound_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_range_bound_response& v);
+    static ores::trading::messaging::put_range_bound_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_range_bounds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_range_bounds_request& v);
+    static ores::trading::messaging::put_many_range_bounds_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_range_bounds_request& v);
+    static ores::trading::messaging::put_many_range_bounds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_range_bounds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_range_bounds_response& v);
+    static ores::trading::messaging::put_many_range_bounds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_range_bounds_response& v);
+    static ores::trading::messaging::put_many_range_bounds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_range_bound_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_range_bound_request& v);
+    static ores::trading::messaging::delete_range_bound_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_range_bound_request& v);
+    static ores::trading::messaging::delete_range_bound_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_range_bound_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_range_bound_response& v);
+    static ores::trading::messaging::delete_range_bound_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_range_bound_response& v);
+    static ores::trading::messaging::delete_range_bound_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_range_bounds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_range_bounds_request& v);
+    static ores::trading::messaging::delete_many_range_bounds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_range_bounds_request& v);
+    static ores::trading::messaging::delete_many_range_bounds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_range_bounds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_range_bounds_response& v);
+    static ores::trading::messaging::delete_many_range_bounds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_range_bounds_response& v);
+    static ores::trading::messaging::delete_many_range_bounds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_trade_id_range_bounds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_by_trade_id_range_bounds_request& v);
+    static ores::trading::messaging::list_by_trade_id_range_bounds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_by_trade_id_range_bounds_request& v);
+    static ores::trading::messaging::list_by_trade_id_range_bounds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_by_trade_id_range_bounds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_by_trade_id_range_bounds_response& v);
+    static ores::trading::messaging::list_by_trade_id_range_bounds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_by_trade_id_range_bounds_response& v);
+    static ores::trading::messaging::list_by_trade_id_range_bounds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_range_bound_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_range_bound_versions_request& v);
+    static ores::trading::messaging::list_range_bound_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_range_bound_versions_request& v);
+    static ores::trading::messaging::list_range_bound_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_range_bound_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_range_bound_versions_response& v);
+    static ores::trading::messaging::list_range_bound_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_range_bound_versions_response& v);
+    static ores::trading::messaging::list_range_bound_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_range_bound_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_range_bound_version_request& v);
+    static ores::trading::messaging::get_range_bound_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_range_bound_version_request& v);
+    static ores::trading::messaging::get_range_bound_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_range_bound_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_range_bound_version_response& v);
+    static ores::trading::messaging::get_range_bound_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_range_bound_version_response& v);
+    static ores::trading::messaging::get_range_bound_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

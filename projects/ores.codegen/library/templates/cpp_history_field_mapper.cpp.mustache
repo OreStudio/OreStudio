@@ -22,7 +22,7 @@
 #include <format>
 {{/has_date_natural_keys}}
 {{#has_enum_columns}}
-#include <rfl/enums.hpp>
+#include "ores.utility/codec/text_form.hpp"
 {{/has_enum_columns}}
 
 namespace ores::{{component}}::presentation {
@@ -128,7 +128,10 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{{group_prefix}}}{{name}})});
 {{/render_is_double}}
 {{#render_is_enum}}
-    fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.{{{group_prefix}}}{{name}})});
+    fields.push_back(
+        {.name = "{{render_label}}",
+         .value = ores::utility::codec::text_form<decltype(v.{{{group_prefix}}}{{name}})>::to_text(
+             v.{{{group_prefix}}}{{name}})});
 {{/render_is_enum}}
 {{/no_wire}}
 {{/sql_only}}

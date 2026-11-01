@@ -31,6 +31,8 @@ import type { BondIssueLegAmount } from '../domain/bond_issue_leg_amount.js';
 import type { BondIssueLegRate } from '../domain/bond_issue_leg_rate.js';
 import type { BondIssueLegSchedule } from '../domain/bond_issue_leg_schedule.js';
 import type { BondIssueLegScheduleDate } from '../domain/bond_issue_leg_schedule_date.js';
+import type { Structure } from '../domain/structure.js';
+import type { StructureMember } from '../domain/structure_member.js';
 import type { Trade } from '../domain/trade.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
 import type { TradeIdentifier } from '../domain/trade_identifier.js';
@@ -62,6 +64,11 @@ export interface BookTradeRequest {
      * draft.
      */
     activity_type_code: string;
+    /**
+     * @brief Why the trade is a draft, when the activity books one. Empty for a
+     * booking that goes live, because a concluded deal waits on nothing.
+     */
+    draft_reason_code: string;
     /**
      * @brief The trade's identifiers. The service states the trade id and the
      * activity id on each one, so the caller states the scheme and the value.
@@ -135,6 +142,63 @@ export interface ExecuteTradeResponse {
      * @brief The activity that executed the trade; absent when it was refused.
      */
     activity_id: string | null;
+}
+
+/**
+ * @brief Completes a structure: its anchor, its legs, and the execution of
+ * every leg, in one transaction.
+ *
+ * The legs are drafts when the request arrives. A completion that is refused
+ * leaves every one of them a draft and writes no member, which is why the
+ * structure, the members and the executions are one unit of work rather than
+ * a sequence a caller drives.
+ */
+export interface CompleteStructureRequest {
+    /**
+     * @brief The structure to write. The service names it, so the caller states
+     * the party, the kind and the template, and no reference.
+     */
+    structure: Structure;
+    /**
+     * @brief The legs the structure holds, in the order they are given. The
+     * service states the structure id and the sequence number on each one.
+     */
+    legs: StructureMember[];
+    /**
+     * @brief How many legs the caller means to complete. A request whose list is
+     * not this long is refused, so a truncated list never completes a structure
+     * that is missing a leg.
+     */
+    leg_count: number;
+    /**
+     * @brief Why the structure is being completed.
+     */
+    change_reason_code: string;
+    /**
+     * @brief The note that goes with the reason.
+     */
+    change_commentary: string;
+}
+
+/**
+ * @brief The outcome of completing a structure.
+ */
+export interface CompleteStructureResponse {
+    /**
+     * @brief Outcome of the operation: conflict with code already_exists when the
+     * structure is already made, conflict with code not_a_draft when a leg is not
+     * a draft, not found when a leg is not booked.
+     */
+    result: Result;
+    /**
+     * @brief The structure written; absent when the completion was refused.
+     */
+    structure_id: string | null;
+    /**
+     * @brief The version the structure is at after the write, so a caller can
+     * address the structure it just made.
+     */
+    structure_version: number;
 }
 
 /**
@@ -328,6 +392,7 @@ export interface ExportTradesToStorageResponse {
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
     execute_trade_request: 'trading.v1.ops.execute_trade',
+    complete_structure_request: 'trading.v1.ops.complete_structure',
     put_bond_issue_composite_request: 'trading.v1.ops.put_bond_issue_composite',
     export_portfolio_request: 'trading.v1.ops.export_portfolio',
     export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
@@ -340,6 +405,7 @@ export const subjects = {
 export const requiresSession = {
     book_trade_request: true,
     execute_trade_request: true,
+    complete_structure_request: true,
     put_bond_issue_composite_request: true,
     export_portfolio_request: true,
     export_trades_to_storage_request: true,

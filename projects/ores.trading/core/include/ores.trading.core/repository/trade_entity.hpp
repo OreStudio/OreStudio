@@ -62,6 +62,7 @@ struct trade_entity {
     std::string origin;
     std::optional<std::string> origin_reference;
     int external_version = 0;
+    std::optional<std::string> draft_reason_code;
     std::optional<std::string> economic_digest;
     std::string modified_by;
     std::string performed_by;
@@ -88,6 +89,7 @@ struct trade_entity {
                query_builder::bind("origin", &e::origin) |
                query_builder::bind("origin_reference", &e::origin_reference) |
                query_builder::bind("external_version", &e::external_version) |
+               query_builder::bind("draft_reason_code", &e::draft_reason_code) |
                query_builder::bind("economic_digest", &e::economic_digest) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

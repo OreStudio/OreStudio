@@ -52,6 +52,8 @@
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_state_handler.hpp"
+#include "ores.marketdata.core/messaging/market_state_payload_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/observation_lineage_registrar.hpp"
 #include "ores.marketdata.core/messaging/ore_export_handler.hpp"
@@ -119,6 +121,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_series_handlers(nats, ctx, verifier));
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
+    fold(register_market_state_payload_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
     fold(register_adapter_handlers(nats, ctx, verifier));
     fold(register_supplier_handlers(nats, ctx, verifier));
@@ -147,6 +150,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             provider_terms_handler h(nats, ctx, verifier);
                                             h.accept(std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(std::string(withdraw_provider_terms_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            provider_terms_handler h(nats, ctx, verifier);
+                                            h.withdraw(std::move(msg));
+                                        }));
 
     // The durable fixings of an item: the latest on or before a date, and a window of days.
     subs.push_back(nats.queue_subscribe(std::string(get_fixing_request::nats_subject),
@@ -171,6 +180,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
             market_series_handler h(nats, ctx, verifier);
             h.export_to_storage(std::move(msg), http_base_url);
+        }));
+
+    // The market state a run priced against: the caller names the run's output
+    // archives and lends the token that reads them, because a cube is far too
+    // large for a message.
+    subs.push_back(nats.queue_subscribe(
+        std::string(store_market_state_request::nats_subject),
+        queue,
+        [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
+            market_state_handler h(nats, ctx, verifier);
+            h.store(std::move(msg), http_base_url);
         }));
 
     // The identity backfill: repairs the projection for series the write path

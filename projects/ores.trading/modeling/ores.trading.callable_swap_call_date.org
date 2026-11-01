@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 323AB81A-5B70-4905-AE8F-F1B3AFC2EC72
 :END:
 #+title: ores.trading.callable_swap_call_date

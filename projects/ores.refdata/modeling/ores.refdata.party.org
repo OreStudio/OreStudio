@@ -747,6 +747,7 @@ Hand-written handler method for =composite_as_of=, dispatching to
 #include "ores.refdata.core/service/party_identifier_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include "ores.database/repository/unit_of_work.hpp"
@@ -817,7 +818,7 @@ the workflow engine rather than replying to the caller directly.
                                         step_id,
                                         inst_id,
                                         ores::workflow::messaging::step_outcome::completed,
-                                        rfl::json::write(resp),
+                                        ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
                                         "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_handler_lg(), error)

@@ -43,13 +43,13 @@ using ores::testing::database_helper;
 
 /// Inserts a series the way the data quality publish does: in SQL, which cannot run the
 /// codec, so the series has no identity row. Returns its id.
-std::string insert_without_identity(database_helper& h,
+std::string insert_without_identity(ores::database::context ctx,
                                     const boost::uuids::uuid& party,
                                     const std::string& uri) {
     const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
     auto lg(make_logger(test_suite));
     ores::database::repository::execute_parameterized_multi_column_query(
-        h.context(),
+        ctx,
         "insert into ores_marketdata_market_series_tbl ("
         "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"
         "    provider_code, derivation_kind, derivation_config_id, derivation_config_version,"
@@ -59,7 +59,7 @@ std::string insert_without_identity(database_helper& h,
         "    current_user, current_user, 'system.external_data_import',"
         "    'inserted in SQL by a backfill test')"
         " returning id::text",
-        {h.tenant_id().to_string(), id, boost::uuids::to_string(party), uri},
+        {ctx.tenant_id().to_string(), id, boost::uuids::to_string(party), uri},
         lg,
         "Inserting a series without its identity row");
     return id;
@@ -79,7 +79,7 @@ TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected",
 
     database_helper h;
     const auto party = boost::uuids::random_generator{}();
-    const auto bare = insert_without_identity(h, party, zero_uri(fresh_curve_id()));
+    const auto bare = insert_without_identity(h.context(), party, zero_uri(fresh_curve_id()));
     REQUIRE(identity_rows(h, bare) == 0);
 
     const auto done = market_series_identity_projector::project_missing(h.context());
@@ -123,7 +123,7 @@ TEST_CASE("a_second_backfill_finds_nothing_to_project", "[repository][series_ide
 
     database_helper h;
     const auto party = boost::uuids::random_generator{}();
-    insert_without_identity(h, party, zero_uri(fresh_curve_id()));
+    insert_without_identity(h.context(), party, zero_uri(fresh_curve_id()));
 
     market_series_identity_projector::project_missing(h.context());
     const auto again = market_series_identity_projector::project_missing(h.context());
@@ -140,7 +140,7 @@ TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried",
     const auto party = boost::uuids::random_generator{}();
     // No codec reads this URI. It still gets a row, with its kind and no field value.
     const auto odd = insert_without_identity(
-        h,
+        h.context(),
         party,
         "oresmd://ir/EUR?type=series&instrument=no_such_instrument&quote=rate&x=" +
             fresh_curve_id());
@@ -164,8 +164,8 @@ TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",
     const auto first = boost::uuids::random_generator{}();
     const auto second = boost::uuids::random_generator{}();
     const auto curve = fresh_curve_id();
-    const auto first_id = insert_without_identity(h, first, zero_uri(curve));
-    const auto second_id = insert_without_identity(h, second, zero_uri(curve));
+    const auto first_id = insert_without_identity(h.context(), first, zero_uri(curve));
+    const auto second_id = insert_without_identity(h.context(), second, zero_uri(curve));
 
     market_series_identity_projector::project_missing(h.context(), first);
 
@@ -174,4 +174,25 @@ TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",
 
     market_series_identity_projector::project_missing(h.context());
     CHECK(identity_rows(h, second_id) == 1);
+}
+
+TEST_CASE("a_backfill_leaves_the_system_tenants_series_to_the_system",
+          "[repository][series_identity][backfill]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto system = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "test");
+    const auto party = boost::uuids::random_generator{}();
+    const auto shared = insert_without_identity(system, party, zero_uri(fresh_curve_id()));
+
+    market_series_identity_projector::project_missing(system);
+    REQUIRE(market_series_identity_repository{}
+                .read_latest(system, std::vector<std::string>{shared})
+                .size() == 1);
+
+    // The tenant reads the shared series but not its identity row. A backfill
+    // must leave it to the system: projecting it would collide with the row the
+    // tenant cannot see.
+    CHECK_NOTHROW(market_series_identity_projector::project_missing(h.context()));
+    CHECK(identity_rows(h, shared) == 0);
 }

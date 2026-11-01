@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-calibration-screen
+#+pr: 4327
 #+blocked_on: 3A15911E-4EA6-40A6-BC45-E8AEBE49AC54
 #+blocked_since: 2026-10-31
 #+created: 2026-10-31
@@ -28,11 +28,11 @@ volatility it measured.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] decides the shape, and [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] carries the data. |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -63,9 +63,18 @@ volatility it measured.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The resolver reports every candidate it read, in rank order, with its
+  outcome and reason; the calibrate read carries the list.
+- Three screens under =/market-data/calibration/{class}=: the list, a feed's
+  record with the Feed record and Flow tabs, and the policy.
+- The BFF saves a class's policy and brings its provider order to the list
+  given, or returns the class to automatic; it pins one candidate on a feed
+  or clears the feed's items.
+- The feed's own window is edited on the FX feed form, which now keeps it
+  through an engine change.
+- A calibration is not stored. The calibrate read is the record: each feed's
+  start and the policy it used, shown on the policy screen. Nothing reads a
+  history yet, so none is kept.
 
 * Measurements
 
@@ -98,12 +107,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4327][#4327]] | [web] Build the calibration screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: the policy save writes two collections in turn | calibration.ts | Accept | Each write is checked against the version read; a retry converges. |
+| 2 | Local: a pin clears the items before it writes | calibration.ts | Accept | A failed write leaves the feed on its policy, the safe side. |
+| 3 | Local: an engine change dropped the feed's window | fxFeeds.tsx | Accept | The write carries it; a test pins it. |
+| 4 | Found by the T4 seed: provider ranks start at 1, the save wrote 0 | calibration.ts | Accept | The order is written from rank 1. |
+| 5 | PR #4327: the policy and pin writes are not atomic | calibration.ts | Accept | Documented: each write converges, so saving again completes it; a failed pin leaves the feed on its policy. |
+| 6 | PR #4327: a swap may hit the unique rank | calibration.ts | Accept | A changed order is removed and rewritten, never moved in place; a test pins the swap. |
+| 7 | PR #4327: say why a pin needs no system tenant | calibration.ts | Accept | Commented: a feed belongs to its tenant. |
+| 8 | PR #4327: show a version conflict on delete as a conflict | CalibrationPages.tsx | Decline | The BFF answers 409 with the message, and the screen shows it. |
+| 9 | PR #4327: check the pin's item and provider | calibration.ts | Accept | An FX fixing URI and a code, refused with 400 otherwise. |
+| 10 | PR #4327: the policy lookup lists every policy | calibration.ts | Decline | The generated filter has no asset class, and the classes are few. |
+| 11 | PR #4327 round 2: an empty order between delete and write | calibration.ts | Decline | An empty order is the automatic default, every provider by code; a valid start, not an error. |
+| 12 | PR #4327 round 2: concurrent saves and the any precondition | calibration.ts | Decline | The policy row is written first on every path with its version check, so a second save fails before the order. |
+| 13 | PR #4327 round 2: the fixing pattern matches type=fixing_other | calibration.ts | Accept | Exact parameter match; a test pins the near miss. |
+| 14 | PR #4327 round 2: provider codes are lower case only | calibration.ts | Decline | Every stored code is lower case: bloomberg boc composite demo ecb ice imf lseg ore tcmb tradeweb. |
 
 * Result
+
+The calibration screens are built. The list shows every feed of a class with
+its start, source and state, behind a class switch, the policy in one line,
+the coverage counts and three filters. A feed's record shows its start, the
+candidates with each one's reason, the measures and its exceptions; a person
+pins a candidate or clears the feed's items there, and the Flow tab explains
+the path from the policy to the process. The policy screen states and edits
+the window, the inverse rule, the provider order and the fallback, warns that
+a change affects every feed, and shows the coverage and each feed's start;
+only the system tenant writes it. With no policy the screens say the class
+calibrates on the defaults. No screen names a vintage.

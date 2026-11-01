@@ -83,6 +83,40 @@ struct accept_provider_terms_response {
     std::optional<std::chrono::system_clock::time_point> accepted_at;
 };
 
+/**
+ * @brief Withdraws the acceptance of a provider's terms, so the adapter no longer fetches it.
+ *
+ * A system administrator who declines a provider, or changes their mind, withdraws its
+ * acceptance. The service clears the digest, the account and the time; a provider that was
+ * never accepted is left as it is.
+ */
+struct withdraw_provider_terms_request {
+    using response_type = struct withdraw_provider_terms_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.withdraw_provider_terms";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The provider whose acceptance is withdrawn.
+     */
+    std::string provider_code;
+};
+
+struct withdraw_provider_terms_response {
+    /**
+     * @brief Whether the provider is now not accepted.
+     */
+    bool success = false;
+    /**
+     * @brief Why it was not, or what was recorded.
+     */
+    std::string message;
+};
+
 }
 
 #endif

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-calibration-policy
+#+pr: 4322
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -28,11 +28,11 @@ per-feed exceptions that stay visible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -56,9 +56,112 @@ per-feed exceptions that stay visible.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Where it lives
+
+The policy is a synthetic concern, so it lives in =ores.synthetic=: the class
+that calibrates its generators decides how. The fixing catalogue it reads stays
+in =ores.marketdata=.
+
+** The schema
+
+- =calibration_policy= (versioned, system tenant): =asset_class= (the
+  refdata code), =window_days=, =allow_inverse=, =fallback= (a lookup:
+  =keep_fixed= or =refuse=).
+- =calibration_provider_order= (child, versioned with its parent):
+  =provider_code= and =rank=. Child rows rather than a JSON list, so the order
+  is queryable and the provider is a soft FK.
+- =fx_spot_generation_config= gains a nullable =calibration_window_days=: the
+  one per-feed exception that has nowhere else to live. The item pin and the
+  explicit list already have a home: =fx_spot_fixing_item=.
+
+No policy row means automatic: providers in catalogue display order, 90 days,
+inverse allowed, keep the fixed level. A row overrides any of the four.
+
+** Resolution
+
+The synthetic service already resolves a start in =resolve_fixing_start=. The
+change is where the candidates come from:
+
+- If the config has =fx_spot_fixing_item= rows, they are the explicit list:
+  use them in rank order (today's behaviour).
+- Otherwise, derive them: read the class policy (or the defaults), read the
+  accepted providers and the fixing series for the pair, order by the policy's
+  provider rank then direct before inverse, and filter by the clock.
+- A pinned item is one =fx_spot_fixing_item= row; the window is the config's
+  override or the policy's.
+
+The derivation reads market data over its existing read subjects; it adds no
+new store.
+
+** Recalculation and coverage
+
+=POST /api/synthetic/calibration/{assetClass}/calibrate= resolves every feed of
+the class, records one calibration run, and returns the per-feed outcome. A
+=GET /api/synthetic/calibration/{assetClass}= returns the policy, the feeds
+with their resolved starts, the coverage counts and the run history. The feed
+page reads the same resolution for one feed.
+
+** Order of work
+
+1. Entity, child and config column; regenerate the synthetic SQL, C++, TS and
+   docs; rebuild.
+2. Service reads: policy lookup with defaults, candidate derivation, window
+   override; unit tests with the existing fixing fixtures.
+3. BFF endpoints and tests.
+4. Screens: list, feed detail with two tabs, policy screen (the prototype).
+5. Seed one default policy per class? No: the absence of a row is the default.
+   Seed a policy only where the market needs one.
+
+** Open choices
+
+- Provider order as child rows (recommended) or a text list.
+- Fallback as a lookup table (recommended, consistent with the enums) or a
+  check-constrained text.
+- Whether the calibration run is its own entity or a field set on the feed's
+  start records. Recommended: its own small table, so a class run has an
+  identity and an actor.
+
+* Notes
+
+** What has landed
+
+- =calibration_fallback= (simple lookup, system rows) with the two answers.
+- =calibration_policy= (one row per asset class; window, inverse, fallback) and
+  =calibration_provider_order= (provider and rank), both system-owned and
+  readable by tenants.
+- =fx_spot_generation_config.calibration_window_days=, nullable, as the one
+  per-feed exception.
+- The generated SQL, C++ domain, repository, TS and cmake, and the fallback
+  seed rows =keep_fixed= and =refuse=.
+- The synthetic api, core and service libraries build, and the targeted checks
+  pass (model-drift, sql-hygiene, format, cmake-sources).
+- =derive_fixing_items= in =feeds/fixing_calibration.hpp=: from a policy and
+  the series that cover a pair, it derives the ordered fixing items (provider
+  order, direct before inverted, the policy window), ready for the existing
+  resolver. Four cases cover the order, the empty order, the inverse rule and a
+  pair that no candidate covers; =ores.synthetic.api.tests= passes.
+
+- The feed resolves under the policy: a config with no items derives them from
+  the policy and the series that cover its pair; its own
+  =calibration_window_days= overrides the policy window; a failed series read
+  is reported, not taken for "no series"; a =refuse= fallback stops the feed,
+  and both start loops skip it with the reason.
+- =read_calibration_policy= is the one policy lookup; no row returns nothing,
+  and the caller takes the defaults.
+- =synthetic.v1.ops.calibrate_feeds= resolves every feed of a class without
+  starting one, and returns the policy and each feed's item, exceptions and
+  fallback or refusal. =GET /api/synthetic/calibration/{assetClass}= serves it
+  with the coverage counts.
+
+** Decisions
+
+- The derivation applies no terms filter. A provider the adapter may not fetch
+  has no fixings, so the resolver skips it; the policy's provider order is the
+  explicit filter.
+- A calibration is a read. Its response is the record of each feed; runs are
+  not stored, because nothing reads a history yet. The calibration screen
+  task decides whether it needs one.
+- The screens belong to [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
 
 * Measurements
 
@@ -91,12 +194,44 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4322][#4322]] | [synthetic] Calibrate each feed under its asset class policy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A feed with no items reads every series on each start | fx_spot_feed.cpp | Defer | Correct but costly for many feeds; filed as a capture. |
+| 2 | Leftover block after the early return | fx_spot_feed.cpp | Accept | Flattened. |
+| 3 | Comment claims an acceptance filter | fx_spot_feed.cpp | Accept | Reworded to the provider order. |
+| 4 | Calibration tables missing from the schema manifests | synthetic_create.sql | Accept | Found by a recreate; wired in create and drop. |
+| 5 | Calibration event registrars not composed | event_registrar.cpp | Accept | Found by the gate; composed. |
+| 6 | Calibrate subject outside the entity protocol | ores.synthetic.feed_config.org | Accept | Moved to synthetic.v1.ops.calibrate_feeds. |
+| 7 | PR #4322: BFF window bound 3650 vs SQL 2 to 180 | synthetic.ts | Accept | Bounded to 2 to 180. |
+| 8 | PR #4322: empty order sorts by item, not provider code | fixing_calibration.cpp | Accept | Provider code breaks the tie; a test pins it. |
+| 9 | PR #4322: registry comment overstates the window override | feed_kind_registry.cpp | Accept | Says derived items only. |
+| 10 | PR #4322: make_fx_spot_feed doc displaced | fx_spot_feed.hpp | Accept | Moved back. |
+| 11 | PR #4322: repeated policy reads in calibrate | feed_config_handler.hpp | Decline | Two small system reads per feed; the series read is the cost, and its capture covers a shared read. |
+| 12 | PR #4322: say why the policy is read in the system tenant | feed_kind_registry.hpp | Accept | Documented: one market, one policy. |
+| 13 | PR #4322: warn when the series cannot be read | fx_spot_feed.cpp | Accept | Logged at warn. |
+| 14 | PR #4322: unit test the refuse path | fx_spot_feed.cpp | Decline | Needs a NATS stub the api tests lack; the refusal is two lines over a tested resolver. |
+| 15 | PR #4322: duplicate blank line, unnamed namespace close | fixing_calibration.cpp | Accept | Fixed. |
 
 * Result
+
+Calibration is a property of the market. One optional policy per asset class
+states the window, the inverse rule, the provider order and the fallback; no
+row means the defaults (catalogue order, 90 days, inverse allowed, keep the
+fixed level).
+
+- A feed with no items derives them from its pair and the policy; it stores
+  no list. Explicit items stay an override, and a feed's own window overrides
+  the policy's.
+- A =refuse= fallback stops the feed with its reason, and the start loops skip
+  it.
+- =synthetic.v1.ops.calibrate_feeds= and =GET
+  /api/synthetic/calibration/{assetClass}= resolve every feed of a class and
+  return the policy and each feed's item, exceptions and fallback or refusal,
+  with the coverage counts.
+
+A calibration is not stored; the screen task decides whether it needs a
+history. The screens are [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].

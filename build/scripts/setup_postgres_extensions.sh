@@ -19,9 +19,18 @@
 #
 #   - timescaledb (apt package, time-series storage)
 #
+# and, with --configure, preloads the two analysis modules that ship with
+# PostgreSQL:
+#
+#   - pg_stat_statements: call counts and times per query; a new database
+#     creates the extension when the library is preloaded
+#   - auto_explain: logs the plan of any statement slower than
+#     auto_explain.log_min_duration
+#
 # Must be run after PostgreSQL is installed.  Use --configure to update
-# postgresql.conf with shared_preload_libraries, and --restart to restart
-# the PostgreSQL service so the changes take effect.
+# postgresql.conf with shared_preload_libraries and write the analysis
+# settings to conf.d/ores_analysis.conf, and --restart to restart the
+# PostgreSQL service so the changes take effect.
 #
 # In CI the postgres action handles shared_preload_libraries via its
 # postgres-conf input, so --configure / --restart are not needed.
@@ -114,7 +123,7 @@ if [[ $configure -eq 1 ]]; then
         echo "Warning: Could not find postgresql.conf — skipping shared_preload_libraries config."
     else
         echo "Configuring shared_preload_libraries in ${pg_conf}..."
-        required_libs=("timescaledb")
+        required_libs=("timescaledb" "pg_stat_statements" "auto_explain")
         if grep -q "^shared_preload_libraries" "$pg_conf"; then
             # Keep the existing libraries except pg_cron, which nothing uses
             # and which stops PostgreSQL starting once its package is gone,
@@ -139,9 +148,27 @@ if [[ $configure -eq 1 ]]; then
                 "s|^shared_preload_libraries.*|shared_preload_libraries = '${new_val}'|" \
                 "$pg_conf"
         else
-            echo "shared_preload_libraries = 'timescaledb'" | sudo tee -a "$pg_conf" > /dev/null
+            echo "shared_preload_libraries = '$(IFS=,; echo "${required_libs[*]}")'" \
+                | sudo tee -a "$pg_conf" > /dev/null
         fi
         echo "shared_preload_libraries set."
+
+        # The analysis settings live in their own file, which postgresql.conf
+        # includes through include_dir, so rewriting it never touches the rest.
+        conf_d="$(dirname "$pg_conf")/conf.d"
+        sudo mkdir -p "$conf_d"
+        sudo tee "${conf_d}/ores_analysis.conf" > /dev/null <<'CONF'
+# Written by build/scripts/setup_postgres_extensions.sh --configure.
+# Statistics for every statement, including those run inside functions.
+pg_stat_statements.track = all
+# Log the plan of any statement slower than this; -1 turns it off.
+auto_explain.log_min_duration = '500ms'
+# Measuring each node's real time costs every query, so it stays off unless
+# a slow statement needs it.
+auto_explain.log_analyze = off
+auto_explain.log_nested_statements = on
+CONF
+        echo "Analysis settings written to ${conf_d}/ores_analysis.conf."
     fi
 fi
 
@@ -161,6 +188,9 @@ echo "  PostgreSQL ${pg_major} extension installed."
 echo "======================================================================="
 echo ""
 echo "  Installed: timescaledb"
+if [[ $configure -eq 1 ]]; then
+    echo "  Preloaded: timescaledb, pg_stat_statements, auto_explain"
+fi
 echo ""
 if [[ $configure -eq 0 ]]; then
     echo "  NOTE: shared_preload_libraries not configured automatically."

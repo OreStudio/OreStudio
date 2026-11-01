@@ -293,3 +293,42 @@ TEST_CASE("a distance is in basis points of the level", tags) {
     CHECK(basis_points_from(1.25, 1.2525) == Approx(20.0));
     CHECK(basis_points_from(1.25, 1.2475) == Approx(20.0));
 }
+
+TEST_CASE("a_calibration_on_the_stored_values_changes_nothing", tags) {
+    const auto change = change_of(1.0832, {0.0001, 0.0004}, 1.0832, std::vector{0.0001, 0.0004});
+    CHECK(change.empty());
+    CHECK_FALSE(change.level.has_value());
+    CHECK(change.stdevs.empty());
+}
+
+TEST_CASE("a_rounding_of_the_stored_values_is_no_change", tags) {
+    const auto change =
+        change_of(1.0832, {0.0001}, 1.0832 * (1 + 1e-12), std::vector{0.0001 * (1 + 1e-12)});
+    CHECK(change.empty());
+}
+
+TEST_CASE("a_moved_level_is_a_change_and_the_deviations_stay", tags) {
+    const auto change = change_of(1.08, {0.0001, 0.0004}, 1.0832, std::vector{0.0001, 0.0004});
+    REQUIRE(change.level.has_value());
+    CHECK(*change.level == Approx(1.0832));
+    CHECK(change.stdevs.empty());
+    CHECK_FALSE(change.empty());
+}
+
+TEST_CASE("only_the_components_that_moved_carry_a_deviation", tags) {
+    const auto change = change_of(1.0832, {0.0001, 0.0004}, 1.0832, std::vector{0.0001, 0.0005});
+    CHECK_FALSE(change.level.has_value());
+    REQUIRE(change.stdevs.size() == 2);
+    CHECK_FALSE(change.stdevs[0].has_value());
+    REQUIRE(change.stdevs[1].has_value());
+    CHECK(*change.stdevs[1] == Approx(0.0005));
+}
+
+TEST_CASE("no_measured_level_or_deviation_is_no_change", tags) {
+    CHECK(change_of(1.08, {0.0001}, std::nullopt, std::nullopt).empty());
+}
+
+TEST_CASE("deviations_for_another_number_of_components_are_ignored", tags) {
+    const auto change = change_of(1.08, {0.0001, 0.0004}, 1.08, std::vector{0.0002});
+    CHECK(change.empty());
+}

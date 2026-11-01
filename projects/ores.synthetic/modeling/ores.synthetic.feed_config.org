@@ -577,6 +577,34 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief Every candidate the feed read, in rank order, with its outcome. */
 #+end_src
 
+*** running
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the feed runs now, so a stored calibration applies at its next start. */
+#+end_src
+
+*** outcome
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief What an applied calibration did to the feed: updated, unchanged, kept, refused or
+ * failed. Empty when the calibration was not applied.
+ */
+#+end_src
+
+*** outcome_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The words of the outcome: the change written, or why nothing was written. */
+#+end_src
+
 ** calibrate_request
 :PROPERTIES:
 :subject: synthetic.v1.ops.calibrate_feeds
@@ -584,9 +612,11 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /**
- * @brief Resolve every feed of one asset class under its policy, without starting any.
+ * @brief Resolve the feeds of one asset class under its policy, without starting any.
  *
- * Every feed of the class is resolved; no subset is selected.
+ * Every feed of the class is resolved, or the one feed the request names. An applied
+ * calibration writes the resolved level and deviations as a new version of each feed config
+ * they change, under the reason system.calibration.
  */
 #+end_src
 
@@ -596,6 +626,23 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief The asset class to calibrate, as its refdata code. */
+#+end_src
+
+*** config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The one feed config to calibrate; empty calibrates every feed of the class. */
+#+end_src
+
+*** apply
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True to write the calibration; false only reports what it would be. */
 #+end_src
 
 ** calibrate_response

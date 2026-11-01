@@ -178,7 +178,7 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 """)
     out.append("\\echo '--- Official Rates Vendor Instruments and Mappings ---'\n")
-    out.append("begin;\n\ncreate temporary table t_official_inventory (\n    provider_code text, external_id text, oresmd_uri text\n) on commit drop;\n")
+    out.append("create temporary table t_official_inventory (\n    provider_code text, external_id text, oresmd_uri text\n) on commit drop;\n")
     out.append("insert into t_official_inventory (provider_code, external_id, oresmd_uri) values")
     out.append(",\n".join(f"    ({q(code)}, {q(c)}, {q(uri)})" for code, c, uri in rows) + ";\n")
     out.append("""insert into ores_marketdata_market_data_vendor_instruments_tbl (
@@ -221,8 +221,6 @@ where not exists (
       and m.vendor_instrument_id = v.id
       and m.valid_to = ores_utility_infinity_timestamp_fn()
 );
-
-commit;
 """)
     out.append("\\echo '--- Official Rates Subscriptions and Routes of the System Party ---'\n")
     out.append("do $$\ndeclare\n    v_party uuid := ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn());\nbegin\n    if v_party is null then\n        raise notice 'No system party yet: the official rates subscriptions wait for it';\n        return;\n    end if;\n")

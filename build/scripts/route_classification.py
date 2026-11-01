@@ -953,6 +953,11 @@ RULES = (
          BFF, COMPOSED, "simulation",
          "The policy a class calibrates under and how every feed of it resolves, with the"
          " coverage counts; nothing starts."),
+    Rule("a calibration run of an asset class",
+         ("exact", "POST /api/synthetic/calibration/:assetClass/run"),
+         BFF, RESOURCE, "simulation",
+         "Calibrates every feed of a class, or the one feed named, and writes each moved level"
+         " and deviation as a new version of the feed config."),
     Rule("the calibration policy of an asset class",
          ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/:assetClass/policy$"),
          BFF, RESOURCE, "simulation",

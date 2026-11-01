@@ -213,16 +213,31 @@ export interface CalibratedFeed {
     start: FeedStart;
     /** @brief Every candidate the feed read, in rank order, with its outcome. */
     candidates: CandidateOutcome[];
+    /** @brief True when the feed runs now, so a stored calibration applies at its next start. */
+    running: boolean;
+    /**
+     * @brief What an applied calibration did to the feed: updated, unchanged, kept, refused or
+     * failed. Empty when the calibration was not applied.
+     */
+    outcome: string;
+    /** @brief The words of the outcome: the change written, or why nothing was written. */
+    outcome_message: string;
 }
 
 /**
- * @brief Resolve every feed of one asset class under its policy, without starting any.
+ * @brief Resolve the feeds of one asset class under its policy, without starting any.
  *
- * Every feed of the class is resolved; no subset is selected.
+ * Every feed of the class is resolved, or the one feed the request names. An applied
+ * calibration writes the resolved level and deviations as a new version of each feed config
+ * they change, under the reason system.calibration.
  */
 export interface CalibrateRequest {
     /** @brief The asset class to calibrate, as its refdata code. */
     asset_class_code: string;
+    /** @brief The one feed config to calibrate; empty calibrates every feed of the class. */
+    config_id: string;
+    /** @brief True to write the calibration; false only reports what it would be. */
+    apply: boolean;
 }
 
 /**

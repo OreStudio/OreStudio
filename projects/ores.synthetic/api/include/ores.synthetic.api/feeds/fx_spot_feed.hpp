@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -37,6 +38,7 @@
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include <atomic>
+#include <expected>
 #include <memory>
 #include <optional>
 #include <string>
@@ -216,6 +218,25 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
                  std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
                  const calibration_policy& policy,
                  const ores::marketdata::domain::market_clock* clock);
+
+/** @brief The market series as one read lists them, or why the read failed. */
+using series_listing =
+    std::expected<std::vector<ores::marketdata::domain::market_series>, std::string>;
+
+/**
+ * @brief Resolve where an FX feed starts, from series already listed.
+ *
+ * The same as the overload above, but a config that derives its items reads them from @p series
+ * instead of listing the series itself, so a caller that resolves many feeds lists them once.
+ */
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock,
+                 const series_listing& series);
 
 /**
  * @brief Constructs an FX spot feed from a persisted fx_spot_generation_config and its

@@ -4878,6 +4878,10 @@ const pt: SourceCatalogue = {
         calibration: {
             title: 'Calibração',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
+            systemOnly:
+                'A calibração é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
+            calibrateAll: 'Calibrar tudo',
+            calibrating: 'A calibrar…',
             assetClass: 'Classe de ativos',
             classes: {
                 fx: 'Câmbio à vista',
@@ -4908,6 +4912,8 @@ const pt: SourceCatalogue = {
             filter: {
                 label: 'Mostrar',
                 all: 'Todos',
+                fixing: 'De um fixing',
+                kept: 'Manteve um nível',
                 attention: 'A rever',
                 overridden: 'Derrogações',
             },
@@ -4929,6 +4935,19 @@ const pt: SourceCatalogue = {
                 skipped: 'ignorado',
                 not_reached: 'não alcançado',
             },
+            run: {
+                title: 'Execução da calibração',
+                progress: '{finished} de {total} fluxos',
+                waiting: 'À espera',
+                running: 'A calibrar…',
+                nextStart:
+                    'O fluxo está a correr: os novos valores aplicam-se no próximo arranque.',
+                summary:
+                    '{updated} atualizados · {unchanged} sem alteração · {kept} mantiveram um nível · {failed} falharam',
+                restart: 'Reiniciar {count} fluxo(s) a correr para aplicar',
+                restarted: 'Os fluxos a correr reiniciaram com a nova calibração.',
+                close: 'Fechar',
+            },
             feed: {
                 title: 'Fluxo',
                 tabs: 'Calibração do fluxo',
@@ -4938,9 +4957,7 @@ const pt: SourceCatalogue = {
                 },
                 back: 'Voltar à lista',
                 missing: 'Este fluxo não está na classe.',
-                start: 'Onde uma execução arranca agora',
-                level: 'Nível',
-                provider: 'Fornecedor',
+                start: 'O que um arranque agora tomaria',
                 date: 'Data do fixing',
                 invertedNote:
                     'O item cota o par ao contrário, por isso o seu valor é lido como o inverso.',
@@ -4951,23 +4968,58 @@ const pt: SourceCatalogue = {
                 direct: 'direto',
                 inverse: '1/x',
                 pin: 'Fixar',
-                exceptions: 'Derrogações',
-                followsPolicy: 'Este fluxo segue a política da sua classe.',
+                item: 'Item',
+                window: 'Janela',
+                windowValue: '{used} fixings em {days} dias',
+                windowDays: 'janela de {days} dias',
+                statedFallback:
+                    'Este é um recurso declarado: nenhum candidato tem fixing, por isso o fluxo mantém o nível fixo.',
+                statedRefusal:
+                    'Esta é uma recusa declarada: nenhum candidato tem fixing, e a política da classe não arranca o fluxo.',
+                trail: 'Percurso da resolução',
+                trailStart: 'Arranque',
+                trailTakes: 'toma {value} de {provider}',
+                trailKept: 'mantém o nível fixo',
+                trailRefused: 'não arranca',
+                measures: 'Medidas por trás do arranque',
+                noMeasures: 'Nenhum fixing foi lido, por isso não há nada a medir.',
+                thisFeed: 'Este fluxo',
+                pair: 'Par',
+                source: 'Fluxo',
+                policyState: 'Política',
+                runs: 'Agora',
+                running: 'a correr',
+                stopped: 'parado',
+                openFeed: 'Abrir o registo do fluxo e o seu histórico',
+                calibrate: 'Calibrar este fluxo',
+                badge: {
+                    automatic: 'automático',
+                    inherits: 'herda',
+                    override: 'exceção',
+                },
+                banner: {
+                    automatic:
+                        'Calibrado automaticamente a partir do catálogo. Nada foi configurado para este fluxo.',
+                    inherits: 'Herda a política da classe: {order}, janela de {window} dias.',
+                },
                 overridesItems:
                     'Este fluxo nomeia os seus próprios itens, por isso derroga a política da classe.',
                 overridesWindow:
                     'Este fluxo mede sobre a sua própria janela de {days} dias, por isso derroga a política da classe.',
                 clearPin: 'Limpar os itens e seguir a política',
                 editWindow: 'Editar a janela do fluxo',
-                toPolicy: 'Ir para a política',
             },
             flow: {
+                title: 'Como {pair} se resolve',
+                inherits: 'O que herda',
+                recent: 'Calibrações recentes',
+                noRecent: 'Nenhuma calibração alterou ainda este fluxo.',
+                when: 'Quando',
+                what: 'O que mudou',
+                by: 'Por',
                 policy: '1. Política',
                 candidates: '2. Candidatos',
                 resolver: '3. Resolução',
-                process: '4. Processo',
-                explicit: 'O fluxo nomeia os seus próprios {count} item(ns).',
-                derived: '{count} candidato(s) derivado(s) do par e da política.',
                 chosen: 'Arranca do fixing {provider} de {value} em {date}.',
                 fixed: 'Nenhum candidato tem fixing, por isso o fluxo mantém o nível fixo.',
                 refused: 'Nenhum candidato tem fixing, e a política recusa arrancar o fluxo.',
@@ -6377,6 +6429,7 @@ const pt: SourceCatalogue = {
         },
         history: {
             lead: 'O fluxo e cada linha que possui, num só fio, do mais recente ao mais antigo. Reverter escreve de novo os valores de uma versão mais antiga como nova versão.',
+            calibrationOnly: 'Só calibração ({count})',
             gap: 'Uma linha apagada do fluxo não está neste fio: o ecrã lê o histórico das linhas que o fluxo tem agora.',
         },
         ticks: {

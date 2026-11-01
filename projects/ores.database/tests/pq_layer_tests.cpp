@@ -402,6 +402,35 @@ TEST_CASE("a connection given back inside a transaction is reset before its next
     CHECK(lease.get().idle());
 }
 
+TEST_CASE("a connection the server closed is reset before its next lease", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto pid_of = [](const pool::lease& lease) {
+        const result r(PQexec(lease.get().native(), "select pg_backend_pid()"));
+        REQUIRE(r.status() == PGRES_TUPLES_OK);
+        return std::string(PQgetvalue(r.native(), 0, 0));
+    };
+    std::string closed;
+    {
+        const auto lease = p.acquire();
+        closed = pid_of(lease);
+    }
+
+    // The server ends the backend as a restart does: the socket is closed under a
+    // connection the pool still holds as idle.
+    pool other(options_of(h), 1);
+    {
+        const auto lease = other.acquire();
+        const auto sql = "select pg_terminate_backend(" + closed + ", 5000)";
+        const result ended(PQexec(lease.get().native(), sql.c_str()));
+        REQUIRE(ended.status() == PGRES_TUPLES_OK);
+        REQUIRE(std::string(PQgetvalue(ended.native(), 0, 0)) == "t");
+    }
+
+    const auto lease = p.acquire();
+    CHECK(pid_of(lease) != closed);
+}
+
 TEST_CASE("a statement that fails to prepare reports its own error, not the abort after it",
           "[pq]") {
     ores::testing::scoped_database_helper h;

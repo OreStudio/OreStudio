@@ -124,7 +124,22 @@ connection::connection(const connection_options& options)
 
 
 bool connection::healthy() const noexcept {
-    return PQstatus(handle_.get()) == CONNECTION_OK;
+    auto* c = handle_.get();
+    if (PQstatus(c) != CONNECTION_OK)
+        return false;
+    // A server that closed the connection, as a restart does, leaves its last message and an
+    // end of file on the socket that libpq has not read, so the status still reads ok. Reading
+    // what is pending, which never blocks, is what turns it bad. A read that returns data stops
+    // there, so the message takes one read, a TLS close notice can take another, and the end of
+    // file the next; an idle connection has nothing to read each time. What is read is kept for
+    // the results not yet taken, so a caller with results pending loses none. A connection
+    // that closes after this check still fails its first statement, and that error is
+    // retryable.
+    for (int read = 0; read < 3; ++read) {
+        if (PQconsumeInput(c) == 0)
+            return false;
+    }
+    return PQstatus(c) == CONNECTION_OK;
 }
 
 bool connection::idle() const noexcept {

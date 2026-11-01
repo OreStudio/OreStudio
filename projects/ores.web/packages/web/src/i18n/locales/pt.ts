@@ -327,7 +327,7 @@ const pt: SourceCatalogue = {
             state: 'Estado do corpo',
             openCut: 'Abrir o corte',
             row: '{kind} · {timepoint} · {scope} · {deals} operações · {sets} conjuntos',
-            summary: 'Autorizar {label} de {scope}',
+            summary: 'corte {label}',
             noSubjectRefused:
                 'Este pedido é uma autorização de corte, e esta conta não pode ler o corte que ele nomeia, pelo que o seu assunto não é desenhado aqui. O pedido em si está são.',
             noSubjectMissing:

@@ -240,10 +240,7 @@ function cutAuthorisation(code: string): KindDescriptor {
             if (subject === null || subject.label === '') {
                 return kindLabel(t, code);
             }
-            return t('inbox.cutAuthorisation.summary', {
-                label: subject.label,
-                scope: subject.scope_code,
-            });
+            return t('inbox.cutAuthorisation.summary', { label: subject.label });
         },
         approveLabel: (t) => t('inbox.request.approve'),
         subjectCell: cutAuthorisationSubject,

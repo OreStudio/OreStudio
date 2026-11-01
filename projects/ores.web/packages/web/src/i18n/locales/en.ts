@@ -327,7 +327,7 @@ export const en: SourceCatalogue = {
             state: 'State of the body',
             openCut: 'Open the cut',
             row: '{kind} · {timepoint} · {scope} · {deals} deals · {sets} sets',
-            summary: 'Authorise {label} of {scope}',
+            summary: '{label}',
             noSubjectRefused:
                 'This request is a cut authorisation, and this account may not read the cut it names, so its subject is not drawn here. The request itself is sound.',
             noSubjectMissing:

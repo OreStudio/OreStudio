@@ -326,7 +326,7 @@ const fr: SourceCatalogue = {
             state: 'État du corps',
             openCut: 'Ouvrir la coupure',
             row: '{kind} · {timepoint} · {scope} · {deals} opérations · {sets} ensembles',
-            summary: 'Autoriser {label} de {scope}',
+            summary: 'coupure {label}',
             noSubjectRefused:
                 'Cette demande est une autorisation de coupure, et ce compte ne peut pas lire la coupure qu’elle nomme : son sujet n’est donc pas dessiné ici. La demande elle-même est saine.',
             noSubjectMissing:

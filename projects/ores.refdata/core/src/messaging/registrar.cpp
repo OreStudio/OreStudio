@@ -276,8 +276,6 @@
 #include "ores.refdata.core/messaging/curve_volatility_moneyness_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_proxy_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_smile_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/curve_volatility_smile_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/curve_volatility_smile_parameter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_smile_parameter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_strike_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"

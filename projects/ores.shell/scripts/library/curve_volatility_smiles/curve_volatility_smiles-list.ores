@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/curve_volatility_smiles/curve_volatility_smile.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+curve_volatility_smiles list --limit 1

@@ -189,7 +189,7 @@ package "refdata" #FFF3E0 {
         * settlement_days : double
         * calendar : text
         * business_day_convention : text
-        * day_counter : text <<FK>>
+        * day_counter : text
           extrapolate : text
           quote_name : text
           start_date : text
@@ -296,7 +296,7 @@ package "refdata" #FFF3E0 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
         * contract_name : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           yield_curve_id : text <<FK>>
           strike_factor : double
@@ -1054,7 +1054,7 @@ package "refdata" #FFF3E0 {
           extrapolation : text
           interpolation_method : text
           include_atm : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           business_day_convention : text
           tenors : text
@@ -1170,7 +1170,7 @@ package "refdata" #FFF3E0 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
           expiries : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           strike_type : text
           quote_name : text
@@ -1317,7 +1317,7 @@ package "refdata" #FFF3E0 {
           yield_curve : text
           spot_quote : text
         * has_quotes : boolean
-          day_counter : text <<FK>>
+          day_counter : text
           interpolation_method : text
           conventions : text
           extrapolation : text
@@ -1325,7 +1325,7 @@ package "refdata" #FFF3E0 {
           basis_base_price_curve : text
           basis_base_price_conventions : text
           basis_conventions : text
-          basis_day_counter : text <<FK>>
+          basis_day_counter : text
           basis_interpolation_method : text
           basis_add_basis : text
           basis_month_offset : integer
@@ -1529,7 +1529,7 @@ package "refdata" #FFF3E0 {
           instrument_type : text
           calendar_spread_offset : integer
           calendar_spread_underlying_name : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           future_conventions : text
           option_expiry_roll_days : text
@@ -2664,7 +2664,7 @@ package "refdata" #FFF3E0 {
           dimension : text
           quote_type : text
           extrapolation : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           business_day_convention : text
           option_tenors : text
@@ -3585,7 +3585,7 @@ package "refdata" #FFF3E0 {
           priority : integer
           default_curve_type : text
           discount_curve : text
-          day_counter : text <<FK>>
+          day_counter : text
           recovery_rate : text
           start_date : text
         * has_quotes : boolean
@@ -3776,7 +3776,7 @@ package "refdata" #FFF3E0 {
           exercise_style : text
         * spot_quote : text
         * has_quotes : boolean
-          day_counter : text <<FK>>
+          day_counter : text
         * has_dividend_interpolation : boolean
           dividend_interpolation_variable : text
           dividend_interpolation_method : text
@@ -3871,7 +3871,7 @@ package "refdata" #FFF3E0 {
           dimension : text
           expiries : text
           strikes : text
-          day_counter : text <<FK>>
+          day_counter : text
           time_extrapolation : text
           strike_extrapolation : text
           calendar : text
@@ -4033,7 +4033,7 @@ package "refdata" #FFF3E0 {
           fx_foreign_curve_id : text <<FK>>
           fx_domestic_curve_id : text <<FK>>
           calendar : text
-          day_counter : text <<FK>>
+          day_counter : text
           fx_index_tag : text
           base_volatility_1 : text
           base_volatility_2 : text
@@ -4144,7 +4144,7 @@ package "refdata" #FFF3E0 {
         * tenors : text
           settlement_days : integer
         * calendar : text
-        * day_counter : text <<FK>>
+        * day_counter : text
         * business_day_convention : text
         * index : text
         * index_curve : text
@@ -4224,7 +4224,7 @@ package "refdata" #FFF3E0 {
         * has_quotes : boolean
           extrapolation : text
         * calendar : text
-          day_counter : text <<FK>>
+          day_counter : text
         * lag : text
         * frequency : text
           base_rate : text
@@ -5910,7 +5910,7 @@ package "refdata" #FFF3E0 {
           output_volatility_type : text
           model_shift : text
           output_shift : text
-          day_counter : text <<FK>>
+          day_counter : text
           calendar : text
           business_day_convention : text
           option_tenors : text
@@ -6383,7 +6383,7 @@ package "refdata" #FFF3E0 {
           interpolation_variable : text
           interpolation_method : text
           mixed_interpolation_cutoff : integer
-          day_counter : text <<FK>>
+          day_counter : text
           tolerance : double
           extrapolation : text
           extrapolation_method : text
@@ -6425,7 +6425,7 @@ package "refdata" #FFF3E0 {
           dimension : text
         * volatility_type : text
         * extrapolation : text
-        * day_counter : text <<FK>>
+        * day_counter : text
         * calendar : text
         * business_day_convention : text
         * option_tenors : text
@@ -6531,9 +6531,7 @@ package "refdata" #FFF3E0 {
 ' ==================== Relationships ====================
 '
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_base_correlation_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_base_correlation_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_bond_future_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_bond_future_volatility_configs_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
 ores_refdata_business_units_tbl ||--o{ ores_refdata_book_changes_tbl : "has"
@@ -6550,15 +6548,11 @@ ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_exceptions_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_rules_tbl : "has"
 ores_refdata_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_cap_floor_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_terms_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_price_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_conventions_tbl : "has"
 ores_refdata_convention_kinds_tbl ||--o{ ores_refdata_conventions_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
@@ -6575,7 +6569,6 @@ ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_curve_bootstra
 ores_refdata_curve_configurations_tbl ||--o{ ores_refdata_curve_configuration_sections_tbl : "has"
 ores_refdata_curve_sections_tbl ||--o{ ores_refdata_curve_configuration_sections_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_correlation_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_curve_correlation_configs_tbl : "has"
 ores_refdata_curve_configurations_tbl ||--o{ ores_refdata_curve_definitions_tbl : "has"
 ores_refdata_curve_sections_tbl ||--o{ ores_refdata_curve_definitions_tbl : "has"
 ores_refdata_curve_configurations_tbl ||--o{ ores_refdata_curve_global_reports_tbl : "has"
@@ -6603,19 +6596,13 @@ ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_smi
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_strike_surfaces_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configurations_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_default_curve_configurations_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_curve_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_equity_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
 ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_inflation_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_strikes_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_seasonality_factors_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_intraday_power_curve_configs_tbl : "has"
 ores_refdata_ir_curve_bootstrap_configs_tbl ||--o{ ores_refdata_ir_curve_bootstrap_pillars_tbl : "has"
@@ -6637,16 +6624,13 @@ ores_refdata_sandboxes_tbl ||--o{ ores_refdata_sandbox_members_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_sandboxes_tbl : "has"
 ores_refdata_swaption_volatility_configs_tbl ||--o{ ores_refdata_swaption_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_swaption_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_swaption_volatility_configs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_tenor_basis_swap_long_shorts_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_tenor_basis_swap_pay_receives_tbl : "has"
 ores_refdata_tenor_schedules_tbl ||--o{ ores_refdata_tenor_convention_resolutions_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_tenor_schedules_tbl : "has"
 ores_refdata_diary_entry_types_tbl ||--o{ ores_refdata_tenor_schedules_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_yield_curve_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_yield_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_yield_volatility_configs_tbl : "has"
-ores_refdata_day_counters_tbl ||--o{ ores_refdata_yield_volatility_configs_tbl : "has"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.refdata.puml"

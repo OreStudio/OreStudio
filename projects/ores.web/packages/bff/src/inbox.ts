@@ -305,7 +305,6 @@ async function withPublishedSubjects<
     });
 }
 
-
 /** The kind of request the Operations queue works. */
 const AUTHORISATION_KIND = 'trading.operational_authorisation';
 

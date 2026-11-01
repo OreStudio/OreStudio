@@ -210,8 +210,8 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database",
     // is stated on what the store returns: the document it holds exports and
     // reads back unchanged.
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, example);
     INFO(difference);
     CHECK(difference.empty());
@@ -320,8 +320,8 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
      * was written.
      */
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, equity_example);
     INFO(difference);
     CHECK(difference.empty());
@@ -366,8 +366,8 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     CHECK(back.global_reports.size() == mapped.global_reports.size());
 
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
@@ -403,8 +403,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         // The store holds one form of each vocabulary value, so the two sides
         // are the document the store returns and the export of it.
         const auto stored = curve_configuration_projection::reverse(back);
-        const auto exported = curve_configuration_projection::read(
-            curve_configuration_projection::write(stored));
+        const auto exported =
+            curve_configuration_projection::read(curve_configuration_projection::write(stored));
         const auto difference = compare_documents(stored, exported, path);
         INFO(difference);
         CHECK(difference.empty());
@@ -437,8 +437,8 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     CHECK(back.volatility_strike_surfaces.size() == 1);
 
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
@@ -504,8 +504,7 @@ TEST_CASE("a parametric smile on a strike surface round trips through the databa
     REQUIRE(mapped.volatility_smiles.size() == 1);
     REQUIRE(mapped.volatility_smile_parameters.size() == 2);
     CHECK(mapped.volatility_smiles.front().max_calibration_attempts == 10);
-    CHECK(mapped.volatility_smiles.front().residual_correction_dimension ==
-          "AbsoluteStrike");
+    CHECK(mapped.volatility_smiles.front().residual_correction_dimension == "AbsoluteStrike");
     CHECK(mapped.volatility_smile_parameters.front().name == "alpha");
     CHECK(mapped.volatility_smile_parameters.front().position == 0);
     CHECK(mapped.volatility_smile_parameters.back().name == "beta");
@@ -515,8 +514,7 @@ TEST_CASE("a parametric smile on a strike surface round trips through the databa
     const auto back = read_back(h.context(), mapped);
     CHECK(back.volatility_smiles.size() == 1);
     CHECK(back.volatility_smile_parameters.size() == 2);
-    CHECK(back.volatility_smiles.front().residual_correction_dimension ==
-          "AbsoluteStrike");
+    CHECK(back.volatility_smiles.front().residual_correction_dimension == "AbsoluteStrike");
 
     const auto exported = curve_configuration_projection::read(
         curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
@@ -621,8 +619,8 @@ TEST_CASE("a holder writing two kinds keeps both and the priority it gave each",
     CHECK(delta_kept);
 
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
@@ -666,8 +664,8 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     CHECK(back.report_configurations.front().deltas == "10P, ATM, 10C");
 
     const auto stored = curve_configuration_projection::reverse(back);
-    const auto exported = curve_configuration_projection::read(
-        curve_configuration_projection::write(stored));
+    const auto exported =
+        curve_configuration_projection::read(curve_configuration_projection::write(stored));
     const auto difference = compare_documents(stored, exported, equity_example);
     INFO(difference);
     CHECK(difference.empty());

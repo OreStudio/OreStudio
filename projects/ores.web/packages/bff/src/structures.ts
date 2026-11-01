@@ -32,6 +32,7 @@ import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generat
 import { subjects as marketSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_asset_class_protocol';
 import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
+import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { input, readAll, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -44,6 +45,9 @@ const FREE_ROLES = ['leg'] as const;
 
 /** The parent a root states, which the store holds as the nil uuid. */
 const NO_PARENT = '00000000-0000-0000-0000-000000000000';
+
+/** The tenant the trading service states on the rows it writes. */
+const statedByTheService = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 /**
  * The key a structure is addressed by: its own id, or the reference the desk
@@ -624,55 +628,55 @@ export function registerStructureRoutes(
         }
 
         const structureId = randomUUID();
-        const written = await session.client.callAuthenticated(
-            structureSubjects.put_structure_request,
-            {
-                change: {
-                    write: {
-                        id: structureId,
-                        counterparty_id: [...counterparties][0] ?? '',
-                        kind: body.kind,
-                        template_code: '',
-                        parent_structure_id: NO_PARENT,
-                    },
-                    precondition: mustNotExist(),
-                },
-                intent: intent(),
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        if (written.result.outcome !== 'ok') {
-            throw refusalOfLeg(written.result);
-        }
-
         /*
-         * The legs are added in the order the desk chose them, so the sequence a
-         * person reads follows the order they picked. A leg that fails is
-         * reported, and the structure stays: a half-grouped deal is visible and
-         * can be finished, which is better than a write that silently did nothing.
+         * One operation, not a loop: the completion writes the structure, its
+         * members and takes every leg live in one transaction. A refusal leaves
+         * every leg a draft and writes no member, which the loop could not
+         * promise: a half-grouped deal is the state it exists to prevent.
          */
-        let sequence = 0;
-        for (const tradeId of body.tradeIds) {
-            sequence += 1;
-            const member = await session.client.callAuthenticated(
-                memberSubjects.put_structure_member_request,
-                {
-                    change: {
-                        write: {
-                            trade_id: tradeId,
-                            structure_id: structureId,
-                            role: FREE_ROLES[0],
-                            sequence_number: sequence,
-                        },
-                        precondition: mustNotExist(),
-                    },
-                    intent: intent(),
+        const completed = await session.client.callAuthenticated(
+            operationsSubjects.complete_structure_request,
+            {
+                structure: {
+                    version: 0,
+                    tenant_id: statedByTheService,
+                    id: structureId,
+                    party_id: partyId,
+                    counterparty_id: [...counterparties][0] ?? '',
+                    kind: body.kind,
+                    template_code: '',
+                    parent_structure_id: NO_PARENT,
+                    modified_by: '',
+                    performed_by: '',
+                    change_reason_code: 'system.new_record',
+                    change_commentary: 'Grouped from the grouping screen.',
+                    recorded_at: new Date().toISOString(),
                 },
-                z.looseObject({ result: resultSchema }),
-            );
-            if (member.result.outcome !== 'ok') {
-                throw refusalOfLeg(member.result);
-            }
+                legs: body.tradeIds.map((tradeId, index) => ({
+                    version: 0,
+                    tenant_id: statedByTheService,
+                    trade_id: tradeId,
+                    structure_id: structureId,
+                    role: FREE_ROLES[0],
+                    sequence_number: index + 1,
+                    modified_by: '',
+                    performed_by: '',
+                    change_reason_code: 'system.new_record',
+                    change_commentary: '',
+                    recorded_at: new Date().toISOString(),
+                })),
+                leg_count: body.tradeIds.length,
+                change_reason_code: 'system.new_record',
+                change_commentary: 'Grouped from the grouping screen.',
+            },
+            z.looseObject({
+                result: resultSchema,
+                structure_id: z.uuid().nullable().default(null),
+                structure_version: z.int().nonnegative().default(0),
+            }),
+        );
+        if (completed.result.outcome !== 'ok') {
+            throw refusalOfLeg(completed.result);
         }
 
         const references = await referencesOf(session, 'structure', [structureId]);

@@ -26,6 +26,13 @@
 using namespace ores::http::stream;
 using namespace ores::logging;
 
+namespace {
+
+/// The tenant every stream hears beside its own.
+const std::string pump_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+
+}
+
 TEST_CASE("a_frame_names_its_collection_and_carries_its_tenancy", "[change_pump]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the event-stream message a frame becomes";
@@ -48,9 +55,9 @@ TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
     BOOST_LOG_SEV(lg, info) << "Testing that a pumped window reaches every stream";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto first = hub.subscribe();
-    auto second = hub.subscribe();
+    change_hub hub(pump_system_tenant);
+    auto first = hub.subscribe("acme");
+    auto second = hub.subscribe("acme");
     change_pump pump(coalescer, hub);
 
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
@@ -67,8 +74,8 @@ TEST_CASE("a_window_with_nothing_in_it_publishes_nothing", "[change_pump]") {
     BOOST_LOG_SEV(lg, info) << "Testing that an empty window is silent";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto stream = hub.subscribe();
+    change_hub hub(pump_system_tenant);
+    auto stream = hub.subscribe("acme");
     change_pump pump(coalescer, hub);
 
     REQUIRE(pump.pump() == 0);
@@ -80,9 +87,9 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
     BOOST_LOG_SEV(lg, info) << "Testing that a ended stream is forgotten by the pump";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto ended = hub.subscribe();
-    auto open = hub.subscribe();
+    change_hub hub(pump_system_tenant);
+    auto ended = hub.subscribe("acme");
+    auto open = hub.subscribe("acme");
     change_pump pump(coalescer, hub);
 
     ended->close();

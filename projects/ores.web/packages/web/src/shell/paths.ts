@@ -238,6 +238,30 @@ export function cutPath(id: string): string {
 }
 
 /**
+ * The address of the take flow: the kind and the instant, the body, the press.
+ *
+ * A take offered for one occasion — a refused body's *Take it again* — states
+ * the kind, the scope and the centre it would fix, so the flow opens on the
+ * occasion that failed rather than on an empty first step.
+ */
+export function takeCutPath(again?: {
+    readonly kindCode: string;
+    readonly scopeCode: string;
+    readonly centreCode: string;
+}): string {
+    const base = `${PATHS.cuts}/take`;
+    if (again === undefined) {
+        return base;
+    }
+    const query = new URLSearchParams({
+        kind: again.kindCode,
+        scope: again.scopeCode,
+        centre: again.centreCode,
+    });
+    return `${base}?${query.toString()}`;
+}
+
+/**
  * The address of one approval request: the inbox's record of the ask, the wait
  * and the decision.
  *

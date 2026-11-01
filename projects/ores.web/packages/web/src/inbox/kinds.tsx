@@ -25,6 +25,7 @@ import type { InterpolationValues } from '../i18n/translate.js';
 import { CurvePublishExtras } from './CurvePublishExtras.js';
 import { RoleRequestExtras } from './RoleRequestExtras.js';
 import { kindLabel } from './words.js';
+import { useTranslation } from '../i18n/Provider.js';
 import { Tag } from '../ui/Primitives.js';
 
 /**
@@ -187,11 +188,45 @@ const ENGINE_SETTINGS_CHANGE: KindDescriptor = {
     drawsDelta: true,
 };
 
+/**
+ * What a cut's authorisation request shows that no other kind does.
+ *
+ * The decider reads the body on the cut's own record page. Nothing answers a
+ * cut by the request that raised it, so the page says where the body is read and
+ * offers no link it cannot build.
+ */
+function CutAuthorisationExtras(_props: { readonly request: InboxRequestView }): ReactNode {
+    const { t } = useTranslation();
+    return <p className="text-xs text-ink-muted">{t('inbox.cutAuthorisation.noSubjectLink')}</p>;
+}
+
+/**
+ * A cut's authorisation request: the close's, and the verification cut's.
+ *
+ * Both ask the decider to authorise one frozen body, and the two differ in the
+ * kind of cut and in who decides, which the request states itself. One
+ * descriptor serves them, so a change to how a cut's ask is drawn lands once.
+ */
+function cutAuthorisation(code: string): KindDescriptor {
+    return {
+        code,
+        label: (t) => kindLabel(t, code),
+        summary: (t) => kindLabel(t, code),
+        approveLabel: (t) => t('inbox.request.approve'),
+        subjectRoute: () => null,
+        fieldLabel: fieldLabelUnder(code),
+        drawsDelta: false,
+        Extras: CutAuthorisationExtras,
+    };
+}
+
 const KINDS: Readonly<Record<string, KindDescriptor>> = {
     [ROLE_GRANT.code]: ROLE_GRANT,
     [BOOK_CHANGE.code]: BOOK_CHANGE,
     [CURVE_PUBLISH.code]: CURVE_PUBLISH,
     [ENGINE_SETTINGS_CHANGE.code]: ENGINE_SETTINGS_CHANGE,
+    'reporting.eod_cut_authorisation': cutAuthorisation('reporting.eod_cut_authorisation'),
+    'reporting.ipv_cut_authorisation': cutAuthorisation('reporting.ipv_cut_authorisation'),
 };
 
 /** The descriptor of a kind, or a plain one for a kind this build does not know. */

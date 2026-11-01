@@ -38,7 +38,7 @@
 
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { CUT_STATE_WORDS, type CutRow } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
@@ -52,8 +52,10 @@ import {
 } from '../../refdata/RecordList.js';
 import { ScreenFrame } from '../../shell/ScreenFrame.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
-import { PATHS, cutPath } from '../../shell/paths.js';
-import { Notice } from '../../ui/Primitives.js';
+import { PATHS, cutPath, takeCutPath } from '../../shell/paths.js';
+import { Button, Notice } from '../../ui/Primitives.js';
+import { usePermissions } from '../../access/holds.js';
+import { PERMISSION } from '../../access/permissions.js';
 import { RelativeTime } from '../../ui/Time.js';
 import { Absent, StateCell, useStateName } from './shared.js';
 
@@ -250,8 +252,14 @@ export function PageSummary({ cuts }: { readonly cuts: readonly CutRow[] }): Rea
 /** The filters the list offers, drawn once and read by both the source and the table. */
 export function CutsPage(): ReactNode {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const trail = [...useAreaRoot('reporting'), { label: t('cuts.title') }];
     const filters = useFilters();
+    // The take is drawn only for a person who may press it: the standard's rule
+    // is that a person who may not take a cut sees no button, and the server
+    // checks the permission again on the call.
+    const { ready, can } = usePermissions();
+    const mayTake = ready && can({ all: [PERMISSION.cutsTake] });
     const source = useCutSource(filters);
     const kinds = useQuery({
         queryKey: ['cuts', 'types'],
@@ -279,6 +287,17 @@ export function CutsPage(): ReactNode {
             pathOf={(row) => cutPath(row.id)}
             keyOf={(row) => row.id}
             notes={[{ tone: 'info', text: t('cuts.readerNote') }]}
+            actions={
+                mayTake ? (
+                    <Button
+                        variant="primary"
+                        icon="add"
+                        onClick={() => void navigate(takeCutPath())}
+                    >
+                        {t('cuts.take.title')}
+                    </Button>
+                ) : null
+            }
         />
     );
 }

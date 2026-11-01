@@ -122,7 +122,9 @@
                           (concat name "/SKILL.org")
                         (concat (file-name-sans-extension name) ".org"))
                       sources)))
-        (unless (file-exists-p source)
+        ;; A symlink is a skill another installer placed here, not output of
+        ;; this build, so it is never stale to us.
+        (unless (or (file-symlink-p entry) (file-exists-p source))
           (if (file-directory-p entry)
               (delete-directory entry t)
             (delete-file entry))

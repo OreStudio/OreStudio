@@ -23,9 +23,12 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::ore::service::config {
 
@@ -53,6 +56,19 @@ struct options final {
      */
     std::string work_dir = "../var/ore-service/work";
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"database", &options::database},
+        ::ores::utility::codec::field{"http_base_url", &options::http_base_url},
+        ::ores::utility::codec::field{"work_dir", &options::work_dir},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

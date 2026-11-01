@@ -50,7 +50,7 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
 }
 
 boost::asio::awaitable<domain::http_response>
-change_routes::handle_changes(const domain::http_request&) {
+change_routes::handle_changes(const domain::http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Opening a change stream";
 
     domain::http_response resp;
@@ -62,8 +62,17 @@ change_routes::handle_changes(const domain::http_request&) {
      */
     resp.headers["Cache-Control"] = "no-cache";
     resp.headers["X-Accel-Buffering"] = "no";
-    resp.body_awaitable =
-        std::make_shared<stream::change_stream_source>(hub_->subscribe(), keep_alive_);
+    /*
+     * A stream hears the caller's own tenant and the system tenant, and nothing
+     * else. The frame states which tenant it belongs to, so the hub can decide
+     * before it queues anything: a session must not be able to read another
+     * tenant's changes, whatever the stream is called.
+     */
+    const auto tenant =
+        req.authenticated_user ? req.authenticated_user->tenant_id.value_or(std::string{})
+                               : std::string{};
+    resp.body_awaitable = std::make_shared<stream::change_stream_source>(
+        hub_->subscribe(tenant), keep_alive_);
     co_return resp;
 }
 

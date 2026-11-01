@@ -206,7 +206,12 @@ TEST_CASE("a time point's bounds survive the codec whatever the clock counts", "
 TEST_CASE("the text form and the codec keep the same microsecond", "[pq]") {
     // A clock that counts nanoseconds lands between two microseconds. The
     // instant is taken down to the one it falls in, so the row a codec writes
-    // and the text a hand-written query passes name the same value.
+    // and the text a hand-written query passes name the same value. Each offset
+    // is floored to the clock's own tick: libc++ counts microseconds and MSVC
+    // counts 100 ns, and neither can add a nanosecond to its time point.
+    const auto tick = [](std::chrono::nanoseconds offset) {
+        return std::chrono::floor<system_clock::duration>(offset);
+    };
     const auto base = system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
     const auto round_trip = [](system_clock::time_point v) {
         std::string bytes;
@@ -214,14 +219,14 @@ TEST_CASE("the text form and the codec keep the same microsecond", "[pq]") {
         return codec<system_clock::time_point>::decode(std::as_bytes(std::span(bytes)));
     };
     for (const auto below : {0, 1, 499, 999}) {
-        const auto instant = base + std::chrono::nanoseconds(below);
+        const auto instant = base + tick(std::chrono::nanoseconds(below));
         CAPTURE(below);
         CHECK(round_trip(instant) == base);
         CHECK(ores::platform::time::datetime::to_iso8601_utc(instant) ==
               "2025-10-28 12:00:00.123456Z");
     }
     // Before the epoch the same instant falls in the microsecond below it.
-    const auto before = system_clock::time_point(std::chrono::nanoseconds(-500));
+    const auto before = system_clock::time_point(tick(std::chrono::nanoseconds(-500)));
     CHECK(ores::platform::time::datetime::to_iso8601_utc(before) == "1969-12-31 23:59:59.999999Z");
     CHECK(round_trip(before) == system_clock::time_point(std::chrono::microseconds(-1)));
 }

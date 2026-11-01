@@ -62,6 +62,7 @@ const WORDS = {
     [PERMISSION.sensitivityTemplatesWrite]: 'permissionWords.sensitivityTemplatesWrite',
     [PERMISSION.sensitivityTemplatesDelete]: 'permissionWords.sensitivityTemplatesDelete',
     [PERMISSION.cutsRead]: 'permissionWords.cutsRead',
+    [PERMISSION.cutsTake]: 'permissionWords.cutsTake',
     [PERMISSION.cutKindsRead]: 'permissionWords.cutKindsRead',
     [PERMISSION.cutKindsWrite]: 'permissionWords.cutKindsWrite',
     [PERMISSION.cutKindsDelete]: 'permissionWords.cutKindsDelete',

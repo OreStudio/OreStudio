@@ -74,7 +74,7 @@ TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     CHECK(json_output.find(R"("database":"production")") != std::string::npos);
     CHECK(json_output.find(R"("user":"app_user")") != std::string::npos);
     CHECK(json_output.find(R"("pool_size":20)") != std::string::npos);
-    // Verify that the password is not serialized (rfl::Skip should exclude it).
+    // The password is not part of the shape, so it is never printed.
     CHECK(json_output.find("secret") == std::string::npos);
 }
 

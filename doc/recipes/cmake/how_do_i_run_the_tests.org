@@ -20,7 +20,8 @@ How do I run the ORE Studio test suite?
 Running tests builds the test binaries first, so use =compass
 build= (not raw =cmake --build=) — it takes the host-wide build lock
 described in [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]], keeping concurrent
-worktrees from corrupting each other's build outputs.
+worktrees from corrupting each other's build outputs. A run that waits
+for a slot is not hung: =./compass.sh build --status= shows who holds each slot.
 
 ** All tests
 

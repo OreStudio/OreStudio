@@ -23,10 +23,13 @@
 #include "ores.logging/logging_options.hpp"
 #include "ores.marketdata.official/domain/source_feed.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::official::config {
@@ -43,6 +46,20 @@ struct options final {
     /// The minutes between two reads of a source once its demand is served.
     std::uint32_t poll_minutes{60};
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"frankfurter_url", &options::frankfurter_url},
+        ::ores::utility::codec::field{"sources", &options::sources},
+        ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
+        ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

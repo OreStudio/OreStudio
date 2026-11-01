@@ -80,7 +80,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // is what the downstream service checks.
     nats::service::nats_client service_nats(
         nats,
-        iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password()));
+        iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password));
 
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{
@@ -196,7 +196,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      * and a stream reads only what it was given. The keep-alive is what a proxy
      * needs to see on a quiet market.
      */
-    auto changes = std::make_shared<http::stream::change_hub>();
+    auto changes = std::make_shared<http::stream::change_hub>(
+        database::service::tenant_context::system_tenant_id);
     auto gathered = std::make_shared<http::stream::change_coalescer>();
     routes::change_routes change_stream(changes, std::chrono::milliseconds(15000));
     change_stream.register_routes(router, registry);
@@ -209,7 +210,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      */
     auto ticker = std::make_shared<http::stream::change_ticker>(
         *gathered, *changes, std::chrono::milliseconds(150));
-    http::stream::change_feed feed(*gathered);
+    auto feed = std::make_shared<http::stream::change_feed>(*gathered);
 
     /*
      * Last, because the bundle answers what no other route claimed: a screen path
@@ -235,7 +236,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&http_base_url, &server, &feed](auto& n, auto verifier) {
+        [&http_base_url, &server, feed](auto& n, auto verifier) {
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");

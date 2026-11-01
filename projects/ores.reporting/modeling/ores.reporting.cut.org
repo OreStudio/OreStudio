@@ -195,12 +195,14 @@ std::nullopt
 :END:
 
 Which take of this occasion the row is: 1 for the first body fixed for the
-kind, party, scope, centre and timepoint, 2 for a retake.
+kind, party, scope and centre on that day, 2 for a retake.
 
 A retake of the same day, kind and scope is the second cut of that day, and the
-label states the ordinal so a person reads which body is meant. The ordinal
-counts within the whole natural key, because two parties or two centres fixing
-the same instant fix two different bodies.
+label states the ordinal so a person reads which body is meant. Two bodies of
+one day cannot share a label even where the two instants differ, so the ordinal
+counts the day and not the instant. The party and the centre are part of the
+occasion, because two parties or two centres fixing one instant fix two
+different bodies.
 
 #+begin_src cpp :name generator
 1
@@ -646,23 +648,31 @@ cut_repository::read_for_party_in_window(context ctx, const boost::uuids::uuid& 
 }
 #+end_src
 
-*** read_by_kind_and_month
+*** read_for_occasion_in_window
 :PROPERTIES:
 :ID: 8E52C410-7B93-4A6D-8F1C-25D9E7B04A63
 :END:
-Reads the cuts of one kind whose timepoint falls in an instant window, newest
-first. The window is the month a person picked on the cuts list, and the read
-takes it as a range so the caller's clock decides what a month is rather than
-the store's.
+Reads the cuts of one occasion whose timepoint falls in an instant window,
+newest first. The occasion is the kind, the party, the scope and the centre: two
+parties or two centres fixing one instant fix two different bodies.
+
+The window is the caller's, because what it means is the caller's. The take
+numbers a retake of the same day, so it reads the day; a person reading the list
+reads the month they picked. The read takes the window as a range so the
+caller's clock decides what a day or a month is rather than the store's.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::cut>
-read_by_kind_and_month(context ctx, const std::string& kind_code,
-                       std::chrono::system_clock::time_point from,
-                       std::chrono::system_clock::time_point to);
+read_for_occasion_in_window(context ctx, const boost::uuids::uuid& party_id,
+                            const std::string& kind_code,
+                            const std::string& scope_code,
+                            const std::string& business_centre_code,
+                            std::chrono::system_clock::time_point from,
+                            std::chrono::system_clock::time_point to);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
 #include <vector>
@@ -670,14 +680,22 @@ read_by_kind_and_month(context ctx, const std::string& kind_code,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::cut>
-cut_repository::read_by_kind_and_month(context ctx, const std::string& kind_code,
-                                       std::chrono::system_clock::time_point from,
-                                       std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of kind: " << kind_code;
+cut_repository::read_for_occasion_in_window(context ctx, const boost::uuids::uuid& party_id,
+                                            const std::string& kind_code,
+                                            const std::string& scope_code,
+                                            const std::string& business_centre_code,
+                                            std::chrono::system_clock::time_point from,
+                                            std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
+                               << scope_code << " " << business_centre_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(party_id);
     const auto query = query_builder::read<std::vector<cut_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                             "kind_code"_c == kind_code &&
+                             "scope_code"_c == scope_code &&
+                             "business_centre_code"_c == business_centre_code &&
                              "timepoint"_c >= from && "timepoint"_c < to &&
                              "valid_to"_c == max) |
                        query_builder::order_by("timepoint"_c.desc());
@@ -687,7 +705,7 @@ cut_repository::read_by_kind_and_month(context ctx, const std::string& kind_code
         query,
         [](const auto& entities) { return cut_mapper::map(entities); },
         lg(),
-        "Reading the cuts of a kind and month.");
+        "Reading the cuts of one occasion.");
 }
 #+end_src
 

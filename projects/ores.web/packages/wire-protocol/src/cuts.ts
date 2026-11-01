@@ -176,12 +176,22 @@ export const cutKindRecordSchema = z.object({
 
 export type CutKindRecord = z.infer<typeof cutKindRecordSchema>;
 
-/** The rules a type may name, and the families it may belong to, as the lists offer them. */
+/**
+ * The rules a type may name, the families it may belong to, and the rates
+ * centres a take may fix a body against.
+ *
+ * The centres are not a type's: they are the take's, because the scope revalues
+ * against one of them and a scope that names none denotes whichever centre
+ * answered first. They are offered here because the two screens that read this
+ * lookup are the type form and the take's first step, and a second lookup would
+ * be the same rows read twice.
+ */
 export const cutKindChoicesSchema = z.object({
     families: z.array(z.object({ code: z.string(), name: z.string() })),
     resolutionRules: z.array(z.object({ code: z.string(), name: z.string() })),
     approvalKinds: z.array(z.object({ code: z.string(), name: z.string() })),
     retentionDestinations: z.array(z.string()),
+    businessCentres: z.array(z.object({ code: z.string(), name: z.string() })),
 });
 
 export type CutKindChoices = z.infer<typeof cutKindChoicesSchema>;
@@ -225,6 +235,26 @@ export const cutBodySchema = z.object({
 export type CutBody = z.infer<typeof cutBodySchema>;
 
 /**
+ * The subject of one cut's approval request: the cut whose body was frozen and
+ * the counts of the body's parts.
+ *
+ * A decider reads the counts here before answering; the cut's own page states
+ * the same numbers, because the two records of one act are read from one row.
+ * The row also carries the facts an apply will stamp when the request is
+ * approved, and no apply exists yet, so nothing here reads them.
+ */
+export const cutApprovalDetailSchema = z.object({
+    id: z.string(),
+    requestId: z.string(),
+    cutId: z.string(),
+    dealCount: z.int().nonnegative(),
+    marketDataSetCount: z.int().nonnegative(),
+    gapCount: z.int().nonnegative(),
+});
+
+export type CutApprovalDetail = z.infer<typeof cutApprovalDetailSchema>;
+
+/**
  * One cut as its record page draws it: the body, the derived state and label,
  * the kind's declarations, the gaps the assembly could not fill and the runs
  * that priced from it.
@@ -241,6 +271,8 @@ export const cutRecordSchema = z.object({
     kind: cutKindRowSchema,
     gaps: z.array(cutGapSchema),
     runCount: z.int().nonnegative(),
+    /** The subject of the take's approval request, or null where the kind required none. */
+    detail: cutApprovalDetailSchema.nullable(),
 });
 
 export type CutRecord = z.infer<typeof cutRecordSchema>;
@@ -274,6 +306,72 @@ export const cutRunsSchema = z.object({
 });
 
 export type CutRuns = z.infer<typeof cutRunsSchema>;
+
+/**
+ * One part of a body the assembly answered, with the state it reached.
+ *
+ * `state` is `closed` where the read answered the part and `gapped` where it did
+ * not, so a screen draws every part with its own state rather than inferring one
+ * from the gaps. `snapshotNote` states what the store cannot say about a part it
+ * answered and materialises no reference for.
+ */
+export const cutBodyPartSchema = z.object({
+    partCode: z.string(),
+    state: z.enum(['closed', 'gapped']),
+    summary: z.string(),
+    reference: z.string(),
+    item: z.string(),
+    reason: z.string(),
+    remedy: z.string(),
+    snapshotNote: z.string(),
+});
+
+export type CutBodyPart = z.infer<typeof cutBodyPartSchema>;
+
+/**
+ * The body an assembly answered and the take it wrote.
+ *
+ * `cutState` is empty on a preview, which writes nothing. A take the server
+ * refuses is a failure of the call and not a body, so its code and its sentence
+ * travel in the failure the client raises. The gaps are the answer and not a
+ * failure: a body that could not be assembled says what closes each one.
+ */
+export const cutTakeSchema = z.object({
+    cutId: z.string(),
+    cutLabel: z.string(),
+    cutState: z.union([cutStateWordSchema, z.literal('')]),
+    requiresAuthorisation: z.boolean(),
+    outputIsIndicative: z.boolean(),
+    retentionMonths: z.int(),
+    retentionDestinationCode: z.string(),
+    approvalRequestId: z.string(),
+    approvalKindCode: z.string(),
+    approvalKindName: z.string(),
+    decidePermissionCode: z.string(),
+    parts: z.array(cutBodyPartSchema),
+    gaps: z.array(cutGapSchema),
+    dealCount: z.int().nonnegative(),
+    marketDataSetCount: z.int().nonnegative(),
+    referenceDataVersion: z.string(),
+    engineVersion: z.string(),
+    codeVersion: z.string(),
+});
+
+export type CutTake = z.infer<typeof cutTakeSchema>;
+
+/** What a person states when they assemble and take a cut by hand. */
+export const cutTakeRequestSchema = z.object({
+    kindCode: z.string().trim().min(1).max(100),
+    scopeCode: z.string().trim().min(1).max(100),
+    businessCentreCode: z.string().trim().min(1).max(100),
+    timepoint: z.string().trim().min(1).max(64),
+    timepointTimezone: z.string().trim().min(1).max(64),
+    cutTimeCode: z.string().trim().max(100).default(''),
+    reason: z.string().trim().max(2000).default(''),
+    preview: z.boolean().default(false),
+});
+
+export type CutTakeRequest = z.infer<typeof cutTakeRequestSchema>;
 
 /** The fields the type form offers, and the only ones a save may change. */
 export const cutKindWriteSchema = z.object({

@@ -28,6 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <filesystem>
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <stdexcept>
@@ -102,6 +103,22 @@ struct text_form<std::string> {
 
     static std::string from_text(std::string_view text) {
         return std::string(text);
+    }
+};
+
+/**
+ * @brief A filesystem path is its native string, as reflect-cpp writes it.
+ */
+template <>
+struct text_form<std::filesystem::path> {
+    static constexpr std::string_view wire_name = "a path";
+
+    static std::string to_text(const std::filesystem::path& v) {
+        return v.string();
+    }
+
+    static std::filesystem::path from_text(std::string_view text) {
+        return std::filesystem::path(std::string(text));
     }
 };
 

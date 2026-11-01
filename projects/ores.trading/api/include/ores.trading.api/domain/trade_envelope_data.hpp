@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_ENVELOPE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_ENVELOPE_DATA_HPP
 
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
@@ -74,6 +75,9 @@ struct trade_envelope_data final {
     };
 }
 
+static_assert(::ores::utility::codec::names_every_member<trade_envelope_field>(),
+              "trade_envelope_field has a member its wire shape does not name");
+
 [[nodiscard]] constexpr auto wire_fields(const trade_envelope_data&) {
     return std::tuple{
         utility::codec::field{"counter_party", &trade_envelope_data::counter_party},
@@ -82,6 +86,9 @@ struct trade_envelope_data final {
         utility::codec::field{"additional_fields", &trade_envelope_data::additional_fields},
     };
 }
+
+static_assert(::ores::utility::codec::names_every_member<trade_envelope_data>(),
+              "trade_envelope_data has a member its wire shape does not name");
 
 }
 

@@ -76,10 +76,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The scheduler's own identity on the bus. A report trigger is a request to
     // another service, and every other service-to-service call in the tree
     // authenticates with the caller's service token, so this one does too.
-    ores::nats::service::nats_client svc_nats(
-        nats,
-        ores::iam::client::make_service_token_provider(
-            nats, cfg.database.user, cfg.database.password()));
+    ores::nats::service::nats_client svc_nats(nats,
+                                              ores::iam::client::make_service_token_provider(
+                                                  nats, cfg.database.user, cfg.database.password));
 
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish.
     // The generated registrar owns the job definition's mapping and its NATS

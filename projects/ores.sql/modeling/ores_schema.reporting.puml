@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 45
+Tables: 46
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -284,6 +284,54 @@ package "reporting" #E0F7FA {
     report_configuration, so several reports share one configuration without
     copying it, and the kind of configuration it is comes from
     configuration_type by foreign key rather than from a text code.
+    end note
+
+    entity ores_reporting_cut_approval_details_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * cut_id : uuid <<FK>>
+        * deal_count : integer
+        * market_data_set_count : integer
+        * gap_count : integer
+        * applied_by : text
+          applied_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_cut_approval_details_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Approval Detail Table
+    The detail row of one reporting.eod_cut_authorisation or
+    reporting.ipv_cut_authorisation approval request: the cut the request
+    authorises, and the counts of the body the decider is asked to sign.
+    A request is a header. What it is about lives here, keyed by the request's own
+    id, exactly as a proposed published set lives in
+    ores.marketdata.curve_publish and is keyed by its request. The subject is one
+    fact and no more: the cut whose body was frozen. The counts travel beside it
+    because the decider reads them before answering and the cut's own record states
+    them only by reading the body's parts one at a time: the deals the population
+    held at the instant, the published sets in use at it, and the gaps that would
+    have stopped the take, which is zero for any body a request was raised for.
+    applied_at and applied_by are the record of the apply. Both are empty while
+    the request waits, and both are written in one act when the approved request is
+    applied to the cut: the instant the authorisation was stamped and the account
+    that stamped it. The row is bitemporal, so the applied version is a new version
+    of the same row and the history holds the unapplied subject beside it.
+    request_id is the natural key, so a request authorises one cut and no second
+    apply can find a row to write.
+    The row is not a client's to write: the take writes it with the body, and the
+    apply stamps it. A client reads it to decide a request or to audit a cut.
     end note
 
     entity ores_reporting_cut_families_tbl <<temporal>> #C6F0D8 {
@@ -1627,6 +1675,7 @@ ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_market_bin
 ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_ore_parameters_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
+ores_reporting_cuts_tbl ||--o{ ores_reporting_cut_approval_details_tbl : "has"
 ores_reporting_cuts_tbl ||--o{ ores_reporting_cut_gaps_tbl : "has"
 ores_reporting_cut_families_tbl ||--o{ ores_reporting_cut_kinds_tbl : "has"
 ores_reporting_cut_resolution_rules_tbl ||--o{ ores_reporting_cut_kinds_tbl : "has"

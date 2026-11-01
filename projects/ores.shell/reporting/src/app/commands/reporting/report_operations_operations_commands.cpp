@@ -244,6 +244,14 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         },
         "get-cut-record <cut_id>");
 
+    menu->Insert(
+        "take-cut",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_take_cut(std::ref(out), std::ref(session), std::move(args));
+        },
+        "take-cut <kind_code> <scope_code> <business_centre_code> <timepoint> <timepoint_timezone> "
+        "<reason> [--cut_time_code <v>] [--preview <v>]");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -1431,6 +1439,77 @@ void report_operations_operations_commands::process_get_cut_record(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::reporting::messaging::get_cut_record_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_take_cut(std::ostream& out,
+                                                             nats_client& session,
+                                                             const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating take-cut request.";
+
+    using request_type = ores::reporting::messaging::take_cut_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run take-cut." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "cut_time_code", .requires_value = true, .default_value = ""},
+        {.name = "preview", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 6;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.kind_code = parsed->positionals[next++];
+        req.scope_code = parsed->positionals[next++];
+        req.business_centre_code = parsed->positionals[next++];
+        req.timepoint = parsed->positionals[next++];
+        req.timepoint_timezone = parsed->positionals[next++];
+        req.reason = parsed->positionals[next++];
+        if (const auto& raw_cut_time_code = parsed->flag("cut_time_code");
+            !raw_cut_time_code.empty()) {
+            req.cut_time_code = raw_cut_time_code;
+        }
+        if (const auto& raw_preview = parsed->flag("preview"); !raw_preview.empty()) {
+            if (!parse_flag(raw_preview, req.preview)) {
+                fail(out) << "preview must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::take_cut_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::take_cut_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::take_cut_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

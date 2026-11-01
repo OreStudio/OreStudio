@@ -22,10 +22,13 @@
 
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::compute::wrapper::config {
 
@@ -95,6 +98,26 @@ struct options final {
      */
     std::string http_base_url;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"host_id", &options::host_id},
+        ::ores::utility::codec::field{"tenant_id", &options::tenant_id},
+        ::ores::utility::codec::field{"work_dir", &options::work_dir},
+        ::ores::utility::codec::field{"package_dir", &options::package_dir},
+        ::ores::utility::codec::field{"heartbeat_interval_seconds",
+                                      &options::heartbeat_interval_seconds},
+        ::ores::utility::codec::field{"claim_poll_seconds", &options::claim_poll_seconds},
+        ::ores::utility::codec::field{"telemetry_interval_seconds",
+                                      &options::telemetry_interval_seconds},
+        ::ores::utility::codec::field{"http_base_url", &options::http_base_url},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

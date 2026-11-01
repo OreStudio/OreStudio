@@ -27,6 +27,7 @@ set(files
     "configuration_market_binding_commands_tests.cpp"
     "configuration_parameter_commands_tests.cpp"
     "configuration_type_commands_tests.cpp"
+    "cut_approval_detail_commands_tests.cpp"
     "cut_commands_tests.cpp"
     "cut_family_commands_tests.cpp"
     "cut_gap_commands_tests.cpp"

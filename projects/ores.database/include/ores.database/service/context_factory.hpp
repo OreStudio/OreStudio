@@ -24,8 +24,11 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <string_view>
+#include <tuple>
 
 namespace ores::database {
 
@@ -68,6 +71,20 @@ public:
      */
     static void verify_schema_fingerprint(const context& ctx, const std::string& database);
 };
+
+[[nodiscard]] constexpr auto wire_fields(const context_factory::configuration&) {
+    using configuration = context_factory::configuration;
+    return std::tuple{
+        ::ores::utility::codec::field{"database_options", &configuration::database_options},
+        ::ores::utility::codec::field{"pool_size", &configuration::pool_size},
+        ::ores::utility::codec::field{"num_attempts", &configuration::num_attempts},
+        ::ores::utility::codec::field{"wait_time_in_seconds", &configuration::wait_time_in_seconds},
+        ::ores::utility::codec::field{"service_account", &configuration::service_account},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<context_factory::configuration>(),
+              "context_factory::configuration has a member its wire shape does not name");
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s,
                                               const context_factory::configuration& v);

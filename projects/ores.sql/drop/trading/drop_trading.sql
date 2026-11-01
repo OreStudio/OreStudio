@@ -352,6 +352,9 @@
 \ir ./trading_exercise_types_notify_trigger_drop.sql
 \ir ./trading_exercise_types_drop.sql
 
+\ir ./trading_draft_reasons_notify_trigger_drop.sql
+\ir ./trading_draft_reasons_drop.sql
+
 \ir ./trading_barrier_types_notify_trigger_drop.sql
 \ir ./trading_barrier_types_drop.sql
 

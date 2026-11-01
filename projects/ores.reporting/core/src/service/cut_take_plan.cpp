@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/cut_take_plan.hpp"
 #include <algorithm>
+#include <chrono>
 
 namespace ores::reporting::service {
 
@@ -47,18 +48,31 @@ domain::cut plan_take(const cut_take_plan& plan,
     cut.taken_by = plan.taken_by;
     cut.taken_at = plan.taken_at;
 
-    cut.requires_authorisation = kind.approval_kind_code.has_value();
-    cut.output_is_indicative = kind.output_is_indicative;
-
-    cut.retention_months = kind.retention_months;
-    cut.retention_destination_code = kind.retention_destination_code;
-    cut.legal_hold = kind.legal_hold_default;
+    const auto facts = kind_facts_of(kind);
+    cut.requires_authorisation = facts.requires_authorisation;
+    cut.output_is_indicative = facts.output_is_indicative;
+    cut.retention_months = facts.retention_months;
+    cut.retention_destination_code = facts.retention_destination_code;
+    cut.legal_hold = facts.legal_hold;
 
     cut.modified_by = plan.taken_by;
     cut.performed_by = plan.taken_by;
     cut.change_reason_code = plan.change_reason_code;
     cut.change_commentary = plan.change_commentary;
     return cut;
+}
+
+cut_kind_facts kind_facts_of(const domain::cut_kind& kind) {
+    return {.requires_authorisation = kind.approval_kind_code.has_value(),
+            .output_is_indicative = kind.output_is_indicative,
+            .retention_months = kind.retention_months,
+            .retention_destination_code = kind.retention_destination_code,
+            .legal_hold = kind.legal_hold_default};
+}
+
+take_day day_of(const std::chrono::system_clock::time_point& at) {
+    const auto day = std::chrono::floor<std::chrono::days>(at);
+    return {.from = day, .to = day + std::chrono::days{1}};
 }
 
 int next_take_ordinal(const std::vector<domain::cut>& same_occasion) {

@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_CODEC_MSGPACK_CODEC_HPP
 #define ORES_UTILITY_CODEC_MSGPACK_CODEC_HPP
 
+#include "ores.utility/codec/duration_form.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/serialization/error_code.hpp"
@@ -314,6 +315,22 @@ struct msgpack_codec<std::map<std::string, T>> {
                         msgpack_codec<T>::read(entry.val));
         }
         return out;
+    }
+};
+
+/**
+ * @brief A duration is a map with its count and the name of its unit.
+ */
+template <typename Rep, typename Period>
+struct msgpack_codec<std::chrono::duration<Rep, Period>> {
+    using duration = std::chrono::duration<Rep, Period>;
+
+    static void write(msgpack_packer* pk, const duration& v) {
+        msgpack_codec<duration_form>::write(pk, to_duration_form(v));
+    }
+
+    static duration read(const msgpack_object& v) {
+        return from_duration_form<duration>(msgpack_codec<duration_form>::read(v));
     }
 };
 

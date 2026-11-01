@@ -18,14 +18,13 @@
  *
  */
 #include "ores.shell/config/options.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::shell::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

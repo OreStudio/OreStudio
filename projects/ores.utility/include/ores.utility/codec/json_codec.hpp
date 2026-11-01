@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_CODEC_JSON_CODEC_HPP
 #define ORES_UTILITY_CODEC_JSON_CODEC_HPP
 
+#include "ores.utility/codec/duration_form.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/serialization/error_code.hpp"
@@ -316,6 +317,22 @@ struct json_codec<std::map<std::string, T>> {
             out.emplace(std::string(yyjson_get_str(key), yyjson_get_len(key)),
                         json_codec<T>::read(yyjson_obj_iter_get_val(key)));
         return out;
+    }
+};
+
+/**
+ * @brief A duration is an object with its count and the name of its unit.
+ */
+template <typename Rep, typename Period>
+struct json_codec<std::chrono::duration<Rep, Period>> {
+    using duration = std::chrono::duration<Rep, Period>;
+
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const duration& v) {
+        return json_codec<duration_form>::write(doc, to_duration_form(v));
+    }
+
+    static duration read(yyjson_val* v) {
+        return from_duration_form<duration>(json_codec<duration_form>::read(v));
     }
 };
 

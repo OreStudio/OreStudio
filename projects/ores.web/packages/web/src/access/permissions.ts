@@ -70,9 +70,14 @@ export const PERMISSION = {
      * The cuts a party has taken, and the cut a run priced from.
      *
      * A cut has no write code a client reaches: the take is the write, and it
-     * carries its own permission, so nothing here offers one.
+     * carries its own permission.
      */
     cutsRead: 'reporting::cuts:read',
+    /**
+     * Assembling and taking a cut by hand, which raises its authorisation where
+     * the kind requires one. The take is the write a cut has.
+     */
+    cutsTake: 'reporting::cuts:take',
     /** The kinds of cut a report may select, which Reference data maintains. */
     cutKindsRead: 'reporting::cut_kinds:read',
     cutKindsWrite: 'reporting::cut_kinds:write',

@@ -415,4 +415,19 @@ describe('the review panel', () => {
     });
 });
 
+describe('the request page, for a cut authorisation', () => {
+    it('names the cut ask and says where its body is read', () => {
+        const html = page('priya', {
+            request: bookRequest({
+                kindCode: 'reporting.eod_cut_authorisation',
+                reason: 'The day is closed and the reports wait on the body.',
+            }),
+            changes: [],
+        });
+
+        expect(html).toContain('Asks for End of day cut authorisation');
+        expect(html).toContain('Nothing here links to it yet');
+    });
+});
+
 export type { ReactNode };

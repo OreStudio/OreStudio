@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 9B77F528-0D1C-4410-A643-0EF07060EE9B
+:END:
+#+title: Task: Fix the CI failures on main
+#+description: Initial task for: Hotfix: Make CI green on every platform
+#+type: task
+#+level: s1
+#+filetags: :make_ci_green_on_every_platform:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/make-ci-green-on-every-platform
+#+pr: 4338
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:135FA088-4598-4597-A92D-730680BEB396][Hotfix: Make CI green on every platform]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every CI workflow that fails on main is red for a cause this task names and
+fixes, except the reflect-cpp work on Windows, which has its own story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:135FA088-4598-4597-A92D-730680BEB396][Hotfix: Make CI green on every platform]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- The SQL validation, codegen drift, codegen suite, permission and
+  pending-model checks pass on the branch.
+- The TypeScript workflow's typecheck, format check and tests pass.
+- macOS compiles the database tests, and Windows no longer meets the
+  column list's tuple.
+
+* Plan
+
+Read the failing step of every red workflow on main, reproduce each locally,
+and fix the cause where it lives:
+
+| Workflow | Failure | Cause | Fix |
+|----------+---------+-------+-----|
+| Continuous and Nightly Linux | Validate SQL Schema | two draft_reason drop scripts in no aggregator | include them in =drop_trading.sql= |
+| Codegen drift | handler permissions | =trading::draft_reasons:*= checked, never seeded | seed them |
+| Codegen drift | aggregator test | draft_reason's shell opt-in came only from its profile | state it in the drawer, as its 49 siblings do |
+| Codegen drift | pending models stale | the deriver dropped the wire-codec opt-in | carry it from the source, with a test |
+| Codegen drift | drift | report scope bind_text fixed in generated code; day counter and cut models not regenerated | move the fix to the model; regenerate |
+| Codegen drift | ER diagram | refdata diagram stale | redraw |
+| TypeScript | parts.test.tsx | 5018f2a25b opened the form for a profile with settings | split the case |
+| Nightly MacOS | pq_layer_tests.cpp | nanoseconds added to a microsecond clock | floor to the clock's tick |
+| Nightly Windows | C1202 and clang-cl crash | column_list grew a std::tuple per column | flat slots and apply() |
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Codegen suite | 1797 passed | =pytest projects/ores.codegen/tests= | =6feebec946= |
+| Database suite | 73 cases, 287 assertions | =ores.database.tests= | =6feebec946= |
+| Web unit tests | 192 files, 2400 tests (web) | =npm test= | =b80f1208a9= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4338][#4338]] | [repo] Fix the CI failures on Linux, macOS, Windows and the check workflows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every red workflow on main has a named cause and a fix on this branch. The
+Windows failures were not reflect-cpp: both compilers stopped in the query
+builder's column list, which now holds flat slots. That fix is proven on
+Linux only; the next Windows nightly is its proof.

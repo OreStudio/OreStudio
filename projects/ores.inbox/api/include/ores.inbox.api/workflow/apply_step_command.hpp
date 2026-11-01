@@ -20,6 +20,7 @@
 #ifndef ORES_INBOX_API_WORKFLOW_APPLY_STEP_COMMAND_HPP
 #define ORES_INBOX_API_WORKFLOW_APPLY_STEP_COMMAND_HPP
 
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <string>
 #include <string_view>
@@ -41,6 +42,9 @@ struct apply_step_command {
 [[nodiscard]] constexpr auto wire_fields(const apply_step_command&) {
     return std::tuple{utility::codec::field{"request_id", &apply_step_command::request_id}};
 }
+
+static_assert(::ores::utility::codec::names_every_member<apply_step_command>(),
+              "apply_step_command has a member its wire shape does not name");
 
 /**
  * @brief The step that tells the person who asked how the apply ended.

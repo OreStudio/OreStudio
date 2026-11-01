@@ -33,7 +33,8 @@ This is the source of truth that drives the four auto-generated files below.
 * Run Codegen (auto-generates four files)
 
 Via =compass build= (not raw =cmake --build=, so it takes the
-host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]];
+=./compass.sh build --status= shows who holds each slot):
 
 #+begin_src sh
 ./compass.sh build codegen

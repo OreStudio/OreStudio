@@ -124,7 +124,7 @@ insert into ores_iam_seed_profiles_tbl (
     'Northwind Traders',
     'A fictional UK trading company',
     'For demos and testing',
-    '["One legal entity and nine staff, from the Northwind Traders sample", "Six portfolios and seven books", "Its own pricing engine, curve and report documents"]'::jsonb,
+    '["One legal entity and nine staff, from the Northwind Traders sample", "Six portfolios and thirteen books, one per asset class", "Its own pricing engine, curve and report documents"]'::jsonb,
     'evaluation', 'Northwind Traders', 'northwind', 'northwind',
     'tenant_admin', 'admin@northwind',
     false, false, 25,
@@ -309,11 +309,13 @@ cross join (values
          "min_notional": "1000000", "max_notional": "50000000", "seed": 53, "trades_per_book": 62, "structures_per_book": 2}
     ]}'::jsonb),
     -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
-    -- one legal entity, one party, nine staff and seven books -- and its party
+    -- one legal entity, one party, nine staff and thirteen books -- and its party
     -- carries its own report documents, so its reports run. Every value the run
     -- needs is stated here: the root LEI of its synthetic entity, the bundle its
-    -- party publishes, and the demonstration password. No parameter, because a
-    -- fictional company has no register to choose from.
+    -- party publishes, and the demonstration password. Its one parameter is the
+    -- size of the population, and the mix it states is the same one ACME's does;
+    -- a fictional company has no register to choose from, so the root entity is
+    -- not a parameter.
     ('northwind', 'system_provision', 5, '{}'::jsonb),
     ('northwind', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
     ('northwind', 'import_lei_hierarchy', 20, '{"bundles": ["northwind_lei_import"], "root_lei": "9695NORTHWIND0000065"}'::jsonb),
@@ -331,8 +333,11 @@ cross join (values
     ('northwind', 'attach_photos', 55, '{"parties": [
         {"name": "Northwind Traders Ltd", "dataset": "northwind.accounts"}
     ]}'::jsonb),
-    -- Two populations, one per traded currency, so a report run finds trades and
-    -- the second tenant has work of its own to put on the grid.
+    -- One config per book, and one book per asset class the population writes,
+    -- so a report run finds trades and the second tenant has work of its own to
+    -- put on the grid. The counts are a demonstration's, not a size: the profile
+    -- states a population size and a share per class, and the step turns those
+    -- into the count each config books.
     ('northwind', 'generate_trades', 60, '{"configs": [
         {"party": "Northwind Traders Ltd", "name": "Northwind GBP bond population",
          "description": "The bonds Northwind Traders books in its London GBP book, generated from its own books, counterparties and staff.",
@@ -343,7 +348,62 @@ cross join (values
          "description": "The bonds Northwind Traders books in its London USD book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "USD Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8}
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+        {"party": "Northwind Traders Ltd", "name": "Northwind EUR bond population",
+         "description": "The bonds Northwind Traders books in its London EUR book, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "EUR Bonds Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 43, "trades_per_book": 8},
+        {"party": "Northwind Traders Ltd", "name": "Northwind USD rates population",
+         "description": "The interest rate trades Northwind Traders books in its Seattle USD rates book.",
+         "asset_class_code": "interest_rates", "book": "USD Rates Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "30Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind GBP treasury rates population",
+         "description": "The interest rate trades Northwind Traders books in its London GBP treasury book.",
+         "asset_class_code": "interest_rates", "book": "GBP Treasury Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "30Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 45, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind USD treasury rates population",
+         "description": "The interest rate trades Northwind Traders books in its USD treasury book.",
+         "asset_class_code": "interest_rates", "book": "USD Treasury Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "30Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 46, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind GBP FX population",
+         "description": "The foreign exchange trades Northwind Traders books in its London GBP FX book.",
+         "asset_class_code": "fx", "book": "GBP FX Book",
+         "min_tenor_code": "1M", "max_tenor_code": "2Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 47, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind USD FX population",
+         "description": "The foreign exchange trades Northwind Traders books in its Seattle USD FX book.",
+         "asset_class_code": "fx", "book": "USD FX Book",
+         "min_tenor_code": "1M", "max_tenor_code": "2Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 48, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind equity population",
+         "description": "The equity trades Northwind Traders books in its London equity book.",
+         "asset_class_code": "equity", "book": "GBP Equity Book",
+         "min_tenor_code": "1M", "max_tenor_code": "5Y",
+         "min_notional": "50000", "max_notional": "5000000", "seed": 49, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind credit population",
+         "description": "The credit trades Northwind Traders books in its Seattle credit book.",
+         "asset_class_code": "credit", "book": "USD Credit Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "1000000", "max_notional": "25000000", "seed": 50, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind commodity population",
+         "description": "The commodity trades Northwind Traders books in its Seattle commodity book.",
+         "asset_class_code": "commodity", "book": "USD Commodity Book",
+         "min_tenor_code": "1M", "max_tenor_code": "2Y",
+         "min_notional": "50000", "max_notional": "5000000", "seed": 51, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind inflation population",
+         "description": "The inflation trades Northwind Traders books in its London inflation book.",
+         "asset_class_code": "inflation", "book": "GBP Inflation Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "30Y",
+         "min_notional": "1000000", "max_notional": "25000000", "seed": 52, "trades_per_book": 20},
+        {"party": "Northwind Traders Ltd", "name": "Northwind scripted population",
+         "description": "The scripted trades Northwind Traders books in its London scripted book.",
+         "asset_class_code": "scripted", "book": "GBP Scripted Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "5Y",
+         "min_notional": "50000", "max_notional": "5000000", "seed": 53, "trades_per_book": 20}
     ]}'::jsonb)
 ) as v(code, step_kind, display_order, arguments_json)
 where p.code = v.code
@@ -412,7 +472,29 @@ cross join (values
     ('acme_demo', 'counterparty_size', 'Counterparty set', 'choice',
      '["tiny", "small", "large"]'::jsonb, 'tiny', true,
      'ACME demonstrates the whole system, so it carries the tiny set: every region '
-     'is represented and provisioning stays quick. Pick a larger set to load it.', 15)
+     'is represented and provisioning stays quick. Pick a larger set to load it.', 15),
+    ('northwind', 'population_size', 'Population size (trades)', 'integer', null, '1000', false,
+     'The trades the demonstration writes, across every asset class. The seeded '
+     'configs state a few hundred, which is what a demo needs to find work in every '
+     'book; state a larger total to fill them. Leave it empty to take the seeded '
+     'configs as they stand.', 20),
+    ('northwind', 'population_interest_rates_percent', 'Interest rates share (%)', 'integer', null, '42', false,
+     'The percentage of the population interest rate trades take.', 21),
+    ('northwind', 'population_fx_percent', 'FX share (%)', 'integer', null, '25', false,
+     'The percentage of the population foreign exchange trades take.', 22),
+    ('northwind', 'population_equity_percent', 'Equity share (%)', 'integer', null, '12', false,
+     'The percentage of the population equity trades take.', 23),
+    ('northwind', 'population_credit_percent', 'Credit share (%)', 'integer', null, '6', false,
+     'The percentage of the population credit trades take.', 24),
+    ('northwind', 'population_commodity_percent', 'Commodity share (%)', 'integer', null, '5', false,
+     'The percentage of the population commodity trades take.', 25),
+    ('northwind', 'population_bond_percent', 'Bond share (%)', 'integer', null, '4', false,
+     'The percentage of the population bond trades take.', 26),
+    ('northwind', 'population_inflation_percent', 'Inflation share (%)', 'integer', null, '3', false,
+     'The percentage of the population inflation trades take.', 27),
+    ('northwind', 'population_scripted_percent', 'Scripted share (%)', 'integer', null, '3', false,
+     'The percentage of the population scripted trades take. The eight shares must '
+     'sum to a hundred when the size is stated.', 28)
 ) as v(code, name, label, data_type, choices_json, default_value, is_required, description, display_order)
 where p.code = v.code
   and p.valid_to = ores_utility_infinity_timestamp_fn()

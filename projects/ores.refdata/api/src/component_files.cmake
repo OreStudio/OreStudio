@@ -1113,6 +1113,8 @@ set(files
     "messaging/yield_volatility_config_protocol_codec.cpp"
     "messaging/zero_convention_protocol_codec.cpp"
     "messaging/zero_inflation_index_convention_protocol_codec.cpp"
+    "workflow/book_apply_workflow.cpp"
+    "workflow/counterparty_apply_workflow.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

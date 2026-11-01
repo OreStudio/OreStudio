@@ -34,6 +34,9 @@ using namespace ores::logging;
 
 namespace {
 
+/// The tenant every stream hears beside its own.
+const std::string stream_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+
 /// Reads one buffer's worth from the source on a running io_context.
 std::string read_once(change_stream_source& source, std::size_t bytes) {
     std::string out;
@@ -56,12 +59,12 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that one frame reaches every subscription";
 
-    change_hub hub;
-    auto first = hub.subscribe();
-    auto second = hub.subscribe();
+    change_hub hub(stream_system_tenant);
+    auto first = hub.subscribe("acme");
+    auto second = hub.subscribe("acme");
     REQUIRE(hub.open_streams() == 2);
 
-    hub.publish("data: one\n\n");
+    hub.publish("acme", "data: one\n\n");
 
     REQUIRE(first->size() == 1);
     REQUIRE(second->size() == 1);
@@ -73,12 +76,12 @@ TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_s
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a closed stream does not accumulate";
 
-    change_hub hub;
-    auto ended = hub.subscribe();
+    change_hub hub(stream_system_tenant);
+    auto ended = hub.subscribe("acme");
     ended->close();
-    auto open = hub.subscribe();
+    auto open = hub.subscribe("acme");
 
-    hub.publish("data: one\n\n");
+    hub.publish("acme", "data: one\n\n");
 
     REQUIRE(hub.open_streams() == 1);
     REQUIRE(ended->size() == 0);
@@ -89,11 +92,11 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a stream's queue is bounded";
 
-    change_hub hub(3);
-    auto slow = hub.subscribe();
+    change_hub hub(stream_system_tenant, 3);
+    auto slow = hub.subscribe("acme");
 
     for (auto index = 0; index < 5; ++index)
-        hub.publish("frame " + std::to_string(index));
+        hub.publish("acme", "frame " + std::to_string(index));
 
     REQUIRE(slow->size() == 3);
     // The newest survive: a screen that fell behind wants where the world is now.
@@ -107,7 +110,7 @@ TEST_CASE("the_source_writes_a_queued_frame", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that the source writes what the hub published";
 
-    auto subscription = std::make_shared<change_subscription>(8);
+    auto subscription = std::make_shared<change_subscription>("acme", 8);
     change_stream_source source(subscription, std::chrono::milliseconds(50));
     subscription->push("data: hello\n\n");
 
@@ -118,7 +121,7 @@ TEST_CASE("the_source_writes_a_keep_alive_when_nothing_arrives", "[change_stream
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a quiet stream is kept alive";
 
-    auto subscription = std::make_shared<change_subscription>(8);
+    auto subscription = std::make_shared<change_subscription>("acme", 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
 
     const auto started = std::chrono::steady_clock::now();
@@ -131,7 +134,7 @@ TEST_CASE("a_frame_ends_the_wait_before_the_keep_alive_interval", "[change_strea
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a frame does not wait out the keep-alive";
 
-    auto subscription = std::make_shared<change_subscription>(8);
+    auto subscription = std::make_shared<change_subscription>("acme", 8);
     change_stream_source source(subscription, std::chrono::seconds(30));
 
     boost::asio::io_context io;
@@ -161,9 +164,55 @@ TEST_CASE("the_source_ends_when_its_subscription_closes", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a closed subscription ends the source";
 
-    auto subscription = std::make_shared<change_subscription>(8);
+    auto subscription = std::make_shared<change_subscription>("acme", 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
     subscription->close();
 
     REQUIRE(read_once(source, 4096).empty());
+}
+
+TEST_CASE("a_frame_reaches_only_the_streams_that_hear_its_tenant", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a stream is kept to its own tenant";
+
+    change_hub hub(stream_system_tenant);
+    auto acme = hub.subscribe("acme");
+    auto globex = hub.subscribe("globex");
+
+    hub.publish("acme", "data: acme moved\n\n");
+
+    REQUIRE(acme->size() == 1);
+    REQUIRE(globex->size() == 0);
+}
+
+TEST_CASE("a_system_tenant_frame_reaches_every_stream", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the shared catalogue reaches every tenant";
+
+    change_hub hub(stream_system_tenant);
+    auto acme = hub.subscribe("acme");
+    auto globex = hub.subscribe("globex");
+
+    hub.publish(stream_system_tenant, "data: currencies moved\n\n");
+
+    REQUIRE(acme->size() == 1);
+    REQUIRE(globex->size() == 1);
+}
+
+TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a client that is gone is not held";
+
+    change_hub hub(stream_system_tenant);
+    {
+        change_stream_source source(hub.subscribe("acme"), std::chrono::milliseconds(10));
+        REQUIRE(hub.open_streams() == 1);
+    }
+
+    // The response, and with it the source, was destroyed when the client left.
+    REQUIRE(hub.open_streams() == 0);
+
+    // And nothing is queued for it any more: the next frame has one home.
+    hub.publish("acme", "data: one\n\n");
+    REQUIRE(hub.open_streams() == 0);
 }

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serialisation:configuration:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/print-every-options-type-through-the-codec
+#+pr: 4345
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -26,11 +26,11 @@ Every service prints its configuration with rfl::json::write, because its option
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ Every service prints its configuration with rfl::json::write, because its option
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- State each options type's shape beside its struct with =wire_fields=,
+  by a script over the headers, skipping the password members.
+- Make the passwords plain strings: =rfl::Skip= existed only to keep
+  reflect-cpp from printing them, and the shape now leaves them out.
+- Print each options type with =json::write=, in the hand-written printers
+  and in the service-app template.
+- Give the codec the leaf forms the options hold and the messages did not:
+  =std::filesystem::path= and =std::chrono::duration=, in reflect-cpp's bytes.
+- Assert beside every hand-written shape that it names every member, since a
+  hand-kept shape is not complete by construction.
 
 * Measurements
 
@@ -57,9 +64,50 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Parse time of a TU with three std headers (baseline) | 0.44s | =clang++ -std=c++23 -O2 -fsyntax-only=, mean of 5 | 98bab47d86 |
+| Same TU plus =wire_fields.hpp=, =<tuple>= and one shape | 0.41s (within noise of the baseline) | same | 98bab47d86 |
+| A TU that includes only =rfl.hpp= | 3.05s | same | 98bab47d86 |
+| A TU that includes only =struct_codec.hpp= | 3.98s | same | 98bab47d86 |
+| A TU that includes only =text_form.hpp= | 3.85s | same, mean of 3 | 98bab47d86 |
+| Hand-written shapes the guard covers | 32 headers; 3 leave one member out (the passwords) | =guard_shapes.py= in the session scratchpad | b0a4f6e14a |
 
 * Notes
+
+** Where a shape lives
+
+A shape in its struct's header costs nothing measurable (see Measurements),
+and a generated field group already states its shape that way. Only a
+generated entity has a separate =_codec.hpp=, because that header also
+declares =wire_traits=. So the options shapes stay beside their structs.
+The cost that matters is the encoder header: =struct_codec.hpp= parses
+slower than =rfl.hpp= did, almost all of it in =text_form.hpp=. That is
+[[id:8856431C-F316-423C-B142-FAC42D87B1AC][Keep the codec headers light]].
+
+** The password leak the tests caught
+
+=context_factory::configuration= holds a =database_options= and still
+printed through reflect-cpp. With =rfl::Skip= gone, reflect-cpp printed the
+password, and =context_factory_configuration_streaming= failed on it. The
+configuration now has a shape and prints through the codec. Every other
+type that holds a =database_options= or a =login_options= prints through
+the codec or is never printed.
+
+** Why the options are hand-written
+
+Twenty of the twenty-one service options headers predate the service-app
+template, which has no input for a service's own members. Generating them
+from a model is [[id:AECB213E-580A-43B7-8997-2C93E1EED9E2][Generate the service options from a model]]; until then the
+member-count guard keeps a hand-kept shape complete.
+
+** Found on the way
+
+- The two refdata apply workflow headers ran the encoder inline, so their
+  includers parsed =struct_codec.hpp=. The registrations moved to
+  =ores.refdata.api=.
+- =compass build status= started a build, =--status= tailed the wrong
+  checkout's log, a backgrounded build printed nothing until it ended, and
+  the skills deploy failed on symlinked skills. All four are fixed here,
+  with tests.
 
 * Test Scenarios
 
@@ -76,12 +124,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4345][#4345]] | [services] Print every options type through the codec |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A password is hidden only by the shape; a wrapper printing =***= would be safer | =database_options.hpp= | Decline | No remaining reflect-cpp writer touches a type that holds a password; the one that did, the context configuration, now prints through the codec. The story removes reflect-cpp. |
+| 2 | The left-out count is not an identity | =member_count.hpp= | Accept | Stated in the comment. |
+| 3 | The member count fails on C-array members | =member_count.hpp= | Accept | Stated in the comment. |
+| 4 | A floating-point duration truncates silently | =duration_form.hpp= | Accept | =static_assert= on an integral =Rep=. |
+| 5 | Two spellings of the build log path | =compass.py= | Accept | One helper, =_checkout_log_dir=. |
+| 6 | Add the check result before merge | — | Accept | The first run's 13 failures are fixed in their own commits and checked one by one; the full gate was not rerun before the merge. |
+| 7 | The printer builds a string first | options printers | No change | It runs once at start-up. |
 
 * Result
+
+Every options type states its wire shape and prints through the JSON codec:
+the shared logging, NATS, database, telemetry and HTTP server options, all 21
+service options, the shell's login options and the database context
+configuration. No options printer names reflect-cpp, and the passwords are
+plain strings that the shapes leave out. A marketdata test pins the printed
+member order and the absence of both passwords, and the database test caught
+the one printer that still leaked the password.
+
+Each of the 32 hand-written shapes asserts that it names every member. The
+codec gained the path and duration forms, proved against reflect-cpp's
+bytes. The refdata apply workflows no longer run the encoder in their
+headers.
+
+Also fixed on the branch: four compass faults around the build lock's
+status and output, and the order and fleet dependence of the marketdata core
+tests, recorded in [[id:25A1EEA1-7804-4A1F-9BAF-603800868260][their own task]].

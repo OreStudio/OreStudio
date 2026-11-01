@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 135FA088-4598-4597-A92D-730680BEB396
+:END:
+#+title: Story: Hotfix: Make CI green on every platform
+#+description: Linux, macOS, Windows, codegen drift and TypeScript runs fail on main; fix every failure that is not the reflect-cpp work on Windows.
+#+type: story
+#+level: s2
+#+filetags: :ci:trading:codegen:sprint_29:v0:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Main's CI is green on Linux, macOS and Windows, and on every check workflow.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-01                               |
+
+* Acceptance
+
+- Every red workflow on main has a named cause and a fix.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:384D2986-D498-4D95-B603-D4DC9197AD28][Scaffold story: Hotfix: Make CI green on every platform]] | DONE | 2026-11-01 | 2026-11-01 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9B77F528-0D1C-4410-A643-0EF07060EE9B][Fix the CI failures on main]] | DONE | 2026-11-01 | 2026-11-01 | Initial task for: Hotfix: Make CI green on every platform |
+
+* Decisions
+
+- The Windows failures were the query builder's column list, not
+  reflect-cpp: it is fixed here rather than left to the decommission.
+- Generated fixes go into the model or the deriver, never the generated file.
+
+* Out of scope
+
+- The reflect-cpp decommission.

@@ -1,0 +1,139 @@
+Cut take and its authorisation: live evidence
+=============================================
+
+The take was walked through the BFF's own route as henry.jones@acme_corporation
+on eager_maxwell, against the live development database. Every command below
+was run against http://127.0.0.1:21402 (ORES_WEB_PORT) after signing in at
+POST /api/session.
+
+
+1. The sign-in and the permission the take needs
+------------------------------------------------
+
+Command:
+    curl -s -c jar -X POST :21402/api/session -H 'Content-Type: application/json' \
+      -d '{"username":"henry.jones@acme_corporation","password":"Secure-Password-123"}'
+
+Output (excerpt):
+    {"outcome":"active","session":{"username":"henry.jones", ...,
+     "tenantName":"Acme Corporation","mode":"application", ...}}
+
+Command:
+    curl -s -b jar :21402/api/me/access
+
+Output (excerpt):
+    roles ['Finance', 'Member', 'Trading']
+    reporting::cuts:take             True
+    compute::app_versions:read       True
+    reporting::cut_approval_details:read True
+
+
+2. The assembly: the parts the store answered and the gap it states
+-------------------------------------------------------------------
+
+Command:
+    curl -s -b jar -X POST :21402/api/reporting/cuts/take -H 'Content-Type: application/json' \
+      -d '{"kindCode":"EOD","scopeCode":"ACME-LONDON","businessCentreCode":"GBLO",
+           "timepoint":"2026-10-31T19:00:00.000000Z","timepointTimezone":"Europe/London",
+           "reason":"The day is closed and the reports wait on the body","preview":true}'
+
+Output:
+    kind             closed  EOD · End of day cut · signed by reporting.eod_cut_authorisation
+    deal_population  closed  212 deals held at the instant
+    market_data      gapped  The store holds no published set in use at or before the instant,
+                             so the snapshot would carry a hole.
+    reference_data   closed  25 report configuration(s) in force, newest version 1 ·
+                             2 engine run settings in force, newest version 4
+    engine_code      closed  engine 1.8.17.0, wrapper 1.0.0
+    deals 212 | sets 0 | retention 25 cold | requires auth True
+
+The market data part is the environment's own gap: `select count(*) from
+ores_marketdata_curve_publishes_tbl` is 0, so no set has been published for any
+series and no body can name one. The design states exactly this as a gap, and
+the flow draws it with the remedy ("Publish a set for the series, or state an
+instant at which the store holds one").
+
+
+3. The press: an incomplete body, kept and not signed
+-----------------------------------------------------
+
+Command (the same call with "preview":false)
+
+Output:
+    cut 5c6f98c6-3d55-4f7d-a543-9edfe01b40e6  EOD.ACME-LONDON.2026-10-31
+    state incomplete | retention 25 cold | requires auth True | request ''
+    gaps [('market_data', 'a series with no value at or before the instant')]
+    deals 212 | sets 0 | engine 1.8.17.0
+
+A gap stops the press, so the body was kept as a draft: no taking instant, no
+approval request, and the retention the kind promises is still copied onto it.
+
+
+4. The record as the taker reads it
+-----------------------------------
+
+Command:
+    curl -s -b jar :21402/api/reporting/cuts/5c6f98c6-3d55-4f7d-a543-9edfe01b40e6
+
+Output:
+    label EOD.ACME-LONDON.2026-10-31 | state incomplete
+    taken_by 'henry.jones' | taken_at None
+    retention 25 cold | requires True | request None
+    deals ref None | engine 1.8.17.0
+    rdata 25 report configuration(s) in force, newest version 1 · 2 engine run settings in
+          force, newest version 4
+    gaps [('market_data', 'The store holds no published set in use at or before the instant…')]
+    detail None
+
+
+5. The history
+--------------
+
+Command:
+    curl -s -b jar ':21402/api/history?entityType=ores.reporting.cut&entityId=5c6f98c6-3d55-4f7d-a543-9edfe01b40e6'
+
+Output:
+    versions 1
+    version 1 | modifiedBy henry.jones | recordedAt 2026-11-01 00:23:23.852692Z
+
+
+6. The authorisation, raised where the body is whole
+----------------------------------------------------
+
+The press raises the request only for a body with no gap, and this environment
+holds no published set, so no live cut can reach that state yet. The same code
+path was driven against the same database by the integration suite
+(`ores.reporting.core.tests`, case "a take writes the body with the kind's
+retention and raises its request"), which asserts the cut, the request and the
+detail row. The rows it wrote are in the store:
+
+Command:
+    select r.id, r.kind_code, r.state_code, r.requested_by, d.cut_id, d.deal_count,
+           d.market_data_set_count, d.gap_count, d.applied_at
+    from ores_inbox_approval_requests_tbl r
+    join ores_reporting_cut_approval_details_tbl d on d.request_id = r.id
+    where r.kind_code = 'reporting.eod_cut_authorisation';
+
+Output (newest first, excerpt):
+    request                              | kind_code                       | state   | cut_id     | deals | sets | gaps | applied_at
+    01a1945d-8bbe-76c7-ae2f-9512e37bade1 | reporting.eod_cut_authorisation | waiting | e769f6e3…  | 1284  | 7    | 0    | (null)
+    01a1945c-d54c-75ad-83b0-c9a0e3027e62 | reporting.eod_cut_authorisation | waiting | 728943ed…  | 1284  | 7    | 0    | (null)
+
+The request is the inbox's own record, in the state that makes it wait on a
+decider, and the detail row is keyed by the request: the cut, the counts of the
+body's parts as the take counted them, and no applied facts until a decision is
+applied.
+
+
+7. The gates
+------------
+
+    ores.reporting.core.tests            237 cases, 1321 assertions, all passed
+    ores.reporting.api.tests             built
+    @ores/bff test                       1192 tests passed
+    @ores/web test                       2389 tests passed
+    compass lint                         ok (advisory durable-link count unchanged)
+    codegen gates                        model drift, handler permissions, subject
+                                         conformance, entity writes, ER diagrams,
+                                         populate refs, sql hygiene, cmake sources:
+                                         all clean

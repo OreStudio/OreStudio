@@ -18,13 +18,12 @@
  *
  */
 #include "ores.logging/logging_options.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::logging {
 
 std::ostream& operator<<(std::ostream& s, const logging_options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

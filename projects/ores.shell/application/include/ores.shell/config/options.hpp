@@ -24,9 +24,12 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 #include "ores.telemetry.core/exporting/telemetry_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::shell::config {
 
@@ -63,6 +66,19 @@ struct options final {
      */
     std::optional<std::string> script_path;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"connection", &options::connection},
+        ::ores::utility::codec::field{"login", &options::login},
+        ::ores::utility::codec::field{"telemetry", &options::telemetry},
+        ::ores::utility::codec::field{"script_path", &options::script_path},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

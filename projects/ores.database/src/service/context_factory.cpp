@@ -24,8 +24,8 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/schema_fingerprint.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <rfl/json.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -111,7 +111,7 @@ void context_factory::verify_schema_fingerprint(const context& ctx, const std::s
 }
 
 std::ostream& operator<<(std::ostream& s, const context_factory::configuration& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

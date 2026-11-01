@@ -21,10 +21,13 @@
 #define ORES_HTTP_NET_HTTP_SERVER_OPTIONS_HPP
 
 #include "ores.http.api/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
 #include <string>
+#include <tuple>
 
 namespace ores::http::net {
 
@@ -162,6 +165,38 @@ struct http_server_options final {
      */
     std::string server_identifier = "ores-http-server";
 };
+
+[[nodiscard]] constexpr auto wire_fields(const http_server_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"address", &http_server_options::address},
+        ::ores::utility::codec::field{"port", &http_server_options::port},
+        ::ores::utility::codec::field{"max_connections", &http_server_options::max_connections},
+        ::ores::utility::codec::field{"request_timeout", &http_server_options::request_timeout},
+        ::ores::utility::codec::field{"default_max_body_size",
+                                      &http_server_options::default_max_body_size},
+        ::ores::utility::codec::field{"max_body_size", &http_server_options::max_body_size},
+        ::ores::utility::codec::field{"body_chunk_size", &http_server_options::body_chunk_size},
+        ::ores::utility::codec::field{"response_chunk_size",
+                                      &http_server_options::response_chunk_size},
+        ::ores::utility::codec::field{"max_header_size", &http_server_options::max_header_size},
+        ::ores::utility::codec::field{"worker_threads", &http_server_options::worker_threads},
+        ::ores::utility::codec::field{"max_inflight_requests",
+                                      &http_server_options::max_inflight_requests},
+        ::ores::utility::codec::field{"bytes_flush_interval",
+                                      &http_server_options::bytes_flush_interval},
+        ::ores::utility::codec::field{"bytes_retain", &http_server_options::bytes_retain},
+        ::ores::utility::codec::field{"enable_ssl", &http_server_options::enable_ssl},
+        ::ores::utility::codec::field{"certificate_file", &http_server_options::certificate_file},
+        ::ores::utility::codec::field{"private_key_file", &http_server_options::private_key_file},
+        ::ores::utility::codec::field{"enable_cors", &http_server_options::enable_cors},
+        ::ores::utility::codec::field{"cors_allowed_origins",
+                                      &http_server_options::cors_allowed_origins},
+        ::ores::utility::codec::field{"server_identifier", &http_server_options::server_identifier},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<http_server_options>(),
+              "http_server_options has a member its wire shape does not name");
 
 ORES_HTTP_API_EXPORT std::ostream& operator<<(std::ostream& s, const http_server_options& v);
 

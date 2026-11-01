@@ -26,7 +26,8 @@ The =deploy_org= target (alias =dorg=) depends on =deploy_site=,
 rebuilds every org-mode artefact in dependency order:
 
 Via =compass build= (not raw =cmake --build=, so it takes the
-host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]];
+=./compass.sh build --status= shows who holds each slot):
 
 #+begin_src sh :results verbatim
 ./compass.sh build deploy_org

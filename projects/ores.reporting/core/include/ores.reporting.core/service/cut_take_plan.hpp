@@ -108,11 +108,51 @@ struct cut_take_plan {
                                                                int take_ordinal);
 
 /**
+ * @brief The facts a cut copies from its kind at the take.
+ *
+ * The kind fixes how long the body is kept, where it goes, whether its values
+ * are indicative and whether a signature is needed. The take copies all of it
+ * onto the row, and the answer states the same facts back to the caller, so the
+ * rule that reads the kind is stated once and the two cannot disagree.
+ */
+struct cut_kind_facts {
+    bool requires_authorisation = false;
+    bool output_is_indicative = false;
+    int retention_months = 0;
+    std::string retention_destination_code;
+    bool legal_hold = false;
+};
+
+/**
+ * @brief The facts @p kind fixes for a body taken under it.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_kind_facts
+kind_facts_of(const domain::cut_kind& kind);
+
+/**
+ * @brief The day an instant falls in, as the window a take ordinal counts over.
+ *
+ * The platform holds instants in UTC and a label states their date, so the day
+ * is the UTC day the instant falls in: two bodies fixed at different instants
+ * of one day are two takes of one occasion.
+ */
+struct take_day {
+    std::chrono::system_clock::time_point from;
+    std::chrono::system_clock::time_point to;
+};
+
+/**
+ * @brief The day @p at falls in.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT take_day
+day_of(const std::chrono::system_clock::time_point& at);
+
+/**
  * @brief Which take of one occasion @p plan is, given the takes already held.
  *
- * A retake of the same kind, scope and timepoint is the second cut of that
- * occasion, and the label states the ordinal so a person reads which body is
- * meant. The candidates are the cuts of the occasion, in any order and of any
+ * A retake of the same day, kind and scope is the second cut of that day, and
+ * the label states the ordinal so a person reads which body is meant. The
+ * candidates are the cuts of the occasion over the day, in any order and of any
  * take; the answer is one more than the highest ordinal among them.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT int

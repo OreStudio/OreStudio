@@ -60,6 +60,14 @@ task and name that file in the Command column.
 
 * Notes
 
+** The step-1 point
+
+The unity build task closed without its own measurement, so this task takes
+it: build #3904's merge commit =5b2c4b9304= (the unity build of step 1,
+before any sqlgen or reflect-cpp change) the same way, in the same session as
+the final tree. The baseline of about 17.2 CPU hours is the tree before
+#3904.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

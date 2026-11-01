@@ -107,6 +107,8 @@ const STRUCTURE = '66666666-6666-4666-8666-666666666666';
 const OTHER_STRUCTURE = '12121212-1212-4212-8212-121212121212';
 const LEG = '55555555-5555-4555-8555-555555555555';
 const FREE_TRADE = '56565656-5656-4565-8656-565656565656';
+/** A second trade no structure holds, so a grouping can take two. */
+const OTHER_FREE_TRADE = '57575757-5757-4575-8757-575757575757';
 const COUNTERPARTY = '88888888-8888-4888-8888-888888888888';
 const PARTY = '99999999-9999-4999-8999-999999999999';
 
@@ -123,6 +125,7 @@ const lists = {
     markets: 'trading.v1.product_type_asset_classes.list',
     kinds: 'trading.v1.structure_kinds.list',
     putStructure: 'trading.v1.structures.put',
+    completeStructure: 'trading.v1.ops.complete_structure',
     deleteMember: 'trading.v1.structure_members.delete',
 };
 
@@ -161,6 +164,12 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
                 { id: LEG, row_kind: 'trade', status: 'live', counterparty_id: COUNTERPARTY },
                 {
                     id: FREE_TRADE,
+                    row_kind: 'trade',
+                    status: 'live',
+                    counterparty_id: COUNTERPARTY,
+                },
+                {
+                    id: OTHER_FREE_TRADE,
                     row_kind: 'trade',
                     status: 'live',
                     counterparty_id: COUNTERPARTY,
@@ -408,6 +417,60 @@ describe('the reason a leg moves', () => {
     });
 });
 
+describe('grouping trades', () => {
+    it('completes the structure in one call, with the legs in the order chosen', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            repliesWith({
+                [lists.completeStructure]: {
+                    result: ok,
+                    structure_id: OTHER_STRUCTURE,
+                    structure_version: 0,
+                },
+            }),
+        );
+        const answer = await send(server, sessionId, '/api/structures', {
+            kind: 'Package',
+            tradeIds: [FREE_TRADE, OTHER_FREE_TRADE],
+        });
+
+        expect(answer.statusCode).toBe(201);
+        const completions = calls.filter((call) => call.subject === lists.completeStructure);
+        // One call, not a write per row: the legs go live with the structure.
+        expect(completions).toHaveLength(1);
+        expect(completions[0]?.body).toMatchObject({
+            leg_count: 2,
+            legs: [
+                { trade_id: FREE_TRADE, sequence_number: 1, role: 'leg' },
+                { trade_id: OTHER_FREE_TRADE, sequence_number: 2, role: 'leg' },
+            ],
+        });
+        // The structure write is the completion's, never a separate one.
+        expect(calls.some((call) => call.subject === lists.putStructure)).toBe(false);
+    });
+
+    it('states a refusal from the completion, and writes nothing else', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            repliesWith({
+                [lists.completeStructure]: {
+                    result: {
+                        outcome: 'conflict',
+                        code: 'not_draft',
+                        message: 'Trade X is not a draft.',
+                    },
+                },
+            }),
+        );
+        const answer = await send(server, sessionId, '/api/structures', {
+            kind: 'Package',
+            tradeIds: [FREE_TRADE, OTHER_FREE_TRADE],
+        });
+
+        expect(answer.statusCode).toBe(409);
+        expect(answer.json().message).toBe('Trade X is not a draft.');
+        expect(calls.some((call) => call.subject === lists.putStructure)).toBe(false);
+    });
+});
+
 describe('what the routes refuse', () => {
     it("refuses to unlink a trade that is another structure's leg", async () => {
         const { server, sessionId, calls } = buildTestServer(
@@ -464,7 +527,7 @@ describe('what the routes refuse', () => {
             message: 'A trade in the grouping is already a leg of a structure.',
         });
         expect(answer.statusCode).toBe(409);
-        // The refusal comes before the structure write: no orphan is left.
-        expect(calls.some((call) => call.subject === lists.putStructure)).toBe(false);
+        // The refusal comes before the completion: no orphan is left.
+        expect(calls.some((call) => call.subject === lists.completeStructure)).toBe(false);
     });
 });

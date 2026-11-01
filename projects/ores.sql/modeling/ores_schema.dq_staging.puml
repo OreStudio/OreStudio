@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 147
+Tables: 149
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -856,42 +856,64 @@ package "dq_staging" #F3E5F5 {
     A top-level container that owns the [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree topology]]'s pivot currency and the set of [[id:B38B3869-02FD-4CC7-99BD-9A77904ACA19][CRM]] driver pairs (crm_driver_pair, a separate, config_id-referencing entity) that hang off it. ores.marketdata.service reads the enabled config per (tenant, party) and its enabled driver pairs, feeds them through ores.analytics.quant::topology_builder::build, and keeps one service::rate_engine per (tenant, party) up to date -- see [[file:../../../doc/agile/versions/v0/sprint_23/crm_implementation/task_wire_crm_into_marketdata_ingest.org][the wiring task]]. UI metadata is deferred to a later task, as it is for market_series. Scoped to a tenant and a party so each party runs its own, independent CRM -- two parties in the same tenant may have entirely different topologies and never share an engine. - Artefact Table
     end note
 
-    entity ores_dq_cross_currency_basis_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_cross_currency_basis_flat_legs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
-        * settlement_days : integer
-          settlement_calendar : text
-        * roll_convention : text
+        * convention_name : text
+        * kind_code : text
         * flat_index : text
-        * spread_index : text
-          eom : boolean
-          is_resettable : boolean
           flat_index_is_resettable : boolean
           flat_tenor : text
-          spread_tenor : text
-          spread_payment_lag : integer
           flat_payment_lag : integer
-          spread_include_spread : boolean
-          spread_lookback : text
-          spread_fixing_days : integer
-          spread_rate_cutoff : integer
-          spread_is_averaged : boolean
-          spread_observation_shift : boolean
           flat_include_spread : boolean
           flat_lookback : text
           flat_fixing_days : integer
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-          oresmd_uri : text
     }
 
-    note right of ores_dq_cross_currency_basis_conventions_artefact_tbl
-    Describes how ORE builds both legs of a cross-currency basis swap: the two indices, their tenors, their payment lags and their fixing and cutoff rules, and whether the spread is included in a leg's coupons. Corresponds to the <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
+    note right of ores_dq_cross_currency_basis_flat_legs_artefact_tbl
+    The leg of a cross-currency basis swap that pays its index flat, as ORE's FlatIndex with the Flat* fixing rules: whether the index is resettable, the tenor, the payment lag, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because each states how this one leg builds its coupon; the spread leg beside it states its own. Each column keeps the flat_ prefix of ORE's element, because the screen shows both legs of one convention on one row, and the two legs' columns would otherwise share their names. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_basis_spread_legs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * spread_index : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+    }
+
+    note right of ores_dq_cross_currency_basis_spread_legs_artefact_tbl
+    The leg of a cross-currency basis swap that pays its index plus the basis spread, as ORE's SpreadIndex with the Spread* fixing rules: the tenor, the payment lag, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because each states how this one leg builds its coupon; the flat leg beside it states its own. Each column keeps the spread_ prefix of ORE's element, for the reason the flat leg's columns do. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_basis_swap_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+          eom : boolean
+          is_resettable : boolean
+    }
+
+    note right of ores_dq_cross_currency_basis_swap_terms_artefact_tbl
+    The terms a cross-currency basis swap states once for both legs, as ORE's SettlementDays, SettlementCalendar, RollConvention, EOM and IsResettable. It is a part because its fields hold one invariant: each applies to the whole swap at once, so neither leg can hold it alone. The settlement fields fix the settlement date, the roll convention and the end of month rule roll the schedules of both legs, and the resettable flag resets the notional of the swap. The flat and spread legs beside it hold none of them. - Artefact Table
     end note
 
     entity ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl  #F7E5FF {

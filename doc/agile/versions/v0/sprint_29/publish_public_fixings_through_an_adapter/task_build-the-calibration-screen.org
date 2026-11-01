@@ -123,6 +123,10 @@ via its "Verifies task" field.
 | 8 | PR #4327: show a version conflict on delete as a conflict | CalibrationPages.tsx | Decline | The BFF answers 409 with the message, and the screen shows it. |
 | 9 | PR #4327: check the pin's item and provider | calibration.ts | Accept | An FX fixing URI and a code, refused with 400 otherwise. |
 | 10 | PR #4327: the policy lookup lists every policy | calibration.ts | Decline | The generated filter has no asset class, and the classes are few. |
+| 11 | PR #4327 round 2: an empty order between delete and write | calibration.ts | Decline | An empty order is the automatic default, every provider by code; a valid start, not an error. |
+| 12 | PR #4327 round 2: concurrent saves and the any precondition | calibration.ts | Decline | The policy row is written first on every path with its version check, so a second save fails before the order. |
+| 13 | PR #4327 round 2: the fixing pattern matches type=fixing_other | calibration.ts | Accept | Exact parameter match; a test pins the near miss. |
+| 14 | PR #4327 round 2: provider codes are lower case only | calibration.ts | Decline | Every stored code is lower case: bloomberg boc composite demo ecb ice imf lseg ore tcmb tradeweb. |
 
 * Result
 

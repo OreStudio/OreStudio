@@ -816,7 +816,7 @@ describe('synthetic calibration', () => {
             `/api/synthetic/calibration/feeds/${ID}/pin`,
             {
                 intent: INTENT,
-                item: 'oresmd://fx/EUR?type=spot&ccy=USD',
+                item: 'oresmd://fx/EUR?type=fixing_other&ccy=USD',
                 provider_code: 'ecb',
                 window_days: 90,
             },

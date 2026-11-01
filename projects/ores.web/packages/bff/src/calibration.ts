@@ -208,7 +208,7 @@ const pinBodySchema = z.object({
         .string()
         .trim()
         .max(500)
-        .regex(/^oresmd:\/\/fx\/[A-Z]{3}\?.*type=fixing/),
+        .regex(/^oresmd:\/\/fx\/[A-Z]{3}\?(?:.*&)?type=fixing(?:&|$)/),
     provider_code: z
         .string()
         .trim()

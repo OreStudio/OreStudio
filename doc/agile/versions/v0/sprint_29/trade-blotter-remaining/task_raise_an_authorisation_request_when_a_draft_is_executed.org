@@ -102,6 +102,9 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4284][#4284]] | [trading] Raise an authorisation request when a draft is executed |
+| [[https://github.com/OreStudio/OreStudio/pull/4285][#4285]] | [agile] Close the execute draft task |
+| [[https://github.com/OreStudio/OreStudio/pull/4286][#4286]] | [agile] Capture the two components that stop main from compiling |
 | [[https://github.com/OreStudio/OreStudio/pull/4301][#4301]] | [agile] Close the execute task on the tree it now passes |
 
 * Review

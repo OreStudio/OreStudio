@@ -45,9 +45,9 @@ std::vector<ores::nats::service::subscription> cut_take_registrar::register_hand
 
     auto h = std::make_shared<cut_take_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        take_cut_request::nats_subject,
-        cut_take_queue_group,
-        [h](ores::nats::message msg) { h->take_cut(std::move(msg)); }));
+        take_cut_request::nats_subject, cut_take_queue_group, [h](ores::nats::message msg) {
+            h->take_cut(std::move(msg));
+        }));
 
     return subs;
 }

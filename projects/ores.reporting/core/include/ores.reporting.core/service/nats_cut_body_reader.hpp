@@ -23,8 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.reporting.core/service/cut_body_reader.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/cut_body_reader.hpp"
 #include <string>
 
 namespace ores::reporting::service {
@@ -48,8 +48,7 @@ namespace ores::reporting::service {
  */
 class ORES_REPORTING_CORE_EXPORT nats_cut_body_reader final : public cut_body_reader {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.service.nats_cut_body_reader";
+    inline static std::string_view logger_name = "ores.reporting.service.nats_cut_body_reader";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

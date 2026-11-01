@@ -25,8 +25,8 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
-#include "ores.reporting.service/service/cut_take.hpp"
 #include "ores.reporting.core/service/nats_cut_body_reader.hpp"
+#include "ores.reporting.service/service/cut_take.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -85,8 +85,7 @@ public:
             return;
         }
         if (!ores::service::messaging::has_permission(*req_ctx, "reporting::cuts:take")) {
-            ores::service::messaging::error_reply(
-                nats_, msg, ores::service::error_code::forbidden);
+            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
 
@@ -97,8 +96,7 @@ public:
             BOOST_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject;
             ores::service::messaging::reply(nats_, msg, answer);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();
             ores::service::messaging::reply(
                 nats_,
                 msg,

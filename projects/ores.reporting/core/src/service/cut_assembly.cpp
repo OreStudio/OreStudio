@@ -36,8 +36,8 @@ constexpr std::string_view reference_data_part = "reference_data";
 constexpr std::string_view engine_part = "engine_code";
 
 /** A part the assembly filled, with what it resolved and what it cannot state. */
-cut_body_part closed(std::string code, std::string summary, std::string reference,
-                    std::string note = {}) {
+cut_body_part
+closed(std::string code, std::string summary, std::string reference, std::string note = {}) {
     cut_body_part part;
     part.part_code = std::move(code);
     part.state = "closed";
@@ -66,14 +66,17 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
     // The kind is the one fact the take cannot proceed without, because the
     // retention and the authorisation basis are copied from it. A take that
     // named a kind the store does not hold never reaches here.
-    out.parts.push_back(closed(
-        std::string(kind_part),
-        std::format("{} · {}{}", kind.code, kind.name,
-                    kind.approval_kind_code ? " · signed by " + *kind.approval_kind_code :
-                                              " · no authorisation"),
-        {},
-        std::format("kept {} months in the {} tier, copied onto the cut at the take",
-                    kind.retention_months, kind.retention_destination_code)));
+    out.parts.push_back(
+        closed(std::string(kind_part),
+               std::format("{} · {}{}",
+                           kind.code,
+                           kind.name,
+                           kind.approval_kind_code ? " · signed by " + *kind.approval_kind_code :
+                                                     " · no authorisation"),
+               {},
+               std::format("kept {} months in the {} tier, copied onto the cut at the take",
+                           kind.retention_months,
+                           kind.retention_destination_code)));
 
     // The deals: the population the store held at the instant, by count. The
     // store holds no copy of a population and no read materialises one, so the
@@ -124,7 +127,8 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
                                    "a curve in the candidate state",
                                    reason,
                                    "Ask for a publish to be approved."));
-        out.gaps.push_back({std::string(market_data_part), "a curve in the candidate state", reason});
+        out.gaps.push_back(
+            {std::string(market_data_part), "a curve in the candidate state", reason});
     } else {
         const auto reason =
             facts.market_data_refusal.empty() ?
@@ -158,7 +162,8 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
                                    reason,
                                    "Bind a configuration to a report, or name the version the run "
                                    "will use."));
-        out.gaps.push_back({std::string(reference_data_part), "the configuration in force", reason});
+        out.gaps.push_back(
+            {std::string(reference_data_part), "the configuration in force", reason});
     }
 
     // The engine and the code. The engine version is required: a body that
@@ -172,8 +177,7 @@ cut_assembly assemble_cut_body(const domain::cut_kind& kind, const cut_body_fact
             std::string(engine_part),
             facts.wrapper_version.empty() ?
                 std::format("engine {}", *facts.engine_version) :
-                std::format("engine {}, wrapper {}", *facts.engine_version,
-                            facts.wrapper_version),
+                std::format("engine {}, wrapper {}", *facts.engine_version, facts.wrapper_version),
             facts.code_version.value_or(std::string{}),
             facts.code_version ?
                 std::string{} :

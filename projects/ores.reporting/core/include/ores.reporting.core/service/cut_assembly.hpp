@@ -116,7 +116,9 @@ struct cut_assembly {
     int market_data_set_count = 0;
 
     /** @brief Whether a take may fix the body: no gap stands and a part answered. */
-    [[nodiscard]] bool complete() const { return gaps.empty() && !parts.empty(); }
+    [[nodiscard]] bool complete() const {
+        return gaps.empty() && !parts.empty();
+    }
 };
 
 /**

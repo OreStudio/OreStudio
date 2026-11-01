@@ -52,11 +52,10 @@ namespace {
  * empty store.
  */
 template <typename Req>
-std::optional<typename Req::response_type>
-call_as_caller(ores::nats::service::client& nats,
-               const std::string& authorization,
-               const Req& request,
-               std::string& error) {
+std::optional<typename Req::response_type> call_as_caller(ores::nats::service::client& nats,
+                                                          const std::string& authorization,
+                                                          const Req& request,
+                                                          std::string& error) {
     using Resp = typename Req::response_type;
     if (authorization.empty()) {
         error = "The take carried no session, so the part could not be read.";
@@ -100,9 +99,8 @@ std::optional<std::string> reference_data_in_force(const ores::database::context
     const auto configurations = repository::configuration_repository{}.read_latest(ctx);
     const auto settings = repository::engine_settings_repository{}.read_latest(ctx);
     if (configurations.empty() && settings.empty()) {
-        refusal =
-            "Nothing names the reporting configuration in force, so the body would record no "
-            "settings for the run to read.";
+        refusal = "Nothing names the reporting configuration in force, so the body would record no "
+                  "settings for the run to read.";
         return std::nullopt;
     }
 
@@ -189,17 +187,14 @@ cut_body_facts nats_cut_body_reader::read(const cut_body_query& query) {
             const auto with_candidates =
                 call_as_caller(nats_, authorization_, candidates, candidate_error);
             if (with_candidates && with_candidates->success) {
-                facts.market_data_candidate_count =
-                    std::max(0,
-                             static_cast<int>(with_candidates->total) -
-                                 static_cast<int>(reply->total));
+                facts.market_data_candidate_count = std::max(
+                    0, static_cast<int>(with_candidates->total) - static_cast<int>(reply->total));
             }
         }
     }
 
     // The reference data and the settings: the reporting component's own.
-    facts.reference_data_version =
-        reference_data_in_force(ctx_, facts.reference_data_refusal);
+    facts.reference_data_version = reference_data_in_force(ctx_, facts.reference_data_refusal);
 
     // The engine and the wrapper the work will run.
     {

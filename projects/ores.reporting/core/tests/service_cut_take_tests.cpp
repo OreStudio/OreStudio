@@ -70,7 +70,8 @@ struct world {
 struct stub_reader final : ores::reporting::service::cut_body_reader {
     ores::reporting::service::cut_body_facts answer;
 
-    [[nodiscard]] ores::reporting::service::cut_body_facts read(const ores::reporting::service::cut_body_query&) override {
+    [[nodiscard]] ores::reporting::service::cut_body_facts
+    read(const ores::reporting::service::cut_body_query&) override {
         return answer;
     }
 };
@@ -126,8 +127,8 @@ ores::reporting::messaging::take_cut_request a_take(const std::string& kind_code
     return {.kind_code = kind_code,
             .scope_code = "ACME-LONDON",
             .business_centre_code = "GBLO",
-            .timepoint = datetime::to_iso8601_utc(std::chrono::system_clock::now() -
-                                                 std::chrono::hours(24)),
+            .timepoint =
+                datetime::to_iso8601_utc(std::chrono::system_clock::now() - std::chrono::hours(24)),
             .timepoint_timezone = "Europe/London",
             .cut_time_code = "",
             .reason = "The day is closed and the reports wait on the body",
@@ -140,8 +141,7 @@ std::size_t cut_count(const ores::database::context& ctx) {
 
 }
 
-TEST_CASE("a take writes the body with the kind's retention and raises its request",
-          "[cut_take]") {
+TEST_CASE("a take writes the body with the kind's retention and raises its request", "[cut_take]") {
 
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
@@ -232,8 +232,8 @@ TEST_CASE("a take whose body has a gap writes a draft and raises nothing", "[cut
 
     // The gap is the record a person chases, and it is the whole list.
     repository::cut_gap_repository gaps;
-    const auto written = gaps.read_latest_by_cut_id(
-        w.ctx, boost::uuids::to_string(rows.front().id), 0, 100);
+    const auto written =
+        gaps.read_latest_by_cut_id(w.ctx, boost::uuids::to_string(rows.front().id), 0, 100);
     REQUIRE(written.size() == 1);
     REQUIRE(written.front().part_code == "deal_population");
     REQUIRE(written.front().reason.find("no deal at the instant") != std::string::npos);
@@ -304,8 +304,8 @@ TEST_CASE("a take of an instant that has not happened writes nothing", "[cut_tak
     service::cut_take_service take(w.ctx, reader);
 
     auto request = a_take("EOD");
-    request.timepoint = datetime::to_iso8601_utc(std::chrono::system_clock::now() +
-                                                 std::chrono::hours(48));
+    request.timepoint =
+        datetime::to_iso8601_utc(std::chrono::system_clock::now() + std::chrono::hours(48));
     const auto answer = take.take(request);
 
     REQUIRE(answer.result.outcome == ores::utility::domain::outcome::invalid);

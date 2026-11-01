@@ -52,8 +52,8 @@ using ores::utility::domain::outcome;
 namespace {
 
 /** The instant at the precision the store keeps, so two statements of it agree. */
-std::chrono::system_clock::time_point at_store_precision(
-    const std::chrono::system_clock::time_point& t) {
+std::chrono::system_clock::time_point
+at_store_precision(const std::chrono::system_clock::time_point& t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
@@ -103,8 +103,8 @@ cut_take_service::cut_take_service(context ctx, cut_body_reader& reader)
     : ctx_(std::move(ctx))
     , reader_(reader) {}
 
-ores::reporting::messaging::take_cut_response cut_take_service::take(
-    const ores::reporting::messaging::take_cut_request& request) {
+ores::reporting::messaging::take_cut_response
+cut_take_service::take(const ores::reporting::messaging::take_cut_request& request) {
     ores::reporting::messaging::take_cut_response response;
 
     // The refusals that need no read are answered first, so a typo costs no
@@ -114,14 +114,14 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
         return response;
     }
     if (request.scope_code.empty()) {
-        response.result =
-            refuse_with(outcome::invalid, "Name the scope the body fixes, so the cut states books.");
+        response.result = refuse_with(outcome::invalid,
+                                      "Name the scope the body fixes, so the cut states books.");
         return response;
     }
     if (request.business_centre_code.empty()) {
         response.result = refuse_with(outcome::invalid,
-                                     "Name the rates centre the scope revalues against, so the "
-                                     "market data half denotes one centre.");
+                                      "Name the rates centre the scope revalues against, so the "
+                                      "market data half denotes one centre.");
         return response;
     }
     const auto party = party_of(ctx_);
@@ -154,10 +154,10 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
     }
 
     // The assembly reads what the store answers and records what it cannot.
-    const auto facts = reader_.read(cut_body_query{
-        .party_id = *party,
-        .business_centre_code = request.business_centre_code,
-        .timepoint = *instant});
+    const auto facts =
+        reader_.read(cut_body_query{.party_id = *party,
+                                    .business_centre_code = request.business_centre_code,
+                                    .timepoint = *instant});
     const auto assembly = assemble_cut_body(kind, facts);
 
     response.parts = assembly.parts;
@@ -205,8 +205,8 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
     if (needs_reason && request.reason.empty()) {
         response.result =
             refuse_with(outcome::invalid,
-                       "Say why the body is being fixed: a cut of the kind " + kind.code +
-                           " waits on a signature, and the decider reads the reason.");
+                        "Say why the body is being fixed: a cut of the kind " + kind.code +
+                            " waits on a signature, and the decider reads the reason.");
         return response;
     }
 
@@ -248,8 +248,8 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
     plan.change_reason_code = "system.new_record";
     plan.change_commentary = request.reason.empty() ? "Cut taken by hand" : request.reason;
 
-    auto cut = plan_take(plan, kind, boost::uuids::random_generator{}(),
-                         next_take_ordinal(same_occasion));
+    auto cut =
+        plan_take(plan, kind, boost::uuids::random_generator{}(), next_take_ordinal(same_occasion));
     cut.tenant_id = ctx_.tenant_id();
     cut.modified_by = actor;
     cut.performed_by = ctx_.service_account();
@@ -319,8 +319,7 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
             detail.modified_by = actor;
             detail.performed_by = ctx.service_account();
             detail.change_reason_code = "system.new_record";
-            detail.change_commentary =
-                "The body cut " + boost::uuids::to_string(cut.id) + " fixed";
+            detail.change_commentary = "The body cut " + boost::uuids::to_string(cut.id) + " fixed";
             repository::cut_approval_detail_repository{}.write(ctx, detail);
         }
         uow.commit();
@@ -337,15 +336,15 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
                 ores::inbox::service::approval_announcer(ctx_).tell_open_parts(
                     lifecycle, *approval_kind, *raised);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "The request " << request_id << " stands, and telling its deciders failed: "
-                << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "The request " << request_id
+                                      << " stands, and telling its deciders failed: " << e.what();
         }
     }
 
     response.cut_id = boost::uuids::to_string(cut.id);
     response.cut_label = cut_label_of(cut, kind);
-    response.cut_state = std::string(to_string(derive_state(cut, static_cast<int>(assembly.gaps.size()))));
+    response.cut_state =
+        std::string(to_string(derive_state(cut, static_cast<int>(assembly.gaps.size()))));
     response.approval_request_id = request_id;
     if (!assembly.gaps.empty()) {
         // The gaps are the answer: the cut exists as an incomplete body and the

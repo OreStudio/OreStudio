@@ -49,6 +49,7 @@
 #include "ores.reporting.core/messaging/cut_gap_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_gap_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_handler.hpp"
+#include "ores.reporting.core/messaging/cut_approval_detail_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_kind_handler.hpp"
 #include "ores.reporting.core/messaging/cut_kind_history_provider_registrar.hpp"
@@ -819,6 +820,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_report_instance_kind_history_provider(hist_registry);
         register_report_trigger_type_history_provider(hist_registry);
         register_report_type_history_provider(hist_registry);
+        register_cut_approval_detail_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "reporting", group, ctx, verifier));

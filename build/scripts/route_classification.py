@@ -504,6 +504,12 @@ RULES = (
          BFF, COMPOSED, "reporting",
          "The families, the resolution rules and the inbox's approval kinds, three"
          " collections read so a form offers what a save will accept."),
+    Rule("the hand take",
+         ("exact", "POST /api/reporting/cuts/take"),
+         BFF, COMPOSED, "reporting",
+         "The body of a cut assembled part by part and taken, and the authorisation the"
+         " take raises beside it: one call serves the flow's review and its press, so an"
+         " assembly computed twice is not two rules."),
     Rule("the cuts",
          ("regex", r"^GET /api/reporting/cuts"),
          BFF, COMPOSED, "reporting",
@@ -1124,6 +1130,12 @@ VIEWS = {
         "the cut families, the cut resolution rules and the inbox approval kinds, three "
         "collection reads",
         "ETag on the whole view, stale after 5 min"),
+    "the hand take": (
+        "ores.reporting",
+        "the body assembled from the trading, market data, compute and reporting reads, "
+        "answered part by part with the gaps it could not fill, and the cut the press "
+        "wrote with the approval request it raised",
+        "no cache: the call writes when it does not preview"),
     "the cuts": (
         "ores.reporting",
         "the cuts of the session's party with the derived state, label and run tally the "

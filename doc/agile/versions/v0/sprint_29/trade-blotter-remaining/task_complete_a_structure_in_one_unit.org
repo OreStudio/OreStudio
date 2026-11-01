@@ -28,10 +28,10 @@ The completion operation takes leg ids, roles and the leg count. It checks the l
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built.                                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
@@ -43,9 +43,21 @@ The completion operation takes leg ids, roles and the leg count. It checks the l
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The operation is =trading.v1.ops.complete_structure=, served beside the booking
+because it writes the same things a booking does: a trade to live, and now a
+structure and its members around it.
+
+Two pieces came first. The execution a leg needs was inside =execute_trade=,
+which opened its own transaction; it is now =execute_within=, taking the caller's
+context, so a leg goes live inside the completion rather than beside it. And the
+structure is written through =structure_service=, not the repository, because that
+is what names it: a deal a person reads later carries a reference rather than a
+uuid.
+
+The order inside the unit is the order the checks imply: count, then existence,
+then every leg, then the structure, then the members, then the executions. A
+refusal anywhere before the writes returns before the transaction opens or leaves
+it to roll back, so the legs stay drafts and no member is written.
 
 * Measurements
 
@@ -59,7 +71,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The completion and its rollback | 4 cases: every leg live and waiting, a second completion already_exists, a short leg list refused with every leg still a draft and no member, and a leg that is not a draft refusing the whole completion | =./publish/bin/ores.trading.core.tests "*completion*,*completed_structure*"= | this branch |
+| The whole trading suite | 237 cases, 1499 assertions | =./publish/bin/ores.trading.core.tests= | this branch |
+| The service builds | the trading service links with the new subject registered | =ninja ores.trading.service= | this branch |
 
 * Notes
 
@@ -87,3 +101,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A structure is completed in one unit: its anchor, its members, and every leg
+taken live.
+
+| Piece | Where |
+|-------|-------|
+| The subject | =trading.v1.ops.complete_structure= |
+| The messages | =complete_structure_request= and =complete_structure_response= in [[proj:projects/ores.trading/modeling/ores.trading.trade_operations.org][trade_operations]] |
+| The service | =trade_operations_service::complete_structure= |
+| The shared execution | =trade_operations_service::execute_within=, which takes the caller's context |
+| The reply | the structure's id and the version it is at after the write |
+
+The checks run before any write: the leg count against the list, the structure
+against the store, and every leg against the trade, its state and any structure
+that already holds it. The structure is then named by its own service, the
+members follow, and the legs are executed last, all in the caller's unit of work.
+
+* What the cases prove
+
+- A completed structure holds every leg live and waiting on Operations, and each
+  leg is a member of the structure just made.
+- A second completion of the same id answers =already_exists=.
+- A completion whose list is shorter than its count is refused, and every leg is
+  still a draft with no member and no request.
+- A completion with a leg that is already live is refused, and the leg beside it
+  is still a draft with no member.

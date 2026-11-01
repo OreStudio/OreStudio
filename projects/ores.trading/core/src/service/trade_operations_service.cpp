@@ -548,7 +548,11 @@ trade_operations_service::complete_structure(const messaging::complete_structure
     // The structure is written through its own service, which is what names it:
     // a deal that a person then reads carries a reference rather than a uuid.
     messaging::put_structure_request written_request;
-    written_request.change.write = structure;
+    written_request.change.write.id = structure.id;
+    written_request.change.write.counterparty_id = structure.counterparty_id;
+    written_request.change.write.kind = structure.kind;
+    written_request.change.write.template_code = structure.template_code;
+    written_request.change.write.parent_structure_id = structure.parent_structure_id;
     written_request.change.precondition = {precondition_kind::must_not_exist, std::nullopt};
     written_request.intent.reason_code = request.change_reason_code;
     written_request.intent.commentary = request.change_commentary;

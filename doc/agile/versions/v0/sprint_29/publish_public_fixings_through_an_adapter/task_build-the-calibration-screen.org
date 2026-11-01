@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-calibration-screen
 #+pr:
 #+blocked_on: 3A15911E-4EA6-40A6-BC45-E8AEBE49AC54
 #+blocked_since: 2026-10-31
@@ -28,11 +28,11 @@ volatility it measured.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] decides the shape, and [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] carries the data. |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -63,9 +63,18 @@ volatility it measured.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The resolver reports every candidate it read, in rank order, with its
+  outcome and reason; the calibrate read carries the list.
+- Three screens under =/market-data/calibration/{class}=: the list, a feed's
+  record with the Feed record and Flow tabs, and the policy.
+- The BFF saves a class's policy and brings its provider order to the list
+  given, or returns the class to automatic; it pins one candidate on a feed
+  or clears the feed's items.
+- The feed's own window is edited on the FX feed form, which now keeps it
+  through an engine change.
+- A calibration is not stored. The calibrate read is the record: each feed's
+  start and the policy it used, shown on the policy screen. Nothing reads a
+  history yet, so none is kept.
 
 * Measurements
 
@@ -104,6 +113,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: the policy save writes two collections in turn | calibration.ts | Accept | Each write is checked against the version read; a retry converges. |
+| 2 | Local: a pin clears the items before it writes | calibration.ts | Accept | A failed write leaves the feed on its policy, the safe side. |
+| 3 | Local: an engine change dropped the feed's window | fxFeeds.tsx | Accept | The write carries it; a test pins it. |
 
 * Result
+
+The calibration screens are built. The list shows every feed of a class with
+its start, source and state, behind a class switch, the policy in one line,
+the coverage counts and three filters. A feed's record shows its start, the
+candidates with each one's reason, the measures and its exceptions; a person
+pins a candidate or clears the feed's items there, and the Flow tab explains
+the path from the policy to the process. The policy screen states and edits
+the window, the inverse rule, the provider order and the fallback, warns that
+a change affects every feed, and shows the coverage and each feed's start;
+only the system tenant writes it. With no policy the screens say the class
+calibrates on the defaults. No screen names a vintage.

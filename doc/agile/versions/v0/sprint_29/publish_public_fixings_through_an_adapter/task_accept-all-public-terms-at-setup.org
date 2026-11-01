@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/accept-all-public-terms-at-setup
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ A new system fetches public fixings as soon as it is set up: the administrator a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | The server operation.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The shell, then the first-run tick box. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -43,9 +43,24 @@ A new system fetches public fixings as soon as it is set up: the administrator a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Data shape first. A =provider_terms_choice= is a provider code and the version
+read, zero for the terms as they stand. A =provider_terms_outcome= is the code,
+whether it was accepted, why not, and who and when. The new
+=accept_many_provider_terms_request= on =marketdata.v1.ops.accept_many_provider_terms=
+carries the choices; its response carries one outcome a choice and =success=
+when every one was accepted.
+
+1. Server: the model gains the two structs and the request and response; the
+   protocol is regenerated for C++ and TypeScript. The handler's single accept
+   becomes =accept_one=, and the list accept calls it for each choice, so one
+   rule records an acceptance. Same permission, =marketdata::providers:accept_terms=.
+2. Shell: =bootstrap setup= lists the providers after it signs in as the
+   administrator, accepts every one that states terms at version zero, and
+   prints one line a provider; =--no-accept-terms= skips it. A command accepts
+   all public terms on a system already set up.
+3. BFF and web: =POST /api/marketdata/public-rates/accept-terms= takes the list;
+   the first-run step gains an accept-all tick box that sends every listed
+   provider at the version shown.
 
 * Measurements
 

@@ -215,6 +215,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             execute_trade_request::nats_subject, queue_group,
             [toh](ores::nats::message msg) { toh->execute_trade(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
+            complete_structure_request::nats_subject, queue_group,
+            [toh](ores::nats::message msg) { toh->complete_structure(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
             put_bond_issue_composite_request::nats_subject,
             queue_group,
             [toh](ores::nats::message msg) { toh->put_bond_issue_composite(std::move(msg)); }));

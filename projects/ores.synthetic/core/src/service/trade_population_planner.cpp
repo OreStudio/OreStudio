@@ -520,6 +520,8 @@ construct_bond_product(const domain::bond_terms& terms,
         trs.common = common;
         trs.return_type = "Price";
         trs.funding_leg_type = "Fixed";
+        // The book receives the bond's return and pays the funding leg.
+        trs.payer = "false";
         trs.funding_rate = money(std::round((0.02 + 0.01 * draw(name, 9)) * 10000.0) / 10000.0);
         trs.price_type = "Clean";
         trs.initial_price = money(100.0);

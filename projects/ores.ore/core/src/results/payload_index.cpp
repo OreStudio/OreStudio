@@ -21,17 +21,12 @@
 #include "output_csv.hpp"
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 
 namespace ores::ore::results {
 namespace {
 
 using namespace ores::ore::results::output_csv;
-
-// Whether a key already holds a value, without reading the whole list for every
-// row of a file that can hold millions.
-bool holds(const std::vector<std::string>& values, const std::string& value) {
-    return std::ranges::find(values, value) != values.end();
-}
 
 }
 
@@ -63,12 +58,14 @@ payload_index index_payload(std::string_view csv,
     // the order the catalogue names them, so two runs of the same family are
     // read the same way.
     std::vector<std::size_t> key_at;
+    std::vector<std::unordered_set<std::string>> seen;
     for (const auto& key : family.key_columns) {
         const auto at = std::ranges::find(index.columns, key);
         if (at == index.columns.end())
             continue;
         key_at.push_back(static_cast<std::size_t>(std::distance(index.columns.begin(), at)));
         index.keys.emplace_back(key, std::vector<std::string>{});
+        seen.emplace_back();
     }
 
     std::size_t offset = first_break == std::string_view::npos ? csv.size() : first_break + 1;
@@ -91,12 +88,13 @@ payload_index index_payload(std::string_view csv,
             if (is_null(value))
                 continue;
             auto& values = index.keys[i].second;
-            if (holds(values, value))
+            if (seen[i].contains(value))
                 continue;
             if (values.size() >= payload_index_value_limit) {
                 index.truncated = true;
                 continue;
             }
+            seen[i].insert(value);
             values.push_back(value);
         }
     }

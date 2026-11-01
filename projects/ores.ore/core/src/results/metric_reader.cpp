@@ -168,6 +168,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
 
         metric base;
         base.source = family.code;
+        base.line = static_cast<int>(line_number);
         std::size_t subject_key = family.key_columns.size();
         for (const auto index : subject_keys) {
             if (is_null(field_at(key_at[index])))

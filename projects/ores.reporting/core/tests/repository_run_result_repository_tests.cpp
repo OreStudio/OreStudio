@@ -45,16 +45,18 @@ ores::reporting::domain::report_metric make_metric(const std::string& instance_i
         .id = boost::uuids::random_generator()(),
         .party_id = boost::uuids::random_generator()(),
         .report_instance_id = boost::uuids::string_generator()(instance_id),
+        .result_id = boost::uuids::random_generator()(),
+        .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31},
+        .measure = measure,
+        .source = "npv.csv",
+        .line = 2,
+        .report_definition_id = boost::uuids::string_generator()(definition_id),
         .family = "npv",
         .subject_type = "trade",
         .subject_id = "Swap_20y",
-        .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31},
-        .measure = measure,
-        .report_definition_id = boost::uuids::string_generator()(definition_id),
         .currency = currency,
         .qualifiers = qualifiers,
-        .value = value,
-        .source = "npv"};
+        .value = value};
 }
 
 }
@@ -104,7 +106,7 @@ TEST_CASE("the screen reads a run's figures through the run result view", "[repo
 
     // A family that is not a result row does not reach the screen through it.
     const auto metrics_of_another_family =
-        std::ranges::find_if(rows, [](const auto& one) { return one.source != "npv"; });
+        std::ranges::find_if(rows, [](const auto& one) { return one.source != "npv.csv"; });
     CHECK(metrics_of_another_family == rows.end());
 }
 
@@ -125,6 +127,10 @@ TEST_CASE("every figure a sensitivity states for one trade is stored", "[reposit
     second.family = "sensitivity";
     second.factor = "DiscountCurve/USD/1/2Y";
     second.party_id = first.party_id;
+    second.result_id = first.result_id;
+    first.source = "sensitivity.csv";
+    second.source = "sensitivity.csv";
+    second.line = 3;
 
     report_metric_repository metrics;
     metrics.insert(h.context(), {first, second});

@@ -930,10 +930,6 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         // know each file's family, so this fetches the result files by name and
         // leaves the rest where they are.
         const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
-        const results::run_stamp run{.party_id = instance->party_id,
-                                     .report_instance_id = sg(req.report_instance_id),
-                                     .report_definition_id = instance->definition_id,
-                                     .priced_at = as_of};
 
         results::run_output_outcome output;
         std::vector<std::string> manifest_uris;
@@ -968,6 +964,11 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 return;
             }
 
+            const results::run_stamp run{.party_id = instance->party_id,
+                                         .report_instance_id = sg(req.report_instance_id),
+                                         .report_definition_id = instance->definition_id,
+                                         .result_id = sg(result_id),
+                                         .priced_at = as_of};
             auto read = results::read_run_outputs(files, run);
             if (!read.refusals.empty()) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));

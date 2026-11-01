@@ -154,6 +154,14 @@ The full local check suite is green: 56 checks, including the drift
 sweep, the format gate, the recipe inventories, the shell tangle and the
 web suite.
 
+The branch merged main again at =47027e89f1=, because main moved 116
+commits while the gate ran and its tip carried the fix for the web tests
+that were red in the merged tree. The merge conflicted in two generated
+artefacts only, the recipe inventory and the schema diagrams, and both
+were regenerated. The suite is green at =c8d26095e4=: 57 checks, and the
+database recreates from that commit with the counts the table above
+states.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

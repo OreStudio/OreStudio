@@ -252,6 +252,14 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         "take-cut <kind_code> <scope_code> <business_centre_code> <timepoint> <timepoint_timezone> "
         "<reason> [--cut_time_code <v>] [--preview <v>]");
 
+    menu->Insert(
+        "list-cut-authorisation-subjects",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_cut_authorisation_subjects(
+                std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-cut-authorisation-subjects <request_ids>");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -1510,6 +1518,60 @@ void report_operations_operations_commands::process_take_cut(std::ostream& out,
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::reporting::messaging::take_cut_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_list_cut_authorisation_subjects(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-cut-authorisation-subjects request.";
+
+    using request_type = ores::reporting::messaging::list_cut_authorisation_subjects_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-cut-authorisation-subjects."
+                      << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.request_ids = report_operations_split_list_token(parsed->positionals[next++]);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::list_cut_authorisation_subjects_response> result;
+    if constexpr (request_type::requires_session) {
+        result =
+            do_auth_request<ores::reporting::messaging::list_cut_authorisation_subjects_response>(
+                out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::list_cut_authorisation_subjects_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

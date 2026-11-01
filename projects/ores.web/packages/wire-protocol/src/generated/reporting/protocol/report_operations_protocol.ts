@@ -480,6 +480,33 @@ export interface CutBodyPart {
     snapshot_note: string;
 }
 
+export interface CutAuthorisationSubject {
+    request_id: string;
+    cut_id: string;
+    label: string;
+    kind_code: string;
+    kind_name: string;
+    timepoint: string;
+    timepoint_timezone: string;
+    scope_code: string;
+    business_centre_code: string;
+    state: string;
+    deal_count: number;
+    market_data_set_count: number;
+    gap_count: number;
+    applied_by: string;
+    applied_at: string;
+}
+
+export interface ListCutAuthorisationSubjectsRequest {
+    request_ids: string[];
+}
+
+export interface ListCutAuthorisationSubjectsResponse {
+    result: Result;
+    subjects: CutAuthorisationSubject[];
+}
+
 export interface TakeCutResponse {
     result: Result;
     cut_id: string;
@@ -532,6 +559,7 @@ export const subjects = {
     list_cut_rows_request: 'reporting.v1.ops.list_cut_rows',
     get_cut_record_request: 'reporting.v1.ops.get_cut_record',
     take_cut_request: 'reporting.v1.ops.take_cut',
+    list_cut_authorisation_subjects_request: 'reporting.v1.ops.list_cut_authorisation_subjects',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -565,4 +593,5 @@ export const requiresSession = {
     list_cut_rows_request: true,
     get_cut_record_request: true,
     take_cut_request: true,
+    list_cut_authorisation_subjects_request: true,
 } as const;

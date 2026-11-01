@@ -93,6 +93,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_gap_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_kind_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_resolution_rule_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_authorisation_subject_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_take_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/cut_take_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/engine_settings_apply_step_handler.hpp"

@@ -35,11 +35,11 @@ authorisation queue (see =* Decisions=).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Started: the prototype and the plan are settled, the screens are next. Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]], which closed in sprint 28 with its done tasks. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Triage into a sprint. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -100,6 +100,31 @@ Every screen of this story reads and writes =ores.trading=, and the story is whe
 - The queue states a request by the state the inbox holds it in. A withdrawn, expired or approved-but-unapplied request reads as closed rather than as a denial nobody gave.
 - Size is not one fact. A bond states a notional, an FX trade two amounts, a commodity a quantity, and a rate swap a schedule per leg; a composition screen therefore states what is grouped and never a total, and a trade page states its family's own fact or nothing. [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] holds the enumeration.
 - Valuation is out of this arc. The structure page's Price tab is a valuation of the deal against a market snapshot, and the product has no valuation at all, so the tab says the deal has not been valued and the work is captured as [[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]]. A tab that waits on a capability is not a screen with a gap to fill later.
+
+* Result
+
+The arc closed on 2026-11-01 with every task done or abandoned. What it shipped:
+
+| Piece | What it does |
+|-------+--------------|
+| The trade list and the trade page | the blotter's two screens |
+| Book a trade | a deal and its first leg, with the structure card |
+| The structure page | the tree, the legs, the history, and a leg that moves for a stated reason |
+| The authorisation queue | the Operations screen: the flow and non-flow division, the states the inbox holds, and a decision that always carries a comment |
+| The queue's data | a request per live actual trade, raised by the booking and by an execution, one per waiting and never two |
+| Import and export | an ORE import that books into a real book and raises a request per new live trade, planned from the document so a second run books nothing twice |
+| Complete a structure | one unit that writes the structure, its members and takes every leg live, refusing all of it or none |
+| The draft reason | why a draft is not live and the desk that unblocks it, required by the booking and refused on a live trade |
+| The size analysis | four shapes of size across the families, and a trade page that states its own family's or nothing |
+
+* What the arc leaves behind
+
+- [[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]] — the Price tab's valuation, waiting on a capability the product does not have.
+- [[id:31C413BC-DB0B-41E4-B76B-DA6246DAC6FE][The structure completion has no caller]] — the operation that ships without a screen calling it.
+- [[id:025EA107-987D-47B2-BE0D-BA250EE22994][Report the drafts and who is late]] — the report of aged drafts.
+- [[id:8276D0CF-A711-4FED-B073-574821E13167][Page the authorisation queue and count it on the server]] — the counts the queue's buttons state.
+- [[id:C3830177-46FC-46A1-83A0-1660C4742E82][Finish the authorisation queue's specification]] — expiry, the operational error flag, the changed fields, the package's legs.
+- [[id:73921707-CE11-41AD-923D-ED5B36D7FF09][Classify a product type as flow or non-flow]] — the division as configuration rather than a constant.
 
 * Out of scope
 

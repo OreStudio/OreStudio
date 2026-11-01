@@ -34,6 +34,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include <cstdint>
 #include <functional>
 #include <optional>

@@ -277,12 +277,13 @@ public:
                 }
                 BOOST_LOG_SEV(party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
-                publish_step_completion(nats_,
-                                        step_id,
-                                        inst_id,
-                                        ores::workflow::messaging::step_outcome::completed,
-                                        ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
-                                        "");
+                publish_step_completion(
+                    nats_,
+                    step_id,
+                    inst_id,
+                    ores::workflow::messaging::step_outcome::completed,
+                    ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
+                    "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject << " — " << e.what();

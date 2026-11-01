@@ -505,7 +505,7 @@ void upload_canonical_log(auto& lg,
  * A reader fetches the files it models by name rather than downloading and
  * unpacking the whole archive. The manifest goes last, so a manifest that exists
  * names files that exist. Each file is compressed on its own, so the node holds
- * one file in memory at a time.
+ * one file and its compressed copy at a time, never the whole run.
  */
 void upload_output_files(auto& lg,
                          const config::options& cfg,
@@ -520,9 +520,14 @@ void upload_output_files(auto& lg,
                                  "' names no object.");
 
     std::vector<fs::path> paths;
-    for (const auto& entry : fs::directory_iterator(output_dir))
+    for (const auto& entry : fs::directory_iterator(output_dir)) {
         if (entry.is_regular_file())
             paths.push_back(entry.path());
+        else
+            BOOST_LOG_SEV(lg, warn) << "Output entry '" << entry.path().filename().string()
+                                    << "' of " << evt.result_id
+                                    << " is not a file, so it is not uploaded; the archive holds it.";
+    }
     std::ranges::sort(paths);
 
     const auto staging = output_dir.parent_path() / "output_files";

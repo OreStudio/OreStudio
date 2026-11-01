@@ -60,18 +60,19 @@ bool collect_output_files(const messaging::store_market_state_request& req,
             const auto text = transfer.download_blob(bucket, key);
             const auto manifest =
                 ores::ore::results::manifest_from_json(std::string_view(text.data(), text.size()));
+            const auto located = ores::ore::results::located_files(manifest, key);
             const auto result_id = sg(manifest.result_id);
-            for (const auto& file : manifest.files) {
+            for (const auto& file : located) {
                 if (!ores::ore::results::is_market_state_file(file)) {
                     files.push_back(
                         service::market_state_file{.result_id = result_id, .name = file.name});
                     continue;
                 }
                 const auto body = transfer.download_blob(bucket, file.key);
-                files.push_back(
-                    service::market_state_file{.result_id = result_id,
-                                               .name = file.name,
-                                               .body = std::string(body.begin(), body.end())});
+                std::string text_body(body.begin(), body.end());
+                ores::ore::results::verify_body(file, text_body);
+                files.push_back(service::market_state_file{
+                    .result_id = result_id, .name = file.name, .body = std::move(text_body)});
             }
         } catch (const std::exception& e) {
             failure = std::format("The output named by '{}' was not read: {}", uri, e.what());

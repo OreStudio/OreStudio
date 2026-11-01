@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/results/output_manifest.hpp"
+#include "ores.utility/crypto/sha256.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
@@ -29,9 +30,11 @@ const std::string manifest_tags("[ore][results][output_manifest]");
 using ores::ore::results::family_code_of;
 using ores::ore::results::is_market_state_file;
 using ores::ore::results::is_result_file;
+using ores::ore::results::located_files;
 using ores::ore::results::manifest_from_json;
 using ores::ore::results::output_manifest;
 using ores::ore::results::output_manifest_file;
+using ores::ore::results::verify_body;
 
 output_manifest_file file_named(const std::string& name) {
     return output_manifest_file{.name = name,
@@ -81,4 +84,44 @@ TEST_CASE("text that is not a manifest is refused", manifest_tags) {
     CHECK_THROWS_AS(manifest_from_json(R"({"result_id":"r"})"), std::runtime_error);
     CHECK_THROWS_AS(manifest_from_json(R"({"result_id":"r","files":[{"name":"npv.csv"}]})"),
                     std::runtime_error);
+}
+
+TEST_CASE("a file is fetched from beside its manifest, not from the key it states",
+          manifest_tags) {
+    auto stray = file_named("npv.csv");
+    stray.key = "compute/output/someone-else/npv.csv.gz";
+    const output_manifest manifest{.result_id = "r", .files = {stray}};
+
+    const auto files = located_files(manifest, "compute/output/r/manifest.json.gz");
+
+    REQUIRE(files.size() == 1);
+    CHECK(files.front().key == "compute/output/r/npv.csv.gz");
+}
+
+TEST_CASE("a manifest that states another result is refused", manifest_tags) {
+    const output_manifest manifest{.result_id = "r", .files = {file_named("npv.csv")}};
+
+    CHECK_THROWS_AS(located_files(manifest, "compute/output/other/manifest.json.gz"),
+                    std::runtime_error);
+}
+
+TEST_CASE("a file name that is not one segment is refused", manifest_tags) {
+    const output_manifest manifest{.result_id = "r", .files = {file_named("../npv.csv")}};
+
+    CHECK_THROWS_AS(located_files(manifest, "compute/output/r/manifest.json.gz"),
+                    std::runtime_error);
+}
+
+TEST_CASE("a body is accepted only when its size and digest match", manifest_tags) {
+    const std::string body = "#TradeId,NPV\nT1,1.0\n";
+    auto file = file_named("npv.csv");
+    file.bytes = static_cast<std::int64_t>(body.size());
+    file.sha256 = ores::utility::crypto::sha256::hex_digest(body);
+
+    CHECK_NOTHROW(verify_body(file, body));
+    CHECK_THROWS_AS(verify_body(file, body.substr(0, body.size() - 1)), std::runtime_error);
+
+    auto altered = body;
+    altered[1] = 'X';
+    CHECK_THROWS_AS(verify_body(file, altered), std::runtime_error);
 }

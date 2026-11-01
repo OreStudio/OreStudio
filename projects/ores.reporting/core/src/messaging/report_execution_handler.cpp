@@ -950,18 +950,17 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 const auto text = transfer.download_blob(bucket, manifest_key);
                 const auto manifest = ores::ore::results::manifest_from_json(
                     std::string_view(text.data(), text.size()));
-                for (const auto& file : manifest.files) {
-                    if (file.family.empty()) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Result " << result_id
-                            << " wrote a file no family states: " << file.name;
-                        continue;
-                    }
+                if (manifest.result_id != result_id)
+                    throw std::runtime_error("its manifest states result " + manifest.result_id);
+                for (const auto& file :
+                     ores::ore::results::located_files(manifest, manifest_key)) {
                     if (!ores::ore::results::is_result_file(file))
                         continue;
                     const auto body = transfer.download_blob(bucket, file.key);
-                    files.push_back(results::output_file{
-                        .name = file.name, .body = std::string(body.begin(), body.end())});
+                    std::string text_body(body.begin(), body.end());
+                    ores::ore::results::verify_body(file, text_body);
+                    files.push_back(
+                        results::output_file{.name = file.name, .body = std::move(text_body)});
                 }
             } catch (const std::exception& read) {
                 refuse(std::format(

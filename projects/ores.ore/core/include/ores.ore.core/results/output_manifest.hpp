@@ -106,6 +106,28 @@ struct output_manifest {
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT output_manifest manifest_from_json(std::string_view text);
 
+/**
+ * @brief The manifest's files, each with its key rebuilt beside the manifest.
+ *
+ * A reader trusts where it found the manifest, not the keys the manifest states,
+ * so a key that points outside the result's own files is never fetched.
+ *
+ * @throws std::runtime_error when the manifest does not sit under its own
+ * result, or a file name is not a single segment.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<output_manifest_file>
+located_files(const output_manifest& manifest, std::string_view manifest_key);
+
+/**
+ * @brief Refuses a body that is not the file the manifest names.
+ *
+ * The manifest states each file's size and digest, so a truncated or partial
+ * upload is caught where it is read and not where its figures are used.
+ *
+ * @throws std::runtime_error naming the file.
+ */
+ORES_ORE_CORE_EXPORT void verify_body(const output_manifest_file& file, std::string_view body);
+
 }
 
 #endif

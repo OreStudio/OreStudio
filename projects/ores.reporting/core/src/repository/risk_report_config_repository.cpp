@@ -399,9 +399,9 @@ struct book_scope_entity {
     static constexpr auto columns() {
         using e = book_scope_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind_text("tenant_id", &e::tenant_id) |
-               query_builder::bind_text("risk_report_config_id", &e::risk_report_config_id) |
-               query_builder::bind_text("book_id", &e::book_id) |
+        return query_builder::columns<e>() | query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("risk_report_config_id", &e::risk_report_config_id) |
+               query_builder::bind("book_id", &e::book_id) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }
@@ -420,10 +420,10 @@ struct binding_entity {
     static constexpr auto columns() {
         using e = binding_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind_text("tenant_id", &e::tenant_id) |
-               query_builder::bind_text("report_definition_id", &e::report_definition_id) |
+        return query_builder::columns<e>() | query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("report_definition_id", &e::report_definition_id) |
                query_builder::bind("configuration_type_code", &e::configuration_type_code) |
-               query_builder::bind_text("configuration_id", &e::configuration_id) |
+               query_builder::bind("configuration_id", &e::configuration_id) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }
@@ -441,9 +441,9 @@ struct portfolio_scope_entity {
     static constexpr auto columns() {
         using e = portfolio_scope_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind_text("tenant_id", &e::tenant_id) |
-               query_builder::bind_text("risk_report_config_id", &e::risk_report_config_id) |
-               query_builder::bind_text("portfolio_id", &e::portfolio_id) |
+        return query_builder::columns<e>() | query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("risk_report_config_id", &e::risk_report_config_id) |
+               query_builder::bind("portfolio_id", &e::portfolio_id) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }

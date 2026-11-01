@@ -62,11 +62,6 @@
 // system-tenant grand-parent is read rather than generated.
 #include "ores.refdata.api/generators/curve_section_generator.hpp"
 #include "ores.refdata.core/repository/curve_section_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_day_counters_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.refdata.api/generators/day_counter_generator.hpp"
-#include "ores.refdata.core/repository/day_counter_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -200,20 +195,6 @@ TEST_CASE("write_yield_volatility_config_publishes_an_event", "[eventing][integr
     ores::refdata::repository::curve_definition_repository curve_definition_id_repo;
     curve_definition_id_repo.write(party_ctx, curve_definition_id_parent);
     v.curve_definition_id = curve_definition_id_parent.id;
-    // Seed the active day_counter row ores_refdata_day_counters_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto day_counter_parent = ores::refdata::generators::generate_synthetic_day_counter(ctx);
-    /*
-     * The parent is what the config's soft key points at, and the value set states
-     * which spellings a day counter may be written as. A generated code is no
-     * spelling, so the parent is given one the set states; the guard then stores
-     * the form a configuration holds.
-     */
-    day_counter_parent.code = std::string("A365");
-    ores::refdata::repository::day_counter_repository day_counter_repo;
-    day_counter_repo.write(party_ctx, day_counter_parent);
-    v.day_counter = day_counter_parent.code;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Yield Volatility Config: " << v;
 

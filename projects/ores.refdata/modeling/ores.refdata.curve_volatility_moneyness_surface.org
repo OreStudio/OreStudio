@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 724C65BA-1D8B-4849-8C81-50233EFDA776
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_moneyness_surface

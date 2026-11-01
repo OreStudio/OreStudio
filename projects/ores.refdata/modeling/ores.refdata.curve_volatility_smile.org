@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 451DDCDA-306A-4B28-8ADD-9D4640913B3F
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_smile

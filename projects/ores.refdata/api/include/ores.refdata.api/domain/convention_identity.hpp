@@ -41,9 +41,7 @@ namespace ores::refdata::domain {
  * read of a convention starts here, so it is one struct rather than five members
  * scattered through the row.
  *
- * Extracted as a plain nested sub-struct so that
- * rfl::internal::no_duplicate_field_names never instantiates a Literal
- * wider than 5 fields for this block. See the decomposition section of
+ * A plain nested sub-struct. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct convention_identity {

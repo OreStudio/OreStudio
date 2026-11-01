@@ -111,6 +111,9 @@ own post-processor hands it over.
   failing the run.
 - The families that are market state are stated once, in the catalogue, so the
   store and the corpus gate cannot disagree.
+- The run's market inputs (=marketdata=, =fixings=, =dividends=) are not
+  covered here. The catalogue does not name them, and they move to
+  [[id:9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B][Land the market inputs in the market data store]].
 
 * PRs
 
@@ -122,4 +125,5 @@ own post-processor hands it over.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the index scanned a key's values once for every row | =payload_index.cpp= | Accept | A hash set beside the ordered list (27fc8c82c9). |
+| 2 | Local review: the store read every result file into memory to drop it | =market_state_handler.cpp= | Accept | Only the market-state files are read (07b088b517). |

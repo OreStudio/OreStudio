@@ -187,8 +187,8 @@ feed_kind make_fx_spot_kind() {
             c.folder_id = fx.folder_id;
             c.asset_class_code = fx.asset_class_code;
             c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
-            c.build_input = [ctx, fx, shared](
-                                const feed::feed_adapter& adapter) -> feed_build_outcome {
+            c.build_input =
+                [ctx, fx, shared](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 std::unique_lock lock(shared->guard);
                 shared->read_once(ctx);
                 auto components = shared->components[fx.id];

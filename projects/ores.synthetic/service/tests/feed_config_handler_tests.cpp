@@ -627,12 +627,11 @@ TEST_CASE("feed_config_calibrate_writes_only_with_the_write_permissions",
     const auto read_only = mint_token(
         f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
     const auto send = [&](bool apply) {
-        return f.nats.request_sync(
-            test_calibrate_subject,
-            ores::nats::default_wire_codec().encode(
-                calibrate_request{.asset_class_code = "fx", .config_id = {}, .apply = apply}),
-            {{std::string(ores::nats::headers::authorization),
-              std::string(ores::nats::headers::bearer_prefix) + read_only}});
+        return f.nats.request_sync(test_calibrate_subject,
+                                   ores::nats::default_wire_codec().encode(calibrate_request{
+                                       .asset_class_code = "fx", .config_id = {}, .apply = apply}),
+                                   {{std::string(ores::nats::headers::authorization),
+                                     std::string(ores::nats::headers::bearer_prefix) + read_only}});
     };
 
     const auto applied = send(true);

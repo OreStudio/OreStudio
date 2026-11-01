@@ -486,12 +486,11 @@ private:
             stored_stdevs.push_back(c.stdev);
         const auto change = feed::change_of(
             in.config.gmm_initial_price, stored_stdevs, resolved.level, resolved.stdevs);
-        const auto fixing = std::format(
-            "the {} fixing of {}{}",
-            src.provider_code,
-            src.fixing_date ? std::format("{:%F}", *src.fixing_date) :
-                              std::string("an unknown date"),
-            src.inverted ? ", inverted" : "");
+        const auto fixing = std::format("the {} fixing of {}{}",
+                                        src.provider_code,
+                                        src.fixing_date ? std::format("{:%F}", *src.fixing_date) :
+                                                          std::string("an unknown date"),
+                                        src.inverted ? ", inverted" : "");
         if (change.empty()) {
             one.outcome = "unchanged";
             one.outcome_message = "The level and the mixture already match " + fixing + ".";
@@ -500,20 +499,21 @@ private:
 
         std::string words = "Calibrated from " + fixing + ":";
         if (change.level)
-            words += std::format(" level {:.6g} to {:.6g};", in.config.gmm_initial_price, *change.level);
-        const auto moved = std::ranges::count_if(change.stdevs, [](const auto& s) {
-            return s.has_value();
-        });
+            words +=
+                std::format(" level {:.6g} to {:.6g};", in.config.gmm_initial_price, *change.level);
+        const auto moved =
+            std::ranges::count_if(change.stdevs, [](const auto& s) { return s.has_value(); });
         if (moved > 0)
-            words += std::format(" {} deviation(s) scaled to the volatility of {} fixing(s) over {} "
-                                 "day(s);",
-                                 moved,
-                                 src.used,
-                                 src.window_days);
+            words +=
+                std::format(" {} deviation(s) scaled to the volatility of {} fixing(s) over {} "
+                            "day(s);",
+                            moved,
+                            src.used,
+                            src.window_days);
         words.pop_back();
         words += ".";
         const ores::utility::domain::change_intent intent{.reason_code = "system.calibration",
-                                                           .commentary = words};
+                                                          .commentary = words};
         const auto claimed = [](int version) {
             return precondition{.kind = precondition_kind::must_match_version,
                                 .version = static_cast<std::uint32_t>(version)};
@@ -535,9 +535,8 @@ private:
                                                          .weight = c.weight},
                                                .precondition = claimed(c.version)});
                 }
-                const auto written =
-                    ores::synthetic::service::gmm_component_service(req_ctx).put_many_gmm_components(
-                        request);
+                const auto written = ores::synthetic::service::gmm_component_service(req_ctx)
+                                         .put_many_gmm_components(request);
                 if (written.result.outcome != outcome::ok) {
                     one.outcome = "failed";
                     one.outcome_message = "The mixture was not written: " + written.result.message;
@@ -568,9 +567,9 @@ private:
                                          .sensitivity = cfg.sensitivity},
                                .precondition = claimed(cfg.version)},
                     .intent = intent};
-                const auto written = ores::synthetic::service::fx_spot_generation_config_service(
-                                         req_ctx)
-                                         .put_fx_spot_generation_config(request);
+                const auto written =
+                    ores::synthetic::service::fx_spot_generation_config_service(req_ctx)
+                        .put_fx_spot_generation_config(request);
                 if (written.result.outcome != outcome::ok) {
                     one.outcome = "failed";
                     one.outcome_message = "The level was not written: " + written.result.message;

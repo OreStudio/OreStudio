@@ -31,7 +31,6 @@
 #include "ores.refdata.service/messaging/event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>

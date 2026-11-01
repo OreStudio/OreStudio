@@ -39,6 +39,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -280,7 +281,7 @@ public:
                                         step_id,
                                         inst_id,
                                         ores::workflow::messaging::step_outcome::completed,
-                                        rfl::json::write(resp),
+                                        ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
                                         "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(party_handler_lg(), error)

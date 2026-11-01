@@ -30,7 +30,6 @@
 #include <chrono>
 #include <format>
 #include <magic_enum/magic_enum.hpp>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -57,11 +56,14 @@ struct text_form;
 /**
  * @brief An enumerator is its own name.
  *
- * A value of an enumerated type travels as the enumerator's name, which is the
- * spelling the reflector wrote for it before the codec carried it, so a message
- * an older build sent reads back here and the other way round. A name this build
- * does not know is refused with the text that arrived, unless the caller asks
- * with the non-throwing form because the column may be absent.
+ * A value of an enumerated type travels as the enumerator's name: the text is
+ * the spelling magic_enum gives it, so a name this build knows reads back as the
+ * enumerator and the other way round.
+ *
+ * A name this build does not know is refused with the text that arrived. An
+ * enumerator outside the declared range names no text, and to_text answers the
+ * empty string for it, which from_text refuses in turn; a type that gives that
+ * value a meaning states its own form, as product_type does.
  */
 template <typename T>
     requires std::is_enum_v<T>
@@ -72,22 +74,17 @@ struct text_form<T> {
         return std::string(magic_enum::enum_name(v));
     }
 
-    /**
-     * @brief The enumerator this text names, or nothing.
-     *
-     * A caller reading a column that may be absent answers for itself whether an
-     * unknown name is a refusal or a default, so this form sits beside the
-     * throwing one instead of the caller spelling its own parse.
-     */
-    static std::optional<T> try_from_text(std::string_view text) {
-        return magic_enum::enum_cast<T>(text);
-    }
-
     static T from_text(std::string_view text) {
-        const auto v = try_from_text(text);
-        if (!v)
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
-                                        " is not one of this type's names");
+        const auto v = magic_enum::enum_cast<T>(text);
+        if (!v) {
+            std::string names;
+            for (const auto name : magic_enum::enum_names<T>()) {
+                names += (names.empty() ? "" : ", ");
+                names += name;
+            }
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": '" +
+                                        std::string(text) + "' is not one of " + names);
+        }
         return *v;
     }
 };

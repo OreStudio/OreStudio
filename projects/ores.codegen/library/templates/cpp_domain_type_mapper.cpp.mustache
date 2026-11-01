@@ -170,8 +170,7 @@ domain::{{entity_singular}}
 {{#render_is_enum}}
 {{^is_enum}}
     r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ?
-        ores::utility::codec::text_form<{{{render_cpp_type}}}>::try_from_text(*v.{{name}})
-            .value_or({{{render_cpp_type}}}{}) :
+        ores::utility::codec::text_form<{{{render_cpp_type}}}>::from_text(*v.{{name}}) :
         {{{render_cpp_type}}}{};
 {{/is_enum}}
 {{/render_is_enum}}

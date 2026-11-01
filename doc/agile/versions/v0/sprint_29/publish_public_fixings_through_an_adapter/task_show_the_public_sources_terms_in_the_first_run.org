@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-public-sources-terms-in-the-first-run
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A system administrator who sets up a new installation reads the terms of each pu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -43,9 +43,22 @@ A system administrator who sets up a new installation reads the terms of each pu
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The accept operation existed but failed on main: the store accepts only an
+  account's name as the acceptor, and its handler test signed in as a name no
+  account held. The test now seeds its reader account.
+- A withdraw operation, =marketdata.v1.ops.withdraw_provider_terms=, clears
+  the digest, the account and the time on the server, so a declined
+  publisher is not fetched. =POST
+  /api/marketdata/public-rates/{code}/withdraw-terms= serves it.
+- The acceptance fields leave the provider's write record and the service
+  carries them forward on an edit, so only the terms operations set them; the
+  shell and the HTTP writes can no longer state an acceptance.
+- The first run gains a *sources* step after the administrator: each
+  publisher's name, what it gives, its terms link, its credit and its storage
+  rule, with Accept and Decline. The person goes on once every publisher has
+  a decision.
+- The Public rates screen offers a withdrawal beside an acceptance, so the
+  terms are changed later outside the first run.
 
 * Measurements
 
@@ -89,6 +102,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: the generated provider write accepted acceptance fields from a client | provider_service.cpp | Accept | Server owned and carried forward by codegen; a codegen test pins it. |
+| 2 | Local: the accept handler test failed on main | messaging_provider_terms_handler_tests.cpp | Accept | The reader is a real account. |
 
 * Result
+
+The first run asks the system administrator to accept or decline each public
+publisher before any of its quotes are fetched. An acceptance records the
+terms digest, the accepting account and the server's time; a decline, or a
+later change of mind on the Public rates screen, withdraws it on the server,
+and a publisher without a current acceptance is not fetched. A change of
+terms clears the acceptance through its digest, so the administrator accepts
+again. Acceptance is set only by the terms operations: a provider write
+carries no acceptance, and an edit keeps the one stored.

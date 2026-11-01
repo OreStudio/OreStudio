@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-variability-codecs-off-reflect-cpp
-#+pr:
+#+pr: 4352
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4352][#4352]] | [variability] Encode and decode without reflect-cpp |
 
 * Review
 

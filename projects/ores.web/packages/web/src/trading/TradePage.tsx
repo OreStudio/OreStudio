@@ -320,6 +320,41 @@ function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
 }
 
 /**
+ * What the trade's terms state as its size, when they state one at all.
+ *
+ * A size is not one fact across the families: a bond states a notional, an FX
+ * trade states two amounts in two currencies, an equity forward states a
+ * quantity, and a rate swap states an amount per leg per period, which is a
+ * schedule and not a number. A screen that draws one "notional" column for every
+ * family draws a column of dashes, so a family that has no single number states
+ * nothing here.
+ */
+function sizeOf(terms: Readonly<Record<string, unknown>>):
+    | {
+          readonly labelKey: string;
+          readonly value: string;
+      }
+    | undefined {
+    const text = (given: unknown): string =>
+        given === undefined || given === null ? '' : String(given);
+    if (text(terms['notional']) !== '') {
+        return { labelKey: 'trading.page.notional', value: text(terms['notional']) };
+    }
+    const bought = text(terms['bought_amount']);
+    const sold = text(terms['sold_amount']);
+    if (bought !== '' || sold !== '') {
+        return {
+            labelKey: 'trading.page.boughtSold',
+            value: [bought, sold].filter((one) => one !== '').join(' / '),
+        };
+    }
+    if (text(terms['quantity']) !== '') {
+        return { labelKey: 'trading.page.quantity', value: text(terms['quantity']) };
+    }
+    return undefined;
+}
+
+/**
  * The trade's terms, from the table its type is stored in.
  *
  * A type with no table states that plainly: the trade is understood, its terms
@@ -353,7 +388,9 @@ function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactN
                     label={t('trading.page.tradeTypeCode')}
                     value={record.trade.instrument_type}
                 />
-                <Fact label={t('trading.page.notional')} value={value(terms['notional'])} />
+                {sizeOf(terms) !== undefined && (
+                    <Fact label={t(sizeOf(terms)!.labelKey)} value={sizeOf(terms)!.value} />
+                )}
             </dl>
             <section className="space-y-3">
                 <h2 className="text-sm font-medium text-ink">{t('trading.page.issue')}</h2>

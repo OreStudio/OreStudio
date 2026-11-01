@@ -3978,6 +3978,8 @@ const pt: SourceCatalogue = {
             tradeDate: 'Data da transação',
             security: 'Título',
             notional: 'Nocional',
+            boughtSold: 'Comprado / vendido',
+            quantity: 'Quantidade',
             identifierType: 'Esquema de identificador',
             identifier: 'Identificador',
             identifierHint: 'O nome que a mesa dá a esta transação.',

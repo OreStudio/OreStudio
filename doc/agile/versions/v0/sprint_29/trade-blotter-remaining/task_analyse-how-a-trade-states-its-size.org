@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/analyse-how-a-trade-states-its-size
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Decide what the composition screens state about size, and on what rule, from the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Answered: the store states four shapes of size, and no one number. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-28                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
@@ -41,9 +41,19 @@ Decide what the composition screens state about size, and on what rule, from the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The question is answered from the store rather than from opinion: every column in
+the trading schema whose name says it is a size, grouped by the shape it takes.
+The screens are then read against that list, and the one place that draws a size
+unconditionally is fixed.
+
+The scope was deliberately narrow. The alternative — deciding what a composition
+screen is *for* and rebuilding it around an exposure number — is a design of its
+own, and this task exists to settle the fact that a size is not one fact.
+
+* Measurements
+
+The list below is =information_schema=, not a reading of the models: the store is
+what a screen can state.
 
 * Measurements
 
@@ -57,7 +67,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The families with a size column | 47 columns across 30 trading tables, in four shapes | =compass db sql -- -c "select table_name, column_name from information_schema.columns where table_name like 'ores_trading_%' and (column_name like '%notional%' or column_name like '%amount%' or column_name like '%face_value%')"= | this branch |
+| A rate leg states no notional | the leg carries payer, index, currency and day count, and the amount is a schedule in =ores_trading_swap_leg_amounts_tbl= | =compass db sql -- -c "select column_name from information_schema.columns where table_name='ores_trading_swap_legs_tbl'"= | this branch |
 
 * Notes
 
@@ -91,3 +102,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+There is no such thing as the size of a trade. The store states four shapes, and
+only one of them is a number a column can hold.
+
+| Shape | Families | Where it lives | What the number means |
+|-------+----------+----------------+-----------------------|
+| One money amount | bond, FRA, equity notional products, bond future (as =contract_notional=), FX variance swap | the instrument table's =notional= | the amount the deal is struck on, in the trade's currency |
+| Two amounts in two currencies | FX forward, FX vanilla option, FX barrier option | =bought_amount= and =sold_amount= | what is bought and what is sold; neither is the deal's size alone |
+| A quantity | commodity, equity forward, equity position | =quantity= | units of the underlying, not money |
+| A schedule | rate swaps and every amortising family | =ores_trading_swap_leg_amounts_tbl= (=amount= per leg per =start_date=), =ores_trading_flexi_swap_lower_notionals_tbl=, =ores_trading_bg_swap_tranche_notionals_tbl= | the amount in force over a period; there is no single figure, and a bond's =face_value= is its convention rather than its size |
+
+A structure makes this worse rather than better: its legs are trades of different
+families, so a structure's size would be a sum across a notional, a quantity and
+a schedule, in more than one currency.
+
+* Recommendation
+
+A composition screen is about what is grouped, not about exposure. It states the
+legs, their roles, their families and their currencies, and the number of legs.
+It does not state a total, because a total across those shapes is not a number;
+exposure is valuation's question, which is
+[[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]].
+
+Where a screen states one trade's own fact, it states that family's fact: the
+notional where the family has one, bought and sold where it has two, the quantity
+where it counts units, and nothing where the family holds a schedule.
+
+* What changed
+
+The trade page drew "Notional" for every family, which is a dash for a swap, an
+FX trade and a commodity. It now states the family's own fact: the notional, the
+bought and sold amounts, or the quantity, and nothing where the family states a
+schedule.
+
+* What is left
+
+Nothing in the composition screens draws a total today, so there is nothing to
+remove. A future screen that wants an exposure number should read this task's
+recommendation first.

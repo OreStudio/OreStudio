@@ -3858,6 +3858,50 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.cut_approval_details.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'cut_id',
+            'party_id',
+            'id_one_of',
+            'request_id_one_of',
+            'cut_id_one_of',
+            'party_id_one_of',
+        ],
+        rows: ['details'],
+    },
+    'reporting.v1.cut_approval_details.list_by_cut_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'cut_id',
+            'party_id',
+            'id_one_of',
+            'request_id_one_of',
+            'cut_id_one_of',
+            'party_id_one_of',
+        ],
+        rows: ['details'],
+    },
+    'reporting.v1.cut_approval_details.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'cut_id',
+            'party_id',
+            'id_one_of',
+            'request_id_one_of',
+            'cut_id_one_of',
+            'party_id_one_of',
+        ],
+        rows: [],
+    },
+    'reporting.v1.cut_approval_details_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.cut_families.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -4108,6 +4152,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
+    },
+    'reporting.v1.ops.list_cut_authorisation_subjects': {
+        asOf: false,
+        filter: [],
+        rows: ['subjects'],
     },
     'reporting.v1.ops.list_cut_rows': {
         asOf: false,

@@ -82,6 +82,9 @@
 \ir ./dq_cms_spread_option_conventions_artefact_drop.sql
 \ir ./dq_commodity_forward_conventions_artefact_drop.sql
 \ir ./dq_commodity_future_conventions_artefact_drop.sql
+\ir ./dq_cross_currency_basis_flat_legs_artefact_drop.sql
+\ir ./dq_cross_currency_basis_spread_legs_artefact_drop.sql
+\ir ./dq_cross_currency_basis_swap_terms_artefact_drop.sql
 \ir ./dq_cross_currency_basis_conventions_artefact_drop.sql
 \ir ./dq_cross_currency_fix_float_fixed_legs_artefact_drop.sql
 \ir ./dq_cross_currency_fix_float_float_legs_artefact_drop.sql

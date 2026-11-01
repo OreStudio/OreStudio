@@ -289,32 +289,6 @@ KINDS = {
         ("BalanceOfTheMonthPricingCalendar", "balance_of_the_month_pricing_calendar", "text"),
         ("OptionUnderlyingFutureConvention", "option_underlying_future_convention", "text"),
     ]),
-    "CrossCurrencyBasis": ("cross_currency_basis", [
-        ("SettlementDays", "settlement_days", "int"),
-        ("SettlementCalendar", "settlement_calendar", "text"),
-        ("RollConvention", "roll_convention", "bdc"),
-        ("FlatIndex", "flat_index", "text"),
-        ("SpreadIndex", "spread_index", "text"),
-        ("EOM", "eom", "bool"),
-        ("IsResettable", "is_resettable", "bool"),
-        ("FlatIndexIsResettable", "flat_index_is_resettable", "bool"),
-        ("FlatTenor", "flat_tenor", "text"),
-        ("SpreadTenor", "spread_tenor", "text"),
-        ("SpreadPaymentLag", "spread_payment_lag", "int"),
-        ("FlatPaymentLag", "flat_payment_lag", "int"),
-        ("SpreadIncludeSpread", "spread_include_spread", "bool"),
-        ("SpreadLookback", "spread_lookback", "text"),
-        ("SpreadFixingDays", "spread_fixing_days", "int"),
-        ("SpreadRateCutoff", "spread_rate_cutoff", "int"),
-        ("SpreadIsAveraged", "spread_is_averaged", "bool"),
-        ("SpreadObservationShift", "spread_observation_shift", "bool"),
-        ("FlatIncludeSpread", "flat_include_spread", "bool"),
-        ("FlatLookback", "flat_lookback", "text"),
-        ("FlatFixingDays", "flat_fixing_days", "int"),
-        ("FlatRateCutoff", "flat_rate_cutoff", "int"),
-        ("FlatIsAveraged", "flat_is_averaged", "bool"),
-        ("FlatObservationShift", "flat_observation_shift", "bool"),
-    ]),
     "Deposit": ("deposit", [
         ("IndexBased", "index_based", "bool"),
         ("Index", "index", "text"),
@@ -451,7 +425,8 @@ CUT_KINDS = {
 # A tenor basis swap fills exactly one of its two parts, and the form is the
 # mapper's choice: a row that carries PayIndex or ReceiveIndex is the paying and
 # receiving form, every other row is the long and short form. A cross-currency
-# fix-float swap fills all three of its parts.
+# fix-float swap and a cross-currency basis swap each fill all three of their
+# parts.
 def tenor_basis_swap_parts(fields):
     pay_receive = (fields.get("PayIndex", "").strip()
                    or fields.get("ReceiveIndex", "").strip())
@@ -459,6 +434,56 @@ def tenor_basis_swap_parts(fields):
 
 
 COMPOSITE_KINDS = {
+    "CrossCurrencyBasis": {
+        "kind_code": "CROSS_CURRENCY_BASIS",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": lambda fields: ["swap_terms", "flat_leg", "spread_leg"],
+        "parts": {
+            "swap_terms": {
+                "table":
+                    "ores_dq_cross_currency_basis_swap_terms_artefact_tbl",
+                "mapping": [
+                    ("SettlementDays", "settlement_days", "int"),
+                    ("SettlementCalendar", "settlement_calendar", "text"),
+                    ("RollConvention", "roll_convention", "bdc"),
+                    ("EOM", "eom", "bool"),
+                    ("IsResettable", "is_resettable", "bool"),
+                ],
+            },
+            "flat_leg": {
+                "table":
+                    "ores_dq_cross_currency_basis_flat_legs_artefact_tbl",
+                "mapping": [
+                    ("FlatIndex", "flat_index", "text"),
+                    ("FlatIndexIsResettable", "flat_index_is_resettable",
+                     "bool"),
+                    ("FlatTenor", "flat_tenor", "text"),
+                    ("FlatPaymentLag", "flat_payment_lag", "int"),
+                    ("FlatIncludeSpread", "flat_include_spread", "bool"),
+                    ("FlatLookback", "flat_lookback", "text"),
+                    ("FlatFixingDays", "flat_fixing_days", "int"),
+                    ("FlatRateCutoff", "flat_rate_cutoff", "int"),
+                    ("FlatIsAveraged", "flat_is_averaged", "bool"),
+                    ("FlatObservationShift", "flat_observation_shift", "bool"),
+                ],
+            },
+            "spread_leg": {
+                "table":
+                    "ores_dq_cross_currency_basis_spread_legs_artefact_tbl",
+                "mapping": [
+                    ("SpreadIndex", "spread_index", "text"),
+                    ("SpreadTenor", "spread_tenor", "text"),
+                    ("SpreadPaymentLag", "spread_payment_lag", "int"),
+                    ("SpreadIncludeSpread", "spread_include_spread", "bool"),
+                    ("SpreadLookback", "spread_lookback", "text"),
+                    ("SpreadFixingDays", "spread_fixing_days", "int"),
+                    ("SpreadRateCutoff", "spread_rate_cutoff", "int"),
+                    ("SpreadIsAveraged", "spread_is_averaged", "bool"),
+                    ("SpreadObservationShift", "spread_observation_shift", "bool"),
+                ],
+            },
+        },
+    },
     "CrossCurrencyFixFloat": {
         "kind_code": "CROSS_CURRENCY_FIX_FLOAT",
         "central_table": "ores_dq_conventions_artefact_tbl",
@@ -570,7 +595,6 @@ PRIMARY_INDEX = {
     "AverageOIS": ("Index",),
     "BMABasisSwap": ("Index", "BMAIndex"),
     "CommodityFuture": ("IndexName",),
-    "CrossCurrencyBasis": ("FlatIndex", "SpreadIndex"),
     "Deposit": ("Index",),
     "FRA": ("Index",),
     "Future": ("Index",),

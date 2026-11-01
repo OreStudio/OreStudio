@@ -1381,6 +1381,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::risk_participation_agreement_instruments:read', 'View risk participation agreement instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::risk_participation_agreement_instruments:write','Create and modify risk participation agreement instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::risk_participation_agreement_instruments:delete','Delete risk participation agreement instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:read',                         'View draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:write',                        'Create and modify draft reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::draft_reasons:delete',                       'Delete draft reasons');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:read',        'View equity accumulator instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:write',       'Create and modify equity accumulator instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_accumulator_instruments:delete',      'Delete equity accumulator instruments');

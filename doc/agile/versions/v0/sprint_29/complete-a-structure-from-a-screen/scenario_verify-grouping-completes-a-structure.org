@@ -1,0 +1,233 @@
+** Book two deals as drafts
+
+- Open =/trading/trades/new= (Book a trade).
+- Fill the form as usual — a real book, a counterparty, a trade date, an issue and
+  a notional.
+- In *Draft reason*, choose *The deal is a leg of a structure that is not
+  complete*. Book it.
+- Repeat for a second deal with the same counterparty, so the two may be grouped.
+- Both appear in the blotter with the status *draft*, and the authorisation queue
+  is still empty: a draft waits, it does not ask.
+
+** Group the two drafts
+
+- Return to =/trading/structures/group=, filter to that counterparty and pick the
+  two drafts.
+- Group them. The new structure's page opens and both are its legs.
+- Both now read *live* in the blotter.
+
+** Confirm each draft asked Operations once
+
+- Open =/operations/authorisation-queue=.
+- Two rows are present, one per leg, each *Awaiting authorisation*, and each named
+  by the deal's reference.
+- The queue was empty before the grouping, so both came from the completion
+  taking the drafts live.
+
+** Confirm the grouping cannot be repeated
+
+- Return to =/trading/structures/group=.
+- Neither draft is offered any more: a trade is a leg of one structure at a time.
+
+:PROPERTIES:
+:ID: 71510D70-A682-49D0-8F9B-3B5A357DD604
+:END:
+#+title: Test Scenario: Verify grouping completes a structure
+#+description: Walk the grouping screen end to end: pick trades, group them, and confirm one structure whose every leg is live and waiting on Operations, with the queue holding a request per leg.
+#+type: test_scenario
+#+level: s1
+#+filetags: :complete-a-structure-from-a-screen:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] in [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- *The branch under test is not on main.* This verifies
+  =feature/point-the-grouping-screen-at-the-completion=, so build that branch:
+  =git checkout feature/point-the-grouping-screen-at-the-completion= then
+  =compass build=, and start the services (=compass services start=).
+- *The tenant must be provisioned.* The database was recreated on 2026-11-01 and
+  holds no tenant. Provision Acme with
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  and confirm the run ends with no failed steps.
+- *The trades must be ungrouped.* The grouping screen offers only trades no
+  structure holds. A freshly provisioned tenant offers 475 of them for the UK
+  party, so the picker is full; if a previous run grouped some, provision again
+  rather than reusing them.
+- *The queue starts empty.* The provisioned population is booked as test trades,
+  which raise no authorisation request. The scenario books two drafts of its own,
+  and those are what the queue should show after the grouping.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] |
+| Parent story  | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]]   |
+| Target screen | Group trades — =/trading/structures/group= |
+| Clients       |                                          |
+| State         | STARTED                               |
+
+* Steps
+
+Each step is its own heading. Record the outcome as a =*** Result= under it.
+
+** Log in as the tenant administrator
+
+- Open http://127.0.0.1:20802.
+- Sign in as =tenant_admin@acme_corporation= / =Secure-Password-123=.
+- When the tenant asks for a party, choose *ACME Corporation UK plc*.
+
+** Open the grouping screen
+
+- Go to =/trading/structures/group= (or follow *Group trades* from the Trades
+  area).
+- The screen shows a kind, a counterparty filter, a chosen count reading "No
+  trade chosen yet", and a picker of ungrouped trades.
+
+** Pick two trades that share a counterparty
+
+- Filter the counterparty to one that holds at least two ungrouped trades.
+- Tick two rows in the picker.
+- The chosen count reads "2 trades chosen", and no mixed-counterparty notice
+  appears.
+
+** Group them
+
+- Press *Group trades*.
+- The screen opens the new structure's page, whose reference reads =PKG-…=.
+- The Members tab lists both trades as legs.
+
+** Confirm the legs are live in the blotter
+
+- Open =/trading= and find the two trades.
+- Each states the status *live*, not *draft*, and the row states the structure
+  they belong to.
+
+** Confirm the queue did not grow
+
+- Before grouping, open =/operations/authorisation-queue= and note the count (a
+  freshly provisioned tenant shows none).
+- After grouping, return to the queue.
+- It still shows the same count. The provisioned population is booked as *test*
+  trades, which raise no request, and a completion executes only legs that are
+  still drafts — a leg that is already live has asked its own question and is
+  not asked again.
+
+** (Known gap) No screen can book a draft
+
+The completion's draft path, where a leg is taken live and raises its request,
+cannot be reached from a screen today: =Book a trade= books live, so the legs a
+tester can make are live ones. That path is covered by the service's own cases
+(=a_draft_that_is_not_executed_raises_no_authorisation_request= and the
+completion cases in =ores.trading.core.tests=), not by this scenario. A screen
+that books a draft is the missing piece, and it is not in this branch.
+
+** Confirm a second grouping of the same trades is refused
+
+- Return to =/trading/structures/group=.
+- The two trades are no longer offered in the picker: a trade is a leg of one
+  structure at a time.
+
+* Results=.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned (state what tenant/data the
+  scenario needs, e.g. "via =--source acme=") — confirm via
+  =compass db status=, recreating only if stale: =compass db recreate
+  -y -k= then the relevant =compass shell -f= provisioning script.
+  Confirm the run completes with no failed steps before starting.
+
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] |
+| Parent story  | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]]   |
+| Target screen | Group trades — =/trading/structures/group= |
+| Clients       |                                          |
+| State         | STARTED                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. Record each step's PASS/FAIL/PENDING outcome and notes as
+a =*** Result= child heading directly under it.
+
+** Log in as <persona>
+
+# This must be the scenario's first step (only * Steps entries
+# carry a pass/fail outcome) -- name the *specific* persona this scenario
+# actually needs: the exact account to log in as and its password
+# (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
+# specific staff username -- see doc/agile/versions/.../
+# acme_corporation_holding_group/story.org for how generated staff
+# usernames work, they're randomised per provisioning run so look one
+# up via `accounts list` rather than assuming a fixed name). Assume
+# the system is already in the state * Before you start establishes --
+# this step is pure tester mechanics, not a readiness check. Never
+# leave the tester to guess credentials -- and never copy this
+# placeholder verbatim.
+
+** (Next manual step the tester should perform.)
+
+(Optional longer instructions for this step.)
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

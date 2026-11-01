@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: ABED58CA-82F1-4821-BA49-058F9DE6286C
+:END:
+#+title: Finish wiring draft_reason on main
+#+description: Main carries draft_reason with its permissions unseeded, two drop scripts no aggregator includes, its shell scripts and recipe inventory untangled, and a shell unit the aggregator test does not expect; six local checks fail on it.
+#+type: capture
+#+level: cross
+#+filetags: :trading:codegen:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Main carries the =draft_reason= entity (commit =5ff1c72221=) without its
+wiring. Six local checks fail on it:
+
+- =handler-permissions=: =trading::draft_reasons:read=, =:write= and =:delete=
+  are checked but never seeded.
+- =sql-reachability= and =er-diagram=: =trading_draft_reasons_drop.sql= and
+  =trading_draft_reasons_notify_trigger_drop.sql= are in no aggregator.
+- =tangle-shell= and =recipe-inventories=: its shell scripts and the shell
+  recipe inventory are not committed.
+- =codegen-tests=: the trading shell aggregator renders =draft_reason_commands=,
+  which =test_the_aggregator_lists_every_opted_in_trading_unit= does not expect.
+  It fails with main's model, so the reflect-cpp branch did not cause it.
+
+Its C++ files were also missing from the CMake component lists. PR #4278 fixes
+that part.
+
+* Why
+
+Every branch's local gate fails on these checks until main finishes the entity.
+
+* References
+
+-
+
+* See also
+
+-

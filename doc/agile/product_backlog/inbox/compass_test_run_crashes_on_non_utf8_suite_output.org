@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 0EBB3477-BAFE-4EDF-8017-7D9B7EC32134
+:END:
+#+title: compass test run crashes when a suite prints bytes that are not UTF-8
+#+description: _run_logged decodes a child's stdout as strict UTF-8, so a Catch2 failure that prints MessagePack bytes stops the run with UnicodeDecodeError, and every later suite goes unreported.
+#+type: capture
+#+level: cross
+#+filetags: :compass:testing:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=_run_logged= in =compass.py= reads a child's stdout as strict UTF-8. When a
+Catch2 suite fails and prints MessagePack bytes, the read raises
+=UnicodeDecodeError=, compass stops, and every suite after it goes unreported.
+Seen with =ores.trading.core.tests=, after which 42 suites did not run. Decode
+with =errors="replace"= or read bytes.
+
+* Why
+
+A failing suite hides the result of every suite after it, and the reported
+error names compass instead of the test.
+
+* References
+
+-
+
+* See also
+
+-

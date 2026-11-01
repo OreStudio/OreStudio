@@ -245,6 +245,11 @@ RULES = (
          BFF, COMPOSED, "workflow",
          "The requests this person may decide, gathered from every kind into one queue with"
          " each kind's subject, which is the approval inbox the design names."),
+    Rule("the authorisation queue",
+         ("exact", "GET /api/queue/authorisations"),
+         BFF, COMPOSED, "operations",
+         "The authorisation requests this person may decide with the deal each one names as"
+         " it looks now, the open requests and the answered tail in one answer."),
     Rule("the grid summary",
          ("exact", "GET /api/operations/grid"),
          BFF, COMPOSED, "grid",
@@ -287,11 +292,31 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The providers and the feeds that serve them in one answer, two collection reads,"
          " so a subscription or a route can name a feed by id."),
-    Rule("the official providers",
-         ("exact", "GET /api/marketdata/official"),
+    Rule("the public publishers",
+         ("exact", "GET /api/marketdata/public-rates"),
          BFF, COMPOSED, "market-data",
-         "Every official provider with its terms, its feeds and the fixing series it fills,"
-         " the providers read first and the feeds and market series read together after."),
+         "Every public publisher with its terms, its feeds with their suppliers and asset"
+         " classes, and the fixing series it fills, six collections read together."),
+    Rule("the public rates coverage",
+         ("exact", "GET /api/marketdata/public-rates/coverage"),
+         BFF, COMPOSED, "market-data",
+         "The first and last date and the count of every series a public publisher fills,"
+         " computed from the public catalogue and its fixings."),
+    Rule("the public rates file",
+         ("exact", "GET /api/marketdata/public-rates/fixings.csv"),
+         BFF, COMPOSED, "market-data",
+         "One publisher's fixings as a CSV file over a date range, the catalogue read to"
+         " find the publisher's series and their fixings read after."),
+    Rule("the connectivity catalogue",
+         ("exact", "GET /api/marketdata/connectivity"),
+         BFF, COMPOSED, "market-data",
+         "The publishers, suppliers, adapters, sessions, feeds, scopes and routes the"
+         " Connectivity screen draws, seven collection reads in one answer."),
+    Rule("an item's fixing series",
+         ("exact", "GET /api/marketdata/fixing-series"),
+         BFF, COMPOSED, "market-data",
+         "One item named by its oresmd URI: its series, the feeds and sessions that brought"
+         " its values, and the fixings written against it."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
          BFF, COMPOSED, "reporting",
@@ -391,15 +416,15 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "Every adapter the service tracks, with what it serves, what it was asked to serve"
          " and the counts of the last demand it answered."),
-    Rule("the official fixings",
-         ("exact", "GET /api/marketdata/official/fixings"),
+    Rule("the public fixings",
+         ("exact", "GET /api/marketdata/public-rates/fixings"),
          BFF, RESOURCE, "market-data",
          "The fixings of up to a dozen series in one read, oldest first, by series."),
-    Rule("a provider's terms",
-         ("exact", "POST /api/marketdata/official/:code/accept-terms"),
-         BFF, RESOURCE, "market-data",
-         "Records that a party accepted one official provider's terms at the version read,"
-         " one row written against a provider that may have moved on."),
+    Rule("the draft reasons",
+         ("exact", "GET /api/draft-reasons"),
+         BFF, RESOURCE, "trading",
+         "The reasons a trade may be captured as a draft with, a tenant-wide code list the"
+         " booking form offers."),
 
     Rule("the blotter",
          ("exact", "GET /api/blotter"),
@@ -1150,10 +1175,35 @@ VIEWS = {
         "ores.marketdata",
         "the providers and the feeds that serve them, two collection reads",
         "ETag on the whole view, stale after 5 min"),
-    "the official providers": (
+    "the public publishers": (
         "ores.marketdata",
-        "the providers first, then the feeds and the market series joined onto them",
+        "the providers, feeds, scopes, sessions, suppliers and market series read together "
+        "and joined onto each publisher",
         "ETag on the whole view, stale after 5 min"),
+    "the public rates coverage": (
+        "ores.marketdata",
+        "the public catalogue and its fixings, reduced to each series' first date, last "
+        "date and count",
+        "ETag on the whole view, stale after 5 min"),
+    "the public rates file": (
+        "ores.marketdata",
+        "the public catalogue to find the publisher's series, then their fixings filtered "
+        "to the range and item",
+        "no cache: a file is built per request"),
+    "the connectivity catalogue": (
+        "ores.marketdata",
+        "seven collection reads in parallel, each parsed and sorted by name",
+        "ETag on the whole view, stale after 5 min"),
+    "an item's fixing series": (
+        "ores.marketdata",
+        "the market series found by URI, with the providers, feeds, scopes, sessions and "
+        "suppliers read beside it, then its fixings",
+        "ETag on the whole view, stale after 5 min"),
+    "the authorisation queue": (
+        "ores.inbox",
+        "the request queue for this viewer, each open and answered request joined to the "
+        "deal it names",
+        "no cache: the queue answers what this person may decide now"),
     "a report configuration": (
         "ores.reporting",
         "the configuration, the names of its type and parties, its analytics and their "

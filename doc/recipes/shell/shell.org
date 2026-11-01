@@ -1951,3 +1951,7 @@ tangled into the runnable script library
 * Draft Reasons
 
 - [[id:FBE43389-1524-5439-8300-3DD44668FEA9][How do I run the draft_reasons commands from the shell?]]
+
+* Cut Approval Details
+
+- [[id:713EDE01-50B1-5DEC-A446-81937CDBCE13][How do I run the cut_approval_details commands from the shell?]]

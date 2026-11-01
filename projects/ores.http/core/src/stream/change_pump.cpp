@@ -58,7 +58,7 @@ std::string frame_text(const coalesced_frame& frame) {
 std::size_t change_pump::pump() {
     std::size_t published = 0;
     for (const auto& frame : coalescer_.drain()) {
-        hub_.publish(frame_text(frame));
+        hub_.publish(frame.tenant, frame_text(frame));
         ++published;
     }
     if (published > 0)

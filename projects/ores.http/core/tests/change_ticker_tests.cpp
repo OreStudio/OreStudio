@@ -29,13 +29,20 @@
 using namespace ores::http::stream;
 using namespace ores::logging;
 
+namespace {
+
+/// The tenant every stream hears beside its own.
+const std::string ticker_system_tenant = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+
+}
+
 TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a tick carries a recorded change to the stream";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto stream = hub.subscribe();
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe("acme");
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -58,8 +65,8 @@ TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
     BOOST_LOG_SEV(lg, info) << "Testing that a stopped ticker is silent";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto stream = hub.subscribe();
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe("acme");
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -81,8 +88,8 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
     BOOST_LOG_SEV(lg, info) << "Testing that an idle tick is silent";
 
     change_coalescer coalescer;
-    change_hub hub;
-    auto stream = hub.subscribe();
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe("acme");
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;

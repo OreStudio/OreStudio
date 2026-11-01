@@ -38,6 +38,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::http::stream {
@@ -55,8 +56,9 @@ namespace ores::http::stream {
  */
 class change_subscription final {
 public:
-    explicit change_subscription(std::size_t capacity)
-        : capacity_(capacity) {}
+    explicit change_subscription(std::string tenant, std::size_t capacity)
+        : tenant_(std::move(tenant))
+        , capacity_(capacity) {}
 
     change_subscription(const change_subscription&) = delete;
     change_subscription& operator=(const change_subscription&) = delete;
@@ -112,6 +114,11 @@ public:
             waker();
     }
 
+    /// The tenant this stream was opened for.
+    [[nodiscard]] const std::string& tenant() const {
+        return tenant_;
+    }
+
     [[nodiscard]] bool closed() const {
         const std::lock_guard lock(mu_);
         return closed_;
@@ -123,6 +130,7 @@ public:
     }
 
 private:
+    std::string tenant_;
     mutable std::mutex mu_;
     std::deque<std::string> queue_;
     std::function<void()> waker_;
@@ -143,18 +151,24 @@ private:
  */
 class change_hub final {
 public:
-    explicit change_hub(std::size_t per_stream_capacity = 256)
-        : capacity_(per_stream_capacity) {}
+    /**
+     * @param system_tenant The tenant whose changes every stream hears, because they
+     *        are the catalogue every tenant shares.
+     */
+    explicit change_hub(std::string system_tenant, std::size_t per_stream_capacity = 256)
+        : system_tenant_(std::move(system_tenant))
+        , capacity_(per_stream_capacity) {}
 
-    [[nodiscard]] std::shared_ptr<change_subscription> subscribe() {
+    /// Opens a stream for @p tenant, which also hears the system tenant.
+    [[nodiscard]] std::shared_ptr<change_subscription> subscribe(std::string tenant) {
         const std::lock_guard lock(mu_);
-        auto subscription = std::make_shared<change_subscription>(capacity_);
+        auto subscription = std::make_shared<change_subscription>(std::move(tenant), capacity_);
         subscriptions_.push_back(subscription);
         return subscription;
     }
 
-    /// Gives every open stream the frame, and forgets the ones that have ended.
-    void publish(std::string frame) {
+    /// Gives the frame to every open stream that hears what owns it.
+    void publish(const std::string& tenant, std::string frame) {
         std::vector<std::shared_ptr<change_subscription>> open;
         {
             const std::lock_guard lock(mu_);
@@ -162,16 +176,23 @@ public:
                           [](const auto& subscription) { return subscription->closed(); });
             open = subscriptions_;
         }
-        for (auto& subscription : open)
-            subscription->push(frame);
+        for (auto& subscription : open) {
+            if (subscription->tenant() == tenant || tenant == system_tenant_)
+                subscription->push(frame);
+        }
     }
 
+    /// How many streams are still open. A closed one is not counted, even before
+    /// the next publish gets around to forgetting it.
     [[nodiscard]] std::size_t open_streams() const {
         const std::lock_guard lock(mu_);
-        return subscriptions_.size();
+        return static_cast<std::size_t>(
+            std::count_if(subscriptions_.begin(), subscriptions_.end(),
+                          [](const auto& subscription) { return !subscription->closed(); }));
     }
 
 private:
+    std::string system_tenant_;
     mutable std::mutex mu_;
     std::vector<std::shared_ptr<change_subscription>> subscriptions_;
     std::size_t capacity_;
@@ -195,6 +216,19 @@ public:
         : subscription_(std::move(subscription))
         , keep_alive_(keep_alive) {}
 
+    /**
+     * @brief Ends the stream when the client it was written for is gone.
+     *
+     * The hub holds its own reference to the subscription, so a source that only
+     * dropped its own would leave the stream in the hub for the life of the
+     * process: its queue would keep filling with every frame, for a reader that no
+     * longer exists. Closing here is what lets the next publish forget it.
+     */
+    ~change_stream_source() override {
+        if (subscription_)
+            subscription_->close();
+    }
+
     [[nodiscard]] std::optional<std::uint64_t> size() const override {
         return std::nullopt;
     }
@@ -217,11 +251,18 @@ public:
              * timer when a frame arrives, so a frame does not wait it out; a cancel
              * that lands before the wait begins does nothing and costs one interval.
              */
-            boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
-            timer.expires_after(keep_alive_);
-            subscription_->set_waker([&timer] { timer.cancel(); });
+            /*
+             * The timer is held by shared ownership because the waker outlives this
+             * scope when the read is cancelled: a cancel that lands on a destroyed
+             * timer would be a call into freed memory, and this makes it a no-op.
+             */
+            auto timer = std::make_shared<boost::asio::steady_timer>(
+                co_await boost::asio::this_coro::executor);
+            timer->expires_after(keep_alive_);
+            subscription_->set_waker([timer] { timer->cancel(); });
             boost::system::error_code ec;
-            co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            co_await timer->async_wait(
+                boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             subscription_->clear_waker();
 
             if (!subscription_->closed() && subscription_->size() == 0)

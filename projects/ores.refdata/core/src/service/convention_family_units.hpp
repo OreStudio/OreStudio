@@ -83,11 +83,26 @@ void apply_convention(const ores::database::context& ctx,
 
 std::vector<std::string> read_convention_payloads(const ores::database::context& ctx);
 
-void apply_cross_currency_basis(const ores::database::context& ctx,
-                                const std::string& payload,
-                                conventions_apply_result& result);
+void apply_cross_currency_basis_flat_leg(const ores::database::context& ctx,
+                                         const std::string& payload,
+                                         conventions_apply_result& result);
 
-std::vector<std::string> read_cross_currency_basis_payloads(const ores::database::context& ctx);
+std::vector<std::string>
+read_cross_currency_basis_flat_leg_payloads(const ores::database::context& ctx);
+
+void apply_cross_currency_basis_spread_leg(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_cross_currency_basis_spread_leg_payloads(const ores::database::context& ctx);
+
+void apply_cross_currency_basis_swap_terms(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_cross_currency_basis_swap_terms_payloads(const ores::database::context& ctx);
 
 void apply_cross_currency_fix_float_fixed_leg(const ores::database::context& ctx,
                                               const std::string& payload,

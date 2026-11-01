@@ -109,12 +109,24 @@ inline constexpr convention_family_entry convention_families[] = {
      "refdata.v1.conventions",
      true,
      convention_write_mode::by_id},
-    {"cross_currency_basis",
-     "cross_currency_basis_convention",
-     "ores::refdata::domain::cross_currency_basis_convention",
-     "refdata.v1.cross_currency_basis_conventions",
+    {"cross_currency_basis_flat_leg",
+     "cross_currency_basis_flat_leg",
+     "ores::refdata::domain::cross_currency_basis_flat_leg",
+     "refdata.v1.cross_currency_basis_flat_legs",
      true,
-     convention_write_mode::party},
+     convention_write_mode::by_id},
+    {"cross_currency_basis_spread_leg",
+     "cross_currency_basis_spread_leg",
+     "ores::refdata::domain::cross_currency_basis_spread_leg",
+     "refdata.v1.cross_currency_basis_spread_legs",
+     true,
+     convention_write_mode::by_id},
+    {"cross_currency_basis_swap_terms",
+     "cross_currency_basis_swap_terms",
+     "ores::refdata::domain::cross_currency_basis_swap_terms",
+     "refdata.v1.cross_currency_basis_swap_terms",
+     true,
+     convention_write_mode::by_id},
     {"cross_currency_fix_float_fixed_leg",
      "cross_currency_fix_float_fixed_leg",
      "ores::refdata::domain::cross_currency_fix_float_fixed_leg",
@@ -250,7 +262,9 @@ enum class convention_family_key : std::size_t {
     commodity_forward,
     commodity_future,
     convention,
-    cross_currency_basis,
+    cross_currency_basis_flat_leg,
+    cross_currency_basis_spread_leg,
+    cross_currency_basis_swap_terms,
     cross_currency_fix_float_fixed_leg,
     cross_currency_fix_float_float_leg,
     cross_currency_fix_float_swap_terms,
@@ -290,9 +304,15 @@ static_assert(convention_families[static_cast<std::size_t>(convention_family_key
                   .key == "commodity_future");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::convention)]
                   .key == "convention");
-static_assert(
-    convention_families[static_cast<std::size_t>(convention_family_key::cross_currency_basis)]
-        .key == "cross_currency_basis");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_flat_leg)]
+                  .key == "cross_currency_basis_flat_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_spread_leg)]
+                  .key == "cross_currency_basis_spread_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_basis_swap_terms)]
+                  .key == "cross_currency_basis_swap_terms");
 static_assert(convention_families[static_cast<std::size_t>(
                                       convention_family_key::cross_currency_fix_float_fixed_leg)]
                   .key == "cross_currency_fix_float_fixed_leg");

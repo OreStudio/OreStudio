@@ -69,6 +69,7 @@ export function Timeline({
     actorPicture,
     marked,
     hideUnchanged = false,
+    only,
     isService,
 }: {
     readonly timeline: Stream;
@@ -101,6 +102,12 @@ export function Timeline({
      */
     readonly hideUnchanged?: boolean;
     /**
+     * Keeps only the entries this accepts, such as the versions one reason wrote.
+     * Each kept entry is still read against the version before it in the full
+     * stream, so its changes are its own and not the sum since the last kept one.
+     */
+    readonly only?: ((event: TimelineEvent) => boolean) | undefined;
+    /**
      * Whether an actor is a service account, or undefined for a reader who
      * cannot tell. When it is given and a service wrote an entry, a toggle
      * hides or shows what services did.
@@ -131,7 +138,9 @@ export function Timeline({
               );
           })
         : timeline.events;
-    const shown = events.filter((event) => system.shows(event.actor));
+    const shown = events.filter(
+        (event) => system.shows(event.actor) && (only === undefined || only(event)),
+    );
     const rows = batchesOf(shown);
     return (
         <div className="grid gap-3" data-timeline>

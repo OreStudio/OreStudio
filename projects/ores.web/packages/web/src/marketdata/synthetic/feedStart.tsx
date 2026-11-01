@@ -66,7 +66,7 @@ export function FeedStartNotice({ start }: { readonly start: FeedStart }): React
                 </p>
             )}
             {start.from_fixing && <FeedStartMeasures start={start} />}
-            {start.from_fixing && start.note !== '' && <p>{start.note}</p>}
+            {start.note !== '' && <p>{start.note}</p>}
         </Notice>
     );
 }

@@ -23,7 +23,19 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { CalibratedFeed, Calibration } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { moveProvider, needsAttention, outcomeOf, visibleFeeds } from './calibration.js';
+import {
+    CALIBRATION_REASON,
+    advance,
+    calibrationEntries,
+    moveProvider,
+    needsAttention,
+    needsRestart,
+    outcomeOf,
+    runCounts,
+    runOf,
+    toneOf,
+    visibleFeeds,
+} from './calibration.js';
 import { CalibrationFeedPage, CalibrationPage, CalibrationPolicyPage } from './CalibrationPages.js';
 
 const EURUSD = '11111111-1111-4111-8111-111111111111';
@@ -205,7 +217,11 @@ describe('a feed calibration record', () => {
         expect(html).toContain('a candidate ranked higher was chosen');
         expect(html).toContain('1/x');
         expect(html).toContain('Realised volatility');
-        expect(html).toContain('This feed follows its class policy.');
+        expect(html).toContain('Calibrated automatically from the catalogue.');
+        expect(html).toContain('A run that starts now will take');
+        expect(html).toContain('Resolution trail');
+        expect(html).toContain('Calibrate this feed');
+        expect(html).not.toContain('Calibration events');
         expect(html).not.toMatch(/vintage/i);
     });
 
@@ -213,19 +229,24 @@ describe('a feed calibration record', () => {
         const html = render(`/market-data/calibration/fx/feeds/${GBPUSD}`, calibration());
         expect(html).toContain('This feed names its own items, so it overrides the class policy.');
         expect(html).toContain('Clear the items and follow the policy');
-        expect(html).toContain('href="/market-data/calibration/fx/policy"');
+        expect(html).toContain('>override<');
     });
 
     it('explains the flow from the policy to the process', () => {
         const html = render(`/market-data/calibration/fx/feeds/${EURUSD}?tab=flow`, calibration());
         expect(html).toContain('Starts from the ecb fixing of 1.0841 on 2026-10-30.');
         expect(html).toContain('The measured volatility scales the mixture&#x27;s deviations.');
+        expect(html).toContain('href="/market-data/calibration/fx/policy"');
+        expect(html).toContain('Recent calibrations');
     });
 });
 
 describe('the calibration policy', () => {
     it('keeps the screen to the system administrator', () => {
-        const html = render('/market-data/calibration/fx/policy', calibration({ policyWritable: false }));
+        const html = render(
+            '/market-data/calibration/fx/policy',
+            calibration({ policyWritable: false }),
+        );
         expect(html).toContain('Calibration is a system control');
         expect(html).not.toContain('Save the policy');
     });
@@ -248,5 +269,61 @@ describe('the calibration policy', () => {
         expect(html).toContain('Save the policy');
         expect(html).toContain('Return to automatic');
         expect(html).toContain('Move imf up');
+    });
+});
+
+describe('a calibration run', () => {
+    const done = (feed: CalibratedFeed, outcome: CalibratedFeed['outcome'], running = false) => ({
+        ...feed,
+        outcome,
+        running,
+        outcome_message: outcome,
+    });
+
+    it('starts with every feed waiting, in the order given', () => {
+        const run = runOf([eurusd, audusd]);
+        expect(run.map((s) => [s.pair, s.state])).toEqual([
+            ['EUR/USD', 'waiting'],
+            ['AUD/USD', 'waiting'],
+        ]);
+        expect(runCounts(run)).toMatchObject({ total: 2, finished: 0 });
+    });
+
+    it('reads each finished feed by what the server wrote', () => {
+        let run = runOf([eurusd, audusd, gbpusd]);
+        run = advance(run, EURUSD, { state: 'done', result: done(eurusd, 'updated') });
+        run = advance(run, AUDUSD, { state: 'done', result: done(audusd, 'kept') });
+        run = advance(run, GBPUSD, { state: 'failed', error: 'stale version' });
+        expect(run.map(toneOf)).toEqual(['ok', 'warn', 'bad']);
+        expect(runCounts(run)).toEqual({
+            total: 3,
+            finished: 3,
+            updated: 1,
+            unchanged: 0,
+            kept: 1,
+            failed: 1,
+        });
+    });
+
+    it('asks a restart only of a running feed whose calibration changed', () => {
+        let run = runOf([eurusd, audusd, gbpusd]);
+        run = advance(run, EURUSD, { state: 'done', result: done(eurusd, 'updated', true) });
+        run = advance(run, AUDUSD, { state: 'done', result: done(audusd, 'updated', false) });
+        run = advance(run, GBPUSD, { state: 'done', result: done(gbpusd, 'unchanged', true) });
+        expect(needsRestart(run).map((s) => s.configId)).toEqual([EURUSD]);
+    });
+});
+
+describe('the calibrations in a feed history', () => {
+    it('keeps only calibration versions, newest first, one per write', () => {
+        const at1 = '2026-11-01 10:00:00.123+00';
+        const at2 = '2026-11-01 11:00:00.456+00';
+        const entries = calibrationEntries([
+            { at: at1, actor: 'svc', reasonCode: CALIBRATION_REASON, commentary: 'first' },
+            { at: at1, actor: 'svc', reasonCode: CALIBRATION_REASON, commentary: 'first' },
+            { at: at2, actor: 'svc', reasonCode: CALIBRATION_REASON, commentary: 'second' },
+            { at: at2, actor: 'ann', reasonCode: 'common.rectification', commentary: 'edit' },
+        ]);
+        expect(entries.map((e) => e.commentary)).toEqual(['second', 'first']);
     });
 });

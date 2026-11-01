@@ -4916,17 +4916,10 @@ const fr: SourceCatalogue = {
         calibration: {
             title: 'Calibrage',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
-            systemOnly: 'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
+            systemOnly:
+                'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
             calibrateAll: 'Tout calibrer',
             calibrating: 'Calibrage…',
-            progress: {
-                title: 'Calibrage de la classe',
-                policy: 'Lire la politique de la classe',
-                feeds: 'Résoudre chaque flux ({seconds} s)',
-                record: 'Enregistrer le résultat',
-                note: 'La classe est résolue en une passe ; les étapes se cochent à mesure que le service répond.',
-            },
-            calibratedAt: 'Dernière calibration {when}.',
             assetClass: "Classe d'actifs",
             classes: {
                 fx: 'Change au comptant',
@@ -4981,30 +4974,29 @@ const fr: SourceCatalogue = {
                 skipped: 'écarté',
                 not_reached: 'non atteint',
             },
+            run: {
+                title: 'Exécution de la calibration',
+                progress: '{finished} sur {total} flux',
+                waiting: 'En attente',
+                running: 'Calibration…',
+                nextStart:
+                    'Le flux tourne : les nouvelles valeurs s’appliquent à son prochain démarrage.',
+                summary:
+                    '{updated} mis à jour · {unchanged} inchangés · {kept} ont gardé un niveau · {failed} en échec',
+                restart: 'Redémarrer {count} flux en cours pour appliquer',
+                restarted: 'Les flux en cours ont redémarré avec la nouvelle calibration.',
+                close: 'Fermer',
+            },
             feed: {
                 title: 'Flux',
                 tabs: 'Calibrage du flux',
                 tab: {
                     record: 'Fiche du flux',
                     flow: 'Parcours',
-                    events: 'Événements de calibrage',
                 },
                 back: 'Retour à la liste',
                 missing: "Ce flux n'est pas dans la classe.",
-                events: {
-                    title: 'Événements de calibrage',
-                    time: 'Heure',
-                    event: 'Événement',
-                    note: 'Ce que le dernier calibrage a fait à ce flux. Les passes précédentes restent dans les enregistrements.',
-                    resolved: 'Résolu depuis {provider} · {item} · {value} le {date}.',
-                    kept: 'Aucun fixing publié n’a fixé le niveau ; le flux a gardé son niveau configuré.',
-                    refused: 'Aucun fixing publié n’a fixé le niveau, et la politique de la classe a refusé de démarrer le flux.',
-                    pinned: 'Le flux épingle son propre élément ; l’ordre de la politique ne s’applique pas.',
-                    window: 'Le flux remplace la fenêtre de la classe par {days} jours.',
-                },
-                start: 'Où un lancement démarre maintenant',
-                level: 'Niveau',
-                provider: 'Fournisseur',
+                start: "Ce qu'un démarrage prendrait maintenant",
                 date: 'Date du fixing',
                 invertedNote:
                     "L'élément cote la paire dans l'autre sens, donc sa valeur est lue comme son inverse.",
@@ -5015,23 +5007,59 @@ const fr: SourceCatalogue = {
                 direct: 'direct',
                 inverse: '1/x',
                 pin: 'Épingler',
-                exceptions: 'Dérogations',
-                followsPolicy: 'Ce flux suit la politique de sa classe.',
+                item: 'Élément',
+                window: 'Fenêtre',
+                windowValue: '{used} fixings sur {days} jours',
+                windowDays: 'fenêtre de {days} jours',
+                statedFallback:
+                    "C'est un repli déclaré : aucun candidat n'a de fixing, donc le flux garde son niveau fixe.",
+                statedRefusal:
+                    "C'est un refus déclaré : aucun candidat n'a de fixing, et la politique de la classe ne démarre pas le flux.",
+                trail: 'Parcours de résolution',
+                trailStart: 'Démarrage',
+                trailTakes: 'prend {value} de {provider}',
+                trailKept: 'garde son niveau fixe',
+                trailRefused: 'ne démarre pas',
+                measures: 'Mesures derrière le démarrage',
+                noMeasures: "Aucun fixing n'a été lu, donc il n'y a rien à mesurer.",
+                thisFeed: 'Ce flux',
+                pair: 'Paire',
+                source: 'Flux',
+                policyState: 'Politique',
+                runs: 'Maintenant',
+                running: 'en cours',
+                stopped: 'arrêté',
+                openFeed: 'Ouvrir la fiche du flux et son historique',
+                calibrate: 'Calibrer ce flux',
+                badge: {
+                    automatic: 'automatique',
+                    inherits: 'hérite',
+                    override: 'dérogation',
+                },
+                banner: {
+                    automatic:
+                        "Calibré automatiquement depuis le catalogue. Rien n'a été configuré pour ce flux.",
+                    inherits:
+                        'Hérite de la politique de la classe : {order}, fenêtre de {window} jours.',
+                },
                 overridesItems:
                     'Ce flux nomme ses propres éléments, donc il déroge à la politique de la classe.',
                 overridesWindow:
                     'Ce flux mesure sur sa propre fenêtre de {days} jours, donc il déroge à la politique de la classe.',
                 clearPin: 'Effacer les éléments et suivre la politique',
                 editWindow: 'Modifier la fenêtre du flux',
-                toPolicy: 'Aller à la politique',
             },
             flow: {
+                title: 'Comment {pair} se résout',
+                inherits: 'Ce dont il hérite',
+                recent: 'Calibrations récentes',
+                noRecent: "Aucune calibration n'a encore modifié ce flux.",
+                when: 'Quand',
+                what: 'Ce qui a changé',
+                by: 'Par',
                 policy: '1. Politique',
                 candidates: '2. Candidats',
                 resolver: '3. Résolution',
-                process: '4. Processus',
-                explicit: 'Le flux nomme ses propres {count} élément(s).',
-                derived: '{count} candidat(s) dérivé(s) de la paire et de la politique.',
                 chosen: 'Démarre du fixing {provider} de {value} au {date}.',
                 fixed: "Aucun candidat n'a de fixing, donc le flux garde son niveau fixe.",
                 refused:
@@ -6453,6 +6481,7 @@ const fr: SourceCatalogue = {
         },
         history: {
             lead: "Le flux et chaque ligne qu'il possède, dans un seul fil, du plus récent au plus ancien. Rétablir réécrit les valeurs d'une version plus ancienne comme une nouvelle version.",
+            calibrationOnly: 'Calibration seulement ({count})',
             gap: "Une ligne supprimée du flux n'est pas dans ce fil : l'écran lit l'historique des lignes que le flux détient maintenant.",
         },
         ticks: {

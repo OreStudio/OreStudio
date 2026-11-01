@@ -25,10 +25,13 @@ import { subjects as feedSubjects } from '@ores/wire-protocol/generated/syntheti
 import { subjects as policySubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
 import { subjects as orderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
 import { subjects as itemSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
-import { HttpFailure, notPermitted } from './errors.js';
+import { HttpFailure, notFound, notPermitted } from './errors.js';
 import { input, intentSchema, paramId, readAll, refusal, write } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 import { feedStartSchema, operationReplySchema, upstreamFailure } from './synthetic.js';
+
+/** A calibration run: every feed of the class, or the one feed it names. */
+const runBodySchema = z.object({ configId: z.uuid().optional() }).strict().default({});
 
 /** An asset class as its refdata code names it. */
 const assetClassSchema = z
@@ -66,6 +69,9 @@ const calibratedFeedSchema = z.object({
     refused: z.boolean().default(false),
     start: feedStartSchema,
     candidates: z.array(candidateOutcomeSchema).default([]),
+    running: z.boolean().default(false),
+    outcome: z.string().default(''),
+    outcome_message: z.string().default(''),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
@@ -249,6 +255,32 @@ export function registerCalibrationRoutes(
             feeds: reply.feeds,
             coverage: calibrationCoverage(reply.feeds),
         };
+    });
+
+    /**
+     * Calibrates and stores: each feed's resolved level and deviations are written as a new
+     * version of its config, under the reason system.calibration, when they moved. A screen
+     * names one feed a call so it can report each feed as it is done. A running feed takes
+     * the stored values at its next start.
+     */
+    server.post('/api/synthetic/calibration/:assetClass/run', async (request) => {
+        const session = requireSession(request);
+        const assetClass = assetClassOf(request);
+        const body = input(runBodySchema, request.body ?? {});
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.calibrate_request,
+            { asset_class_code: assetClass, config_id: body.configId ?? '', apply: true },
+            operationReplySchema.extend({
+                feeds: z.array(calibratedFeedSchema).default([]),
+            }),
+        );
+        if (!reply.success) {
+            throw upstreamFailure(reply.message);
+        }
+        if (body.configId !== undefined && reply.feeds.length === 0) {
+            throw notFound(`No feed ${body.configId} calibrates in ${assetClass}.`);
+        }
+        return { assetClass, feeds: reply.feeds };
     });
 
     /**

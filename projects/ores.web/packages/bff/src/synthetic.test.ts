@@ -600,6 +600,76 @@ describe('synthetic calibration', () => {
         expect(response.body).toContain('A calibration names its asset class.');
     });
 
+    it('calibrates and stores the one feed named, and answers what it wrote', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                feeds: [
+                    {
+                        config_id: ID,
+                        source_name: 'synthetic.eurusd',
+                        start: { from_fixing: true, item: 'oresmd://fx/EUR?type=fixing&ccy=USD' },
+                        running: true,
+                        outcome: 'updated',
+                        outcome_message: 'Calibrated from the ecb fixing of 2026-10-30.',
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: ID,
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'synthetic.v1.ops.calibrate_feeds',
+                body: { asset_class_code: 'fx', config_id: ID, apply: true },
+            },
+        ]);
+        expect(response.json().feeds[0]).toMatchObject({
+            running: true,
+            outcome: 'updated',
+            outcome_message: 'Calibrated from the ecb fixing of 2026-10-30.',
+        });
+    });
+
+    it('answers not found when the named feed is not in the class', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': { success: true, feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: ID,
+            },
+        );
+        expect(response.statusCode).toBe(404);
+    });
+
+    it('refuses a run that names a feed by something other than its id, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/calibration/fx/run',
+            {
+                configId: 'eurusd',
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     const statedPolicy = {
         intent: INTENT,
         version: 3,

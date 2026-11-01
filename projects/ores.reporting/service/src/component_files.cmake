@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
+    "app/cut_authorisation_reconciler.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
@@ -72,6 +73,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/application.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/cut_authorisation_reconciler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/parser.hpp"

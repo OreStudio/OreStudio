@@ -22,11 +22,15 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.inbox.api/eventing/approval_request_event.hpp"
+#include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/eventing/report_definition_event.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
+#include "ores.reporting.core/service/cut_authorisation_applier.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
+#include "ores.reporting.service/app/cut_authorisation_reconciler.hpp"
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
 #include "ores.reporting.service/messaging/cut_event_registrar.hpp"
 #include "ores.reporting.service/messaging/cut_family_event_registrar.hpp"
@@ -44,6 +48,8 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/post.hpp>
+#include <cstdint>
+#include <memory>
 
 namespace ores::reporting::service::app {
 
@@ -134,7 +140,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto cg_changed_sub = ores::reporting::service::messaging::register_cut_gap_event_mapping(
         event_source, event_bus, nats);
 
+    // A decided cut authorisation is stamped here, by reporting, which owns the
+    // cuts. The inbox's request channel is only the nudge: each change runs the
+    // reconciliation, which stamps every decided request the cut does not carry
+    // yet, so a missed or repeated event changes nothing. The sweep below catches
+    // what was decided while this service was down.
+    using approval_request_event = ores::inbox::messaging::approval_request_event;
+    auto cut_authorisations = std::make_shared<service::cut_authorisation_applier>(
+        make_context(cfg.database));
+    event_source.register_entity_event_mapping<approval_request_event>(
+        "ores_inbox_approval_requests");
+    auto cut_authorisation_sub = event_bus.subscribe<approval_request_event>(
+        [cut_authorisations](const approval_request_event&) { cut_authorisations->apply(); });
+
     event_source.start();
+    cut_authorisations->apply();
 
     co_await ores::service::service::run(
         io_ctx,
@@ -161,11 +181,22 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 subs.push_back(std::move(sub));
             return subs;
         },
-        [&nats, &svc_nats, db_ctx](boost::asio::io_context& ioc) {
+        [&nats, &svc_nats, db_ctx, cut_authorisations](boost::asio::io_context& ioc) {
             // Reconcile scheduler jobs for all unscheduled report definitions.
             auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, svc_nats);
             boost::asio::co_spawn(
                 ioc, [reconciler]() { return reconciler->reconcile(); }, boost::asio::detached);
+
+            // A decision the request's event never announced is applied within
+            // the interval, because the sweep reads the store rather than
+            // listening to it.
+            constexpr std::uint32_t reconcile_interval_seconds = 60;
+            auto cut_authorisation_sweep = std::make_shared<app::cut_authorisation_reconciler>(
+                reconcile_interval_seconds, cut_authorisations);
+            boost::asio::co_spawn(
+                ioc,
+                [cut_authorisation_sweep]() { return cut_authorisation_sweep->run(); },
+                boost::asio::detached);
 
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);

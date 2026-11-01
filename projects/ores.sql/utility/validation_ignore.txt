@@ -433,6 +433,12 @@ RLS_002 ores_dq_*_artefact_tbl
 # ores.marketdata.curve_publish.
 RLS_002 ores_marketdata_curve_publishes_tbl
 
+# Cut approval details -- the same rule as curve publishes: the decider of a cut
+# is a tenant function, Finance for the close and Market Risk for the
+# verification, so a party policy would hide the request's subject from the
+# person who decides it. See the model ores.reporting.cut_approval_detail.
+RLS_002 ores_reporting_cut_approval_details_tbl
+
 # Synthetic generators — the system party owns every collection, folder and feed, and every
 # tenant reads them. A feed stands for one observation in the world, so no party may be
 # outside the readers of a generator. Tenant isolation is the whole policy.

@@ -344,6 +344,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        // An applied calibration writes new versions of the configs and their components, and
+        // the services that write them check no permission of their own.
+        if (req->apply &&
+            (!has_permission(req_ctx, "synthetic::fx_spot_generation_configs:write") ||
+             !has_permission(req_ctx, "synthetic::gmm_components:write"))) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         try {
             reply(nats_, msg, calibrate_class(req_ctx, *kind, *req));

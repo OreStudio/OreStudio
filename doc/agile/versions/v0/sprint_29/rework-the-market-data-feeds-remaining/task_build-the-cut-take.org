@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-cut-take
-#+pr:
+#+pr: 4314
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4314][#4314]] | [reporting] Take a cut and raise its approval |
 
 * Review
 

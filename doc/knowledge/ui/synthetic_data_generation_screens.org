@@ -41,16 +41,14 @@ and
 :END:
 
 The one-stop authoring window. A toolbar (New Collection, New FX Rate, New IR
-Curve, Edit, Delete, Start, Stop, Validate Vintage, Reload), a tree of the
+Curve, Edit, Delete, Start, Stop, Reload), a tree of the
 configured feeds on the left, and a hero header, a summary and a live chart
 on the right. FX feeds show a mid-price tick chart. IR curves show recent
 curve snapshots overlaid, newest bold, with the number of snapshots under a
 History control.
 
-The *Validate Vintage* action merges each contributor's check into one
-summary. For FX it reports the availability of the named vintage, and for IR
-it reports the local binding collision check. The summary ends with the count
-of items that pass or do not need validation.
+Where an FX feed starts, and why, is on the calibration screens: the class
+list, the feed's record and the policy.
 
 The prototype is at
 [[file:../../prototypes/market_data/synthetic-feeds/][synthetic feeds]].

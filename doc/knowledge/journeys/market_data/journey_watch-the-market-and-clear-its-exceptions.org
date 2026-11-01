@@ -124,7 +124,7 @@ say who cleared what do not exist yet.
 | Read the raw points | List the fixings | =marketdata.v1.market_fixings.list= | exists |
 | Read the raw points | Read each point's lineage | =marketdata.v1.observation_lineages.get= | exists |
 | Find the exceptions | Compare against the expected points | =refdata.v1.ir_curve_bootstrap_pillars.list= | partial |
-| Find the exceptions | Check the feed vintage | =marketdata.v1.ops.get_vintage_validity= | partial |
+| Find the exceptions | Check where each feed starts | =synthetic.v1.ops.calibrate_feeds= | partial |
 | Find the exceptions | Read the exceptions of a scope | none | missing |
 | Decide each exception | Read the exception rules and thresholds | none | missing |
 | Record the resolution | Write the resolution | none | missing |
@@ -135,8 +135,8 @@ say who cleared what do not exist yet.
 The history request is the generic one, with =entity_type=
 =ores.marketdata.market_observation= or
 =ores.marketdata.observation_lineage=; both register a history provider. The
-vintage check covers only the =fx_spot= generation configs, so the screen cannot
-ask it about every feed.
+calibration read covers only the FX asset class, so the screen cannot ask it
+about every feed.
 
 * What is missing
 

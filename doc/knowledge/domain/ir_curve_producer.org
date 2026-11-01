@@ -21,20 +21,15 @@ It implements =i_generator=, and its =kind()= returns the string constant
 
 ** How the generator is built
 
-=make_ir_curve_generator= is the builder the start paths share, so the auto-start
+=make_ir_curve_feed= is the builder the start paths share, so the auto-start
 pass and an on-demand start cannot drift.
 
 1. It resolves the config's template entries into =ir_curve_resolved_entry=
    records through =resolve()=.
-2. Under ="vintage"= it overrides the stored =initial_rate= value row with a
-   real observation. The anchor is the resolved deposit entry with the
-   smallest tick distance to its end, chosen by =select_vintage_anchor_entry=,
-   which is a separate function so the selection is unit-testable without a
-   live market data client.
-3. It builds the process through
+2. It builds the process through
    =map_parameters_to_yield_curve_process=, passing the joined definitions and
-   value rows.
-4. It names each pillar's vendor instrument from the template entry: the
+   value rows. The starting short rate is the stored =initial_rate= value row.
+3. It names each pillar's vendor instrument from the template entry: the
    provider, the id scheme, the external id and the field. See
    [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][the mapping]].
 

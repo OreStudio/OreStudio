@@ -34,7 +34,7 @@ package "bloomberg-live" {
 }
 
 package "bloomberg-sim (ores.marketdata.synthetic)" {
-    component "Generator runner\nprocesses, vintage anchors" as gen
+    component "Generator runner\nprocesses, fixing calibration" as gen
     component "Fault injection\ndrops, delays, bad ticks" as fault
     component "Authoring\ncollections, folders, preview" as auth
 }

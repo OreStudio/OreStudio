@@ -2261,12 +2261,47 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'refdata.v1.cross_currency_basis_conventions.list': {
+    'refdata.v1.cross_currency_basis_flat_legs.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['cross_currency_basis_conventions'],
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_flat_legs'],
     },
-    'refdata.v1.cross_currency_basis_conventions_versions.list': {
+    'refdata.v1.cross_currency_basis_flat_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_flat_legs'],
+    },
+    'refdata.v1.cross_currency_basis_flat_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_spread_legs'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_spread_legs'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_swap_terms'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_swap_terms'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

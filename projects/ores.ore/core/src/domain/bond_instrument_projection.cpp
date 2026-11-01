@@ -1348,8 +1348,11 @@ void write_conversion_targets(const std::vector<bond_issue_conversion_target>& t
     for (const auto& row : targets)
         ratios.append("ConversionRatio")
             .set_own_text(decimal_from_double(row.conversion_ratio).to_string());
-    if (!targets.front().underlying_id.empty())
-        conversion.child("Underlying").set_text("Name", targets.front().underlying_id);
+    if (!targets.front().underlying_id.empty()) {
+        auto underlying = conversion.child("Underlying");
+        underlying.set_text("Type", "Equity");
+        underlying.set_text("Name", targets.front().underlying_id);
+    }
 }
 
 void write_call_dates(const std::vector<bond_issue_call_date>& dates, record_writer call) {

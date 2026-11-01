@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "test_suite.hpp"
@@ -2648,6 +2649,32 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying",
     CHECK(round->strike.to_string() == "2800.5");
 }
 
+TEST_CASE("a_trade_the_writer_refuses_is_named_in_the_refusal",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    // The reader refuses an underlying with no type, so the trade is built
+    // with the writer the export uses.
+    portfolio_projection::document document;
+    ores::ore::xml::record_writer root(*pf::portfolio_document().root, &document);
+    auto trade = root.append("Trade");
+    trade.set_spelling("TradeType", "EquityPosition", "trade type");
+    trade.set_text("id", "untyped-underlying-1");
+    auto data = trade.child("EquityPositionData");
+    data.set_decimal("Quantity", *ores::utility::decimal::decimal::from_string("5000"));
+    data.append("Underlying").set_text("Name", ".SPX");
+    root.state("Trade");
+
+    try {
+        static_cast<void>(portfolio_projection::write(document));
+        FAIL("the writer accepted an underlying with no type");
+    } catch (const std::runtime_error& e) {
+        const std::string message = e.what();
+        CHECK(message.find("required element 'Type'") != std::string::npos);
+        CHECK(message.find("Trade 'untyped-underlying-1'") != std::string::npos);
+    }
+}
+
 TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entries",
           "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
@@ -3082,6 +3109,26 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
     CHECK(cfd_again.anchor.trade_type == "ContractForDifference");
     CHECK(std::get<ores::trading::domain::composite_instrument_data>(cfd_again.instrument)
               .instrument.identity.trade_type_code == "ContractForDifference");
+}
+
+TEST_CASE("a_written_equity_position_states_the_type_of_its_underlying",
+          "[ore][xml][portfolio][projection]") {
+    auto lg(make_logger(test_suite));
+
+    const auto items =
+        portfolio_projection::map(portfolio_projection::read(equity_position_document_text));
+    REQUIRE(items.size() == 2);
+
+    // The schema requires a type on every underlying, so a position the row
+    // names only by its equity would not be written at all.
+    for (const auto& item : items) {
+        INFO("trade " << item.ore_id);
+        const auto written = portfolio_projection::write(exported(item));
+        CHECK(written.find("<Type>Equity</Type>") != std::string::npos);
+        const auto again = portfolio_projection::map(portfolio_projection::read(written));
+        REQUIRE(again.size() == 1);
+        CHECK(again.front().anchor.trade_type == item.anchor.trade_type);
+    }
 }
 
 TEST_CASE("a_written_product_states_the_terms_the_schema_requires",

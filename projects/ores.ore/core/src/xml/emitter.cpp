@@ -279,12 +279,12 @@ auto write_repeated(std::string& out,
     return {};
 }
 
-auto write_element(std::string& out,
-                   const record_type& type,
-                   const void* record,
-                   std::size_t depth,
-                   std::string_view name,
-                   const void* columns) -> std::expected<void, emit_error> {
+auto write_element_body(std::string& out,
+                        const record_type& type,
+                        const void* record,
+                        std::size_t depth,
+                        std::string_view name,
+                        const void* columns) -> std::expected<void, emit_error> {
     // The binder holds max_depth frames, so an element this writer places at
     // that depth would not bind again.
     if (depth >= max_emit_depth)
@@ -443,6 +443,31 @@ auto write_element(std::string& out,
     out.append(name);
     out.push_back('>');
     return {};
+}
+
+/**
+ * A refusal deep in a portfolio names a record type that dozens of trades
+ * share, so the element that carries an id names itself on the way out and the
+ * reader learns which trade to fix.
+ */
+auto write_element(std::string& out,
+                   const record_type& type,
+                   const void* record,
+                   std::size_t depth,
+                   std::string_view name,
+                   const void* columns) -> std::expected<void, emit_error> {
+    auto written = write_element_body(out, type, record, depth, name, columns);
+    if (written)
+        return written;
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (!f.is_attribute || f.name != std::string_view("id") || !emitter_present(record, f))
+            continue;
+        written.error().message += " (in " + std::string(name) + " '" +
+                                   *static_cast<const std::string*>(slot_of(record, f)) + "')";
+        break;
+    }
+    return written;
 }
 
 }

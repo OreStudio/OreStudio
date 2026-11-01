@@ -65,8 +65,34 @@ export interface AcceptProviderTermsResponse {
     accepted_at: string | null;
 }
 
+/**
+ * @brief Withdraws the acceptance of a provider's terms, so the adapter no longer fetches it.
+ *
+ * A system administrator who declines a provider, or changes their mind, withdraws its
+ * acceptance. The service clears the digest, the account and the time; a provider that was
+ * never accepted is left as it is.
+ */
+export interface WithdrawProviderTermsRequest {
+    /**
+     * @brief The provider whose acceptance is withdrawn.
+     */
+    provider_code: string;
+}
+
+export interface WithdrawProviderTermsResponse {
+    /**
+     * @brief Whether the provider is now not accepted.
+     */
+    success: boolean;
+    /**
+     * @brief Why it was not, or what was recorded.
+     */
+    message: string;
+}
+
 export const subjects = {
     accept_provider_terms_request: 'marketdata.v1.ops.accept_provider_terms',
+    withdraw_provider_terms_request: 'marketdata.v1.ops.withdraw_provider_terms',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -75,4 +101,5 @@ export const subjects = {
  */
 export const requiresSession = {
     accept_provider_terms_request: true,
+    withdraw_provider_terms_request: true,
 } as const;

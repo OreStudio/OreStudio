@@ -150,6 +150,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             provider_terms_handler h(nats, ctx, verifier);
                                             h.accept(std::move(msg));
                                         }));
+    subs.push_back(nats.queue_subscribe(std::string(withdraw_provider_terms_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            provider_terms_handler h(nats, ctx, verifier);
+                                            h.withdraw(std::move(msg));
+                                        }));
 
     // The durable fixings of an item: the latest on or before a date, and a window of days.
     subs.push_back(nats.queue_subscribe(std::string(get_fixing_request::nats_subject),

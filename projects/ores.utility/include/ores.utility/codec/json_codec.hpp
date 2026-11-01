@@ -290,6 +290,9 @@ struct json_codec<std::vector<T>> {
 /**
  * @brief A map from names to values is an object: each key is a member name,
  * in the map's order, and each value is in its element's form.
+ *
+ * A key that appears twice on read keeps its first value. The writer never
+ * writes a key twice, so only a foreign sender can produce one.
  */
 template <typename T>
 struct json_codec<std::map<std::string, T>> {

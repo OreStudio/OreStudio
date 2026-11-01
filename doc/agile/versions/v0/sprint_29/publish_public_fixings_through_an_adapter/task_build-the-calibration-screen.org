@@ -116,6 +116,13 @@ via its "Verifies task" field.
 | 1 | Local: the policy save writes two collections in turn | calibration.ts | Accept | Each write is checked against the version read; a retry converges. |
 | 2 | Local: a pin clears the items before it writes | calibration.ts | Accept | A failed write leaves the feed on its policy, the safe side. |
 | 3 | Local: an engine change dropped the feed's window | fxFeeds.tsx | Accept | The write carries it; a test pins it. |
+| 4 | Found by the T4 seed: provider ranks start at 1, the save wrote 0 | calibration.ts | Accept | The order is written from rank 1. |
+| 5 | PR #4327: the policy and pin writes are not atomic | calibration.ts | Accept | Documented: each write converges, so saving again completes it; a failed pin leaves the feed on its policy. |
+| 6 | PR #4327: a swap may hit the unique rank | calibration.ts | Accept | A changed order is removed and rewritten, never moved in place; a test pins the swap. |
+| 7 | PR #4327: say why a pin needs no system tenant | calibration.ts | Accept | Commented: a feed belongs to its tenant. |
+| 8 | PR #4327: show a version conflict on delete as a conflict | CalibrationPages.tsx | Decline | The BFF answers 409 with the message, and the screen shows it. |
+| 9 | PR #4327: check the pin's item and provider | calibration.ts | Accept | An FX fixing URI and a code, refused with 400 otherwise. |
+| 10 | PR #4327: the policy lookup lists every policy | calibration.ts | Decline | The generated filter has no asset class, and the classes are few. |
 
 * Result
 

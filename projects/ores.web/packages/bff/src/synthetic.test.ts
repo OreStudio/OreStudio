@@ -622,27 +622,32 @@ describe('synthetic calibration', () => {
         expect(calls).toEqual([]);
     });
 
-    it('writes the policy against its version and brings the provider order to the list', async () => {
+    const ordered = (rungs: readonly [string, string, number, number][]) => ({
+        ...policyRows,
+        'synthetic.v1.calibration_provider_orders.list': {
+            result: ok,
+            calibration_provider_orders: rungs.map(([id, provider_code, rank, version]) => ({
+                id,
+                version,
+                policy_id: POLICY_ID,
+                provider_code,
+                rank,
+            })),
+        },
+        'synthetic.v1.calibration_policies.put_many': { result: ok },
+        'synthetic.v1.calibration_provider_orders.put_many': { result: ok },
+        'synthetic.v1.calibration_provider_orders.delete_many': { result: ok },
+    });
+    type Change = { write: Record<string, unknown>; precondition: unknown };
+    const changesOf = (calls: { subject: string; body: unknown }[], subject: string): Change[] =>
+        (calls.find((c) => c.subject === subject)?.body as { changes: Change[] }).changes;
+
+    it('writes the policy against its version and the order from rank 1', async () => {
         const { server, sessionId, calls } = buildTestServer(
-            {
-                ...policyRows,
-                'synthetic.v1.calibration_provider_orders.list': {
-                    result: ok,
-                    calibration_provider_orders: [
-                        { id: ID, version: 1, policy_id: POLICY_ID, provider_code: 'ecb', rank: 0 },
-                        {
-                            id: OTHER,
-                            version: 2,
-                            policy_id: POLICY_ID,
-                            provider_code: 'boe',
-                            rank: 1,
-                        },
-                    ],
-                },
-                'synthetic.v1.calibration_policies.put_many': { result: ok },
-                'synthetic.v1.calibration_provider_orders.put_many': { result: ok },
-                'synthetic.v1.calibration_provider_orders.delete_many': { result: ok },
-            },
+            ordered([
+                [ID, 'ecb', 1, 1],
+                [OTHER, 'boe', 2, 2],
+            ]),
             SYSTEM_TENANT,
         );
         const response = await send(
@@ -654,45 +659,92 @@ describe('synthetic calibration', () => {
         );
         expect(response.statusCode).toBe(204);
 
-        const put = calls.find((c) => c.subject === 'synthetic.v1.calibration_policies.put_many');
-        expect(put?.body).toEqual({
-            intent: INTENT,
-            changes: [
-                {
-                    write: {
-                        id: POLICY_ID,
-                        asset_class_code: 'fx',
-                        window_days: 120,
-                        allow_inverse: true,
-                        fallback_code: 'keep_fixed',
-                    },
-                    precondition: { kind: 'must_match_version', version: 3 },
+        expect(changesOf(calls, 'synthetic.v1.calibration_policies.put_many')).toEqual([
+            {
+                write: {
+                    id: POLICY_ID,
+                    asset_class_code: 'fx',
+                    window_days: 120,
+                    allow_inverse: true,
+                    fallback_code: 'keep_fixed',
                 },
-            ],
-        });
+                precondition: { kind: 'must_match_version', version: 3 },
+            },
+        ]);
         const removed = calls.find(
             (c) => c.subject === 'synthetic.v1.calibration_provider_orders.delete_many',
         );
-        expect(removed?.body).toMatchObject({ removals: [{ key: { id: ID } }] });
-        const ordered = calls.find(
-            (c) => c.subject === 'synthetic.v1.calibration_provider_orders.put_many',
+        expect(removed?.body).toMatchObject({
+            removals: [{ key: { id: ID } }, { key: { id: OTHER } }],
+        });
+        const rungs = changesOf(calls, 'synthetic.v1.calibration_provider_orders.put_many');
+        expect(rungs.map((c) => [c.write['provider_code'], c.write['rank']])).toEqual([
+            ['boe', 1],
+            ['imf', 2],
+        ]);
+        expect(
+            rungs.every((c) => (c.precondition as { kind: string }).kind === 'must_not_exist'),
+        ).toBe(true);
+    });
+
+    it('swaps two providers by rewriting the order, never by moving a rank in place', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            ordered([
+                [ID, 'ecb', 1, 1],
+                [OTHER, 'imf', 2, 1],
+            ]),
+            SYSTEM_TENANT,
         );
-        const changes = (
-            ordered?.body as {
-                changes: { write: Record<string, unknown>; precondition: unknown }[];
-            }
-        ).changes;
-        expect(changes).toHaveLength(2);
-        expect(changes[0]).toEqual({
-            write: { id: OTHER, policy_id: POLICY_ID, provider_code: 'boe', rank: 0 },
-            precondition: { kind: 'must_match_version', version: 2 },
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            {
+                ...statedPolicy,
+                provider_order: ['imf', 'ecb'],
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        const subjects = calls.map((c) => c.subject);
+        expect(
+            subjects.indexOf('synthetic.v1.calibration_provider_orders.delete_many'),
+        ).toBeLessThan(subjects.indexOf('synthetic.v1.calibration_provider_orders.put_many'));
+        const removed = calls.find(
+            (c) => c.subject === 'synthetic.v1.calibration_provider_orders.delete_many',
+        );
+        expect(removed?.body).toMatchObject({
+            removals: [{ key: { id: ID } }, { key: { id: OTHER } }],
         });
-        expect(changes[1]?.write).toMatchObject({
-            policy_id: POLICY_ID,
-            provider_code: 'imf',
-            rank: 1,
-        });
-        expect(changes[1]?.precondition).toEqual({ kind: 'must_not_exist', version: null });
+        const rungs = changesOf(calls, 'synthetic.v1.calibration_provider_orders.put_many');
+        expect(rungs.map((c) => [c.write['provider_code'], c.write['rank']])).toEqual([
+            ['imf', 1],
+            ['ecb', 2],
+        ]);
+    });
+
+    it('writes no order when the order is the one stored', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            ordered([
+                [ID, 'boe', 1, 1],
+                [OTHER, 'imf', 2, 1],
+            ]),
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            statedPolicy,
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).not.toContain(
+            'synthetic.v1.calibration_provider_orders.put_many',
+        );
+        expect(calls.map((c) => c.subject)).not.toContain(
+            'synthetic.v1.calibration_provider_orders.delete_many',
+        );
     });
 
     it('refuses a provider order that names a provider twice', async () => {
@@ -753,6 +805,24 @@ describe('synthetic calibration', () => {
                 },
             ],
         });
+    });
+
+    it('refuses to pin an item that is not an FX fixing, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/synthetic/calibration/feeds/${ID}/pin`,
+            {
+                intent: INTENT,
+                item: 'oresmd://fx/EUR?type=spot&ccy=USD',
+                provider_code: 'ecb',
+                window_days: 90,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 
     it('clears a pin so the feed derives its candidates again', async () => {

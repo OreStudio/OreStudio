@@ -204,8 +204,15 @@ async function removeItems(
 /** One candidate a person pins on a feed, as the exception to its policy. */
 const pinBodySchema = z.object({
     intent: intentSchema,
-    item: z.string().trim().min(1).max(500),
-    provider_code: z.string().trim().min(1).max(100),
+    item: z
+        .string()
+        .trim()
+        .max(500)
+        .regex(/^oresmd:\/\/fx\/[A-Z]{3}\?.*type=fixing/),
+    provider_code: z
+        .string()
+        .trim()
+        .regex(/^[a-z0-9_]{1,100}$/),
     window_days: z.int().min(2).max(180),
 });
 
@@ -245,9 +252,10 @@ export function registerCalibrationRoutes(
     });
 
     /**
-     * States a class's policy. The policy row is written against the version read, and the
-     * provider order is brought to the list given: a kept provider's rank is updated, a new
-     * one added and a dropped one removed. Saving the same policy twice changes nothing more.
+     * States a class's policy. The policy row is written against the version read. When the
+     * provider order differs from the stored one, the stored rungs are removed and the list
+     * is written from rank 1: a rank is unique within a policy, so rungs are not moved in
+     * place. Each write converges, so a save that fails part way is completed by saving again.
      */
     server.put('/api/synthetic/calibration/:assetClass/policy', async (request, reply) => {
         const session = requireSession(request);
@@ -285,50 +293,46 @@ export function registerCalibrationRoutes(
         );
 
         const orders = existing === undefined ? [] : await orderRowsOf(session, policyId);
-        const byProvider = new Map(orders.map((o) => [o.provider_code, o]));
-        const changes = body.provider_order.flatMap((provider, index) => {
-            const kept = byProvider.get(provider);
-            if (kept !== undefined && kept.rank === index) {
-                return [];
+        const current = [...orders].sort((x, y) => x.rank - y.rank).map((o) => o.provider_code);
+        const unchanged =
+            current.length === body.provider_order.length &&
+            current.every((code, index) => code === body.provider_order[index]);
+        if (!unchanged) {
+            if (orders.length > 0) {
+                ensure(
+                    await write(
+                        session,
+                        orderSubjects.delete_many_calibration_provider_orders_request,
+                        {
+                            intent: body.intent,
+                            removals: orders.map((o) => ({
+                                key: { id: o.id },
+                                precondition: { kind: 'any', version: null },
+                            })),
+                        },
+                    ),
+                );
             }
-            return [
-                {
-                    write: {
-                        id: kept?.id ?? randomUUID(),
-                        policy_id: policyId,
-                        provider_code: provider,
-                        rank: index,
-                    },
-                    precondition:
-                        kept === undefined
-                            ? { kind: 'must_not_exist', version: null }
-                            : { kind: 'must_match_version', version: kept.version },
-                },
-            ];
-        });
-        const dropped = orders.filter((o) => !body.provider_order.includes(o.provider_code));
-        if (dropped.length > 0) {
-            ensure(
-                await write(
-                    session,
-                    orderSubjects.delete_many_calibration_provider_orders_request,
-                    {
-                        intent: body.intent,
-                        removals: dropped.map((o) => ({
-                            key: { id: o.id },
-                            precondition: { kind: 'any', version: null },
-                        })),
-                    },
-                ),
-            );
-        }
-        if (changes.length > 0) {
-            ensure(
-                await write(session, orderSubjects.put_many_calibration_provider_orders_request, {
-                    intent: body.intent,
-                    changes,
-                }),
-            );
+            if (body.provider_order.length > 0) {
+                ensure(
+                    await write(
+                        session,
+                        orderSubjects.put_many_calibration_provider_orders_request,
+                        {
+                            intent: body.intent,
+                            changes: body.provider_order.map((provider, index) => ({
+                                write: {
+                                    id: randomUUID(),
+                                    policy_id: policyId,
+                                    provider_code: provider,
+                                    rank: index + 1,
+                                },
+                                precondition: { kind: 'must_not_exist', version: null },
+                            })),
+                        },
+                    ),
+                );
+            }
         }
         return reply.code(204).send();
     });
@@ -373,7 +377,10 @@ export function registerCalibrationRoutes(
 
     /**
      * Pins one candidate on a feed: the feed's own items become that one item, read on or
-     * before the clock over the window given. The feed then overrides its class policy.
+     * before the clock over the window given. The feed then overrides its class policy. A
+     * feed belongs to its tenant, so any tenant pins its own feeds. The old items go first:
+     * a write that then fails leaves the feed following its policy, and pinning again
+     * completes it.
      */
     server.put('/api/synthetic/calibration/feeds/:id/pin', async (request, reply) => {
         const session = requireSession(request);

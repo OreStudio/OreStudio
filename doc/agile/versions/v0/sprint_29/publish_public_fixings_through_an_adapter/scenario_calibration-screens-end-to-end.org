@@ -31,7 +31,7 @@ The system must already be in this state before the tester opens the screen:
 | Parent story  | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]]   |
 | Target screen | Market data → Calibration (=/market-data/calibration=) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 * Steps
 
@@ -40,6 +40,11 @@ The system must already be in this state before the tester opens the screen:
 - Calibration is a system control: the feeds it lists belong to the system tenant,
   and only the system administrator may change the policy.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 PENDING
 
 ** Open the FX calibration list
@@ -47,12 +52,22 @@ PENDING
 - The page shows: the asset-class switch, the policy in one line with a link, the counts, the filters, and one row per feed with start, source and state.
 - The counts add up to the number of feeds, and at least one feed reads "from a fixing".
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 ** Read a feed's record
 - Click the =EUR/USD= row.
 - The detail opens with two tabs. *Feed record* shows the start value, the item URI, the provider and credit, the fixing date and time received, the measured volatility and the mixture scale, the derived candidates, the measures card and the exceptions.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 ** Read the flow
@@ -60,6 +75,11 @@ PENDING
 - It shows the policy or defaults into the candidates into the resolver, the resolution trail, what the feed inherits, and the recent calibrations.
 - Nothing on the Flow tab can be edited.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 ** Read the automatic policy
@@ -67,6 +87,11 @@ PENDING
 - With no stored policy it shows the automatic defaults: 90 days, the provider order, inverse allowed, keep the fixed level.
 - A tenant administrator can read the same rows but cannot save changes.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 ** Customise and restore the policy
@@ -75,14 +100,33 @@ PENDING
 - The list's policy line and the feeds' windows reflect the change.
 - Choose *Return to automatic* and confirm the policy line returns to the automatic defaults.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 ** Calibrate all
 - On the list, choose *Calibrate all*.
 - The list re-resolves every feed of the class and states when it last calibrated and how the counts changed, without leaving the page.
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 PENDING
 
 * Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  |  |
+| Branch        |  |
+| Commit        |  |
+| Worktree      |  |
+
 
 Record a PASSED or FAILED for each step above, and state the defect and the fix for every failure.

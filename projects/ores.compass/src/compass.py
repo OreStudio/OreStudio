@@ -7232,15 +7232,33 @@ def _check_publish_artifacts(build_dir):
     return problems
 
 
-def _build_log_path(slot_name):
-    """Well-known output-log path for a build-lock slot, for `tail -f`."""
-    return _build_log_dir() / f"ores-build.log.{slot_name}"
+def _build_log_path(slot_name, checkout=None):
+    """Well-known output-log path for a build-lock slot, for `tail -f`.
+
+    Each checkout writes its own log, so the log of a build another checkout
+    runs is under that checkout, which checkout names."""
+    if checkout is None:
+        return _build_log_dir() / f"ores-build.log.{slot_name}"
+    return Path(checkout) / "tmp" / f"ores-build.log.{slot_name}"
 
 
-def _build_log_tail(slot_name, n=10):
+def _build_lock_holder_checkout(identity):
+    """The checkout a build-lock identity line names, or None.
+
+    The line is the one _build_lock_identity_line writes, whose fifth field
+    is the holder's PROJECT_ROOT."""
+    if not identity:
+        return None
+    fields = [f.strip() for f in identity.split(" | ")]
+    if len(fields) < 5 or not fields[4].startswith("/"):
+        return None
+    return Path(fields[4])
+
+
+def _build_log_tail(slot_name, n=10, checkout=None):
     """Last n lines of a build-lock slot's log file, or None if there's
     no log yet (no build has run in this slot since the file last existed)."""
-    path = _build_log_path(slot_name)
+    path = _build_log_path(slot_name, checkout)
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     except (FileNotFoundError, OSError):
@@ -7450,6 +7468,10 @@ def cmd_build(argv):
                          "(about 3s). Only safe when no page has been added, "
                          "renamed or deleted since the last scan.")
     args = ap.parse_args(argv)
+    # `status` reads like the other pillars' status verbs; as a target it
+    # would start a build, which the worktree lock then refuses.
+    if args.targets == ["status"]:
+        args.status, args.targets = True, []
 
     if args.status:
         failure = _abstract_namespace_failure()
@@ -7467,8 +7489,12 @@ def cmd_build(argv):
             else:
                 print(f"🔒 slot '{name}' (-j{jobs}): held by "
                       f"{holder or 'unknown holder'}")
-            tail = _build_log_tail(name)
-            log_path = _build_log_path(name)
+            # A live holder may be another checkout, whose log is its own; the
+            # last holder of a free slot is recorded per checkout, so it is this
+            # one.
+            checkout = None if free else _build_lock_holder_checkout(holder)
+            tail = _build_log_tail(name, checkout=checkout)
+            log_path = _build_log_path(name, checkout)
             if tail is None:
                 print(f"   (no log yet: {log_path})")
             else:
@@ -7869,6 +7895,11 @@ def _adopt_transport_from_env_file(env_file: Path) -> None:
 
 
 def main():
+    # A build or test run streams its tool's output for an hour or more. When
+    # stdout is a file or a pipe, Python holds it all until exit, so a reader of
+    # that file sees nothing, not even the wait for a build-lock slot.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(line_buffering=True)
     # Parse --env / --env-file before command dispatch so sub-commands
     # that read .env see the alternate file.  Pop so the individual
     # parsers don't choke on the flag.

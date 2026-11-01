@@ -39,13 +39,14 @@ CMake — or generate PlantUML diagrams as part of a build.
    configures the build directory automatically on first use, so a
    separate =cmake --preset= configure step is never needed. Multiple
    worktrees on this host build concurrently; =compass build= takes a
-   host-wide lock first (one slot, capped =-j6=) so builds
+   host-wide lock first (two slots, =a= and =b=, each capped at =-j3=) so builds
    don't corrupt each other's shared library outputs — raw =cmake
    --preset=/=cmake --build= invocations bypass that lock entirely
    and are never the right call, even "just to configure" or "just
    to build one target". If it prints a waiting message, let it wait
-   — that's expected, not a hang. =./compass.sh build --status= shows
-   who holds each slot. See [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] for detail.
+   — that's expected, not a hang. =./compass.sh build --status= (or
+   =./compass.sh build status=) shows who holds each slot and the tail
+   of each holder's log, and works while a build of this worktree runs. See [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] for detail.
 
 * Recipes
 

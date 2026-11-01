@@ -19,7 +19,7 @@ How do I configure ORE Studio with CMake?
 
 Configure via =compass build=, never raw =cmake --preset= — it takes
 the host-wide build lock (see *Build locking* in [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the
-system?]]) before touching the shared build directory, which a bare
+system?]]; =./compass.sh build --status= shows who holds each slot) before touching the shared build directory, which a bare
 =cmake --preset= bypasses entirely:
 
 #+begin_src sh :results verbatim

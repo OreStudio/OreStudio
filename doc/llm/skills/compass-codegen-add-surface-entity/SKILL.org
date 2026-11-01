@@ -47,7 +47,8 @@ layer ordering.
 
 4. /Build after every step/ through compass, so the host-wide build lock is
    taken and a concurrent build in another worktree cannot corrupt this one
-   (see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]).
+   (see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]];
+   =./compass.sh build --status= shows who holds each slot).
 
 5. /Raise each phase's PR/ with [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]],
    branching between phases with [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][compass-code-start-branch]].

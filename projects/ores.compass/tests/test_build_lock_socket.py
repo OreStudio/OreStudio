@@ -279,3 +279,61 @@ def test_a_namespace_that_does_not_keep_names_exclusive_is_refused(
     err = capsys.readouterr().err
     assert "the abstract AF_UNIX namespace is unavailable" in err
     assert "not exclusive" in err
+
+
+def test_the_status_verb_reports_without_taking_the_worktree_lock(one_slot, monkeypatch,
+                                                                   capsys):
+    def refuse():
+        raise AssertionError("a status read took the worktree lock")
+
+    monkeypatch.setattr(compass, "_acquire_worktree_build_lock", refuse)
+    assert compass.cmd_build(["status"]) == 0
+    assert "no build has taken it yet" in capsys.readouterr().out
+
+
+def test_status_tails_the_log_of_the_checkout_that_holds_the_slot(one_slot, monkeypatch,
+                                                                    tmp_path, capsys):
+    theirs, mine = tmp_path / "theirs", tmp_path / "mine"
+    for root, line in ((theirs, "their build is at step 7"), (mine, "my stale run")):
+        (root / "tmp").mkdir(parents=True)
+        (root / "tmp" / f"ores-build.log.{one_slot}").write_text(line + "\n")
+
+    monkeypatch.setattr(compass, "PROJECT_ROOT", theirs)
+    lock, _, _ = compass._acquire_build_lock()
+    try:
+        monkeypatch.setattr(compass, "PROJECT_ROOT", mine)
+        assert compass.cmd_build(["--status"]) == 0
+    finally:
+        lock.close()
+    out = capsys.readouterr().out
+    assert "their build is at step 7" in out
+    assert "my stale run" not in out
+    assert str(theirs / "tmp" / f"ores-build.log.{one_slot}") in out
+
+
+def test_output_reaches_a_file_before_the_command_ends(tmp_path):
+    import subprocess
+    import time
+
+    script = tmp_path / "probe.py"
+    script.write_text(
+        "import sys, time\n"
+        f"sys.path.insert(0, {str(Path(compass.__file__).parent)!r})\n"
+        "import compass\n"
+        "def wait(argv):\n"
+        "    print('waiting for a slot')\n"
+        "    time.sleep(30)\n"
+        "compass._pop_env_file_arg = wait\n"
+        "compass.main()\n")
+    out_path = tmp_path / "out.txt"
+    with open(out_path, "w") as out:
+        proc = subprocess.Popen([sys.executable, str(script)], stdout=out,
+                                stderr=subprocess.STDOUT)
+    try:
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline and "waiting" not in out_path.read_text():
+            time.sleep(0.1)
+        assert "waiting for a slot" in out_path.read_text()
+    finally:
+        proc.kill()
+        proc.wait()

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compute-the-calibration-measures
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ start actually did, served beside the start and recorded for later policies.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin after [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]]; the measures decorate a start, they do not gate it. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -49,9 +49,19 @@ start actually did, served beside the start and recorded for later policies.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One pure function, =measure_window=, reads the window's business-day log
+  returns in the feed's orientation: the daily spread, the drift times 252,
+  the smallest and largest return, and the returns beyond three spreads. An
+  inverted item negates its returns, so its drift changes sign and its range
+  turns round.
+- The resolver records the age of the fixing against the date it read, and
+  reads each other provider's candidate on the same date for the dispersion
+  in basis points of the level. A missing measure is left empty; nothing
+  blocks a start.
+- The measures ride on =feed_start=, so the running feeds, the calibrate read
+  and the BFF carry them with no new call.
+- The start notice says the volatility changed the calibration and lists the
+  rest as recorded for a later policy.
 
 * Measurements
 
@@ -90,6 +100,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: dispersion adds one fixing read per other provider on each start | fx_spot_feed.cpp | Accept | Bounded by the providers of the pair; never blocks a start. |
 
 * Result
+
+A start reports what its fixings did: the realised volatility daily and
+hourly, the annualised drift, the daily range, the samples against the
+window, the age of the fixing, the jumps beyond three spreads and the
+dispersion against each other provider of the pair in basis points. Only the
+volatility changes the calibration, and the start notice says so; the rest
+are recorded. A feed with no usable fixing says it has nothing to measure.
+The measures are computed when a start resolves and are not stored apart
+from the run's start.

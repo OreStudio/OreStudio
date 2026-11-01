@@ -26,11 +26,11 @@ A new system fetches public fixings as soon as it is set up: the administrator a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | The server operation.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The shell, then the first-run tick box. |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -74,7 +74,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Providers accepted by bootstrap setup on a fresh database | 4 of 4 (boc, ecb, imf, tcmb), by super_admin | the Acme provisioning script after =compass db recreate= | d91f8fcbbe |
+| System fixings after that setup, with no manual step | 29294, about 15 s after setup | =select count(*) from ores_marketdata_market_fixings_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | d91f8fcbbe |
+| FX feeds calibrated from a fixing on that system | 28 of 51 | =GET /api/synthetic/calibration/fx= | d91f8fcbbe |
 
 * Notes
 
@@ -110,3 +112,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A new system now fetches public fixings with no manual step. =bootstrap setup=
+accepts every public source's terms after it signs in as the administrator, and
+on a fresh database the four sources were accepted, the adapter backfilled their
+fixings within seconds, and 28 FX feeds calibrated from them. The acceptance goes
+through the service's one accept, so it is recorded under the administrator's
+account and the server's time; =--no-accept-terms= leaves it to the person.
+
+The service gained a list accept, which the first run's new tick box and the
+shell's =provider_terms_operations accept-all= both use, and an accept of terms
+already accepted writes nothing, so a setup that runs again leaves each
+provider's history as it was.
+
+The FX calibration list read about 5 s on the fresh system, against 3.4 s
+measured on the calibration branch; this task does not touch that path.

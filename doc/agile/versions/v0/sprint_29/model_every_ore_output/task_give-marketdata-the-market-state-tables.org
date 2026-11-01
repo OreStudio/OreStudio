@@ -31,19 +31,13 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 | Now          | The store and the writer are built: a market-state file is indexed, compressed and kept, and the post-processor hands the run's archives to marketdata, which reads them with the run's own token. |
 | Waiting on   | Nothing.                               |
 | Next         | A whole run through the grid, so the hand-off is proved against a live engine rather than against its samples. |
-| Last touched | 2026-10-30                               |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
 - Each market-state family has a table or a stored payload in ores.marketdata/modeling, with its generated layers committed.
 - marketdata's ingest calls the ores.ore readers and writes the families it reads.
 - A scenario cube is stored as a compressed payload whose index names the dates, scenarios and factors it holds, not as one row per value.
-
-* Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Plan
 
@@ -80,6 +74,11 @@ task and name that file in the Command column.
 | Payload index limit | 1 000 values for each key | `results_payload_index_tests` | |
 
 * Notes
+
+- 2026-11-01: The payload families are the scope of this task. =marketdata=,
+  =fixings= and =dividends= have no catalogue entry, so no reader serves them.
+  They move to [[id:9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B][Land the market inputs in the market data store]], with the
+  owner of =todaysmarketcalibration_cashflows=.
 
 * Test Scenarios
 
@@ -124,5 +123,3 @@ own post-processor hands it over.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

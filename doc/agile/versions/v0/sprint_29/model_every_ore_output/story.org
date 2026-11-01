@@ -23,10 +23,10 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The catalogue is in place, and the model is settled: one declaration-driven reader, three storage shapes, and roles rather than a reader for each family. Six tasks remain. |
+| Now           | The payload store for market state is built and rebased on main. The market inputs (marketdata, fixings, dividends) move to their own task. |
 | Waiting on    | Nothing.                               |
-| Next          | Give every family its column roles, because the reader and the gate both depend on them. |
-| Last touched  | 2026-10-31                               |
+| Next          | Prove the payload store on a fresh database, then raise its PR. |
+| Last touched  | 2026-11-01                               |
 
 * Acceptance
 
@@ -55,6 +55,7 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 | [[id:2B253ED2-E629-4A58-82BC-EEDEE3F0077F][Store a run's figures in blocks]] | BACKLOG | | | The post-processor reads a family whole and inserts it in one statement, so a large run holds every figure in memory before the first row is written. Read a block of rows, write it, read the next, so memory per run is bounded whatever the family states. |
 | [[id:1D326204-29A2-4467-8DC7-779BD0C3CFAB][Keep the market state in the object store]] | BACKLOG | | | A cube is tens to hundreds of megabytes. Held as base64 text in a row it adds a third on top of gzip and puts the payload in the database, which is the wrong place for grid throughput. The row keeps the index and a storage key; the compressed file lives in the object store and is fetched only when a reader needs the values. |
 | [[id:DA5EBB3A-E221-4DC0-BFA1-6B2CDEF15DBB][Document how a report run is processed]] | BACKLOG | | | One page states the flow of a run end to end and what post-processing does with its output: the phases the workflow invokes, what each hands the next, how the archive becomes rows in the two stores, which component owns which format, and why the shapes are what they are. The existing pipeline page predates the implementation and says only that post-processing records rows. |
+| [[id:9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B][Land the market inputs in the market data store]] | BACKLOG | | | A run states the market it read in marketdata.csv, fixings.csv and dividends.csv, and the catalogue names none of them, so no reader serves them and the store keeps nothing. Catalogue the three from the writers, read them with the declaration-driven reader, and land them in the shapes ores.marketdata already holds: market observations for the quotes and market fixings for the fixings and dividends. Also decide whether todaysmarketcalibration_cashflows is a run result or market state, and record the decision in the story. |
 
 * Decisions
 

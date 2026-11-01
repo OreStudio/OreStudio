@@ -8,7 +8,7 @@
 #+filetags: :trading:web:structure:sprint_29:v0:complete-a-structure-from-a-screen:
 #+owner: marco
 #+branch: feature/point-the-grouping-screen-at-the-completion
-#+pr:
+#+pr: 4335
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4335][#4335]] | [web] Group trades by completing a structure, not by writing its rows |
 
 * Review
 

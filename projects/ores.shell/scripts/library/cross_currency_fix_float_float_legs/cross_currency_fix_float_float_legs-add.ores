@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/cross_currency_fix_float_float_legs/cross_currency_fix_float_float_leg.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cross_currency_fix_float_float_legs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - system.new_record generated_script

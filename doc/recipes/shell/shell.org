@@ -1020,10 +1020,6 @@ tangled into the runnable script library
 
 - [[id:52E34F2C-24D6-5926-AB27-39D8C0CB03DC][How do I run the inflation_swap_conventions commands from the shell?]]
 
-* Cross Currency Fix Float Conventions
-
-- [[id:1364CBFE-B388-54EF-ACA4-1FB984009E0A][How do I run the cross_currency_fix_float_conventions commands from the shell?]]
-
 * Cms Spread Option Conventions
 
 - [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]
@@ -1955,3 +1951,15 @@ tangled into the runnable script library
 * Cut Approval Details
 
 - [[id:713EDE01-50B1-5DEC-A446-81937CDBCE13][How do I run the cut_approval_details commands from the shell?]]
+
+* Cross Currency Fix Float Fixed Legs
+
+- [[id:73034E33-66E9-5FD7-BF8F-78C956BF47F0][How do I run the cross_currency_fix_float_fixed_legs commands from the shell?]]
+
+* Cross Currency Fix Float Float Legs
+
+- [[id:F0DEB72A-4042-504F-981F-63670C3F5534][How do I run the cross_currency_fix_float_float_legs commands from the shell?]]
+
+* Cross Currency Fix Float Swap Terms
+
+- [[id:1042FCD9-B5F5-5163-A0DF-8737F9935961][How do I run the cross_currency_fix_float_swap_terms commands from the shell?]]

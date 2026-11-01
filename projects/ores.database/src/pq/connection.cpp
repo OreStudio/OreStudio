@@ -127,10 +127,15 @@ bool connection::healthy() const noexcept {
     auto* c = handle_.get();
     if (PQstatus(c) != CONNECTION_OK)
         return false;
-    // A server that closed the connection, as a restart does, leaves an end of file on the
-    // socket that libpq has not read, so the status still reads ok. Reading what is pending,
-    // which never blocks, is what turns it bad.
-    return PQconsumeInput(c) == 1 && PQstatus(c) == CONNECTION_OK;
+    // A server that closed the connection, as a restart does, leaves its last message and an
+    // end of file on the socket that libpq has not read, so the status still reads ok. Reading
+    // what is pending, which never blocks, is what turns it bad. One read stops at the message,
+    // so the end of file needs another; an idle connection has nothing to read either time.
+    for (int read = 0; read < 3; ++read) {
+        if (PQconsumeInput(c) == 0)
+            return false;
+    }
+    return PQstatus(c) == CONNECTION_OK;
 }
 
 bool connection::idle() const noexcept {

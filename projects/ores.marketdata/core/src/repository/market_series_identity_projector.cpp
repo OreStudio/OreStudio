@@ -344,6 +344,11 @@ market_series_identity_projector::backfill_result
 market_series_identity_projector::project_missing(ores::database::context ctx,
                                                   const std::optional<boost::uuids::uuid>& party) {
     auto series = market_series_repository{}.read_latest(ctx);
+    // A tenant reads the system tenant's shared series but not their identity
+    // rows, so those would look unprojected. They are the system's to project,
+    // and a tenant that projected them would write a row it cannot see.
+    std::erase_if(series,
+                  [&](const domain::market_series& s) { return s.tenant_id != ctx.tenant_id(); });
     if (party)
         std::erase_if(series, [&](const domain::market_series& s) { return s.party_id != *party; });
 

@@ -239,6 +239,14 @@ export const trades = {
         ) as BookingOptions;
     },
 
+    /** The reasons a trade may be captured as a draft with. */
+    async draftReasons(): Promise<readonly DraftReason[]> {
+        const answer = draftReasonsSchema.parse(
+            await request('/api/draft-reasons', { method: 'GET' }),
+        );
+        return answer.reasons.filter((reason) => reason.code !== '');
+    },
+
     /** The link types a person can record between two trades. */
     async linkTypes(): Promise<readonly { readonly code: string; readonly description: string }[]> {
         const answer = z
@@ -325,7 +333,28 @@ export interface BookingRequest {
     readonly notional: string;
     readonly identifierType: string;
     readonly identifierValue: string;
+    /** Why the deal is a draft. Absent, the booking goes live at once. */
+    readonly draftReasonCode?: string;
 }
+
+/** A reason a trade may be captured as a draft with. */
+export interface DraftReason {
+    readonly code: string;
+    readonly description: string;
+    readonly responsibleRole: string;
+}
+
+const draftReasonsSchema = z.object({
+    reasons: z
+        .array(
+            z.object({
+                code: z.string().default(''),
+                description: z.string().default(''),
+                responsibleRole: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
 
 /** The trade a booking made. */
 const bookedTradeSchema = z.object({ id: z.uuid() });

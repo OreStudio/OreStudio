@@ -3960,6 +3960,10 @@ export const en: SourceCatalogue = {
             instrumentSection: 'Instrument — {type}',
             instrumentLead:
                 'The security is the instrument, and the notional is the position held in it. Only a bond is routed to a table today, so a ticket names a bond.',
+            draftReason: 'Draft reason',
+            draftReasonHint:
+                'Choose why the deal waits, and it is captured as a draft; leave it empty and it goes live at once.',
+            bookLive: 'Book live, no draft',
             notionalHint: 'The size of the position in the security above.',
             identifierSection: 'Identifier',
             open: 'Book a trade',

@@ -12,6 +12,7 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as draftReasonSubjects } from '@ores/wire-protocol/generated/trading/protocol/draft_reason_protocol';
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
@@ -22,11 +23,13 @@ import { subjects as stateSubjects } from '@ores/wire-protocol/generated/trading
 import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import { HttpFailure } from './errors.js';
-import { input, readAll, resultSchema } from './refdata-calls.js';
+import { input, readAll, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /** The one transition that books a live trade. */
 const newBooking = 'new_booking';
+/** The activity that captures a draft rather than a concluded deal. */
+const draftCapture = 'draft_capture';
 
 /** Why a booked trade exists, as the trade's own change reason. */
 const bookingReason = 'system.new_record';
@@ -50,6 +53,11 @@ const bookingBodySchema = z.object({
     notional: z.string().regex(/^\d+(?:\.\d+)?$/, 'The notional is a plain decimal.'),
     identifierType: z.string().min(1).max(40),
     identifierValue: z.string().min(1).max(80),
+    /**
+     * Why the deal is a draft, from the lookup. Stated, the booking captures a
+     * deal the desk has not concluded; absent, the trade goes live at once.
+     */
+    draftReasonCode: z.string().trim().min(1).max(64).optional(),
 });
 
 /**
@@ -322,6 +330,31 @@ export function registerBookingRoutes(
         return { from: id, to: body.otherTradeId, linkType: body.linkType };
     });
 
+    /**
+     * The reasons a trade may be captured as a draft with.
+     *
+     * A draft names a code from this list rather than free text, so the form
+     * offers it and a report of aged drafts can group by it. The list is a
+     * tenant-wide lookup and carries no personal data, so the route is gated on
+     * a session and on nothing else.
+     */
+    server.get('/api/draft-reasons', async (request) => {
+        const session = requireSession(request);
+        const rows = await readAll(
+            session,
+            draftReasonSubjects.list_draft_reasons_request,
+            'draft_reasons',
+            { filter: { code_one_of: null } },
+        );
+        return {
+            reasons: rows.map((row) => ({
+                code: text(row['code']),
+                description: text(row['description']),
+                responsibleRole: text(row['responsible_role']),
+            })),
+        };
+    });
+
     server.post('/api/trades', async (request, reply) => {
         const session = requireSession(request);
         const body = input(bookingBodySchema, request.body);
@@ -332,6 +365,13 @@ export function registerBookingRoutes(
 
         const tradeId = randomUUID();
         const now = new Date().toISOString();
+        /*
+         * A draft is a deal the desk has captured and not concluded. It writes
+         * the same anchor and booking as a live trade; what differs is the
+         * activity, which states a transition that stops at draft, and the
+         * reason it waits on.
+         */
+        const asDraft = body.draftReasonCode !== undefined;
         const acknowledgement = await session.client.callAuthenticated(
             operationsSubjects.book_trade_request,
             {
@@ -349,6 +389,7 @@ export function registerBookingRoutes(
                     origin_reference: '',
                     external_version: 0,
                     economic_digest: '',
+                    draft_reason_code: body.draftReasonCode ?? '',
                     modified_by: '',
                     performed_by: '',
                     change_reason_code: bookingReason,
@@ -372,7 +413,7 @@ export function registerBookingRoutes(
                     change_commentary: '',
                     recorded_at: now,
                 },
-                activity_type_code: newBooking,
+                activity_type_code: asDraft ? draftCapture : newBooking,
                 identifiers: [],
                 instruments: emptyBatch(),
             },

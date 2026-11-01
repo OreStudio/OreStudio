@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D55D1A85-DE8C-4646-81B6-00C669984A6B
+:END:
+#+title: A web journey test expects text no source writes
+#+description: On origin/main 36a94808aa, ores.web.tests fails the tenant form case 'opens as a summary, and asks for no settings, when the profile states its own' (parts.test.tsx:338). It expects 'Empty operational uses its standard settings.' and no web source contains that text. The revert-and-restore incident (#4312) probably brought back the test without its source.
+#+type: capture
+#+level: cross
+#+filetags: :testing:web:main:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -58,6 +58,11 @@ namespace ores::marketdata::terms {
 [[nodiscard]] ORES_MARKETDATA_CORE_EXPORT domain::provider
 accept_terms(domain::provider p, std::string who, std::chrono::system_clock::time_point when);
 
+/**
+ * @brief The provider with no acceptance: the digest, the account and the time cleared.
+ */
+[[nodiscard]] ORES_MARKETDATA_CORE_EXPORT domain::provider withdraw_terms(domain::provider p);
+
 }
 
 #endif

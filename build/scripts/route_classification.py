@@ -932,6 +932,11 @@ RULES = (
          BFF, RESOURCE, "simulation",
          "Pins one candidate on a feed as the exception to its class policy, or clears the"
          " feed's own items so it follows the policy again."),
+    Rule("the terms of a public publisher",
+         ("regex", r"^POST /api/marketdata/public-rates/:code/(accept|withdraw)-terms$"),
+         BFF, RESOURCE, "market-data",
+         "Records the acceptance of a publisher's terms as the service holds them, or"
+         " withdraws it so the adapter no longer fetches the publisher."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",

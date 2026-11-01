@@ -2962,6 +2962,23 @@ const pt: SourceCatalogue = {
                 'O administrador não tem uma entidade de sistema onde iniciar sessão, por isso a instalação não pode ser aprovisionada.',
         },
 
+        sources: {
+            title: 'Ler as condições das fontes públicas',
+            lead: 'A instalação pode carregar taxas diárias de editores públicos. Leia as condições de cada um e aceite ou recuse; um editor recusado nunca é consultado, e pode mudar isto mais tarde no ecrã de taxas públicas.',
+            next: 'Continuar',
+            none: 'Nenhum editor público indica condições, por isso não há nada a aceitar.',
+            gives: 'Publica {count} séries de taxas diárias.',
+            terms: 'Condições',
+            credit: 'Crédito pedido',
+            storage: 'Armazenamento',
+            storageAllowed: 'Os seus valores podem ser guardados',
+            storageRefused: 'Os seus valores não podem ser guardados, por isso não é consultado',
+            accept: 'Aceitar',
+            decline: 'Recusar',
+            accepted: 'Aceite',
+            declined: 'Recusado',
+        },
+
         profile: {
             title: 'Escolher um ponto de partida',
             lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
@@ -5017,6 +5034,7 @@ const pt: SourceCatalogue = {
                 acceptedBy: 'Por {who} em {when}',
                 notAccepted: 'Não aceites',
                 accept: 'Aceitar termos',
+                withdraw: 'Retirar a aceitação',
                 read: 'Ler os termos',
             },
             detail: {

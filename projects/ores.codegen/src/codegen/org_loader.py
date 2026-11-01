@@ -3101,6 +3101,11 @@ SERVER_OWNED_FIELDS = frozenset({
     # finished, and a caller that had to restate them would erase them the
     # first time it edited anything else.
     "started_at", "completed_at", "last_event_at", "command_published_at",
+    # The acceptance of a provider's terms. Only the terms operation records
+    # it: the digest of the terms as the service holds them, the account of
+    # the session and the service's clock. A caller that could state it could
+    # accept terms nobody read.
+    "terms_accepted_digest", "terms_accepted_by", "terms_accepted_at",
 })
 
 # The server-owned fields an update carries forward from the row it edits
@@ -3112,6 +3117,7 @@ SERVER_OWNED_FIELDS = frozenset({
 # stamp its own state funnel wrote.
 SERVICE_PRESERVED_FIELDS = frozenset({
     "started_at", "completed_at", "last_event_at", "command_published_at",
+    "terms_accepted_digest", "terms_accepted_by", "terms_accepted_at",
 })
 
 # Why a change is being made is user-owned, but it travels beside the write

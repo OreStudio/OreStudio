@@ -142,8 +142,7 @@ void provider_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit> "
-        "<allows_storage> <credential_ref> <terms_accepted_digest> <terms_accepted_by> "
-        "<terms_accepted_at> <reason> <commentary>");
+        "<allows_storage> <credential_ref> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +150,7 @@ void provider_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <code> <name> <kind> <description> <display_order> <terms_url> <terms_credit> "
-        "<allows_storage> <credential_ref> <terms_accepted_digest> <terms_accepted_by> "
-        "<terms_accepted_at> <reason> <commentary> [--version <n>]");
+        "<allows_storage> <credential_ref> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,8 +158,7 @@ void provider_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <code> <name> <kind> <description> <display_order> <terms_url> "
-        "<terms_credit> <allows_storage> <credential_ref> <terms_accepted_digest> "
-        "<terms_accepted_by> <terms_accepted_at> <reason> <commentary>");
+        "<terms_credit> <allows_storage> <credential_ref> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +353,8 @@ void provider_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -375,13 +372,6 @@ void provider_commands::process_add(std::ostream& out,
             req.change.write.allows_storage, parsed->positionals[next++], "allows_storage");
         provider_read_token(
             req.change.write.credential_ref, parsed->positionals[next++], "credential_ref");
-        provider_read_token(req.change.write.terms_accepted_digest,
-                            parsed->positionals[next++],
-                            "terms_accepted_digest");
-        provider_read_token(
-            req.change.write.terms_accepted_by, parsed->positionals[next++], "terms_accepted_by");
-        provider_read_token(
-            req.change.write.terms_accepted_at, parsed->positionals[next++], "terms_accepted_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -424,8 +414,8 @@ void provider_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,13 +433,6 @@ void provider_commands::process_set(std::ostream& out,
             req.change.write.allows_storage, parsed->positionals[next++], "allows_storage");
         provider_read_token(
             req.change.write.credential_ref, parsed->positionals[next++], "credential_ref");
-        provider_read_token(req.change.write.terms_accepted_digest,
-                            parsed->positionals[next++],
-                            "terms_accepted_digest");
-        provider_read_token(
-            req.change.write.terms_accepted_by, parsed->positionals[next++], "terms_accepted_by");
-        provider_read_token(
-            req.change.write.terms_accepted_at, parsed->positionals[next++], "terms_accepted_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -504,8 +487,8 @@ void provider_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -525,13 +508,6 @@ void provider_commands::process_put_many(std::ostream& out,
                 change.write.allows_storage, parsed->positionals[next++], "allows_storage");
             provider_read_token(
                 change.write.credential_ref, parsed->positionals[next++], "credential_ref");
-            provider_read_token(change.write.terms_accepted_digest,
-                                parsed->positionals[next++],
-                                "terms_accepted_digest");
-            provider_read_token(
-                change.write.terms_accepted_by, parsed->positionals[next++], "terms_accepted_by");
-            provider_read_token(
-                change.write.terms_accepted_at, parsed->positionals[next++], "terms_accepted_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

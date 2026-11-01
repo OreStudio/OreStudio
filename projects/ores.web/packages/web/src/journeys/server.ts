@@ -30,7 +30,7 @@
  */
 
 import { useMemo } from 'react';
-import { api } from '../api/client.js';
+import { type PublicRatesProvider, api } from '../api/client.js';
 import { useBootstrap } from '../session/BootstrapProvider.js';
 import { useSession, type SignInOutcome } from '../session/SessionProvider.js';
 import type {
@@ -60,6 +60,12 @@ export interface JourneyServer {
      * only the system tenant can leave the setup screen.
      */
     readonly completeSystemOnboarding: () => Promise<void>;
+    /** The public publishers the installation may fetch, with their terms. */
+    readonly publicSources: () => Promise<readonly PublicRatesProvider[]>;
+    /** Accepts a publisher's terms at the version the person read. */
+    readonly acceptSourceTerms: (code: string, version: number) => Promise<void>;
+    /** Declines a publisher: any acceptance is withdrawn, so it is not fetched. */
+    readonly declineSourceTerms: (code: string) => Promise<void>;
     /**
      * The signed-in tenant's own setup run, as the setup screen follows it.
      *
@@ -107,6 +113,9 @@ export function useJourneyServer(): JourneyServer {
             },
             recheckBootstrap: recheck,
             completeSystemOnboarding: api.completeSystemOnboarding,
+            publicSources: () => api.publicRates(),
+            acceptSourceTerms: (code, version) => api.acceptProviderTerms(code, version),
+            declineSourceTerms: (code) => api.withdrawProviderTerms(code),
             tenantSetupRun: api.tenantSetupRun,
             signIn,
             chooseParty,

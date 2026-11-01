@@ -59,4 +59,11 @@ accept_terms(domain::provider p, std::string who, std::chrono::system_clock::tim
     return p;
 }
 
+domain::provider withdraw_terms(domain::provider p) {
+    p.terms_accepted_digest.clear();
+    p.terms_accepted_by.clear();
+    p.terms_accepted_at.reset();
+    return p;
+}
+
 }

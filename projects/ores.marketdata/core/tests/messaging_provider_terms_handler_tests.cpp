@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.marketdata.api/generators/provider_generator.hpp"
 #include "ores.marketdata.api/messaging/provider_terms_operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/provider_terms_handler.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
+#include "ores.marketdata.core/terms/provider_terms.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -47,11 +50,13 @@
 namespace provider_terms_test {
 
 const std::string terms_subject("ores.test.provider_terms.accept");
+const std::string withdraw_subject("ores.test.provider_terms.withdraw");
 const std::string terms_accept_permission("marketdata::providers:accept_terms");
-const std::string terms_reader("terms-test-terms_reader");
 
 using ores::marketdata::messaging::accept_provider_terms_request;
 using ores::marketdata::messaging::accept_provider_terms_response;
+using ores::marketdata::messaging::withdraw_provider_terms_request;
+using ores::marketdata::messaging::withdraw_provider_terms_response;
 using ores::marketdata::tests::system_party_of_the_test_tenant;
 using ores::marketdata::tests::test_audience;
 using ores::marketdata::tests::test_issuer;
@@ -62,14 +67,24 @@ struct terms_fixture {
     ores::nats::service::client nats;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::optional<ores::nats::service::subscription> sub;
+    std::optional<ores::nats::service::subscription> withdraw_sub;
     boost::uuids::uuid party;
     std::string code;
+    /// The account that reads and accepts the terms; the store accepts only an account's name.
+    std::string reader;
 
     terms_fixture()
         : nats(ores::testing::make_nats_options())
         , party(system_party_of_the_test_tenant(db))
-        , code("terms-" +
-               boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8)) {
+        , code("terms-" + boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8))
+        , reader("terms-reader-" +
+                 boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8)) {
+        auto generation = ores::testing::make_generation_context(db);
+        auto account = ores::iam::generators::generate_synthetic_account(generation);
+        account.username = reader;
+        account.change_reason_code = "system.test";
+        ores::iam::repository::account_repository{}.write(db.context(), account);
+
         nats.connect();
         REQUIRE(nats.is_connected());
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
@@ -78,6 +93,11 @@ struct terms_fixture {
             terms_subject, "ores.marketdata.service", [this](ores::nats::message msg) {
                 ores::marketdata::messaging::provider_terms_handler h(nats, db.context(), verifier);
                 h.accept(std::move(msg));
+            });
+        withdraw_sub = nats.queue_subscribe(
+            withdraw_subject, "ores.marketdata.service", [this](ores::nats::message msg) {
+                ores::marketdata::messaging::provider_terms_handler h(nats, db.context(), verifier);
+                h.withdraw(std::move(msg));
             });
     }
 
@@ -105,8 +125,8 @@ struct terms_fixture {
         auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
         auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
-        claims.subject = terms_reader;
-        claims.username = terms_reader;
+        claims.subject = reader;
+        claims.username = reader;
         claims.issuer = test_issuer;
         claims.audience = test_audience;
         claims.tenant_id = db.tenant_id().to_string();
@@ -126,6 +146,16 @@ struct terms_fixture {
         return nats.request_sync(
             terms_subject, ores::nats::default_wire_codec().encode(req), headers);
     }
+
+    ores::nats::message withdraw(const std::vector<std::string>& roles) {
+        withdraw_provider_terms_request req;
+        req.provider_code = code;
+        std::unordered_map<std::string, std::string> headers;
+        headers[std::string(ores::nats::headers::authorization)] =
+            std::string(ores::nats::headers::bearer_prefix) + token(roles);
+        return nats.request_sync(
+            withdraw_subject, ores::nats::default_wire_codec().encode(req), headers);
+    }
 };
 
 accept_provider_terms_response decode_terms_reply(const ores::nats::message& reply) {
@@ -141,7 +171,7 @@ accept_provider_terms_response decode_terms_reply(const ores::nats::message& rep
 using provider_terms_test::decode_terms_reply;
 using provider_terms_test::terms_accept_permission;
 using provider_terms_test::terms_fixture;
-using provider_terms_test::terms_reader;
+using ores::marketdata::messaging::withdraw_provider_terms_response;
 
 TEST_CASE("terms_read_at_the_current_version_are_accepted_by_the_reader",
           "[provider_terms_handler][integration]") {
@@ -152,9 +182,9 @@ TEST_CASE("terms_read_at_the_current_version_are_accepted_by_the_reader",
     const auto response = decode_terms_reply(f.accept(read.version, {terms_accept_permission}));
 
     CHECK(response.success);
-    CHECK(response.accepted_by == terms_reader);
+    CHECK(response.accepted_by == f.reader);
     const auto after = f.latest();
-    CHECK(after.terms_accepted_by == terms_reader);
+    CHECK(after.terms_accepted_by == f.reader);
     CHECK_FALSE(after.terms_accepted_digest.empty());
     CHECK(after.version > read.version);
 }
@@ -208,4 +238,40 @@ TEST_CASE("a_token_without_the_accept_permission_is_refused_forbidden",
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     CHECK(f.latest().terms_accepted_digest.empty());
+}
+
+TEST_CASE("a_withdrawn_acceptance_clears_the_terms_so_the_provider_is_not_fetched",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    REQUIRE(ores::marketdata::terms::may_fetch(f.latest()));
+
+    const auto reply = f.withdraw({terms_accept_permission});
+    REQUIRE_FALSE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    const auto response =
+        ores::nats::default_wire_codec().decode<withdraw_provider_terms_response>(reply.data);
+    REQUIRE(response);
+
+    CHECK(response->success);
+    const auto after = f.latest();
+    CHECK(after.terms_accepted_digest.empty());
+    CHECK(after.terms_accepted_by.empty());
+    CHECK_FALSE(after.terms_accepted_at.has_value());
+    CHECK_FALSE(ores::marketdata::terms::may_fetch(after));
+}
+
+TEST_CASE("withdrawing_terms_never_accepted_writes_nothing",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    const auto read = f.latest();
+
+    const auto reply = f.withdraw({terms_accept_permission});
+    const auto response =
+        ores::nats::default_wire_codec().decode<withdraw_provider_terms_response>(reply.data);
+    REQUIRE(response);
+
+    CHECK(response->success);
+    CHECK(f.latest().version == read.version);
 }

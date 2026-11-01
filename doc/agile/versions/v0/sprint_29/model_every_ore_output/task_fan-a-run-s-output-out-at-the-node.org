@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/fan-a-run-s-output-out-at-the-node
-#+pr:
+#+pr: 4348
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -135,7 +135,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4348][#4348]] | [compute] Fan a run's output out at the node |
 
 * Review
 

@@ -3881,6 +3881,7 @@ const fr: SourceCatalogue = {
             kindLegByLeg: '{kind} — chaque jambe confirme seule',
             counterparty: 'Contrepartie',
             allCounterparties: 'Toutes les contreparties',
+            trades: 'Transactions',
             chosen: 'Choisies',
             noneChosen:
                 'Aucune transaction choisie. Au moins deux, et elles partagent une contrepartie.',
@@ -4397,6 +4398,7 @@ const fr: SourceCatalogue = {
             columns: 'Colonnes',
             noRecords: "Il n'y a pas encore de {plural}.",
             noMatchSearch: 'Aucun élément de {plural} ne correspond à la recherche.',
+            chooseAll: 'Choisir toutes les lignes',
             clearSearch: 'Effacer la recherche',
             retry: 'Réessayer',
             showing: '{first}–{last} sur {total}',

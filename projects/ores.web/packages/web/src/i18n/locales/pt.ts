@@ -3864,6 +3864,7 @@ const pt: SourceCatalogue = {
             kindLegByLeg: '{kind} — cada perna confirma sozinha',
             counterparty: 'Contraparte',
             allCounterparties: 'Todas as contrapartes',
+            trades: 'Transações',
             chosen: 'Escolhidas',
             noneChosen:
                 'Nenhuma transação escolhida. Pelo menos duas, e partilham uma contraparte.',
@@ -4362,6 +4363,7 @@ const pt: SourceCatalogue = {
             columns: 'Colunas',
             noRecords: 'Ainda não há {plural}.',
             noMatchSearch: 'Nenhum elemento de {plural} corresponde à pesquisa.',
+            chooseAll: 'Escolher todas as linhas',
             clearSearch: 'Limpar a pesquisa',
             retry: 'Tentar de novo',
             showing: '{first}–{last} de {total}',

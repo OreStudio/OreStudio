@@ -22,8 +22,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { structures } from '../api/structures.js';
+import { structures, type UngroupedTrade } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { localSource, RecordTable } from '../refdata/RecordList.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -160,54 +161,51 @@ export function GroupStructuresPage(): ReactNode {
                             {t('trading.group.none')}
                         </p>
                     ) : (
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-                                    <th className="px-3 py-2 font-medium">
-                                        {t('trading.group.pickColumn')}
-                                    </th>
-                                    <th className="px-3 py-2 font-medium">
-                                        {t('trading.structure.trade')}
-                                    </th>
-                                    <th className="px-3 py-2 font-medium">
-                                        {t('trading.structure.product')}
-                                    </th>
-                                    <th className="px-3 py-2 font-medium">
-                                        {t('trading.structure.counterparty')}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row) => (
-                                    <tr key={row.id} className="border-b border-line last:border-0">
-                                        <td className="px-3 py-2">
-                                            <input
-                                                type="checkbox"
-                                                aria-label={
-                                                    row.reference === '' ? row.id : row.reference
-                                                }
-                                                checked={chosen.includes(row.id)}
-                                                onChange={() => toggle(row.id)}
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2 font-mono text-ink">
-                                            <Link
-                                                className="text-accent hover:text-accent-bright"
-                                                to={`${PATHS.trades}/${row.id}`}
-                                            >
-                                                {row.reference === '' ? row.id : row.reference}
-                                            </Link>
-                                        </td>
-                                        <td className="px-3 py-2 text-ink">
-                                            <Tag tone="muted">{row.instrument_type}</Tag>
-                                        </td>
-                                        <td className="px-3 py-2 text-ink">
-                                            {row.counterparty_name}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        /*
+                         * The choosing is the screen's rule — which trades may go
+                         * together, how many are chosen and what the choice is
+                         * for — and the drawing is the shared table's.
+                         */
+                        <RecordTable
+                            source={localSource<UngroupedTrade>({
+                                key: 'group-structures',
+                                rows,
+                                revision: chosen.join(','),
+                                searchOf: (row) =>
+                                    `${row.reference} ${row.instrument_type} ${row.counterparty_name}`,
+                            })}
+                            plural={t('trading.group.trades')}
+                            keyOf={(row) => row.id}
+                            selection={{
+                                chosen,
+                                onToggle: (key) => toggle(key),
+                            }}
+                            columns={[
+                                {
+                                    id: 'trade',
+                                    header: t('trading.structure.trade'),
+                                    mono: true,
+                                    cell: (row) => (
+                                        <Link
+                                            className="text-accent hover:text-accent-bright"
+                                            to={`${PATHS.trades}/${row.id}`}
+                                        >
+                                            {row.reference === '' ? row.id : row.reference}
+                                        </Link>
+                                    ),
+                                },
+                                {
+                                    id: 'product',
+                                    header: t('trading.structure.product'),
+                                    cell: (row) => <Tag tone="muted">{row.instrument_type}</Tag>,
+                                },
+                                {
+                                    id: 'counterparty',
+                                    header: t('trading.structure.counterparty'),
+                                    cell: (row) => row.counterparty_name,
+                                },
+                            ]}
+                        />
                     )}
                 </section>
 

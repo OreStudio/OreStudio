@@ -4847,6 +4847,8 @@ export const en: SourceCatalogue = {
         calibration: {
             title: 'Calibration',
             lead: 'How every feed of an asset class takes its starting level and volatility from public fixings.',
+            calibrateAll: 'Calibrate all',
+            calibratedAt: 'Last calibrated {when}.',
             assetClass: 'Asset class',
             classes: {
                 fx: 'FX spot',

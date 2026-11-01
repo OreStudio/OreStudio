@@ -4878,6 +4878,8 @@ const pt: SourceCatalogue = {
         calibration: {
             title: 'Calibração',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
+            calibrateAll: 'Calibrar tudo',
+            calibratedAt: 'Última calibração {when}.',
             assetClass: 'Classe de ativos',
             classes: {
                 fx: 'Câmbio à vista',

@@ -162,7 +162,7 @@ function Loading({
 
 /** Every feed of one asset class, with how it starts. Rows open the feed's record. */
 export function CalibrationPage(): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const navigate = useNavigate();
     const assetClass = useAssetClass();
     const [search, setSearch] = useSearchParams();
@@ -183,23 +183,41 @@ export function CalibrationPage(): ReactNode {
                     title={title}
                     description={t('marketdata.calibration.lead')}
                     actions={
-                        <Field label={t('marketdata.calibration.assetClass')}>
-                            <Select
-                                value={assetClass}
-                                onChange={(event) =>
-                                    void navigate(calibrationPath(event.target.value))
-                                }
+                        <div className="flex items-end gap-2">
+                            <Field label={t('marketdata.calibration.assetClass')}>
+                                <Select
+                                    value={assetClass}
+                                    onChange={(event) =>
+                                        void navigate(calibrationPath(event.target.value))
+                                    }
+                                >
+                                    {CALIBRATED_CLASSES.map((c) => (
+                                        <option key={c} value={c}>
+                                            {t(`marketdata.calibration.classes.${c}`)}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Button
+                                onClick={() => void calibration.refetch()}
+                                disabled={calibration.isFetching}
                             >
-                                {CALIBRATED_CLASSES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {t(`marketdata.calibration.classes.${c}`)}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
+                                {t('marketdata.calibration.calibrateAll')}
+                            </Button>
+                        </div>
                     }
                 />
                 <PolicyLine calibration={data} />
+                {calibration.dataUpdatedAt > 0 && (
+                    <p className="mt-1 text-xs text-ink-faint">
+                        {t('marketdata.calibration.calibratedAt', {
+                            when: new Intl.DateTimeFormat(language, {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                            }).format(new Date(calibration.dataUpdatedAt)),
+                        })}
+                    </p>
+                )}
             </div>
             <Coverage calibration={data} />
             <div

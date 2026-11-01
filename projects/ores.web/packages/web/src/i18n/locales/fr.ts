@@ -4916,6 +4916,8 @@ const fr: SourceCatalogue = {
         calibration: {
             title: 'Calibrage',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
+            calibrateAll: 'Tout calibrer',
+            calibratedAt: 'Dernière calibration {when}.',
             assetClass: "Classe d'actifs",
             classes: {
                 fx: 'Change au comptant',

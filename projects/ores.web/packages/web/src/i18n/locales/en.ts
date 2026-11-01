@@ -4888,6 +4888,8 @@ export const en: SourceCatalogue = {
             filter: {
                 label: 'Show',
                 all: 'All',
+                fixing: 'From a fixing',
+                kept: 'Kept a level',
                 attention: 'Needs attention',
                 overridden: 'Overridden',
             },

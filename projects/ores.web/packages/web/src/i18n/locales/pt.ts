@@ -4919,6 +4919,8 @@ const pt: SourceCatalogue = {
             filter: {
                 label: 'Mostrar',
                 all: 'Todos',
+                fixing: 'De um fixing',
+                kept: 'Manteve um nível',
                 attention: 'A rever',
                 overridden: 'Derrogações',
             },

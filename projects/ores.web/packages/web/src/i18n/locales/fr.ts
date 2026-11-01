@@ -4958,6 +4958,8 @@ const fr: SourceCatalogue = {
             filter: {
                 label: 'Afficher',
                 all: 'Tous',
+                fixing: 'Depuis un fixing',
+                kept: 'A gardé un niveau',
                 attention: 'À examiner',
                 overridden: 'Dérogations',
             },

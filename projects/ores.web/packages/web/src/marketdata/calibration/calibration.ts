@@ -42,7 +42,7 @@ export function needsAttention(feed: CalibratedFeed): boolean {
     return outcomeOf(feed) !== 'fixing' || overrides(feed);
 }
 
-export const FILTERS = ['all', 'attention', 'overridden'] as const;
+export const FILTERS = ['all', 'fixing', 'kept', 'attention', 'overridden'] as const;
 export type CalibrationFilter = (typeof FILTERS)[number];
 
 export function filterOf(value: string | null): CalibrationFilter {
@@ -53,6 +53,12 @@ export function visibleFeeds(
     feeds: readonly CalibratedFeed[],
     filter: CalibrationFilter,
 ): readonly CalibratedFeed[] {
+    if (filter === 'fixing') {
+        return feeds.filter((feed) => feed.start.from_fixing);
+    }
+    if (filter === 'kept') {
+        return feeds.filter((feed) => !feed.start.from_fixing && !feed.refused);
+    }
     if (filter === 'attention') {
         return feeds.filter(needsAttention);
     }

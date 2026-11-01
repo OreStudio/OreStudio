@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/show-the-public-sources-terms-in-the-first-run
-#+pr:
+#+pr: 4331
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4331][#4331]] | [marketdata,web] Ask for each public source's terms in the first run |
 
 * Review
 

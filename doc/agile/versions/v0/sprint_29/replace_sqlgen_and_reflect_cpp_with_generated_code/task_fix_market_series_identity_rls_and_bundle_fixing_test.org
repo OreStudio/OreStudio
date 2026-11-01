@@ -74,17 +74,25 @@ task and name that file in the Command column.
 | One of those tests alone | Passes | the test binary, with =.env= loaded | 690a7d9154 rebased |
 | Current market series in the system tenant, on a running fleet | 4 | =compass sql= | 690a7d9154 rebased |
 | The suite after the fix | 21745 assertions, 0 failures | =compass test run -- -R ores.marketdata.core.tests= | 69f9268e36 |
+| Every pgTAP suite after the bundle test fix | 76 files, 710 tests, all pass | =projects/ores.sql/test/run_tests.sh= | this branch |
 
 * Notes
 
 ** What main had already fixed
 
-- The bundle fixing pgTAP test: =d3245a90b0= rewrote it, and it no longer
-  reads =s.provider_code=.
 - The series identity RLS refusal: every =repository_series_identity_backfill_tests=
   case passes on the rebased branch.
 - The terms handler failures: =9958dbf651= seeded the reader account the store
   needs.
+
+** The bundle fixing pgTAP test
+
+Main's feed rename (=84605bcf70=) turned the feed's =provider_code= into
+=publisher_code=, which the table validates as a provider, and line 100 of
+=synthetic_system_bundle_fixing_test.sql= still read the old name. It now
+reads =publisher_code=. An earlier note here said main had fixed this test;
+it had rewritten other lines of it, not this one, and the check's pgTAP run
+showed the error.
 
 ** What the terms fix broke
 
@@ -134,9 +142,9 @@ via its "Verifies task" field.
 
 Fixed in 69f9268e36 on the options codec branch, with what main had fixed
 before: =ores.marketdata.core.tests= passes in full (21745 assertions), the
-bundle fixing test reads the current schema, and the backfill tests pass.
-The demo tenant's provisioning is exercised by the check's =ticks-smoke=
-step on the same branch.
+bundle fixing test reads the feed's =publisher_code= and every pgTAP suite
+passes, and the backfill tests pass. The check's =ticks-smoke= step, which
+provisions the demo tenant, passes on the same branch.
 
 * Promoted from capture
 

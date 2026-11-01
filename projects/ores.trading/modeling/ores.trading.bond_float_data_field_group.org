@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: A103F73B-F3D0-4075-9A29-D453CA9C4AFD
 :END:
 #+title: ores.trading.bond_float_data

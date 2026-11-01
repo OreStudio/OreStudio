@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 8c1a468d-6278-476a-b8e9-e3281dfdeb8d
 :END:
 #+title: ores.trading.instrument_schedule

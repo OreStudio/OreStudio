@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_CREDIT_LINKED_SWAP_INSTRUMENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -291,7 +297,839 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "trading.v1.credit_linked_swap_instruments_events.deleted";
 }
+/**
+ * @brief The members of credit_linked_swap_instrument_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &credit_linked_swap_instrument_key::trade_id},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_write, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &credit_linked_swap_instrument_write::trade_id},
+        utility::codec::field{"trade_activity_id",
+                              &credit_linked_swap_instrument_write::trade_activity_id},
+        utility::codec::field{"credit_curve_id",
+                              &credit_linked_swap_instrument_write::credit_curve_id},
+        utility::codec::field{"recovery_rate", &credit_linked_swap_instrument_write::recovery_rate},
+        utility::codec::field{"settles_accrual",
+                              &credit_linked_swap_instrument_write::settles_accrual},
+        utility::codec::field{"default_payment_time",
+                              &credit_linked_swap_instrument_write::default_payment_time},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_change, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &credit_linked_swap_instrument_change::write},
+        utility::codec::field{"precondition", &credit_linked_swap_instrument_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_removal, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &credit_linked_swap_instrument_removal::key},
+        utility::codec::field{"precondition", &credit_linked_swap_instrument_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_lookup, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &credit_linked_swap_instrument_lookup::key},
+        utility::codec::field{"credit_linked_swap_instrument",
+                              &credit_linked_swap_instrument_lookup::credit_linked_swap_instrument},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instruments_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instruments_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id_one_of",
+                              &credit_linked_swap_instruments_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_event, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &credit_linked_swap_instrument_event::event_id},
+        utility::codec::field{"key", &credit_linked_swap_instrument_event::key},
+        utility::codec::field{"action", &credit_linked_swap_instrument_event::action},
+        utility::codec::field{"version", &credit_linked_swap_instrument_event::version},
+        utility::codec::field{"occurred_at", &credit_linked_swap_instrument_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &credit_linked_swap_instrument_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_version_key, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "credit_linked_swap_instrument",
+            &credit_linked_swap_instrument_version_key::credit_linked_swap_instrument},
+        utility::codec::field{"version", &credit_linked_swap_instrument_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of credit_linked_swap_instrument_versions_filter, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const credit_linked_swap_instrument_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &credit_linked_swap_instrument_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &credit_linked_swap_instrument_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &credit_linked_swap_instrument_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_credit_linked_swap_instruments_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_credit_linked_swap_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_credit_linked_swap_instruments_request::offset},
+        utility::codec::field{"limit", &list_credit_linked_swap_instruments_request::limit},
+        utility::codec::field{"order", &list_credit_linked_swap_instruments_request::order},
+        utility::codec::field{"filter", &list_credit_linked_swap_instruments_request::filter},
+        utility::codec::field{"as_of", &list_credit_linked_swap_instruments_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_credit_linked_swap_instruments_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_credit_linked_swap_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_credit_linked_swap_instruments_response::result},
+        utility::codec::field{
+            "credit_linked_swap_instruments",
+            &list_credit_linked_swap_instruments_response::credit_linked_swap_instruments},
+        utility::codec::field{"total", &list_credit_linked_swap_instruments_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_credit_linked_swap_instrument_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_credit_linked_swap_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_credit_linked_swap_instrument_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_credit_linked_swap_instrument_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_credit_linked_swap_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_credit_linked_swap_instrument_response::result},
+        utility::codec::field{
+            "credit_linked_swap_instrument",
+            &get_credit_linked_swap_instrument_response::credit_linked_swap_instrument},
+    };
+}
+
+/**
+ * @brief The members of get_many_credit_linked_swap_instruments_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_credit_linked_swap_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_credit_linked_swap_instruments_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_credit_linked_swap_instruments_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_credit_linked_swap_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_credit_linked_swap_instruments_response::result},
+        utility::codec::field{"entries",
+                              &get_many_credit_linked_swap_instruments_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_credit_linked_swap_instrument_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_credit_linked_swap_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_credit_linked_swap_instrument_request::change},
+        utility::codec::field{"intent", &put_credit_linked_swap_instrument_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_credit_linked_swap_instrument_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_credit_linked_swap_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_credit_linked_swap_instrument_response::result},
+        utility::codec::field{
+            "credit_linked_swap_instrument",
+            &put_credit_linked_swap_instrument_response::credit_linked_swap_instrument},
+    };
+}
+
+/**
+ * @brief The members of put_many_credit_linked_swap_instruments_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_credit_linked_swap_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_credit_linked_swap_instruments_request::changes},
+        utility::codec::field{"intent", &put_many_credit_linked_swap_instruments_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_credit_linked_swap_instruments_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_credit_linked_swap_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_credit_linked_swap_instruments_response::result},
+        utility::codec::field{
+            "credit_linked_swap_instruments",
+            &put_many_credit_linked_swap_instruments_response::credit_linked_swap_instruments},
+    };
+}
+
+/**
+ * @brief The members of delete_credit_linked_swap_instrument_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_credit_linked_swap_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_credit_linked_swap_instrument_request::removal},
+        utility::codec::field{"intent", &delete_credit_linked_swap_instrument_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_credit_linked_swap_instrument_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_credit_linked_swap_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_credit_linked_swap_instrument_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_credit_linked_swap_instruments_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_credit_linked_swap_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_credit_linked_swap_instruments_request::removals},
+        utility::codec::field{"intent",
+                              &delete_many_credit_linked_swap_instruments_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_credit_linked_swap_instruments_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_credit_linked_swap_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_credit_linked_swap_instruments_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_credit_linked_swap_instrument_versions_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_credit_linked_swap_instrument_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_credit_linked_swap_instrument_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_credit_linked_swap_instrument_versions_request::offset},
+        utility::codec::field{"limit", &list_credit_linked_swap_instrument_versions_request::limit},
+        utility::codec::field{"order", &list_credit_linked_swap_instrument_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_credit_linked_swap_instrument_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_credit_linked_swap_instrument_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_credit_linked_swap_instrument_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_credit_linked_swap_instrument_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_credit_linked_swap_instrument_versions_response::versions},
+        utility::codec::field{"total",
+                              &list_credit_linked_swap_instrument_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_credit_linked_swap_instrument_version_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_credit_linked_swap_instrument_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_credit_linked_swap_instrument_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_credit_linked_swap_instrument_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const get_credit_linked_swap_instrument_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &get_credit_linked_swap_instrument_version_response::result},
+        utility::codec::field{"version",
+                              &get_credit_linked_swap_instrument_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_key& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_key& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_write& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_write& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_change& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_change& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_removal& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_removal& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_lookup& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_lookup& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instruments_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instruments_filter& v);
+    static ores::trading::messaging::credit_linked_swap_instruments_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instruments_filter& v);
+    static ores::trading::messaging::credit_linked_swap_instruments_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_event& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_event& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_version_key& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_version_key& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::credit_linked_swap_instrument_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::credit_linked_swap_instrument_versions_filter& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::credit_linked_swap_instrument_versions_filter& v);
+    static ores::trading::messaging::credit_linked_swap_instrument_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_credit_linked_swap_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::list_credit_linked_swap_instruments_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::list_credit_linked_swap_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_credit_linked_swap_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::list_credit_linked_swap_instruments_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::list_credit_linked_swap_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_credit_linked_swap_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_credit_linked_swap_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_credit_linked_swap_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::get_many_credit_linked_swap_instruments_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::get_many_credit_linked_swap_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_credit_linked_swap_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::get_many_credit_linked_swap_instruments_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::get_many_credit_linked_swap_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_credit_linked_swap_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::put_credit_linked_swap_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::put_credit_linked_swap_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_credit_linked_swap_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::put_credit_linked_swap_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::put_credit_linked_swap_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_credit_linked_swap_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::put_many_credit_linked_swap_instruments_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::put_many_credit_linked_swap_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_credit_linked_swap_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::put_many_credit_linked_swap_instruments_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::put_many_credit_linked_swap_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_credit_linked_swap_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::delete_credit_linked_swap_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_credit_linked_swap_instrument_request& v);
+    static ores::trading::messaging::delete_credit_linked_swap_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_credit_linked_swap_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::delete_credit_linked_swap_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_credit_linked_swap_instrument_response& v);
+    static ores::trading::messaging::delete_credit_linked_swap_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_credit_linked_swap_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::delete_many_credit_linked_swap_instruments_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_credit_linked_swap_instruments_request& v);
+    static ores::trading::messaging::delete_many_credit_linked_swap_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_credit_linked_swap_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::delete_many_credit_linked_swap_instruments_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_credit_linked_swap_instruments_response& v);
+    static ores::trading::messaging::delete_many_credit_linked_swap_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_credit_linked_swap_instrument_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_credit_linked_swap_instrument_versions_request& v);
+    static ores::trading::messaging::list_credit_linked_swap_instrument_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_credit_linked_swap_instrument_versions_request& v);
+    static ores::trading::messaging::list_credit_linked_swap_instrument_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_credit_linked_swap_instrument_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_credit_linked_swap_instrument_versions_response& v);
+    static ores::trading::messaging::list_credit_linked_swap_instrument_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_credit_linked_swap_instrument_versions_response& v);
+    static ores::trading::messaging::list_credit_linked_swap_instrument_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_credit_linked_swap_instrument_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_credit_linked_swap_instrument_version_request& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_credit_linked_swap_instrument_version_request& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_credit_linked_swap_instrument_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_credit_linked_swap_instrument_version_response& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_credit_linked_swap_instrument_version_response& v);
+    static ores::trading::messaging::get_credit_linked_swap_instrument_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

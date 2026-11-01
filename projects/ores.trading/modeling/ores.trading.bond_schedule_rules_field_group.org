@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: BF23574B-397C-401B-A4DC-FA707E1ACD7E
 :END:
 #+title: ores.trading.bond_schedule_rules

@@ -25,9 +25,11 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORMULA_BASED_LEG_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORMULA_BASED_LEG_DATA_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -67,6 +69,22 @@ struct bond_formula_based_leg_data {
     friend bool operator==(const bond_formula_based_leg_data&,
                            const bond_formula_based_leg_data&) = default;
 };
+/**
+ * @brief The members of bond_formula_based_leg_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_formula_based_leg_data&) {
+    return std::tuple{
+        utility::codec::field{"index", &bond_formula_based_leg_data::index},
+        utility::codec::field{"is_in_arrears", &bond_formula_based_leg_data::is_in_arrears},
+        utility::codec::field{"fixing_days", &bond_formula_based_leg_data::fixing_days},
+        utility::codec::field{"fixing_calendar", &bond_formula_based_leg_data::fixing_calendar},
+    };
+}
 
 }
 

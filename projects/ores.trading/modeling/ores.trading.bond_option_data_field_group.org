@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 327EA360-28FF-4317-BF48-AB269EEC10FE
 :END:
 #+title: ores.trading.bond_option_data

@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_BOND_ISSUE_CONVERSION_TARGET_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -278,7 +284,799 @@ inline constexpr std::string_view updated =
 inline constexpr std::string_view deleted =
     "trading.v1.bond_issue_conversion_targets_events.deleted";
 }
+/**
+ * @brief The members of bond_issue_conversion_target_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_key&) {
+    return std::tuple{
+        utility::codec::field{"issue_id", &bond_issue_conversion_target_key::issue_id},
+        utility::codec::field{"sequence_number",
+                              &bond_issue_conversion_target_key::sequence_number},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_write&) {
+    return std::tuple{
+        utility::codec::field{"issue_id", &bond_issue_conversion_target_write::issue_id},
+        utility::codec::field{"sequence_number",
+                              &bond_issue_conversion_target_write::sequence_number},
+        utility::codec::field{"underlying_id", &bond_issue_conversion_target_write::underlying_id},
+        utility::codec::field{"conversion_ratio",
+                              &bond_issue_conversion_target_write::conversion_ratio},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_change, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &bond_issue_conversion_target_change::write},
+        utility::codec::field{"precondition", &bond_issue_conversion_target_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_removal, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &bond_issue_conversion_target_removal::key},
+        utility::codec::field{"precondition", &bond_issue_conversion_target_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_lookup, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &bond_issue_conversion_target_lookup::key},
+        utility::codec::field{"bond_issue_conversion_target",
+                              &bond_issue_conversion_target_lookup::bond_issue_conversion_target},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &bond_issue_conversion_target_event::event_id},
+        utility::codec::field{"key", &bond_issue_conversion_target_event::key},
+        utility::codec::field{"action", &bond_issue_conversion_target_event::action},
+        utility::codec::field{"version", &bond_issue_conversion_target_event::version},
+        utility::codec::field{"occurred_at", &bond_issue_conversion_target_event::occurred_at},
+        utility::codec::field{"correlation_id",
+                              &bond_issue_conversion_target_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_version_key, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_version_key&) {
+    return std::tuple{
+        utility::codec::field{
+            "bond_issue_conversion_target",
+            &bond_issue_conversion_target_version_key::bond_issue_conversion_target},
+        utility::codec::field{"version", &bond_issue_conversion_target_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_conversion_target_versions_filter, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_conversion_target_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &bond_issue_conversion_target_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &bond_issue_conversion_target_versions_filter::from_version},
+        utility::codec::field{"to_version",
+                              &bond_issue_conversion_target_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_conversion_targets_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_conversion_targets_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_bond_issue_conversion_targets_request::offset},
+        utility::codec::field{"limit", &list_bond_issue_conversion_targets_request::limit},
+        utility::codec::field{"order", &list_bond_issue_conversion_targets_request::order},
+        utility::codec::field{"as_of", &list_bond_issue_conversion_targets_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_conversion_targets_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_conversion_targets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_bond_issue_conversion_targets_response::result},
+        utility::codec::field{"conversion_targets",
+                              &list_bond_issue_conversion_targets_response::conversion_targets},
+        utility::codec::field{"total", &list_bond_issue_conversion_targets_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_conversion_target_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_bond_issue_conversion_target_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_conversion_target_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_bond_issue_conversion_target_response::result},
+        utility::codec::field{
+            "bond_issue_conversion_target",
+            &get_bond_issue_conversion_target_response::bond_issue_conversion_target},
+    };
+}
+
+/**
+ * @brief The members of get_many_bond_issue_conversion_targets_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_conversion_targets_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_bond_issue_conversion_targets_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_bond_issue_conversion_targets_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_conversion_targets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_bond_issue_conversion_targets_response::result},
+        utility::codec::field{"entries", &get_many_bond_issue_conversion_targets_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_bond_issue_conversion_target_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_conversion_target_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_bond_issue_conversion_target_request::change},
+        utility::codec::field{"intent", &put_bond_issue_conversion_target_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_bond_issue_conversion_target_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_conversion_target_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_bond_issue_conversion_target_response::result},
+        utility::codec::field{
+            "bond_issue_conversion_target",
+            &put_bond_issue_conversion_target_response::bond_issue_conversion_target},
+    };
+}
+
+/**
+ * @brief The members of put_many_bond_issue_conversion_targets_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_conversion_targets_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_bond_issue_conversion_targets_request::changes},
+        utility::codec::field{"intent", &put_many_bond_issue_conversion_targets_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_bond_issue_conversion_targets_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_conversion_targets_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_bond_issue_conversion_targets_response::result},
+        utility::codec::field{"conversion_targets",
+                              &put_many_bond_issue_conversion_targets_response::conversion_targets},
+    };
+}
+
+/**
+ * @brief The members of delete_bond_issue_conversion_target_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_conversion_target_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_bond_issue_conversion_target_request::removal},
+        utility::codec::field{"intent", &delete_bond_issue_conversion_target_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_bond_issue_conversion_target_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_conversion_target_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_bond_issue_conversion_target_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_bond_issue_conversion_targets_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_bond_issue_conversion_targets_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_bond_issue_conversion_targets_request::removals},
+        utility::codec::field{"intent", &delete_many_bond_issue_conversion_targets_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_bond_issue_conversion_targets_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const delete_many_bond_issue_conversion_targets_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &delete_many_bond_issue_conversion_targets_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_conversion_target_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_bond_issue_conversion_target_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_bond_issue_conversion_target_versions_request::key},
+        utility::codec::field{"offset",
+                              &list_bond_issue_conversion_target_versions_request::offset},
+        utility::codec::field{"limit", &list_bond_issue_conversion_target_versions_request::limit},
+        utility::codec::field{"order", &list_bond_issue_conversion_target_versions_request::order},
+        utility::codec::field{"filter",
+                              &list_bond_issue_conversion_target_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_conversion_target_versions_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_bond_issue_conversion_target_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_bond_issue_conversion_target_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_bond_issue_conversion_target_versions_response::versions},
+        utility::codec::field{"total", &list_bond_issue_conversion_target_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_conversion_target_version_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_bond_issue_conversion_target_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_conversion_target_version_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_conversion_target_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_bond_issue_conversion_target_version_response::result},
+        utility::codec::field{"version",
+                              &get_bond_issue_conversion_target_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_key& v);
+    static ores::trading::messaging::bond_issue_conversion_target_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_key& v);
+    static ores::trading::messaging::bond_issue_conversion_target_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_write& v);
+    static ores::trading::messaging::bond_issue_conversion_target_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_write& v);
+    static ores::trading::messaging::bond_issue_conversion_target_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_change& v);
+    static ores::trading::messaging::bond_issue_conversion_target_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_change& v);
+    static ores::trading::messaging::bond_issue_conversion_target_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_removal& v);
+    static ores::trading::messaging::bond_issue_conversion_target_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_removal& v);
+    static ores::trading::messaging::bond_issue_conversion_target_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_lookup& v);
+    static ores::trading::messaging::bond_issue_conversion_target_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_lookup& v);
+    static ores::trading::messaging::bond_issue_conversion_target_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_event& v);
+    static ores::trading::messaging::bond_issue_conversion_target_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_event& v);
+    static ores::trading::messaging::bond_issue_conversion_target_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_version_key& v);
+    static ores::trading::messaging::bond_issue_conversion_target_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_version_key& v);
+    static ores::trading::messaging::bond_issue_conversion_target_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_conversion_target_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_conversion_target_versions_filter& v);
+    static ores::trading::messaging::bond_issue_conversion_target_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_conversion_target_versions_filter& v);
+    static ores::trading::messaging::bond_issue_conversion_target_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_conversion_targets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::list_bond_issue_conversion_targets_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::list_bond_issue_conversion_targets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_conversion_targets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::list_bond_issue_conversion_targets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::list_bond_issue_conversion_targets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_conversion_target_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_conversion_target_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_bond_issue_conversion_targets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::get_many_bond_issue_conversion_targets_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::get_many_bond_issue_conversion_targets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_bond_issue_conversion_targets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::get_many_bond_issue_conversion_targets_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::get_many_bond_issue_conversion_targets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_bond_issue_conversion_target_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::put_bond_issue_conversion_target_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::put_bond_issue_conversion_target_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_bond_issue_conversion_target_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::put_bond_issue_conversion_target_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::put_bond_issue_conversion_target_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_bond_issue_conversion_targets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::put_many_bond_issue_conversion_targets_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::put_many_bond_issue_conversion_targets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_bond_issue_conversion_targets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::put_many_bond_issue_conversion_targets_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::put_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::put_many_bond_issue_conversion_targets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_bond_issue_conversion_target_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::delete_bond_issue_conversion_target_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_bond_issue_conversion_target_request& v);
+    static ores::trading::messaging::delete_bond_issue_conversion_target_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_bond_issue_conversion_target_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::delete_bond_issue_conversion_target_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_bond_issue_conversion_target_response& v);
+    static ores::trading::messaging::delete_bond_issue_conversion_target_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_bond_issue_conversion_targets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::delete_many_bond_issue_conversion_targets_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_bond_issue_conversion_targets_request& v);
+    static ores::trading::messaging::delete_many_bond_issue_conversion_targets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_bond_issue_conversion_targets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::delete_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::delete_many_bond_issue_conversion_targets_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::delete_many_bond_issue_conversion_targets_response& v);
+    static ores::trading::messaging::delete_many_bond_issue_conversion_targets_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_conversion_target_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_bond_issue_conversion_target_versions_request& v);
+    static ores::trading::messaging::list_bond_issue_conversion_target_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_bond_issue_conversion_target_versions_request& v);
+    static ores::trading::messaging::list_bond_issue_conversion_target_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_conversion_target_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::list_bond_issue_conversion_target_versions_response& v);
+    static ores::trading::messaging::list_bond_issue_conversion_target_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::list_bond_issue_conversion_target_versions_response& v);
+    static ores::trading::messaging::list_bond_issue_conversion_target_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_conversion_target_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_bond_issue_conversion_target_version_request& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_version_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_bond_issue_conversion_target_version_request& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_conversion_target_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::trading::messaging::get_bond_issue_conversion_target_version_response& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::trading::messaging::get_bond_issue_conversion_target_version_response& v);
+    static ores::trading::messaging::get_bond_issue_conversion_target_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

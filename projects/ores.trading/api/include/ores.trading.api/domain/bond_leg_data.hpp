@@ -30,9 +30,11 @@
 #include "ores.trading.api/domain/bond_leg_rate_data.hpp"
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_settlement_data.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -163,6 +165,36 @@ struct bond_leg_data {
      */
     friend bool operator==(const bond_leg_data&, const bond_leg_data&) = default;
 };
+/**
+ * @brief The members of bond_leg_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_leg_data&) {
+    return std::tuple{
+        utility::codec::field{"payer", &bond_leg_data::payer},
+        utility::codec::field{"leg_type", &bond_leg_data::leg_type},
+        utility::codec::field{"currency", &bond_leg_data::currency},
+        utility::codec::field{"payment_convention", &bond_leg_data::payment_convention},
+        utility::codec::field{"payment_lag", &bond_leg_data::payment_lag},
+        utility::codec::field{"payment_calendar", &bond_leg_data::payment_calendar},
+        utility::codec::field{"day_counter", &bond_leg_data::day_counter},
+        utility::codec::field{"last_period_day_counter", &bond_leg_data::last_period_day_counter},
+        utility::codec::field{"notional_payment_lag", &bond_leg_data::notional_payment_lag},
+        utility::codec::field{"strict_notional_dates", &bond_leg_data::strict_notional_dates},
+        utility::codec::field{"schedule", &bond_leg_data::schedule},
+        utility::codec::field{"amortizations", &bond_leg_data::amortizations},
+        utility::codec::field{"notionals", &bond_leg_data::notionals},
+        utility::codec::field{"payment_dates", &bond_leg_data::payment_dates},
+        utility::codec::field{"indexings_from_asset_leg", &bond_leg_data::indexings_from_asset_leg},
+        utility::codec::field{"rate", &bond_leg_data::rate},
+        utility::codec::field{"payment_schedule", &bond_leg_data::payment_schedule},
+        utility::codec::field{"settlement", &bond_leg_data::settlement},
+    };
+}
 
 }
 

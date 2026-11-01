@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 9A4CC472-2BB6-46C2-A032-44AFCE5BA171
 :END:
 #+title: ores.trading.flexi_swap_lower_notional

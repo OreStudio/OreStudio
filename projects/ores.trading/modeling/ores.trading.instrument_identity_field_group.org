@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: F9B9C91D-427F-420A-A3BC-D5725AC04674
 :END:
 #+title: ores.trading.instrument_identity

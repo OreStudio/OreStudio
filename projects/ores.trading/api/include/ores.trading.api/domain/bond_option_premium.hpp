@@ -26,8 +26,10 @@
 #define ORES_TRADING_API_DOMAIN_BOND_OPTION_PREMIUM_HPP
 
 #include "ores.trading.api/domain/bond_option_settlement.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -68,6 +70,22 @@ struct bond_option_premium {
      */
     friend bool operator==(const bond_option_premium&, const bond_option_premium&) = default;
 };
+/**
+ * @brief The members of bond_option_premium, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_option_premium&) {
+    return std::tuple{
+        utility::codec::field{"amount", &bond_option_premium::amount},
+        utility::codec::field{"currency", &bond_option_premium::currency},
+        utility::codec::field{"pay_date", &bond_option_premium::pay_date},
+        utility::codec::field{"settlement", &bond_option_premium::settlement},
+    };
+}
 
 }
 

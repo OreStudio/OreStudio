@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3C255B2B-B7DE-4A55-8666-153D982A1167
 :ores.cpp.shell-command.enabled: true
 :END:

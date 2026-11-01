@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 63F0A94E-322E-4CA4-BA26-D47ED6F6320F
 :END:
 #+title: ores.trading.bond_forward_settlement

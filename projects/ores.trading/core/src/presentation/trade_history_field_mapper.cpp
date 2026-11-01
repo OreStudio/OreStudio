@@ -27,8 +27,8 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 #include <string>
 #include <vector>
 
@@ -45,10 +45,18 @@ std::vector<ores::diff::domain::field_value> render_trade_fields(const domain::t
          .value = v.counterparty_id ? boost::uuids::to_string(*v.counterparty_id) : std::string{}});
     fields.push_back({.name = "Trade Type", .value = v.trade_type});
     fields.push_back(
-        {.name = "Counterparty Scope", .value = rfl::enum_to_string(v.counterparty_scope)});
-    fields.push_back({.name = "Booking Nature", .value = rfl::enum_to_string(v.booking_nature)});
-    fields.push_back({.name = "Entry Channel", .value = rfl::enum_to_string(v.entry_channel)});
-    fields.push_back({.name = "Origin", .value = rfl::enum_to_string(v.origin)});
+        {.name = "Counterparty Scope",
+         .value = ores::utility::codec::text_form<decltype(v.counterparty_scope)>::to_text(
+             v.counterparty_scope)});
+    fields.push_back({.name = "Booking Nature",
+                      .value = ores::utility::codec::text_form<decltype(v.booking_nature)>::to_text(
+                          v.booking_nature)});
+    fields.push_back({.name = "Entry Channel",
+                      .value = ores::utility::codec::text_form<decltype(v.entry_channel)>::to_text(
+                          v.entry_channel)});
+    fields.push_back(
+        {.name = "Origin",
+         .value = ores::utility::codec::text_form<decltype(v.origin)>::to_text(v.origin)});
     fields.push_back({.name = "Origin Reference", .value = v.origin_reference});
     fields.push_back({.name = "External Version", .value = std::to_string(v.external_version)});
     fields.push_back({.name = "Draft Reason Code", .value = v.draft_reason_code});

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7F9DD321-272F-44D9-8E0C-B898A49CC85F
 :END:
 #+title: ores.trading.bond_schedule_dates

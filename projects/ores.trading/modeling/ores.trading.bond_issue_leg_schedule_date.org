@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: e53f4ad2-1462-41c3-9f76-2d107bd70c50
 :END:
 #+title: ores.trading.bond_issue_leg_schedule_date

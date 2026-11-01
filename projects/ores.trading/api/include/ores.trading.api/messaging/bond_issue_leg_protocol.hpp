@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_BOND_ISSUE_LEG_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -279,7 +285,741 @@ inline constexpr std::string_view created = "trading.v1.bond_issue_legs_events.c
 inline constexpr std::string_view updated = "trading.v1.bond_issue_legs_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.bond_issue_legs_events.deleted";
 }
+/**
+ * @brief The members of bond_issue_leg_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_key&) {
+    return std::tuple{
+        utility::codec::field{"issue_id", &bond_issue_leg_key::issue_id},
+        utility::codec::field{"leg_number", &bond_issue_leg_key::leg_number},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_write&) {
+    return std::tuple{
+        utility::codec::field{"issue_id", &bond_issue_leg_write::issue_id},
+        utility::codec::field{"leg_number", &bond_issue_leg_write::leg_number},
+        utility::codec::field{"payer", &bond_issue_leg_write::payer},
+        utility::codec::field{"leg_type", &bond_issue_leg_write::leg_type},
+        utility::codec::field{"currency", &bond_issue_leg_write::currency},
+        utility::codec::field{"payment_convention", &bond_issue_leg_write::payment_convention},
+        utility::codec::field{"payment_lag", &bond_issue_leg_write::payment_lag},
+        utility::codec::field{"payment_calendar", &bond_issue_leg_write::payment_calendar},
+        utility::codec::field{"day_counter", &bond_issue_leg_write::day_counter},
+        utility::codec::field{"last_period_day_counter",
+                              &bond_issue_leg_write::last_period_day_counter},
+        utility::codec::field{"notional_payment_lag", &bond_issue_leg_write::notional_payment_lag},
+        utility::codec::field{"strict_notional_dates",
+                              &bond_issue_leg_write::strict_notional_dates},
+        utility::codec::field{"indexings_from_asset_leg",
+                              &bond_issue_leg_write::indexings_from_asset_leg},
+        utility::codec::field{"settlement_fx_index", &bond_issue_leg_write::settlement_fx_index},
+        utility::codec::field{"settlement_fixing_date",
+                              &bond_issue_leg_write::settlement_fixing_date},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &bond_issue_leg_change::write},
+        utility::codec::field{"precondition", &bond_issue_leg_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &bond_issue_leg_removal::key},
+        utility::codec::field{"precondition", &bond_issue_leg_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &bond_issue_leg_lookup::key},
+        utility::codec::field{"bond_issue_leg", &bond_issue_leg_lookup::bond_issue_leg},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &bond_issue_leg_event::event_id},
+        utility::codec::field{"key", &bond_issue_leg_event::key},
+        utility::codec::field{"action", &bond_issue_leg_event::action},
+        utility::codec::field{"version", &bond_issue_leg_event::version},
+        utility::codec::field{"occurred_at", &bond_issue_leg_event::occurred_at},
+        utility::codec::field{"correlation_id", &bond_issue_leg_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_version_key&) {
+    return std::tuple{
+        utility::codec::field{"bond_issue_leg", &bond_issue_leg_version_key::bond_issue_leg},
+        utility::codec::field{"version", &bond_issue_leg_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of bond_issue_leg_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_issue_leg_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &bond_issue_leg_versions_filter::version},
+        utility::codec::field{"from_version", &bond_issue_leg_versions_filter::from_version},
+        utility::codec::field{"to_version", &bond_issue_leg_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_legs_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_bond_issue_legs_request::offset},
+        utility::codec::field{"limit", &list_bond_issue_legs_request::limit},
+        utility::codec::field{"order", &list_bond_issue_legs_request::order},
+        utility::codec::field{"as_of", &list_bond_issue_legs_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_legs_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_bond_issue_legs_response::result},
+        utility::codec::field{"bond_issue_legs", &list_bond_issue_legs_response::bond_issue_legs},
+        utility::codec::field{"total", &list_bond_issue_legs_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_leg_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_bond_issue_leg_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_leg_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_bond_issue_leg_response::result},
+        utility::codec::field{"bond_issue_leg", &get_bond_issue_leg_response::bond_issue_leg},
+    };
+}
+
+/**
+ * @brief The members of get_many_bond_issue_legs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_bond_issue_legs_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_bond_issue_legs_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_bond_issue_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_bond_issue_legs_response::result},
+        utility::codec::field{"entries", &get_many_bond_issue_legs_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_bond_issue_leg_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_bond_issue_leg_request::change},
+        utility::codec::field{"intent", &put_bond_issue_leg_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_bond_issue_leg_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_bond_issue_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_bond_issue_leg_response::result},
+        utility::codec::field{"bond_issue_leg", &put_bond_issue_leg_response::bond_issue_leg},
+    };
+}
+
+/**
+ * @brief The members of put_many_bond_issue_legs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_bond_issue_legs_request::changes},
+        utility::codec::field{"intent", &put_many_bond_issue_legs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_bond_issue_legs_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_bond_issue_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_bond_issue_legs_response::result},
+        utility::codec::field{"bond_issue_legs",
+                              &put_many_bond_issue_legs_response::bond_issue_legs},
+    };
+}
+
+/**
+ * @brief The members of delete_bond_issue_leg_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_leg_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_bond_issue_leg_request::removal},
+        utility::codec::field{"intent", &delete_bond_issue_leg_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_bond_issue_leg_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_bond_issue_leg_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_bond_issue_leg_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_bond_issue_legs_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_bond_issue_legs_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_bond_issue_legs_request::removals},
+        utility::codec::field{"intent", &delete_many_bond_issue_legs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_bond_issue_legs_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_bond_issue_legs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_bond_issue_legs_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_leg_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_leg_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_bond_issue_leg_versions_request::key},
+        utility::codec::field{"offset", &list_bond_issue_leg_versions_request::offset},
+        utility::codec::field{"limit", &list_bond_issue_leg_versions_request::limit},
+        utility::codec::field{"order", &list_bond_issue_leg_versions_request::order},
+        utility::codec::field{"filter", &list_bond_issue_leg_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_bond_issue_leg_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_bond_issue_leg_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_bond_issue_leg_versions_response::result},
+        utility::codec::field{"versions", &list_bond_issue_leg_versions_response::versions},
+        utility::codec::field{"total", &list_bond_issue_leg_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_leg_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_leg_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_bond_issue_leg_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_bond_issue_leg_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_bond_issue_leg_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_bond_issue_leg_version_response::result},
+        utility::codec::field{"version", &get_bond_issue_leg_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_key& v);
+    static ores::trading::messaging::bond_issue_leg_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_key& v);
+    static ores::trading::messaging::bond_issue_leg_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_write& v);
+    static ores::trading::messaging::bond_issue_leg_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_write& v);
+    static ores::trading::messaging::bond_issue_leg_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_change& v);
+    static ores::trading::messaging::bond_issue_leg_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_change& v);
+    static ores::trading::messaging::bond_issue_leg_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_removal& v);
+    static ores::trading::messaging::bond_issue_leg_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_removal& v);
+    static ores::trading::messaging::bond_issue_leg_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_lookup& v);
+    static ores::trading::messaging::bond_issue_leg_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_lookup& v);
+    static ores::trading::messaging::bond_issue_leg_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_event& v);
+    static ores::trading::messaging::bond_issue_leg_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_event& v);
+    static ores::trading::messaging::bond_issue_leg_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::bond_issue_leg_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::bond_issue_leg_version_key& v);
+    static ores::trading::messaging::bond_issue_leg_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::bond_issue_leg_version_key& v);
+    static ores::trading::messaging::bond_issue_leg_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::bond_issue_leg_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::bond_issue_leg_versions_filter& v);
+    static ores::trading::messaging::bond_issue_leg_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::bond_issue_leg_versions_filter& v);
+    static ores::trading::messaging::bond_issue_leg_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_bond_issue_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_bond_issue_legs_request& v);
+    static ores::trading::messaging::list_bond_issue_legs_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_legs_request& v);
+    static ores::trading::messaging::list_bond_issue_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_bond_issue_legs_response& v);
+    static ores::trading::messaging::list_bond_issue_legs_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_legs_response& v);
+    static ores::trading::messaging::list_bond_issue_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_bond_issue_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_bond_issue_leg_request& v);
+    static ores::trading::messaging::get_bond_issue_leg_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_bond_issue_leg_request& v);
+    static ores::trading::messaging::get_bond_issue_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_bond_issue_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_bond_issue_leg_response& v);
+    static ores::trading::messaging::get_bond_issue_leg_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_bond_issue_leg_response& v);
+    static ores::trading::messaging::get_bond_issue_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_bond_issue_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::get_many_bond_issue_legs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::get_many_bond_issue_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_bond_issue_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::get_many_bond_issue_legs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::get_many_bond_issue_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_bond_issue_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_bond_issue_leg_request& v);
+    static ores::trading::messaging::put_bond_issue_leg_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_bond_issue_leg_request& v);
+    static ores::trading::messaging::put_bond_issue_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_bond_issue_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_bond_issue_leg_response& v);
+    static ores::trading::messaging::put_bond_issue_leg_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_bond_issue_leg_response& v);
+    static ores::trading::messaging::put_bond_issue_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_bond_issue_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::put_many_bond_issue_legs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::put_many_bond_issue_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_bond_issue_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::put_many_bond_issue_legs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::put_many_bond_issue_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_bond_issue_leg_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_bond_issue_leg_request& v);
+    static ores::trading::messaging::delete_bond_issue_leg_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_bond_issue_leg_request& v);
+    static ores::trading::messaging::delete_bond_issue_leg_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_bond_issue_leg_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_bond_issue_leg_response& v);
+    static ores::trading::messaging::delete_bond_issue_leg_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_bond_issue_leg_response& v);
+    static ores::trading::messaging::delete_bond_issue_leg_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_bond_issue_legs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::delete_many_bond_issue_legs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_bond_issue_legs_request& v);
+    static ores::trading::messaging::delete_many_bond_issue_legs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_bond_issue_legs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::delete_many_bond_issue_legs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_bond_issue_legs_response& v);
+    static ores::trading::messaging::delete_many_bond_issue_legs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_leg_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_bond_issue_leg_versions_request& v);
+    static ores::trading::messaging::list_bond_issue_leg_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_leg_versions_request& v);
+    static ores::trading::messaging::list_bond_issue_leg_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_bond_issue_leg_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_bond_issue_leg_versions_response& v);
+    static ores::trading::messaging::list_bond_issue_leg_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_bond_issue_leg_versions_response& v);
+    static ores::trading::messaging::list_bond_issue_leg_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_leg_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_bond_issue_leg_version_request& v);
+    static ores::trading::messaging::get_bond_issue_leg_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_bond_issue_leg_version_request& v);
+    static ores::trading::messaging::get_bond_issue_leg_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_bond_issue_leg_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_bond_issue_leg_version_response& v);
+    static ores::trading::messaging::get_bond_issue_leg_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_bond_issue_leg_version_response& v);
+    static ores::trading::messaging::get_bond_issue_leg_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

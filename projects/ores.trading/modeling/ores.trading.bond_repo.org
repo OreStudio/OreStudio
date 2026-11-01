@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 2114162c-5e96-4f17-a2ef-8223ff80ef9e
 :END:
 #+title: ores.trading.bond_repo

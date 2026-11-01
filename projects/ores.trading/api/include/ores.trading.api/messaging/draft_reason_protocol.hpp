@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_DRAFT_REASON_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/draft_reason.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -271,7 +277,736 @@ inline constexpr std::string_view created = "trading.v1.draft_reasons_events.cre
 inline constexpr std::string_view updated = "trading.v1.draft_reasons_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.draft_reasons_events.deleted";
 }
+/**
+ * @brief The members of draft_reason_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &draft_reason_key::code},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &draft_reason_write::code},
+        utility::codec::field{"description", &draft_reason_write::description},
+        utility::codec::field{"responsible_role", &draft_reason_write::responsible_role},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &draft_reason_change::write},
+        utility::codec::field{"precondition", &draft_reason_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &draft_reason_removal::key},
+        utility::codec::field{"precondition", &draft_reason_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &draft_reason_lookup::key},
+        utility::codec::field{"draft_reason", &draft_reason_lookup::draft_reason},
+    };
+}
+
+/**
+ * @brief The members of draft_reasons_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reasons_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &draft_reasons_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &draft_reason_event::event_id},
+        utility::codec::field{"key", &draft_reason_event::key},
+        utility::codec::field{"action", &draft_reason_event::action},
+        utility::codec::field{"version", &draft_reason_event::version},
+        utility::codec::field{"occurred_at", &draft_reason_event::occurred_at},
+        utility::codec::field{"correlation_id", &draft_reason_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_version_key&) {
+    return std::tuple{
+        utility::codec::field{"draft_reason", &draft_reason_version_key::draft_reason},
+        utility::codec::field{"version", &draft_reason_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of draft_reason_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const draft_reason_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &draft_reason_versions_filter::version},
+        utility::codec::field{"from_version", &draft_reason_versions_filter::from_version},
+        utility::codec::field{"to_version", &draft_reason_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_draft_reasons_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_draft_reasons_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_draft_reasons_request::offset},
+        utility::codec::field{"limit", &list_draft_reasons_request::limit},
+        utility::codec::field{"order", &list_draft_reasons_request::order},
+        utility::codec::field{"filter", &list_draft_reasons_request::filter},
+        utility::codec::field{"as_of", &list_draft_reasons_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_draft_reasons_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_draft_reasons_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_draft_reasons_response::result},
+        utility::codec::field{"draft_reasons", &list_draft_reasons_response::draft_reasons},
+        utility::codec::field{"total", &list_draft_reasons_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_draft_reason_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_draft_reason_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_draft_reason_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_draft_reason_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_draft_reason_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_draft_reason_response::result},
+        utility::codec::field{"draft_reason", &get_draft_reason_response::draft_reason},
+    };
+}
+
+/**
+ * @brief The members of get_many_draft_reasons_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_draft_reasons_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_draft_reasons_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_draft_reasons_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_draft_reasons_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_draft_reasons_response::result},
+        utility::codec::field{"entries", &get_many_draft_reasons_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_draft_reason_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_draft_reason_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_draft_reason_request::change},
+        utility::codec::field{"intent", &put_draft_reason_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_draft_reason_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_draft_reason_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_draft_reason_response::result},
+        utility::codec::field{"draft_reason", &put_draft_reason_response::draft_reason},
+    };
+}
+
+/**
+ * @brief The members of put_many_draft_reasons_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_draft_reasons_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_draft_reasons_request::changes},
+        utility::codec::field{"intent", &put_many_draft_reasons_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_draft_reasons_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_draft_reasons_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_draft_reasons_response::result},
+        utility::codec::field{"draft_reasons", &put_many_draft_reasons_response::draft_reasons},
+    };
+}
+
+/**
+ * @brief The members of delete_draft_reason_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_draft_reason_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_draft_reason_request::removal},
+        utility::codec::field{"intent", &delete_draft_reason_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_draft_reason_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_draft_reason_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_draft_reason_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_draft_reasons_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_draft_reasons_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_draft_reasons_request::removals},
+        utility::codec::field{"intent", &delete_many_draft_reasons_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_draft_reasons_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_draft_reasons_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_draft_reasons_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_draft_reason_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_draft_reason_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_draft_reason_versions_request::key},
+        utility::codec::field{"offset", &list_draft_reason_versions_request::offset},
+        utility::codec::field{"limit", &list_draft_reason_versions_request::limit},
+        utility::codec::field{"order", &list_draft_reason_versions_request::order},
+        utility::codec::field{"filter", &list_draft_reason_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_draft_reason_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_draft_reason_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_draft_reason_versions_response::result},
+        utility::codec::field{"versions", &list_draft_reason_versions_response::versions},
+        utility::codec::field{"total", &list_draft_reason_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_draft_reason_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_draft_reason_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_draft_reason_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_draft_reason_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_draft_reason_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_draft_reason_version_response::result},
+        utility::codec::field{"version", &get_draft_reason_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_key& v);
+    static ores::trading::messaging::draft_reason_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_key& v);
+    static ores::trading::messaging::draft_reason_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_write& v);
+    static ores::trading::messaging::draft_reason_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_write& v);
+    static ores::trading::messaging::draft_reason_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_change& v);
+    static ores::trading::messaging::draft_reason_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_change& v);
+    static ores::trading::messaging::draft_reason_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_removal& v);
+    static ores::trading::messaging::draft_reason_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_removal& v);
+    static ores::trading::messaging::draft_reason_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_lookup& v);
+    static ores::trading::messaging::draft_reason_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_lookup& v);
+    static ores::trading::messaging::draft_reason_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reasons_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reasons_filter& v);
+    static ores::trading::messaging::draft_reasons_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reasons_filter& v);
+    static ores::trading::messaging::draft_reasons_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_event& v);
+    static ores::trading::messaging::draft_reason_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_event& v);
+    static ores::trading::messaging::draft_reason_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_version_key& v);
+    static ores::trading::messaging::draft_reason_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::draft_reason_version_key& v);
+    static ores::trading::messaging::draft_reason_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::draft_reason_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::draft_reason_versions_filter& v);
+    static ores::trading::messaging::draft_reason_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::draft_reason_versions_filter& v);
+    static ores::trading::messaging::draft_reason_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_draft_reasons_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_draft_reasons_request& v);
+    static ores::trading::messaging::list_draft_reasons_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_draft_reasons_request& v);
+    static ores::trading::messaging::list_draft_reasons_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_draft_reasons_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_draft_reasons_response& v);
+    static ores::trading::messaging::list_draft_reasons_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_draft_reasons_response& v);
+    static ores::trading::messaging::list_draft_reasons_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_draft_reason_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_draft_reason_request& v);
+    static ores::trading::messaging::get_draft_reason_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_draft_reason_request& v);
+    static ores::trading::messaging::get_draft_reason_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_draft_reason_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_draft_reason_response& v);
+    static ores::trading::messaging::get_draft_reason_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_draft_reason_response& v);
+    static ores::trading::messaging::get_draft_reason_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_draft_reasons_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_draft_reasons_request& v);
+    static ores::trading::messaging::get_many_draft_reasons_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_draft_reasons_request& v);
+    static ores::trading::messaging::get_many_draft_reasons_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_draft_reasons_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_draft_reasons_response& v);
+    static ores::trading::messaging::get_many_draft_reasons_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_draft_reasons_response& v);
+    static ores::trading::messaging::get_many_draft_reasons_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_draft_reason_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_draft_reason_request& v);
+    static ores::trading::messaging::put_draft_reason_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_draft_reason_request& v);
+    static ores::trading::messaging::put_draft_reason_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_draft_reason_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_draft_reason_response& v);
+    static ores::trading::messaging::put_draft_reason_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_draft_reason_response& v);
+    static ores::trading::messaging::put_draft_reason_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_draft_reasons_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_draft_reasons_request& v);
+    static ores::trading::messaging::put_many_draft_reasons_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_draft_reasons_request& v);
+    static ores::trading::messaging::put_many_draft_reasons_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_draft_reasons_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_draft_reasons_response& v);
+    static ores::trading::messaging::put_many_draft_reasons_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_draft_reasons_response& v);
+    static ores::trading::messaging::put_many_draft_reasons_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_draft_reason_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_draft_reason_request& v);
+    static ores::trading::messaging::delete_draft_reason_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_draft_reason_request& v);
+    static ores::trading::messaging::delete_draft_reason_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_draft_reason_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_draft_reason_response& v);
+    static ores::trading::messaging::delete_draft_reason_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_draft_reason_response& v);
+    static ores::trading::messaging::delete_draft_reason_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_draft_reasons_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_draft_reasons_request& v);
+    static ores::trading::messaging::delete_many_draft_reasons_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_draft_reasons_request& v);
+    static ores::trading::messaging::delete_many_draft_reasons_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_draft_reasons_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_draft_reasons_response& v);
+    static ores::trading::messaging::delete_many_draft_reasons_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_draft_reasons_response& v);
+    static ores::trading::messaging::delete_many_draft_reasons_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_draft_reason_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_draft_reason_versions_request& v);
+    static ores::trading::messaging::list_draft_reason_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_draft_reason_versions_request& v);
+    static ores::trading::messaging::list_draft_reason_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_draft_reason_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_draft_reason_versions_response& v);
+    static ores::trading::messaging::list_draft_reason_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_draft_reason_versions_response& v);
+    static ores::trading::messaging::list_draft_reason_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_draft_reason_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_draft_reason_version_request& v);
+    static ores::trading::messaging::get_draft_reason_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_draft_reason_version_request& v);
+    static ores::trading::messaging::get_draft_reason_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_draft_reason_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_draft_reason_version_response& v);
+    static ores::trading::messaging::get_draft_reason_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_draft_reason_version_response& v);
+    static ores::trading::messaging::get_draft_reason_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

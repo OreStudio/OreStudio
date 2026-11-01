@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_ASCOT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/ascot.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -271,7 +277,689 @@ inline constexpr std::string_view created = "trading.v1.ascots_events.created";
 inline constexpr std::string_view updated = "trading.v1.ascots_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.ascots_events.deleted";
 }
+/**
+ * @brief The members of ascot_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &ascot_key::trade_id},
+    };
+}
+
+/**
+ * @brief The members of ascot_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &ascot_write::trade_id},
+        utility::codec::field{"trade_activity_id", &ascot_write::trade_activity_id},
+        utility::codec::field{"ascot_option_type", &ascot_write::ascot_option_type},
+    };
+}
+
+/**
+ * @brief The members of ascot_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &ascot_change::write},
+        utility::codec::field{"precondition", &ascot_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of ascot_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &ascot_removal::key},
+        utility::codec::field{"precondition", &ascot_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of ascot_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &ascot_lookup::key},
+        utility::codec::field{"ascot", &ascot_lookup::ascot},
+    };
+}
+
+/**
+ * @brief The members of ascots_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascots_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id_one_of", &ascots_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of ascot_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &ascot_event::event_id},
+        utility::codec::field{"key", &ascot_event::key},
+        utility::codec::field{"action", &ascot_event::action},
+        utility::codec::field{"version", &ascot_event::version},
+        utility::codec::field{"occurred_at", &ascot_event::occurred_at},
+        utility::codec::field{"correlation_id", &ascot_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of ascot_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_version_key&) {
+    return std::tuple{
+        utility::codec::field{"ascot", &ascot_version_key::ascot},
+        utility::codec::field{"version", &ascot_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of ascot_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ascot_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &ascot_versions_filter::version},
+        utility::codec::field{"from_version", &ascot_versions_filter::from_version},
+        utility::codec::field{"to_version", &ascot_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_ascots_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ascots_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_ascots_request::offset},
+        utility::codec::field{"limit", &list_ascots_request::limit},
+        utility::codec::field{"order", &list_ascots_request::order},
+        utility::codec::field{"filter", &list_ascots_request::filter},
+        utility::codec::field{"as_of", &list_ascots_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_ascots_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ascots_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ascots_response::result},
+        utility::codec::field{"ascots", &list_ascots_response::ascots},
+        utility::codec::field{"total", &list_ascots_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ascot_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ascot_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ascot_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ascot_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ascot_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ascot_response::result},
+        utility::codec::field{"ascot", &get_ascot_response::ascot},
+    };
+}
+
+/**
+ * @brief The members of get_many_ascots_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ascots_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_ascots_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_ascots_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ascots_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_ascots_response::result},
+        utility::codec::field{"entries", &get_many_ascots_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_ascot_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ascot_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_ascot_request::change},
+        utility::codec::field{"intent", &put_ascot_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_ascot_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ascot_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_ascot_response::result},
+        utility::codec::field{"ascot", &put_ascot_response::ascot},
+    };
+}
+
+/**
+ * @brief The members of put_many_ascots_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ascots_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_ascots_request::changes},
+        utility::codec::field{"intent", &put_many_ascots_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_ascots_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ascots_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_ascots_response::result},
+        utility::codec::field{"ascots", &put_many_ascots_response::ascots},
+    };
+}
+
+/**
+ * @brief The members of delete_ascot_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ascot_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_ascot_request::removal},
+        utility::codec::field{"intent", &delete_ascot_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_ascot_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ascot_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_ascot_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ascots_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ascots_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_ascots_request::removals},
+        utility::codec::field{"intent", &delete_many_ascots_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ascots_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ascots_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_ascots_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_ascot_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ascot_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_ascot_versions_request::key},
+        utility::codec::field{"offset", &list_ascot_versions_request::offset},
+        utility::codec::field{"limit", &list_ascot_versions_request::limit},
+        utility::codec::field{"order", &list_ascot_versions_request::order},
+        utility::codec::field{"filter", &list_ascot_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_ascot_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ascot_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ascot_versions_response::result},
+        utility::codec::field{"versions", &list_ascot_versions_response::versions},
+        utility::codec::field{"total", &list_ascot_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ascot_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ascot_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ascot_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ascot_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ascot_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ascot_version_response::result},
+        utility::codec::field{"version", &get_ascot_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_key& v);
+    static ores::trading::messaging::ascot_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_key& v);
+    static ores::trading::messaging::ascot_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_write& v);
+    static ores::trading::messaging::ascot_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_write& v);
+    static ores::trading::messaging::ascot_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_change& v);
+    static ores::trading::messaging::ascot_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_change& v);
+    static ores::trading::messaging::ascot_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_removal& v);
+    static ores::trading::messaging::ascot_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_removal& v);
+    static ores::trading::messaging::ascot_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_lookup& v);
+    static ores::trading::messaging::ascot_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_lookup& v);
+    static ores::trading::messaging::ascot_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascots_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascots_filter& v);
+    static ores::trading::messaging::ascots_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascots_filter& v);
+    static ores::trading::messaging::ascots_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_event& v);
+    static ores::trading::messaging::ascot_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_event& v);
+    static ores::trading::messaging::ascot_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_version_key& v);
+    static ores::trading::messaging::ascot_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_version_key& v);
+    static ores::trading::messaging::ascot_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::ascot_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::ascot_versions_filter& v);
+    static ores::trading::messaging::ascot_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::ascot_versions_filter& v);
+    static ores::trading::messaging::ascot_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_ascots_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_ascots_request& v);
+    static ores::trading::messaging::list_ascots_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_ascots_request& v);
+    static ores::trading::messaging::list_ascots_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_ascots_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_ascots_response& v);
+    static ores::trading::messaging::list_ascots_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::list_ascots_response& v);
+    static ores::trading::messaging::list_ascots_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_ascot_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_ascot_request& v);
+    static ores::trading::messaging::get_ascot_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_ascot_request& v);
+    static ores::trading::messaging::get_ascot_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_ascot_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_ascot_response& v);
+    static ores::trading::messaging::get_ascot_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_ascot_response& v);
+    static ores::trading::messaging::get_ascot_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_many_ascots_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_ascots_request& v);
+    static ores::trading::messaging::get_many_ascots_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_many_ascots_request& v);
+    static ores::trading::messaging::get_many_ascots_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_many_ascots_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_many_ascots_response& v);
+    static ores::trading::messaging::get_many_ascots_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_many_ascots_response& v);
+    static ores::trading::messaging::get_many_ascots_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_ascot_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_ascot_request& v);
+    static ores::trading::messaging::put_ascot_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_ascot_request& v);
+    static ores::trading::messaging::put_ascot_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_ascot_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_ascot_response& v);
+    static ores::trading::messaging::put_ascot_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_ascot_response& v);
+    static ores::trading::messaging::put_ascot_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_many_ascots_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_ascots_request& v);
+    static ores::trading::messaging::put_many_ascots_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_many_ascots_request& v);
+    static ores::trading::messaging::put_many_ascots_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::put_many_ascots_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::put_many_ascots_response& v);
+    static ores::trading::messaging::put_many_ascots_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::put_many_ascots_response& v);
+    static ores::trading::messaging::put_many_ascots_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_ascot_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_ascot_request& v);
+    static ores::trading::messaging::delete_ascot_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_ascot_request& v);
+    static ores::trading::messaging::delete_ascot_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_ascot_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_ascot_response& v);
+    static ores::trading::messaging::delete_ascot_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_ascot_response& v);
+    static ores::trading::messaging::delete_ascot_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_many_ascots_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_many_ascots_request& v);
+    static ores::trading::messaging::delete_many_ascots_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::delete_many_ascots_request& v);
+    static ores::trading::messaging::delete_many_ascots_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::delete_many_ascots_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::delete_many_ascots_response& v);
+    static ores::trading::messaging::delete_many_ascots_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_ascots_response& v);
+    static ores::trading::messaging::delete_many_ascots_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_ascot_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_ascot_versions_request& v);
+    static ores::trading::messaging::list_ascot_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_ascot_versions_request& v);
+    static ores::trading::messaging::list_ascot_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_ascot_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_ascot_versions_response& v);
+    static ores::trading::messaging::list_ascot_versions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_ascot_versions_response& v);
+    static ores::trading::messaging::list_ascot_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_ascot_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_ascot_version_request& v);
+    static ores::trading::messaging::get_ascot_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_ascot_version_request& v);
+    static ores::trading::messaging::get_ascot_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::get_ascot_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::get_ascot_version_response& v);
+    static ores::trading::messaging::get_ascot_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::get_ascot_version_response& v);
+    static ores::trading::messaging::get_ascot_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

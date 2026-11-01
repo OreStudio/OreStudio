@@ -25,8 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_SETTLEMENT_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_SETTLEMENT_DATA_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::trading::domain {
 
@@ -55,6 +57,20 @@ struct bond_settlement_data {
      */
     friend bool operator==(const bond_settlement_data&, const bond_settlement_data&) = default;
 };
+/**
+ * @brief The members of bond_settlement_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_settlement_data&) {
+    return std::tuple{
+        utility::codec::field{"fx_index", &bond_settlement_data::fx_index},
+        utility::codec::field{"fixing_date", &bond_settlement_data::fixing_date},
+    };
+}
 
 }
 

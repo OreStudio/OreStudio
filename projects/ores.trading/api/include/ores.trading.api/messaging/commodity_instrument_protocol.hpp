@@ -26,11 +26,17 @@
 #define ORES_TRADING_API_MESSAGING_COMMODITY_INSTRUMENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -299,7 +305,817 @@ inline constexpr std::string_view created = "trading.v1.commodity_instruments_ev
 inline constexpr std::string_view updated = "trading.v1.commodity_instruments_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.commodity_instruments_events.deleted";
 }
+/**
+ * @brief The members of commodity_instrument_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_key&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &commodity_instrument_key::trade_id},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_write&) {
+    return std::tuple{
+        utility::codec::field{"trade_id", &commodity_instrument_write::trade_id},
+        utility::codec::field{"trade_type_code", &commodity_instrument_write::trade_type_code},
+        utility::codec::field{"trade_activity_id", &commodity_instrument_write::trade_activity_id},
+        utility::codec::field{"commodity_code", &commodity_instrument_write::commodity_code},
+        utility::codec::field{"currency", &commodity_instrument_write::currency},
+        utility::codec::field{"quantity", &commodity_instrument_write::quantity},
+        utility::codec::field{"unit", &commodity_instrument_write::unit},
+        utility::codec::field{"start_date", &commodity_instrument_write::start_date},
+        utility::codec::field{"maturity_date", &commodity_instrument_write::maturity_date},
+        utility::codec::field{"fixed_price", &commodity_instrument_write::fixed_price},
+        utility::codec::field{"option_type", &commodity_instrument_write::option_type},
+        utility::codec::field{"strike_price", &commodity_instrument_write::strike_price},
+        utility::codec::field{"exercise_type", &commodity_instrument_write::exercise_type},
+        utility::codec::field{"average_type", &commodity_instrument_write::average_type},
+        utility::codec::field{"averaging_start_date",
+                              &commodity_instrument_write::averaging_start_date},
+        utility::codec::field{"averaging_end_date",
+                              &commodity_instrument_write::averaging_end_date},
+        utility::codec::field{"spread_commodity_code",
+                              &commodity_instrument_write::spread_commodity_code},
+        utility::codec::field{"spread_amount", &commodity_instrument_write::spread_amount},
+        utility::codec::field{"strip_frequency_code",
+                              &commodity_instrument_write::strip_frequency_code},
+        utility::codec::field{"variance_strike", &commodity_instrument_write::variance_strike},
+        utility::codec::field{"accumulation_amount",
+                              &commodity_instrument_write::accumulation_amount},
+        utility::codec::field{"knock_out_barrier", &commodity_instrument_write::knock_out_barrier},
+        utility::codec::field{"barrier_type", &commodity_instrument_write::barrier_type},
+        utility::codec::field{"lower_barrier", &commodity_instrument_write::lower_barrier},
+        utility::codec::field{"upper_barrier", &commodity_instrument_write::upper_barrier},
+        utility::codec::field{"day_count_fraction_code",
+                              &commodity_instrument_write::day_count_fraction_code},
+        utility::codec::field{"payment_frequency_code",
+                              &commodity_instrument_write::payment_frequency_code},
+        utility::codec::field{"swaption_expiry_date",
+                              &commodity_instrument_write::swaption_expiry_date},
+        utility::codec::field{"description", &commodity_instrument_write::description},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &commodity_instrument_change::write},
+        utility::codec::field{"precondition", &commodity_instrument_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &commodity_instrument_removal::key},
+        utility::codec::field{"precondition", &commodity_instrument_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &commodity_instrument_lookup::key},
+        utility::codec::field{"commodity_instrument",
+                              &commodity_instrument_lookup::commodity_instrument},
+    };
+}
+
+/**
+ * @brief The members of commodity_instruments_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instruments_filter&) {
+    return std::tuple{
+        utility::codec::field{"trade_id_one_of", &commodity_instruments_filter::trade_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &commodity_instrument_event::event_id},
+        utility::codec::field{"key", &commodity_instrument_event::key},
+        utility::codec::field{"action", &commodity_instrument_event::action},
+        utility::codec::field{"version", &commodity_instrument_event::version},
+        utility::codec::field{"occurred_at", &commodity_instrument_event::occurred_at},
+        utility::codec::field{"correlation_id", &commodity_instrument_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_version_key&) {
+    return std::tuple{
+        utility::codec::field{"commodity_instrument",
+                              &commodity_instrument_version_key::commodity_instrument},
+        utility::codec::field{"version", &commodity_instrument_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of commodity_instrument_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const commodity_instrument_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &commodity_instrument_versions_filter::version},
+        utility::codec::field{"from_version", &commodity_instrument_versions_filter::from_version},
+        utility::codec::field{"to_version", &commodity_instrument_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_commodity_instruments_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_commodity_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_commodity_instruments_request::offset},
+        utility::codec::field{"limit", &list_commodity_instruments_request::limit},
+        utility::codec::field{"order", &list_commodity_instruments_request::order},
+        utility::codec::field{"filter", &list_commodity_instruments_request::filter},
+        utility::codec::field{"as_of", &list_commodity_instruments_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_commodity_instruments_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_commodity_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_commodity_instruments_response::result},
+        utility::codec::field{"commodity_instruments",
+                              &list_commodity_instruments_response::commodity_instruments},
+        utility::codec::field{"total", &list_commodity_instruments_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_commodity_instrument_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_commodity_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_commodity_instrument_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_commodity_instrument_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_commodity_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_commodity_instrument_response::result},
+        utility::codec::field{"commodity_instrument",
+                              &get_commodity_instrument_response::commodity_instrument},
+    };
+}
+
+/**
+ * @brief The members of get_many_commodity_instruments_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_commodity_instruments_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_commodity_instruments_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_commodity_instruments_response::result},
+        utility::codec::field{"entries", &get_many_commodity_instruments_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_commodity_instrument_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_commodity_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_commodity_instrument_request::change},
+        utility::codec::field{"intent", &put_commodity_instrument_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_commodity_instrument_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_commodity_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_commodity_instrument_response::result},
+        utility::codec::field{"commodity_instrument",
+                              &put_commodity_instrument_response::commodity_instrument},
+    };
+}
+
+/**
+ * @brief The members of put_many_commodity_instruments_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_commodity_instruments_request::changes},
+        utility::codec::field{"intent", &put_many_commodity_instruments_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_commodity_instruments_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_commodity_instruments_response::result},
+        utility::codec::field{"commodity_instruments",
+                              &put_many_commodity_instruments_response::commodity_instruments},
+    };
+}
+
+/**
+ * @brief The members of delete_commodity_instrument_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_commodity_instrument_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_commodity_instrument_request::removal},
+        utility::codec::field{"intent", &delete_commodity_instrument_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_commodity_instrument_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_commodity_instrument_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_commodity_instrument_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_commodity_instruments_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_commodity_instruments_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_commodity_instruments_request::removals},
+        utility::codec::field{"intent", &delete_many_commodity_instruments_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_commodity_instruments_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_commodity_instruments_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_commodity_instruments_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_commodity_instrument_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_commodity_instrument_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_commodity_instrument_versions_request::key},
+        utility::codec::field{"offset", &list_commodity_instrument_versions_request::offset},
+        utility::codec::field{"limit", &list_commodity_instrument_versions_request::limit},
+        utility::codec::field{"order", &list_commodity_instrument_versions_request::order},
+        utility::codec::field{"filter", &list_commodity_instrument_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_commodity_instrument_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_commodity_instrument_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_commodity_instrument_versions_response::result},
+        utility::codec::field{"versions", &list_commodity_instrument_versions_response::versions},
+        utility::codec::field{"total", &list_commodity_instrument_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_commodity_instrument_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_commodity_instrument_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_commodity_instrument_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_commodity_instrument_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_commodity_instrument_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_commodity_instrument_version_response::result},
+        utility::codec::field{"version", &get_commodity_instrument_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_key& v);
+    static ores::trading::messaging::commodity_instrument_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::commodity_instrument_key& v);
+    static ores::trading::messaging::commodity_instrument_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_write& v);
+    static ores::trading::messaging::commodity_instrument_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::commodity_instrument_write& v);
+    static ores::trading::messaging::commodity_instrument_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_change& v);
+    static ores::trading::messaging::commodity_instrument_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instrument_change& v);
+    static ores::trading::messaging::commodity_instrument_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_removal& v);
+    static ores::trading::messaging::commodity_instrument_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instrument_removal& v);
+    static ores::trading::messaging::commodity_instrument_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_lookup& v);
+    static ores::trading::messaging::commodity_instrument_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instrument_lookup& v);
+    static ores::trading::messaging::commodity_instrument_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instruments_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instruments_filter& v);
+    static ores::trading::messaging::commodity_instruments_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instruments_filter& v);
+    static ores::trading::messaging::commodity_instruments_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::commodity_instrument_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::commodity_instrument_event& v);
+    static ores::trading::messaging::commodity_instrument_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::commodity_instrument_event& v);
+    static ores::trading::messaging::commodity_instrument_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::commodity_instrument_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::commodity_instrument_version_key& v);
+    static ores::trading::messaging::commodity_instrument_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instrument_version_key& v);
+    static ores::trading::messaging::commodity_instrument_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::commodity_instrument_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::commodity_instrument_versions_filter& v);
+    static ores::trading::messaging::commodity_instrument_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::commodity_instrument_versions_filter& v);
+    static ores::trading::messaging::commodity_instrument_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_commodity_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_commodity_instruments_request& v);
+    static ores::trading::messaging::list_commodity_instruments_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_commodity_instruments_request& v);
+    static ores::trading::messaging::list_commodity_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_commodity_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_commodity_instruments_response& v);
+    static ores::trading::messaging::list_commodity_instruments_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_commodity_instruments_response& v);
+    static ores::trading::messaging::list_commodity_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_commodity_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_commodity_instrument_request& v);
+    static ores::trading::messaging::get_commodity_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_commodity_instrument_request& v);
+    static ores::trading::messaging::get_commodity_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_commodity_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_commodity_instrument_response& v);
+    static ores::trading::messaging::get_commodity_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_commodity_instrument_response& v);
+    static ores::trading::messaging::get_commodity_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_commodity_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_commodity_instruments_request& v);
+    static ores::trading::messaging::get_many_commodity_instruments_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_commodity_instruments_request& v);
+    static ores::trading::messaging::get_many_commodity_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_many_commodity_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_many_commodity_instruments_response& v);
+    static ores::trading::messaging::get_many_commodity_instruments_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_many_commodity_instruments_response& v);
+    static ores::trading::messaging::get_many_commodity_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_commodity_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_commodity_instrument_request& v);
+    static ores::trading::messaging::put_commodity_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_commodity_instrument_request& v);
+    static ores::trading::messaging::put_commodity_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_commodity_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_commodity_instrument_response& v);
+    static ores::trading::messaging::put_commodity_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_commodity_instrument_response& v);
+    static ores::trading::messaging::put_commodity_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_commodity_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_commodity_instruments_request& v);
+    static ores::trading::messaging::put_many_commodity_instruments_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_commodity_instruments_request& v);
+    static ores::trading::messaging::put_many_commodity_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::put_many_commodity_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::put_many_commodity_instruments_response& v);
+    static ores::trading::messaging::put_many_commodity_instruments_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::put_many_commodity_instruments_response& v);
+    static ores::trading::messaging::put_many_commodity_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_commodity_instrument_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_commodity_instrument_request& v);
+    static ores::trading::messaging::delete_commodity_instrument_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_commodity_instrument_request& v);
+    static ores::trading::messaging::delete_commodity_instrument_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_commodity_instrument_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_commodity_instrument_response& v);
+    static ores::trading::messaging::delete_commodity_instrument_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_commodity_instrument_response& v);
+    static ores::trading::messaging::delete_commodity_instrument_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_commodity_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_commodity_instruments_request& v);
+    static ores::trading::messaging::delete_many_commodity_instruments_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_commodity_instruments_request& v);
+    static ores::trading::messaging::delete_many_commodity_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::delete_many_commodity_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::delete_many_commodity_instruments_response& v);
+    static ores::trading::messaging::delete_many_commodity_instruments_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::delete_many_commodity_instruments_response& v);
+    static ores::trading::messaging::delete_many_commodity_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_commodity_instrument_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_commodity_instrument_versions_request& v);
+    static ores::trading::messaging::list_commodity_instrument_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_commodity_instrument_versions_request& v);
+    static ores::trading::messaging::list_commodity_instrument_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::list_commodity_instrument_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::list_commodity_instrument_versions_response& v);
+    static ores::trading::messaging::list_commodity_instrument_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_commodity_instrument_versions_response& v);
+    static ores::trading::messaging::list_commodity_instrument_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_commodity_instrument_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_commodity_instrument_version_request& v);
+    static ores::trading::messaging::get_commodity_instrument_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_commodity_instrument_version_request& v);
+    static ores::trading::messaging::get_commodity_instrument_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::get_commodity_instrument_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::get_commodity_instrument_version_response& v);
+    static ores::trading::messaging::get_commodity_instrument_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::get_commodity_instrument_version_response& v);
+    static ores::trading::messaging::get_commodity_instrument_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

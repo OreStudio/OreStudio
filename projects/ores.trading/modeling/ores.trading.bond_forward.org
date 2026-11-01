@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: AFB87F90-DA8A-45E1-8C84-CD4945B23485
 :END:
 #+title: ores.trading.bond_forward

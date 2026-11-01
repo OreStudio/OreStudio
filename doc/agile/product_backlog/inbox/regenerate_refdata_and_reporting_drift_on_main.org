@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 522EE91C-8429-4D27-BFB3-200454AA8034
+:END:
+#+title: Regenerate the refdata and reporting files that drift from their models on main
+#+description: On main at f4cf29c82c, ten refdata and reporting files do not match their models: day_counter, three curve_volatility entity units, three eventing tests and three create scripts.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:reporting:codegen:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=check_component_drift.py --changed= on the reflect-cpp trading branch names ten
+files the branch does not touch: =day_counter.hpp=, the
+=curve_volatility_moneyness_surface=, =curve_volatility_smile= and
+=curve_volatility_smile_parameter= entity units, three refdata eventing
+integration tests, and the =refdata_day_counters=, =reporting_cut_families= and
+=reporting_cut_resolution_rules= create scripts. The reporting scripts would
+gain an own-tenant limit in their delete rule.
+
+* Why
+
+Any branch that touches refdata or reporting fails =component-drift= until main
+is regenerated, and the reporting delete rule may let a tenant end the system
+tenant's shared rows.
+
+* References
+
+-
+
+* See also
+
+-

@@ -25,11 +25,13 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FLOAT_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FLOAT_DATA_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 
 namespace ores::trading::domain {
@@ -62,6 +64,20 @@ struct bond_float_data {
      */
     friend bool operator==(const bond_float_data&, const bond_float_data&) = default;
 };
+/**
+ * @brief The members of bond_float_data, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const bond_float_data&) {
+    return std::tuple{
+        utility::codec::field{"value", &bond_float_data::value},
+        utility::codec::field{"start_date", &bond_float_data::start_date},
+    };
+}
 
 /**
  * @brief The members of bond_float_data the customer agreed to.

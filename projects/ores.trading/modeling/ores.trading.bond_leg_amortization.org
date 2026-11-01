@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 6c6415ff-172f-47ea-8cc6-f293ee7af888
 :END:
 #+title: ores.trading.bond_leg_amortization

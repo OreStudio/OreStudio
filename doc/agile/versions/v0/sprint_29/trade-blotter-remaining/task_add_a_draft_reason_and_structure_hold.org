@@ -28,10 +28,10 @@ A draft carries a reason from a lookup, such as structure_incomplete. A leg name
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Now          | Built: the lookup, the trade's column and the booking's rule. |
+| Waiting on   | [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] for a leg naming a structure that is not yet made. |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
@@ -40,11 +40,26 @@ A draft carries a reason from a lookup, such as structure_incomplete. A leg name
 - A leg of a new structure can name its structure.
 - A draft report lists age and reason.
 
+The third line needs a structure that does not exist yet when the leg is booked,
+which is what [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] builds. The
+fourth is a report, and [[id:025EA107-987D-47B2-BE0D-BA250EE22994][Report the drafts and who is late]] carries it.
+
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three pieces: the lookup, the trade's own column, and the booking's rule.
+
+The lookup is a simple one, in the shape the trading component's other closed sets
+take: a code, a description and the desk that owns it. The desk is what makes an
+aged draft somebody's work rather than nobody's.
+
+The reason lives on the trade, not on its state: a report lists drafts, and the
+trade is the row it lists. The booking request carries it because only the
+booking knows whether the trade it makes is a draft.
+
+The rule is then a pair the service answers. A =draft_capture= that states no
+reason is refused, because a draft nobody can explain is a deal nobody can pick
+up. A booking that goes live and states a reason is refused too, because a
+concluded deal waits on nothing.
 
 * Measurements
 
@@ -58,7 +73,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The lookup is seeded | 4 reasons, each with the desk that owns it | =compass db sql -- -c "select count(*) from ores_trading_draft_reasons_tbl"= | this branch |
+| The trading suite | 233 cases, 1457 assertions, including a draft with no reason refused, a live booking stating one refused, and a draft keeping what it stated | =./publish/bin/ores.trading.core.tests= | this branch |
+| The schema is regenerated | the table, its notify trigger and the trade's column come from the model, not from a migration | =compass db recreate -y -k= | this branch |
 
 * Notes
 
@@ -86,3 +103,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A draft states why it is not live, and the reason names the desk that unblocks it.
+
+| Piece | Where |
+|-------|-------|
+| The lookup | =ores.trading.draft_reason=: the code, what it waits on, and the desk that owns it |
+| The seed | =trading_draft_reasons_populate.sql=: four reasons, from the rest of a structure to a credit decision |
+| The column | =ores_trading_trades_tbl.draft_reason_code=, null for a trade that went live when it was booked |
+| The rule | the booking refuses a draft with no reason, and refuses a reason on a trade that goes live |
+| The message | =book_trade_request.draft_reason_code= |
+
+* What is not done
+
+A leg naming a structure that does not exist yet waits on
+[[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]], which creates the structure the
+legs were captured against. The report of drafts is
+[[id:025EA107-987D-47B2-BE0D-BA250EE22994][Report the drafts and who is late]].
+
+* What the tree did
+
+The new column and table needed the environment's database rebuilt, which it was:
+=compass db recreate -y -k= took 1m17s and left the schema in step with the
+models.

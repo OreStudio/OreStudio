@@ -1,0 +1,366 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.marketdata.core/repository/market_state_payload_repository.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.marketdata.api/domain/market_state_payload.hpp"
+#include "ores.marketdata.api/domain/market_state_payload_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/messaging/market_state_payload_protocol.hpp"
+#include "ores.marketdata.core/repository/market_state_payload_entity.hpp"
+#include "ores.marketdata.core/repository/market_state_payload_mapper.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
+namespace ores::marketdata::repository {
+
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+std::string market_state_payload_repository::sql() {
+    return query_builder::insert_statement_sql<market_state_payload_entity>(lg());
+}
+
+bool market_state_payload_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+query_builder::order
+market_state_payload_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
+    if (order.field.empty())
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
+    if (!market_state_payload_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of market state payloads cannot be ordered by " +
+                                    order.field + ".");
+    return query_builder::make_order({order.field}, order.descending, {"id"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<query_builder::condition> market_state_payload_filter_condition(
+    const std::optional<messaging::market_state_payloads_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<query_builder::condition> r;
+    if (filter->report_instance_id)
+        r.push_back(query_builder::equals(
+            "report_instance_id", query_builder::filter_value(*filter->report_instance_id)));
+    if (filter->family)
+        r.push_back(query_builder::equals("family", query_builder::filter_value(*filter->family)));
+    if (filter->id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
+    }
+    if (filter->report_instance_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->report_instance_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("report_instance_id", std::move(values)));
+    }
+    if (filter->family_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->family_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("family", std::move(values)));
+    }
+    return query_builder::all_of(std::move(r));
+}
+
+}
+
+ores::utility::domain::precondition
+market_state_payload_repository::replace_claim(context ctx, const domain::market_state_payload& v) {
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+}
+
+domain::market_state_payload
+market_state_payload_repository::apply_claim(context ctx,
+                                             const domain::market_state_payload& v,
+                                             const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "market_state_payload_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist &&
+        !read_latest(ctx, boost::uuids::to_string(v.id)).empty())
+        throw std::invalid_argument(
+            "market_state_payload_repository::write: a current row already exists");
+    return t;
+}
+
+void market_state_payload_repository::write(context ctx, const domain::market_state_payload& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+
+void market_state_payload_repository::insert(context ctx, const domain::market_state_payload& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market state payload. " << "id: " << v.id;
+    query_builder::execute_write_query(ctx,
+                                       market_state_payload_mapper::map(v),
+                                       lg(),
+                                       "Inserting market state payload into database.");
+}
+
+void market_state_payload_repository::insert(context ctx,
+                                             const std::vector<domain::market_state_payload>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market state payloads. Count: " << v.size();
+    query_builder::execute_write_query(ctx,
+                                       market_state_payload_mapper::map(v),
+                                       lg(),
+                                       "Inserting market state payloads into database.");
+}
+
+void market_state_payload_repository::write(context ctx,
+                                            const std::vector<domain::market_state_payload>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void market_state_payload_repository::write(context ctx,
+                                            const domain::market_state_payload& v,
+                                            const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing market state payload. " << "id: " << v.id;
+    const auto t = apply_claim(ctx, v, claim);
+    query_builder::execute_write_query(ctx,
+                                       market_state_payload_mapper::map(t),
+                                       lg(),
+                                       "Writing market state payload to database.");
+}
+
+void market_state_payload_repository::write(
+    context ctx,
+    const std::vector<domain::market_state_payload>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing market state payloads. Count: " << v.size();
+    std::vector<domain::market_state_payload> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+    query_builder::execute_write_query(ctx,
+                                       market_state_payload_mapper::map(batch),
+                                       lg(),
+                                       "Writing market state payloads to database.");
+}
+
+std::vector<domain::market_state_payload>
+market_state_payload_repository::read_latest(context ctx) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_state_payload_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::order_by("id"_c);
+
+    return query_builder::execute_read_query<market_state_payload_entity,
+                                             domain::market_state_payload>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_state_payload_mapper::map(entities); },
+        lg(),
+        "Reading latest market state payloads");
+}
+
+std::vector<domain::market_state_payload>
+market_state_payload_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market state payload. " << "id: " << id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<market_state_payload_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
+
+    return query_builder::execute_read_query<market_state_payload_entity,
+                                             domain::market_state_payload>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_state_payload_mapper::map(entities); },
+        lg(),
+        "Reading latest market state payload by id.");
+}
+
+
+std::vector<domain::market_state_payload>
+market_state_payload_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market state payload versions. " << "id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_state_payload_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("valid_from"_c.desc());
+
+    return query_builder::execute_read_query<market_state_payload_entity,
+                                             domain::market_state_payload>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_state_payload_mapper::map(entities); },
+        lg(),
+        "Reading all market state payload versions by id.");
+}
+
+
+market_state_payload_repository::remove_status market_state_payload_repository::remove(
+    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing market state payload. " << "id: " << id;
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+    const auto current = read_latest(ctx, id);
+    if (current.empty())
+        return remove_status::missing;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::delete_from<market_state_payload_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
+
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing market state payload from database.");
+    return remove_status::removed;
+}
+
+void market_state_payload_repository::remove(context ctx, const std::string& id) {
+    static_cast<void>(remove(ctx, id, std::nullopt));
+}
+
+std::vector<domain::market_state_payload> market_state_payload_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::market_state_payloads_filter>& filter,
+    const std::optional<std::string>& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market state payloads with offset: " << offset
+                               << " and limit: " << limit;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_state_payload_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
+
+    return query_builder::execute_ordered_read_query<market_state_payload_entity,
+                                                     domain::market_state_payload>(
+        ctx,
+        query,
+        market_state_payload_list_order(order, {"id"}, false),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_state_payload_filter_condition(filter)),
+        [](const auto& entities) { return market_state_payload_mapper::map(entities); },
+        lg(),
+        "Reading latest market state payloads with pagination.");
+}
+
+std::uint32_t market_state_payload_repository::get_total_payload_count(
+    context ctx,
+    const std::optional<messaging::market_state_payloads_filter>& filter,
+    const std::optional<std::string>& as_of) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market state payload count";
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_state_payload_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
+
+    return query_builder::execute_count_query<market_state_payload_entity>(
+        ctx,
+        query,
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_state_payload_filter_condition(filter)),
+        lg(),
+        "Counting market state payloads");
+}
+
+std::vector<domain::market_state_payload>
+market_state_payload_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<market_state_payload_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
+    auto result = query_builder::execute_read_query<market_state_payload_entity,
+                                                    domain::market_state_payload>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_state_payload_mapper::map(entities); },
+        lg(),
+        "Reading latest market state payloads by ids.");
+    return result;
+}
+
+void market_state_payload_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if (ids.empty())
+        return;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::delete_from<market_state_payload_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market state payloads.");
+}
+
+
+}

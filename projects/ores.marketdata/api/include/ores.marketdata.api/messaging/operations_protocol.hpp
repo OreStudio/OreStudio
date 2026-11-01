@@ -1309,6 +1309,47 @@ struct get_series_ticks_response {
     std::vector<double> values;
 };
 
+/**
+ * @brief Asks this component to keep the market state a run priced against.
+ *
+ * The state is the output files the run left in its output archives, and those
+ * files are far too large for a message: a cube states a column for every curve
+ * and tenor the run built. The caller therefore names the archives and lends the
+ * token that reads them — the run's own, the same one the run's other steps use
+ * — and this reads the files rather than receiving them.
+ *
+ * The archives are named by their storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is left alone:
+ * the run's results belong to reporting.
+ */
+struct store_market_state_request {
+    using response_type = struct store_market_state_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.store_market_state";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+    std::string report_instance_id;
+    std::string report_definition_id;
+    std::string as_of;
+    std::string storage_token;
+    std::vector<std::string> output_uris;
+    std::vector<std::string> result_ids;
+};
+
+struct store_market_state_response {
+    ores::utility::domain::result result;
+    std::vector<std::string> families;
+    int payloads = 0;
+    std::int64_t payload_bytes = 0;
+    std::vector<std::string> left_alone;
+    std::vector<std::string> refusals;
+};
+
 }
 
 #endif

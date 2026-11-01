@@ -149,6 +149,16 @@ struct output_family {
 [[nodiscard]] ORES_ORE_CORE_EXPORT const output_family* family_of_file(std::string_view file_name);
 
 /**
+ * @brief Whether a family states the market state a run priced against.
+ *
+ * A market state is not a result: it says what the world looked like, the engine
+ * read it rather than produced it, and it belongs in the market data store. The
+ * wide families are the ones whose row is a date and a scenario, or a market
+ * object, with a column for every curve and tenor of the run.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT bool is_market_state(const output_family& family);
+
+/**
  * @brief The column a family states under a heading, or null when it states none.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT const output_column* column_named(const output_family& family,

@@ -214,3 +214,21 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
         CHECK_FALSE(family->measures_open);
     }
 }
+
+TEST_CASE("every market-state family is a family of the catalogue", catalogue_tags) {
+    const std::vector<std::string> expected = {"netcube",
+                                               "rawcube",
+                                               "scenario",
+                                               "scenario_fullSurface",
+                                               "scenariostatistics",
+                                               "stress_scenarios",
+                                               "todaysmarketcalibration"};
+
+    std::vector<std::string> stated;
+    for (const auto& family : output_families())
+        if (ores::ore::results::is_market_state(family))
+            stated.push_back(family.code);
+    std::ranges::sort(stated);
+
+    CHECK(stated == expected);
+}

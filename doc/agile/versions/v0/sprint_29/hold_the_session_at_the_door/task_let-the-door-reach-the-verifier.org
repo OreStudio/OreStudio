@@ -29,7 +29,7 @@ A door that is opened before the lock is fitted still works once the lock is in 
 | State        | DONE                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
 | Now          | Nothing. |
-| Waiting on   | The build on main: see =* Notes=. |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 

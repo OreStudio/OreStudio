@@ -29,7 +29,7 @@ The change stream carries what the stores announce. One subscription hears every
 | State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
 | Now          | Nothing. |
-| Waiting on   | [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]] |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 

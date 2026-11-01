@@ -40,7 +40,7 @@ namespace ores::database::query_builder {
 template <typename Entity, typename Member>
 struct column_binding {
     std::string_view name;
-    Member Entity::*member;
+    Member Entity::* member;
     bool key = false;
     static constexpr bool as_text = false;
 };
@@ -48,13 +48,13 @@ struct column_binding {
 template <typename Entity, typename Member>
 struct text_column_binding {
     std::string_view name;
-    Member Entity::*member;
+    Member Entity::* member;
     bool key = false;
     static constexpr bool as_text = true;
 };
 
 template <typename Entity, typename Member>
-constexpr column_binding<Entity, Member> bind(std::string_view name, Member Entity::*member) {
+constexpr column_binding<Entity, Member> bind(std::string_view name, Member Entity::* member) {
     return {name, member, false};
 }
 
@@ -63,12 +63,12 @@ constexpr column_binding<Entity, Member> bind(std::string_view name, Member Enti
  */
 template <typename Entity, typename Member>
 constexpr text_column_binding<Entity, Member> bind_text(std::string_view name,
-                                                        Member Entity::*member) {
+                                                        Member Entity::* member) {
     return {name, member, false};
 }
 
 template <typename Entity, typename Member>
-constexpr column_binding<Entity, Member> key(std::string_view name, Member Entity::*member) {
+constexpr column_binding<Entity, Member> key(std::string_view name, Member Entity::* member) {
     return {name, member, true};
 }
 
@@ -78,7 +78,7 @@ constexpr column_binding<Entity, Member> key(std::string_view name, Member Entit
  */
 template <typename Entity, typename Member>
 constexpr text_column_binding<Entity, Member> key_text(std::string_view name,
-                                                       Member Entity::*member) {
+                                                       Member Entity::* member) {
     return {name, member, true};
 }
 
@@ -135,8 +135,8 @@ private:
     template <typename Binding, std::size_t... Indices>
     constexpr column_list<Bindings..., Binding> append_at(Binding b,
                                                           std::index_sequence<Indices...>) const {
-        return {{{static_cast<const detail::column_slot<Indices, Bindings>&>(slots).binding}...,
-                 {b}}};
+        return {
+            {{static_cast<const detail::column_slot<Indices, Bindings>&>(slots).binding}..., {b}}};
     }
 };
 

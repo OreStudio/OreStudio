@@ -83,19 +83,18 @@ template <typename Entity>
 const std::string& select_list() {
     static const std::string list = [] {
         std::string out;
-        Entity::columns().apply(
-            [&](const auto&... b) {
-                (([&] {
-                     std::string column(b.name);
-                     // A column the row holds as text is asked for as text, so
-                     // the binary format never describes a type the layer has no
-                     // codec for.
-                     if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
-                         column += "::text";
-                     out += (out.empty() ? "" : ", ") + column;
-                 }()),
-                 ...);
-            });
+        Entity::columns().apply([&](const auto&... b) {
+            (([&] {
+                 std::string column(b.name);
+                 // A column the row holds as text is asked for as text, so
+                 // the binary format never describes a type the layer has no
+                 // codec for.
+                 if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                     column += "::text";
+                 out += (out.empty() ? "" : ", ") + column;
+             }()),
+             ...);
+        });
         return out;
     }();
     return list;
@@ -105,19 +104,18 @@ template <typename Entity>
 const std::string& insert_sql(bool replace) {
     static const auto build = [](bool upsert) {
         std::string names, values, keys, sets;
-        Entity::columns().apply(
-            [&](const auto&... b) {
-                (([&] {
-                     const std::string n(b.name);
-                     names += (names.empty() ? "" : ", ") + n;
-                     values += values.empty() ? "?" : ", ?";
-                     if (b.key)
-                         keys += (keys.empty() ? "" : ", ") + n;
-                     else
-                         sets += (sets.empty() ? "" : ", ") + n + " = excluded." + n;
-                 }()),
-                 ...);
-            });
+        Entity::columns().apply([&](const auto&... b) {
+            (([&] {
+                 const std::string n(b.name);
+                 names += (names.empty() ? "" : ", ") + n;
+                 values += values.empty() ? "?" : ", ?";
+                 if (b.key)
+                     keys += (keys.empty() ? "" : ", ") + n;
+                 else
+                     sets += (sets.empty() ? "" : ", ") + n + " = excluded." + n;
+             }()),
+             ...);
+        });
         std::string sql =
             "insert into " + table<Entity>() + " (" + names + ") values (" + values + ")";
         if (upsert)
@@ -132,16 +130,15 @@ const std::string& insert_sql(bool replace) {
 template <typename Entity>
 std::vector<pq::param> row_params(const Entity& e) {
     std::vector<pq::param> out;
-    Entity::columns().apply(
-        [&](const auto&... b) {
-            (([&] {
-                 if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
-                     out.push_back(pq::to_text(e.*(b.member)));
-                 else
-                     out.push_back(pq::encode_param(e.*(b.member)));
-             }()),
-             ...);
-        });
+    Entity::columns().apply([&](const auto&... b) {
+        (([&] {
+             if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                 out.push_back(pq::to_text(e.*(b.member)));
+             else
+                 out.push_back(pq::encode_param(e.*(b.member)));
+         }()),
+         ...);
+    });
     return out;
 }
 
@@ -150,21 +147,20 @@ std::vector<Entity> entity_rows(const pq::result& r) {
     std::vector<Entity> out(static_cast<std::size_t>(r.rows()));
     for (int row = 0; row < r.rows(); ++row) {
         int column = 0;
-        Entity::columns().apply(
-            [&](const auto&... b) {
-                (([&] {
-                     using member_type = std::remove_cvref_t<decltype(out[0].*(b.member))>;
-                     auto& cell = out[static_cast<std::size_t>(row)].*(b.member);
-                     // A column held as text is read through the text form, so
-                     // the member may keep a type the database does not store.
-                     if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
-                         cell = pq::from_text<member_type>(r, row, column);
-                     else
-                         cell = pq::read<member_type>(r, row, column);
-                     ++column;
-                 }()),
-                 ...);
-            });
+        Entity::columns().apply([&](const auto&... b) {
+            (([&] {
+                 using member_type = std::remove_cvref_t<decltype(out[0].*(b.member))>;
+                 auto& cell = out[static_cast<std::size_t>(row)].*(b.member);
+                 // A column held as text is read through the text form, so
+                 // the member may keep a type the database does not store.
+                 if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                     cell = pq::from_text<member_type>(r, row, column);
+                 else
+                     cell = pq::read<member_type>(r, row, column);
+                 ++column;
+             }()),
+             ...);
+        });
     }
     return out;
 }

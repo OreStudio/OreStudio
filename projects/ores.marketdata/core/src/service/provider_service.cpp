@@ -105,9 +105,6 @@ domain::provider provider_to_domain(const messaging::provider_write& write) {
     v.terms_credit = write.terms_credit;
     v.allows_storage = write.allows_storage;
     v.credential_ref = write.credential_ref;
-    v.terms_accepted_digest = write.terms_accepted_digest;
-    v.terms_accepted_by = write.terms_accepted_by;
-    v.terms_accepted_at = write.terms_accepted_at;
     return v;
 }
 
@@ -360,6 +357,14 @@ provider_service::prepare_change(const messaging::provider_change& change,
             break;
         case precondition_kind::any:
             break;
+    }
+    // What the row already records about its own life is the row's to keep.
+    // The write carries no way to state these, so an edit that let them take
+    // a default would clear the stamps the service itself wrote.
+    if (!current.empty()) {
+        out.terms_accepted_digest = current.front().terms_accepted_digest;
+        out.terms_accepted_by = current.front().terms_accepted_by;
+        out.terms_accepted_at = current.front().terms_accepted_at;
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the

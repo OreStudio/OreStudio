@@ -146,12 +146,12 @@ public:
     reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v,
                                  xml::record_writer w);
 
-    static refdata::domain::cross_currency_fix_float_convention
+    static ores::refdata::messaging::cross_currency_fix_float_convention_item
     map_cross_currency_fix_float(const xml::record_reader& v);
 
-    static void
-    reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v,
-                                     xml::record_writer w);
+    static void reverse_cross_currency_fix_float(
+        const ores::refdata::messaging::cross_currency_fix_float_convention_item& v,
+        xml::record_writer w);
 
     static refdata::domain::deposit_convention map_deposit(const xml::record_reader& v);
 

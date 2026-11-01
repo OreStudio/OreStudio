@@ -106,11 +106,18 @@ export const CONVENTION_FAMILY_ENTRIES: readonly ConventionFamilyEntry[] = [
         writeMode: 'party',
     },
     {
-        key: 'cross_currency_fix_float',
-        entity: 'cross_currency_fix_float_convention',
-        subjectStem: 'refdata.v1.cross_currency_fix_float_conventions',
+        key: 'cross_currency_fix_float_fixed_leg',
+        entity: 'cross_currency_fix_float_fixed_leg',
+        subjectStem: 'refdata.v1.cross_currency_fix_float_fixed_legs',
         partyScoped: true,
-        writeMode: 'party',
+        writeMode: 'by_id',
+    },
+    {
+        key: 'cross_currency_fix_float_float_leg',
+        entity: 'cross_currency_fix_float_float_leg',
+        subjectStem: 'refdata.v1.cross_currency_fix_float_float_legs',
+        partyScoped: true,
+        writeMode: 'by_id',
     },
     {
         key: 'deposit',

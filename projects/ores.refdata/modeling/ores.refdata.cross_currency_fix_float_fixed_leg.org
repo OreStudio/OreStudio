@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: DB6EA8B2-7EDD-421C-84B0-8011E830A052
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.cross_currency_fix_float_fixed_leg
+#+description: Codegen entity model for the refdata =cross_currency_fix_float_fixed_leg= part. the fixed leg of a cross-currency fix-float swap.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: cross_currency_fix_float_fixed_leg
+#+entity_plural: cross_currency_fix_float_fixed_legs
+#+entity_title: Cross Currency Fix Float Fixed Leg
+#+convention_family: cross_currency_fix_float_fixed_leg
+#+convention_write: by_id
+#+brief: the fixed leg of a cross-currency fix-float swap.
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+The leg a cross-currency fix-float swap pays in the currency it fixes, as
+ORE's =FixedCurrency=, =FixedFrequency=, =FixedConvention= and
+=FixedDayCounter=. It is a part because its four fields hold one invariant: the
+terms the fixed leg is built from, and a convention either states them or does
+not. The floating leg beside it holds none of them.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** fixed_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The currency the fixed leg pays, as ORE's currency code.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** fixed_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How often the fixed leg pays, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::string("Annual")
+#+end_src
+
+** fixed_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The business day convention the fixed leg rolls on.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The day count fraction the fixed leg accrues on.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** fixed_currency
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** fixed_frequency
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** fixed_convention
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cross_currency_fix_float_fixed_legs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency_fix_float_fixed_leg
+:entity_plural_short:   cross_currency_fix_float_fixed_legs
+:entity_singular_words: cross currency fix float fixed leg
+:entity_plural_words:   cross currency fix float fixed legs
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:42B27F4A-F09C-4DBC-9B9B-F9EFE601E2EA][ores.refdata.cross_currency_fix_float_convention]] — the family this part belongs to.
+- ores.refdata.cross_currency_fix_float_float_leg — the leg beside this one.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that introduced it.

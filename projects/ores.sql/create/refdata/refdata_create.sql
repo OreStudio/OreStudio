@@ -292,8 +292,6 @@
 \ir ./refdata_bma_basis_swap_conventions_notify_trigger_create.sql
 \ir ./refdata_inflation_swap_conventions_create.sql
 \ir ./refdata_inflation_swap_conventions_notify_trigger_create.sql
-\ir ./refdata_cross_currency_fix_float_conventions_create.sql
-\ir ./refdata_cross_currency_fix_float_conventions_notify_trigger_create.sql
 \ir ./refdata_cms_spread_option_conventions_create.sql
 \ir ./refdata_cms_spread_option_conventions_notify_trigger_create.sql
 \ir ./refdata_commodity_future_conventions_create.sql

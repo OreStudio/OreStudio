@@ -66,7 +66,8 @@ std::map<std::string, int> element_counts(const std::string& xml) {
 std::string without_tenor_basis_swap(const conventions_package& p) {
     std::string out;
     for (const auto& row : p.bundle.rows) {
-        if (conventions_family::is_tenor_basis_swap_family(row.family))
+        if (conventions_family::is_tenor_basis_swap_family(row.family) ||
+            conventions_family::is_cross_currency_fix_float_family(row.family))
             continue;
         out += row.family + "\x1f" + std::to_string(row.sequence) + "\x1f" + row.payload + "\n";
     }

@@ -43,7 +43,6 @@ constexpr family_codec family_codecs[] = {
     {"commodity_forward", &pack_commodity_forward, &join_commodity_forward},
     {"commodity_future", &pack_commodity_future, &join_commodity_future},
     {"cross_currency_basis", &pack_cross_currency_basis, &join_cross_currency_basis},
-    {"cross_currency_fix_float", &pack_cross_currency_fix_float, &join_cross_currency_fix_float},
     {"deposit", &pack_deposit, &join_deposit},
     {"fra", &pack_fra, &join_fra},
     {"future", &pack_future, &join_future},
@@ -62,7 +61,8 @@ constexpr family_codec family_codecs[] = {
 
 constexpr bool codecs_cover_the_registry() {
     for (const auto& family : refdata::domain::convention_families) {
-        if (is_tenor_basis_swap_family(family.key))
+        if (is_tenor_basis_swap_family(family.key) ||
+            is_cross_currency_fix_float_family(family.key))
             continue;
         std::size_t found = 0;
         for (const auto& codec : family_codecs)
@@ -71,7 +71,8 @@ constexpr bool codecs_cover_the_registry() {
         if (found != 1)
             return false;
     }
-    return std::size(family_codecs) + std::size(tenor_basis_swap_families) ==
+    return std::size(family_codecs) + std::size(tenor_basis_swap_families) +
+               std::size(cross_currency_fix_float_families) ==
            std::size(refdata::domain::convention_families);
 }
 
@@ -90,6 +91,7 @@ conventions_package split_conventions(const conventions& v) {
     for (const auto& codec : conventions_family::family_codecs)
         codec.pack(root, p.bundle);
     conventions_family::pack_tenor_basis_swap(root, p.bundle);
+    conventions_family::pack_cross_currency_fix_float(root, p.bundle);
     p.fx = conventions_family::project_fx(root);
     return p;
 }
@@ -101,9 +103,14 @@ conventions join_conventions(const conventions_package& p) {
     xml::record_writer root(*xg::conventions_document().root, &r);
 
     std::vector<const conventions_family::package_row*> tenor;
+    std::vector<const conventions_family::package_row*> fix_float;
     for (const auto& row : p.bundle.rows) {
         if (conventions_family::is_tenor_basis_swap_family(row.family)) {
             tenor.push_back(&row);
+            continue;
+        }
+        if (conventions_family::is_cross_currency_fix_float_family(row.family)) {
+            fix_float.push_back(&row);
             continue;
         }
 
@@ -117,6 +124,7 @@ conventions join_conventions(const conventions_package& p) {
     }
 
     conventions_family::join_tenor_basis_swap(tenor, root);
+    conventions_family::join_cross_currency_fix_float(fix_float, root);
     conventions_family::join_fx(p.fx, root);
     return r;
 }

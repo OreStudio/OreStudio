@@ -21,76 +21,166 @@
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace ores::ore::domain {
 
 using namespace ores::logging;
 using namespace conventions_fields;
 
-refdata::domain::cross_currency_fix_float_convention
+namespace conventions_fields {
+
+// The central row's uuid is made by the store when the publish inserts it. The
+// mapper knows the kind and the name but not the party, so it cannot state the
+// identity: it mints a provisional key instead, so both legs reach their central
+// row inside one mapped document. The store discards it.
+boost::uuids::uuid provisional_uuid() {
+    static thread_local ores::utility::uuid::uuid_v7_generator generator;
+    return generator();
+}
+
+}
+
+ores::refdata::messaging::cross_currency_fix_float_convention_item
 conventions_mapper::map_cross_currency_fix_float(const record_reader& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
                                << text_of(v, "Id");
 
-    refdata::domain::cross_currency_fix_float_convention r;
-    r.id = text_of(v, "Id");
-    r.settlement_days = integer_of(v, "SettlementDays");
-    r.settlement_calendar = text_of(v, "SettlementCalendar");
-    r.settlement_convention = bdc_of(v, "SettlementConvention");
-    r.fixed_currency = spelling_of(v, "FixedCurrency", "currency code");
-    r.fixed_frequency = frequency_of(v, "FixedFrequency");
-    r.fixed_convention = bdc_of(v, "FixedConvention");
-    r.fixed_day_count_fraction = day_counter_of(v, "FixedDayCounter");
-    r.index = text_of(v, "Index");
-    assign(r.eom, opt_flag(v, "EOM"));
-    assign(r.is_resettable, opt_flag(v, "IsResettable"));
-    assign(r.float_index_is_resettable, opt_flag(v, "FloatIndexIsResettable"));
-    assign(r.include_spread, opt_flag(v, "IncludeSpread"));
-    assign(r.lookback, opt_text(v, "Lookback"));
-    assign(r.fixing_days, opt_integer(v, "FixingDays"));
-    assign(r.rate_cutoff, opt_integer(v, "RateCutoff"));
-    assign(r.is_averaged, opt_flag(v, "IsAveraged"));
-    assign(r.observation_shift, opt_flag(v, "ObservationShift"));
-    set_audit(r);
+    ores::refdata::messaging::cross_currency_fix_float_convention_item r;
+    refdata::domain::convention central;
+    central.identity.kind_code = std::string(conventions_family::cross_currency_fix_float_kind);
+    central.payload.name = text_of(v, "Id");
+    central.identity.id = provisional_uuid();
+    assign(central.payload.settlement_days, optional_integer(v, "SettlementDays"));
+    assign(central.payload.settlement_calendar, opt_text(v, "SettlementCalendar"));
+    assign(central.payload.settlement_convention, opt_spelling(v, "SettlementConvention"));
+    assign(central.payload.eom, opt_flag(v, "EOM"));
+    assign(central.payload.is_resettable, opt_flag(v, "IsResettable"));
+    set_audit(central);
+    r.key.id = central.identity.id;
+    r.convention = central;
+
+    refdata::domain::cross_currency_fix_float_fixed_leg fixed;
+    fixed.identity.id = provisional_uuid();
+    fixed.identity.convention_id = central.identity.id;
+    assign(fixed.fixed_currency, opt_spelling(v, "FixedCurrency"));
+    assign(fixed.fixed_frequency, opt_spelling(v, "FixedFrequency"));
+    assign(fixed.fixed_convention, opt_spelling(v, "FixedConvention"));
+    assign(fixed.fixed_day_count_fraction, opt_spelling(v, "FixedDayCounter"));
+    set_audit(fixed);
+    r.fixed_leg.push_back(std::move(fixed));
+
+    refdata::domain::cross_currency_fix_float_float_leg floating;
+    floating.identity.id = provisional_uuid();
+    floating.identity.convention_id = central.identity.id;
+    assign(floating.index, opt_text(v, "Index"));
+    assign(floating.float_index_is_resettable, opt_flag(v, "FloatIndexIsResettable"));
+    assign(floating.include_spread, opt_flag(v, "IncludeSpread"));
+    assign(floating.lookback, opt_text(v, "Lookback"));
+    assign(floating.fixing_days, optional_integer(v, "FixingDays"));
+    assign(floating.rate_cutoff, optional_integer(v, "RateCutoff"));
+    assign(floating.is_averaged, opt_flag(v, "IsAveraged"));
+    assign(floating.observation_shift, opt_flag(v, "ObservationShift"));
+    set_audit(floating);
+    r.float_leg.push_back(std::move(floating));
     return r;
 }
 
 void conventions_mapper::reverse_cross_currency_fix_float(
-    const refdata::domain::cross_currency_fix_float_convention& v, record_writer w) {
-    w.set_text("Id", v.id);
-    w.set_integer("SettlementDays", v.settlement_days);
-    w.set_text("SettlementCalendar", v.settlement_calendar);
-    put_bdc(w, "SettlementConvention", v.settlement_convention);
-    put_enum(w, "FixedCurrency", v.fixed_currency, "currency code");
-    put_enum(w, "FixedFrequency", v.fixed_frequency, "frequency type");
-    put_bdc(w, "FixedConvention", v.fixed_convention);
-    put_day_counter(w, "FixedDayCounter", v.fixed_day_count_fraction);
-    w.set_text("Index", v.index);
-    w.set_optional_flag("EOM", v.eom);
-    w.set_optional_flag("IsResettable", v.is_resettable);
-    w.set_optional_flag("FloatIndexIsResettable", v.float_index_is_resettable);
-    w.set_optional_flag("IncludeSpread", v.include_spread);
-    w.set_optional_text("Lookback", v.lookback);
-    w.set_optional_integer("FixingDays", as_integer(v.fixing_days));
-    w.set_optional_integer("RateCutoff", as_integer(v.rate_cutoff));
-    w.set_optional_flag("IsAveraged", v.is_averaged);
-    w.set_optional_flag("ObservationShift", v.observation_shift);
+    const ores::refdata::messaging::cross_currency_fix_float_convention_item& v,
+    record_writer w) {
+    if (v.convention) {
+        w.set_text("Id", v.convention->payload.name);
+        w.set_optional_integer("SettlementDays",
+                               as_integer(v.convention->payload.settlement_days));
+        w.set_optional_text("SettlementCalendar", v.convention->payload.settlement_calendar);
+        w.set_optional_spelling(
+            "SettlementConvention", v.convention->payload.settlement_convention, "business day convention");
+        w.set_optional_flag("EOM", v.convention->payload.eom);
+        w.set_optional_flag("IsResettable", v.convention->payload.is_resettable);
+    }
+    if (!v.fixed_leg.empty()) {
+        const auto& f = v.fixed_leg.front();
+        w.set_optional_spelling("FixedCurrency", f.fixed_currency, "currency code");
+        w.set_optional_spelling("FixedFrequency", f.fixed_frequency, "frequency type");
+        w.set_optional_spelling("FixedConvention", f.fixed_convention, "business day convention");
+        w.set_optional_spelling("FixedDayCounter", f.fixed_day_count_fraction, "day counter");
+    }
+    if (!v.float_leg.empty()) {
+        const auto& f = v.float_leg.front();
+        w.set_optional_text("Index", f.index);
+        w.set_optional_flag("FloatIndexIsResettable", f.float_index_is_resettable);
+        w.set_optional_flag("IncludeSpread", f.include_spread);
+        w.set_optional_text("Lookback", f.lookback);
+        w.set_optional_integer("FixingDays", as_integer(f.fixing_days));
+        w.set_optional_integer("RateCutoff", as_integer(f.rate_cutoff));
+        w.set_optional_flag("IsAveraged", f.is_averaged);
+        w.set_optional_flag("ObservationShift", f.observation_shift);
+    }
 }
 
 namespace conventions_family {
 
 void pack_cross_currency_fix_float(const record_reader& root,
                                    refdata::messaging::conventions_bundle& bundle) {
-    pack_family(bundle,
-                "cross_currency_fix_float",
-                root.children("CrossCurrencyFixFloat"),
-                &conventions_mapper::map_cross_currency_fix_float);
+    int conventions_seen = 0;
+    int fixed_seen = 0;
+    int float_seen = 0;
+    for (const auto& x : root.children("CrossCurrencyFixFloat")) {
+        auto item = conventions_mapper::map_cross_currency_fix_float(x);
+        if (item.convention)
+            pack_row(bundle, "convention", conventions_seen++, *item.convention);
+        for (const auto& part : item.fixed_leg)
+            pack_row(bundle, "cross_currency_fix_float_fixed_leg", fixed_seen++, part);
+        for (const auto& part : item.float_leg)
+            pack_row(bundle, "cross_currency_fix_float_float_leg", float_seen++, part);
+    }
 }
 
-void join_cross_currency_fix_float(const package_row& row, record_writer& root) {
-    conventions_mapper::reverse_cross_currency_fix_float(
-        unpack_row<refdata::domain::cross_currency_fix_float_convention>(row),
-        root.append("CrossCurrencyFixFloat"));
+void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
+                                   record_writer& root) {
+    std::vector<refdata::domain::convention> central;
+    std::vector<refdata::domain::cross_currency_fix_float_fixed_leg> fixed;
+    std::vector<refdata::domain::cross_currency_fix_float_float_leg> floating;
+
+    for (const auto* row : rows) {
+        // The one table carries every kind, and only this kind's rows have a
+        // document element. A row of another kind is a convention with no
+        // element to be written as, so it is dropped rather than written as a
+        // fix-float swap that carries no legs.
+        if (row->family == "convention") {
+            auto c = unpack_row<refdata::domain::convention>(*row);
+            if (c.identity.kind_code == cross_currency_fix_float_kind)
+                central.push_back(std::move(c));
+        } else if (row->family == "cross_currency_fix_float_fixed_leg") {
+            fixed.push_back(unpack_row<refdata::domain::cross_currency_fix_float_fixed_leg>(*row));
+        } else if (row->family == "cross_currency_fix_float_float_leg") {
+            floating.push_back(
+                unpack_row<refdata::domain::cross_currency_fix_float_float_leg>(*row));
+        } else {
+            throw std::runtime_error(
+                std::format("Family \"{}\" is not a cross-currency fix-float family.",
+                            row->family));
+        }
+    }
+
+    for (const auto& c : central) {
+        ores::refdata::messaging::cross_currency_fix_float_convention_item item;
+        item.key.id = c.identity.id;
+        item.convention = c;
+        for (const auto& f : fixed)
+            if (f.identity.convention_id == c.identity.id)
+                item.fixed_leg.push_back(f);
+        for (const auto& f : floating)
+            if (f.identity.convention_id == c.identity.id)
+                item.float_leg.push_back(f);
+        conventions_mapper::reverse_cross_currency_fix_float(
+            item, root.append("CrossCurrencyFixFloat"));
+    }
 }
 
 }

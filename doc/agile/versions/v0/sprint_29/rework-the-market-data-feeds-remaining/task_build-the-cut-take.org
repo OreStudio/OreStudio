@@ -26,7 +26,7 @@ A person takes a cut through the take flow, the body is assembled with its gaps,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,29 @@ A person takes a cut through the take flow, the body is assembled with its gaps,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work follows the platform's own order: the model, then the store, then the
+operations, and the screens last.
+
+1. The cut's approval detail is a codegen entity in the reporting component: the
+   cut the request authorises, the counts of the body's parts as the take
+   counted them, and the applied facts. Its `request_id` is the natural key, so
+   a request authorises one body, and it is client read only, so the take writes
+   it and the apply stamps it.
+2. The assembly is a pure function over the facts the reads answer: a part is
+   closed when a read answered it and a gap stands with the item, the reason and
+   the remedy when it did not. That keeps the rule that a gap stops the press
+   testable without a database.
+3. The reads are the components' own operations, called with the caller's
+   Authorization header: trading's list at the as-of, market data's published
+   sets, compute's app versions, and this component's own configuration rows.
+4. The take is one operation, `reporting.v1.ops.take_cut`, serving the preview
+   and the press as the resolution serves its own two callers. It writes the cut
+   through `plan_take` and raises the request in the same transaction as the
+   body, with the detail row keyed by the request.
+5. The record read answers the detail beside the gaps, so the page states who
+   waits without reading an inbox it may not see.
+6. The screens: the take flow with its rail, the list's take button gated on the
+   permission, and the authorisation tab's subject panel.
 
 * Measurements
 
@@ -53,14 +73,42 @@ and the commit it was measured at. A number without both is not a measurement,
 because a clean-up record describes a tree and trunk moves under a branch: a
 consumer count, a gate's component count and a suite's size all change with no
 code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+from. Where the raw output matters, it is in =evidence/cut_take_live.txt= and
+named in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reporting core cases | 237 cases, 1321 assertions, all passed | `./build/output/linux-clang-release-ninja/publish/bin/ores.reporting.core.tests` | a8c2b6617b |
+| The take's own cases | 14 cases, 107 assertions | the same binary with `[cut_assembly],[cut_take]` | a8c2b6617b |
+| BFF tests | 1192 tests | `npm test --workspace @ores/bff` | e79335106d |
+| Web tests | 2389 tests | `npm test --workspace @ores/web` | e79335106d |
+| Live evidence | see `evidence/cut_take_live.txt` | the BFF at :21402 as henry.jones | a8c2b6617b |
 
 * Notes
+
+** The environment holds no published curve set
+
+`ores_marketdata_curve_publishes_tbl` is empty, so the market data part of every
+body stands as a gap and no hand take in this environment can reach the press
+that raises a request. That is the design's own gap ("a series with no value at
+or before the instant"), drawn with its remedy, and the flow states it. The
+request path itself was proven by the integration suite against the same
+database; the evidence file names the rows.
+
+** The take's reads run as the person
+
+The caller's Authorization header travels with the parts' reads, so a person who
+may take a cut must be able to read what the body names: the engine version is
+compute's read, and the subject a request names is the detail row's. Both are
+granted where the take is, to the Finance role.
+
+** The assembly states what the store does not keep, and does not gap on it
+
+No read materialises a copy of a deal population, a fixed market data snapshot,
+or the revision of the services that assembled the body. A body that refused
+over each of them could never be taken, so each part says so beside itself
+(`snapshot_note`) and the take records the parts it answered. A gap stands only
+where a read answered "nothing there" — the design's own gap table.
 
 * Test Scenarios
 
@@ -86,3 +134,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The take exists and it raises the authorisation it is for.
+
+- The subject of a cut's approval request is a codegen entity in the reporting
+  component: the cut, the counts of the body's parts, and the applied facts. It
+  is client read only, its request id is its natural key, and its SQL is applied
+  to the development database additively and carried in the seeds.
+- The assembly answers five parts — the kind and its retention, the deal
+  population, the published sets in use, the versions in force, and the engine
+  and the code — and records every part it could not fill as a gap with the
+  item, the reason and the remedy. The rule is a pure function, so the design's
+  "a gap stops the press" is tested without a store.
+- The take is one operation, `reporting.v1.ops.take_cut`, serving the flow's
+  preview and its press. It writes the body through `plan_take` — the kind's
+  retention, its destination and its authorisation basis copied, the take
+  ordinal, the taker and the instant set — and, where the kind names an approval
+  kind, raises the request in the same transaction with the cut's detail row
+  keyed by it. A body with a gap is kept as an incomplete draft that raises
+  nothing, and a kind that names no approval kind records that none was required.
+- The record read answers the detail row beside the gaps, so the page states who
+  waits without reading the inbox.
+- The BFF serves the take on one route and the record's subject, and the web
+  draws the four-step flow, the list's gated take button, and the authorisation
+  tab's subject panel.
+- The permission is `reporting::cuts:take`, checked at the handler; the deciders
+  are the kind's own, `inbox::approvals:decide_finance` for the close.
+
+Left to the next unit: the decide and the apply. The inbox decides, and the
+reporting side stamps the cut's authorisation by reconciliation over the
+request's state — the detail row's `applied_at` is the marker it will write.
+
+Left open by the environment: a published curve set, without which no hand take
+can raise a request here; and the run's cut selection, which is the report
+journey's.

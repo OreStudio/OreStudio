@@ -115,7 +115,7 @@ async function policyRowOf(session: LiveSession, assetClass: string) {
     const rows = await readAll(
         session,
         policySubjects.list_calibration_policies_request,
-        'calibration_policies',
+        'policies',
         {
             filter: null,
             as_of: null,
@@ -129,7 +129,7 @@ async function orderRowsOf(session: LiveSession, policyId: string) {
     const rows = await readAll(
         session,
         orderSubjects.list_calibration_provider_orders_request,
-        'calibration_provider_orders',
+        'provider_orders',
         {
             filter: {
                 policy_id: policyId,

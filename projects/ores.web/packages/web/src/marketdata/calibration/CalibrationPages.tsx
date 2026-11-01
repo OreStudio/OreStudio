@@ -51,6 +51,7 @@ import {
 } from '../../ui/Primitives.js';
 import { useTabs } from '../../ui/Tabs.js';
 import { useFeedStory } from '../synthetic/FeedHistory.js';
+import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useFeedParts } from '../synthetic/FeedScreens.js';
 import { FeedStartMeasures } from '../synthetic/feedStart.js';
 import { FX_FEED_KIND, fxFeedPath } from '../synthetic/fxFeeds.js';
@@ -699,6 +700,15 @@ function FlowDiagram({
 
 /** The calibrations that changed this feed, read from its history. */
 function RecentCalibrations({ configId }: { readonly configId: string }): ReactNode {
+    return (
+        <RecordStoreProvider store={syntheticStore}>
+            <CalibrationLog configId={configId} />
+        </RecordStoreProvider>
+    );
+}
+
+/** The feed's parts are synthetic records, so this reads them under the synthetic store. */
+function CalibrationLog({ configId }: { readonly configId: string }): ReactNode {
     const { t, language } = useTranslation();
     const parts = useFeedParts(FX_FEED_KIND, configId);
     const story = useFeedStory({ id: configId, version: 0 }, FX_FEED_KIND.entity, parts, 'fx_feed');

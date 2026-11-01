@@ -183,11 +183,15 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
         s.received_at = latest->received_at;
         out.level = s.inverted ? 1.0 / *value : *value;
         s.window_days = item.window_days;
-        s.age_days =
-            (std::chrono::sys_days(*date) - std::chrono::sys_days(*latest->fixing_date)).count();
+        // The read is on or before the date, so a fixing is never younger than it.
+        s.age_days = std::max(0,
+                              static_cast<int>((std::chrono::sys_days(*date) -
+                                                std::chrono::sys_days(*latest->fixing_date))
+                                                   .count()));
 
         // The other providers' fixings of the pair, read on the same date and turned to the
-        // feed's orientation. They describe the start; a missing one never blocks it.
+        // feed's orientation. Each provider is compared once, through its first candidate. They
+        // describe the start; a missing one never blocks it.
         for (const auto& other : items) {
             if (other.provider_code == latest->provider_code ||
                 std::ranges::any_of(s.dispersion, [&](const auto& d) {

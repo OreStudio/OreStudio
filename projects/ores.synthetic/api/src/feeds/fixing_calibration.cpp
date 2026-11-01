@@ -78,7 +78,7 @@ std::optional<window_measures> measure_window(const std::vector<double>& values,
     window_measures out;
     out.daily_spread = *spread;
     out.annual_drift = std::accumulate(returns.begin(), returns.end(), 0.0) /
-                       static_cast<double>(returns.size()) * 252.0;
+                       static_cast<double>(returns.size()) * business_days_per_year;
     out.min_return = lo;
     out.max_return = hi;
     out.jumps = static_cast<int>(

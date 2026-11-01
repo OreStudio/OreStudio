@@ -63,6 +63,9 @@ orientation_of(const std::string& item, const std::string& base, const std::stri
 ORES_SYNTHETIC_API_EXPORT std::optional<double>
 business_day_log_return_spread(const std::vector<double>& values);
 
+/// The business days in a year, which annualise a business-day measure.
+inline constexpr double business_days_per_year = 252.0;
+
 /**
  * @brief What a window's business-day log returns did.
  *
@@ -102,9 +105,8 @@ measure_window(const std::vector<double>& values, bool inverted);
  * business day's times the root of 252 over 8,760.
  */
 [[nodiscard]] inline double hourly_spread_of(double business_day_spread) {
-    constexpr double business_days = 252.0;
     constexpr double hours = 365.0 * 24.0;
-    return business_day_spread * std::sqrt(business_days / hours);
+    return business_day_spread * std::sqrt(business_days_per_year / hours);
 }
 
 /**

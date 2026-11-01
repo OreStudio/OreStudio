@@ -25,14 +25,20 @@ export handler reads is generated from it.
 An empty =instrument= means no table holds the type yet: nothing imports it,
 so nothing can export it. A type is routed where the ORE importer writes it.
 
-=product_type= is the asset class the refdata taxonomy carries, not the
-table the type routes to. RiskParticipationAgreement is a credit product
-whose importer has always written the credit table, so it is classified
-=credit= and routed there. The table that was meant to hold its facts was
-never written by any mapper, and it is retired. InflationSwap is an inflation product
-whose importer writes the rates family's tables; it stays classified
-=swap= and routed to =rate_instruments= until an inflation family is
-scaffolded, and the reason is recorded on the rates story.
+=markets= names the markets a type references, the first of them the market
+the catalogue groups the type under, marked with a trailing =!=. A type that
+names no market is one whose market is decided per trade: every container and
+every scripted trade. =family= is the contract shape the type shares with types
+in other markets, and =construction= says whether the type is built natively,
+by script or as a container.
+
+A type is routed where the ORE importer writes it. RiskParticipationAgreement
+is a credit product whose importer has always written the credit table. The
+table that was meant to hold its facts was never written by any mapper, and it
+is retired. InflationSwap references inflation first and interest rates second,
+and its importer writes the rates family's tables, so it is routed to
+=rate_instruments= until an inflation family is scaffolded, and the reason is
+recorded on the rates story.
 
 The rates family routes every one of its codes to =rate_instruments=, the
 family's header. A product's own fields live in the family's fact tables,

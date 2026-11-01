@@ -170,6 +170,13 @@ via its "Verifies task" field.
 | L1 | Local review: the diff is 940 files, and almost all are generated codecs | (whole PR) | Accepted | The hand-written part is text_form, two mapper templates, the byte test and two include removals. A reviewer reads those and spot-checks one generated entity, such as draft_reason. |
 | L2 | Local review: text_form refuses an out-of-range enumerator through the empty string | =text_form.hpp= | Accepted | Documented in the header. product_type states its own form for that case, and its codec test covers it. |
 | L3 | Local review: two reflector includes removed with no replacement | =bus_book_status.cpp=, =application.cpp= | Accepted | Neither file names rfl, and the full linux-clang-release build passes at 84d56f6000. |
+| R1 | Unknown optional enum text now throws instead of defaulting | =cpp_domain_type_mapper.cpp.mustache= | Accepted, no code change | No generated mapper reaches the nullable render branch. Stated in the PR notes. |
+| R2 | magic_enum sees only -128 to 127 | =text_form.hpp= | Checked, no change | 604 enums scanned. Only http_status is out of range, and nothing encodes it. |
+| R3 | Other platforms must find magic_enum | =ores.utility/src/CMakeLists.txt= | No change needed | vcpkg.json lists magic-enum, and CMakeLists.txt:471 finds it. |
+| R4 | Wrap the decltype in remove_cvref_t | mapper template | Dismissed | The generator writes no const or reference member. |
+| R5 | Test the refdata store transform | refdata mappers | Fixed in 27fe91b6db | =repository_store_transform_mapper_tests.cpp=. |
+| R6 | A round trip that does not need the reflector | tests | Deferred | Owned by Remove reflect-cpp, which removes the reference. |
+| R7 | Run compass check on the final commit | (whole PR) | Done | 13 of 86 fail, all from main. Each has a capture, or is an ores.web check, or is the live sign-in test, which needs the fleet. |
 
 * Result
 

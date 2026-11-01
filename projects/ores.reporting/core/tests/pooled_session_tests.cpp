@@ -23,6 +23,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/stamp_audit.hpp"
 #include "ores.testing/two_parties.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -36,6 +37,8 @@
  * these cases alternate contexts over many acquires, through a repository, and
  * read what each context is allowed to see.
  */
+
+using namespace ores::logging;
 
 namespace {
 

@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/{component_dir}/src/domain/{entity}_codec.cpp
 #+facet: ores.cpp.wire-codec
+#+model_types: domain_entity junction
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-10-29

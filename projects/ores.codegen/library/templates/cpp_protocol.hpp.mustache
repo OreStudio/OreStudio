@@ -205,6 +205,16 @@ wire_traits<ores::{{component}}::messaging::{{name}}> {
 {{#includes}}
 #include {{{.}}}
 {{/includes}}
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.{{component_include}}/export.hpp"
+{{/has_generated_wire_codec}}
 
 namespace {{namespace}} {
 
@@ -273,7 +283,43 @@ struct {{name}} {
     return {{subject_function_by_component}}(component);
 }
 {{/derived_subject}}
+{{#has_generated_wire_codec}}
+{{#messages}}
+/**
+ * @brief The members of {{name}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+    return std::tuple{
+{{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
+{{/fields}}    };
 }
+
+{{/messages}}
+{{/has_generated_wire_codec}}
+}
+{{#has_generated_wire_codec}}
+namespace ores::utility::codec {
+
+{{#messages}}
+template <>
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<{{namespace}}::{{name}}> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const {{namespace}}::{{name}}& v);
+    static {{namespace}}::{{name}} read_json(std::string_view text);
+    static std::string write_msgpack(const {{namespace}}::{{name}}& v);
+    static {{namespace}}::{{name}} read_msgpack(std::span<const std::byte> data);
+};
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
 
 #endif
 {{/operation}}
@@ -293,6 +339,16 @@ struct {{name}} {
 {{#protocol_includes}}
 #include "{{{.}}}"
 {{/protocol_includes}}
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.{{component_include}}/export.hpp"
+{{/has_generated_wire_codec}}
 
 namespace ores::{{component}}::messaging {
 
@@ -323,7 +379,43 @@ struct {{name}} {
 };
 
 {{/messages}}
+{{#has_generated_wire_codec}}
+{{#messages}}
+/**
+ * @brief The members of {{name}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+    return std::tuple{
+{{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
+{{/fields}}    };
 }
+
+{{/messages}}
+{{/has_generated_wire_codec}}
+}
+{{#has_generated_wire_codec}}
+namespace ores::utility::codec {
+
+{{#messages}}
+template <>
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<ores::{{component}}::messaging::{{name}}> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_json(std::string_view text);
+    static std::string write_msgpack(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_msgpack(std::span<const std::byte> data);
+};
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
 
 #endif
 {{/family}}

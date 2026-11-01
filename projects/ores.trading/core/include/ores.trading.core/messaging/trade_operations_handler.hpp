@@ -34,10 +34,10 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
-#include <rfl/msgpack.hpp>
 #include <string>
 
 namespace ores::trading::messaging {
@@ -342,7 +342,9 @@ public:
             const auto trade_count = static_cast<int>(payload.items.size());
             payload.message = "Exported " + std::to_string(trade_count) + " trades.";
 
-            const auto blob = rfl::msgpack::write(payload);
+            const auto blob =
+                ores::utility::codec::wire_traits<export_portfolio_response>::write_msgpack(
+                    payload);
             ores::storage::net::storage_transfer transfer(http_base_url_, extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 

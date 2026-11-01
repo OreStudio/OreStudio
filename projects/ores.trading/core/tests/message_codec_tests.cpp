@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/trade_codec.hpp"
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.api/domain/trade_type_codec.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/repository/trade_type_entity.hpp"
 #include "ores.trading.core/repository/trade_type_mapper.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
@@ -34,6 +35,7 @@
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -126,6 +128,32 @@ ores::trading::domain::trade_type a_trade_type() {
     return tt;
 }
 
+/**
+ * @brief An export with one trade, a full envelope and two instrument arrays.
+ *
+ * The export is stored as a blob that ores.ore reads with reflect-cpp, so the
+ * generated codec has to write exactly the reflector's bytes for it.
+ */
+ores::trading::messaging::export_portfolio_response an_export() {
+    ores::trading::messaging::export_portfolio_response r;
+    r.success = true;
+    r.message = "Exported 1 trades.";
+    ores::trading::messaging::trade_export_item item;
+    item.anchor = a_trade();
+    item.ore_id = "TRADE-1";
+    ores::trading::domain::trade_envelope_data envelope;
+    envelope.counter_party = "CPTY_A";
+    envelope.netting_set_id = "NS-1";
+    envelope.portfolio_ids = std::vector<std::string>{"P1", "P2"};
+    envelope.additional_fields =
+        std::vector<ores::trading::domain::trade_envelope_field>{{"desk", "rates"}};
+    item.envelope = envelope;
+    r.items.push_back(item);
+    r.instruments.rate_instruments.emplace_back();
+    r.instruments.bond_issues.emplace_back();
+    return r;
+}
+
 }
 
 TEST_CASE("a_trade_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
@@ -138,6 +166,12 @@ TEST_CASE("a_trade_type_writes_the_bytes_the_reflector_wrote", "[messaging][code
     auto lg(ores::logging::make_logger(test_suite));
 
     same_bytes_as_reflect_cpp(a_trade_type());
+}
+
+TEST_CASE("an_export_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    same_bytes_as_reflect_cpp(an_export());
 }
 
 TEST_CASE("the_mapper_stores_a_product_type_as_its_own_text", "[repository][codec]") {

@@ -33,10 +33,12 @@ it directly. =append= adds one value to the array that holds its type, and
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 
 {{#trade_type_catalogue}}
-{{#batch}}
-#include "ores.{{component}}.api/domain/{{cpp_type}}.hpp"
-{{/batch}}
+{{#batch_shape_includes}}
+#include "{{{.}}}"
+{{/batch_shape_includes}}
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -47,7 +49,7 @@ namespace ores::trading::domain {
  * array per entity.
  *
  * Generated from ores.trading.trade_type_catalogue. A std::variant cannot
- * cross the wire, because rfl names no alternative, and neither can a payload
+ * cross the wire, because the wire names no alternative, and neither can a payload
  * that encodes one in a string. The tag therefore lives on the container
  * instead of on every element: each element carries the trade id it belongs
  * to, and the array it sits in states its type. A receiver joins an array to a
@@ -111,6 +113,16 @@ find_all(const std::vector<T>& members, boost::uuids::uuid trade_id) {
         if (trade_id_of(member) == trade_id)
             found.push_back(member);
     return found;
+}
+
+/**
+ * @brief The arrays of a batch, named as the wire names them and in the order
+ * the type declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(const instrument_batch&) {
+    return std::tuple{
+{{#batch}}        ::ores::utility::codec::field{"{{name}}", &instrument_batch::{{name}}},
+{{/batch}}    };
 }
 
 }

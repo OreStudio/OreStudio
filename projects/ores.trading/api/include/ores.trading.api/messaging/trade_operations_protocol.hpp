@@ -35,6 +35,8 @@
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.trading.api/domain/structure.hpp"
+#include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
@@ -167,6 +169,72 @@ struct execute_trade_response {
      * @brief The activity that executed the trade; absent when it was refused.
      */
     std::optional<boost::uuids::uuid> activity_id;
+};
+
+/**
+ * @brief Completes a structure: its anchor, its legs, and the execution of
+ * every leg, in one transaction.
+ *
+ * The legs are drafts when the request arrives. A completion that is refused
+ * leaves every one of them a draft and writes no member, which is why the
+ * structure, the members and the executions are one unit of work rather than
+ * a sequence a caller drives.
+ */
+struct complete_structure_request {
+    using response_type = struct complete_structure_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.complete_structure";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The structure to write. The service names it, so the caller states
+     * the party, the kind and the template, and no reference.
+     */
+    ores::trading::domain::structure structure;
+    /**
+     * @brief The legs the structure holds, in the order they are given. The
+     * service states the structure id and the sequence number on each one.
+     */
+    std::vector<ores::trading::domain::structure_member> legs;
+    /**
+     * @brief How many legs the caller means to complete. A request whose list is
+     * not this long is refused, so a truncated list never completes a structure
+     * that is missing a leg.
+     */
+    int leg_count;
+    /**
+     * @brief Why the structure is being completed.
+     */
+    std::string change_reason_code;
+    /**
+     * @brief The note that goes with the reason.
+     */
+    std::string change_commentary;
+};
+
+/**
+ * @brief The outcome of completing a structure.
+ */
+struct complete_structure_response {
+    /**
+     * @brief Outcome of the operation: conflict with code already_exists when the
+     * structure is already made, conflict with code not_a_draft when a leg is not
+     * a draft, not found when a leg is not booked.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The structure written; absent when the completion was refused.
+     */
+    std::optional<boost::uuids::uuid> structure_id;
+    /**
+     * @brief The version the structure is at after the write, so a caller can
+     * address the structure it just made.
+     */
+    int structure_version;
 };
 
 /**

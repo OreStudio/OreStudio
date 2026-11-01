@@ -43,6 +43,8 @@ generates no service handler.
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
+#include "ores.trading.api/domain/structure.hpp"
+#include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
@@ -278,6 +280,129 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The activity that executed the trade; absent when it was refused.
+ */
+#+end_src
+
+** complete_structure_request
+:PROPERTIES:
+:subject:  trading.v1.ops.complete_structure
+:response: complete_structure_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Completes a structure: its anchor, its legs, and the execution of
+ * every leg, in one transaction.
+ *
+ * The legs are drafts when the request arrives. A completion that is refused
+ * leaves every one of them a draft and writes no member, which is why the
+ * structure, the members and the executions are one unit of work rather than
+ * a sequence a caller drives.
+ */
+#+end_src
+
+*** structure
+:PROPERTIES:
+:cpp_type: ores::trading::domain::structure
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The structure to write. The service names it, so the caller states
+ * the party, the kind and the template, and no reference.
+ */
+#+end_src
+
+*** legs
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::structure_member>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The legs the structure holds, in the order they are given. The
+ * service states the structure id and the sequence number on each one.
+ */
+#+end_src
+
+*** leg_count
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many legs the caller means to complete. A request whose list is
+ * not this long is refused, so a truncated list never completes a structure
+ * that is missing a leg.
+ */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the structure is being completed.
+ */
+#+end_src
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The note that goes with the reason.
+ */
+#+end_src
+
+** complete_structure_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of completing a structure.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Outcome of the operation: conflict with code already_exists when the
+ * structure is already made, conflict with code not_a_draft when a leg is not
+ * a draft, not found when a leg is not booked.
+ */
+#+end_src
+
+*** structure_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The structure written; absent when the completion was refused.
+ */
+#+end_src
+
+*** structure_version
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version the structure is at after the write, so a caller can
+ * address the structure it just made.
  */
 #+end_src
 

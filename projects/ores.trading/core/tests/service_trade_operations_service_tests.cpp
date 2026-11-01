@@ -40,6 +40,7 @@
 #include "ores.trading.api/generators/bond_issue_leg_schedule_date_generator.hpp"
 #include "ores.trading.api/generators/fx_forward_instrument_generator.hpp"
 #include "ores.trading.api/generators/rate_instrument_generator.hpp"
+#include "ores.trading.api/generators/structure_generator.hpp"
 #include "ores.trading.api/generators/swap_leg_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
@@ -54,8 +55,12 @@
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
@@ -589,6 +594,154 @@ TEST_CASE("an_amendment_raises_its_own_request_after_the_last_was_answered", "[s
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
     REQUIRE(authorisation.raise_if_awaiting(req.anchor.id).has_value());
     CHECK(requests_for(f.ctx, req.anchor.id).size() == 2);
+}
+
+namespace {
+
+/** The logger the store calls of this file share. */
+ores::logging::logger_t& lg() {
+    static auto instance = ores::logging::make_logger("service_trade_operations_service_tests");
+    return instance;
+}
+
+/** The request that completes a structure over these legs. */
+ores::trading::messaging::complete_structure_request
+completion(fixture& f, const std::vector<boost::uuids::uuid>& legs) {
+    ores::trading::messaging::complete_structure_request req;
+    req.structure = ores::trading::generators::generate_synthetic_structure(f.gen);
+    // The fixture's generator is seeded, so two cases would name one structure
+    // and the reference would collide. A structure is a new deal each time.
+    req.structure.id = boost::uuids::random_generator()();
+    req.structure.kind = "Package";
+    req.structure.template_code = "";
+    req.structure.parent_structure_id = boost::uuids::uuid{};
+    req.structure.change_reason_code = "system.test";
+    req.leg_count = static_cast<int>(legs.size());
+    int sequence = 0;
+    for (const auto& id : legs) {
+        ores::trading::domain::structure_member member;
+        member.trade_id = id;
+        member.role = "leg";
+        member.sequence_number = ++sequence;
+        member.change_reason_code = "system.test";
+        req.legs.push_back(member);
+    }
+    req.change_reason_code = "system.test";
+    req.change_commentary = "Completed by a service test.";
+    return req;
+}
+
+/** Books two actual drafts and answers their ids. */
+std::vector<boost::uuids::uuid> two_drafts(fixture& f) {
+    std::vector<boost::uuids::uuid> ids;
+    for (int i = 0; i < 2; ++i) {
+        const auto req = draft(f);
+        REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
+                outcome::ok);
+        ids.push_back(req.anchor.id);
+    }
+    return ids;
+}
+
+}
+
+TEST_CASE("a_completed_structure_holds_every_leg_live_and_waiting", "[service]") {
+    fixture f;
+    const auto legs = two_drafts(f);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open)
+                              .complete_structure(completion(f, legs));
+    REQUIRE(response.result.outcome == outcome::ok);
+    REQUIRE(response.structure_id.has_value());
+    CHECK(response.structure_version >= 0);
+
+    for (const auto& id : legs) {
+        const auto summaries = ores::trading::repository::trade_summary_repository().read_latest(
+            f.ctx, boost::uuids::to_string(id));
+        REQUIRE(summaries.size() == 1);
+        // Live, and waiting on Operations rather than authorised by the grouping.
+        CHECK(summaries.front().status == std::optional<std::string>{"live"});
+        CHECK(summaries.front().authorisation_status == "waiting");
+        CHECK(requests_for(f.ctx, id).size() == 1);
+        // And each one is a member of the structure just made.
+        const auto members = ores::trading::repository::structure_member_repository().read_latest(
+            f.ctx, boost::uuids::to_string(id));
+        REQUIRE(members.size() == 1);
+        CHECK(members.front().structure_id == *response.structure_id);
+    }
+}
+
+TEST_CASE("a_second_completion_of_the_same_structure_is_already_exists", "[service]") {
+    fixture f;
+    const auto legs = two_drafts(f);
+    auto req = completion(f, legs);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).complete_structure(req).result.outcome ==
+            outcome::ok);
+
+    // The same structure id, against legs that are no longer drafts: the
+    // structure's own existence is what the answer names.
+    const auto again = trade_operations_service(f.ctx, every_book_open).complete_structure(req);
+    CHECK(again.result.outcome == outcome::conflict);
+    CHECK(again.result.code == "already_exists");
+}
+
+TEST_CASE("a_refused_completion_leaves_every_leg_a_draft_and_writes_no_member", "[service]") {
+    fixture f;
+    const auto legs = two_drafts(f);
+    auto req = completion(f, legs);
+    // A completion that states fewer legs than it holds is refused before the
+    // transaction opens, so nothing is written at all.
+    req.leg_count = 1;
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).complete_structure(req);
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "leg_count_mismatch");
+
+    for (const auto& id : legs) {
+        const auto states = ores::trading::repository::trade_state_repository().read_latest(
+            f.ctx, boost::uuids::to_string(id));
+        REQUIRE(states.size() == 1);
+        const auto draft = ores::database::repository::execute_parameterized_string_query(
+            f.ctx,
+            "select ores_trading_status_is_draft_fn($1::uuid)::text",
+            {boost::uuids::to_string(states.front().status_id)},
+            lg(),
+            "Checking whether a leg is still a draft");
+        CHECK(draft.front() == "true");
+        CHECK(ores::trading::repository::structure_member_repository()
+                  .read_latest(f.ctx, boost::uuids::to_string(id))
+                  .empty());
+        CHECK(requests_for(f.ctx, id).empty());
+    }
+}
+
+TEST_CASE("a_completion_with_a_leg_that_is_not_a_draft_writes_nothing", "[service]") {
+    fixture f;
+    const auto legs = two_drafts(f);
+    // One leg is taken live on its own before the completion, so the completion
+    // cannot hold it. The other leg must stay a draft.
+    const auto execute_ok = trade_operations_service(f.ctx, every_book_open)
+                                .execute_trade(execute(legs[0], version_of(f.ctx, legs[0])));
+    REQUIRE(execute_ok.result.outcome == outcome::ok);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open)
+                              .complete_structure(completion(f, legs));
+    CHECK(response.result.outcome == outcome::conflict);
+    CHECK(response.result.code == "not_draft");
+
+    const auto states = ores::trading::repository::trade_state_repository().read_latest(
+        f.ctx, boost::uuids::to_string(legs[1]));
+    REQUIRE(states.size() == 1);
+    const auto draft = ores::database::repository::execute_parameterized_string_query(
+        f.ctx,
+        "select ores_trading_status_is_draft_fn($1::uuid)::text",
+        {boost::uuids::to_string(states.front().status_id)},
+        lg(),
+        "Checking whether the untouched leg is still a draft");
+    CHECK(draft.front() == "true");
+    CHECK(ores::trading::repository::structure_member_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(legs[1]))
+              .empty());
 }
 
 TEST_CASE("an_execution_of_a_trade_that_moved_since_it_was_read_is_refused", "[service]") {

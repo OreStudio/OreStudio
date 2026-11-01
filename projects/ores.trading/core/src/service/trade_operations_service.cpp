@@ -36,7 +36,10 @@
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
+#include "ores.trading.core/service/structure_service.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -322,6 +325,52 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     return response;
 }
 
+std::optional<raised_authorisation> trade_operations_service::execute_within(
+    context ctx,
+    const boost::uuids::uuid& trade_id,
+    const std::string& change_reason_code,
+    const std::string& change_commentary,
+    boost::uuids::uuid* activity_id) {
+    using ores::service::messaging::stamp;
+    using ores::utility::domain::precondition;
+    using ores::utility::domain::precondition_kind;
+
+    const auto id = boost::uuids::to_string(trade_id);
+    const auto trades = repository::trade_repository().read_latest(ctx, id);
+    if (trades.empty())
+        throw std::runtime_error("Trade " + id + " is not booked.");
+    const auto& trade = trades.front();
+
+    domain::trade_activity activity;
+    activity.id = boost::uuids::random_generator()();
+    activity.activity_type_code = "execution";
+    activity.actor = ctx_.actor();
+    activity.occurred_at = std::chrono::system_clock::now();
+    activity.comment = change_commentary;
+    stamp(activity, ctx);
+    activity.party_id = trade.party_id;
+
+    repository::trade_activity_repository{}.write(
+        ctx, activity, {precondition_kind::must_not_exist, std::nullopt});
+
+    // The status is the transition's: the store reads the activity and moves
+    // the machine. The claim is the state it replaces, which is the draft.
+    domain::trade_state state;
+    state.trade_id = trade_id;
+    state.trade_activity_id = activity.id;
+    state.status_id = boost::uuids::uuid{};
+    state.change_reason_code = change_reason_code;
+    state.change_commentary = change_commentary;
+    stamp(state, ctx);
+    repository::trade_state_repository{}.write(ctx, state);
+
+    if (activity_id != nullptr)
+        *activity_id = activity.id;
+
+    operational_authorisation_service authorisation(ctx);
+    return authorisation.raise_if_awaiting(trade_id);
+}
+
 messaging::execute_trade_response
 trade_operations_service::execute_trade(const messaging::execute_trade_request& request) {
     using ores::database::repository::unit_of_work;
@@ -388,37 +437,9 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
         return response;
     }
 
-    domain::trade_activity activity;
-    activity.id = boost::uuids::random_generator()();
-    activity.activity_type_code = "execution";
-    activity.actor = ctx_.actor();
-    activity.occurred_at = request.occurred_at.value_or(std::chrono::system_clock::now());
-    activity.comment = request.change_commentary;
-    stamp(activity, ctx);
-    activity.party_id = trade.party_id;
-
-    const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};
-    repository::trade_activity_repository{}.write(ctx, activity, must_not_exist);
-
-    /*
-     * The state's status is the transition's, not the caller's: the store reads
-     * the activity's type and moves the machine. The write claims the version of
-     * the state it replaces, which is the draft the caller executed, so a state
-     * that moved under them is refused rather than overwritten.
-     */
-    domain::trade_state state;
-    state.trade_id = request.trade_id;
-    state.trade_activity_id = activity.id;
-    state.status_id = boost::uuids::uuid{};
-    state.change_reason_code = request.change_reason_code;
-    state.change_commentary = request.change_commentary;
-    stamp(state, ctx);
-    repository::trade_state_repository{}.write(ctx, state);
-
-    // A trade live in a real book awaits Operations, and an execution does not
-    // escape that: the request joins this transaction.
-    operational_authorisation_service authorisation(ctx);
-    const auto raised = authorisation.raise_if_awaiting(request.trade_id);
+    auto activity_id = boost::uuids::uuid{};
+    const auto raised = execute_within(ctx, request.trade_id, request.change_reason_code,
+                                       request.change_commentary, &activity_id);
 
     uow.commit();
 
@@ -431,7 +452,151 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
         }
     }
 
-    response.activity_id = activity.id;
+    response.activity_id = activity_id;
+    return response;
+}
+
+messaging::complete_structure_response
+trade_operations_service::complete_structure(const messaging::complete_structure_request& request) {
+    using ores::database::repository::unit_of_work;
+    using ores::service::messaging::stamp;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+
+    messaging::complete_structure_response response;
+
+    // The count is the caller's claim about the list. A truncated list is the
+    // failure this checks for: a structure completed with a leg missing is
+    // worse than one that was not completed.
+    if (request.leg_count <= 0 ||
+        static_cast<int>(request.legs.size()) != request.leg_count) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "leg_count_mismatch";
+        response.result.message = "A completion states " + std::to_string(request.leg_count) +
+                                  " legs and the request holds " +
+                                  std::to_string(request.legs.size()) + ".";
+        return response;
+    }
+
+    unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    auto structure = request.structure;
+    stamp(structure, ctx);
+    const auto structure_id = boost::uuids::to_string(structure.id);
+
+    repository::structure_repository structures;
+    if (!structures.read_latest(ctx, structure_id).empty()) {
+        response.result.outcome = outcome::conflict;
+        response.result.code = "already_exists";
+        response.result.message = "Structure " + structure_id + " is already made.";
+        return response;
+    }
+
+    /*
+     * Every leg must be a draft in a real book and free of another structure.
+     * The checks run before anything is written, and the transaction is what
+     * makes them hold afterwards: a leg that somebody groups elsewhere while the
+     * completion runs makes its member write fail, and the whole unit rolls back.
+     */
+    repository::trade_repository trades;
+    repository::trade_state_repository states;
+    repository::structure_member_repository members;
+    for (const auto& leg : request.legs) {
+        const auto leg_id = boost::uuids::to_string(leg.trade_id);
+        const auto held = trades.read_latest(ctx, leg_id);
+        if (held.empty()) {
+            response.result.outcome = outcome::missing;
+            response.result.code = "not_found";
+            response.result.message = "Trade " + leg_id + " is not booked.";
+            return response;
+        }
+        if (held.front().booking_nature != domain::booking_nature::actual) {
+            response.result.outcome = outcome::conflict;
+            response.result.code = "not_actual";
+            response.result.message = "Trade " + leg_id +
+                                      " is not an actual trade, so it completes no structure.";
+            return response;
+        }
+        const auto state = states.read_latest(ctx, leg_id);
+        if (state.empty()) {
+            response.result.outcome = outcome::missing;
+            response.result.code = "not_found";
+            response.result.message = "Trade " + leg_id + " has no state to complete.";
+            return response;
+        }
+        const auto draft = ores::database::repository::execute_parameterized_string_query(
+            ctx,
+            "select ores_trading_status_is_draft_fn($1::uuid)::text",
+            {boost::uuids::to_string(state.front().status_id)},
+            lg(),
+            "Checking whether a leg is a draft");
+        if (draft.empty() || draft.front() != "true") {
+            response.result.outcome = outcome::conflict;
+            response.result.code = "not_draft";
+            response.result.message = "Trade " + leg_id + " is not a draft, so it completes nothing.";
+            return response;
+        }
+        if (!members.read_latest(ctx, leg_id).empty()) {
+            response.result.outcome = outcome::conflict;
+            response.result.code = "already_grouped";
+            response.result.message = "Trade " + leg_id + " is already a leg of a structure.";
+            return response;
+        }
+    }
+
+    // The structure is written through its own service, which is what names it:
+    // a deal that a person then reads carries a reference rather than a uuid.
+    messaging::put_structure_request written_request;
+    written_request.change.write.id = structure.id;
+    written_request.change.write.counterparty_id = structure.counterparty_id;
+    written_request.change.write.kind = structure.kind;
+    written_request.change.write.template_code = structure.template_code;
+    written_request.change.write.parent_structure_id = structure.parent_structure_id;
+    written_request.change.precondition = {precondition_kind::must_not_exist, std::nullopt};
+    written_request.intent.reason_code = request.change_reason_code;
+    written_request.intent.commentary = request.change_commentary;
+    const auto written = structure_service(ctx).put_structure(written_request);
+    if (written.result.outcome != outcome::ok || !written.structure) {
+        response.result = written.result;
+        return response;
+    }
+
+    int sequence = 0;
+    for (const auto& leg : request.legs) {
+        auto member = leg;
+        member.structure_id = structure.id;
+        member.sequence_number = ++sequence;
+        member.change_reason_code = request.change_reason_code;
+        member.change_commentary = request.change_commentary;
+        stamp(member, ctx);
+        members.write(ctx, member, {precondition_kind::must_not_exist, std::nullopt});
+    }
+
+    // Each leg goes live in this same unit, so a leg is never live without its
+    // structure and the structure is never made of drafts.
+    std::vector<raised_authorisation> raised;
+    for (const auto& leg : request.legs) {
+        auto one = execute_within(ctx, leg.trade_id, request.change_reason_code,
+                                  request.change_commentary);
+        if (one)
+            raised.push_back(std::move(*one));
+    }
+
+    uow.commit();
+
+    for (const auto& one : raised) {
+        try {
+            operational_authorisation_service(ctx_).announce(one);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "A leg of structure " << structure_id
+                                      << " was completed but its deciders were not told: "
+                                      << e.what();
+        }
+    }
+
+    response.structure_id = structure.id;
+    response.structure_version = written.structure->version;
     return response;
 }
 

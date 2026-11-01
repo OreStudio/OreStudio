@@ -67,8 +67,6 @@ task and name that file in the Command column.
 
 * Notes
 
-* Notes
-
 ** 2026-11-01 — work in progress
 
 Done on `feature/model-the-product-type-as-the-golden-source`:

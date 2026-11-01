@@ -1959,3 +1959,7 @@ tangled into the runnable script library
 * Cut Approval Details
 
 - [[id:713EDE01-50B1-5DEC-A446-81937CDBCE13][How do I run the cut_approval_details commands from the shell?]]
+
+* Product Family Codes
+
+- [[id:FC8DF32C-209D-51EF-AC33-1D819F608F53][How do I run the product_family_codes commands from the shell?]]

@@ -450,10 +450,17 @@ async function catalogueOf(
         names: new Map(
             types.map(
                 (entry) =>
-                    [text(entry['code']), text(entry['name']) || text(entry['description'])] as const,
+                    [
+                        text(entry['code']),
+                        text(entry['name']) || text(entry['description']),
+                    ] as const,
             ),
         ),
-        classes: new Map(types.map((entry) => [text(entry['code']), homeOf.get(text(entry['code'])) ?? ''] as const)),
+        classes: new Map(
+            types.map(
+                (entry) => [text(entry['code']), homeOf.get(text(entry['code'])) ?? ''] as const,
+            ),
+        ),
     };
 }
 

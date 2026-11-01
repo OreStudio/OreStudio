@@ -26,11 +26,11 @@ A stream shows a caller its own tenant's changes and the system tenant's, and no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | The hub filters by tenant and forgets a stream whose source died. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build and run the cases, then close it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -69,7 +69,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Core suite cases | 48 | =ores.http.core.tests= | =bfcc96fd46= |
+| Core suite assertions | 194 | =ores.http.core.tests= | =bfcc96fd46= |
+| Core suite cases before this task | 45 | =ores.http.core.tests= on =4455142167= | =4455142167= |
 
 * Notes
 
@@ -97,3 +99,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A stream is now kept to its own tenant. The hub holds the system tenant, a
+subscription states the tenant it was opened for, and a frame is queued only for
+the streams that hear it: the one whose tenant owns the frame, and every one when
+the frame belongs to the system tenant. The route takes the caller's tenant from
+its claims, so a session cannot read another tenant's changes, and a caller whose
+claims state no tenant hears only the system tenant.
+
+Three cases prove it: a frame for another tenant is not queued, a system-tenant
+frame reaches two streams of different tenants, and a stream whose source is
+destroyed leaves the hub and takes no further frame.
+
+The other two defects are fixed beside it. The source closes its subscription
+when it is destroyed, so a client that leaves no longer leaves a queue behind
+that fills with every frame for the life of the process. The keep-alive timer is
+shared and the waker holds that share, so a cancel that lands after the read
+ended touches a live object.
+
+One thing the work found: =open_streams()= counted closed subscriptions until the
+next publish, so it answered a question nobody asks. It now counts the streams
+that are still open.

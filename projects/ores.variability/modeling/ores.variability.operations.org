@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D4A00A97-BD2C-4871-B1A5-318EFDAFD907
 :END:
 #+title: ores.variability.operations

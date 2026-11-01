@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-variability-codecs-off-reflect-cpp
+#+pr: 4352
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.variability encodes and decodes without reflect
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,11 @@ Step 6 of 7, one component. ores.variability encodes and decodes without reflect
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the system setting and operations models into the wire codec and
+  regenerate. The JSON printer and the event's key read follow from the
+  templates, as they did for dq.
+- Prove the bytes with a test that writes the entity and every message through
+  reflect-cpp and through the codec, in JSON and MessagePack.
 
 * Measurements
 
@@ -58,9 +60,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Variability suites | 4 of 4 pass | =compass test run --preset linux-clang-release-ninja -- -R variability= | 65d794ff1c plus this branch |
+| Byte tests against reflect-cpp | 3 cases, 80 assertions pass | =ores.variability.api.tests "[codec]"= | 65d794ff1c plus this branch |
+| Component drift, format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component variability-cpp= and the check scripts | 65d794ff1c plus this branch |
+| reflect-cpp left in variability sources, outside tests | 0 includes; 1 =ores.rfl.pch= link | =grep -rn rfl projects/ores.variability= | 65d794ff1c plus this branch |
 
 * Notes
+
+The move needed no hand-written code: the opt-in property and a
+regeneration replaced every reflect-cpp use. The api library still links
+=ores.rfl.pch=; [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]] replaces it with a codec precompiled header.
 
 * Test Scenarios
 
@@ -77,12 +86,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4352][#4352]] | [variability] Encode and decode without reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The test keeps reflect-cpp | =codec_wire_bytes_tests.cpp= | No change | The reference; Remove reflect-cpp drops it |
+| 2 | Test a setting with unset optionals | =codec_wire_bytes_tests.cpp= | No change | =system_setting= has no optional members; the messages' optionals are covered |
+| 3 | Run the full gate | - | Declined | Unity collisions and unique type names already run and pass |
+| 4 | Generated headers not read | - | No change | Drift clean; byte tests cover them |
 
 * Result
+
+ores.variability encodes and decodes without reflect-cpp. The system setting
+and its messages, and the operation messages, use the generated codec, and
+their bytes match reflect-cpp's in JSON and MessagePack.

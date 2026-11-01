@@ -115,17 +115,29 @@ def _psql(env, *args, user="postgres", password=None, database=None,
 def check_connections(env, db_name, kill=False) -> bool:
     """Port of utility/check_db_connections.sh + kill_db_connections.sh."""
     pw = env.get("PGPASSWORD", "")
+
+    def active():
+        out = _psql(env, "-At", "-c",
+                    f"SELECT count(*) FROM pg_stat_activity WHERE datname = "
+                    f"'{db_name}' AND pid <> pg_backend_pid();",
+                    password=pw, check=False, capture=True)
+        return (out.stdout or "").strip()
+
     if kill:
-        _psql(env, "-At", "-c",
-              f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
-              f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid();",
-              password=pw, check=False, capture=True)
-        time.sleep(0.5)
-    out = _psql(env, "-At", "-c",
-                f"SELECT count(*) FROM pg_stat_activity WHERE datname = "
-                f"'{db_name}' AND pid <> pg_backend_pid();",
-                password=pw, check=False, capture=True)
-    count = (out.stdout or "").strip()
+        # Terminating only signals a backend, and one still closing counts as
+        # active, so each kill waits for its backend to exit and the count is
+        # taken again until it is zero or the deadline passes.
+        deadline = time.monotonic() + 10
+        while True:
+            _psql(env, "-At", "-c",
+                  f"SELECT pg_terminate_backend(pid, 2000) FROM pg_stat_activity "
+                  f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid();",
+                  password=pw, check=False, capture=True)
+            count = active()
+            if count in ("", "0") or time.monotonic() >= deadline:
+                break
+            time.sleep(0.5)
+    count = active()
     if not count:
         return True  # database may not exist — fine for recreation
     if int(count) > 0:

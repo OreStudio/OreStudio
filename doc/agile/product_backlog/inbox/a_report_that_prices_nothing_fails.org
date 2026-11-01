@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: B1C0DE1B-1121-4422-BF8E-FC4C132525FF
+:END:
+#+title: A report that prices nothing fails
+#+description: A run whose analytics state no figure, such as Portfolio details, is marked failed with 'states no figure' though the engine ran as asked.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:ore:results:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Audit Trail Summary report of Acme Corporation runs the "Portfolio details"
+configuration, which lists the trades and prices none. The engine runs as asked,
+but no file of its output states a figure the metric or cashflow readers take, so
+the execution handler refuses the run with "The run's output states no figure, so
+there is nothing to load." and the instance ends failed. Instance
+c8b104e9-cfb7-4973-9f74-cdaffb34dc8c on 2026-11-01 shows this. Data Quality
+Completeness and System Health share the same configuration, so they fail too.
+
+* Why
+
+A report the user configured correctly reads as broken. The refusal guards
+against a run whose output was lost, which is real, but it cannot tell that case
+from a configuration that asks for no figure. Once every output file is parsed
+(story Model every output ORE writes), a portfolio-details run stores its rows,
+and the guard should ask whether the run stored anything, not whether it stated a
+metric or a cashflow.
+
+* References
+
+- =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp=, the "states no figure" refusal.
+
+* See also
+
+- [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]

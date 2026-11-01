@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-01
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,12 +33,12 @@ and be fetched only by a reader that needs the values.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned: the market state is parsed into rows, not kept as a blob. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-11-01                               |
 
 * Acceptance
 
@@ -101,3 +101,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-01. The user wants every output file parsed into
+timeseries tables, so the market state is no longer kept as a blob, in the
+database or in the object store. The work moves to
+[[id:40A46EF1-C11A-4652-A490-4B0D454E24FB][Parse the market state into timeseries tables]]. The raw files stay
+in the object store because the node uploads each one (task B), so this task
+has nothing left to do.

@@ -25,7 +25,9 @@
 #include <immer/map_transient.hpp>
 #include <vector>
 {{/cache_aux_type}}
+{{^has_generated_wire_codec}}
 #include "ores.utility/rfl/reflectors.hpp"
+{{/has_generated_wire_codec}}
 #include <cstdint>
 #include <functional>
 #include <optional>

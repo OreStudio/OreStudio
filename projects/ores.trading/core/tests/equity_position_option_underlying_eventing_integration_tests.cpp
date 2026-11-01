@@ -57,7 +57,6 @@
 #include "ores.trading.api/generators/trade_activity_generator.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>

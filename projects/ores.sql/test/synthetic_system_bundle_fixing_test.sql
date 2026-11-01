@@ -22,8 +22,8 @@
  * The system bundle installs the feeds that start from the public fixings.
  *
  * synthetic.feeds.bloomberg starts every pair from the newest public fixing of
- * the pair, so each config is fixing-priced and carries the items it may start
- * from, ranked by provider. A publish into the system tenant names no party: the
+ * the pair, so each config is fixing-priced and names no items of its own: the
+ * FX calibration policy derives its candidates. A publish into the system tenant names no party: the
  * feeds belong to the system party, where the simulator, which reads as the
  * system tenant, finds them. The catalogue also holds the pair of provider and
  * source that the Acme profile routes its parties to.
@@ -70,26 +70,24 @@ select is(
 );
 
 select is(
-    (select i.item from ores_synthetic_fx_spot_fixing_items_tbl i
-     join ores_synthetic_fx_spot_generation_configs_tbl f on f.id = i.fx_spot_config_id
-     join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
-     where c.provider_code = 'bloomberg'
-       and f.base_currency_code = 'EUR' and f.quote_currency_code = 'USD'
-       and i.rank = 0
-       and i.valid_to = ores_utility_infinity_timestamp_fn()
-       and f.valid_to = ores_utility_infinity_timestamp_fn()
-       and c.valid_to = ores_utility_infinity_timestamp_fn()),
-    'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
-    'EUR/USD starts from the ECB fixing first'
+    (select o.provider_code from ores_synthetic_calibration_provider_orders_tbl o
+     join ores_synthetic_calibration_policies_tbl p on p.id = o.policy_id
+     where p.asset_class_code = 'fx' and p.allow_inverse
+       and o.rank = 1
+       and o.valid_to = ores_utility_infinity_timestamp_fn()
+       and p.valid_to = ores_utility_infinity_timestamp_fn()),
+    'ecb',
+    'the FX policy reads the ECB first and allows an inverse'
 );
 
 select ok(
-    exists(select 1 from ores_synthetic_fx_spot_fixing_items_tbl i
-           join ores_synthetic_fx_spot_generation_configs_tbl f on f.id = i.fx_spot_config_id
-           where f.base_currency_code = 'EUR' and f.quote_currency_code = 'USD'
-             and i.item = 'oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=EUR'
-             and i.valid_to = ores_utility_infinity_timestamp_fn()),
-    'EUR/USD may also start from the IMF fixing of USD/EUR, read the other way round'
+    not exists(select 1 from ores_synthetic_fx_spot_fixing_items_tbl i
+               join ores_synthetic_fx_spot_generation_configs_tbl f on f.id = i.fx_spot_config_id
+               join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
+               where c.provider_code = 'bloomberg'
+                 and i.valid_to = ores_utility_infinity_timestamp_fn()
+                 and f.valid_to = ores_utility_infinity_timestamp_fn()),
+    'no Bloomberg feed names items of its own, so each derives its candidates from the policy'
 );
 
 select ok(

@@ -83,15 +83,14 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
                            "' is not latest_on_or_before_clock or exact:<date>");
 }
 
-} // namespace
-
-ORES_SYNTHETIC_API_EXPORT resolved_start
-resolve_fx_start(ores::nats::service::nats_client& auth_nats,
-                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                 const std::vector<ores::synthetic::domain::gmm_component>& components,
-                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
-                 const calibration_policy& policy,
-                 const ores::marketdata::domain::market_clock* clock) {
+resolved_start
+resolve_fx_start_from(ores::nats::service::nats_client& auth_nats,
+                      const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                      const std::vector<ores::synthetic::domain::gmm_component>& components,
+                      std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                      const calibration_policy& policy,
+                      const ores::marketdata::domain::market_clock* clock,
+                      const series_listing* listed) {
     resolved_start out;
     out.level = cfg.gmm_initial_price;
 
@@ -101,7 +100,7 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     // A config that names no items is calibrated from its class policy: every series that
     // covers the pair from a provider the policy keeps becomes an item, in the policy's order.
     if (items.empty() && cfg.price_source == "fixing") {
-        const auto series = md.list_series();
+        const auto series = listed != nullptr ? *listed : md.list_series();
         if (!series) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
                 << "Feed " << cfg.source_name
@@ -292,6 +291,31 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     if (out.refused)
         out.source.note += "; the class policy refuses to start without a fixing.";
     return out;
+}
+
+} // namespace
+
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock) {
+    return resolve_fx_start_from(
+        auth_nats, cfg, components, std::move(items), policy, clock, nullptr);
+}
+
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock,
+                 const series_listing& series) {
+    return resolve_fx_start_from(
+        auth_nats, cfg, components, std::move(items), policy, clock, &series);
 }
 
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>

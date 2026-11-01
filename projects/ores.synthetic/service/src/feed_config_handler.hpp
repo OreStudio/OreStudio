@@ -27,6 +27,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/feed_start.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -379,6 +380,9 @@ private:
                        .provider_order = policy.provider_order};
 
         const ores::marketdata::domain::system_market_clock clock;
+        // Read once, on the first feed that resolves from a fixing: each feed would otherwise
+        // list every series again.
+        std::optional<feed::series_listing> series;
         for (const auto& c : kind.candidates(req_ctx, {})) {
             if (c.asset_class_code != asset_class_code)
                 continue;
@@ -412,8 +416,17 @@ private:
                     one.outcome_message = one.start.note;
                 }
             } else {
-                const auto resolved = feed::resolve_fx_start(
-                    auth_nats_, in.config, in.components, in.fixing_items, in.policy, &clock);
+                if (!series) {
+                    auto delegated = auth_nats_.with_delegation({});
+                    series = ores::marketdata::client::market_data_client(delegated).list_series();
+                }
+                const auto resolved = feed::resolve_fx_start(auth_nats_,
+                                                             in.config,
+                                                             in.components,
+                                                             in.fixing_items,
+                                                             in.policy,
+                                                             &clock,
+                                                             *series);
                 one.refused = resolved.refused;
                 one.start = to_wire(resolved.source);
                 for (const auto& c : resolved.candidates)

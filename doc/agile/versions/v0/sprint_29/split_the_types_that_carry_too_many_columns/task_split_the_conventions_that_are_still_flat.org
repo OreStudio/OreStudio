@@ -28,9 +28,9 @@ The three remaining convention kinds are on the family's shape: a central conven
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The cross currency fix float kind is split into a central row and three parts, in review. |
-| Waiting on   | Review of the fix float PR.            |
-| Next         | Split the cross currency basis kind, then commodity future. |
+| Now          | The fix float kind is merged (PR #4351). The cross currency basis kind is split into a central row and three parts. |
+| Waiting on   | The build and tests of the basis slice. |
+| Next         | Raise the basis PR, then split commodity future. |
 | Last touched | 2026-11-01                             |
 
 * Acceptance
@@ -140,6 +140,39 @@ so it can use the same part shape.
 | Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
 | Consistency point | None: the part is not a view of the world. |
 | Forbidden here | Putting kind-specific columns on the shared central row, and nesting the part inside another part's object on the wire. |
+
+** Cross currency basis: three parts, and why the leg columns keep their prefix
+
+The basis kind takes the fix float kind's shape: the central =convention=
+row, the swap terms both legs share, and one part per leg. The swap terms are
+=SettlementDays=, =SettlementCalendar=, =RollConvention=, =EOM= and
+=IsResettable=; the fix float kind states a settlement convention where this
+kind states a roll convention, so the two kinds do not share one part type.
+=FlatIndexIsResettable= goes on the flat leg, because it states whether that
+leg's index resets. =oresmd_uri= goes to the central row, which every kind
+carries; an atomised central row stages no URI, as the fix float kind's does.
+
+The two legs carry the same fields, and the screen shows a composite as one
+row with every part's columns laid over it. A leg column named =index= or
+=tenor= would then be written twice, and the spread leg would hide the flat
+leg. So each leg column keeps the leg prefix that ORE's element states:
+=flat_index=, =flat_tenor=, =spread_index=, =spread_tenor= and so on. That is
+what the fix float fixed leg (=fixed_currency=) and the tenor basis swap
+parts (=pay_index=, =long_index=) already do, and the column names stay the
+ones the flat table had.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The swap terms, the flat leg and the spread leg of one cross currency basis convention. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family parts: three parts of the =cross_currency_basis_convention= family. |
+| Invariant, or none | The swap terms apply to the whole swap at once. Each leg's fields state how that one leg builds its coupon, and ORE requires each leg's index, so a convention fills all three parts. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. Each part is related to its central row by =convention_id=, and the family write puts all four rows in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and three rows in the Parts table. |
+| Generated artefact | =cross_currency_basis_swap_terms=, =cross_currency_basis_flat_leg= and =cross_currency_basis_spread_leg=, each with its table, codec, repository, service, protocol and shell commands. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
+| Consistency point | None: the parts are not a view of the world. |
+| Forbidden here | Kind-specific columns on the shared central row, and two parts of one family that state a column of the same name. |
 
 * Test Scenarios
 

@@ -23,15 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.assets.api/domain/image_tag_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.assets.api/domain/image_tag_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::assets::domain {
 
 std::ostream& operator<<(std::ostream& s, const image_tag& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

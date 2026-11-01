@@ -25,7 +25,14 @@
 #ifndef ORES_ASSETS_API_MESSAGING_PUBLISH_OPERATION_PROTOCOL_HPP
 #define ORES_ASSETS_API_MESSAGING_PUBLISH_OPERATION_PROTOCOL_HPP
 
+#include "ores.assets.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
+#include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::assets::messaging {
 
@@ -47,6 +54,33 @@ struct publish_images_from_dq_request {
     static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The members of publish_images_from_dq_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_images_from_dq_request&) {
+    return std::tuple{};
 }
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::publish_images_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::publish_images_from_dq_request& v);
+    static ores::assets::messaging::publish_images_from_dq_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::assets::messaging::publish_images_from_dq_request& v);
+    static ores::assets::messaging::publish_images_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

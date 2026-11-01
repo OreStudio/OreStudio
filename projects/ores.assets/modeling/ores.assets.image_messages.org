@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: FC165268-4BD3-4552-A3BE-B0F5BC1F1A01
 :END:
 #+title: ores.assets.image_messages

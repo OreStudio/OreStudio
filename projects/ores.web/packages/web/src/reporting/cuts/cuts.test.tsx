@@ -254,8 +254,6 @@ function cutRecord(over: Partial<CutRecord> = {}): CutRecord {
             dealCount: 1284,
             marketDataSetCount: 7,
             gapCount: 0,
-            appliedBy: '',
-            appliedAt: null,
         },
         ...over,
     };
@@ -694,6 +692,18 @@ describe('the take flow', () => {
         );
     }
 
+    it('draws no take for a person who may not take a cut', () => {
+        const html = render('/reporting/cuts/take', (client) => {
+            seedTake(client);
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        const page = textOf(html);
+        // A saved link to the flow is the door the server would refuse, so the
+        // screen states the refusal before it draws a button.
+        expect(page).toContain('You cannot open Take a cut yet');
+        expect(page).not.toContain('Assemble the body');
+    });
+
     it('offers the kinds a person takes, and says why LIVE is not one', () => {
         const html = render('/reporting/cuts/take', seedTake);
         const page = textOf(html);
@@ -755,7 +765,6 @@ describe('the take flow', () => {
             referenceDataVersion: '',
             engineVersion: 'ORE 1.8.15',
             codeVersion: '',
-            refusal: '',
         };
         const page = textOf(
             renderToStaticMarkup(
@@ -799,7 +808,6 @@ describe('the take flow', () => {
                                     referenceDataVersion: '',
                                     engineVersion: '',
                                     codeVersion: '',
-                                    refusal: '',
                                 } satisfies CutTake
                             }
                         />
@@ -845,7 +853,6 @@ describe('the take flow', () => {
                                     referenceDataVersion: '',
                                     engineVersion: '',
                                     codeVersion: '',
-                                    refusal: '',
                                 } satisfies CutTake
                             }
                         />
@@ -973,6 +980,42 @@ describe('one cut', () => {
         const page = textOf(html);
         expect(page).toContain('requires no authorisation: the basis is a fact of the kind');
         expect(page).toContain('No signature');
+    });
+
+    it('offers a new take of the same occasion for a refused body', () => {
+        const base = cutRecord();
+        const refused = cutRecord({
+            state: 'refused',
+            cut: {
+                ...base.cut,
+                refusedAt: '2026-10-06 16:30:00.000000Z',
+                refusalComment: 'The population was not the one the day closed on.',
+            },
+        });
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=authorisation`, (client) => {
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id], refused);
+            client.setQueryData(
+                ['my-access'],
+                access(['reporting::cuts:read', 'reporting::cuts:take']),
+            );
+        });
+        const page = textOf(html);
+        expect(page).toContain('A refusal is terminal for this body');
+        expect(page).toContain('Take it again');
+        // The new take opens on the occasion that failed, so the flow fixes the
+        // same kind, scope and centre without the person typing them again.
+        expect(html).toContain(
+            '/reporting/cuts/take?kind=EOD&amp;scope=ACME-LONDON&amp;centre=LONDON',
+        );
+
+        const notPermitted = render(
+            `/reporting/cuts/${AUTHORISED.id}?tab=authorisation`,
+            (client) => {
+                client.setQueryData(['cuts', 'cut', AUTHORISED.id], refused);
+                client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+            },
+        );
+        expect(textOf(notPermitted)).not.toContain('Take it again');
     });
 
     it('lists the runs that priced from it, with the state each reached', () => {

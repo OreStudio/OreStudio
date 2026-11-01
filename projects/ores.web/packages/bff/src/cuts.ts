@@ -515,8 +515,6 @@ function approvalDetailOf(detail: Read): Record<string, unknown> {
         dealCount: count(detail['deal_count']),
         marketDataSetCount: count(detail['market_data_set_count']),
         gapCount: count(detail['gap_count']),
-        appliedBy: text(detail['applied_by']),
-        appliedAt: nullable(detail['applied_at']),
     };
 }
 
@@ -561,14 +559,14 @@ const takeCutReplySchema = z.looseObject({
     reference_data_version: z.string().default(''),
     engine_version: z.string().default(''),
     code_version: z.string().default(''),
-    refusal: z.string().default(''),
 });
 
 /**
  * The body one assembly answered, and the take it wrote.
  *
- * The gaps are the answer and not a refusal: a call that answers them succeeded,
- * and the sentence that refuses a take arrives in `refusal`.
+ * The gaps are the answer and not a refusal: a call that answers them succeeded.
+ * A take the server refuses answers with an outcome that is not `ok`, its code
+ * and one sentence, and that sentence is the refusal the person reads.
  */
 async function takeCutReply(
     session: LiveSession,
@@ -615,7 +613,6 @@ async function takeCutReply(
         referenceDataVersion: reply.reference_data_version,
         engineVersion: reply.engine_version,
         codeVersion: reply.code_version,
-        refusal: reply.refusal,
     };
 }
 
@@ -1135,7 +1132,7 @@ export function registerCutRoutes(
      * computed by a second path is a preview of that path: the request states
      * `preview` and the server answers the same parts and gaps either way. A
      * gap is the answer and not a failure, so a call that answers gaps is a
-     * success and the sentence that refuses a take arrives in `refusal`.
+     * success, and a refused take is the server's own result.
      */
     server.post('/api/reporting/cuts/take', async (request) => {
         const session = requireSession(request);

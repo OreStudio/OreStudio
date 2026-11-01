@@ -22,7 +22,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
 import { CardScreen } from './shell/CardScreen.js';
-import { MOVED, PATHS } from './shell/paths.js';
+import { MOVED, PATHS, takeCutPath } from './shell/paths.js';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
@@ -1168,7 +1168,7 @@ export function AppRoutes({
              * the flow is not opening a cut called "take".
              */}
             <Route
-                path={PATHS.cutsTake}
+                path={takeCutPath()}
                 element={signedIn(
                     gate.version,
                     session,

@@ -235,11 +235,13 @@ export const cutBodySchema = z.object({
 export type CutBody = z.infer<typeof cutBodySchema>;
 
 /**
- * The subject of one cut's approval request: the cut whose body was frozen, the
- * counts of the body's parts, and the apply once the request is approved.
+ * The subject of one cut's approval request: the cut whose body was frozen and
+ * the counts of the body's parts.
  *
  * A decider reads the counts here before answering; the cut's own page states
  * the same numbers, because the two records of one act are read from one row.
+ * The row also carries the facts an apply will stamp when the request is
+ * approved, and no apply exists yet, so nothing here reads them.
  */
 export const cutApprovalDetailSchema = z.object({
     id: z.string(),
@@ -248,8 +250,6 @@ export const cutApprovalDetailSchema = z.object({
     dealCount: z.int().nonnegative(),
     marketDataSetCount: z.int().nonnegative(),
     gapCount: z.int().nonnegative(),
-    appliedBy: z.string(),
-    appliedAt: nullableWireTimestampSchema,
 });
 
 export type CutApprovalDetail = z.infer<typeof cutApprovalDetailSchema>;
@@ -331,8 +331,9 @@ export type CutBodyPart = z.infer<typeof cutBodyPartSchema>;
 /**
  * The body an assembly answered and the take it wrote.
  *
- * `cutState` is empty on a preview, which writes nothing, and `refusal` carries
- * the one sentence that refuses a take. The gaps are the answer and not a
+ * `cutState` is empty on a preview, which writes nothing. A take the server
+ * refuses is a failure of the call and not a body, so its code and its sentence
+ * travel in the failure the client raises. The gaps are the answer and not a
  * failure: a body that could not be assembled says what closes each one.
  */
 export const cutTakeSchema = z.object({
@@ -354,7 +355,6 @@ export const cutTakeSchema = z.object({
     referenceDataVersion: z.string(),
     engineVersion: z.string(),
     codeVersion: z.string(),
-    refusal: z.string(),
 });
 
 export type CutTake = z.infer<typeof cutTakeSchema>;

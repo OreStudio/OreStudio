@@ -277,6 +277,8 @@ const fr: SourceCatalogue = {
             'refdata.book_change': 'Modification de livre',
             'marketdata.curve_publish': 'Publication de courbe',
             'reporting.engine_settings_change': "Modification des réglages d'exécution du moteur",
+            'reporting.eod_cut_authorisation': 'Autorisation de coupure de fin de journée',
+            'reporting.ipv_cut_authorisation': 'Autorisation de coupure de vérification',
         },
         bell: {
             label: 'Notifications, {count} non lues',
@@ -311,6 +313,10 @@ const fr: SourceCatalogue = {
             row: '{party} · arrêté au {asOf} · {points} points',
             summary: '{curve} de {party}, arrêté au {asOf}',
             approve: 'Approuver la publication',
+        },
+        cutAuthorisation: {
+            noSubjectLink:
+                'Le corps que cette demande autorise se trouve sur l’enregistrement de la coupure, sous Reporting, Coupures. Rien ici n’y renvoie encore, car aucune lecture ne répond d’une coupure par la demande qu’elle a levée.',
         },
         mine: {
             none: 'Vous n’avez fait aucune demande.',
@@ -7218,9 +7224,11 @@ const fr: SourceCatalogue = {
             deals: 'Transactions à l’instant',
             sets: 'Ensembles publiés en vigueur',
             gaps: 'Écarts ouverts',
-            applied: 'Appliqué à la coupure',
-            notApplied:
-                'Le service reporting marque la coupure quand la demande atteint l’état approuvé. Rien n’est encore marqué.',
+            applyLater:
+                'L’application n’est pas construite. Quand la demande sera approuvée, le service reporting écrira l’autorisation de la coupure et marquera cet enregistrement, et rien ne l’écrit maintenant.',
+            takeAgain: 'Prendre à nouveau',
+            takeAgainLead:
+                'Un refus est définitif pour ce corps, donc le remède est une nouvelle prise. Le nouveau corps porte l’ordinal suivant de son jour dans son libellé.',
         },
         take: {
             title: 'Prendre une coupure',
@@ -7236,9 +7244,12 @@ const fr: SourceCatalogue = {
             kindLead:
                 'Un type fixe si une signature est nécessaire et combien de temps le corps est conservé. L’instant se lit juste après la clôture, et la portée est un fait des livres et non un choix : les livres qui se revalorisent ensemble sont ceux d’un même centre.',
             family: 'Famille',
+            fixes: 'Fixe',
             basis: 'Fondement',
             retentionShort: 'Conservation',
             indicativeShort: 'Valeurs',
+            centreNote:
+                'Chaque type travaille contre le centre de taux que vous indiquez ci-dessous. Rien ne relie un type à un centre pour le moment, donc l’étape propose le centre une fois et non par type.',
             consumerNote:
                 'LIVE n’est pas offert ici : son instant vient du run qui le consomme, il n’y a donc aucune prise à presser.',
             timepoint: 'Instant',
@@ -7249,8 +7260,12 @@ const fr: SourceCatalogue = {
             timezone: 'Fuseau horaire',
             timezoneHint:
                 'L’horloge du centre, pour que l’instant dise de quelle clôture il s’agit.',
+            timepointTyped:
+                'Vous saisissez l’instant. La clôture du centre de taux n’est pas encore lue dans les données de référence, car le magasin ne contient aucun horaire de coupure.',
             scope: 'Portée',
             scopeHint: 'Le code qu’une personne cite dans le libellé, tel que ACME-LONDON.',
+            scopeNotChecked:
+                'Vous saisissez la portée. Rien ne lit encore les livres de la portée, donc une portée qui couvre deux centres n’est pas refusée ici ; l’assemblage déclare le centre qu’il a lu.',
             centre: 'Centre de taux',
             centreHint:
                 'Le centre contre les données de marché duquel les livres de la portée se revalorisent.',
@@ -7287,6 +7302,8 @@ const fr: SourceCatalogue = {
             codeVersion: 'Révision du code',
             codeVersionGap:
                 'Rien dans le magasin n’enregistre la révision des services qui ont assemblé le corps : la coupure nomme donc le moteur et l’enveloppe, et aucune révision de code.',
+            reviewGap:
+                'Les différences avec la coupure précédente ne sont pas encore lues. Aucune lecture ne compare deux corps, donc cette étape déclare ce que le corps contient et non comment il a bougé.',
             reviewSentences:
                 'Une coupure fige le corps qu’une valorisation lit, et elle enregistre le moteur et le code, afin qu’un run ultérieur de la même coupure avec le même moteur reproduise son résultat. Elle ne décide ni les prix du jour, ni les conventions, ni la façon de pricer un produit : elle enregistre ce qui était en vigueur.',
             take: 'Prendre la coupure',

@@ -279,6 +279,8 @@ export const en: SourceCatalogue = {
             'refdata.book_change': 'Book change',
             'marketdata.curve_publish': 'Curve publish',
             'reporting.engine_settings_change': 'Engine run settings change',
+            'reporting.eod_cut_authorisation': 'End of day cut authorisation',
+            'reporting.ipv_cut_authorisation': 'Verification cut authorisation',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -312,6 +314,10 @@ export const en: SourceCatalogue = {
             row: '{party} · as of {asOf} · {points} points',
             summary: '{curve} of {party}, as of {asOf}',
             approve: 'Approve the publish',
+        },
+        cutAuthorisation: {
+            noSubjectLink:
+                'The body this request authorises is on the cut’s own record, under Reporting, Cuts. Nothing here links to it yet, because no read answers a cut by the request it raised.',
         },
         mine: {
             none: 'You have made no requests.',
@@ -7112,9 +7118,11 @@ export const en: SourceCatalogue = {
             deals: 'Deals at the instant',
             sets: 'Published sets in use',
             gaps: 'Gaps standing',
-            applied: 'Applied to the cut',
-            notApplied:
-                'The reporting service stamps the cut when the request reaches approved. Nothing is stamped yet.',
+            applyLater:
+                'The apply is not built. When the request is approved, the reporting service will write the cut\u2019s authorisation and stamp this record, and nothing writes it now.',
+            takeAgain: 'Take it again',
+            takeAgainLead:
+                'A refusal is terminal for this body, so the remedy is a new take. The new body carries the next ordinal of its day in its label.',
         },
         take: {
             title: 'Take a cut',
@@ -7130,9 +7138,12 @@ export const en: SourceCatalogue = {
             kindLead:
                 'A kind fixes whether a signature is needed and how long the body is kept. The instant is read straight after the close, and the scope is a fact of the books and not a choice: the books that revalue together are the ones of one centre.',
             family: 'Family',
+            fixes: 'Fixes',
             basis: 'Basis',
             retentionShort: 'Retention',
             indicativeShort: 'Values',
+            centreNote:
+                'Every kind works against the rates centre you state below. Nothing maps a kind to a centre yet, so the step offers the centre once and not per kind.',
             consumerNote:
                 'LIVE is not offered here: its instant comes from the run that consumes it, so there is no take to press.',
             timepoint: 'Timepoint',
@@ -7142,8 +7153,12 @@ export const en: SourceCatalogue = {
             time: 'Time',
             timezone: 'Timezone',
             timezoneHint: 'The centre’s own clock, so the instant says which close it is.',
+            timepointTyped:
+                'You type the instant. The close of the rates centre is not read from reference data yet, because the store holds no cut times.',
             scope: 'Scope',
             scopeHint: 'The code a person quotes in the label, such as ACME-LONDON.',
+            scopeNotChecked:
+                'You type the scope. Nothing reads the books of the scope yet, so a scope that spans two centres is not refused here; the assembly states the centre it read.',
             centre: 'Rates centre',
             centreHint: 'The centre whose market data the scope’s books revalue against.',
             chooseCentre: 'Choose a centre',
@@ -7179,6 +7194,8 @@ export const en: SourceCatalogue = {
             codeVersion: 'Code revision',
             codeVersionGap:
                 'Nothing in the store records the revision of the services that assembled the body, so the cut names the engine and the wrapper and no code revision.',
+            reviewGap:
+                'The differences from the previous cut are not read yet. No read compares two bodies, so this step states what the body holds and not how it moved.',
             reviewSentences:
                 'A cut fixes the body one valuation reads, and it records the engine and the code, so a later run of the same cut with the same engine reproduces its result. It does not decide the day’s prices, the conventions or how a product is priced: it records what was in force.',
             take: 'Take the cut',

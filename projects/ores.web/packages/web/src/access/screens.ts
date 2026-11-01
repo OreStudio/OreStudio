@@ -43,6 +43,8 @@ export const NEEDS = {
     roles: { all: [PERMISSION.rolesRead] },
     /** The reporting hierarchy, read from the organisation. */
     hierarchy: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },
+    /** Assembling and taking a cut by hand, which also guards the take flow's route. */
+    cutTaking: { all: [PERMISSION.cutsTake] },
 } as const satisfies Record<string, Needs>;
 
 /** One tab of a screen, and what it needs. A tab with no needs is always there. */

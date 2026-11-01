@@ -289,7 +289,11 @@ export function CutsPage(): ReactNode {
             notes={[{ tone: 'info', text: t('cuts.readerNote') }]}
             actions={
                 mayTake ? (
-                    <Button variant="primary" icon="add" onClick={() => void navigate(takeCutPath)}>
+                    <Button
+                        variant="primary"
+                        icon="add"
+                        onClick={() => void navigate(takeCutPath())}
+                    >
                         {t('cuts.take.title')}
                     </Button>
                 ) : null

@@ -32,7 +32,7 @@ import { enFlat } from '../i18n/locales/en.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import { MENU } from './areas.js';
 import { AREA_CARDS, AREA_PAGE, CARDS, cardOf, screenAreaOf, type CardId } from './cards.js';
-import { PATHS } from './paths.js';
+import { PATHS, takeCutPath } from './paths.js';
 
 const party = {
     id: '3f1e2d4c-0000-4000-8000-000000000010',
@@ -214,7 +214,10 @@ describe('the routes of the application', () => {
         const template = route.replace(/^`|`$/g, '');
         return template
             .replace(/\$\{PATHS\.(\w+)\}/g, (_, name: string) => PATHS[name as keyof typeof PATHS])
-            .replace(/^PATHS\.(\w+)$/, (_, name: string) => PATHS[name as keyof typeof PATHS]);
+            .replace(/^PATHS\.(\w+)$/, (_, name: string) => PATHS[name as keyof typeof PATHS])
+            // An address the paths module builds, so the route and the link a
+            // button follows are one name and not two spellings of it.
+            .replace(/^takeCutPath\(\)$/, () => takeCutPath());
     };
 
     const walked = new Set<string>([
@@ -233,7 +236,7 @@ describe('the routes of the application', () => {
         '/development',
         PATHS.reporting,
         // Opened from the cuts list's own Take button, so no card leads to it.
-        PATHS.cutsTake,
+        takeCutPath(),
         // Opened from an oresmd URL, so no card leads to it.
         '/market-data/series',
         // The Import steps, opened from the kind's list's Import (RS-ORE-05).

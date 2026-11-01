@@ -825,7 +825,6 @@ const A_TAKEN_BODY = {
     reference_data_version: '4 report configuration(s) in force',
     engine_version: '1.8.17.0',
     code_version: '',
-    refusal: '',
 };
 
 /** What a person states when they take a cut, as the screen sends it. */
@@ -857,7 +856,6 @@ describe('POST /api/reporting/cuts/take', () => {
             decidePermissionCode: 'inbox::approvals:decide_finance',
             dealCount: 1284,
             marketDataSetCount: 7,
-            refusal: '',
         });
         const body = answer.json() as {
             parts: readonly { partCode: string; state: string; snapshotNote: string }[];
@@ -923,11 +921,10 @@ describe('POST /api/reporting/cuts/take', () => {
             [TAKE_CUT]: {
                 result: {
                     outcome: 'invalid',
-                    code: '',
+                    code: 'as_of_invalid',
                     message: 'A body cannot be fixed at an instant that has not happened.',
                     fields: [],
                 },
-                refusal: 'A body cannot be fixed at an instant that has not happened.',
             },
         });
         const answer = await send(server, sessionId, 'POST', '/api/reporting/cuts/take', {

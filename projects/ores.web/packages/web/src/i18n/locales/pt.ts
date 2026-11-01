@@ -279,6 +279,8 @@ const pt: SourceCatalogue = {
             'refdata.book_change': 'Alteração de livro',
             'marketdata.curve_publish': 'Publicação de curva',
             'reporting.engine_settings_change': 'Alteração das definições de execução do motor',
+            'reporting.eod_cut_authorisation': 'Autorização do corte de fim de dia',
+            'reporting.ipv_cut_authorisation': 'Autorização do corte de verificação',
         },
         bell: {
             label: 'Notificações, {count} por ler',
@@ -312,6 +314,10 @@ const pt: SourceCatalogue = {
             row: '{party} · com data de referência {asOf} · {points} pontos',
             summary: '{curve} de {party}, com data de referência {asOf}',
             approve: 'Aprovar a publicação',
+        },
+        cutAuthorisation: {
+            noSubjectLink:
+                'O corpo que este pedido autoriza está no registo do corte, em Reporting, Cortes. Nada aqui liga a ele ainda, porque nenhuma leitura responde de um corte pelo pedido que levantou.',
         },
         mine: {
             none: 'Não fez nenhum pedido.',
@@ -7162,9 +7168,11 @@ const pt: SourceCatalogue = {
             deals: 'Negócios no instante',
             sets: 'Conjuntos publicados em uso',
             gaps: 'Lacunas em aberto',
-            applied: 'Aplicado ao corte',
-            notApplied:
-                'O serviço de reporting marca o corte quando o pedido chega a aprovado. Ainda nada está marcado.',
+            applyLater:
+                'A aplicação não está construída. Quando o pedido for aprovado, o serviço de reporting escreverá a autorização do corte e marcará este registo, e nada o escreve agora.',
+            takeAgain: 'Tomar de novo',
+            takeAgainLead:
+                'Uma recusa é definitiva para este corpo, por isso o remédio é uma nova tomada. O novo corpo leva o ordinal seguinte do seu dia no rótulo.',
         },
         take: {
             title: 'Tomar um corte',
@@ -7180,9 +7188,12 @@ const pt: SourceCatalogue = {
             kindLead:
                 'Um tipo fixa se é precisa uma assinatura e durante quanto tempo o corpo é guardado. O instante lê-se logo após o fecho, e o âmbito é um facto dos livros e não uma escolha: os livros que se reavaliam em conjunto são os de um mesmo centro.',
             family: 'Família',
+            fixes: 'Fixa',
             basis: 'Fundamento',
             retentionShort: 'Retenção',
             indicativeShort: 'Valores',
+            centreNote:
+                'Cada tipo trabalha contra o centro de taxas que indicar abaixo. Nada liga um tipo a um centro por agora, por isso a etapa oferece o centro uma vez e não por tipo.',
             consumerNote:
                 'LIVE não é oferecido aqui: o seu instante vem da execução que o consome, por isso não há tomada a premir.',
             timepoint: 'Instante',
@@ -7192,8 +7203,12 @@ const pt: SourceCatalogue = {
             time: 'Hora',
             timezone: 'Fuso horário',
             timezoneHint: 'O relógio do centro, para que o instante diga de que fecho se trata.',
+            timepointTyped:
+                'Escreve o instante. O fecho do centro de taxas ainda não é lido nos dados de referência, porque o armazém não tem horários de corte.',
             scope: 'Âmbito',
             scopeHint: 'O código que uma pessoa cita no rótulo, tal como ACME-LONDON.',
+            scopeNotChecked:
+                'Escreve o âmbito. Nada lê ainda os livros do âmbito, por isso um âmbito que abranja dois centros não é recusado aqui; a montagem declara o centro que leu.',
             centre: 'Centro de taxas',
             centreHint: 'O centro contra cujos dados de mercado os livros do âmbito se reavaliam.',
             chooseCentre: 'Escolher um centro',
@@ -7228,6 +7243,8 @@ const pt: SourceCatalogue = {
             codeVersion: 'Revisão do código',
             codeVersionGap:
                 'Nada no armazém registra a revisão dos serviços que montaram o corpo, pelo que o corte nomeia o motor e o invólucro, e nenhuma revisão de código.',
+            reviewGap:
+                'As diferenças face ao corte anterior ainda não são lidas. Nenhuma leitura compara dois corpos, por isso esta etapa declara o que o corpo contém e não como mudou.',
             reviewSentences:
                 'Um corte fixa o corpo que uma avaliação lê, e registra o motor e o código, para que uma execução posterior do mesmo corte com o mesmo motor reproduza o seu resultado. Não decide os preços do dia, as convenções nem como um produto é avaliado: registra o que estava em vigor.',
             take: 'Tomar o corte',

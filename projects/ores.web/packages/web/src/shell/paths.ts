@@ -74,7 +74,6 @@ export const PATHS = {
     curveConfigurations: '/reporting/curve-configurations',
     sensitivityTemplates: '/reporting/sensitivity-templates',
     cuts: '/reporting/cuts',
-    cutsTake: '/reporting/cuts/take',
     cutTypes: '/refdata/cut-types',
 } as const;
 
@@ -234,11 +233,32 @@ export function engineSettingsPath(id: string): string {
 }
 
 /** The address of one cut's record page. */
-/** The address of the take flow: the kind and the instant, the body, the press. */
-export const takeCutPath = PATHS.cutsTake;
-
 export function cutPath(id: string): string {
     return `${PATHS.cuts}/${encodeURIComponent(id)}`;
+}
+
+/**
+ * The address of the take flow: the kind and the instant, the body, the press.
+ *
+ * A take offered for one occasion — a refused body's *Take it again* — states
+ * the kind, the scope and the centre it would fix, so the flow opens on the
+ * occasion that failed rather than on an empty first step.
+ */
+export function takeCutPath(again?: {
+    readonly kindCode: string;
+    readonly scopeCode: string;
+    readonly centreCode: string;
+}): string {
+    const base = `${PATHS.cuts}/take`;
+    if (again === undefined) {
+        return base;
+    }
+    const query = new URLSearchParams({
+        kind: again.kindCode,
+        scope: again.scopeCode,
+        centre: again.centreCode,
+    });
+    return `${base}?${query.toString()}`;
 }
 
 /**

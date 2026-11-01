@@ -29,17 +29,22 @@
  * call writes the body when the person presses. The screen therefore holds no
  * rule about what a body must contain — it draws what the service answered.
  *
- * A gap stops the press. The server refuses a take that carries one and keeps the
- * attempt as an incomplete body, so the screen offers *Save as a draft* in place
- * of *Take the cut* and states why, rather than letting a person press a button
- * that would be refused.
+ * A gap does not fail the call: the server keeps the attempt as an incomplete
+ * body, raises nothing and answers ok, so the screen offers *Save as a draft* in
+ * place of *Take the cut* and states what the draft leaves open.
+ *
+ * The screen is drawn only for a person who may take a cut. The route and the
+ * screen both check `reporting::cuts:take`, so a saved link to the flow draws no
+ * assemble and no press for a person who may not.
  */
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import type { CutKindRow, CutTake } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
+import { Requires } from '../../access/Requires.js';
+import { NEEDS } from '../../access/screens.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Crumbs } from '../../refdata/shared.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
@@ -296,10 +301,28 @@ export function PressResult({ answer }: { readonly answer: CutTake }): ReactNode
     );
 }
 
+/**
+ * The take flow, drawn only for a person who may take a cut.
+ *
+ * The check is the list's own: a person who may not take a cut is drawn no
+ * Assemble and no press, whether they arrive from the list or by a saved link.
+ */
 export function TakeCutPage(): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Requires needs={NEEDS.cutTaking} screen={t('cuts.take.title')}>
+            <TakeCutFlow />
+        </Requires>
+    );
+}
+
+function TakeCutFlow(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const root = useAreaRoot('reporting');
+    // A refused body's *Take it again* states the occasion it would fix, so the
+    // first step opens on the take that failed rather than on an empty one.
+    const [asked] = useSearchParams();
     const trail = [
         ...root,
         { label: t('cuts.title'), to: PATHS.cuts },
@@ -307,12 +330,12 @@ export function TakeCutPage(): ReactNode {
     ];
 
     const [step, setStep] = useState<Step>('kind');
-    const [kindCode, setKindCode] = useState('');
+    const [kindCode, setKindCode] = useState(() => asked.get('kind') ?? '');
     const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
     const [time, setTime] = useState('17:00');
     const [timezone, setTimezone] = useState('Europe/London');
-    const [scopeCode, setScopeCode] = useState('');
-    const [centreCode, setCentreCode] = useState('');
+    const [scopeCode, setScopeCode] = useState(() => asked.get('scope') ?? '');
+    const [centreCode, setCentreCode] = useState(() => asked.get('centre') ?? '');
     const [reason, setReason] = useState('');
     const [answer, setAnswer] = useState<CutTake | null>(null);
 
@@ -393,6 +416,7 @@ export function TakeCutPage(): ReactNode {
                             <tr className="text-xs uppercase tracking-wide text-ink-faint">
                                 <th className="py-1 pr-3 font-medium">{t('cuts.columns.kind')}</th>
                                 <th className="py-1 pr-3 font-medium">{t('cuts.take.family')}</th>
+                                <th className="py-1 pr-3 font-medium">{t('cuts.take.fixes')}</th>
                                 <th className="py-1 pr-3 font-medium">{t('cuts.take.basis')}</th>
                                 <th className="py-1 pr-3 font-medium">
                                     {t('cuts.take.retentionShort')}
@@ -428,6 +452,11 @@ export function TakeCutPage(): ReactNode {
                                     </td>
                                     <td className="py-1 pr-3 text-sm">{kind.familyName}</td>
                                     <td className="py-1 pr-3 text-sm">
+                                        {kind.resolutionRuleName === ''
+                                            ? kind.resolutionRuleCode
+                                            : kind.resolutionRuleName}
+                                    </td>
+                                    <td className="py-1 pr-3 text-sm">
                                         {kind.signed ? (
                                             <span>
                                                 {kind.approvalKindName ?? kind.approvalKindCode}
@@ -456,6 +485,7 @@ export function TakeCutPage(): ReactNode {
                             ))}
                         </tbody>
                     </table>
+                    <Notice tone="info">{t('cuts.take.centreNote')}</Notice>
                     <Notice tone="info">{t('cuts.take.consumerNote')}</Notice>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -497,6 +527,14 @@ export function TakeCutPage(): ReactNode {
                             />
                         </Field>
                     </div>
+
+                    {/*
+                     * The design reads the close and refuses a scope that spans
+                     * two centres. Neither read exists, so the step states what
+                     * a person types and what the assembly answers instead.
+                     */}
+                    <p className="text-xs text-ink-muted">{t('cuts.take.timepointTyped')}</p>
+                    <p className="text-xs text-ink-muted">{t('cuts.take.scopeNotChecked')}</p>
 
                     <div className="text-sm text-ink-muted">
                         {t('cuts.take.label')}{' '}
@@ -579,6 +617,13 @@ export function TakeCutPage(): ReactNode {
                         <p className="mt-3 text-xs text-ink-muted">
                             {t('cuts.take.reviewSentences')}
                         </p>
+                        {/*
+                         * The design's review reads the differences from the
+                         * previous cut of the same kind and scope. No read
+                         * compares two bodies yet, so the step says so rather
+                         * than drawing an empty comparison.
+                         */}
+                        <Notice tone="info">{t('cuts.take.reviewGap')}</Notice>
                     </section>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <Button variant="secondary" onClick={() => setStep('body')}>

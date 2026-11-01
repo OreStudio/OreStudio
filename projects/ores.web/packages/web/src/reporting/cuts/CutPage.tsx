@@ -41,11 +41,13 @@ import { Link, useParams } from 'react-router';
 import type { ReactNode } from 'react';
 import type { CutBody, CutKindRow, CutRecord, CutRun } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
+import { PERMISSION } from '../../access/permissions.js';
+import { usePermissions } from '../../access/holds.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { RecordTimeline } from '../../refdata/RecordTimeline.js';
 import { RecordHeader, useRecordTabs } from '../../refdata/records.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
-import { PATHS, cutTypePath, reportRunPath, requestPath } from '../../shell/paths.js';
+import { PATHS, cutTypePath, reportRunPath, requestPath, takeCutPath } from '../../shell/paths.js';
 import { Notice, Tag } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
 import { HealthTag } from '../shared.js';
@@ -274,6 +276,8 @@ function Gaps({ record }: { readonly record: CutRecord }): ReactNode {
 function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode {
     const { t } = useTranslation();
     const kind: CutKindRow = record.kind;
+    const { ready, can } = usePermissions();
+    const mayTake = ready && can({ all: [PERMISSION.cutsTake] });
     return (
         <div className="space-y-4">
             {record.cut.requiresAuthorisation ? (
@@ -362,6 +366,26 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                 </Notice>
             )}
 
+            {/*
+             * The design's remedy for a refused body is a new take of the same
+             * occasion, offered only to a person who may take one.
+             */}
+            {record.state === 'refused' && mayTake && (
+                <Notice tone="info">
+                    {t('cuts.auth.takeAgainLead')}{' '}
+                    <Link
+                        to={takeCutPath({
+                            kindCode: record.cut.kindCode,
+                            scopeCode: record.cut.scopeCode,
+                            centreCode: record.cut.businessCentreCode,
+                        })}
+                        className="text-accent"
+                    >
+                        {t('cuts.auth.takeAgain')}
+                    </Link>
+                </Notice>
+            )}
+
             {record.detail !== null && (
                 <section className="rounded-md border border-line bg-surface-raised p-4">
                     <h2 className="text-sm font-semibold">{t('cuts.auth.subject')}</h2>
@@ -385,24 +409,15 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                                 {record.detail.gapCount}
                             </dd>
                         </div>
-                        <div className="min-w-0">
-                            <dt className="text-xs text-ink-faint">{t('cuts.auth.applied')}</dt>
-                            <dd className="mt-0.5 text-sm">
-                                {record.detail.appliedAt === null ? (
-                                    <span className="text-ink-muted">
-                                        {t('cuts.auth.notApplied')}
-                                    </span>
-                                ) : (
-                                    <span className="flex flex-col">
-                                        <span>{record.detail.appliedBy}</span>
-                                        <span className="text-xs text-ink-faint">
-                                            <RelativeTime at={record.detail.appliedAt} />
-                                        </span>
-                                    </span>
-                                )}
-                            </dd>
-                        </div>
                     </dl>
+                    {/*
+                     * The apply is the reporting side's reconciliation of an
+                     * approved request, and it does not exist yet: nothing
+                     * writes the cut's authorisation when the request is
+                     * approved, so the panel states that instead of drawing an
+                     * apply nobody made.
+                     */}
+                    <p className="mt-3 text-xs text-ink-muted">{t('cuts.auth.applyLater')}</p>
                 </section>
             )}
 

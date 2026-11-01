@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-673 tables in 21 groups.
+675 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -224,6 +224,7 @@ entity "refdata" as refdata {
   ores_refdata_portfolio_rights_tbl
   ores_refdata_portfolios_tbl
   ores_refdata_producer_kinds_tbl
+  ores_refdata_product_family_codes_tbl
   ores_refdata_purpose_types_tbl
   ores_refdata_regulatory_book_types_tbl
   ores_refdata_regulatory_corporate_sectors_tbl
@@ -258,7 +259,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-183 tables — ores_schema.refdata.puml
+184 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -580,6 +581,8 @@ entity "trading" as trading {
   ores_trading_party_roles_tbl
   ores_trading_payoff_types_tbl
   ores_trading_price_types_tbl
+  ores_trading_product_type_asset_classes_tbl
+  ores_trading_product_types_tbl
   ores_trading_range_bounds_tbl
   ores_trading_rate_instruments_tbl
   ores_trading_return_types_tbl
@@ -607,13 +610,12 @@ entity "trading" as trading {
   ores_trading_trade_links_tbl
   ores_trading_trade_portfolios_tbl
   ores_trading_trade_states_tbl
-  ores_trading_trade_types_tbl
   ores_trading_trades_tbl
   ores_trading_vanilla_swap_instruments_tbl
 }
 note bottom of trading
 Trading & Lifecycle
-122 tables — ores_schema.trading.puml
+123 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

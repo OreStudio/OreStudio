@@ -121,10 +121,10 @@ TEST_CASE("a run's results are left alone rather than stored as market state", m
 
 TEST_CASE("a market-state file with no heading stops the run's state", market_state_tags) {
     const auto outcome =
-        read_market_state({market_state_file{.name = "rawcube.csv", .body = ""}}, the_run());
+        read_market_state({market_state_file{.name = "stress_scenarios.csv", .body = ""}}, the_run());
 
     REQUIRE_FALSE(outcome.refusals.empty());
-    CHECK(outcome.refusals.front().find("rawcube") != std::string::npos);
+    CHECK(outcome.refusals.front().find("stress_scenarios") != std::string::npos);
     CHECK(outcome.payloads.empty());
 }
 
@@ -132,9 +132,9 @@ TEST_CASE("each result of a run keeps its own file of the same name", market_sta
     const auto first = boost::uuids::random_generator()();
     const auto second = boost::uuids::random_generator()();
     const auto outcome = read_market_state(
-        {market_state_file{.result_id = first, .name = "netcube.csv", .body = two_date_cube_file()},
+        {market_state_file{.result_id = first, .name = "stress_scenarios.csv", .body = two_date_cube_file()},
          market_state_file{
-             .result_id = second, .name = "netcube.csv", .body = two_date_cube_file()}},
+             .result_id = second, .name = "stress_scenarios.csv", .body = two_date_cube_file()}},
         the_run());
 
     REQUIRE(outcome.refusals.empty());
@@ -147,9 +147,9 @@ TEST_CASE("a result that states the same file twice is refused", market_state_ta
     const auto result = boost::uuids::random_generator()();
     const auto outcome = read_market_state(
         {market_state_file{
-             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()},
+             .result_id = result, .name = "stress_scenarios.csv", .body = two_date_cube_file()},
          market_state_file{
-             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()}},
+             .result_id = result, .name = "stress_scenarios.csv", .body = two_date_cube_file()}},
         the_run());
 
     REQUIRE(outcome.refusals.size() == 1);

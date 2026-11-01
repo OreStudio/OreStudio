@@ -96,9 +96,9 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
         }
     }
 
-    CHECK(metrics == 50);
+    CHECK(metrics == 54);
     CHECK(cashflows == 3);
-    CHECK(payloads == 7);
+    CHECK(payloads == 3);
 }
 
 TEST_CASE("the checked-in corpus reads whole with the reader each family states", gate_tags) {

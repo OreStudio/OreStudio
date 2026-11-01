@@ -127,16 +127,12 @@ bool pattern_matches(std::string_view pattern, std::string_view file_name) {
 }
 
 bool is_market_state(const output_family& family) {
-    // The families the store keeps as one payload, stated once. A family of
-    // figures about a trade is a result and belongs to the run's result tables;
-    // these state what the run read, and a row for each value would be millions.
-    static const std::vector<std::string> codes = {"rawcube",
-                                                   "netcube",
-                                                   "stress_scenarios",
-                                                   "scenariostatistics",
-                                                   "todaysmarketcalibration",
-                                                   "scenario",
-                                                   "scenario_fullSurface"};
+    // The families that state the market the run read rather than a figure the
+    // run produced, stated once. The cubes and the sensitivity scenarios state a
+    // trade's or a netting set's value under a shift or a sample, so they are
+    // results and belong to the run's result tables.
+    static const std::vector<std::string> codes = {
+        "stress_scenarios", "scenariostatistics", "todaysmarketcalibration"};
     return std::ranges::find(codes, family.code) != codes.end();
 }
 

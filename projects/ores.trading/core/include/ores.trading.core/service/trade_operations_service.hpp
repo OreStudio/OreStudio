@@ -83,7 +83,8 @@ public:
      * live without one. A trade that is not a draft, or that moved since the
      * caller read it, is answered with a conflict and writes nothing.
      */
-    messaging::execute_trade_response execute_trade(const messaging::execute_trade_request& request);
+    messaging::execute_trade_response
+    execute_trade(const messaging::execute_trade_request& request);
 
     /**
      * @brief Completes a structure: its anchor, its legs, and each leg executed,
@@ -120,12 +121,11 @@ private:
      *
      * @return The request raised, when the trade started waiting on Operations.
      */
-    std::optional<raised_authorisation>
-    execute_within(context ctx,
-                   const boost::uuids::uuid& trade_id,
-                   const std::string& change_reason_code,
-                   const std::string& change_commentary,
-                   boost::uuids::uuid* activity_id = nullptr);
+    std::optional<raised_authorisation> execute_within(context ctx,
+                                                       const boost::uuids::uuid& trade_id,
+                                                       const std::string& change_reason_code,
+                                                       const std::string& change_commentary,
+                                                       boost::uuids::uuid* activity_id = nullptr);
 
     context ctx_;
     const book_status_port* books_;

@@ -34,10 +34,10 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <vector>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 using namespace ores::http::net;
 using namespace ores::http::domain;
@@ -483,8 +483,10 @@ private:
  */
 class streamed_waiting_source final : public awaitable_body_source {
 public:
-    streamed_waiting_source(std::vector<std::string> pieces, std::chrono::milliseconds wait,
-                            bool states_length = true, bool fail_after_first = false)
+    streamed_waiting_source(std::vector<std::string> pieces,
+                            std::chrono::milliseconds wait,
+                            bool states_length = true,
+                            bool fail_after_first = false)
         : pieces_(std::move(pieces))
         , wait_(wait)
         , states_length_(states_length)
@@ -1169,8 +1171,7 @@ TEST_CASE("a_source_that_fails_mid_body_closes_the_connection", "[http_response_
     REQUIRE(!answered.has_value());
 }
 
-TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length",
-          "[http_response_stream]") {
+TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length", "[http_response_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a response body is written from a source that waits";
 
@@ -1181,19 +1182,19 @@ TEST_CASE("an_awaitable_source_writes_its_body_and_states_its_length",
 
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->get("/slow")
-            .summary("Answer from a source that waits")
-            .auth_optional()
-            .handler([](const http_request&) -> asio::awaitable<http_response> {
-                http_response resp;
-                resp.status = http_status::ok;
-                resp.content_type = "text/plain";
-                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
-                    std::vector<std::string>{"alpha", "beta"}, std::chrono::milliseconds(5));
-                co_return resp;
-            })
-            .build());
+    router->add_route(router->get("/slow")
+                          .summary("Answer from a source that waits")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              http_response resp;
+                              resp.status = http_status::ok;
+                              resp.content_type = "text/plain";
+                              resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                                  std::vector<std::string>{"alpha", "beta"},
+                                  std::chrono::milliseconds(5));
+                              co_return resp;
+                          })
+                          .build());
 
     const auto answered = fetch_streamed(fixture.port(), "/slow", std::chrono::seconds(5));
 
@@ -1251,31 +1252,29 @@ TEST_CASE("a_source_that_waits_does_not_hold_another_connection", "[http_respons
 
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->get("/waiting")
-            .summary("Answer after a wait")
-            .auth_optional()
-            .handler([](const http_request&) -> asio::awaitable<http_response> {
-                http_response resp;
-                resp.status = http_status::ok;
-                resp.content_type = "text/plain";
-                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
-                    std::vector<std::string>{"late"}, std::chrono::milliseconds(400));
-                co_return resp;
-            })
-            .build());
-    router->add_route(
-        router->get("/prompt")
-            .summary("Answer at once")
-            .auth_optional()
-            .handler([](const http_request&) -> asio::awaitable<http_response> {
-                http_response resp;
-                resp.status = http_status::ok;
-                resp.content_type = "text/plain";
-                resp.body = "prompt";
-                co_return resp;
-            })
-            .build());
+    router->add_route(router->get("/waiting")
+                          .summary("Answer after a wait")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              http_response resp;
+                              resp.status = http_status::ok;
+                              resp.content_type = "text/plain";
+                              resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                                  std::vector<std::string>{"late"}, std::chrono::milliseconds(400));
+                              co_return resp;
+                          })
+                          .build());
+    router->add_route(router->get("/prompt")
+                          .summary("Answer at once")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              http_response resp;
+                              resp.status = http_status::ok;
+                              resp.content_type = "text/plain";
+                              resp.body = "prompt";
+                              co_return resp;
+                          })
+                          .build());
 
     std::atomic<bool> waiting_done{false};
     std::atomic<long long> waiting_finished_ms{-1};
@@ -1319,20 +1318,21 @@ TEST_CASE("an_awaitable_source_that_fails_mid_body_closes_the_connection",
 
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->get("/broken")
-            .summary("Answer from a source that cannot finish")
-            .auth_optional()
-            .handler([](const http_request&) -> asio::awaitable<http_response> {
-                http_response resp;
-                resp.status = http_status::ok;
-                resp.content_type = "text/plain";
-                resp.body_awaitable = std::make_shared<streamed_waiting_source>(
-                    std::vector<std::string>{"first", "second"},
-                    std::chrono::milliseconds(1), true, true);
-                co_return resp;
-            })
-            .build());
+    router->add_route(router->get("/broken")
+                          .summary("Answer from a source that cannot finish")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              http_response resp;
+                              resp.status = http_status::ok;
+                              resp.content_type = "text/plain";
+                              resp.body_awaitable = std::make_shared<streamed_waiting_source>(
+                                  std::vector<std::string>{"first", "second"},
+                                  std::chrono::milliseconds(1),
+                                  true,
+                                  true);
+                              co_return resp;
+                          })
+                          .build());
 
     const auto answered = fetch_streamed(fixture.port(), "/broken", std::chrono::seconds(5));
 

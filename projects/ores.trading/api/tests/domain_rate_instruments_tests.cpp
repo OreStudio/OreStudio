@@ -72,8 +72,7 @@ rate_common_terms make_inflation_common() {
     auto common = make_rate_common();
     // A swap matures after it starts, so the fixed level's date cannot be its
     // own start date.
-    common.maturity_date = std::chrono::year{2032} / std::chrono::month{3} /
-                           std::chrono::day{15};
+    common.maturity_date = std::chrono::year{2032} / std::chrono::month{3} / std::chrono::day{15};
     common.floating.leg_type_code = "CPI";
     common.floating.floating_index_code = "UKRPIX";
     common.floating.payment_frequency_code = "Annual";
@@ -217,9 +216,8 @@ TEST_CASE("an_inflation_swap_states_its_index_on_a_cpi_leg", "[domain]") {
     const auto built = construct_rate_inflation_swap(make_inflation_swap());
 
     REQUIRE(built.legs.size() == 2u);
-    const auto cpi = std::ranges::find_if(built.legs, [](const auto& leg) {
-        return leg.leg_type_code == "CPI";
-    });
+    const auto cpi = std::ranges::find_if(
+        built.legs, [](const auto& leg) { return leg.leg_type_code == "CPI"; });
     REQUIRE(cpi != built.legs.end());
     /*
      * The leg states no benchmark index: the column references the floating
@@ -263,8 +261,8 @@ TEST_CASE("an_inflation_swap_refuses_a_trade_it_cannot_state", "[domain]") {
 
     auto inverted = make_inflation_swap();
     inverted.common.start_date = a_rate_date();
-    inverted.common.maturity_date = std::chrono::year_month_day{
-        std::chrono::sys_days{a_rate_date()} - std::chrono::days{1}};
+    inverted.common.maturity_date =
+        std::chrono::year_month_day{std::chrono::sys_days{a_rate_date()} - std::chrono::days{1}};
     CHECK_THROWS_AS(construct_rate_inflation_swap(inverted), rate_product_error);
 
     auto floating_leg = make_inflation_swap();

@@ -48,8 +48,7 @@ std::string label_instant(const std::chrono::system_clock::time_point& timepoint
 
 /// The date of the instant, in the shape a label states it.
 std::string label_date(const std::chrono::system_clock::time_point& timepoint) {
-    const std::chrono::year_month_day date(
-        std::chrono::floor<std::chrono::days>(timepoint));
+    const std::chrono::year_month_day date(std::chrono::floor<std::chrono::days>(timepoint));
     return ores::platform::time::datetime::to_iso8601_date(date);
 }
 
@@ -68,9 +67,7 @@ cut_state derive_state(const domain::cut& cut, int open_gap_count) {
     return cut.requires_authorisation ? cut_state::authorised : cut_state::in_use;
 }
 
-cut_state derive_state(const domain::cut& cut,
-                       int open_gap_count,
-                       bool later_cut_holds_its_place) {
+cut_state derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_its_place) {
     const auto state = derive_state(cut, open_gap_count);
     if (later_cut_holds_its_place && is_usable(state))
         return cut_state::superseded;
@@ -92,35 +89,35 @@ bool later_cut_holds_its_place(const domain::cut& cut, const std::vector<domain:
 
 bool is_usable(cut_state state) {
     switch (state) {
-    case cut_state::in_use:
-    case cut_state::authorised:
-    case cut_state::superseded:
-        return true;
-    case cut_state::draft:
-    case cut_state::incomplete:
-    case cut_state::taken:
-    case cut_state::refused:
-        return false;
+        case cut_state::in_use:
+        case cut_state::authorised:
+        case cut_state::superseded:
+            return true;
+        case cut_state::draft:
+        case cut_state::incomplete:
+        case cut_state::taken:
+        case cut_state::refused:
+            return false;
     }
     return false;
 }
 
 std::string_view to_string(cut_state state) {
     switch (state) {
-    case cut_state::draft:
-        return "draft";
-    case cut_state::incomplete:
-        return "incomplete";
-    case cut_state::taken:
-        return "taken";
-    case cut_state::in_use:
-        return "in_use";
-    case cut_state::authorised:
-        return "authorised";
-    case cut_state::refused:
-        return "refused";
-    case cut_state::superseded:
-        return "superseded";
+        case cut_state::draft:
+            return "draft";
+        case cut_state::incomplete:
+            return "incomplete";
+        case cut_state::taken:
+            return "taken";
+        case cut_state::in_use:
+            return "in_use";
+        case cut_state::authorised:
+            return "authorised";
+        case cut_state::refused:
+            return "refused";
+        case cut_state::superseded:
+            return "superseded";
     }
     return "unknown";
 }

@@ -32,16 +32,16 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
-#include "ores.trading.core/repository/structure_member_repository.hpp"
-#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
-#include "ores.trading.core/service/structure_service.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
+#include "ores.trading.core/service/structure_service.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -297,8 +297,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     if (!books_a_draft && !request.draft_reason_code.empty()) {
         response.result.outcome = outcome::failed;
         response.result.code = "draft_reason_on_live_trade";
-        response.result.message =
-            "A trade that goes live when it is booked waits on nothing, so it states no draft reason.";
+        response.result.message = "A trade that goes live when it is booked waits on nothing, so "
+                                  "it states no draft reason.";
         return response;
     }
     anchor.draft_reason_code = books_a_draft ? request.draft_reason_code : std::string{};
@@ -325,12 +325,12 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     return response;
 }
 
-std::optional<raised_authorisation> trade_operations_service::execute_within(
-    context ctx,
-    const boost::uuids::uuid& trade_id,
-    const std::string& change_reason_code,
-    const std::string& change_commentary,
-    boost::uuids::uuid* activity_id) {
+std::optional<raised_authorisation>
+trade_operations_service::execute_within(context ctx,
+                                         const boost::uuids::uuid& trade_id,
+                                         const std::string& change_reason_code,
+                                         const std::string& change_commentary,
+                                         boost::uuids::uuid* activity_id) {
     using ores::service::messaging::stamp;
     using ores::utility::domain::precondition;
     using ores::utility::domain::precondition_kind;
@@ -409,7 +409,8 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     if (trade.booking_nature != domain::booking_nature::actual) {
         response.result.outcome = outcome::conflict;
         response.result.code = "not_actual";
-        response.result.message = "Trade " + id + " is not an actual trade, so it executes nothing.";
+        response.result.message =
+            "Trade " + id + " is not an actual trade, so it executes nothing.";
         return response;
     }
 
@@ -438,8 +439,8 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     }
 
     auto activity_id = boost::uuids::uuid{};
-    const auto raised = execute_within(ctx, request.trade_id, request.change_reason_code,
-                                       request.change_commentary, &activity_id);
+    const auto raised = execute_within(
+        ctx, request.trade_id, request.change_reason_code, request.change_commentary, &activity_id);
 
     uow.commit();
 
@@ -468,8 +469,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
     // The count is the caller's claim about the list. A truncated list is the
     // failure this checks for: a structure completed with a leg missing is
     // worse than one that was not completed.
-    if (request.leg_count <= 0 ||
-        static_cast<int>(request.legs.size()) != request.leg_count) {
+    if (request.leg_count <= 0 || static_cast<int>(request.legs.size()) != request.leg_count) {
         response.result.outcome = outcome::failed;
         response.result.code = "leg_count_mismatch";
         response.result.message = "A completion states " + std::to_string(request.leg_count) +
@@ -514,8 +514,8 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         if (held.front().booking_nature != domain::booking_nature::actual) {
             response.result.outcome = outcome::conflict;
             response.result.code = "not_actual";
-            response.result.message = "Trade " + leg_id +
-                                      " is not an actual trade, so it completes no structure.";
+            response.result.message =
+                "Trade " + leg_id + " is not an actual trade, so it completes no structure.";
             return response;
         }
         const auto state = states.read_latest(ctx, leg_id);
@@ -534,7 +534,8 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         if (draft.empty() || draft.front() != "true") {
             response.result.outcome = outcome::conflict;
             response.result.code = "not_draft";
-            response.result.message = "Trade " + leg_id + " is not a draft, so it completes nothing.";
+            response.result.message =
+                "Trade " + leg_id + " is not a draft, so it completes nothing.";
             return response;
         }
         if (!members.read_latest(ctx, leg_id).empty()) {
@@ -577,8 +578,8 @@ trade_operations_service::complete_structure(const messaging::complete_structure
     // structure and the structure is never made of drafts.
     std::vector<raised_authorisation> raised;
     for (const auto& leg : request.legs) {
-        auto one = execute_within(ctx, leg.trade_id, request.change_reason_code,
-                                  request.change_commentary);
+        auto one = execute_within(
+            ctx, leg.trade_id, request.change_reason_code, request.change_commentary);
         if (one)
             raised.push_back(std::move(*one));
     }
@@ -589,9 +590,9 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         try {
             operational_authorisation_service(ctx_).announce(one);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "A leg of structure " << structure_id
-                                      << " was completed but its deciders were not told: "
-                                      << e.what();
+            BOOST_LOG_SEV(lg(), warn)
+                << "A leg of structure " << structure_id
+                << " was completed but its deciders were not told: " << e.what();
         }
     }
 

@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -49,19 +52,15 @@
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/fx_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
-#include "ores.trading.core/repository/structure_member_repository.hpp"
-#include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.inbox.core/repository/approval_request_repository.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
@@ -541,11 +540,13 @@ TEST_CASE("a_draft_keeps_the_reason_it_states", "[service]") {
 TEST_CASE("an_actual_draft_executed_raises_one_authorisation_request", "[service]") {
     fixture f;
     const auto booked = draft(f);
-    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(booked, {}).result.outcome ==
-            outcome::ok);
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_trade(booked, {}).result.outcome ==
+        outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .execute_trade(execute(booked.anchor.id, version_of(f.ctx, booked.anchor.id)));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open)
+            .execute_trade(execute(booked.anchor.id, version_of(f.ctx, booked.anchor.id)));
     REQUIRE(response.result.outcome == outcome::ok);
 
     const auto raised = requests_for(f.ctx, booked.anchor.id);
@@ -636,8 +637,9 @@ std::vector<boost::uuids::uuid> two_drafts(fixture& f) {
     std::vector<boost::uuids::uuid> ids;
     for (int i = 0; i < 2; ++i) {
         const auto req = draft(f);
-        REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
-                outcome::ok);
+        REQUIRE(
+            trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
+            outcome::ok);
         ids.push_back(req.anchor.id);
     }
     return ids;
@@ -649,8 +651,8 @@ TEST_CASE("a_completed_structure_holds_every_leg_live_and_waiting", "[service]")
     fixture f;
     const auto legs = two_drafts(f);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .complete_structure(completion(f, legs));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).complete_structure(completion(f, legs));
     REQUIRE(response.result.outcome == outcome::ok);
     REQUIRE(response.structure_id.has_value());
     CHECK(response.structure_version >= 0);
@@ -675,8 +677,9 @@ TEST_CASE("a_second_completion_of_the_same_structure_is_already_exists", "[servi
     fixture f;
     const auto legs = two_drafts(f);
     auto req = completion(f, legs);
-    REQUIRE(trade_operations_service(f.ctx, every_book_open).complete_structure(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).complete_structure(req).result.outcome ==
+        outcome::ok);
 
     // The same structure id, against legs that are no longer drafts: the
     // structure's own existence is what the answer names.
@@ -724,8 +727,8 @@ TEST_CASE("a_completion_with_a_leg_that_is_not_a_draft_writes_nothing", "[servic
                                 .execute_trade(execute(legs[0], version_of(f.ctx, legs[0])));
     REQUIRE(execute_ok.result.outcome == outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .complete_structure(completion(f, legs));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).complete_structure(completion(f, legs));
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "not_draft");
 
@@ -747,11 +750,13 @@ TEST_CASE("a_completion_with_a_leg_that_is_not_a_draft_writes_nothing", "[servic
 TEST_CASE("an_execution_of_a_trade_that_moved_since_it_was_read_is_refused", "[service]") {
     fixture f;
     const auto booked = draft(f);
-    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(booked, {}).result.outcome ==
-            outcome::ok);
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_trade(booked, {}).result.outcome ==
+        outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .execute_trade(execute(booked.anchor.id, version_of(f.ctx, booked.anchor.id) + 7));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open)
+            .execute_trade(execute(booked.anchor.id, version_of(f.ctx, booked.anchor.id) + 7));
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "version_conflict");
     CHECK(requests_for(f.ctx, booked.anchor.id).empty());
@@ -764,8 +769,9 @@ TEST_CASE("a_trade_that_is_not_a_draft_cannot_be_executed", "[service]") {
     REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
             outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .execute_trade(execute(req.anchor.id, version_of(f.ctx, req.anchor.id)));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open)
+            .execute_trade(execute(req.anchor.id, version_of(f.ctx, req.anchor.id)));
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "not_draft");
 }

@@ -130,10 +130,9 @@ struct cut_record_view {
  *
  * @return the window, or the sentence that refuses the month.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT
-std::expected<std::pair<std::chrono::system_clock::time_point,
-                        std::chrono::system_clock::time_point>,
-              std::string>
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::expected<
+    std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>,
+    std::string>
 cut_window_of(const std::string& month);
 
 /**

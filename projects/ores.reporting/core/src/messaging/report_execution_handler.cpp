@@ -1008,8 +1008,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                           << name;
             }
             BOOST_LOG_SEV(lg(), info)
-                << "Read " << read.files_read.size() << " output file(s) of "
-                << "result " << result_id << ": " << read.metrics.size() << " metric(s), "
+                << "Read " << read.files_read.size() << " output file(s) of " << "result "
+                << result_id << ": " << read.metrics.size() << " metric(s), "
                 << read.cashflows.size() << " cashflow figure(s)";
             output.metrics.insert(output.metrics.end(),
                                   std::make_move_iterator(read.metrics.begin()),

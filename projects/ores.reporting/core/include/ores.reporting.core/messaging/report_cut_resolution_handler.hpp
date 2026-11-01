@@ -127,8 +127,8 @@ inline resolve_cut_response apply_cut_resolution(service::report_definition_serv
     }
 
     service::cut_resolution_context resolution;
-    resolution.covered_date = ores::platform::time::datetime::from_iso8601_utc(
-        request.covered_date + "T00:00:00Z");
+    resolution.covered_date =
+        ores::platform::time::datetime::from_iso8601_utc(request.covered_date + "T00:00:00Z");
     resolution.scope_code = request.scope_code;
     resolution.business_centre_code = request.business_centre_code;
     resolution.party_id = ctx.party_id().value_or(boost::uuids::uuid{});
@@ -137,8 +137,8 @@ inline resolve_cut_response apply_cut_resolution(service::report_definition_serv
     resolution.body = body_of(request);
     resolution.preview = request.preview;
 
-    const auto resolution_result = request.preview ? cuts.preview(selection, resolution)
-                                                   : cuts.resolve(selection, resolution);
+    const auto resolution_result =
+        request.preview ? cuts.preview(selection, resolution) : cuts.resolve(selection, resolution);
 
     if (!resolution_result.ok()) {
         response.refusal = resolution_result.refusal;
@@ -208,8 +208,8 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto permission = req->preview ? "reporting::cuts:read"
-                                            : "reporting::report_instances:write";
+        const auto permission =
+            req->preview ? "reporting::cuts:read" : "reporting::report_instances:write";
         if (!has_permission(req_ctx, permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

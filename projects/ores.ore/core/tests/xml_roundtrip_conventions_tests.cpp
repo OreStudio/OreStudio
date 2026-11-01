@@ -462,7 +462,10 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][con
 
         ++files;
         const auto mapped = split_conventions(document);
-        const auto centrals = rows_of<ores::refdata::domain::convention>(mapped, "convention");
+        std::vector<ores::refdata::domain::convention> centrals;
+        for (const auto& c : rows_of<ores::refdata::domain::convention>(mapped, "convention"))
+            if (c.identity.kind_code == "TENOR_BASIS_SWAP")
+                centrals.push_back(c);
         const auto pay_receives = rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
             mapped, "tenor_basis_swap_pay_receive");
         const auto long_shorts = rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(

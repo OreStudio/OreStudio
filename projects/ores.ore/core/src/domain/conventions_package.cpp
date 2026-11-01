@@ -124,15 +124,18 @@ conventions join_conventions(const conventions_package& p) {
 
     std::vector<const conventions_family::package_row*> tenor;
     std::vector<const conventions_family::package_row*> fix_float;
+    // The central convention family is shared by every joined kind, so its rows
+    // go to each kind's join, and each join keeps the rows of its own kind.
     for (const auto& row : p.bundle.rows) {
-        if (conventions_family::is_tenor_basis_swap_family(row.family)) {
+        const bool is_tenor = conventions_family::is_tenor_basis_swap_family(row.family);
+        const bool is_fix_float =
+            conventions_family::is_cross_currency_fix_float_family(row.family);
+        if (is_tenor)
             tenor.push_back(&row);
-            continue;
-        }
-        if (conventions_family::is_cross_currency_fix_float_family(row.family)) {
+        if (is_fix_float)
             fix_float.push_back(&row);
+        if (is_tenor || is_fix_float)
             continue;
-        }
 
         const auto codec =
             std::ranges::find(conventions_family::family_codecs, row.family, &family_codec::family);

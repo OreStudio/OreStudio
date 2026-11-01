@@ -85,27 +85,38 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
         CHECK(rows_of("zero_inflation_index") == count(document, "ZeroInflationIndex"));
         CHECK(rows_of("tenor_basis_two_swap") == count(document, "TenorBasisTwoSwap"));
 
-        // The one document element that is three families.
-        CHECK(rows_of("convention") == count(document, "TenorBasisSwap"));
+        // The two document elements that are a central row and its parts. The
+        // central convention family holds the central row of both.
+        CHECK(rows_of("convention") ==
+              count(document, "TenorBasisSwap") + count(document, "CrossCurrencyFixFloat"));
+        CHECK(rows_of("cross_currency_fix_float_swap_terms") ==
+              count(document, "CrossCurrencyFixFloat"));
+        CHECK(rows_of("cross_currency_fix_float_fixed_leg") ==
+              count(document, "CrossCurrencyFixFloat"));
+        CHECK(rows_of("cross_currency_fix_float_float_leg") ==
+              count(document, "CrossCurrencyFixFloat"));
 
         // Every other family packs one row per element, so the rows outside
-        // the three tenor basis swap families equal all the elements.
+        // the central and part families equal all the other elements.
         const std::size_t elements =
             count(document, "AverageOIS") + count(document, "BMABasisSwap") +
             count(document, "BondYield") + count(document, "CDS") +
             count(document, "CmsSpreadOption") + count(document, "CommodityForward") +
             count(document, "CommodityFuture") + count(document, "CrossCurrencyBasis") +
-            count(document, "CrossCurrencyFixFloat") + count(document, "Deposit") +
+            count(document, "Deposit") +
             count(document, "FRA") + count(document, "Future") + count(document, "FxOption") +
             count(document, "IborIndex") + count(document, "InflationSwap") +
             count(document, "IntradayPowerLoad") + count(document, "OIS") +
             count(document, "OvernightIndex") + count(document, "Swap") +
             count(document, "SwapIndex") + count(document, "TenorBasisTwoSwap") +
             count(document, "Zero") + count(document, "ZeroInflationIndex");
-        const std::size_t outside_tenor_basis_swap =
+        const std::size_t outside_central_and_parts =
             package.bundle.rows.size() - rows_of("convention") -
-            rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short");
-        CHECK(outside_tenor_basis_swap == elements);
+            rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short") -
+            rows_of("cross_currency_fix_float_swap_terms") -
+            rows_of("cross_currency_fix_float_fixed_leg") -
+            rows_of("cross_currency_fix_float_float_leg");
+        CHECK(outside_central_and_parts == elements);
         ++checked;
     }
 

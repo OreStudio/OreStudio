@@ -167,9 +167,6 @@ export interface GetTelemetryLogsResponse {
 
 /**
  * @brief A single log entry for the fire-and-forget publish protocol.
- *
- * It uses primitive types only, to avoid rfl serialisation issues with
- * boost::uuids::uuid and std::chrono::time_point.
  */
 export interface PublishLogEntryItem {
     /**

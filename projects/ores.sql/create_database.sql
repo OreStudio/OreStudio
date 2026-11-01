@@ -81,6 +81,9 @@ grant pg_read_all_stats to :ddl_user;
 -- Install per-database extensions
 \i setup_extensions.sql
 
+-- The query statistics, read as monitoring.pg_stat_statements.
+grant usage on schema monitoring to :ddl_user;
+
 -- Grant schema permissions to appropriate roles
 grant usage on schema public to :owner_role, :rw_role, :ro_role, :service_role;
 grant create on schema public to :owner_role;

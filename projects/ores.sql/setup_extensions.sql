@@ -137,11 +137,15 @@ end $$;
 
 -- pg_stat_statements: Query statistics (OPTIONAL)
 -- Its views fail on use when the library is not preloaded, so it is created
--- only when its GUC, registered by the preloaded library, exists.
+-- only when its GUC, registered by the preloaded library, exists. It lives in
+-- its own schema: its views belong to the superuser, and the grants the DDL
+-- user makes on every table in public would warn on each of them.
+create schema if not exists monitoring;
+
 do $$
 begin
     if current_setting('pg_stat_statements.max', true) is not null then
-        create extension if not exists pg_stat_statements;
+        create extension if not exists pg_stat_statements schema monitoring;
         raise notice 'Installed: pg_stat_statements';
     else
         raise notice 'pg_stat_statements: not in shared_preload_libraries — query statistics are off';

@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/retire-the-vintage-path
-#+pr:
+#+pr: 4329
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4329][#4329]] | [synthetic] Retire the vintage path and make fixings the default |
 
 * Review
 

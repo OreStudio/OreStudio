@@ -57,6 +57,7 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
                              in.config,
                              in.components,
                              in.fixing_items,
+                             in.policy,
                              ctx.scheduler,
                              in.adapter,
                              ctx.clock.get());

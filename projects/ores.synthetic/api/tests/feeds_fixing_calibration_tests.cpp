@@ -119,3 +119,132 @@ TEST_CASE("a_mixture_that_cannot_be_scaled_is_an_error", tags) {
     CHECK_FALSE(scaled_stdevs({{0.0, 0.001, 1.0}}, 0.01, 0).has_value());
     CHECK_FALSE(scaled_stdevs({{0.01, 0.001, 0.5}, {-0.01, 0.001, 0.5}}, 0.000001, 60).has_value());
 }
+
+TEST_CASE("a policy derives the items in provider order, direct before inverted", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/USD?type=fixing&index=fx&source=ECB&ccy=EUR",
+         .provider_code = "ecb",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=BOC&ccy=USD",
+         .provider_code = "boc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    calibration_policy policy;
+    policy.provider_order = {"ecb", "imf"};
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 3);
+    CHECK(items[0].provider_code == "ecb");
+    CHECK(items[0].item == "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD");
+    CHECK(items[1].provider_code == "ecb");
+    CHECK(items[1].item == "oresmd://fx/USD?type=fixing&index=fx&source=ECB&ccy=EUR");
+    CHECK(items[2].provider_code == "imf");
+    CHECK(items[0].rank == 1);
+    CHECK(items[1].rank == 2);
+    CHECK(items[2].rank == 3);
+    CHECK(items[0].policy == "latest_on_or_before_clock");
+}
+
+TEST_CASE("an empty provider order keeps every provider, ordered by code", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=BOC&ccy=USD",
+         .provider_code = "boc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    const calibration_policy policy;
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 3);
+    CHECK(items[0].provider_code == "boc");
+    CHECK(items[1].provider_code == "ecb");
+    CHECK(items[2].provider_code == "imf");
+}
+
+TEST_CASE("a policy that forbids an inverse leaves the reversed item out", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = imf_usd_eur,
+         .provider_code = "imf",
+         .base_currency = "USD",
+         .quote_currency = "EUR"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+    calibration_policy policy;
+    policy.allow_inverse = false;
+    policy.window_days = 30;
+
+    const auto items = derive_fixing_items(policy, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].provider_code == "ecb");
+    CHECK(items[0].window_days == 30);
+}
+
+TEST_CASE("a candidate of another pair is left out", tags) {
+    const std::vector<calibration_candidate> candidates = {
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=GBP",
+         .provider_code = "ecb",
+         .base_currency = "EUR",
+         .quote_currency = "GBP"},
+    };
+
+    const auto items = derive_fixing_items(calibration_policy{}, "EUR", "USD", candidates);
+
+    CHECK(items.empty());
+}
+
+TEST_CASE("an fx fixing names its base and quote currencies", tags) {
+    const auto pair = pair_of_item(ecb_eur_usd);
+    REQUIRE(pair.has_value());
+    CHECK(pair->first == "EUR");
+    CHECK(pair->second == "USD");
+}
+
+TEST_CASE("an item that is not an fx fixing names no pair", tags) {
+    CHECK_FALSE(pair_of_item("oresmd://fx/EUR?type=spot&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("oresmd://ir/EUR?type=fixing&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("").has_value());
+}
+
+TEST_CASE("an empty provider order breaks ties by provider code, not by item", tags) {
+    // The item names sort the other way round from the provider codes.
+    const std::vector<calibration_candidate> candidates = {
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=AAA&ccy=USD",
+         .provider_code = "zed",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ZZZ&ccy=USD",
+         .provider_code = "abc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+
+    const auto items = derive_fixing_items(calibration_policy{}, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].provider_code == "abc");
+    CHECK(items[1].provider_code == "zed");
+}

@@ -299,3 +299,182 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The feeds that run, in source name order. */
 #+end_src
 
+
+** calibration_policy_summary
+#+begin_src cpp :name comment
+/**
+ * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
+ */
+#+end_src
+
+*** from_policy_row
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the class has a policy row; false when it calibrates on the defaults. */
+#+end_src
+
+*** window_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many calendar days of fixings measure the spread. */
+#+end_src
+
+*** allow_inverse
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when an item that quotes the pair the other way round is read as one over it. */
+#+end_src
+
+*** fallback_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
+#+end_src
+
+*** provider_order
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/** @brief The accepted providers, first preferred. Empty means every provider, by code. */
+#+end_src
+
+** calibrated_feed
+#+begin_src cpp :name comment
+/**
+ * @brief How one feed of the class resolved: the item it starts from, or its fallback or
+ * refusal, and the exceptions it states against the policy.
+ */
+#+end_src
+
+*** config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's config id. */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The source name the feed publishes under. */
+#+end_src
+
+*** base_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The base currency of the feed's pair. */
+#+end_src
+
+*** quote_currency_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The quote currency of the feed's pair. */
+#+end_src
+
+*** explicit_items
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the feed names its own items instead of deriving them from the policy. */
+#+end_src
+
+*** window_days_override
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief The feed's own window, when it overrides the policy's. */
+#+end_src
+
+*** refused
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when no candidate has a fixing and the policy refuses to start the feed. */
+#+end_src
+
+*** start
+:PROPERTIES:
+:cpp_type: feed_start
+:END:
+#+begin_src cpp :name comment
+/** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+#+end_src
+
+** calibrate_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.calibrate_feeds
+:response: calibrate_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Resolve every feed of one asset class under its policy, without starting any.
+ *
+ * Every feed of the class is resolved; no subset is selected.
+ */
+#+end_src
+
+*** asset_class_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The asset class to calibrate, as its refdata code. */
+#+end_src
+
+** calibrate_response
+#+begin_src cpp :name comment
+/**
+ * @brief The policy the class calibrated under and the outcome of each of its feeds.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** policy
+:PROPERTIES:
+:cpp_type: calibration_policy_summary
+:END:
+#+begin_src cpp :name comment
+/** @brief The policy the class calibrated under. */
+#+end_src
+
+*** feeds
+:PROPERTIES:
+:cpp_type: std::vector<calibrated_feed>
+:END:
+#+begin_src cpp :name comment
+/** @brief Every feed of the class, in source name order. */
+#+end_src

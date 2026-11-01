@@ -1943,3 +1943,11 @@ tangled into the runnable script library
 * Swaption Proxy Configs
 
 - [[id:9F3F432E-1A47-59F3-B653-613221351E95][How do I run the swaption_proxy_configs commands from the shell?]]
+
+* Calibration Fallbacks
+
+- [[id:5D77EC26-5A8E-543D-962C-9A162B924453][How do I run the calibration_fallbacks commands from the shell?]]
+
+* Draft Reasons
+
+- [[id:FBE43389-1524-5439-8300-3DD44668FEA9][How do I run the draft_reasons commands from the shell?]]

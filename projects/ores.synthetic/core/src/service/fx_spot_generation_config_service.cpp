@@ -110,6 +110,7 @@ fx_spot_generation_config_to_domain(const messaging::fx_spot_generation_config_w
     v.source_name = write.source_name;
     v.oresmd_uri = write.oresmd_uri;
     v.price_source = write.price_source;
+    v.calibration_window_days = write.calibration_window_days;
     v.gmm_initial_price = write.gmm_initial_price;
     v.ticks_per_hour = write.ticks_per_hour;
     v.process_type = write.process_type;

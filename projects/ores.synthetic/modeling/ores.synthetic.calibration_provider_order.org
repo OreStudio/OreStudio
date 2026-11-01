@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 72BA2E46-94E9-4149-9C7C-66475AA34FE7
+:END:
+#+title: ores.synthetic.calibration_provider_order
+#+description: One provider in a calibration policy's order, with the rank that decides which accepted provider wins.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: calibration_provider_order
+#+entity_plural: calibration_provider_orders
+#+entity_title: Calibration Provider Order
+#+brief: One provider in a calibration policy's order, with its rank.
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+One rung of a policy's provider order. The rank decides which accepted
+provider wins when several carry the pair. The provider is named by its
+market data code, so the order follows the provider catalogue rather than a
+copy of it.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:has_tenant_id: true
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** policy_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:filterable:  true
+:END:
+
+Parent =calibration_policy= this rung belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable:  true
+:END:
+
+The provider at this rank (soft FK to =provider.code=).
+
+#+begin_src cpp :name generator
+std::string("ecb")
+#+end_src
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying the row.
+
+
+** rank
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 1
+:END:
+
+One-based rank within the policy. Lower wins.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 5)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                      ores_synthetic_calibration_provider_orders_tbl
+:rls_tenant_isolation:           true
+:rls_own_or_system_tenant_rows:  true
+:END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "rank" >= 1       |
+
+** Indexes
+
+| name  | columns                     | unique | current_only | where_extra |
+|-------+-----------------------------+--------+--------------+-------------|
+| rank  | tenant_id, policy_id, rank  | true   | true         |             |
+
+One provider per rank within a policy.
+
+* Foreign keys
+
+** policy_id
+:PROPERTIES:
+:table:         ores_synthetic_calibration_policies_tbl
+:error_message: Invalid policy_id: %. No active calibration policy found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     rank
+:END:
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| provider_code | ores_marketdata_validate_provider_fn   |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: provider_order
+:entity_plural_short:   provider_orders
+:entity_singular_words: calibration provider order
+:entity_plural_words:   calibration provider orders
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cpo
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| provider_code | Provider    |
+| rank          | Rank        |
+| modified_by   | Modified By |
+| version       | Version     |
+
+* See also
+
+- [[id:B1A831F5-8D53-4428-94F5-576A7E1C6CE3][Calibration Policy]] -- the policy this rung belongs to.

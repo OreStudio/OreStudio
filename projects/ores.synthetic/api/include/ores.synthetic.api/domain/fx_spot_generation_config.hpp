@@ -103,6 +103,14 @@ struct fx_spot_generation_config final {
     std::string price_source = "fixed";
 
     /**
+     * @brief Optional per-feed override of the class calibration window, in days. Empty means the
+     * feed follows its asset class's policy, or the 90-day default when there is no policy. It is
+     * the one per-feed exception that has nowhere else to live: a pinned item or an explicit item
+     * list is an fx_spot_fixing_item.
+     */
+    std::optional<int> calibration_window_days;
+
+    /**
      * @brief Initial spot price the generated process starts from, > 0: the price a "fixed" feed
      * starts from, and the level a "fixing" feed keeps when no item has a fixing.
      */

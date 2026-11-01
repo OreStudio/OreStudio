@@ -33,6 +33,8 @@
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
+#include "ores.synthetic.core/repository/calibration_policy_repository.hpp"
+#include "ores.synthetic.core/repository/calibration_provider_order_repository.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
@@ -51,6 +53,28 @@
 #include <utility>
 
 namespace ores::synthetic::service {
+
+std::optional<feed::calibration_policy>
+read_calibration_policy(const ores::database::context& ctx, const std::string& asset_class_code) {
+    namespace repo = ores::synthetic::repository;
+    const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto policies = repo::calibration_policy_repository{}.read_latest(sys_ctx);
+    const auto found = std::ranges::find_if(
+        policies, [&](const auto& p) { return p.asset_class_code == asset_class_code; });
+    if (found == policies.end())
+        return std::nullopt;
+
+    feed::calibration_policy out;
+    out.window_days = found->window_days;
+    out.allow_inverse = found->allow_inverse;
+    out.fallback_code = found->fallback_code;
+    auto orders = repo::calibration_provider_order_repository{}.read_latest(sys_ctx);
+    std::erase_if(orders, [&](const auto& o) { return o.policy_id != found->id; });
+    std::ranges::sort(orders, {}, &ores::synthetic::domain::calibration_provider_order::rank);
+    for (const auto& o : orders)
+        out.provider_order.push_back(o.provider_code);
+    return out;
+}
 
 namespace {
 
@@ -125,6 +149,7 @@ feed_kind make_fx_spot_kind() {
             c.enabled = fx.enabled;
             c.auto_start = fx.auto_start;
             c.folder_id = fx.folder_id;
+            c.asset_class_code = fx.asset_class_code;
             c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
             c.build_input = [ctx, fx](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 repo::gmm_component_repository comp_repo;
@@ -142,6 +167,14 @@ feed_kind make_fx_spot_kind() {
                         if (i.fx_spot_config_id == fx.id)
                             fixing_items.push_back(std::move(i));
 
+                // A config that names no items calibrates under its class policy, or the
+                // defaults when the class has none. The feed's own window overrides the
+                // policy's for the items it derives; explicit items keep their own windows.
+                auto policy = read_calibration_policy(ctx, fx.asset_class_code)
+                                  .value_or(feed::calibration_policy{});
+                if (fx.calibration_window_days)
+                    policy.window_days = *fx.calibration_window_days;
+
                 // The feed quotes the pair in the notation of the adapter's provider, so a feed
                 // started by hand publishes the same ids the demand set names.
                 std::optional<feed::adapter_target> target;
@@ -151,8 +184,12 @@ feed_kind make_fx_spot_kind() {
                         return {.input = std::nullopt, .skip_reason = written.error()};
                     target = std::move(*written);
                 }
-                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
-                            fx, std::move(components), std::move(target), std::move(fixing_items)}},
+                return {.input =
+                            feed::feed_build_input{fx_spot_feed_build_input{fx,
+                                                                            std::move(components),
+                                                                            std::move(target),
+                                                                            std::move(fixing_items),
+                                                                            std::move(policy)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

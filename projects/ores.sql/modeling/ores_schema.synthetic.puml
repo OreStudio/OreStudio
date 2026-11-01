@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 14
+Tables: 17
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,6 +41,92 @@ end note
 ' ==================== synthetic (Synthetic Data Generation) ====================
 '
 package "synthetic" #F9FBE7 {
+    entity ores_synthetic_calibration_fallbacks_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_calibration_fallbacks_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calibration Fallback Table
+    The two answers a calibration policy may give when no candidate has a usable
+    fixing: keep_fixed starts the feed from its configured fixed level and says
+    so, refuse does not start it. A policy names one of these rows; the absence of
+    a policy means keep_fixed.
+    end note
+
+    entity ores_synthetic_calibration_policies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * asset_class_code : text
+        * window_days : integer
+        * allow_inverse : boolean
+        * fallback_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_calibration_policies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calibration Policy Table
+    A policy is the class-wide answer to how a feed is calibrated: the volatility
+    window in days, whether a pair may be read the other way round as 1/x, and
+    what to do when no candidate has a usable fixing. The provider order lives in
+    calibration_provider_order rows.
+    A policy row is optional. When no row exists for a class, the defaults apply:
+    providers in catalogue display order, a 90-day window, an inverse allowed and
+    the keep_fixed fallback. The system tenant owns the rows and every tenant
+    reads them.
+    end note
+
+    entity ores_synthetic_calibration_provider_orders_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * policy_id : uuid <<FK>>
+        * provider_code : text
+        * rank : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_calibration_provider_orders_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calibration Provider Order Table
+    One rung of a policy's provider order. The rank decides which accepted
+    provider wins when several carry the pair. The provider is named by its
+    market data code, so the order follows the provider catalogue rather than a
+    copy of it.
+    end note
+
     entity ores_synthetic_config_process_parameter_values_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -169,6 +255,7 @@ package "synthetic" #F9FBE7 {
         * source_name : text
         * oresmd_uri : text
         * price_source : text
+          calibration_window_days : integer
         * gmm_initial_price : double
         * ticks_per_hour : integer
         * process_type : text
@@ -623,6 +710,7 @@ package "synthetic" #F9FBE7 {
 '
 ' ==================== Relationships ====================
 '
+ores_synthetic_calibration_policies_tbl ||--o{ ores_synthetic_calibration_provider_orders_tbl : "has"
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_folders_tbl : "has"
 ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_fixing_items_tbl : "has"
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"

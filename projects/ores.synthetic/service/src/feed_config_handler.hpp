@@ -33,11 +33,14 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
+#include <variant>
 
 namespace ores::synthetic::service {
 
@@ -297,7 +300,95 @@ public:
         }
     }
 
+    void calibrate(ores::nats::message msg) {
+        using namespace ores::synthetic::messaging;
+        [[maybe_unused]] const auto cid = log_handler_entry(feed_config_handler_lg(), msg);
+
+        auto ctx_expected = authenticated_context("calibrate", msg);
+        if (!ctx_expected)
+            return;
+        const auto& req_ctx = *ctx_expected;
+
+        auto req = decode<calibrate_request>(msg);
+        if (!req || req->asset_class_code.empty()) {
+            reply(nats_,
+                  msg,
+                  calibrate_response{.success = false,
+                                     .message = "A calibration names its asset class."});
+            return;
+        }
+
+        const auto* kind = registry_.find(ores::synthetic::feed::fx_spot_feed_kind);
+        if (kind == nullptr || !has_permission(req_ctx, kind->config_permission)) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        try {
+            reply(nats_, msg, calibrate_class(req_ctx, *kind, req->asset_class_code));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, calibrate_response{.success = false, .message = client_message(e)});
+        }
+    }
+
 private:
+    // Resolves every feed of the class as a start would, and starts none. A feed that cannot be
+    // built still appears, with the reason, so the class shows every feed it holds.
+    ores::synthetic::messaging::calibrate_response
+    calibrate_class(const ores::database::context& req_ctx,
+                    const feed_kind& kind,
+                    const std::string& asset_class_code) {
+        using namespace ores::synthetic::messaging;
+        namespace feed = ores::synthetic::feed;
+
+        calibrate_response resp;
+        const auto class_policy = read_calibration_policy(req_ctx, asset_class_code);
+        const auto policy = class_policy.value_or(feed::calibration_policy{});
+        resp.policy = {.from_policy_row = class_policy.has_value(),
+                       .window_days = policy.window_days,
+                       .allow_inverse = policy.allow_inverse,
+                       .fallback_code = policy.fallback_code,
+                       .provider_order = policy.provider_order};
+
+        const ores::marketdata::domain::system_market_clock clock;
+        for (const auto& c : kind.candidates(req_ctx, {})) {
+            if (c.asset_class_code != asset_class_code)
+                continue;
+            calibrated_feed one;
+            one.config_id = c.feed_config_id;
+            one.source_name = c.source_name;
+            if (c.fx_pair) {
+                one.base_currency_code = c.fx_pair->first;
+                one.quote_currency_code = c.fx_pair->second;
+            }
+            const auto outcome = c.build_input(feed::feed_adapter{});
+            if (!outcome.input) {
+                one.start.note = outcome.skip_reason;
+                resp.feeds.push_back(std::move(one));
+                continue;
+            }
+            const auto& in = std::get<feed::fx_spot_feed_build_input>(*outcome.input);
+            one.explicit_items = !in.fixing_items.empty();
+            one.window_days_override = in.config.calibration_window_days;
+            if (in.config.price_source != "fixing") {
+                one.start.note = "The config starts from its fixed level.";
+            } else {
+                const auto resolved = feed::resolve_fx_start(
+                    auth_nats_, in.config, in.components, in.fixing_items, in.policy, &clock);
+                one.refused = resolved.refused;
+                one.start = to_wire(resolved.source);
+            }
+            resp.feeds.push_back(std::move(one));
+        }
+        std::ranges::sort(resp.feeds, {}, &calibrated_feed::source_name);
+        resp.success = true;
+        BOOST_LOG_SEV(feed_config_handler_lg(), info)
+            << "Calibrated " << resp.feeds.size() << " feed(s) of class " << asset_class_code;
+        return resp;
+    }
+
     // Auth gate shared by every verb; the per-kind permission check happens
     // after resolution, since the caller's kind is not known until the
     // config_id is resolved.

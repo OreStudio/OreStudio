@@ -1,0 +1,6 @@
+# =delete=
+#
+# GENERATED from doc/recipes/shell/calibration_fallbacks/calibration_fallback.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+calibration_fallbacks delete __none__ system.new_record generated_script

@@ -917,6 +917,11 @@ RULES = (
          BFF, RESOURCE, "simulation",
          "The times of the ticks each feed published in the window, one row per feed, a"
          " stopped feed keeping its row so the picture shows that it is silent."),
+    Rule("the calibration of an asset class",
+         ("exact", "GET /api/synthetic/calibration/:assetClass"),
+         BFF, COMPOSED, "simulation",
+         "The policy a class calibrates under and how every feed of it resolves, with the"
+         " coverage counts; nothing starts."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",

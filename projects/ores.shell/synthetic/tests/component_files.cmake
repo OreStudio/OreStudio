@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "calibration_fallback_commands_tests.cpp"
     "folder_commands_tests.cpp"
     "fx_spot_fixing_item_commands_tests.cpp"
     "fx_spot_generation_config_commands_tests.cpp"

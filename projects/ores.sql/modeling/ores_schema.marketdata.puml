@@ -646,6 +646,7 @@ package "marketdata" #E3F2FD {
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
         * family : text
         * file_name : text
         * report_definition_id : uuid <<FK>>
@@ -657,7 +658,6 @@ package "marketdata" #E3F2FD {
         * payload : text
         * payload_bytes : integer
         * content_sha256 : text
-        * source : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }

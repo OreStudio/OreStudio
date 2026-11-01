@@ -66,6 +66,7 @@ struct fx_spot_generation_config_entity {
     std::string source_name;
     std::string oresmd_uri;
     std::string price_source = "fixed";
+    std::optional<int> calibration_window_days;
     double gmm_initial_price = 0.0;
     int ticks_per_hour = 0;
     std::string process_type = "geometric";
@@ -100,6 +101,7 @@ struct fx_spot_generation_config_entity {
                query_builder::bind("source_name", &e::source_name) |
                query_builder::bind("oresmd_uri", &e::oresmd_uri) |
                query_builder::bind("price_source", &e::price_source) |
+               query_builder::bind("calibration_window_days", &e::calibration_window_days) |
                query_builder::bind("gmm_initial_price", &e::gmm_initial_price) |
                query_builder::bind("ticks_per_hour", &e::ticks_per_hour) |
                query_builder::bind("process_type", &e::process_type) |

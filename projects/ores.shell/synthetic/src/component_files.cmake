@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/commands/synthetic/calibration_fallback_commands.cpp"
     "app/commands/synthetic/folder_commands.cpp"
     "app/commands/synthetic/fx_spot_fixing_item_commands.cpp"
     "app/commands/synthetic/fx_spot_generation_config_commands.cpp"
@@ -38,6 +39,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/calibration_fallback_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/folder_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/fx_spot_fixing_item_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/synthetic/fx_spot_generation_config_commands.hpp"

@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: B1A831F5-8D53-4428-94F5-576A7E1C6CE3
+:END:
+#+title: ores.synthetic.calibration_policy
+#+description: One calibration policy per asset class: the volatility window, whether an inverse is allowed, and the fallback when no candidate has a fixing.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: calibration_policy
+#+entity_plural: calibration_policies
+#+entity_title: Calibration Policy
+#+brief: The calibration rule for one asset class: window, inverse and fallback.
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A policy is the class-wide answer to how a feed is calibrated: the volatility
+window in days, whether a pair may be read the other way round as =1/x=, and
+what to do when no candidate has a usable fixing. The provider order lives in
+=calibration_provider_order= rows.
+
+A policy row is optional. When no row exists for a class, the defaults apply:
+providers in catalogue display order, a 90-day window, an inverse allowed and
+the =keep_fixed= fallback. The system tenant owns the rows and every tenant
+reads them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:has_tenant_id: true
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** asset_class_code
+:PROPERTIES:
+:natural_key: true
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:sortable:    true
+:searchable:  true
+:END:
+
+The asset class the policy governs (soft FK to =asset_class_code.code=): =fx=
+today, with the other classes to follow. One policy per class.
+
+#+begin_src cpp :name generator
+std::string("fx")
+#+end_src
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying the policy.
+
+
+** window_days
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 90
+:END:
+
+The volatility window, in days, over which the fixing returns are measured.
+
+#+begin_src cpp :name generator
+faker::number::integer(30, 180)
+#+end_src
+
+** allow_inverse
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:END:
+
+Whether a pair may be read from an item that quotes it the other way round,
+as =1/x=.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1) == 1
+#+end_src
+
+** fallback_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "keep_fixed"
+:filterable:    true
+:END:
+
+What a calibration does when no candidate has a usable fixing (soft FK to
+=calibration_fallback.code=).
+
+#+begin_src cpp :name generator
+std::string("keep_fixed")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                      ores_synthetic_calibration_policies_tbl
+:rls_tenant_isolation:           true
+:rls_own_or_system_tenant_rows:  true
+:END:
+
+** Checks
+
+| expression                                                 |
+|------------------------------------------------------------|
+| "window_days" between 2 and 180                            |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     asset_class_code
+:END:
+
+* Insert trigger
+** Validations
+
+| column           | validation_function                         |
+|------------------+---------------------------------------------|
+| asset_class_code | ores_refdata_validate_asset_class_code_fn   |
+| fallback_code    | ores_synthetic_validate_calibration_fallback_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: policy
+:entity_plural_short:   policies
+:entity_singular_words: calibration policy
+:entity_plural_words:   calibration policies
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cp
+:END:
+
+** Table display
+
+| column           | header        |
+|------------------+---------------|
+| asset_class_code | Asset Class   |
+| window_days      | Window (days) |
+| allow_inverse    | Inverse       |
+| fallback_code    | Fallback      |
+| modified_by      | Modified By   |
+| version          | Version       |
+
+* See also
+
+- [[id:72BA2E46-94E9-4149-9C7C-66475AA34FE7][Calibration Provider Order]] -- the provider order a policy carries.
+- [[id:548D95B8-1587-47CD-8990-1947ED8BBD11][Calibration Fallback]] -- the answers a policy may name.

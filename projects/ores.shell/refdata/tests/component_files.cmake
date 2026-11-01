@@ -169,6 +169,7 @@ set(files
     "portfolio_commands_tests.cpp"
     "portfolio_right_commands_tests.cpp"
     "producer_kind_commands_tests.cpp"
+    "product_family_code_commands_tests.cpp"
     "purpose_type_commands_tests.cpp"
     "regulatory_book_type_commands_tests.cpp"
     "regulatory_corporate_sector_commands_tests.cpp"

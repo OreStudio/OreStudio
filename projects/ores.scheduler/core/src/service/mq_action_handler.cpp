@@ -20,11 +20,11 @@
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.scheduler.core/service/action_payloads.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::scheduler::service {
 
@@ -38,14 +38,6 @@ auto& lg() {
     return instance;
 }
 
-/**
- * @brief Parsed fields from the action_payload JSON.
- */
-struct mq_payload_fields {
-    std::string queue_id;
-    std::string message_type;
-    std::string payload = "{}";
-};
 
 } // anonymous namespace
 
@@ -54,15 +46,15 @@ mq_action_handler::execute(const action_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Executing MQ action for job: " << ctx.job.job_name;
     try {
         // Parse the action_payload JSON to extract required fields.
-        auto parsed = rfl::json::read<mq_payload_fields>(ctx.job.action_payload);
-        if (!parsed) {
+        mq_payload_fields fields;
+        try {
+            fields = utility::codec::object::read_json<mq_payload_fields>(ctx.job.action_payload);
+        } catch (const std::exception& e) {
             const auto msg = "Failed to parse action_payload JSON for job '" + ctx.job.job_name +
-                             "': " + parsed.error().what();
+                             "': " + e.what();
             BOOST_LOG_SEV(lg(), error) << msg;
             co_return std::unexpected(msg);
         }
-
-        const auto& fields = *parsed;
         if (fields.queue_id.empty()) {
             const auto msg =
                 std::string("action_payload missing queue_id for job '") + ctx.job.job_name + "'";

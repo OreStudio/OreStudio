@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: BD750888-6B72-48C1-AE74-DDC535705022
 :END:
 #+title: ores.scheduler.job_definition

@@ -22,6 +22,7 @@
 
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include <algorithm>
 #include <cmath>
 #include <expected>
 #include <optional>
@@ -169,6 +170,27 @@ struct mixture_component final {
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<std::vector<double>, std::string> scaled_stdevs(
     const std::vector<mixture_component>& components, double hourly_spread, int ticks_per_hour);
+
+/**
+ * @brief What a calibration changes in a stored feed: the level, when it moved, and each
+ * component's deviation, when it moved. A value within a rounding of the stored one is no change,
+ * so a calibration that runs again on the same fixings writes nothing.
+ */
+struct calibration_change final {
+    std::optional<double> level;
+    /// One entry for each stored component, in the stored order; empty when none moved.
+    std::vector<std::optional<double>> stdevs;
+
+    [[nodiscard]] bool empty() const {
+        return !level && std::ranges::none_of(stdevs, [](const auto& s) { return s.has_value(); });
+    }
+};
+
+ORES_SYNTHETIC_API_EXPORT calibration_change
+change_of(double stored_level,
+          const std::vector<double>& stored_stdevs,
+          std::optional<double> level,
+          const std::optional<std::vector<double>>& stdevs);
 
 }
 

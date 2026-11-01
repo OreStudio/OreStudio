@@ -253,12 +253,23 @@ struct calibrated_feed {
     feed_start start;
     /** @brief Every candidate the feed read, in rank order, with its outcome. */
     std::vector<candidate_outcome> candidates;
+    /** @brief True when the feed runs now, so a stored calibration applies at its next start. */
+    bool running = false;
+    /**
+     * @brief What an applied calibration did to the feed: updated, unchanged, kept, refused or
+     * failed. Empty when the calibration was not applied.
+     */
+    std::string outcome;
+    /** @brief The words of the outcome: the change written, or why nothing was written. */
+    std::string outcome_message;
 };
 
 /**
- * @brief Resolve every feed of one asset class under its policy, without starting any.
+ * @brief Resolve the feeds of one asset class under its policy, without starting any.
  *
- * Every feed of the class is resolved; no subset is selected.
+ * Every feed of the class is resolved, or the one feed the request names. An applied
+ * calibration writes the resolved level and deviations as a new version of each feed config
+ * they change, under the reason system.calibration.
  */
 struct calibrate_request {
     using response_type = struct calibrate_response;
@@ -272,6 +283,10 @@ struct calibrate_request {
     static constexpr bool requires_session = true;
     /** @brief The asset class to calibrate, as its refdata code. */
     std::string asset_class_code;
+    /** @brief The one feed config to calibrate; empty calibrates every feed of the class. */
+    std::string config_id;
+    /** @brief True to write the calibration; false only reports what it would be. */
+    bool apply = false;
 };
 
 /**

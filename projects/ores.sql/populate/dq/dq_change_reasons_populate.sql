@@ -204,6 +204,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.calibration',
+        'A calibration set a feed''s start level or its mixture from the public fixings',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (a calibration is a new version of the feed config)
+        false,  -- not for delete
+        false,  -- no commentary required
+        66      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.curve_published',
         'A curve publish applied the approved set: the record stamps who published it and when',
         'system',

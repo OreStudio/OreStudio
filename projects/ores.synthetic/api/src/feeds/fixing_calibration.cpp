@@ -190,4 +190,34 @@ derive_fixing_items(const calibration_policy& policy,
     return items;
 }
 
+namespace {
+
+bool moved(double stored, double value) {
+    return std::abs(value - stored) > 1e-9 * std::max(1.0, std::abs(stored));
+}
+
+}
+
+calibration_change change_of(double stored_level,
+                             const std::vector<double>& stored_stdevs,
+                             std::optional<double> level,
+                             const std::optional<std::vector<double>>& stdevs) {
+    calibration_change out;
+    if (level && moved(stored_level, *level))
+        out.level = level;
+    if (stdevs && stdevs->size() == stored_stdevs.size()) {
+        bool any = false;
+        std::vector<std::optional<double>> each(stored_stdevs.size());
+        for (std::size_t i = 0; i < stored_stdevs.size(); ++i) {
+            if (moved(stored_stdevs[i], (*stdevs)[i])) {
+                each[i] = (*stdevs)[i];
+                any = true;
+            }
+        }
+        if (any)
+            out.stdevs = std::move(each);
+    }
+    return out;
+}
+
 }

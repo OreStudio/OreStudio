@@ -4002,6 +4002,8 @@ const fr: SourceCatalogue = {
             tradeDate: 'Date de la transaction',
             security: 'Titre',
             notional: 'Notionnel',
+            boughtSold: 'Acheté / vendu',
+            quantity: 'Quantité',
             identifierType: "Schéma d'identifiant",
             identifier: 'Identifiant',
             identifierHint: 'Le nom que le desk donne à cette transaction.',

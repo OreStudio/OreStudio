@@ -3952,6 +3952,8 @@ export const en: SourceCatalogue = {
             tradeDate: 'Trade date',
             security: 'Security',
             notional: 'Notional',
+            boughtSold: 'Bought / sold',
+            quantity: 'Quantity',
             identifierType: 'Identifier scheme',
             identifier: 'Identifier',
             identifierHint: 'What the desk calls this trade.',

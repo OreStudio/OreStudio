@@ -22,6 +22,7 @@
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
+#include "ores.shell/app/commands/marketdata/public_terms_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -284,10 +285,11 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
                         process_setup(std::ref(out), std::ref(session), args);
                     },
                     "Set an empty installation up from a starting point: create the "
-                    "system administrator, sign in as it, and provision the first "
-                    "tenant",
+                    "system administrator, sign in as it, accept the public sources' "
+                    "terms, and provision the first tenant",
                     {"<username> <password> <email> --tenant-admin-password <pw> "
-                     "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
+                     "[--profile <code>] [--param <name=value>] [--no-accept-terms] "
+                     "[--tenant-code <c>] "
                      "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
                      "[--tenant-admin <user>] [--tenant-admin-email <email>] "
                      "[--timeout <seconds>]"});
@@ -322,8 +324,9 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
 void provision_commands::process_setup(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args, tenant_flag_specs("Default tenant for single-tenant deployment"));
+    auto specs = tenant_flag_specs("Default tenant for single-tenant deployment");
+    specs.push_back({.name = "no-accept-terms", .requires_value = false, .default_value = "false"});
+    auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -331,7 +334,7 @@ void provision_commands::process_setup(std::ostream& out,
     if (parsed->positionals.size() != 3) {
         fail(out) << "Usage: bootstrap setup <username> <password> <email> "
                      "--tenant-admin-password <pw> [--profile <code>] "
-                     "[--param <name=value>] [--tenant-* flags]"
+                     "[--param <name=value>] [--no-accept-terms] [--tenant-* flags]"
                   << std::endl;
         return;
     }
@@ -369,7 +372,7 @@ void provision_commands::process_setup(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Provisioning system: admin " << username << ", tenant "
                               << fields->code;
 
-    out << "[1/3] Creating initial admin account '" << username << "'..." << std::endl;
+    out << "[1/4] Creating initial admin account '" << username << "'..." << std::endl;
     iam::messaging::create_initial_admin_request admin_req;
     admin_req.principal = username;
     admin_req.password = password;
@@ -383,12 +386,25 @@ void provision_commands::process_setup(std::ostream& out,
     }
     out << "  Account created (ID: " << admin->account_id << ")." << std::endl;
 
-    out << "[2/3] Logging in as '" << username << "'..." << std::endl;
+    out << "[2/4] Logging in as '" << username << "'..." << std::endl;
     accounts_commands::process_login(out, session, username, password);
     if (!session.is_logged_in())
         return;
 
-    out << "[3/3] Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
+    // A new system fetches no public fixings until each source's terms are accepted, so the
+    // administrator accepts them here, through the service's one accept, unless told not to.
+    if (!parsed->flag_set("no-accept-terms")) {
+        out << "[3/4] Accepting the terms of the public sources..." << std::endl;
+        if (!public_terms_commands::accept_all(out, session))
+            out << "  Not every source was accepted; accept them later with "
+                   "'provider_terms_operations accept-all'."
+                << std::endl;
+    } else {
+        out << "[3/4] Leaving the public sources' terms for the administrator to accept."
+            << std::endl;
+    }
+
+    out << "[4/4] Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
         << "'..." << std::endl;
     const auto outcome =
         run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout);

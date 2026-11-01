@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 0D751AB7-2621-43F4-86C5-0F0AF0ABD221
+:END:
+#+title: Story: Complete a structure from a screen
+#+description: The completion operation writes a structure, its members and takes every leg live in one transaction, and nothing calls it: the grouping route writes the structure and then each member, so grouped legs stay drafts and a half-grouped deal can stand. Point the screen at the operation.
+#+type: story
+#+level: s2
+#+filetags: :trading:web:structure:sprint_29:v0:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-01                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] | STARTED | 2026-11-01 | | Replace the route's structure-then-members loop with one call to the completion, so grouping a set of trades makes one structure whose every leg is live and waiting. |
+
+* Decisions
+
+* Out of scope
+
+-

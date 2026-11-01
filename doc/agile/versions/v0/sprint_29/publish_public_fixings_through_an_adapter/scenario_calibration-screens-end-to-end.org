@@ -2,7 +2,7 @@
 :ID: CEBFDA90-F42A-4278-87A3-6305FDE59A6B
 :END:
 #+title: Test Scenario: Exercise the calibration screens end to end
-#+description: A tenant administrator opens the FX calibration list, reads the coverage, opens a feed's record and flow, and a system administrator customises the class policy.
+#+description: The system administrator opens the FX calibration list, reads the coverage, opens a feed's record and flow, and customises the class policy.
 #+type: test_scenario
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
@@ -21,7 +21,7 @@ The system must already be in this state before the tester opens the screen:
 
 - The services are rebuilt and running: =compass services status= shows 25 running, none failed.
 - The public terms are accepted for ECB, IMF and BoC, and the public sources adapter has backfilled fixings: =select count(*) from ores_marketdata_market_fixings_tbl;= is not zero. Restart =ores.marketdata.official= if it is.
-- The Acme tenant is provisioned with the FX feed configs, and the calibration tables exist in the database.
+- The system tenant holds the FX feed configs, and the calibration tables exist in the database.
 
 * Scenario Info
 
@@ -35,8 +35,10 @@ The system must already be in this state before the tester opens the screen:
 
 * Steps
 
-** Log in as the tenant administrator
-- Open http://127.0.0.1:20002 and sign in as =tenant_admin@acme_corporation= / =Secure-Password-123=, and select =Acme Corporation Plc=.
+** Log in as the system administrator
+- Open http://127.0.0.1:20002 and sign in as =super_admin= / =Secure-Password-123=.
+- Calibration is a system control: the feeds it lists belong to the system tenant,
+  and only the system administrator may change the policy.
 *** Result
 PENDING
 
@@ -63,12 +65,12 @@ PENDING
 ** Read the automatic policy
 - Go back with *← All FX feeds*, then open *The policy*.
 - With no stored policy it shows the automatic defaults: 90 days, the provider order, inverse allowed, keep the fixed level.
-- A tenant administrator cannot save changes.
+- A tenant administrator can read the same rows but cannot save changes.
 *** Result
 PENDING
 
 ** Customise and restore the policy
-- Sign in as =super_admin= / =Secure-Password-123= and open the policy screen.
+- Stay signed in as =super_admin= and open the policy screen.
 - Choose *Customise this class*, set the window to 60 days, save.
 - The list's policy line and the feeds' windows reflect the change.
 - Choose *Return to automatic* and confirm the policy line returns to the automatic defaults.

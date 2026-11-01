@@ -21,7 +21,10 @@
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <format>
+#include <map>
+#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -86,14 +89,13 @@ conventions_mapper::map_cross_currency_fix_float(const record_reader& v) {
 // parts: the swap terms' settlement fields come first, its end of month and
 // resettable flags come after the floating leg's index.
 void conventions_mapper::reverse_cross_currency_fix_float(
-    const ores::refdata::messaging::cross_currency_fix_float_convention_item& v,
-    record_writer w) {
+    const ores::refdata::messaging::cross_currency_fix_float_convention_item& v, record_writer w) {
     if (!v.convention || v.swap_terms.size() != 1 || v.fixed_leg.size() != 1 ||
         v.float_leg.size() != 1)
-        throw std::runtime_error(std::format(
-            "Cross-currency fix-float convention \"{}\" needs its central row and one "
-            "swap terms, fixed leg and float leg row each.",
-            v.convention ? v.convention->payload.name : std::string("?")));
+        throw std::runtime_error(
+            std::format("Cross-currency fix-float convention \"{}\" needs its central row and one "
+                        "swap terms, fixed leg and float leg row each.",
+                        v.convention ? v.convention->payload.name : std::string("?")));
 
     const auto& terms = v.swap_terms.front();
     const auto& fixed = v.fixed_leg.front();
@@ -161,12 +163,10 @@ void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
             floating.push_back(
                 unpack_row<refdata::domain::cross_currency_fix_float_float_leg>(*row));
         } else if (row->family == "cross_currency_fix_float_swap_terms") {
-            terms.push_back(
-                unpack_row<refdata::domain::cross_currency_fix_float_swap_terms>(*row));
+            terms.push_back(unpack_row<refdata::domain::cross_currency_fix_float_swap_terms>(*row));
         } else {
-            throw std::runtime_error(
-                std::format("Family \"{}\" is not a cross-currency fix-float family.",
-                            row->family));
+            throw std::runtime_error(std::format(
+                "Family \"{}\" is not a cross-currency fix-float family.", row->family));
         }
     }
 
@@ -183,9 +183,58 @@ void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
         for (const auto& t : terms)
             if (t.convention_id == c.identity.id)
                 item.swap_terms.push_back(t);
-        conventions_mapper::reverse_cross_currency_fix_float(
-            item, root.append("CrossCurrencyFixFloat"));
+        conventions_mapper::reverse_cross_currency_fix_float(item,
+                                                             root.append("CrossCurrencyFixFloat"));
     }
+}
+
+
+/// A cross-currency fix-float swap's facts, keyed by the identity the mapper
+/// states, for the reason the tenor basis swap's are.
+std::map<std::string, std::string>
+cross_currency_fix_float_facts(const refdata::messaging::conventions_bundle& bundle) {
+    std::vector<refdata::domain::cross_currency_fix_float_swap_terms> terms;
+    std::vector<refdata::domain::cross_currency_fix_float_fixed_leg> fixed;
+    std::vector<refdata::domain::cross_currency_fix_float_float_leg> floating;
+    for (const auto& row : bundle.rows) {
+        if (row.family == "cross_currency_fix_float_swap_terms")
+            terms.push_back(unpack_row<refdata::domain::cross_currency_fix_float_swap_terms>(row));
+        else if (row.family == "cross_currency_fix_float_fixed_leg")
+            fixed.push_back(unpack_row<refdata::domain::cross_currency_fix_float_fixed_leg>(row));
+        else if (row.family == "cross_currency_fix_float_float_leg")
+            floating.push_back(
+                unpack_row<refdata::domain::cross_currency_fix_float_float_leg>(row));
+    }
+
+    const auto without_keys = [](auto part) {
+        part.id = boost::uuids::uuid{};
+        part.convention_id = boost::uuids::uuid{};
+        return part;
+    };
+
+    std::map<std::string, std::string> out;
+    for (const auto& row : bundle.rows) {
+        if (row.family != "convention")
+            continue;
+        const auto c = unpack_row<refdata::domain::convention>(row);
+        if (c.identity.kind_code != cross_currency_fix_float_kind)
+            continue;
+        refdata::messaging::cross_currency_fix_float_convention_item item;
+        auto central = c;
+        central.identity.id = boost::uuids::uuid{};
+        item.convention = central;
+        for (const auto& part : terms)
+            if (part.convention_id == c.identity.id)
+                item.swap_terms.push_back(without_keys(part));
+        for (const auto& part : fixed)
+            if (part.convention_id == c.identity.id)
+                item.fixed_leg.push_back(without_keys(part));
+        for (const auto& part : floating)
+            if (part.convention_id == c.identity.id)
+                item.float_leg.push_back(without_keys(part));
+        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
+    }
+    return out;
 }
 
 }

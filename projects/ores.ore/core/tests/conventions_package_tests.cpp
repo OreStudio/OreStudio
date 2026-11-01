@@ -103,11 +103,10 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
             count(document, "BondYield") + count(document, "CDS") +
             count(document, "CmsSpreadOption") + count(document, "CommodityForward") +
             count(document, "CommodityFuture") + count(document, "CrossCurrencyBasis") +
-            count(document, "Deposit") +
-            count(document, "FRA") + count(document, "Future") + count(document, "FxOption") +
-            count(document, "IborIndex") + count(document, "InflationSwap") +
-            count(document, "IntradayPowerLoad") + count(document, "OIS") +
-            count(document, "OvernightIndex") + count(document, "Swap") +
+            count(document, "Deposit") + count(document, "FRA") + count(document, "Future") +
+            count(document, "FxOption") + count(document, "IborIndex") +
+            count(document, "InflationSwap") + count(document, "IntradayPowerLoad") +
+            count(document, "OIS") + count(document, "OvernightIndex") + count(document, "Swap") +
             count(document, "SwapIndex") + count(document, "TenorBasisTwoSwap") +
             count(document, "Zero") + count(document, "ZeroInflationIndex");
         const std::size_t outside_central_and_parts =

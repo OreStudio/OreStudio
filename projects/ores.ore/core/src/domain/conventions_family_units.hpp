@@ -24,6 +24,8 @@
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include <cstddef>
+#include <map>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -145,9 +147,14 @@ void pack_cross_currency_fix_float(const xml::record_reader& root,
 void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
                                    xml::record_writer& root);
 
+/// The facts of each cross-currency fix-float swap the rows hold, keyed by the
+/// identity the mapper states and without the provisional keys, so two maps of
+/// one document compare equal.
+std::map<std::string, std::string>
+cross_currency_fix_float_facts(const refdata::messaging::conventions_bundle& bundle);
+
 /// The kind of the central convention row of a cross-currency fix-float swap.
-inline constexpr std::string_view cross_currency_fix_float_kind =
-    "CROSS_CURRENCY_FIX_FLOAT";
+inline constexpr std::string_view cross_currency_fix_float_kind = "CROSS_CURRENCY_FIX_FLOAT";
 
 /// The families that are one document element, the cross-currency fix-float.
 inline constexpr std::string_view cross_currency_fix_float_families[] = {

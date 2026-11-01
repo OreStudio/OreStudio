@@ -25,7 +25,7 @@
 #include "ores.trading.api/generators/trade_id_type_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
-#include "ores.trading.api/generators/trade_type_generator.hpp"
+#include "ores.trading.api/generators/product_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -35,14 +35,14 @@ using namespace ores::trading::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-// --- trade_type ---
+// --- product_type ---
 
-TEST_CASE("trade_type_generator_produces_valid_instance", "[generators]") {
+TEST_CASE("product_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
-    auto sut = generate_synthetic_trade_type(ctx);
+    auto sut = generate_synthetic_product_type(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated trade_type code: " << sut.code;
+    BOOST_LOG_SEV(lg, info) << "Generated product_type code: " << sut.code;
 
     CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
@@ -52,11 +52,11 @@ TEST_CASE("trade_type_generator_produces_valid_instance", "[generators]") {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("trade_type_generator_produces_multiple_instances", "[generators]") {
+TEST_CASE("product_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
-    auto items = generate_synthetic_trade_types(count, ctx);
+    auto items = generate_synthetic_product_types(count, ctx);
 
     CHECK(items.size() == count);
     for (const auto& item : items) {

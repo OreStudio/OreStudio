@@ -29,7 +29,7 @@ import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
-import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
+import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { input, readAll, resultSchema, text } from './refdata-calls.js';
@@ -425,7 +425,7 @@ function verdictsOf(kind: string): { confirms: string; prices: string } {
 async function catalogueOf(
     session: LiveSession,
 ): Promise<{ names: ReadonlyMap<string, string>; classes: ReadonlyMap<string, string> }> {
-    const types = await readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+    const types = await readAll(session, productTypeSubjects.list_product_types_request, 'types', {
         filter: { code_one_of: null },
     });
     return {

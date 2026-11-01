@@ -44,7 +44,7 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
 import { subjects as tradeSummarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
-import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
+import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { invalidRequest, notFound } from './errors.js';
@@ -375,7 +375,7 @@ async function dealtWithByRequests(
             filter: null,
             as_of: null,
         }),
-        readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+        readAll(session, productTypeSubjects.list_product_types_request, 'types', {
             filter: { code_one_of: null },
         }),
     ]);

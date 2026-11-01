@@ -96,7 +96,6 @@ set(files
     "repository_trade_booking_range_tests.cpp"
     "repository_trade_filter_tests.cpp"
     "repository_trade_summary_tests.cpp"
-    "repository_trade_type_repository_tests.cpp"
     "return_type_eventing_integration_tests.cpp"
     "risk_participation_agreement_instrument_eventing_integration_tests.cpp"
     "scripted_instrument_eventing_integration_tests.cpp"

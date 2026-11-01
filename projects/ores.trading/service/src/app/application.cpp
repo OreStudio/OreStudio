@@ -98,6 +98,7 @@
 #include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/lifecycle_event_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/product_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/range_bound_event_registrar.hpp"
 #include "ores.trading.service/messaging/rate_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/risk_participation_agreement_instrument_event_registrar.hpp"
@@ -115,7 +116,6 @@
 #include "ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_portfolio_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_state_event_registrar.hpp"
-#include "ores.trading.service/messaging/product_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>

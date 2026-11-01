@@ -22,10 +22,10 @@
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
 #include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generators/party_role_type_generator.hpp"
+#include "ores.trading.api/generators/product_type_generator.hpp"
 #include "ores.trading.api/generators/trade_id_type_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
-#include "ores.trading.api/generators/product_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>

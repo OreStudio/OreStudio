@@ -88,6 +88,7 @@
 #include "ores.trading.core/messaging/payoff_type_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
+#include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/range_bound_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
@@ -132,7 +133,6 @@
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_summary_registrar.hpp"
-#include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/service/bus_book_status.hpp"
 #include <memory>
 

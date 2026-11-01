@@ -3321,6 +3321,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.product_family_codes.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['families'],
+    },
+    'refdata.v1.product_family_codes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.purpose_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5665,6 +5675,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.product_type_asset_classes.list': {
+        asOf: false,
+        filter: ['product_type_code', 'product_type_code_one_of'],
+        rows: ['product_type_asset_classes'],
+    },
+    'trading.v1.product_type_asset_classes.list_by_product_type_code': {
+        asOf: false,
+        filter: ['product_type_code', 'product_type_code_one_of'],
+        rows: ['product_type_asset_classes'],
+    },
+    'trading.v1.product_types.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['types'],
+    },
+    'trading.v1.product_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.range_bounds.list': {
         asOf: true,
         filter: ['trade_id', 'trade_id_one_of'],
@@ -6034,16 +6064,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
             'search',
         ],
         rows: ['trade_summaries'],
-    },
-    'trading.v1.trade_types.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['types'],
-    },
-    'trading.v1.trade_types_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
     },
     'trading.v1.trades.list': {
         asOf: true,

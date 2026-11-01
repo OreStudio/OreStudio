@@ -73,3 +73,81 @@ wire_traits<ores::{{component}}::messaging::{{name}}>::read_msgpack(
 }
 
 {{/junction}}
+{{#operation}}
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+
+{{#message_codec_includes}}
+#include "{{{.}}}"
+{{/message_codec_includes}}
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+
+namespace ores::utility::codec {
+
+{{#messages}}
+std::string wire_traits<{{namespace}}::{{name}}>::write_json(
+    const {{namespace}}::{{name}}& v) {
+    return object::write_json(v);
+}
+
+{{namespace}}::{{name}}
+wire_traits<{{namespace}}::{{name}}>::read_json(std::string_view text) {
+    return object::read_json<{{namespace}}::{{name}}>(text);
+}
+
+std::string wire_traits<{{namespace}}::{{name}}>::write_msgpack(
+    const {{namespace}}::{{name}}& v) {
+    return object::write_msgpack(v);
+}
+
+{{namespace}}::{{name}}
+wire_traits<{{namespace}}::{{name}}>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<{{namespace}}::{{name}}>(data);
+}
+
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
+{{/operation}}
+{{#family}}
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+
+{{#message_codec_includes}}
+#include "{{{.}}}"
+{{/message_codec_includes}}
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+
+namespace ores::utility::codec {
+
+{{#messages}}
+std::string wire_traits<ores::{{component}}::messaging::{{name}}>::write_json(
+    const ores::{{component}}::messaging::{{name}}& v) {
+    return object::write_json(v);
+}
+
+ores::{{component}}::messaging::{{name}}
+wire_traits<ores::{{component}}::messaging::{{name}}>::read_json(std::string_view text) {
+    return object::read_json<ores::{{component}}::messaging::{{name}}>(text);
+}
+
+std::string wire_traits<ores::{{component}}::messaging::{{name}}>::write_msgpack(
+    const ores::{{component}}::messaging::{{name}}& v) {
+    return object::write_msgpack(v);
+}
+
+ores::{{component}}::messaging::{{name}}
+wire_traits<ores::{{component}}::messaging::{{name}}>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::{{component}}::messaging::{{name}}>(data);
+}
+
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
+{{/family}}

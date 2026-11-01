@@ -4,7 +4,7 @@
 #+title: ores.cpp.wire-codec
 #+description: A domain type's own JSON and MessagePack functions, generated from its field list.
 #+type: facet
-#+model_types: domain_entity junction
+#+model_types: domain_entity junction operation family
 #+default: disabled
 #+level: cross
 #+facet_group: ores.cpp

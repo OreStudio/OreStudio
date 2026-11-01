@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-codecs-for-the-operation-messages
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ No operation model states the wire-codec facet, so every message an operation de
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -57,9 +57,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Operation models stating the wire codec | 1 of 73 | =grep -l '#+type: ores.codegen.operation' projects/*/modeling/*.org \vert{} xargs grep -l 'wire-codec.enabled' \vert{} wc -l= | 6de4c93065 |
+| Files outside this branch that a render of every component would change | 0 | =check_drift_sweep= in =compass check= | 6de4c93065 |
 
 * Notes
+
+**The generator.** The operation and family sections of =cpp_protocol.hpp=
+now carry the =wire_fields= and =wire_traits= blocks the entity section
+carries, and =cpp_protocol_codec.cpp= defines them. An operation's messages
+live in the namespace its model names, so the blocks name each message by
+=namespace= and spell =::ores::utility::codec= in full. =core.py= projects the
+same three facts an entity carries, and resolves the codec includes only for a
+model that opts in, because that lookup can refuse a member type.
+
+The wire-codec facet now serves operation and family models. Its two domain
+codec archetypes state =#+model_types: domain_entity junction=, so an operation
+renders only its protocol codec unit. A gate test pins the rule that a model
+that has not opted in renders the same bytes as before, and the drift sweep
+confirms it for the 72 that have not.
+
+**What the trading messages needed.** Three things had no wire form:
+- =std::map<std::string, int>=, in one message. The carriers now write a map as
+  a JSON object or a MessagePack map, as reflect-cpp does.
+- =trade_envelope_data= and =trade_envelope_field=, which are hand-written. They
+  state their shape beside their structs.
+- =instrument_batch=, which is generated from the trade type catalogue. It
+  states its shape, and its header includes each element's shape header, down
+  through field groups such as =bond_instrument_data=.
+
+**The export blob.** The handler writes the stored export with the generated
+codec. ores.ore reads it with reflect-cpp, so
+=an_export_writes_the_bytes_the_reflector_wrote= asserts equal bytes for a full
+export in both formats. The ore task moves the reader.
+
+**What is left.** The other 72 operation models opt in with their components'
+tasks. refdata's =publish_from_dq_handler.cpp= waits for dq's.
 
 * Test Scenarios
 
@@ -85,3 +117,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Operation and family models can now opt into the wire codec. The trade
+operations model has, so its messages, including the stored export, encode
+through generated code. The carriers gained a map form, and the instrument
+batch and the trade envelope state their shapes. A byte test shows the export
+is unchanged for its reflect-cpp reader, and the drift sweep shows no other
+model's output changed.

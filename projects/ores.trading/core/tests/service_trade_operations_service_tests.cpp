@@ -467,6 +467,7 @@ ores::trading::messaging::book_trade_request draft(fixture& f) {
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
     req.activity_type_code = "draft_capture";
+    req.draft_reason_code = "structure_incomplete";
     return req;
 }
 
@@ -496,6 +497,40 @@ TEST_CASE("a_draft_that_is_not_executed_raises_no_authorisation_request", "[serv
             outcome::ok);
 
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
+}
+
+TEST_CASE("a_draft_that_states_no_reason_is_refused", "[service]") {
+    fixture f;
+    auto req = draft(f);
+    req.draft_reason_code.clear();
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "draft_reason_missing");
+}
+
+TEST_CASE("a_trade_that_goes_live_states_no_draft_reason", "[service]") {
+    fixture f;
+    auto req = f.request();
+    req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
+    // A concluded deal waits on nothing, so a reason here is a mistake.
+    req.draft_reason_code = "structure_incomplete";
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "draft_reason_on_live_trade");
+}
+
+TEST_CASE("a_draft_keeps_the_reason_it_states", "[service]") {
+    fixture f;
+    const auto req = draft(f);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
+            outcome::ok);
+
+    const auto stored = ores::trading::repository::trade_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.anchor.id));
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front().draft_reason_code == "structure_incomplete");
 }
 
 TEST_CASE("an_actual_draft_executed_raises_one_authorisation_request", "[service]") {

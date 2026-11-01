@@ -98,6 +98,9 @@
 \ir ./trading_barrier_types_create.sql
 \ir ./trading_barrier_types_notify_trigger_create.sql
 
+\ir ./trading_draft_reasons_create.sql
+\ir ./trading_draft_reasons_notify_trigger_create.sql
+
 \ir ./trading_exercise_types_create.sql
 \ir ./trading_exercise_types_notify_trigger_create.sql
 

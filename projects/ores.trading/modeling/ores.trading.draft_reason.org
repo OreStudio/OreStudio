@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 8F2C41B7-9D3E-4A58-B1C0-5E7D2A6F9B43
+:END:
+#+title: ores.trading.draft_reason
+#+description: Why a trade is a draft, and which desk must unblock it. The lookup a draft_capture names, so a draft that sits in a book says what it waits on.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Why a trade is a draft, and which desk must unblock it.
+#+entity_singular: draft_reason
+#+entity_plural: draft_reasons
+#+entity_title: Draft Reason
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A trade that is not live is a draft, and a draft with no stated reason is a deal
+nobody can pick up: the desk sees a row that has not moved and cannot tell whether
+it waits on the customer, on a confirmation, or on the rest of a structure.
+
+The lookup states the reason, and the desk that owns it. The reason is a code the
+booking names, so a draft's reason is reference data rather than free text, and
+the responsible desk is what a report groups drafts by when it asks who is late.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The reason a draft exists, as the booking names it.
+
+Examples: 'structure_incomplete', 'confirmation_pending', 'credit_review'.
+
+#+begin_src cpp :name generator
+std::string("structure_incomplete")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the draft waits on, in the words a person reads.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** responsible_role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The desk that unblocks a draft held for this reason, as the role catalogue names
+it. A report of drafts groups by this, which is what makes an aged draft somebody's
+work rather than nobody's.
+
+#+begin_src cpp :name generator
+std::string("trading_middle_office")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_draft_reasons_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 3C9B5E24-7A18-4D6F-8E42-9B1F0C7A2D58
+drop function if exists ores_trading_validate_draft_reason_fn;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: draft_reason
+:entity_plural_short:   draft_reasons
+:entity_singular_words: draft reason
+:entity_plural_words:   draft reasons
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dr
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| description      | Description      |
+| responsible_role | Responsible desk |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

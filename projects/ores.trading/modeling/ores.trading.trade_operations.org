@@ -105,6 +105,18 @@ generates no service handler.
  */
 #+end_src
 
+*** draft_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the trade is a draft, when the activity books one. Empty for a
+ * booking that goes live, because a concluded deal waits on nothing.
+ */
+#+end_src
+
 *** identifiers
 :PROPERTIES:
 :cpp_type: std::vector<ores::trading::domain::trade_identifier>

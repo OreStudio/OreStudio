@@ -278,6 +278,28 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     service::write_instrument_batch(
         ctx, instruments, keys, [&](auto& row) { stamp(row, ctx_); }, must_not_exist);
 
+    /*
+     * A draft states why it is not live. The reason is what a report of aged
+     * drafts groups by, so a draft without one is a deal nobody can pick up; and
+     * a trade that goes live when it is booked waits on nothing, so a reason
+     * there is a mistake the caller should hear about.
+     */
+    const auto books_a_draft = request.activity_type_code == "draft_capture";
+    if (books_a_draft && request.draft_reason_code.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "draft_reason_missing";
+        response.result.message = "A draft states why it is not live.";
+        return response;
+    }
+    if (!books_a_draft && !request.draft_reason_code.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "draft_reason_on_live_trade";
+        response.result.message =
+            "A trade that goes live when it is booked waits on nothing, so it states no draft reason.";
+        return response;
+    }
+    anchor.draft_reason_code = books_a_draft ? request.draft_reason_code : std::string{};
+
     // A trade booked live in a real book awaits Operations. The request joins
     // this transaction, so a trade is never live without one.
     operational_authorisation_service authorisation(ctx);

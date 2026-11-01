@@ -109,6 +109,7 @@ domain::trade trade_to_domain(const messaging::trade_write& write) {
     v.origin = write.origin;
     v.origin_reference = write.origin_reference;
     v.external_version = write.external_version;
+    v.draft_reason_code = write.draft_reason_code;
     v.economic_digest = write.economic_digest;
     return v;
 }

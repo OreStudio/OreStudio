@@ -51,6 +51,7 @@ std::vector<ores::diff::domain::field_value> render_trade_fields(const domain::t
     fields.push_back({.name = "Origin", .value = rfl::enum_to_string(v.origin)});
     fields.push_back({.name = "Origin Reference", .value = v.origin_reference});
     fields.push_back({.name = "External Version", .value = std::to_string(v.external_version)});
+    fields.push_back({.name = "Draft Reason Code", .value = v.draft_reason_code});
     fields.push_back({.name = "Economic Digest", .value = v.economic_digest});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

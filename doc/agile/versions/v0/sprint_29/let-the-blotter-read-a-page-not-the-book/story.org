@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 44A58042-462F-46E2-93A5-F6936D38B411
+:END:
+#+title: Story: Let the blotter read a page, not the book
+#+description: The blotter reads every summary to count its rail, so at ten thousand trades it takes fifty-four seconds and then the service refuses a filter with ten thousand values. The screen needs a read model that answers one page and one count, owned below the BFF.
+#+type: story
+#+level: s2
+#+filetags: :trading:performance:ui:sprint_29:v0:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A desk opens the blotter and has its rows in well under a second, at any size the tenant has written, and its rail states how many rows sit at each node without reading the book to find out.
+
+The screen asks two questions, and they are different questions: give me one page of rows, and give me a count at each node. Today one request answers both by reading everything.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Measured and designed; no code written. |
+| Waiting on    | The decision on where the read model lives (see =* Decisions=). |
+| Next          | Break the story into tasks once the model is agreed. |
+| Last touched  | 2026-11-01                               |
+
+* What was measured
+
+On a fresh database with the ACME demonstration at =population_size=10000=, signed in as =tenant_admin@acme_corporation= and reading the =Acme Corporation Plc= party.
+
+| What | Value | How |
+|------+-------+-----|
+| Trades in the book | 10,000 | seed profile, knob at 10000 |
+| =select count(*) from ores_trading_trade_summaries_vw= | 154 ms | psql |
+| 200-row page, offset 0 | 106 ms | psql |
+| 200-row page, offset 9,800 | 117 ms | psql |
+| The screen's own read | *54 s* | =GET /api/blotter= with a live session |
+| The screen's own read, after the 54 s | *400 refusals* | =The filter on trade_id_one_of lists more than 1000 values.= |
+
+The store is not the problem: the view answers a page in about a tenth of a second whether it is asked for the first page or the hundredth. The time is spent in the read path above it.
+
+* Why it costs what it costs
+
+Two defects, and neither is statistics:
+
+- *The rail forces a full read.* The route pages through every summary — 200 rows at a time, up to a cap of 20,000 — because the rail's figures need the whole set, and the summary view has no grouped read. At 10,000 trades that is roughly fifty sequential broker round trips before anything is drawn, and the rail is then counted in the client's server over the retrieved rows.
+- *The identifier read is built from the whole book.* The page's trades are named in one filtered read, but that list is taken before the page is sliced, so it holds every trade. At 10,000 the request states 10,000 ids, the service refuses any filter over 1,000 values, and the screen never renders at all.
+
+* The read model the screen needs
+
+The screen must be answered by two reads, and both belong to the store and the service. The BFF is on its way out, so none of this is designed around it.
+
+** One projection row per blotter row
+
+Not per trade: per row the screen shows. A trade no structure holds, a structure, and a leg in the flat view.
+
+- identity and scope: =tenant_id=, =party_id=, =row_id=, =row_kind= (=trade= or =structure=), =is_leg=, =structure_id=;
+- the columns the screen shows and filters: =reference=, =instrument_type=, =product_code=, =asset_class_code=, =book_id=, =portfolio_id=, =counterparty_id=, =status=, =trade_date=;
+- =search_text= if search survives the design;
+- the schema's usual validity columns.
+
+** Indexes, one per question the screen asks
+
+| Index | Serves |
+|-------+--------|
+| =(tenant_id, party_id, is_leg, trade_date desc, row_id)= | the default page, and keyset paging |
+| =(tenant_id, book_id)=, =(tenant_id, portfolio_id)= | rail counts, and the book and portfolio filters |
+| =(tenant_id, counterparty_id)=, =(tenant_id, asset_class_code)= | rail counts and their filters |
+| =(tenant_id, status)= | the state filter |
+| GIN on =search_text= | the search box, if it stays |
+
+** The rail is one grouped read**
+
+A count at each node is a =GROUP BY= over the projection joined to the node's membership, not a walk of the rows in a client. The portfolio roll-up needs the ancestry stored once — a materialised path on the portfolio, or a closure table — so a subtree's count is a prefix match rather than a recursive walk per node.
+
+** Paging is keyset, not offset**
+
+=WHERE (trade_date, row_id) < ($last_date, $last_id) ORDER BY trade_date DESC, row_id LIMIT $n=. Every page then costs what the first page costs. An =OFFSET= page re-walks what it skips, and the current path pays that fifty times over.
+
+** The invariants are stated where they are written**
+
+The rules the BFF states today in code belong in the projection's writer, or in the store's own rules:
+
+- a structure stands in place of its legs; legs appear only in the flat view;
+- a structure's date is its earliest leg's, and its status is its legs' when they all agree, otherwise blank;
+- a structure's book is the book its legs share, otherwise the lowest portfolio that holds them all, otherwise the party;
+- a row with no booking sits at the party rather than disappearing.
+
+* Acceptance
+
+- The first page of a 100,000-trade book answers in under 300 ms p95, and the hundredth page costs what the first costs.
+- The rail's figures come from one read of the store whatever the size of the book; the rows come from a second.
+- No request asks the service for a list of ids drawn from the whole book, and no request trips the service's 1,000-value filter cap.
+- The screen renders at 10,000 trades, which it cannot do today.
+- Both reads are served through ores.http, and the BFF is untouched.
+- A rebuild of the projection from the facts exists and is run by a test, so the projection can never drift silently.
+
+* Decisions
+
+- *Where the projection lives*: a table the trading service writes and maintains, or a grouped read over the existing summary view plus keyset paging. The table answers both questions at any size; the grouped read is smaller and buys until about a hundred thousand rows.
+- *Search*: does the blotter's search box search identifiers and free text, which needs a trigram index, or only a reference prefix?
+- *Flat mode*: is showing legs a first-class view, in which case every rail figure needs its flat variant, or a debug corner?
+- *History*: does the blotter ever read as of a past instant, or only the current state? Current state keeps the projection simple; as-of makes it bitemporal like the rest of the schema.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Out of scope
+
+- Any change to the BFF. It is being replaced by ores.http, and a read model written around it would be thrown away.
+- The screen's layout and interaction, except where the read model forces a change (paging, the rail's source).
+- The other screens that read the summary view; they are separate stories unless they share the projection.

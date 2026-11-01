@@ -26,6 +26,7 @@
 #include <expected>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::feed {
@@ -38,6 +39,13 @@ namespace ores::synthetic::feed {
  * pair cannot start the feed.
  */
 enum class item_orientation { direct, inverted };
+
+/**
+ * @brief The base and quote currencies an FX fixing's oresmd URI names, or nothing when it is
+ * not an FX fixing.
+ */
+ORES_SYNTHETIC_API_EXPORT std::optional<std::pair<std::string, std::string>>
+pair_of_item(const std::string& item);
 
 /**
  * @brief The orientation of @p item, an FX fixing's oresmd URI, against @p base / @p quote.

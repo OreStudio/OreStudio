@@ -175,12 +175,43 @@ private:
  * process_factory::make_process(), which falls back to the geometric engine for unrecognised
  * values.
  */
+/**
+ * @brief The level and the measured spread a fixing feed starts from, and the mixture's
+ * deviations scaled to it; or, when no item has a fixing, the record of the fallback.
+ */
+struct resolved_start final {
+    ores::marketdata::domain::feed_start source;
+    /// The level the mixture starts from, as the process reads it. The start records the value
+    /// as published; the process is the one boundary that holds it as a binary float.
+    double level = 0.0;
+    std::optional<std::vector<double>> stdevs;
+    /// The policy refuses to start a feed with no usable fixing.
+    bool refused = false;
+};
+
+/**
+ * @brief Resolve where an FX feed starts, without building it.
+ *
+ * Reads @p items in rank order. A config that names no items derives them from @p policy and
+ * the series that cover its pair. The first item with a fixing sets the level and, when its
+ * window has a spread, the mixture's deviations. When none has one, the feed keeps
+ * gmm_initial_price, or is refused when the policy says so.
+ */
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock);
+
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
 make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
+                  const calibration_policy& policy,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr);

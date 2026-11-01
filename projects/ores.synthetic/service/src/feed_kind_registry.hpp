@@ -67,6 +67,8 @@ struct feed_kind_candidate final {
     bool enabled = false;
     bool auto_start = false;
     std::optional<boost::uuids::uuid> folder_id;
+    /** The asset class an FX feed belongs to. Other kinds leave it empty. */
+    std::string asset_class_code;
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
     /**
@@ -142,6 +144,13 @@ struct feed_simulation_result final {
  * Running a feed changes what the platform publishes, so it is not the read of the feed's
  * config. A caller needs this and the read of the configs the verb touches.
  */
+/**
+ * @brief The calibration policy of @p asset_class_code, or nothing when the class has no policy
+ * row and so calibrates on the defaults.
+ */
+std::optional<feed::calibration_policy>
+read_calibration_policy(const ores::database::context& ctx, const std::string& asset_class_code);
+
 inline constexpr std::string_view run_permission = "synthetic::feeds:run";
 
 /**

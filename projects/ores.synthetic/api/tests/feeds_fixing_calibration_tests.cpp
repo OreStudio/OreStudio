@@ -215,3 +215,16 @@ TEST_CASE("a candidate of another pair is left out", tags) {
 
     CHECK(items.empty());
 }
+
+TEST_CASE("an fx fixing names its base and quote currencies", tags) {
+    const auto pair = pair_of_item(ecb_eur_usd);
+    REQUIRE(pair.has_value());
+    CHECK(pair->first == "EUR");
+    CHECK(pair->second == "USD");
+}
+
+TEST_CASE("an item that is not an fx fixing names no pair", tags) {
+    CHECK_FALSE(pair_of_item("oresmd://fx/EUR?type=spot&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("oresmd://ir/EUR?type=fixing&ccy=USD").has_value());
+    CHECK_FALSE(pair_of_item("").has_value());
+}

@@ -116,6 +116,8 @@ struct fx_spot_feed_build_input final {
     std::optional<adapter_target> adapter;
     /// The fixings a config whose price source is "fixing" may start from, in any order.
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> fixing_items;
+    /// The policy the feed calibrates under: its class policy or the defaults, with its own window.
+    feed::calibration_policy policy;
 };
 
 /**

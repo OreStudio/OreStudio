@@ -83,28 +83,48 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
                            "' is not latest_on_or_before_clock or exact:<date>");
 }
 
-/// The level and the measured spread a fixing feed starts from, and the mixture's deviations
-/// scaled to it; or, when no item has a fixing, the record that the feed kept its fixed level.
-struct resolved_start final {
-    ores::marketdata::domain::feed_start source;
-    /// The level the mixture starts from, as the process reads it. The start records the value
-    /// as published; the process is the one boundary that holds it as a binary float.
-    double level = 0.0;
-    std::optional<std::vector<double>> stdevs;
-};
+} // namespace
 
-resolved_start
-resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
-                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                     const std::vector<ores::synthetic::domain::gmm_component>& components,
-                     std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
-                     const ores::marketdata::domain::market_clock* clock) {
+ORES_SYNTHETIC_API_EXPORT resolved_start
+resolve_fx_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                 const std::vector<ores::synthetic::domain::gmm_component>& components,
+                 std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock) {
     resolved_start out;
     out.level = cfg.gmm_initial_price;
-    std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
 
     auto delegated = auth_nats.with_delegation({});
     ores::marketdata::client::market_data_client md(delegated);
+
+    // A config that names no items is calibrated from its class policy: every accepted series
+    // that covers the pair becomes an item, in the policy's provider order.
+    if (items.empty() && cfg.price_source == "fixing") {
+        const auto series = md.list_series();
+        if (!series) {
+            out.source.note = "The series that cover the pair could not be read: " + series.error();
+            out.refused = policy.fallback_code == "refuse";
+            return out;
+        }
+        {
+            std::vector<calibration_candidate> candidates;
+            candidates.reserve(series->size());
+            for (const auto& s : *series) {
+                const auto pair = pair_of_item(s.oresmd_uri);
+                if (!pair)
+                    continue;
+                candidates.push_back({.item = s.oresmd_uri,
+                                      .provider_code = s.provider_code,
+                                      .base_currency = pair->first,
+                                      .quote_currency = pair->second});
+            }
+            items = derive_fixing_items(
+                policy, cfg.base_currency_code, cfg.quote_currency_code, candidates);
+        }
+    }
+
+    std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
     std::vector<std::string> skipped;
     for (const auto& item : items) {
         const auto orientation =
@@ -194,13 +214,16 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
         out.stdevs = *scaled;
         return out;
     }
-    out.source.note = items.empty() ? "The config names no fixing item." : "No item has a fixing";
+    out.source.note = items.empty() ? "The config names no fixing item, and no series covers its "
+                                      "pair." :
+                                      "No item has a fixing";
     for (const auto& reason : skipped)
         out.source.note += "; " + reason;
+    out.refused = policy.fallback_code == "refuse";
+    if (out.refused)
+        out.source.note += "; the class policy refuses to start without a fixing.";
     return out;
 }
-
-} // namespace
 
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
 make_fx_spot_feed(ores::nats::service::client& nats,
@@ -208,6 +231,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
+                  const calibration_policy& policy,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter,
                   const ores::marketdata::domain::market_clock* clock) {
@@ -240,8 +264,11 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     ores::marketdata::domain::feed_start start;
     double initial_price = cfg.gmm_initial_price;
     if (cfg.price_source == "fixing") {
-        auto resolved = resolve_fixing_start(auth_nats, cfg, components, fixing_items, clock);
+        auto resolved = resolve_fx_start(auth_nats, cfg, components, fixing_items, policy, clock);
         start = std::move(resolved.source);
+        if (resolved.refused)
+            throw std::runtime_error("Feed " + cfg.source_name +
+                                     " did not start: " + resolved.source.note);
         initial_price = resolved.level;
         if (resolved.stdevs)
             stdevs = std::move(*resolved.stdevs);

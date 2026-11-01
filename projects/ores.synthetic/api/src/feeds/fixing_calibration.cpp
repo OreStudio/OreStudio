@@ -26,15 +26,22 @@
 
 namespace ores::synthetic::feed {
 
-std::expected<item_orientation, std::string>
-orientation_of(const std::string& item, const std::string& base, const std::string& quote) {
+std::optional<std::pair<std::string, std::string>> pair_of_item(const std::string& item) {
     static const std::regex fx_fixing(
         R"(^oresmd://fx/([A-Z]{3})\?(?:.*&)?ccy=([A-Z]{3})(?:&.*)?$)");
     std::smatch m;
     if (!std::regex_match(item, m, fx_fixing) || item.find("type=fixing") == std::string::npos)
+        return std::nullopt;
+    return std::make_pair(m[1].str(), m[2].str());
+}
+
+std::expected<item_orientation, std::string>
+orientation_of(const std::string& item, const std::string& base, const std::string& quote) {
+    const auto pair = pair_of_item(item);
+    if (!pair)
         return std::unexpected("'" + item + "' is not an FX fixing item.");
-    const auto item_base = m[1].str();
-    const auto item_quote = m[2].str();
+    const auto item_base = pair->first;
+    const auto item_quote = pair->second;
     if (item_base == base && item_quote == quote)
         return item_orientation::direct;
     if (item_base == quote && item_quote == base)

@@ -26,11 +26,11 @@ Every market-state output ORE writes is read by ores.ore and stored by ores.mark
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The store and the writer are built: a market-state file is indexed, compressed and kept, and the post-processor hands the run's archives to marketdata, which reads them with the run's own token. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | A whole run through the grid, so the hand-off is proved against a live engine rather than against its samples. |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

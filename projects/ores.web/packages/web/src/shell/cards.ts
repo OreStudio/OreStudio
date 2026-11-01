@@ -206,6 +206,14 @@ export const CARDS = {
         permission: 'marketdata::providers:read',
         screenTitleKey: 'marketdata.publicRates.title',
     },
+    calibration: {
+        titleKey: 'marketdata.calibration.title',
+        bodyKey: 'marketdata.calibration.lead',
+        to: PATHS.calibration,
+        icon: 'chart',
+        permission: 'synthetic::fx_spot_generation_configs:read',
+        screenTitleKey: 'marketdata.calibration.title',
+    },
     publishedCurves: {
         titleKey: 'marketdata.published.title',
         bodyKey: 'marketdata.published.lead',
@@ -446,6 +454,7 @@ export const AREA_CARDS = {
         'subscriptions',
         'connectivity',
         'publicRates',
+        'calibration',
         'publishedCurves',
         'curveEvolution',
     ],

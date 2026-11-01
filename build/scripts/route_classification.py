@@ -922,6 +922,16 @@ RULES = (
          BFF, COMPOSED, "simulation",
          "The policy a class calibrates under and how every feed of it resolves, with the"
          " coverage counts; nothing starts."),
+    Rule("the calibration policy of an asset class",
+         ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/:assetClass/policy$"),
+         BFF, COMPOSED, "simulation",
+         "States a class's policy and brings its provider order to the list given, or returns"
+         " the class to automatic calibration; two collections written together."),
+    Rule("the pinned item of a feed",
+         ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/feeds/:id/pin$"),
+         BFF, RESOURCE, "simulation",
+         "Pins one candidate on a feed as the exception to its class policy, or clears the"
+         " feed's own items so it follows the policy again."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",

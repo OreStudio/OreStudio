@@ -62,6 +62,7 @@ export const PATHS = {
     connectivity: '/market-data/connectivity',
     fixingSeries: '/market-data/fixings',
     publicRates: '/market-data/public-rates',
+    calibration: '/market-data/calibration',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     reporting: '/reporting',
@@ -75,6 +76,21 @@ export const PATHS = {
     cuts: '/reporting/cuts',
     cutTypes: '/refdata/cut-types',
 } as const;
+
+/** The address of one asset class's calibration list. */
+export function calibrationPath(assetClass: string): string {
+    return `${PATHS.calibration}/${encodeURIComponent(assetClass)}`;
+}
+
+/** The address of one feed's calibration record. */
+export function calibrationFeedPath(assetClass: string, configId: string): string {
+    return `${calibrationPath(assetClass)}/feeds/${encodeURIComponent(configId)}`;
+}
+
+/** The address of one asset class's calibration policy. */
+export function calibrationPolicyPath(assetClass: string): string {
+    return `${calibrationPath(assetClass)}/policy`;
+}
 
 /** The address of one public publisher's record. */
 export function publicRatesPublisherPath(code: string): string {

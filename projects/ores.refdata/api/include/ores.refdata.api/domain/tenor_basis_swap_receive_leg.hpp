@@ -38,9 +38,7 @@ namespace ores::refdata::domain {
  * The receiving leg: the index it references, the frequency it pays at, and
  * whether its coupons are averaged.
  *
- * Extracted as a plain nested sub-struct so that
- * rfl::internal::no_duplicate_field_names never instantiates a Literal
- * wider than 5 fields for this block. See the decomposition section of
+ * A plain nested sub-struct. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */
 struct tenor_basis_swap_receive_leg {

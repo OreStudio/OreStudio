@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 8C63F8CB-EA20-4C25-BCC5-6DC25D8E41A9
+:END:
+#+title: ores.refdata.product_family_code
+#+description: Codegen entity model for the refdata product_family_code table: the contract-shape taxonomy a product type carries.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:taxonomy:
+#+brief: The contract shape of a product type, independent of its market.
+#+entity_singular: product_family_code
+#+entity_plural: product_family_codes
+#+entity_title: Product Family Code
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The shape of contract a product type takes, independent of the market it
+references: an option, a swap, a forward. The list exists so that every option
+can be seen across markets, which neither the market nor the product type
+permits on its own.
+
+The values are ours rather than a published scheme's, and the analysis behind
+them is in the Product Family knowledge note. A product type names one family,
+or none where the corpus states the shape is unsettled.
+
+The rows are seeded into the system tenant and read by every tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:rls_tenant_isolation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique family code, as the catalogue states it.
+
+Examples: 'option', 'swap', 'forward'.
+
+#+begin_src cpp :name generator
+std::string("swap")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for the family.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Family"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the shape is, in prose.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order the families are listed in.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_product_family_codes_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_product_family_code_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: family
+:entity_plural_short:   families
+:entity_singular_words: product family
+:entity_plural_words:   product families
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+
+* See also
+
+- [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the analysis behind the values.

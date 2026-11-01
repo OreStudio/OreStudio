@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 122
+Tables: 123
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -47,6 +47,7 @@ Keys this group states reach into:
 - ores_refdata_netting_sets_tbl (refdata)
 - ores_refdata_parties_tbl (refdata)
 - ores_refdata_portfolios_tbl (refdata)
+- ores_refdata_product_family_codes_tbl (refdata)
 end note
 
 '
@@ -3534,6 +3535,82 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_product_type_asset_classes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * product_type_code : text <<PK>>
+        * asset_class_code : text <<PK>>
+        --
+        * version : integer
+        * is_home : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_product_type_asset_classes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Product Type Asset Class Table
+    The markets a product type references. A kind may reference more than one: a
+    CrossCurrencySwap references interest rates and foreign exchange, an
+    InflationSwap references inflation and interest rates, a ConvertibleBond
+    references bonds and equity.
+    One row per (product type, market) pair. Exactly one row per product type is
+    marked as the *home market*, the market the catalogue groups the kind under;
+    the rest are the markets it also references. A product type whose markets are
+    decided per trade, such as a container or a scripted trade, carries no rows at
+    all.
+    The invariants are stated on the Product Type knowledge page.
+    end note
+
+    entity ores_trading_product_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+          description : text
+          source : text
+          source_ref : text
+          product_family_code : text <<FK>>
+        * construction : text
+        * has_options : boolean
+        * has_extension : boolean
+          instrument_table : text
+        * display_order : integer
+          knowledge_note : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_product_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Product Type Table
+    The catalogue of the instrument types a tenant can book, keyed by the code
+    ORE uses. One row per kind: a BondOption, a CrossCurrencySwap, a
+    ScriptedTrade.
+    The row is the golden source for what a product type is. It carries the name a
+    desk uses, the description and the source that description came from, the
+    product family that names its contract shape, the construction method that says
+    how the payoff is expressed, and the instrument table that holds a trade of the
+    kind. The markets it references are a junction, because a kind may reference
+    more than one.
+    The catalogue is declared once, in ores.trading.trade_type_catalogue, and
+    seeded into the system tenant. Every tenant reads those rows; a tenant does not
+    hold a product type of its own.
+    end note
+
     entity ores_trading_range_bounds_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4499,32 +4576,6 @@ package "trading" #E8F5E9 {
     row-level security needs the party on every row.
     end note
 
-    entity ores_trading_trade_types_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * code : text <<PK>>
-        --
-        * version : integer
-          description : text
-        * product_type : product_type_t
-        * has_options : boolean
-        * has_extension : boolean
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_trade_types_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Trade Type Table
-    Reference data table defining valid trade type classifications used to
-    categorise trades in the system.
-    end note
-
     entity ores_trading_trades_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -4785,7 +4836,7 @@ ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_portfolios_tbl : "ha
 ores_trading_trades_tbl ||--o{ ores_trading_trade_states_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_states_tbl : "has"
 ores_trading_origin_types_tbl ||--o{ ores_trading_trades_tbl : "has"
-ores_trading_trade_types_tbl ||--o{ ores_trading_trades_tbl : "has"
+ores_trading_product_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_counterparty_scope_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_booking_nature_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_entry_channel_types_tbl ||--o{ ores_trading_trades_tbl : "has"

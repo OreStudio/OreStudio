@@ -32,6 +32,7 @@
 #include "ores.refdata.core/messaging/local_jurisdiction_registrar.hpp"
 #include "ores.refdata.core/messaging/party_relationship_registrar.hpp"
 #include "ores.refdata.core/messaging/person_role_registrar.hpp"
+#include "ores.refdata.core/messaging/product_family_code_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_corporate_sector_registrar.hpp"
 #include "ores.refdata.core/messaging/reporting_regime_registrar.hpp"
 #include "ores.refdata.core/messaging/supervisory_body_registrar.hpp"
@@ -352,6 +353,7 @@
 #include "ores.refdata.core/messaging/portfolio_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_right_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/producer_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/product_family_code_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_corporate_sector_history_provider_registrar.hpp"
@@ -516,6 +518,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
     append(register_person_role_handlers(nats, ctx, verifier));
+    append(register_product_family_code_handlers(nats, ctx, verifier));
     append(register_portfolio_handlers(nats, ctx, verifier));
     append(register_portfolio_right_handlers(nats, ctx, verifier));
     append(register_regulatory_corporate_sector_handlers(nats, ctx, verifier));
@@ -695,6 +698,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_local_jurisdiction_history_provider(hist_registry);
         register_party_relationship_history_provider(hist_registry);
         register_person_role_history_provider(hist_registry);
+        register_product_family_code_history_provider(hist_registry);
         register_regulatory_corporate_sector_history_provider(hist_registry);
         register_reporting_regime_history_provider(hist_registry);
         register_supervisory_body_history_provider(hist_registry);

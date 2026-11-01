@@ -631,15 +631,11 @@ const OPEN_RUN = new Set(['', 'pending', 'in_progress', 'compensating']);
  * none, and a step still running has no end to measure to, so both answer
  * nothing rather than a zero.
  */
-function stepDuration(
-    startedAt: WireTimestamp | null,
-    completedAt: WireTimestamp | null,
-): string {
+function stepDuration(startedAt: WireTimestamp | null, completedAt: WireTimestamp | null): string {
     if (startedAt === null || completedAt === null) {
         return '';
     }
-    const ms =
-        fromWireTimestamp(completedAt).getTime() - fromWireTimestamp(startedAt).getTime();
+    const ms = fromWireTimestamp(completedAt).getTime() - fromWireTimestamp(startedAt).getTime();
     if (ms < 0) {
         return '';
     }
@@ -656,7 +652,9 @@ function stepDuration(
         return seconds === 0 ? `${minutes}m` : `${minutes}m ${seconds}s`;
     }
     const remainder = minutes % 60;
-    return remainder === 0 ? `${Math.floor(minutes / 60)}h` : `${Math.floor(minutes / 60)}h ${remainder}m`;
+    return remainder === 0
+        ? `${Math.floor(minutes / 60)}h`
+        : `${Math.floor(minutes / 60)}h ${remainder}m`;
 }
 
 /**

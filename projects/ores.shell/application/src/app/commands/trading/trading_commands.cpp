@@ -76,6 +76,8 @@
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
 #include "ores.shell/app/commands/trading/payoff_type_commands.hpp"
 #include "ores.shell/app/commands/trading/price_type_commands.hpp"
+#include "ores.shell/app/commands/trading/product_type_asset_class_commands.hpp"
+#include "ores.shell/app/commands/trading/product_type_commands.hpp"
 #include "ores.shell/app/commands/trading/range_bound_commands.hpp"
 #include "ores.shell/app/commands/trading/rate_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/return_type_commands.hpp"
@@ -100,7 +102,6 @@
 #include "ores.shell/app/commands/trading/trade_party_role_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_state_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_summary_commands.hpp"
-#include "ores.shell/app/commands/trading/trade_type_commands.hpp"
 #include "ores.shell/app/commands/trading/vanilla_swap_instrument_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -163,6 +164,8 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     party_role_type_commands::register_commands(root_menu, session);
     payoff_type_commands::register_commands(root_menu, session);
     price_type_commands::register_commands(root_menu, session);
+    product_type_asset_class_commands::register_commands(root_menu, session);
+    product_type_commands::register_commands(root_menu, session);
     range_bound_commands::register_commands(root_menu, session);
     rate_instrument_commands::register_commands(root_menu, session);
     return_type_commands::register_commands(root_menu, session);
@@ -187,7 +190,6 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     trade_party_role_commands::register_commands(root_menu, session);
     trade_state_commands::register_commands(root_menu, session);
     trade_summary_commands::register_commands(root_menu, session);
-    trade_type_commands::register_commands(root_menu, session);
     vanilla_swap_instrument_commands::register_commands(root_menu, session);
 }
 

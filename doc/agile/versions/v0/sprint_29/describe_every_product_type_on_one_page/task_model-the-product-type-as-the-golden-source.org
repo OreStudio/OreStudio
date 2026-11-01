@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-product-type-as-the-golden-source
+#+pr: 4337
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-01
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ One entity holds everything the system states about a product type, and every ar
 
 | Field        | Value                                                                                |
 |--------------+--------------------------------------------------------------------------------------|
-| State        | BACKLOG                                                                              |
+| State        | STARTED                                                                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
 | Now          | Not yet started.                                                                     |
 | Waiting on   | Nothing.                                                                             |
@@ -63,9 +63,104 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types in the catalogue | 121, all in the system tenant | =select count(*) from ores_trading_product_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | 3d159744c2 |
+| Types naming a family | 92 | the same query filtered on =product_family_code is not null= | 3d159744c2 |
+| Types built natively | 115 | the same query filtered on =construction = 'native'= | 3d159744c2 |
+| Market rows | 121, of which 115 are home rows | =select count(*), count(*) filter (where is_home) from ores_trading_product_type_asset_classes_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | 3d159744c2 |
+| Families | 8 | =select count(*) from ores_refdata_product_family_codes_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | 3d159744c2 |
+| Codegen suite | 1799 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | d50bcd7816 |
 
 * Notes
+
+** 2026-11-01 — work in progress
+
+Done on `feature/model-the-product-type-as-the-golden-source`:
+
+- =ores.refdata.product_family_code=, complete: model, generated layers, seeds,
+  orchestration, permissions, and the codegen suite green.
+- =ores.trading.product_type= replaces the trade type: the model was renamed and
+  gained name, source, source_ref, product_family_code, construction, the
+  routing table, display order and the knowledge note; the =product_type_t=
+  enum is deleted, and its header path now holds the generated entity.
+- =ores.trading.product_type_asset_class=, the market junction, with =is_home=
+  and a partial unique index for the home row.
+- The catalogue template and loader now emit both tables, and the 121 rows carry
+  their construction and markets, with 92 families filled from the notes.
+
+Still open:
+
+- The catalogue's own codegen tests still build the old row shape.
+- The C++ and web fallout of the rename: every consumer of the deleted
+  =trade_type= artefacts and of the enum header.
+- The build, the database recreate, and the suites.
+- The junction has no generated table drop (a codegen gap: junctions generate a
+  create and a notify-trigger drop, but no table drop), so =drop_trading.sql=
+  drops only its trigger.
+
+** 2026-11-01 — modelled, built and seeded
+
+- =ores.refdata.product_family_code=: complete, seeded with the eight shapes.
+- =ores.trading.product_type=: the catalogue row, with name, source,
+  source_ref, product_family_code, construction, instrument_table,
+  display_order and knowledge_note; the =product_type_t= enum is deleted.
+- =ores.trading.product_type_asset_class=: the market junction with =is_home=
+  and the partial unique index.
+- The catalogue seeds both tables: 121 product types, 92 with a family, 115
+  native, and 121 market rows of which 115 are home rows, so 6 types carry a
+  second market and 6 carry none.
+- The codegen suite passes (1795 tests). The trading API, core and service and
+  the shell build. The web packages typecheck, and the BFF suite passes (1191
+  tests). The database recreates and the counts above are read from it.
+- The web UI suite is 2384 of 2385: the one failure is in
+  =src/journeys/parts.test.tsx=, which this branch does not touch.
+
+Open:
+
+- Rebase onto main. The rebase conflicts in generated files because main's
+  hotfix #4334 regenerated the reporting cut rules; resolve by regenerating the
+  affected components rather than by keeping either side.
+- The full =compass check= gate: =ctest=, =pgtap= and the smoke checks have not
+  run.
+- The junction generates a create and a notify-trigger drop but no table drop.
+- The descriptions and sources are still empty; that is the authoring task.
+
+** 2026-11-01 — merged, built and checked
+
+The branch is merged with main at =3d159744c2= and the database recreated
+from it. Two gates had been lying about the work:
+
+- The family's shell command unit was generated onto disk but was in no
+  build list and in no registrar. =cmake-sources= and the composition
+  check would both have caught it had either run after the unit appeared;
+  neither did, so the unit was dead weight. It is now compiled and
+  registered.
+- Two test files still read the deleted =trade_type=: the codec tests now
+  build and round-trip a product type, and the bond instrument tests state
+  the =uuid_io= include they had been borrowing from a deleted header.
+
+Four review findings are closed here:
+
+- =trading::product_type_asset_classes:read= existed but no role held it,
+  so the market column would have read empty for every user. The four
+  roles that read product types now read their markets.
+- The junction had no table drop, so a teardown left it behind. It has
+  one, wired ahead of the table it points at.
+- The schema diagrams were a regeneration behind: neither new table
+  appeared and the trade types table still did.
+- The generated list request table did not state the three product type
+  list requests.
+
+The full local check suite is green: 56 checks, including the drift
+sweep, the format gate, the recipe inventories, the shell tangle and the
+web suite.
+
+The branch merged main again at =47027e89f1=, because main moved 116
+commits while the gate ran and its tip carried the fix for the web tests
+that were red in the merged tree. The merge conflicted in two generated
+artefacts only, the recipe inventory and the schema diagrams, and both
+were regenerated. The suite is green at =c8d26095e4=: 57 checks, and the
+database recreates from that commit with the counts the table above
+states.
 
 * Test Scenarios
 
@@ -82,12 +177,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4337][#4337]] | [trading] Model the product type and its markets |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The unit the family model emits is in no build list and no registrar | =component_files.cmake=, =refdata_commands.cpp= | Fixed | A generated unit nobody compiles and nobody registers is dead weight. Both gates that catch it existed and had not run since the unit appeared. |
+| 2 | The junction's home-row index is stated in the model and never generated | =product_type_asset_class_junction.org= | Deferred | The junction loader ignores a model's =* SQL ** Indexes= section, so no generator emits it. Deferred with the codegen gap, not silently. The invariant is stated on the Product Type page and holds in the seed: 115 home rows for 115 types that name a market. |
+| 3 | No role held =product_type_asset_classes:read= | =iam_roles_populate.sql= | Fixed | The permission existed and was granted to nobody, so the market column would have read empty for every user. |
+| 4 | The junction table has no drop script | =trading_product_type_asset_classes_drop.sql= | Fixed | A hand-written drop, wired into =drop_trading.sql= ahead of the table it points at. |
+| 5 | The schema diagrams predate the new tables | =ores_schema.*.puml= | Fixed | Regenerated; both new tables now appear and the deleted trade types table is gone. |
+| 6 | The generated list request table omits the product type requests | =list_requests.ts= | Fixed | Regenerated. |
+| 7 | The catalogue model's prose still describes the deleted =product_type= column | =ores.trading.trade_type_catalogue.org= | Fixed | Describes =markets=, =family= and =construction= instead. |
+| 8 | The task doc repeats a =* Notes= heading and carries a stale =Now= | this file | Fixed | One heading, and the notes are dated. |
+| 9 | =structures.ts= breaks the column limit | =structures.ts= | Fixed | Prettier wraps it. |
+| 10 | The draft reason permissions ride in this branch | =iam_permissions_populate.sql= | Kept | =draft_reason= arrived from main without any permission or shell unit, so the branch that regenerated the tree had to supply them or leave the tree red. It is fallout, not scope. |
 
 * Result

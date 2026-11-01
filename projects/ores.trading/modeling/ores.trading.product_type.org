@@ -1,0 +1,317 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 2BB5F81F-836F-4A10-AF9F-E202777B880A
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.product_type
+#+description: Codegen entity model for the trading product_type table. The one catalogue of the instruments a tenant can book, and the golden source for what each one is, what it references and how it is documented.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:product_type:
+#+brief: One kind of instrument a desk can book.
+#+entity_singular: product_type
+#+entity_plural: product_types
+#+entity_title: Product Type
+#+created: 2026-06-01
+#+updated: 2026-10-31
+
+The catalogue of the instrument types a tenant can book, keyed by the code
+ORE uses. One row per kind: a =BondOption=, a =CrossCurrencySwap=, a
+=ScriptedTrade=.
+
+The row is the golden source for what a product type is. It carries the name a
+desk uses, the description and the source that description came from, the
+product family that names its contract shape, the construction method that says
+how the payoff is expressed, and the instrument table that holds a trade of the
+kind. The markets it references are a junction, because a kind may reference
+more than one.
+
+The catalogue is declared once, in =ores.trading.trade_type_catalogue=, and
+seeded into the system tenant. Every tenant reads those rows; a tenant does not
+hold a product type of its own.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The ORE code, which is the identity.
+
+Examples: 'Swap', 'FxForward', 'CapFloor', 'Swaption'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "_product"
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name a desk uses for the product.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Product"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the product is, in prose: its cashflows and when a desk uses it.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The body that states the description, such as the ORE User Guide.
+
+#+begin_src cpp :name generator
+std::string("ORE User Guide")
+#+end_src
+
+** source_ref
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Where in that body the description is stated, as a link.
+
+#+begin_src cpp :name generator
+std::string("https://www.fpml.org/")
+#+end_src
+
+** product_family_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The contract shape the product type takes. Null where the shape is not stated.
+
+#+begin_src cpp :name generator
+std::string("swap")
+#+end_src
+
+** construction
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+How the payoff is expressed: native, scripted or container.
+
+#+begin_src cpp :name generator
+std::string("native")
+#+end_src
+
+** has_options
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when a trade of this type carries an option block.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** has_extension
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when a trade of this type carries an extension block.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** instrument_table
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The instrument table that holds a trade of this type. Null when nothing holds
+it yet, so no trade of the type can be imported.
+
+#+begin_src cpp :name generator
+std::string("rate_instrument")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default_value: 0
+:END:
+
+The order the catalogue lists the type in.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+** knowledge_note
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The knowledge note that describes the product, by document id.
+
+#+begin_src cpp :name generator
+std::string("00000000-0000-0000-0000-000000000000")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_product_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "construction" in ('native', 'scripted', 'container') |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_product_type_fn;
+#+end_src
+
+* Foreign keys
+
+** product_family_code
+:PROPERTIES:
+:table:         ores_refdata_product_family_codes_tbl
+:target_column: code
+:error_message: Invalid product family: %. No active product family found with this code.
+:use_no_tenant: true
+:nullable:      true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: product type
+:entity_plural_words:   product types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Table display
+
+| column          | header        |
+|-----------------+---------------|
+| code            | Code          |
+| name            | Name          |
+| product_family_code | Family    |
+| construction    | Construction  |
+| has_options     | Has Options   |
+| has_extension   | Has Extension |
+| modified_by     | Modified By   |
+| version         | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.trading.api/domain/product_type.hpp
+:domain_class:           trading::domain::product_type
+:protocol_include:       ores.trading.api/messaging/product_type_protocol.hpp
+:collection_name:        product_types
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field          | label          | widget               | type      | is_key | is_required | placeholder             |
+|----------------+----------------+----------------------+-----------+--------+-------------+-------------------------|
+| code           | Code           | codeEdit             | line_edit | true   | true        | Enter product type code |
+| name           | Name           | nameEdit             | line_edit |        | true        | Enter a name            |
+| description    | Description    | descriptionEdit      | text_edit |        |             | Enter a description     |
+| has_options    | Has Options    | hasOptionsCheckBox   | check_box |        |             |                         |
+| has_extension  | Has Extension  | hasExtensionCheckBox | check_box |        |             |                         |
+
+*** Columns
+
+| enum_name     | field          | header         | type      | width |
+|---------------+----------------+----------------+-----------+-------|
+| Code          | code           | Code           | string    | 120   |
+| Name          | name           | Name           | string    | 240   |
+| Description   | description    | Description    | string    | 300   |
+| HasOptions    | has_options    | Has Options    | boolean   | 100   |
+| HasExtension  | has_extension  | Has Extension  | boolean   | 120   |
+| Version       | version        | Version        | int       | 80    |
+| ModifiedBy    | modified_by    | Modified By    | string    | 120   |
+| RecordedAt    | recorded_at    | Recorded At    | timestamp | 150   |
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pt
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the product types this table is seeded with, and the instrument table that holds each.
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]] — what the row states, and the rules it holds.

@@ -72,6 +72,8 @@ set(files
     "app/commands/trading/party_role_type_commands.cpp"
     "app/commands/trading/payoff_type_commands.cpp"
     "app/commands/trading/price_type_commands.cpp"
+    "app/commands/trading/product_type_asset_class_commands.cpp"
+    "app/commands/trading/product_type_commands.cpp"
     "app/commands/trading/range_bound_commands.cpp"
     "app/commands/trading/rate_instrument_commands.cpp"
     "app/commands/trading/return_type_commands.cpp"
@@ -96,7 +98,6 @@ set(files
     "app/commands/trading/trade_party_role_commands.cpp"
     "app/commands/trading/trade_state_commands.cpp"
     "app/commands/trading/trade_summary_commands.cpp"
-    "app/commands/trading/trade_type_commands.cpp"
     "app/commands/trading/vanilla_swap_instrument_commands.cpp"
 )
 
@@ -154,6 +155,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/party_role_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/payoff_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/price_type_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/product_type_asset_class_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/product_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/range_bound_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/rate_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/return_type_commands.hpp"
@@ -178,7 +181,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_party_role_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_state_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_summary_commands.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/trade_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/trading/vanilla_swap_instrument_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.trading.hpp"
 )

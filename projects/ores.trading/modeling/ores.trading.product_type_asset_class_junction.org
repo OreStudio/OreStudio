@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: D4E50E71-CAEC-4D3A-A220-18FA07F3243A
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.product_type_asset_class
+#+description: Codegen junction model: the markets a product type references, one row per market, with one marked as the home market.
+#+type: ores.codegen.junction
+#+component: trading
+#+filetags: :model:junction:trading:taxonomy:
+#+name: product_type_asset_classes
+#+name_singular: product_type_asset_class
+#+name_title: Product Type Asset Class
+#+name_singular_words: product type market
+#+brief: Links a product type to a market it references.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The markets a product type references. A kind may reference more than one: a
+=CrossCurrencySwap= references interest rates and foreign exchange, an
+=InflationSwap= references inflation and interest rates, a =ConvertibleBond=
+references bonds and equity.
+
+One row per (product type, market) pair. Exactly one row per product type is
+marked as the *home market*, the market the catalogue groups the kind under;
+the rest are the markets it also references. A product type whose markets are
+decided per trade, such as a container or a scripted trade, carries no rows at
+all.
+
+The invariants are stated on the Product Type knowledge page.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:history: true
+:events: true
+:END:
+
+* Left
+:PROPERTIES:
+:column:        product_type_code
+:column_short:  product_type
+:column_title:  Product Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up the markets a product type references
+:list_by:       true
+:END:
+
+The product type's code.
+
+References ores_trading_product_types_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        asset_class_code
+:column_short:  asset_class
+:column_title:  Market
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the product types that reference a market
+:END:
+
+The market's code, as the refdata asset class taxonomy states it.
+
+References ores_refdata_asset_class_codes_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("interest_rates")
+#+end_src
+
+* Columns
+
+** is_home
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True on the one market the catalogue groups the product type under.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_product_type_asset_classes_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Indexes
+
+| name                           | columns                     | unique | current_only | where_extra |
+|--------------------------------+-----------------------------+--------+--------------+-------------|
+| product_type_asset_class_home  | tenant_id, product_type_code | true  | true         | is_home |
+| product_type_asset_class_mkt   | tenant_id, asset_class_code  | false | true         |         |
+
+** Checks
+
+| expression |
+|------------|
+| "product_type_code" <> '' |
+| "asset_class_code" <> '' |
+
+* Repository
+:PROPERTIES:
+:name_singular_short: product_type_asset_class
+:name_short:          product_type_asset_classes
+:name_singular_words: product type market
+:name_words:          product type markets
+:order_column:        asset_class_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ptac
+:END:
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]] — the invariants this junction holds.

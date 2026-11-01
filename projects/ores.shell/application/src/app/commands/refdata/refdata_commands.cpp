@@ -149,6 +149,7 @@
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
 #include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
+#include "ores.shell/app/commands/refdata/product_family_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_corporate_sector_commands.hpp"
@@ -337,6 +338,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     portfolio_commands::register_commands(root_menu, session);
     portfolio_right_commands::register_commands(root_menu, session);
     producer_kind_commands::register_commands(root_menu, session);
+    product_family_code_commands::register_commands(root_menu, session);
     purpose_type_commands::register_commands(root_menu, session);
     regulatory_book_type_commands::register_commands(root_menu, session);
     regulatory_corporate_sector_commands::register_commands(root_menu, session);

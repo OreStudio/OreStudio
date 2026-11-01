@@ -75,8 +75,8 @@ def _catalogue(rows: str) -> str:
 
 * Trade types
 
-| code | description | product_type | has_options | has_extension | instrument |
-|------+-------------+--------------+-------------+---------------+------------|
+| code | name | family | construction | markets | has_options | has_extension | instrument |
+|------+------+--------+--------------+---------+-------------+---------------+------------|
 {rows}
 """
 
@@ -92,9 +92,9 @@ def _write_catalogue(tmp_path, rows):
 
 def test_the_catalogue_groups_codes_by_the_table_that_holds_them(tmp_path):
     path = _write_catalogue(tmp_path, "\n".join([
-        "| Swap | Interest Rate Swap | swap | false | false | widget |",
-        "| FxForward | FX Forward | fx | false | false | widget |",
-        "| Failed | A placeholder | swap | false | false | |",
+        "| Swap | Interest Rate Swap | swap | native | interest_rates! | false | false | widget |",
+        "| FxForward | FX Forward | forward | native | fx! | false | false | widget |",
+        "| Failed | A placeholder | swap | native | interest_rates! | false | false | |",
     ]))
 
     catalogue = load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
@@ -106,9 +106,11 @@ def test_the_catalogue_groups_codes_by_the_table_that_holds_them(tmp_path):
 
 
 @pytest.mark.parametrize("row,message", [
-    ("| Swap | x | rates | false | false | widget |", "product type"),
-    ("| Swap | x | swap | yes | false | widget |", "has_options"),
-    ("| Swap | x | swap | false | false | gadget |", "no entity model declares"),
+    ("| Swap | x | rates | native | interest_rates! | false | false | widget |", "family"),
+    ("| Swap | x | swap | native | interest_rates! | yes | false | widget |", "has_options"),
+    ("| Swap | x | swap | native | interest_rates! | false | false | gadget |", "no entity model declares"),
+    ("| Swap | x | swap | native | fx!,interest_rates! | false | false | widget |", "home markets"),
+    ("| Swap | x | swap | native | fx,interest_rates | false | false | widget |", "home markets"),
 ])
 def test_the_catalogue_refuses_a_row_it_cannot_honour(tmp_path, row, message):
     path = _write_catalogue(tmp_path, row)
@@ -119,8 +121,8 @@ def test_the_catalogue_refuses_a_row_it_cannot_honour(tmp_path, row, message):
 
 def test_the_catalogue_refuses_a_repeated_code(tmp_path):
     path = _write_catalogue(tmp_path, "\n".join([
-        "| Swap | x | swap | false | false | widget |",
-        "| Swap | y | swap | false | false | widget |",
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        "| Swap | y | swap | native | interest_rates! | false | false | widget |",
     ]))
 
     with pytest.raises(ValueError, match="duplicate"):

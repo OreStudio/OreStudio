@@ -159,6 +159,8 @@ select ores_utility_allow_version_replace_fn();
 
 -- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ../refdata/refdata_asset_class_codes_populate.sql
+\ir ../refdata/refdata_product_family_codes_populate.sql
+
 \ir ../refdata/refdata_curve_roles_populate.sql
 \ir ../refdata/refdata_instrument_codes_populate.sql
 

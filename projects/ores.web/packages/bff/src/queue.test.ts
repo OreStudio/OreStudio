@@ -9,7 +9,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
-import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
+import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -158,7 +158,7 @@ function replies(): Readonly<Record<string, unknown>> {
             ],
             total: 2,
         },
-        [tradeTypeSubjects.list_trade_types_request]: {
+        [productTypeSubjects.list_product_types_request]: {
             result: ok,
             types: [
                 { code: 'Swap', description: 'Interest rate swap' },

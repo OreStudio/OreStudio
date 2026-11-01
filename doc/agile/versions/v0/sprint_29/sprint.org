@@ -165,6 +165,7 @@ of the application join as their own stories under this heading.
 | [[id:5D31F9D8-143A-43AA-8AE3-F75D17F6822E][Let the area come from the model]] | DONE | | 2026-10-31 | The generated route template writes /api/v1/<component>/<plural>, which leaks an internal component name into a published contract. Let an entity model declare its HTTP area, resolve it once, default it to the component so nothing moves yet, and gate a declared area against the published list. |
 | [[id:CFA3BC5C-9297-4C49-8336-40DB598C61DB][Move the IAM collections onto their areas]] | DONE | | 2026-10-31 | The IAM entity collections answer under /api/v1/iam, a component name, while the inventory decides their areas as access or auth. Declare each entity's area, regenerate what follows from it, and settle the one collision the move exposes, that the generated session collection and the session door both want /api/v1/auth/sessions. |
 | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] | BACKLOG | | | A browser needs to hear about a change when it happens rather than when it next polls. Serve the change stream over the HTTP server: a hub every publisher reaches, a source that waits without holding the thread, the SSE framing, and a keep-alive a proxy will not time out. |
+| [[id:135FA088-4598-4597-A92D-730680BEB396][Hotfix: Make CI green on every platform]] | BACKLOG | | | Linux, macOS, Windows, codegen drift and TypeScript runs fail on main; fix every failure that is not the reflect-cpp work on Windows. |
 
 * Achievements
 

@@ -71,6 +71,10 @@ grant connect, temp on database :db_name to :rw_role, :ro_role, :service_role;
 -- on party-isolated tables independently of the calling session's party context.
 alter role :ddl_user bypassrls;
 
+-- Lets the DDL user, which compass sql connects as, read the text and
+-- statistics of every role's queries in pg_stat_statements, not only its own.
+grant pg_read_all_stats to :ddl_user;
+
 -- Connect to new database
 \c :db_name
 

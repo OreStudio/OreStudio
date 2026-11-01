@@ -568,17 +568,23 @@ void upload_output_files(auto& lg,
             .key = key});
     }
 
-    const auto manifest_file = staging / "manifest.json";
+    // Every object under the prefix is gzip, so a reader fetches each one,
+    // the manifest included, with the same blob download.
+    const auto manifest_text = ores::ore::results::to_json(manifest);
+    const auto manifest_packed = ores::utility::compression::gzip_compress(
+        std::span<const char>(manifest_text.data(), manifest_text.size()));
+    const auto manifest_file = staging / "manifest.json.gz";
     {
         std::ofstream out(manifest_file, std::ios::binary | std::ios::trunc);
-        out << ores::ore::results::to_json(manifest);
+        out.write(manifest_packed.data(), static_cast<std::streamsize>(manifest_packed.size()));
     }
     ores::storage::net::http_client::put(
-        make_url(
-            cfg.http_base_url,
-            ores::storage::net::storage_paths::make_object_path(bucket, prefix + "manifest.json")),
+        make_url(cfg.http_base_url,
+                 ores::storage::net::storage_paths::make_object_path(
+                     bucket, prefix + "manifest.json.gz")),
         manifest_file,
         evt.storage_token);
+    fs::remove(manifest_file);
     BOOST_LOG_SEV(lg, info) << "Uploaded " << manifest.files.size() << " output file(s) of "
                             << evt.result_id << " and their manifest";
 }

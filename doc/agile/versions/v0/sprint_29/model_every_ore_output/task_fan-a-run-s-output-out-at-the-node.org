@@ -64,7 +64,7 @@ which files it models and fetches those, by name.
 The shape:
 
 - Keys. =compute/output/{result_id}/{file}.gz= for each file and
-  =compute/output/{result_id}/manifest.json= for the manifest. The archive keeps
+  =compute/output/{result_id}/manifest.json.gz= for the manifest. The archive keeps
   its key, =compute/output/{result_id}.tar.gz=, as the run's audit blob.
 - Grant. The claim already grants a put on =results_path=, the canonical result
   rows the node no longer writes. That slot becomes the output-file prefix, so

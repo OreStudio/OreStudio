@@ -24,7 +24,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
-#include "ores.utility/compression/gzip.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -68,8 +67,7 @@ bool collect_output_files(const messaging::store_market_state_request& req,
                         service::market_state_file{.result_id = result_id, .name = file.name});
                     continue;
                 }
-                const auto packed = transfer.download_blob(bucket, file.key);
-                const auto body = ores::utility::compression::gzip_decompress(packed);
+                const auto body = transfer.download_blob(bucket, file.key);
                 files.push_back(
                     service::market_state_file{.result_id = result_id,
                                                .name = file.name,

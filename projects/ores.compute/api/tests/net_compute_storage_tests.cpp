@@ -39,7 +39,7 @@ TEST_CASE("a result's output files and manifest fall under its own grant", tags)
     CHECK(compute_storage::output_file_key(a_result, "npv.csv") ==
           "compute/output/" + a_result + "/npv.csv.gz");
     CHECK(compute_storage::output_manifest_key(a_result) ==
-          "compute/output/" + a_result + "/manifest.json");
+          "compute/output/" + a_result + "/manifest.json.gz");
     CHECK(compute_storage::output_file_key(a_result, "npv.csv").starts_with(prefix));
     CHECK(compute_storage::output_manifest_key(a_result).starts_with(prefix));
 }

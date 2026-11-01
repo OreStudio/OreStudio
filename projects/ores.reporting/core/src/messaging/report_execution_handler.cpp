@@ -45,7 +45,6 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/compression/gzip.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -960,8 +959,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                     }
                     if (!ores::ore::results::is_result_file(file))
                         continue;
-                    const auto packed = transfer.download_blob(bucket, file.key);
-                    const auto body = ores::utility::compression::gzip_decompress(packed);
+                    const auto body = transfer.download_blob(bucket, file.key);
                     files.push_back(results::output_file{
                         .name = file.name, .body = std::string(body.begin(), body.end())});
                 }

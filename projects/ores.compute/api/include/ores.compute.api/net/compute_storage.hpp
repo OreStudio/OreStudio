@@ -42,7 +42,7 @@ namespace ores::compute::net {
  *   compute/config/{workunit_id}[.ext]   — workunit configuration file
  *   compute/output/{result_id}.tar.gz    — result output archive
  *   compute/output/{result_id}/{file}.gz — one output file of a result
- *   compute/output/{result_id}/manifest.json — the files a result wrote
+ *   compute/output/{result_id}/manifest.json.gz — the files a result wrote
  *
  * Use @c storage_paths::make_object_path / @c make_object_url to build
  * the full HTTP path or URL from the helpers below.
@@ -200,7 +200,7 @@ struct compute_storage {
      * @param result_id  Result UUID as string.
      */
     static std::string output_manifest_key(std::string_view result_id) {
-        return ores::storage::api::object_keys::make(service, "output", result_id, "manifest.json");
+        return ores::storage::api::object_keys::make(service, "output", result_id, "manifest.json.gz");
     }
 
     /**

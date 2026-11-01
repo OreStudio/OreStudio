@@ -28,11 +28,11 @@ per-feed exceptions that stay visible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Service, wire and BFF in review.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then the measures.              |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -148,7 +148,7 @@ page reads the same resolution for one feed.
   and both start loops skip it with the reason.
 - =read_calibration_policy= is the one policy lookup; no row returns nothing,
   and the caller takes the defaults.
-- =synthetic.v1.feed_configs.calibrate= resolves every feed of a class without
+- =synthetic.v1.ops.calibrate_feeds= resolves every feed of a class without
   starting one, and returns the policy and each feed's item, exceptions and
   fallback or refusal. =GET /api/synthetic/calibration/{assetClass}= serves it
   with the coverage counts.
@@ -200,6 +200,29 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A feed with no items reads every series on each start | fx_spot_feed.cpp | Defer | Correct but costly for many feeds; filed as a capture. |
+| 2 | Leftover block after the early return | fx_spot_feed.cpp | Accept | Flattened. |
+| 3 | Comment claims an acceptance filter | fx_spot_feed.cpp | Accept | Reworded to the provider order. |
+| 4 | Calibration tables missing from the schema manifests | synthetic_create.sql | Accept | Found by a recreate; wired in create and drop. |
+| 5 | Calibration event registrars not composed | event_registrar.cpp | Accept | Found by the gate; composed. |
+| 6 | Calibrate subject outside the entity protocol | ores.synthetic.feed_config.org | Accept | Moved to synthetic.v1.ops.calibrate_feeds. |
 
 * Result
+
+Calibration is a property of the market. One optional policy per asset class
+states the window, the inverse rule, the provider order and the fallback; no
+row means the defaults (catalogue order, 90 days, inverse allowed, keep the
+fixed level).
+
+- A feed with no items derives them from its pair and the policy; it stores
+  no list. Explicit items stay an override, and a feed's own window overrides
+  the policy's.
+- A =refuse= fallback stops the feed with its reason, and the start loops skip
+  it.
+- =synthetic.v1.ops.calibrate_feeds= and =GET
+  /api/synthetic/calibration/{assetClass}= resolve every feed of a class and
+  return the policy and each feed's item, exceptions and fallback or refusal,
+  with the coverage counts.
+
+A calibration is not stored; the screen task decides whether it needs a
+history. The screens are [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].

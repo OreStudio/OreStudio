@@ -144,14 +144,6 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::zero_inflation_index_conventions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::bond_issues:read');
 
-    -- The role a feed acts with when it starts from a vintage price. A person
-    -- grants it when they first start a collection, and only if they hold both
-    -- permissions; a run token carries it, narrowed to what the grantor still
-    -- holds.
-    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'Synthetic feed run - the series and observations a feed reads to resolve its vintage price');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'marketdata::market_series:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'marketdata::market_observations:read');
-
     -- Assign permissions to SuperAdmin role (platform-level)
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', '*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:create');
@@ -1094,11 +1086,6 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'scheduler::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'compute::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'telemetry::*');
-    -- Synthetic saves the feed bindings of the feeds a person starts, with that
-    -- person's token. It exchanges a collection's run grant for the token that
-    -- reads the series and observations of a vintage. Its ticks reach marketdata
-    -- over NATS, not through a handler.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::run_grants:exchange');
     -- The simulator serves a source of the catalogue, so it reads the sources through marketdata,
     -- which owns the tables. A generator that starts from a published value reads the series, the
     -- observations and the fixing as the service, since no run token stands in for a person.

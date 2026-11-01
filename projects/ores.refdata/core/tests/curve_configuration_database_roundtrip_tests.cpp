@@ -42,6 +42,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/two_parties.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -59,6 +60,7 @@
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
 
+using namespace ores::logging;
 using ores::testing::rows_of;
 
 namespace {

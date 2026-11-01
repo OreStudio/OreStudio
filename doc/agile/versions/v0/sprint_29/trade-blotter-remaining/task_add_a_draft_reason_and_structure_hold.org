@@ -26,11 +26,11 @@ A draft carries a reason from a lookup, such as structure_incomplete. A leg name
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the lookup, the trade's column and the booking's rule. |
+| Now          | Nothing. |
 | Waiting on   | [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] for a leg naming a structure that is not yet made. |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

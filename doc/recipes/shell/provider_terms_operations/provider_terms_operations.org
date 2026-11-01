@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :recipe:shell:provider_terms_operations:
 
-This file documents declared operations at the shell. Its one command is =ores-shell> provider_terms_operations accept-provider-terms=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =provider_terms_operations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
 
 * Commands
 
@@ -31,5 +31,26 @@ It is addressed at =marketdata.v1.ops.accept_provider_terms=.
 #+name: provider_terms_operations-accept-provider-terms
 #+begin_src ores-shell :tangle provider_terms_operations-accept-provider-terms.ores :exports none
 provider_terms_operations accept-provider-terms __none__
+#+end_src
+
+** =withdraw-provider-terms=
+:PROPERTIES:
+:ID: C3C3243B-7EF4-59CD-8F40-B40ADE90EB5C
+:END:
+
+Sends =withdraw_provider_terms_request= and prints =withdraw_provider_terms_response=, so the shape is the protocol's and the meaning is the service's. It reads =provider_code=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+provider_terms_operations withdraw-provider-terms <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.ops.withdraw_provider_terms=.
+
+#+name: provider_terms_operations-withdraw-provider-terms
+#+begin_src ores-shell :tangle provider_terms_operations-withdraw-provider-terms.ores :exports none
+provider_terms_operations withdraw-provider-terms __none__
 #+end_src
 

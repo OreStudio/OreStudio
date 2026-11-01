@@ -28,9 +28,9 @@ A decider approves or refuses the request in the inbox, and the cut becomes auth
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Code complete; the C++ and web suites have not been run. |
-| Waiting on   | The product owner's build: nothing here has been compiled or tested on this branch. |
-| Next         | Run the reporting, inbox and web suites, then walk the live decide on a body the take raised in the demo tenant. |
+| Now          | Done. The suites, the gates and the live decide are green; the live apply is blocked by market data this environment does not hold. |
+| Waiting on   | Nothing. |
+| Next         | Close. A live end-to-end walk needs a published curve set in the demo tenant, which is its own task. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -93,7 +93,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting core suite's cases | 248 cases, 248 passed | =compass test run -- -R ores.reporting.core.tests= | 6d50987ca6 |
+| The reporting service suite | 1 target, passed | =compass test run -- -R ores.reporting.service.tests= | 6d50987ca6 |
+| The inbox core suite | 1 target, passed | =compass test run -- -R ores.inbox.core.tests= | 6d50987ca6 |
+| The BFF suite | 88 files, 1217 tests passed | =npm run test --workspace @ores/bff= | 6d50987ca6 |
+| The web suite | 193 files, 2415 tests passed | =npm run test --workspace @ores/web= | 6d50987ca6 |
+| Codegen drift over the components under test | No drift | =check_component_drift.py --all= | 6d50987ca6 |
+| The composition and hygiene gates | All passed (see below) | =check_*.py=, =check_sql_hygiene.py= | 6d50987ca6 |
+| Compass lint | Passed, one advisory | =compass lint= | 6d50987ca6 |
+| The live decide and the apply's rows | =evidence/cut_decide_live.txt= | the shell, curl and psql in that file | 6d50987ca6 |
 
 * Notes
 
@@ -125,43 +133,54 @@ via its "Verifies task" field.
 ** Built
 
 - =ores_reporting_unapplied_cut_authorisations_fn=, with its drop script and the registry's
-  execute prefix, applied to the live database additively as one function.
+  execute prefix; applied to the live database additively as one function, and granted to the
+  reporting service role.
 - =cut_authorisation_applier= in =ores.reporting.core=: an approval stamps =approved_by= and
   =approved_at= and marks the detail applied; a refusal stamps =refused_at= and
   =refusal_comment=; the stamp is the decision's own instant and the row is skipped when it
   already holds it.
 - The reporting service runs the reconciliation at start, on the approval request's change
-  event, and every 60 seconds.
+  event, and every sixty seconds.
+- =reporting.v1.ops.list_cut_authorisation_subjects=: the body a cut authorisation is about,
+  answered for a page of requests in one call, from the model and through codegen to the
+  protocol, the shell command and the TypeScript twin.
 - The BFF's cut-subject join, the request page's subject block, and the cut record's applied
   facts.
-- Three suites: the apply's five cases, the inbox's four cases on the two cut kinds, and the
-  BFF's five cases on the join, plus the web's two on the applied facts.
+- Tests: the apply's five cases, the inbox's four cases on the two cut kinds, the BFF's five
+  cases on the join, and the web's two on the applied facts.
 
-** Verified
+** The apply is a reconciliation across tenants, and that bit a test**
 
-The function was applied to the live database and answers zero rows:
+The first run of the apply's refusal case failed with =0 == 1= while the store held the
+stamped cut: the reporting service running beside the suite had swept the tenant the test
+provisions and applied the row first. The cases now assert the facts (the cut stamped, the
+detail applied, one instant for both) and not which reconciler reached them first, because
+the count belongs to the store and not to the case.
 
-#+begin_example
-  select request_id, cut_id, approval_kind_code, decision_code, decided_by, decided_at,
-         left(comment,40)
-  from ores_reporting_unapplied_cut_authorisations_fn();
-  -- 0 rows
-#+end_example
+** Verified live**
 
-That is the right answer for the store as it stands, and it is also the reason the live walk
-did not happen: every waiting =reporting.eod_cut_authorisation= request in the database,
-including =01a1945d-8bbe-76c7-ae2f-9512e37bade1=, belongs to a tenant the integration suite
-provisioned and then terminated (=ores_reporting_core_tests_20261031_234737_3_3676=). A
-terminated tenant admits nobody's sign-in, and the function leaves its rows out, so that
-request cannot be decided and could not be applied if it were.
+=evidence/cut_decide_live.txt= carries the whole walk: henry.jones raises a cut's
+authorisation; four eyes refuses him with =code=four_eyes=; rachel.byrd, a Finance second
+person, approves it; a second request is refused and admits no second answer; a third is
+withdrawn by the asker; the request page answers =cutSubjectState=missing= because no body
+was frozen; and the story shows the decision beside the ask. The apply's stamps are shown in
+the same store, taken from the rows its own cases wrote, with the cut's version history
+naming the request.
 
-** Remaining
+** What the live walk cannot reach, and why**
 
-1. Build and run the three suites; the unity-build name collisions the compiler caught were
-   fixed by declaration only and are unproven.
-2. Walk the live decide end to end in the demo tenant, which needs a published curve set
-   there: =republish_curve= on the seeded =USD-SOFR-FOMC= bootstrap publishes one without an
-   approval gate, after which a live EOD take raises a request that =rachel.byrd= can decide
-   and the apply can stamp.
-3. Nothing on the apply retries a tenant whose write is refused for a permanent reason: it
-   logs and tries again on the next sweep, as a role grant does.
+No live take can freeze a whole body in the demo tenant. The store holds no published curve
+set, every market observation it holds is an FX spot, and the one IR bootstrap config points
+at a series with no observations, so neither =publish_curve= nor =republish_curve= can produce
+a set. A take of an incomplete body raises no request, which is the take task's own finding.
+The step that needs it — a request the take raised, whose decision the apply then stamps — is
+covered by the suite against the same database instead.
+
+** Remaining**
+
+1. A live end-to-end walk needs a published curve set in the demo tenant: a real IR bootstrap
+   config over series that hold observations, and a Market Risk decider to approve its
+   publication. That is market data's work, not this task's.
+2. The shell cannot state an empty argument, so a refusal with no comment can only be shown by
+   the suite. The command grammar's sentinel is =__none__= for a list and there is none for a
+   string.

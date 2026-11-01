@@ -62,8 +62,9 @@ std::map<std::string, int> element_counts(const std::string& xml) {
     return names;
 }
 
-/// The package without the families whose identity is not a value.
-std::string without_tenor_basis_swap(const conventions_package& p) {
+/// The package without the joined kinds, whose central and part rows carry a
+/// provisional key rather than a value.
+std::string without_joined_kinds(const conventions_package& p) {
     std::string out;
     for (const auto& row : p.bundle.rows) {
         if (conventions_family::is_tenor_basis_swap_family(row.family) ||
@@ -131,6 +132,52 @@ std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_pack
     return out;
 }
 
+/// A cross-currency fix-float swap's facts, keyed by the identity the mapper
+/// states, for the reason the tenor basis swap's are.
+std::map<std::string, std::string> cross_currency_fix_float_facts(const conventions_package& p) {
+    std::vector<refdata::domain::cross_currency_fix_float_swap_terms> terms;
+    std::vector<refdata::domain::cross_currency_fix_float_fixed_leg> fixed;
+    std::vector<refdata::domain::cross_currency_fix_float_float_leg> floating;
+    for (const auto& row : p.bundle.rows) {
+        if (row.family == "cross_currency_fix_float_swap_terms")
+            terms.push_back(decode<refdata::domain::cross_currency_fix_float_swap_terms>(row));
+        else if (row.family == "cross_currency_fix_float_fixed_leg")
+            fixed.push_back(decode<refdata::domain::cross_currency_fix_float_fixed_leg>(row));
+        else if (row.family == "cross_currency_fix_float_float_leg")
+            floating.push_back(decode<refdata::domain::cross_currency_fix_float_float_leg>(row));
+    }
+
+    const auto without_keys = [](auto part) {
+        part.id = boost::uuids::uuid{};
+        part.convention_id = boost::uuids::uuid{};
+        return part;
+    };
+
+    std::map<std::string, std::string> out;
+    for (const auto& row : p.bundle.rows) {
+        if (row.family != "convention")
+            continue;
+        const auto c = decode<refdata::domain::convention>(row);
+        if (c.identity.kind_code != conventions_family::cross_currency_fix_float_kind)
+            continue;
+        refdata::messaging::cross_currency_fix_float_convention_item item;
+        auto central = c;
+        central.identity.id = boost::uuids::uuid{};
+        item.convention = central;
+        for (const auto& part : terms)
+            if (part.convention_id == c.identity.id)
+                item.swap_terms.push_back(without_keys(part));
+        for (const auto& part : fixed)
+            if (part.convention_id == c.identity.id)
+                item.fixed_leg.push_back(without_keys(part));
+        for (const auto& part : floating)
+            if (part.convention_id == c.identity.id)
+                item.float_leg.push_back(without_keys(part));
+        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
+    }
+    return out;
+}
+
 } // namespace
 
 std::string conventions_difference(const conventions& original,
@@ -162,11 +209,15 @@ std::string conventions_difference(const conventions& original,
     // survives neither direction, so this catches it.
     const auto mapped_document = split_conventions(original);
     const auto mapped_export = split_conventions(exported);
-    if (without_tenor_basis_swap(mapped_document) != without_tenor_basis_swap(mapped_export))
+    if (without_joined_kinds(mapped_document) != without_joined_kinds(mapped_export))
         return path + ": the export reads back as different conventions";
 
     if (tenor_basis_swap_facts(mapped_document) != tenor_basis_swap_facts(mapped_export))
         return path + ": the export reads back as a different tenor basis swap";
+
+    if (cross_currency_fix_float_facts(mapped_document) !=
+        cross_currency_fix_float_facts(mapped_export))
+        return path + ": the export reads back as a different cross-currency fix-float swap";
 
     return {};
 }

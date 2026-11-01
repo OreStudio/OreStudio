@@ -22,9 +22,11 @@
 
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
-#include <rfl.hpp>
 #include <string>
+#include <tuple>
 
 namespace ores::database {
 
@@ -39,7 +41,7 @@ struct database_options final {
     /**
      * @brief Password for the user.
      */
-    rfl::Skip<std::string> password;
+    std::string password;
     /**
      * @brief Host to connect to.
      */
@@ -71,6 +73,21 @@ struct database_options final {
      */
     std::string pool_backoff = "exponential";
 };
+
+[[nodiscard]] constexpr auto wire_fields(const database_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"user", &database_options::user},
+        ::ores::utility::codec::field{"host", &database_options::host},
+        ::ores::utility::codec::field{"database", &database_options::database},
+        ::ores::utility::codec::field{"port", &database_options::port},
+        ::ores::utility::codec::field{"tenant", &database_options::tenant},
+        ::ores::utility::codec::field{"pool_size", &database_options::pool_size},
+        ::ores::utility::codec::field{"pool_backoff", &database_options::pool_backoff},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<database_options>(1),
+              "database_options has a member its wire shape does not name");
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);
 

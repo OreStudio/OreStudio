@@ -66,7 +66,9 @@ that slot's =-j=:
 #+end_src
 
 reports each slot as held (with the holding environment's identity,
-pid, and start time) or free, plus a tail of that slot's build log. A
+pid, and start time) or free, plus a tail of the holder's build log,
+read from the holder's own checkout. =./compass.sh build status= is the
+same command, and both answer while a build of this worktree runs. A
 free slot also reports the last holder recorded in this checkout, from
 =tmp/ores-build-last-holder.<slot>=, or says that no build has taken it
 yet. The abstract socket itself leaves nothing behind, so this sidecar

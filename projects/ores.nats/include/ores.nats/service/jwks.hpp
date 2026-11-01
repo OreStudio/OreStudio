@@ -47,6 +47,16 @@ ORES_NATS_EXPORT boost::asio::awaitable<std::string>
 fetch_jwks_public_key(client& nats,
                       std::chrono::seconds per_request_timeout = std::chrono::seconds(60));
 
+/**
+ * @brief Makes one attempt at the IAM public key, with no retry.
+ *
+ * For a caller that must not wait for IAM to come up, such as a test against a
+ * fleet that may not be running. Throws when IAM does not answer within the
+ * timeout, answers an error, or answers an empty key.
+ */
+ORES_NATS_EXPORT boost::asio::awaitable<std::string>
+fetch_jwks_public_key_once(client& nats, std::chrono::seconds timeout);
+
 } // namespace ores::nats::service
 
 #endif

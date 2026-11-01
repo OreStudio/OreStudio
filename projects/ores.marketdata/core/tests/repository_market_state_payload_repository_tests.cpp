@@ -37,7 +37,7 @@ using ores::marketdata::service::read_market_state;
 using ores::testing::database_helper;
 
 // A cube narrow enough to read, wide enough that the stored text is not a word.
-std::string cube_file() {
+std::string wide_cube_file() {
     std::string csv = "#Date,Scenario,Numeraire";
     for (int i = 0; i < 40; ++i)
         csv += ",DiscountCurve/USD/" + std::to_string(i);
@@ -55,7 +55,7 @@ std::string cube_file() {
 
 TEST_CASE("a stored market state reads back with its index and its payload", payload_tags) {
     database_helper h;
-    const auto body = cube_file();
+    const auto body = wide_cube_file();
     const auto run =
         market_state_run{.party_id = boost::uuids::random_generator()(),
                          .report_instance_id = boost::uuids::random_generator()(),

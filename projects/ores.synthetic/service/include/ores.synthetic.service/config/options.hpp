@@ -23,9 +23,12 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <tuple>
 
 namespace ores::synthetic::service::config {
 
@@ -61,6 +64,19 @@ struct options final {
      */
     double market_speed = 1440.0;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"database", &options::database},
+        ::ores::utility::codec::field{"run_seed", &options::run_seed},
+        ::ores::utility::codec::field{"market_speed", &options::market_speed},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

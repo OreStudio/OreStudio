@@ -95,5 +95,5 @@ TEST_CASE("parse_tick_writer_role", "[config]") {
     const auto given = parser{}.parse(args, info, err);
     REQUIRE(given.has_value());
     CHECK(given->tick_writer_user == "ores_x_marketdata_writer");
-    CHECK(given->tick_writer_password() == "secret");
+    CHECK(given->tick_writer_password == "secret");
 }

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-672 tables in 21 groups.
+673 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -645,6 +645,7 @@ entity "reporting" as reporting {
   ores_reporting_configuration_parameters_tbl
   ores_reporting_configuration_types_tbl
   ores_reporting_configurations_tbl
+  ores_reporting_cut_approval_details_tbl
   ores_reporting_cut_families_tbl
   ores_reporting_cut_gaps_tbl
   ores_reporting_cut_kinds_tbl
@@ -685,7 +686,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-45 tables — ores_schema.reporting.puml
+46 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

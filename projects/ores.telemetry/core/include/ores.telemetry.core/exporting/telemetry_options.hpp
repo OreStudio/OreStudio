@@ -21,11 +21,14 @@
 #define ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_OPTIONS_HPP
 
 #include "ores.telemetry.core/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <iosfwd>
 #include <string>
+#include <tuple>
 
 namespace ores::telemetry::exporting {
 
@@ -102,6 +105,21 @@ struct telemetry_options final {
      */
     std::chrono::seconds flush_interval{5};
 };
+
+[[nodiscard]] constexpr auto wire_fields(const telemetry_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"service_name", &telemetry_options::service_name},
+        ::ores::utility::codec::field{"service_version", &telemetry_options::service_version},
+        ::ores::utility::codec::field{"output_file", &telemetry_options::output_file},
+        ::ores::utility::codec::field{"output_directory", &telemetry_options::output_directory},
+        ::ores::utility::codec::field{"streaming_enabled", &telemetry_options::streaming_enabled},
+        ::ores::utility::codec::field{"batch_size", &telemetry_options::batch_size},
+        ::ores::utility::codec::field{"flush_interval", &telemetry_options::flush_interval},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<telemetry_options>(),
+              "telemetry_options has a member its wire shape does not name");
 
 ORES_TELEMETRY_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const telemetry_options& v);
 

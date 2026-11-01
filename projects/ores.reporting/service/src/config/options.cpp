@@ -18,13 +18,12 @@
  *
  */
 #include "ores.reporting.service/config/options.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::reporting::service::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

@@ -212,12 +212,17 @@ describe('the routes of the application', () => {
 
     const resolve = (route: string): string => {
         const template = route.replace(/^`|`$/g, '');
-        return template
-            .replace(/\$\{PATHS\.(\w+)\}/g, (_, name: string) => PATHS[name as keyof typeof PATHS])
-            .replace(/^PATHS\.(\w+)$/, (_, name: string) => PATHS[name as keyof typeof PATHS])
-            // An address the paths module builds, so the route and the link a
-            // button follows are one name and not two spellings of it.
-            .replace(/^takeCutPath\(\)$/, () => takeCutPath());
+        return (
+            template
+                .replace(
+                    /\$\{PATHS\.(\w+)\}/g,
+                    (_, name: string) => PATHS[name as keyof typeof PATHS],
+                )
+                .replace(/^PATHS\.(\w+)$/, (_, name: string) => PATHS[name as keyof typeof PATHS])
+                // An address the paths module builds, so the route and the link a
+                // button follows are one name and not two spellings of it.
+                .replace(/^takeCutPath\(\)$/, () => takeCutPath())
+        );
     };
 
     const walked = new Set<string>([

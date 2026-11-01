@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <filesystem>
 #include <map>
 #include <optional>
 #include <rfl/json.hpp>
@@ -88,6 +91,43 @@ struct tally {
 
 inline constexpr auto wire_fields(const tally&) {
     return std::tuple{field{"counts", &tally::counts}, field{"parts", &tally::parts}};
+}
+
+/**
+ * @brief A type with a duration, as a service's flush interval is.
+ */
+struct timed {
+    std::chrono::seconds interval{5};
+    std::chrono::milliseconds pause{250};
+};
+
+inline constexpr auto wire_fields(const timed&) {
+    return std::tuple{field{"interval", &timed::interval}, field{"pause", &timed::pause}};
+}
+
+/**
+ * @brief A type with a path, as a service's working directory is.
+ */
+struct located {
+    std::filesystem::path dir;
+};
+
+inline constexpr auto wire_fields(const located&) {
+    return std::tuple{field{"dir", &located::dir}};
+}
+
+/**
+ * @brief A type whose shape leaves a member out, as a hand-written shape does
+ * when a member is added to the struct and not to the shape.
+ */
+struct forgetful {
+    std::string user;
+    std::string password;
+    int port = 0;
+};
+
+inline constexpr auto wire_fields(const forgetful&) {
+    return std::tuple{field{"user", &forgetful::user}, field{"port", &forgetful::port}};
 }
 
 }
@@ -170,6 +210,20 @@ TEST_CASE("a map from names to values is written as reflect-cpp writes it and re
     CHECK(ores::utility::codec::json::write(full).contains("\"counts\":{\"a\":1,\"b\":2}"));
 }
 
+TEST_CASE("a duration is written as reflect-cpp writes it and reads back", "[codec][object]") {
+    using wire_form_probe::timed;
+
+    const auto v = timed{};
+    const auto json = ores::utility::codec::json::write(v);
+    CHECK(json == rfl::json::write(v));
+    CHECK(json.contains("\"interval\":{\"count\":5,\"unit\":\"seconds\"}"));
+    CHECK(ores::utility::codec::msgpack::write(v) == their_msgpack(v));
+
+    const auto back = ores::utility::codec::json::read<timed>(json);
+    CHECK(back.interval == v.interval);
+    CHECK(back.pause == v.pause);
+}
+
 TEST_CASE("a nested member that is absent is omitted from JSON and nil in MessagePack",
           "[codec][object]") {
     using wire_form_probe::inner;
@@ -182,4 +236,30 @@ TEST_CASE("a nested member that is absent is omitted from JSON and nil in Messag
     CHECK(ores::utility::codec::json::write(present) == rfl::json::write(present));
     CHECK(ores::utility::codec::msgpack::write(absent) == their_msgpack(absent));
     CHECK(ores::utility::codec::msgpack::write(present) == their_msgpack(present));
+}
+
+TEST_CASE("a shape that leaves a member out is told apart from one that names them all",
+          "[codec][object]") {
+    using namespace wire_form_probe;
+    using ores::utility::codec::member_count;
+    using ores::utility::codec::names_every_member;
+
+    STATIC_REQUIRE(member_count<inner> == 2);
+    STATIC_REQUIRE(member_count<outer> == 5);
+    STATIC_REQUIRE(member_count<timed> == 2);
+    STATIC_REQUIRE(names_every_member<outer>());
+    STATIC_REQUIRE(names_every_member<tally>());
+    STATIC_REQUIRE_FALSE(names_every_member<forgetful>());
+    STATIC_REQUIRE(names_every_member<forgetful>(1));
+}
+
+TEST_CASE("a path is written as reflect-cpp writes it and reads back", "[codec][object]") {
+    using wire_form_probe::located;
+
+    const auto v = located{"/var/ores/work dir"};
+    const auto json = ores::utility::codec::json::write(v);
+
+    CHECK(json == rfl::json::write(v));
+    CHECK(ores::utility::codec::msgpack::write(v) == their_msgpack(v));
+    CHECK(ores::utility::codec::json::read<located>(json).dir == v.dir);
 }

@@ -23,6 +23,8 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.official/domain/frankfurter.hpp"
 #include "ores.marketdata.official/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <cstdint>
 #include <expected>
@@ -30,6 +32,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::official::domain {
@@ -43,6 +46,17 @@ struct hosted_source final {
     std::string provider_code;
     std::string frankfurter_key;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const hosted_source&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"source_name", &hosted_source::source_name},
+        ::ores::utility::codec::field{"provider_code", &hosted_source::provider_code},
+        ::ores::utility::codec::field{"frankfurter_key", &hosted_source::frankfurter_key},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<hosted_source>(),
+              "hosted_source has a member its wire shape does not name");
 
 /// The id scheme of the publishers' own notation: the currency a rate is quoted in.
 inline constexpr std::string_view id_scheme = "iso4217";

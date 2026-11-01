@@ -102,7 +102,8 @@ truth for both humans and codegen — the standalone
 
 7. /Build and verify/ the scaffold tests with [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]], via
    =compass build= (not raw =cmake --build=, so it takes the
-   host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+   host-wide build lock — see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]];
+   =./compass.sh build --status= shows who holds each slot):
    =./compass.sh build ores.COMPONENT.api.tests=
 
 8. /Fill in the architecture sections/ of each overview using

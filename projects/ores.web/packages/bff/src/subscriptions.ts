@@ -180,7 +180,7 @@ export function registerSubscriptionRoutes(
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
+            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
                 filter: null,
                 as_of: null,
             }),

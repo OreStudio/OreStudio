@@ -22,7 +22,10 @@
 
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/domain/wire_format.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <string>
+#include <tuple>
 
 namespace ores::nats::config {
 
@@ -80,6 +83,20 @@ struct nats_options final {
      */
     ores::nats::wire_format format = ores::nats::default_wire_codec().format();
 };
+
+[[nodiscard]] constexpr auto wire_fields(const nats_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"url", &nats_options::url},
+        ::ores::utility::codec::field{"subject_prefix", &nats_options::subject_prefix},
+        ::ores::utility::codec::field{"tls_ca_cert", &nats_options::tls_ca_cert},
+        ::ores::utility::codec::field{"tls_client_cert", &nats_options::tls_client_cert},
+        ::ores::utility::codec::field{"tls_client_key", &nats_options::tls_client_key},
+        ::ores::utility::codec::field{"format", &nats_options::format},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<nats_options>(),
+              "nats_options has a member its wire shape does not name");
 
 }
 

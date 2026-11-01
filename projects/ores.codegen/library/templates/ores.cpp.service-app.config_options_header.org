@@ -22,6 +22,13 @@ block on the service's =component_overview.org=; the option's command-line
 declaration and its assignment belong to the
 [[id:D9364D78-1F39-4DC0-AAD3-13576F733064][config_parser_impl]] archetype.
 
+The options print through the JSON codec, so the struct states its wire shape.
+A service that declares a member of its own names it in the shape as well:
+=<<paste:656876C4-82D2-4D19-928C-681CAF5C115C>>= sits after the standard =database= field. Supply it as a
+=#+begin_src cpp :name service_app_config_option_field :implements 656876C4-82D2-4D19-928C-681CAF5C115C=
+block holding one =::ores::utility::codec::field= line per member. The
+=static_assert= beside the shape stops the build when a member has no field.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -40,9 +47,12 @@ The full template source. Edit here and re-tangle with
 
 #include <iosfwd>
 #include <optional>
+#include <tuple>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 
 namespace {{namespace}}::config {
 
@@ -64,6 +74,18 @@ struct options final {
     ores::database::database_options database;
 <<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"database", &options::database},
+<<paste:656876C4-82D2-4D19-928C-681CAF5C115C>>
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

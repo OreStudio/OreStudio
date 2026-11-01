@@ -20,8 +20,11 @@
 #ifndef ORES_SHELL_CONFIG_LOGIN_OPTIONS_HPP
 #define ORES_SHELL_CONFIG_LOGIN_OPTIONS_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <string>
+#include <tuple>
 
 namespace ores::shell::config {
 
@@ -39,6 +42,15 @@ struct login_options final {
      */
     std::string password;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const login_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"username", &login_options::username},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<login_options>(1),
+              "login_options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const login_options& v);
 

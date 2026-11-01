@@ -18,15 +18,14 @@
  *
  */
 #include "ores.database/domain/database_options.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::database {
 
 
 std::ostream& operator<<(std::ostream& s, const database_options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 
@@ -35,7 +34,7 @@ pq::connection_options to_connection_options(const database_options& opts) {
             .port = static_cast<std::uint16_t>(opts.port),
             .dbname = opts.database,
             .user = opts.user,
-            .password = opts.password()};
+            .password = opts.password};
 }
 
 }

@@ -35,6 +35,7 @@ set(files
     "credit_default_swap_instrument_eventing_integration_tests.cpp"
     "credit_instrument_eventing_integration_tests.cpp"
     "credit_linked_swap_instrument_eventing_integration_tests.cpp"
+    "draft_reason_eventing_integration_tests.cpp"
     "equity_accumulator_instrument_eventing_integration_tests.cpp"
     "equity_asian_option_instrument_eventing_integration_tests.cpp"
     "equity_barrier_option_instrument_eventing_integration_tests.cpp"

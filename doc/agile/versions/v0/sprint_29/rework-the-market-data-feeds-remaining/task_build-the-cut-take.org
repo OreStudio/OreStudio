@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-01
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -78,11 +78,19 @@ named in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Reporting core cases | 237 cases, 1321 assertions, all passed | `./build/output/linux-clang-release-ninja/publish/bin/ores.reporting.core.tests` | a8c2b6617b |
-| The take's own cases | 14 cases, 107 assertions | the same binary with `[cut_assembly],[cut_take]` | a8c2b6617b |
-| BFF tests | 1192 tests | `npm test --workspace @ores/bff` | e79335106d |
-| Web tests | 2389 tests | `npm test --workspace @ores/web` | e79335106d |
+| Reporting core cases | 243 cases, 1350 assertions, all passed | `./build/output/linux-clang-release-ninja/publish/bin/ores.reporting.core.tests` | 276b1e4b60 |
+| The take's own cases | 20 cases, 136 assertions | the same binary with `[cut_assembly],[cut_take]` | 276b1e4b60 |
+| Reporting service cases | 10 cases, 26 assertions, all passed | `./build/output/linux-clang-release-ninja/publish/bin/ores.reporting.service.tests` | 276b1e4b60 |
+| BFF tests | 1195 tests, all passed | `npm test --workspace @ores/bff` | 8ef7b06362 |
+| Web tests | 2392 tests, 2391 passed, 1 failed and inherited from main | `npm test --workspace @ores/web` | 8ef7b06362 |
 | Live evidence | see `evidence/cut_take_live.txt` | the BFF at :21402 as henry.jones | a8c2b6617b |
+
+The one web failure is `src/journeys/parts.test.tsx`, which asks the tenant form
+for "Empty operational uses its standard settings". The form stopped drawing
+that sentence in `5018f2a25b`, which is an ancestor of `origin/main`, so the
+failure is main's and not this branch's. It is left standing rather than edited
+here, because whether the sentence returns or the test goes is the tenant
+journey's call.
 
 * Notes
 
@@ -135,72 +143,68 @@ via its "Verifies task" field.
 
 * Result
 
-The hand take and the authorisation it raises are built and verified as far as
-the environment allows.
-
-- The take: reporting.v1.ops.take_cut serves the assembly and the press, gated by
-  reporting::cuts:take. The assembly reads the parts the store answers (trading's
-  list at the as-of, the published sets, compute's app versions, the component's
-  configuration versions) through the caller's session, and records every part it
-  cannot fill as a cut_gap with item, reason and remedy.
-- The take writes through plan_take (the kind's retention, destination and
-  authorisation basis copied; ordinal, taker and instant set). A body with a gap
-  is kept as an incomplete draft and raises nothing.
-- The approval raise: where the kind names an approval kind, the request is raised
-  in the same transaction, with a new reporting detail entity keyed by the request
-  id (the cut, the counts of the parts, the applied facts empty). The record read
-  answers the detail.
-- The screens: the four-step take flow, the list's take button for the permission
-  holder, the Authorisation tab's subject panel and request link.
-- The seeds: the detail read permission, the taker's engine-version read, and the
-  demo's Finance arm for henry.jones; applied live additively.
-- Tests: 14 new C++ cases (237 cases/1321 assertions in the suite), BFF 1192,
-  web 2389.
-- Live: as henry.jones the assembly answered four of five parts and stood one gap
-  (the environment holds no published curve set), the press wrote the incomplete
-  draft with the kind's retention, and the record and history read back. The
-  request path is proven against the same database by the suite (a waiting
-  reporting.eod_cut_authorisation with its detail: deals 1284, sets 7, gaps 0).
-- The branch was rebased on main after main's own synthetic repair landed; the
-  two local synthetic repair commits were dropped.
-
-Remaining: the decide and the apply (the inbox decides, the reporting side stamps
-by reconciliation); the report's cut selection and the LIVE mint UI; and a
-published curve set in the environment, without which a hand take cannot raise a
-request live.
-
-* Result
-
-The take exists and it raises the authorisation it is for.
+The take exists, it raises the authorisation it is for, and this pass closed the
+two-axis review of it.
 
 - The subject of a cut's approval request is a codegen entity in the reporting
   component: the cut, the counts of the body's parts, and the applied facts. It
   is client read only, its request id is its natural key, and its SQL is applied
   to the development database additively and carried in the seeds.
-- The assembly answers five parts — the kind and its retention, the deal
-  population, the published sets in use, the versions in force, and the engine
-  and the code — and records every part it could not fill as a gap with the
-  item, the reason and the remedy. The rule is a pure function, so the design's
-  "a gap stops the press" is tested without a store.
+- The assembly answers six parts: the kind and its retention, the deal
+  population, the published sets in use, the versions in force, the engine and
+  the code, and the taking identity. It records every part it could not fill as a
+  gap with the item, the reason and the remedy, and the rule is a pure function,
+  so it is tested without a store.
+- A gap is not a hole. The design's gaps are the four a read answers "nothing
+  there" for: a series with no value, a deal with no version, a curve nobody
+  approved and an engine version nothing recorded. A day on which nothing traded
+  is a body whose count is zero, and it closes.
 - The take is one operation, `reporting.v1.ops.take_cut`, serving the flow's
   preview and its press. It writes the body through `plan_take` — the kind's
   retention, its destination and its authorisation basis copied, the take
   ordinal, the taker and the instant set — and, where the kind names an approval
   kind, raises the request in the same transaction with the cut's detail row
-  keyed by it. A body with a gap is kept as an incomplete draft that raises
-  nothing, and a kind that names no approval kind records that none was required.
+  keyed by it. A kind that names no approval kind records that none was required.
+- The ordinal counts the day, the kind, the party, the scope and the centre, and
+  it is read inside the write's own unit of work. Two takes of one occasion at
+  two instants of one day carry `.1` and `.2` in their labels, and two takes of
+  one occasion cannot read one count and write one ordinal.
+- A body with a gap is kept as an incomplete draft that raises nothing and
+  answers `ok`. A take the service refuses answers with its outcome's code and
+  one sentence, both in `result`; there is no second field for a refusal, so no
+  caller reads two answers to one call.
 - The record read answers the detail row beside the gaps, so the page states who
-  waits without reading the inbox.
-- The BFF serves the take on one route and the record's subject, and the web
-  draws the four-step flow, the list's gated take button, and the authorisation
-  tab's subject panel.
-- The permission is `reporting::cuts:take`, checked at the handler; the deciders
-  are the kind's own, `inbox::approvals:decide_finance` for the close.
+  waits without reading the inbox. The page does not draw an Applied panel: the
+  apply that would stamp it is not built, and the section says so.
+- The permission is `reporting::cuts:take`. The handler checks it, the list's
+  Take button is drawn only to a holder, and the take route and the flow check it
+  too, so a saved link draws no Assemble and no press to a person who may not.
+  The deciders are the kind's own, `inbox::approvals:decide_finance` for the
+  close.
+- The queue names a cut's authorisation request through its own descriptor, in
+  the three locales. Nothing answers a cut by the request that raised it, so the
+  request page says where the body is read and links it not.
 
 Left to the next unit: the decide and the apply. The inbox decides, and the
 reporting side stamps the cut's authorisation by reconciliation over the
-request's state — the detail row's `applied_at` is the marker it will write.
+request's state — the detail row's `applied_at` is the marker it will write, and
+nothing writes it yet.
 
 Left open by the environment: a published curve set, without which no hand take
 can raise a request here; and the run's cut selection, which is the report
 journey's.
+
+* What the branch holds
+
+The branch carries 21 commits over its base. Two of them are `[synthetic]`, and
+neither leaves a change in the tree:
+
+- `e83da91dec` `[synthetic] Build the inflation swap the planner draws` adds the
+  inflation branch to the rate planner's visitor, because the component did not
+  compile without it.
+- `14efb501a6` `[synthetic] Take main's planner, the repair landed upstream`
+  removes those two lines again, because the same repair landed on main.
+
+So the branch holds no synthetic change, and its history holds both commits. An
+earlier version of this record said the two local synthetic repair commits had
+been dropped, which is not what the history shows.

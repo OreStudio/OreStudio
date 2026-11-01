@@ -200,12 +200,13 @@ private:
         }
         const auto result_id = boost::uuids::to_string(entry.result_id);
         const auto output_path = ores::compute::net::compute_storage::output_path(result_id);
-        const auto results_path = ores::compute::net::compute_storage::results_path(result_id);
+        const auto output_files_path =
+            ores::compute::net::compute_storage::output_files_path(result_id);
         const auto logs_path = ores::compute::net::compute_storage::logs_path(result_id);
         const auto grants = package ? storage_grants_for(package->package_uri,
                                                          workunit->input_uri,
                                                          output_path,
-                                                         results_path,
+                                                         output_files_path,
                                                          logs_path) :
                                       std::nullopt;
         if (!grants) {
@@ -273,7 +274,7 @@ private:
         assignment.input_uri = workunit->input_uri;
         assignment.config_uri = workunit->config_uri;
         assignment.output_uri = output_path;
-        assignment.results_uri = results_path;
+        assignment.output_files_uri = output_files_path;
         assignment.logs_uri = logs_path;
         assignment.storage_token = *token;
         assignment.attempt = entry.attempts;

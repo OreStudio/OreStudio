@@ -122,7 +122,9 @@
 \ir ./dq_commodity_forward_conventions_artefact_create.sql
 \ir ./dq_commodity_future_conventions_artefact_create.sql
 \ir ./dq_cross_currency_basis_conventions_artefact_create.sql
-\ir ./dq_cross_currency_fix_float_conventions_artefact_create.sql
+\ir ./dq_cross_currency_fix_float_fixed_legs_artefact_create.sql
+\ir ./dq_cross_currency_fix_float_float_legs_artefact_create.sql
+\ir ./dq_cross_currency_fix_float_swap_terms_artefact_create.sql
 \ir ./dq_deposit_conventions_artefact_create.sql
 \ir ./dq_fra_conventions_artefact_create.sql
 \ir ./dq_future_conventions_artefact_create.sql

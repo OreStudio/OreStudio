@@ -279,3 +279,32 @@ TEST_CASE("withdrawing_terms_never_accepted_writes_nothing",
     CHECK(response->success);
     CHECK(f.latest().version == read.version);
 }
+
+TEST_CASE("a_token_without_the_accept_permission_cannot_withdraw_the_terms",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    const auto accepted = f.latest();
+
+    const auto reply = f.withdraw({"marketdata::providers:read"});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+    CHECK(f.latest().version == accepted.version);
+    CHECK_FALSE(f.latest().terms_accepted_digest.empty());
+}
+
+TEST_CASE("withdrawing_the_terms_of_an_unknown_provider_fails_and_says_so",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+
+    const auto reply = f.withdraw({terms_accept_permission});
+    REQUIRE_FALSE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    const auto response =
+        ores::nats::default_wire_codec().decode<withdraw_provider_terms_response>(reply.data);
+    REQUIRE(response);
+
+    CHECK_FALSE(response->success);
+    CHECK(response->message.find("No provider") != std::string::npos);
+}

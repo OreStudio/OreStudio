@@ -27,6 +27,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/feed_start.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -36,7 +37,10 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include "ores.synthetic.core/service/fx_spot_generation_config_service.hpp"
+#include "ores.synthetic.core/service/gmm_component_service.hpp"
 #include <algorithm>
+#include <format>
 #include <memory>
 #include <optional>
 #include <string>
@@ -340,9 +344,19 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        // An applied calibration writes new versions of the configs and their components, and
+        // the services that write them check no permission of their own. The feeds it writes run
+        // for every tenant, so, like the policy, only the system tenant may apply it.
+        if (req->apply &&
+            (!feed_kind_registry::is_system_caller(req_ctx) ||
+             !has_permission(req_ctx, "synthetic::fx_spot_generation_configs:write") ||
+             !has_permission(req_ctx, "synthetic::gmm_components:write"))) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         try {
-            reply(nats_, msg, calibrate_class(req_ctx, *kind, req->asset_class_code));
+            reply(nats_, msg, calibrate_class(req_ctx, *kind, *req));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(feed_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -351,14 +365,20 @@ public:
     }
 
 private:
-    // Resolves every feed of the class as a start would, and starts none. A feed that cannot be
-    // built still appears, with the reason, so the class shows every feed it holds.
+    // Resolves every feed of the class as a start would, or the one feed the request names, and
+    // starts none. A feed that cannot be built still appears, with the reason, so the class shows
+    // every feed it holds. An applied calibration writes what moved as a new version.
     ores::synthetic::messaging::calibrate_response
     calibrate_class(const ores::database::context& req_ctx,
                     const feed_kind& kind,
-                    const std::string& asset_class_code) {
+                    const ores::synthetic::messaging::calibrate_request& req) {
         using namespace ores::synthetic::messaging;
         namespace feed = ores::synthetic::feed;
+        const auto& asset_class_code = req.asset_class_code;
+
+        std::vector<std::string> running;
+        for (const auto& f : generators_.running_feeds())
+            running.push_back(f.source_name);
 
         calibrate_response resp;
         const auto class_policy = read_calibration_policy(req_ctx, asset_class_code);
@@ -370,12 +390,18 @@ private:
                        .provider_order = policy.provider_order};
 
         const ores::marketdata::domain::system_market_clock clock;
+        // Read once, on the first feed that resolves from a fixing: each feed would otherwise
+        // list every series again.
+        std::optional<feed::series_listing> series;
         for (const auto& c : kind.candidates(req_ctx, {})) {
             if (c.asset_class_code != asset_class_code)
+                continue;
+            if (!req.config_id.empty() && c.feed_config_id != req.config_id)
                 continue;
             calibrated_feed one;
             one.config_id = c.feed_config_id;
             one.source_name = c.source_name;
+            one.running = std::ranges::contains(running, c.source_name);
             if (c.fx_pair) {
                 one.base_currency_code = c.fx_pair->first;
                 one.quote_currency_code = c.fx_pair->second;
@@ -383,6 +409,10 @@ private:
             const auto outcome = c.build_input(feed::feed_adapter{});
             if (!outcome.input) {
                 one.start.note = outcome.skip_reason;
+                if (req.apply) {
+                    one.outcome = "failed";
+                    one.outcome_message = outcome.skip_reason;
+                }
                 resp.feeds.push_back(std::move(one));
                 continue;
             }
@@ -391,18 +421,33 @@ private:
             one.window_days_override = in.config.calibration_window_days;
             if (in.config.price_source != "fixing") {
                 one.start.note = "The config starts from its fixed level.";
+                if (req.apply) {
+                    one.outcome = "kept";
+                    one.outcome_message = one.start.note;
+                }
             } else {
-                const auto resolved = feed::resolve_fx_start(
-                    auth_nats_, in.config, in.components, in.fixing_items, in.policy, &clock);
+                if (!series) {
+                    auto delegated = auth_nats_.with_delegation({});
+                    series = ores::marketdata::client::market_data_client(delegated).list_series();
+                }
+                const auto resolved = feed::resolve_fx_start(auth_nats_,
+                                                             in.config,
+                                                             in.components,
+                                                             in.fixing_items,
+                                                             in.policy,
+                                                             &clock,
+                                                             *series);
                 one.refused = resolved.refused;
                 one.start = to_wire(resolved.source);
-                for (const auto& c : resolved.candidates)
-                    one.candidates.push_back({.item = c.item,
-                                              .provider_code = c.provider_code,
-                                              .inverted = c.inverted,
-                                              .rank = c.rank,
-                                              .state = std::string(feed::to_string(c.state)),
-                                              .reason = c.reason});
+                for (const auto& tried : resolved.candidates)
+                    one.candidates.push_back({.item = tried.item,
+                                              .provider_code = tried.provider_code,
+                                              .inverted = tried.inverted,
+                                              .rank = tried.rank,
+                                              .state = std::string(feed::to_string(tried.state)),
+                                              .reason = tried.reason});
+                if (req.apply)
+                    apply_calibration(req_ctx, in, resolved, one);
             }
             resp.feeds.push_back(std::move(one));
         }
@@ -411,6 +456,141 @@ private:
         BOOST_LOG_SEV(feed_config_handler_lg(), info)
             << "Calibrated " << resp.feeds.size() << " feed(s) of class " << asset_class_code;
         return resp;
+    }
+
+    // Writes what the calibration moved: the components' deviations, then the config's level, each
+    // claimed against the version the resolution read, so a write that raced it is refused rather
+    // than overwritten. A feed whose values already match writes nothing.
+    void apply_calibration(const ores::database::context& req_ctx,
+                           const ores::synthetic::feed::fx_spot_feed_build_input& in,
+                           const ores::synthetic::feed::resolved_start& resolved,
+                           ores::synthetic::messaging::calibrated_feed& one) {
+        using namespace ores::synthetic::messaging;
+        using ores::utility::domain::outcome;
+        using ores::utility::domain::precondition;
+        using ores::utility::domain::precondition_kind;
+        namespace feed = ores::synthetic::feed;
+
+        if (resolved.refused) {
+            one.outcome = "refused";
+            one.outcome_message = resolved.source.note;
+            return;
+        }
+        const auto& src = resolved.source;
+        if (!src.from_fixing) {
+            one.outcome = "kept";
+            one.outcome_message = src.note;
+            return;
+        }
+
+        std::vector<double> stored_stdevs;
+        for (const auto& c : in.components)
+            stored_stdevs.push_back(c.stdev);
+        const auto change = feed::change_of(
+            in.config.gmm_initial_price, stored_stdevs, resolved.level, resolved.stdevs);
+        const auto fixing = std::format("the {} fixing of {}{}",
+                                        src.provider_code,
+                                        src.fixing_date ? std::format("{:%F}", *src.fixing_date) :
+                                                          std::string("an unknown date"),
+                                        src.inverted ? ", inverted" : "");
+        if (change.empty()) {
+            one.outcome = "unchanged";
+            one.outcome_message = "The level and the mixture already match " + fixing + ".";
+            return;
+        }
+
+        std::string words = "Calibrated from " + fixing + ":";
+        if (change.level)
+            words +=
+                std::format(" level {:.6g} to {:.6g};", in.config.gmm_initial_price, *change.level);
+        const auto moved =
+            std::ranges::count_if(change.stdevs, [](const auto& s) { return s.has_value(); });
+        if (moved > 0)
+            words +=
+                std::format(" {} deviation(s) scaled to the volatility of {} fixing(s) over {} "
+                            "day(s);",
+                            moved,
+                            src.used,
+                            src.window_days);
+        words.pop_back();
+        words += ".";
+        const ores::utility::domain::change_intent intent{.reason_code = "system.calibration",
+                                                          .commentary = words};
+        const auto claimed = [](int version) {
+            return precondition{.kind = precondition_kind::must_match_version,
+                                .version = static_cast<std::uint32_t>(version)};
+        };
+
+        try {
+            if (moved > 0) {
+                put_many_gmm_components_request request{.intent = intent};
+                for (std::size_t i = 0; i < in.components.size(); ++i) {
+                    if (!change.stdevs[i])
+                        continue;
+                    const auto& c = in.components[i];
+                    request.changes.push_back({.write = {.id = c.id,
+                                                         .fx_spot_config_id = c.fx_spot_config_id,
+                                                         .component_index = c.component_index,
+                                                         .description = c.description,
+                                                         .mean = c.mean,
+                                                         .stdev = *change.stdevs[i],
+                                                         .weight = c.weight},
+                                               .precondition = claimed(c.version)});
+                }
+                const auto written = ores::synthetic::service::gmm_component_service(req_ctx)
+                                         .put_many_gmm_components(request);
+                if (written.result.outcome != outcome::ok) {
+                    one.outcome = "failed";
+                    one.outcome_message = "The mixture was not written: " + written.result.message;
+                    return;
+                }
+            }
+            if (change.level) {
+                const auto& cfg = in.config;
+                put_fx_spot_generation_config_request request{
+                    .change = {.write = {.id = cfg.id,
+                                         .config_id = cfg.config_id,
+                                         .base_currency_code = cfg.base_currency_code,
+                                         .quote_currency_code = cfg.quote_currency_code,
+                                         .source_name = cfg.source_name,
+                                         .oresmd_uri = cfg.oresmd_uri,
+                                         .price_source = cfg.price_source,
+                                         .calibration_window_days = cfg.calibration_window_days,
+                                         .gmm_initial_price = *change.level,
+                                         .ticks_per_hour = cfg.ticks_per_hour,
+                                         .process_type = cfg.process_type,
+                                         .enabled = cfg.enabled,
+                                         .auto_start = cfg.auto_start,
+                                         .folder_id = cfg.folder_id,
+                                         .asset_class_code = cfg.asset_class_code,
+                                         .arrival_mode = cfg.arrival_mode,
+                                         .branching_ratio = cfg.branching_ratio,
+                                         .decay = cfg.decay,
+                                         .sensitivity = cfg.sensitivity},
+                               .precondition = claimed(cfg.version)},
+                    .intent = intent};
+                const auto written =
+                    ores::synthetic::service::fx_spot_generation_config_service(req_ctx)
+                        .put_fx_spot_generation_config(request);
+                if (written.result.outcome != outcome::ok) {
+                    one.outcome = "failed";
+                    one.outcome_message = "The level was not written: " + written.result.message;
+                    if (moved > 0)
+                        one.outcome_message += ". The scaled deviations are stored; calibrating "
+                                               "again writes the level alone.";
+                    return;
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
+                << "Calibration of " << one.source_name << " was not written: " << e.what();
+            one.outcome = "failed";
+            one.outcome_message = "The calibration was not written: " + client_message(e);
+            return;
+        }
+        one.outcome = "updated";
+        one.outcome_message = words;
+        BOOST_LOG_SEV(feed_config_handler_lg(), info) << one.source_name << ": " << words;
     }
 
     // Auth gate shared by every verb; the per-kind permission check happens

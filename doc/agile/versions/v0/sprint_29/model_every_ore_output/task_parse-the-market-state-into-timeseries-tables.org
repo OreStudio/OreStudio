@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 40A46EF1-C11A-4652-A490-4B0D454E24FB
+:END:
+#+title: Task: Parse the market state into timeseries tables
+#+description: Every market-state file a run writes is parsed into rows in a hypertable, so a user can query what the computation did. The NPV cubes are values of trades, so they are run results and go to ores.reporting. The simulated factor values, the stress shifts and the calibrated market go to ores.marketdata. The payload table and its index are removed, and scenario.csv moves to the run results, because it holds sensitivity figures.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run's intermediate state is held as rows that a user can query, not as a blob.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- rawcube and netcube are read into a cube hypertable in ores.reporting with the columns result, trade or netting set, date index, date, sample, depth and value.
+- scenariostatistics, stress_scenarios and the scenario dumps are read into a factor hypertable in ores.marketdata with the columns result, date, scenario, factor and value, one row for each value.
+- todaysmarketcalibration is read into a calibration table in ores.marketdata with one row for each result key.
+- scenario.csv is catalogued as a run result and lands in the metric table.
+- The market_state_payloads table, the payload index and the base64 writer are removed.
+- A test reads each checked-in sample of these families and lands every value.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

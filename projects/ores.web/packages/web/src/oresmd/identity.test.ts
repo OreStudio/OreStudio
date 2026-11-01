@@ -27,6 +27,7 @@ import {
     seriesOfUrl,
     seriesPageOf,
     seriesRoute,
+    fixingRoute,
     seriesTargetOf,
     seriesVerdict,
 } from './identity.js';
@@ -252,10 +253,10 @@ describe('seriesTargetOf', () => {
         ).toBeUndefined();
     });
 
-    it('stays plain text for a fixing, which names no series', () => {
-        expect(
-            seriesTargetOf(uri, SCHEMA, parts({ kind: 'fixing' }), listOf(listed(['term']))),
-        ).toBeUndefined();
+    it('links a fixing to the fixing series page, even with no series listed', () => {
+        expect(seriesTargetOf(uri, SCHEMA, parts({ kind: 'fixing' }), listOf())).toBe(
+            fixingRoute(uri),
+        );
     });
 
     it('stays plain text for an instrument the schema does not hold', () => {

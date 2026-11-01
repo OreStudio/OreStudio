@@ -169,6 +169,39 @@ TEST_CASE("a_date_before_the_first_fixing_finds_none", "[fixing_reader][integrat
     CHECK(r.vendor_id.empty());
 }
 
+TEST_CASE("a_latest_fixing_older_than_a_month_is_still_found", "[fixing_reader][integration]") {
+    reader_fixture f;
+    const auto uri = reader_fixture::item("STALE");
+    const auto s = f.series(uri, "ore");
+    f.fix(s, d(2026, 6, 30), "1.1000");
+    f.fix(s, d(2026, 7, 1), "1.1100");
+
+    const auto r = f.latest(uri, d(2026, 10, 22));
+
+    CHECK(r.result.outcome == outcome::ok);
+    REQUIRE(r.fixing_date.has_value());
+    CHECK(*r.fixing_date == d(2026, 7, 1));
+    CHECK(r.value == "1.1100");
+}
+
+TEST_CASE("the_latest_fixing_is_the_newest_on_both_sides_of_a_month",
+          "[fixing_reader][integration]") {
+    reader_fixture f;
+    const auto uri = reader_fixture::item("MONTH");
+    const auto s = f.series(uri, "ore");
+    f.fix(s, d(2026, 9, 21), "1.2000");
+    f.fix(s, d(2026, 9, 22), "1.2100");
+
+    const auto inside = f.latest(uri, d(2026, 10, 22));
+    const auto outside = f.latest(uri, d(2026, 10, 23));
+
+    REQUIRE(inside.fixing_date.has_value());
+    CHECK(*inside.fixing_date == d(2026, 9, 22));
+    REQUIRE(outside.fixing_date.has_value());
+    CHECK(*outside.fixing_date == d(2026, 9, 22));
+    CHECK(outside.value == "1.2100");
+}
+
 TEST_CASE("a_window_skips_the_days_without_a_fixing_and_says_how_many_it_used",
           "[fixing_reader][integration]") {
     reader_fixture f;

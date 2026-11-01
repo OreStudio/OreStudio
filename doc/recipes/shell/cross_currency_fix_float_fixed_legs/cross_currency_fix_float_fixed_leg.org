@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 73034E33-66E9-5FD7-BF8F-78C956BF47F0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cross_currency_fix_float_fixed_legs commands from the shell?
+#+description: Every command the cross_currency_fix_float_fixed_legs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cross_currency_fix_float_fixed_legs:
+
+This file documents the cross_currency_fix_float_fixed_legs resource at the shell, one section per command. Every command is a subcommand of =cross_currency_fix_float_fixed_legs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 72B792DF-E267-5251-9580-6D1C656EEF52
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.list=.
+
+#+name: cross_currency_fix_float_fixed_legs-list
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-list.ores :exports none
+cross_currency_fix_float_fixed_legs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 53E67388-6B86-53B6-A35C-649B93D48D43
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.get=.
+
+#+name: cross_currency_fix_float_fixed_legs-get
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-get.ores :exports none
+cross_currency_fix_float_fixed_legs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D6F31533-A5E4-54A8-8429-23B04EDD3D51
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.get_many=.
+
+#+name: cross_currency_fix_float_fixed_legs-get-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-get-many.ores :exports none
+cross_currency_fix_float_fixed_legs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 068C1246-E114-5759-81C2-F938E73424E0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs add <convention_id> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.put=.
+
+#+name: cross_currency_fix_float_fixed_legs-add
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-add.ores :exports none
+cross_currency_fix_float_fixed_legs add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3E8A627B-1D29-5B4C-A98E-6FF0352D5DC9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs set <id> <convention_id> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.put=.
+
+#+name: cross_currency_fix_float_fixed_legs-set
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-set.ores :exports none
+cross_currency_fix_float_fixed_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: BA273E83-1194-587F-9C46-58E2391CF9D7
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs put-many --count <n> <id> <convention_id> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.put_many=.
+
+#+name: cross_currency_fix_float_fixed_legs-put-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-put-many.ores :exports none
+cross_currency_fix_float_fixed_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1D343AE8-1CA8-5778-AB47-327AA0EC94FF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.delete=.
+
+#+name: cross_currency_fix_float_fixed_legs-delete
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-delete.ores :exports none
+cross_currency_fix_float_fixed_legs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 605400AC-7A54-5AED-8EF0-1CE86D84190A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.delete_many=.
+
+#+name: cross_currency_fix_float_fixed_legs-delete-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-delete-many.ores :exports none
+cross_currency_fix_float_fixed_legs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: 35A39D3F-9A6C-5BC2-8375-93A80F3B4A6B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs.list_by_convention_id=.
+
+#+name: cross_currency_fix_float_fixed_legs-by-convention-id
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-by-convention-id.ores :exports none
+cross_currency_fix_float_fixed_legs by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 29B384BA-FCB9-5008-9349-B09EF5FFEF54
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs_versions.list=.
+
+#+name: cross_currency_fix_float_fixed_legs-versions
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-versions.ores :exports none
+cross_currency_fix_float_fixed_legs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1793E43A-8AFE-5E39-BA90-1DFEBD612B04
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_fixed_legs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_fixed_legs_versions.get=.
+
+#+name: cross_currency_fix_float_fixed_legs-version
+#+begin_src ores-shell :tangle cross_currency_fix_float_fixed_legs-version.ores :exports none
+cross_currency_fix_float_fixed_legs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

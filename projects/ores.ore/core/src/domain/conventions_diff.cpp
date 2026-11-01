@@ -62,11 +62,13 @@ std::map<std::string, int> element_counts(const std::string& xml) {
     return names;
 }
 
-/// The package without the families whose identity is not a value.
-std::string without_tenor_basis_swap(const conventions_package& p) {
+/// The package without the joined kinds, whose central and part rows carry a
+/// provisional key rather than a value.
+std::string without_joined_kinds(const conventions_package& p) {
     std::string out;
     for (const auto& row : p.bundle.rows) {
-        if (conventions_family::is_tenor_basis_swap_family(row.family))
+        if (conventions_family::is_tenor_basis_swap_family(row.family) ||
+            conventions_family::is_cross_currency_fix_float_family(row.family))
             continue;
         out += row.family + "\x1f" + std::to_string(row.sequence) + "\x1f" + row.payload + "\n";
     }
@@ -161,11 +163,15 @@ std::string conventions_difference(const conventions& original,
     // survives neither direction, so this catches it.
     const auto mapped_document = split_conventions(original);
     const auto mapped_export = split_conventions(exported);
-    if (without_tenor_basis_swap(mapped_document) != without_tenor_basis_swap(mapped_export))
+    if (without_joined_kinds(mapped_document) != without_joined_kinds(mapped_export))
         return path + ": the export reads back as different conventions";
 
     if (tenor_basis_swap_facts(mapped_document) != tenor_basis_swap_facts(mapped_export))
         return path + ": the export reads back as a different tenor basis swap";
+
+    if (conventions_family::cross_currency_fix_float_facts(mapped_document.bundle) !=
+        conventions_family::cross_currency_fix_float_facts(mapped_export.bundle))
+        return path + ": the export reads back as a different cross-currency fix-float swap";
 
     return {};
 }

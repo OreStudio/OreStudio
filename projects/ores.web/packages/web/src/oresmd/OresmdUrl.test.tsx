@@ -113,9 +113,9 @@ describe('OresmdUrl', () => {
         expect(draw(URI, { parsed: parts('series'), list: none })).not.toContain('<a ');
     });
 
-    it('is plain text for a fixing, because a fixing has no page', () => {
+    it('is a link to the fixing series page for a fixing', () => {
         const html = draw(FIXING, { parsed: parts('fixing'), list: listOf(['term']) });
-        expect(html).not.toContain('<a ');
+        expect(html).toContain(`href="/market-data/fixings?uri=${encodeURIComponent(FIXING)}"`);
         expect(html).toContain('EURIBOR');
     });
 

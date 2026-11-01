@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 8EED0888-B80F-42FB-9B60-EE35ADEBFA1A
+:END:
+#+title: Refuse a generated SQL identifier that PostgreSQL truncates into a collision
+#+description: The generator builds index, trigger and policy names that exceed PostgreSQL's 63-byte limit in some forty places, and PostgreSQL truncates them silently; nothing fails when two truncate to the same name.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:sql:check:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A check that fails when two SQL identifiers in the schema truncate to the same
+63-byte name. PostgreSQL cuts every identifier longer than 63 bytes and prints
+only a notice, so two long names that share their first 63 bytes become one
+name, and the second index, trigger or policy replaces the first, or its create
+fails. The check would read the create scripts, truncate each identifier as
+PostgreSQL does, and refuse a collision. A later step could make the generator
+shorten its names so none needs truncating.
+
+* Why
+
+A database recreation prints some forty truncation notices: unique indexes,
+notify triggers, RLS policies and functions, most of them generated. Today the
+truncated names stay distinct, but nothing proves it. The split of the cross
+currency fix float convention added three more, the
+=dq_cross_currency_fix_float_*_artefact_convention_name_idx= indexes, and a
+publish function whose 68-byte name worked only because the create and the
+call were cut in the same way. The PR #4351 review asked for a check that
+would stop a later collision.
+
+* References
+
+- PR #4351, review point 5.
+- The truncation notices of =compass db recreate -y -k=.
+
+* See also
+
+-

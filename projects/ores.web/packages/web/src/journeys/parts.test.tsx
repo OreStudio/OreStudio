@@ -344,7 +344,7 @@ describe('the tenant form', () => {
         expect(html).not.toContain('Root LEI');
     });
 
-    it('opens its form when the profile states its own details and declares settings', () => {
+    it('states a declared setting in the summary instead of opening the form', () => {
         const html = render(
             <TenantForm
                 profile={profile}
@@ -356,8 +356,15 @@ describe('the tenant form', () => {
             />,
         );
 
+        /*
+         * The setting is readable where it stands, and the field that edits it
+         * is not on screen: most people take the demonstration as it stands, and
+         * the button is what opens the form for the one who does not.
+         */
         expect(html).toContain('Root LEI');
-        expect(html).not.toContain('Empty operational uses its standard settings.');
+        expect(html).toContain('9695ACMEGROUP0000030');
+        expect(html).toContain('Edit');
+        expect(html).toContain('Empty operational uses its standard settings.');
     });
 
     it('states the forced change beside the password it applies to', () => {
@@ -473,5 +480,36 @@ describe("a run's step", () => {
         const html = render(<RunStep step={step} words={(sentence) => `[${sentence}]`} />);
 
         expect(html).toContain('[Import the legal entities]');
+    });
+
+    it('states how long a finished step took', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    completed_at: '2026-11-01 17:00:41.000000Z',
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('41s');
+    });
+
+    it('states no time for a step that has not finished', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    started_at: '2026-11-01 17:00:00.000000Z',
+                    completed_at: null,
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).not.toMatch(/\d+m?s</);
     });
 });

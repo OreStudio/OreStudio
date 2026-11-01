@@ -73,7 +73,7 @@ export function FeedPage({ kind }: { readonly kind: FeedKind }): ReactNode {
 }
 
 /** The rows each part of a feed holds, and whether the person may write them. */
-function useFeedParts(
+export function useFeedParts(
     kind: FeedKind,
     id: string,
 ): readonly (FeedPart & { readonly mayRemove: boolean })[] {

@@ -171,6 +171,7 @@ set(files
     "messaging/nature_dimension_protocol_codec.cpp"
     "messaging/origin_dimension_protocol_codec.cpp"
     "messaging/publication_protocol_codec.cpp"
+    "messaging/publish_from_dq_protocol_codec.cpp"
     "messaging/subject_area_protocol_codec.cpp"
     "messaging/treatment_dimension_protocol_codec.cpp"
 )

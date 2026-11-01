@@ -92,6 +92,7 @@ const std::string test_secret("feed-config-test-secret");
 const std::string test_start_subject("ores.test.feed_config.start");
 const std::string test_stop_subject("ores.test.feed_config.stop");
 const std::string test_list_subject("ores.test.feed_config.list");
+const std::string test_calibrate_subject("ores.test.feed_config.calibrate");
 
 // Mints an HS256 token the handler's verifier accepts, scoped to the test
 // tenant and party with the given roles.
@@ -367,6 +368,7 @@ struct config_fixture {
     std::optional<ores::nats::service::subscription> start_sub;
     std::optional<ores::nats::service::subscription> stop_sub;
     std::optional<ores::nats::service::subscription> list_sub;
+    std::optional<ores::nats::service::subscription> calibrate_sub;
 
     config_fixture()
         : nats(ores::testing::make_nats_options())
@@ -395,6 +397,12 @@ struct config_fixture {
                 ores::synthetic::service::feed_config_handler h(
                     nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.list(std::move(msg));
+            });
+        calibrate_sub = nats.queue_subscribe(
+            test_calibrate_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+                ores::synthetic::service::feed_config_handler h(
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                h.calibrate(std::move(msg));
             });
     }
 };
@@ -610,4 +618,41 @@ TEST_CASE("feed_config_list_requires_both_permissions", "[feed_config_handler][i
                               std::string(ores::nats::headers::bearer_prefix) + token}});
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("feed_config_calibrate_writes_only_with_the_write_permissions",
+          "[feed_config_handler][integration]") {
+    config_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto read_only = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
+    const auto send = [&](bool apply) {
+        return f.nats.request_sync(test_calibrate_subject,
+                                   ores::nats::default_wire_codec().encode(calibrate_request{
+                                       .asset_class_code = "fx", .config_id = {}, .apply = apply}),
+                                   {{std::string(ores::nats::headers::authorization),
+                                     std::string(ores::nats::headers::bearer_prefix) + read_only}});
+    };
+
+    const auto applied = send(true);
+    REQUIRE(applied.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(applied.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+
+    const auto read = send(false);
+    CHECK_FALSE(read.headers.contains(std::string(ores::nats::headers::x_error)));
+
+    // The feeds run for every tenant, so a tenant holding both writes still may not apply.
+    const auto tenant_writer = mint_token(f.db.tenant_id().to_string(),
+                                          test_party,
+                                          {"synthetic::fx_spot_generation_configs:read",
+                                           "synthetic::fx_spot_generation_configs:write",
+                                           "synthetic::gmm_components:write"});
+    const auto by_tenant =
+        f.nats.request_sync(test_calibrate_subject,
+                            ores::nats::default_wire_codec().encode(calibrate_request{
+                                .asset_class_code = "fx", .config_id = {}, .apply = true}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + tenant_writer}});
+    REQUIRE(by_tenant.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(by_tenant.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }

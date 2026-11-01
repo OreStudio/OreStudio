@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A45723B2-0591-4E20-AB8D-7CA07F62F1A8
+:END:
+#+title: Give every generated handler registrar a responder
+#+description: 54 generated handler registrars in seven components have subjects no service answers; decide for each whether to call it or retire it, then add the component to the handler-registrars gate.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:messaging:tooling:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =handler-registrars= check in =./compass.sh check= fails when a generated
+handler registrar is never called and its subjects are not subscribed by hand.
+It covers only the components that pass today: ores.assets, ores.compute,
+ores.dq, ores.marketdata, ores.scheduler, ores.synthetic and ores.variability.
+A census on 2026-11-01 found the rest:
+
+| Component       | Registrars without a responder |
+|-----------------+--------------------------------|
+| ores.refdata    | 17                             |
+| ores.analytics  | 16                             |
+| ores.trading    | 10                             |
+| ores.reporting  | 7                              |
+| ores.workflow   | 2                              |
+| ores.iam        | 1                              |
+| ores.inbox      | 1                              |
+
+For each, call the registrar from the component's =registrar.cpp=, or retire
+it when the entity is not meant to be served. Then add the component to
+=CHECKED_COMPONENTS=. Run the check script without the list to see the names.
+
+* Why
+
+The synthetic calibration policy, provider order and fallback were generated
+but never called, so the calibration screen timed out reading its policy, and
+neither the build nor a test noticed. A request on any of the 54 subjects above
+times out the same way.
+
+* References
+
+- =projects/ores.codegen/scripts/check_handler_registrar_composition.py=
+- =projects/ores.synthetic/core/src/messaging/registrar.cpp=
+- =projects/ores.codegen/modeling/codegen_entity_post_generation_checklist.org=
+
+* See also
+
+- [[id:F18A305D-FE28-4EAE-BB7F-01787ACDCF2D][Task: Exercise the calibration screens]]

@@ -25,8 +25,15 @@
 #ifndef ORES_ASSETS_API_MESSAGING_IMAGE_OPERATIONS_PROTOCOL_HPP
 #define ORES_ASSETS_API_MESSAGING_IMAGE_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.assets.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::assets::messaging {
@@ -145,6 +152,168 @@ struct ensure_image_response {
     std::string image_id;
 };
 
+/**
+ * @brief The members of upload_image_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const upload_image_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"mime_type", &upload_image_request::mime_type},
+        ::ores::utility::codec::field{"data", &upload_image_request::data},
+    };
 }
+
+/**
+ * @brief The members of upload_image_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const upload_image_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &upload_image_response::result},
+        ::ores::utility::codec::field{"image_id", &upload_image_response::image_id},
+    };
+}
+
+/**
+ * @brief The members of get_image_upload_policy_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_image_upload_policy_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_image_upload_policy_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_image_upload_policy_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_image_upload_policy_response::result},
+        ::ores::utility::codec::field{"formats", &get_image_upload_policy_response::formats},
+        ::ores::utility::codec::field{"max_size_bytes",
+                                      &get_image_upload_policy_response::max_size_bytes},
+        ::ores::utility::codec::field{"min_width", &get_image_upload_policy_response::min_width},
+        ::ores::utility::codec::field{"min_height", &get_image_upload_policy_response::min_height},
+    };
+}
+
+/**
+ * @brief The members of ensure_image_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ensure_image_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"code", &ensure_image_request::code},
+    };
+}
+
+/**
+ * @brief The members of ensure_image_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ensure_image_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &ensure_image_response::result},
+        ::ores::utility::codec::field{"image_id", &ensure_image_response::image_id},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::upload_image_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::upload_image_request& v);
+    static ores::assets::messaging::upload_image_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::upload_image_request& v);
+    static ores::assets::messaging::upload_image_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::upload_image_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::upload_image_response& v);
+    static ores::assets::messaging::upload_image_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::upload_image_response& v);
+    static ores::assets::messaging::upload_image_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT
+    wire_traits<ores::assets::messaging::get_image_upload_policy_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::assets::messaging::get_image_upload_policy_request& v);
+    static ores::assets::messaging::get_image_upload_policy_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::assets::messaging::get_image_upload_policy_request& v);
+    static ores::assets::messaging::get_image_upload_policy_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT
+    wire_traits<ores::assets::messaging::get_image_upload_policy_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::assets::messaging::get_image_upload_policy_response& v);
+    static ores::assets::messaging::get_image_upload_policy_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::assets::messaging::get_image_upload_policy_response& v);
+    static ores::assets::messaging::get_image_upload_policy_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::ensure_image_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::ensure_image_request& v);
+    static ores::assets::messaging::ensure_image_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::ensure_image_request& v);
+    static ores::assets::messaging::ensure_image_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ASSETS_API_EXPORT wire_traits<ores::assets::messaging::ensure_image_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::assets::messaging::ensure_image_response& v);
+    static ores::assets::messaging::ensure_image_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::assets::messaging::ensure_image_response& v);
+    static ores::assets::messaging::ensure_image_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

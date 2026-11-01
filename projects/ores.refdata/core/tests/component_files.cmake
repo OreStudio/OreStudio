@@ -75,7 +75,6 @@ set(files
     "crm_enabled_derived_pair_eventing_integration_tests.cpp"
     "crm_topology_config_eventing_integration_tests.cpp"
     "cross_currency_basis_convention_eventing_integration_tests.cpp"
-    "cross_currency_fix_float_convention_eventing_integration_tests.cpp"
     "csa_eligible_currency_eventing_integration_tests.cpp"
     "csa_eventing_integration_tests.cpp"
     "currency_eventing_integration_tests.cpp"

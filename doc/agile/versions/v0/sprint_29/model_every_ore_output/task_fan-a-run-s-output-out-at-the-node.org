@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fan-a-run-s-output-out-at-the-node
+#+pr: 4348
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -33,11 +33,11 @@ run's audit blob and is not the path a reader takes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -56,17 +56,42 @@ run's audit blob and is not the path a reader takes.
 
 * Plan
 
-The node already has the output directory. It walks it once, compresses each
-file, and uploads it, then writes the manifest last so a manifest that exists is
-a manifest whose files exist.
+A run's output reaches its readers one file at a time. The node already has the
+engine's directory on disk, so it uploads each file as its own gzipped object
+beside the archive, and a manifest that names them. A reader asks the manifest
+which files it models and fetches those, by name.
 
-The post-processor and marketdata change from "one archive, unpack it" to "a
-list of files, fetch each". The keys are compute's, under
-=compute/output/<result_id>/<file_name>.gz=, so no other component invents a
-layout.
+The shape:
 
-This removes the two downloads and the two unpacks a run costs today, and it is
-what makes the store hold up when a grid finishes many runs at once.
+- Keys. =compute/output/{result_id}/{file}.gz= for each file and
+  =compute/output/{result_id}/manifest.json.gz= for the manifest. The archive keeps
+  its key, =compute/output/{result_id}.tar.gz=, as the run's audit blob.
+- Grant. The claim already grants a put on =results_path=, the canonical result
+  rows the node no longer writes. That slot becomes the output-file prefix, so
+  the token still carries five grants and none of them is dead.
+- Manifest. =ores.ore.core= owns it, beside the catalogue that names a file's
+  family: the result id, and for each file its name, its family (empty when no
+  family covers it), its bytes, its compressed bytes, its digest and its key. The
+  key is in the manifest so a reader that is handed one needs no knowledge of the
+  compute key layout.
+- Fetching. =ores.storage.core= reads one gzipped object back as bytes. Each
+  reader reads the manifest, keeps the families it models, and fetches those.
+- Readers. Reporting fetches the result families. Marketdata is handed the
+  manifest paths, not the archive paths, and fetches the market-state families.
+  Both archive-unpacking blocks go.
+
+A file no family covers is named in the manifest with an empty family, and the
+node logs it.
+
+The manifest is written last, so a manifest that exists names files that exist.
+
+The order of delivery:
+
+1. The keys and the grant, with the dead results slot removed.
+2. The manifest type, its JSON form and a round-trip test.
+3. The node writes the files and the manifest.
+4. Reporting reads through the manifest; its archive block goes.
+5. Marketdata reads through the manifest; its archive block goes.
 
 * Measurements
 
@@ -84,6 +109,17 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-01: The storage download already gunzips a blob, so the manifest is
+  gzipped like every other object under the prefix (=manifest.json.gz=), and the
+  readers read each object with one blob download.
+- 2026-11-01: The =ReportRun= role never held
+  =marketdata::market_state_payloads:write=, so every run's market state was
+  refused as forbidden. #4321 added the call without an end-to-end run to catch it.
+- 2026-11-01: The run log names ten files no family states yet: =capital_crif=,
+  =cashflow=, =dividends=, =fixings=, =marketdata=, =pricingstats=, =runtimes=,
+  =saccrdetail=, =log.txt= and =log_structured.json=. The manifest names them, so
+  the catalogue work can pick them up.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -99,12 +135,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4348][#4348]] | [compute] Fan a run's output out at the node |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Files in a subdirectory are dropped in silence | =application.cpp= | Accept | The node logs an entry that is not a file; the archive still holds it. |
+| 2 | Readers trust the manifest's keys and result id | =output_manifest.cpp= | Accept | =located_files= rebuilds each key beside the manifest and refuses another result's manifest. |
+| 3 | The digest is never checked | =output_manifest.cpp= | Accept | =verify_body= checks size and sha256 in both readers. |
+| 4 | The comment claims one copy in memory | =application.cpp= | Accept | The comment states the file and its compressed copy. Streaming waits for the blocks task. |
+| 5 | A failed upload leaves a half upload | =application.cpp= | Decline | The upload's exception marks the result failed, so no reader asks for its manifest. |
+| 6 | A skipped file is not in the manifest | =application.cpp= | Decline | The log says the file is not uploaded; a manifest entry with no object would be fetched. |
+| 7 | Familyless files are logged twice | =report_execution_handler.cpp= | Accept | Reporting no longer repeats the node's log. |
+| 8 | The not-modelled warning is gone | =report_execution_handler.cpp= | Decline | Reporting reads only files of a result family, so the list cannot be non-empty. |
 
 * Result
+
+The node uploads each file a run wrote as its own gzipped object under
+=compute/output/{result_id}/=, and a gzipped manifest that names each file's
+family, sizes and digest. Reporting reads the result files through the
+manifest, and marketdata reads the market-state files the same way. Neither
+unpacks an archive. The run's archive is still uploaded as its audit blob.
+
+Proved end to end on a recreated database with Acme provisioned: Group
+Consolidated Exposure (instance =b15ca172=) completed, the node uploaded 15
+files and the manifest, reporting stored 38 metrics from 4 result files, and
+marketdata stored the run's =todaysmarketcalibration= payload.

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
@@ -31,7 +31,12 @@ import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
 import { ReasonFields, useReason } from '../../refdata/shared.js';
 import { AreaTrail } from '../../shell/AreaTrail.js';
 import { ScreenFrame } from '../../shell/ScreenFrame.js';
-import { calibrationFeedPath, calibrationPath, calibrationPolicyPath } from '../../shell/paths.js';
+import {
+    PATHS,
+    calibrationFeedPath,
+    calibrationPath,
+    calibrationPolicyPath,
+} from '../../shell/paths.js';
 import { Metric } from '../../ui/Metric.js';
 import {
     Button,
@@ -42,13 +47,20 @@ import {
     PageHeader,
     Select,
     Tag,
+    cx,
 } from '../../ui/Primitives.js';
 import { useTabs } from '../../ui/Tabs.js';
+import { useFeedStory } from '../synthetic/FeedHistory.js';
+import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
+import { useFeedParts } from '../synthetic/FeedScreens.js';
 import { FeedStartMeasures } from '../synthetic/feedStart.js';
-import { fxFeedPath } from '../synthetic/fxFeeds.js';
+import { FX_FEED_KIND, fxFeedPath } from '../synthetic/fxFeeds.js';
+import { formatDateTime } from '../../ui/Time.js';
+import { CalibrationRun, useCalibrationRun } from './CalibrationRun.js';
 import {
     CALIBRATED_CLASSES,
     FILTERS,
+    calibrationEntries,
     filterOf,
     moveProvider,
     outcomeOf,
@@ -57,10 +69,17 @@ import {
     type FeedOutcome,
 } from './calibration.js';
 
-function useCalibration(assetClass: string) {
+/**
+ * A class's calibration. A screen of one feed names it, so the service resolves that feed
+ * alone; the key still starts with the class, so a change to the class refreshes it.
+ */
+function useCalibration(assetClass: string, configId?: string) {
     return useQuery({
-        queryKey: ['calibration', assetClass],
-        queryFn: () => api.calibration(assetClass),
+        queryKey:
+            configId === undefined
+                ? ['calibration', assetClass]
+                : ['calibration', assetClass, configId],
+        queryFn: () => api.calibration(assetClass, configId),
     });
 }
 
@@ -168,12 +187,26 @@ export function CalibrationPage(): ReactNode {
     const [search, setSearch] = useSearchParams();
     const filter = filterOf(search.get('filter'));
     const calibration = useCalibration(assetClass);
+    const client = useQueryClient();
+    const run = useCalibrationRun(assetClass, () => {
+        void client.invalidateQueries({ queryKey: ['calibration', assetClass] });
+        void client.invalidateQueries({ queryKey: ['history'] });
+    });
     const title = t('marketdata.calibration.title');
     const trail = <AreaTrail area="marketdata" screen={title} />;
     if (calibration.data === undefined) {
         return <Loading query={calibration} title={title} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const shown = visibleFeeds(data.feeds, filter);
     return (
         <div className="space-y-6">
@@ -183,24 +216,44 @@ export function CalibrationPage(): ReactNode {
                     title={title}
                     description={t('marketdata.calibration.lead')}
                     actions={
-                        <Field label={t('marketdata.calibration.assetClass')}>
-                            <Select
-                                value={assetClass}
-                                onChange={(event) =>
-                                    void navigate(calibrationPath(event.target.value))
-                                }
+                        <div className="flex items-end gap-2">
+                            <Field label={t('marketdata.calibration.assetClass')}>
+                                <Select
+                                    value={assetClass}
+                                    onChange={(event) =>
+                                        void navigate(calibrationPath(event.target.value))
+                                    }
+                                >
+                                    {CALIBRATED_CLASSES.map((c) => (
+                                        <option key={c} value={c}>
+                                            {t(`marketdata.calibration.classes.${c}`)}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Button
+                                variant="primary"
+                                onClick={() => void run.start(data.feeds)}
+                                disabled={run.active || data.feeds.length === 0}
+                                pending={run.active}
                             >
-                                {CALIBRATED_CLASSES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {t(`marketdata.calibration.classes.${c}`)}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
+                                {run.active
+                                    ? t('marketdata.calibration.calibrating')
+                                    : t('marketdata.calibration.calibrateAll')}
+                            </Button>
+                        </div>
                     }
                 />
                 <PolicyLine calibration={data} />
             </div>
+            {run.steps !== undefined && (
+                <CalibrationRun
+                    assetClass={assetClass}
+                    steps={run.steps}
+                    active={run.active}
+                    onClose={run.close}
+                />
+            )}
             <Coverage calibration={data} />
             <div
                 role="radiogroup"
@@ -260,9 +313,17 @@ export function CalibrationPage(): ReactNode {
                                     {feed.start.from_fixing ? feed.start.value : '—'}
                                 </td>
                                 <td className="py-2">
-                                    {feed.start.from_fixing
-                                        ? `${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`
-                                        : '—'}
+                                    {feed.start.from_fixing ? (
+                                        <Link
+                                            className="text-accent hover:underline"
+                                            to={`${PATHS.fixingSeries}?uri=${encodeURIComponent(feed.start.item)}`}
+                                            title={feed.start.item}
+                                        >
+                                            {`${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`}
+                                        </Link>
+                                    ) : (
+                                        '—'
+                                    )}
                                 </td>
                                 <td className="space-x-1 py-2">
                                     <OutcomeTag outcome={outcomeOf(feed)} />
@@ -344,8 +405,29 @@ function Candidates({
     );
 }
 
-/** The path from the policy through the candidates to the level the process starts from. */
-function Flow({
+/** A titled card, as every block of the feed page is drawn. */
+function Card({
+    title,
+    aside,
+    children,
+}: {
+    readonly title: string;
+    readonly aside?: ReactNode;
+    readonly children: ReactNode;
+}): ReactNode {
+    return (
+        <section className="card space-y-3 p-4">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-medium">{title}</h2>
+                {aside}
+            </header>
+            {children}
+        </section>
+    );
+}
+
+/** How the feed stands against the class: automatic, inheriting the policy, or overriding it. */
+function FeedBanner({
     calibration,
     feed,
 }: {
@@ -353,28 +435,256 @@ function Flow({
     readonly feed: CalibratedFeed;
 }): ReactNode {
     const { t } = useTranslation();
-    const chosen = feed.candidates.find((c) => c.state === 'chosen');
+    const overridden = overrides(feed);
+    const state = overridden
+        ? 'override'
+        : calibration.policy.from_policy_row
+          ? 'inherits'
+          : 'automatic';
+    const words = overridden
+        ? feed.explicit_items
+            ? t('marketdata.calibration.feed.overridesItems')
+            : t('marketdata.calibration.feed.overridesWindow', {
+                  days: String(feed.window_days_override ?? ''),
+              })
+        : state === 'automatic'
+          ? t('marketdata.calibration.feed.banner.automatic')
+          : t('marketdata.calibration.feed.banner.inherits', {
+                order: calibration.policy.provider_order.join(' → '),
+                window: String(calibration.policy.window_days),
+            });
     return (
-        <ol className="space-y-3 text-sm">
-            <li>
-                <p className="font-medium">{t('marketdata.calibration.flow.policy')}</p>
-                <PolicyLine calibration={calibration} />
-            </li>
-            <li>
-                <p className="font-medium">{t('marketdata.calibration.flow.candidates')}</p>
-                <p className="text-ink-muted">
-                    {feed.explicit_items
-                        ? t('marketdata.calibration.flow.explicit', {
-                              count: String(feed.candidates.length),
-                          })
-                        : t('marketdata.calibration.flow.derived', {
-                              count: String(feed.candidates.length),
-                          })}
+        <div
+            className={
+                overridden
+                    ? 'flex flex-wrap items-center gap-2 rounded-card border border-warn/40 bg-warn/10 p-3 text-sm'
+                    : 'flex flex-wrap items-center gap-2 rounded-card border border-line bg-raised p-3 text-sm'
+            }
+        >
+            <Tag tone={overridden ? 'warn' : 'muted'}>
+                {t(`marketdata.calibration.feed.badge.${state}`)}
+            </Tag>
+            <span className="flex-1">{words}</span>
+            <Link className="text-accent hover:underline" to={fxFeedPath(feed.config_id)}>
+                {t('marketdata.calibration.feed.editWindow')}
+            </Link>
+        </div>
+    );
+}
+
+/** Where a run that starts now takes its level from, with the measured volatility. */
+function StartCard({ feed }: { readonly feed: CalibratedFeed }): ReactNode {
+    const { t } = useTranslation();
+    const s = feed.start;
+    return (
+        <Card title={t('marketdata.calibration.feed.start')}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <div className="text-3xl font-semibold tabular-nums">
+                        {s.from_fixing ? s.value : '—'}
+                    </div>
+                    <div className="text-sm text-ink-muted">
+                        {s.from_fixing
+                            ? [s.provider_code, s.fixing_date ?? '', s.received_at ?? '']
+                                  .filter((x) => x !== '')
+                                  .join(' · ')
+                            : s.note}
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                    <OutcomeTag outcome={outcomeOf(feed)} />
+                    {s.inverted && (
+                        <Tag tone="muted">{t('marketdata.calibration.feed.inverse')}</Tag>
+                    )}
+                    {s.from_fixing && <Tag tone="muted">{s.provider_code}</Tag>}
+                </div>
+            </div>
+            <dl className="grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                    <Fact label={t('marketdata.calibration.feed.item')}>
+                        {s.from_fixing ? <OresmdUrl uri={s.item} /> : '—'}
+                    </Fact>
+                </div>
+                <Fact
+                    label={t('marketdata.calibration.feed.window')}
+                    value={
+                        s.from_fixing
+                            ? t('marketdata.calibration.feed.windowValue', {
+                                  used: String(s.used),
+                                  days: String(s.window_days),
+                              })
+                            : ''
+                    }
+                />
+                <Fact label={t('marketdata.calibration.feed.date')} value={s.fixing_date ?? ''} />
+            </dl>
+            {s.inverted && (
+                <p className="text-sm text-ink-muted">
+                    {t('marketdata.calibration.feed.invertedNote')}
                 </p>
+            )}
+            {s.from_fixing && s.note !== '' && <p className="text-sm text-ink-muted">{s.note}</p>}
+            {!s.from_fixing && (
+                <Notice tone="warn">
+                    {feed.refused
+                        ? t('marketdata.calibration.feed.statedRefusal')
+                        : t('marketdata.calibration.feed.statedFallback')}
+                </Notice>
+            )}
+        </Card>
+    );
+}
+
+const TRAIL_MARK = { chosen: '✓', skipped: '–', not_reached: '·' } as const;
+const TRAIL_TONE = {
+    chosen: 'text-up',
+    skipped: 'text-warn',
+    not_reached: 'text-ink-faint',
+} as const;
+
+/** Each candidate the resolver read, in rank order, and where the feed starts. */
+function Trail({ feed }: { readonly feed: CalibratedFeed }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <ul className="space-y-1.5 text-sm">
+            {feed.candidates.map((c) => (
+                <li key={c.item} className="flex gap-2">
+                    <span aria-hidden className={cx('w-3 font-semibold', TRAIL_TONE[c.state])}>
+                        {TRAIL_MARK[c.state]}
+                    </span>
+                    <span>
+                        <b>{c.provider_code}</b> — {c.reason}
+                    </span>
+                </li>
+            ))}
+            <li className="flex gap-2">
+                <span
+                    aria-hidden
+                    className={cx(
+                        'w-3 font-semibold',
+                        feed.start.from_fixing ? 'text-up' : 'text-warn',
+                    )}
+                >
+                    {feed.start.from_fixing ? '✓' : '–'}
+                </span>
+                <span>
+                    <b>{t('marketdata.calibration.feed.trailStart')}</b> —{' '}
+                    {feed.start.from_fixing
+                        ? t('marketdata.calibration.feed.trailTakes', {
+                              value: feed.start.value,
+                              provider: feed.start.provider_code,
+                          })
+                        : feed.refused
+                          ? t('marketdata.calibration.feed.trailRefused')
+                          : t('marketdata.calibration.feed.trailKept')}
+                </span>
             </li>
-            <li>
-                <p className="font-medium">{t('marketdata.calibration.flow.resolver')}</p>
-                <p className="text-ink-muted">
+        </ul>
+    );
+}
+
+/** The feed's own facts, and the way to its record. */
+function ThisFeed({ feed }: { readonly feed: CalibratedFeed }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <dl className="grid grid-cols-2 gap-3 text-sm">
+            <Fact
+                label={t('marketdata.calibration.feed.pair')}
+                value={`${feed.base_currency_code}/${feed.quote_currency_code}`}
+            />
+            <Fact label={t('marketdata.calibration.feed.source')} value={feed.source_name} />
+            <Fact
+                label={t('marketdata.calibration.feed.policyState')}
+                value={t(
+                    overrides(feed)
+                        ? 'marketdata.calibration.feed.badge.override'
+                        : 'marketdata.calibration.feed.badge.inherits',
+                )}
+            />
+            <Fact
+                label={t('marketdata.calibration.feed.runs')}
+                value={t(
+                    feed.running
+                        ? 'marketdata.calibration.feed.running'
+                        : 'marketdata.calibration.feed.stopped',
+                )}
+            />
+            <div className="col-span-2">
+                <Link className="text-accent hover:underline" to={fxFeedPath(feed.config_id)}>
+                    {t('marketdata.calibration.feed.openFeed')}
+                </Link>
+            </div>
+        </dl>
+    );
+}
+
+/** The path from the policy through the candidates to the level the process starts from. */
+function FlowDiagram({
+    calibration,
+    feed,
+}: {
+    readonly calibration: Calibration;
+    readonly feed: CalibratedFeed;
+}): ReactNode {
+    const { t } = useTranslation();
+    const p = calibration.policy;
+    const chosen = feed.candidates.find((c) => c.state === 'chosen');
+    const node = 'rounded-card border border-line bg-raised p-3';
+    return (
+        <div className="grid items-center gap-3 md:grid-cols-[1fr_auto_1.4fr_auto_1fr]">
+            <div className={node}>
+                <p className="text-xs text-ink-faint">{t('marketdata.calibration.flow.policy')}</p>
+                <p className="font-mono text-xs">
+                    {p.provider_order.length === 0
+                        ? t('marketdata.calibration.order.everyProvider')
+                        : p.provider_order.join(' → ')}
+                </p>
+                <p className="text-xs text-ink-muted">
+                    {t('marketdata.calibration.feed.windowDays', { days: String(p.window_days) })}
+                </p>
+            </div>
+            <span aria-hidden className="hidden text-ink-faint md:block">
+                →
+            </span>
+            <div className="space-y-1.5">
+                <p className="text-xs text-ink-faint">
+                    {t('marketdata.calibration.flow.candidates')}
+                </p>
+                {feed.candidates.length === 0 ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('marketdata.calibration.feed.noCandidates')}
+                    </p>
+                ) : (
+                    feed.candidates.map((c) => (
+                        <div
+                            key={c.item}
+                            className={cx(
+                                'flex items-center gap-2 rounded-chip border px-2 py-1 text-xs',
+                                c.state === 'chosen'
+                                    ? 'border-up/50 bg-up/10'
+                                    : 'border-line text-ink-muted',
+                            )}
+                        >
+                            <span className="tabular-nums">{c.rank}</span>
+                            <span className="flex-1">{c.provider_code}</span>
+                            <Tag tone={CANDIDATE_TONE[c.state]} small>
+                                {t(`marketdata.calibration.candidateState.${c.state}`)}
+                            </Tag>
+                        </div>
+                    ))
+                )}
+            </div>
+            <span aria-hidden className="hidden text-ink-faint md:block">
+                →
+            </span>
+            <div className={node}>
+                <p className="text-xs text-ink-faint">
+                    {t('marketdata.calibration.flow.resolver')}
+                </p>
+                <p className="text-2xl font-semibold tabular-nums">
+                    {feed.start.from_fixing ? feed.start.value : '—'}
+                </p>
+                <p className="text-xs text-ink-muted">
                     {chosen === undefined
                         ? feed.refused
                             ? t('marketdata.calibration.flow.refused')
@@ -385,27 +695,77 @@ function Flow({
                               date: feed.start.fixing_date ?? '',
                           })}
                 </p>
-            </li>
-            <li>
-                <p className="font-medium">{t('marketdata.calibration.flow.process')}</p>
-                <p className="text-ink-muted">
+                <p className="text-xs text-ink-muted">
                     {feed.start.hourly_spread == null
                         ? t('marketdata.calibration.flow.mixtureKept')
                         : t('marketdata.calibration.flow.mixtureScaled')}
                 </p>
-            </li>
-        </ol>
+            </div>
+        </div>
+    );
+}
+
+/** The calibrations that changed this feed, read from its history. */
+function RecentCalibrations({ configId }: { readonly configId: string }): ReactNode {
+    return (
+        <RecordStoreProvider store={syntheticStore}>
+            <CalibrationLog configId={configId} />
+        </RecordStoreProvider>
+    );
+}
+
+/** The feed's parts are synthetic records, so this reads them under the synthetic store. */
+function CalibrationLog({ configId }: { readonly configId: string }): ReactNode {
+    const { t, language } = useTranslation();
+    const parts = useFeedParts(FX_FEED_KIND, configId);
+    const story = useFeedStory({ id: configId, version: 0 }, FX_FEED_KIND.entity, parts, 'fx_feed');
+    if (story.error !== null) {
+        return <Notice tone="error">{story.error.message}</Notice>;
+    }
+    if (story.stream === undefined) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    const entries = calibrationEntries(story.stream.events);
+    if (entries.length === 0) {
+        return (
+            <p className="text-sm text-ink-muted">{t('marketdata.calibration.flow.noRecent')}</p>
+        );
+    }
+    return (
+        <table className="w-full text-sm">
+            <thead className="text-left text-xs text-ink-faint">
+                <tr>
+                    <th className="py-2">{t('marketdata.calibration.flow.when')}</th>
+                    <th className="py-2">{t('marketdata.calibration.flow.what')}</th>
+                    <th className="py-2">{t('marketdata.calibration.flow.by')}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {entries.map((e) => (
+                    <tr
+                        key={`${e.at}-${e.commentary}`}
+                        className="border-t border-line-subtle align-top"
+                    >
+                        <td className="whitespace-nowrap py-2 font-mono text-xs text-ink-muted">
+                            {formatDateTime(e.at, language)}
+                        </td>
+                        <td className="py-2">{e.commentary}</td>
+                        <td className="py-2 text-xs text-ink-muted">{e.actor}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
     );
 }
 
 const FEED_TABS = ['record', 'flow'] as const;
 
-/** One feed's calibration: its record (start, candidates, measures, exceptions) and its flow. */
+/** One feed's calibration: its record (start, candidates, trail, measures) and its flow. */
 export function CalibrationFeedPage(): ReactNode {
     const { t } = useTranslation();
     const assetClass = useAssetClass();
     const { configId = '' } = useParams();
-    const calibration = useCalibration(assetClass);
+    const calibration = useCalibration(assetClass, configId);
     const client = useQueryClient();
     const reason = useReason('amend');
     const [commentary, setCommentary] = useState('');
@@ -428,6 +788,13 @@ export function CalibrationFeedPage(): ReactNode {
         mutationFn: () => api.clearCalibrationPin(configId, intent),
         onSuccess: refresh,
     });
+    const calibrate = useMutation({
+        mutationFn: () => api.runCalibration(assetClass, configId),
+        onSuccess: () => {
+            void refresh();
+            void client.invalidateQueries({ queryKey: ['history'] });
+        },
+    });
     const { tab, bar } = useTabs({
         label: t('marketdata.calibration.feed.tabs'),
         tabs: FEED_TABS,
@@ -445,6 +812,15 @@ export function CalibrationFeedPage(): ReactNode {
         return <Loading query={calibration} title={listTitle} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const feed = data.feeds.find((f) => f.config_id === configId);
     if (feed === undefined) {
         return (
@@ -458,7 +834,8 @@ export function CalibrationFeedPage(): ReactNode {
         );
     }
     const missingCommentary = reason.needsCommentary && commentary.trim() === '';
-    const failure = pin.error ?? clear.error;
+    const failure = pin.error ?? clear.error ?? calibrate.error;
+    const done = calibrate.data;
     return (
         <div className="space-y-6">
             <div>
@@ -468,81 +845,69 @@ export function CalibrationFeedPage(): ReactNode {
                     description={feed.source_name}
                     subdued
                     actions={
-                        <Link
-                            className="text-sm text-accent hover:underline"
-                            to={calibrationPath(assetClass)}
-                        >
-                            {t('marketdata.calibration.feed.back')}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <Link
+                                className="text-sm text-accent hover:underline"
+                                to={calibrationPath(assetClass)}
+                            >
+                                {t('marketdata.calibration.feed.back')}
+                            </Link>
+                            <Button
+                                variant="primary"
+                                pending={calibrate.isPending}
+                                onClick={() => calibrate.mutate()}
+                            >
+                                {t('marketdata.calibration.feed.calibrate')}
+                            </Button>
+                        </div>
                     }
                 />
             </div>
+            {done !== undefined && (
+                <Notice
+                    tone={
+                        done.outcome === 'failed' || done.outcome === 'refused'
+                            ? 'error'
+                            : done.outcome === 'kept'
+                              ? 'warn'
+                              : 'success'
+                    }
+                >
+                    {done.outcome_message}
+                    {done.outcome === 'updated' && done.running
+                        ? ` ${t('marketdata.calibration.run.nextStart')}`
+                        : ''}
+                </Notice>
+            )}
+            <FeedBanner calibration={data} feed={feed} />
             {bar}
             {tab === 'record' ? (
-                <div className="space-y-6">
-                    <section className="card space-y-3 p-4">
-                        <h2 className="font-medium">{t('marketdata.calibration.feed.start')}</h2>
-                        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            <Fact label={t('marketdata.calibration.columns.state')}>
-                                <OutcomeTag outcome={outcomeOf(feed)} />
-                            </Fact>
-                            <Fact
-                                label={t('marketdata.calibration.feed.level')}
-                                value={feed.start.from_fixing ? feed.start.value : ''}
+                <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+                    <div className="space-y-4">
+                        <StartCard feed={feed} />
+                        <Card
+                            title={t('marketdata.calibration.feed.candidates')}
+                            aside={
+                                <span className="text-xs text-ink-faint">
+                                    {t('marketdata.calibration.feed.windowDays', {
+                                        days: String(
+                                            feed.window_days_override ?? data.policy.window_days,
+                                        ),
+                                    })}
+                                </span>
+                            }
+                        >
+                            <Candidates
+                                feed={feed}
+                                pinning={pin.isPending || missingCommentary}
+                                onPin={(c) => pin.mutate(c)}
                             />
-                            <Fact
-                                label={t('marketdata.calibration.feed.provider')}
-                                value={feed.start.provider_code}
+                            <ReasonFields
+                                reason={reason}
+                                commentary={commentary}
+                                onCommentary={setCommentary}
+                                missing={missingCommentary}
                             />
-                            <Fact
-                                label={t('marketdata.calibration.feed.date')}
-                                value={feed.start.fixing_date ?? ''}
-                            />
-                        </dl>
-                        {feed.start.inverted && (
-                            <p className="text-sm text-ink-muted">
-                                {t('marketdata.calibration.feed.invertedNote')}
-                            </p>
-                        )}
-                        {feed.start.note !== '' && (
-                            <p className="text-sm text-ink-muted">{feed.start.note}</p>
-                        )}
-                        {feed.start.from_fixing && <FeedStartMeasures start={feed.start} />}
-                    </section>
-                    <section className="card space-y-3 p-4">
-                        <h2 className="font-medium">
-                            {t('marketdata.calibration.feed.candidates')}
-                        </h2>
-                        <Candidates
-                            feed={feed}
-                            pinning={pin.isPending || missingCommentary}
-                            onPin={(c) => pin.mutate(c)}
-                        />
-                    </section>
-                    <section className="card space-y-3 p-4">
-                        <h2 className="font-medium">
-                            {t('marketdata.calibration.feed.exceptions')}
-                        </h2>
-                        {overrides(feed) ? (
-                            <Notice tone="warn">
-                                {feed.explicit_items
-                                    ? t('marketdata.calibration.feed.overridesItems')
-                                    : t('marketdata.calibration.feed.overridesWindow', {
-                                          days: String(feed.window_days_override ?? ''),
-                                      })}
-                            </Notice>
-                        ) : (
-                            <p className="text-sm text-ink-muted">
-                                {t('marketdata.calibration.feed.followsPolicy')}
-                            </p>
-                        )}
-                        <ReasonFields
-                            reason={reason}
-                            commentary={commentary}
-                            onCommentary={setCommentary}
-                            missing={missingCommentary}
-                        />
-                        <div className="flex flex-wrap gap-2">
                             {feed.explicit_items && (
                                 <Button
                                     disabled={missingCommentary}
@@ -552,27 +917,51 @@ export function CalibrationFeedPage(): ReactNode {
                                     {t('marketdata.calibration.feed.clearPin')}
                                 </Button>
                             )}
-                            <Link
-                                className="text-sm text-accent hover:underline"
-                                to={fxFeedPath(feed.config_id)}
-                            >
-                                {t('marketdata.calibration.feed.editWindow')}
-                            </Link>
-                            <Link
-                                className="text-sm text-accent hover:underline"
-                                to={calibrationPolicyPath(assetClass)}
-                            >
-                                {t('marketdata.calibration.feed.toPolicy')}
-                            </Link>
-                        </div>
-                        {failure !== null && <Notice tone="error">{failure.message}</Notice>}
-                    </section>
+                        </Card>
+                    </div>
+                    <div className="space-y-4">
+                        <Card title={t('marketdata.calibration.feed.trail')}>
+                            <Trail feed={feed} />
+                        </Card>
+                        <Card title={t('marketdata.calibration.feed.measures')}>
+                            {feed.start.from_fixing ? (
+                                <FeedStartMeasures start={feed.start} />
+                            ) : (
+                                <p className="text-sm text-ink-muted">
+                                    {t('marketdata.calibration.feed.noMeasures')}
+                                </p>
+                            )}
+                        </Card>
+                        <Card title={t('marketdata.calibration.feed.thisFeed')}>
+                            <ThisFeed feed={feed} />
+                        </Card>
+                    </div>
                 </div>
             ) : (
-                <section className="card p-4">
-                    <Flow calibration={data} feed={feed} />
-                </section>
+                <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+                    <div className="space-y-4">
+                        <Card
+                            title={t('marketdata.calibration.flow.title', {
+                                pair: `${feed.base_currency_code}/${feed.quote_currency_code}`,
+                            })}
+                        >
+                            <FlowDiagram calibration={data} feed={feed} />
+                        </Card>
+                        <Card title={t('marketdata.calibration.feed.trail')}>
+                            <Trail feed={feed} />
+                        </Card>
+                    </div>
+                    <div className="space-y-4">
+                        <Card title={t('marketdata.calibration.flow.inherits')}>
+                            <PolicyLine calibration={data} />
+                        </Card>
+                        <Card title={t('marketdata.calibration.flow.recent')}>
+                            <RecentCalibrations configId={configId} />
+                        </Card>
+                    </div>
+                </div>
             )}
+            {failure !== null && <Notice tone="error">{failure.message}</Notice>}
         </div>
     );
 }
@@ -634,6 +1023,15 @@ export function CalibrationPolicyPage(): ReactNode {
         return <Loading query={calibration} title={listTitle} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const p = data.policy;
     const shown = draft ?? {
         windowDays: String(p.window_days),

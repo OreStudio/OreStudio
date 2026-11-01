@@ -67,16 +67,30 @@
 -- catalogs, datasets, dataset bundles, etc.)
 \ir ./populate/populate.sql
 
--- Grant table permissions to appropriate roles
+-- Grant table permissions to appropriate roles, on the tables and views the
+-- DDL user created. "all tables in schema public" would also name the views
+-- that extensions such as pgTAP add as the superuser, which the DDL user may
+-- not grant on, and each would warn.
 -- Note: TRUNCATE is included for test database cleanup
--- Owner role gets full access
-grant select, insert, update, delete, truncate on all tables in schema public to :owner_role;
-
--- RW role gets standard DML access
-grant select, insert, update, delete, truncate on all tables in schema public to :rw_role;
+-- Owner role gets full access; RW role gets standard DML access. Each grant
+-- reports a status line, so their output is discarded; errors still show.
+\o /dev/null
+select format('grant select, insert, update, delete, truncate on %I to %I, %I',
+              c.relname, :'owner_role', :'rw_role')
+from pg_class c
+where c.relnamespace = 'public'::regnamespace
+  and c.relkind in ('r', 'p', 'v', 'm', 'f')
+  and c.relowner = current_user::regrole
+\gexec
 
 -- RO role gets read-only access
-grant select on all tables in schema public to :ro_role;
+select format('grant select on %I to %I', c.relname, :'ro_role')
+from pg_class c
+where c.relnamespace = 'public'::regnamespace
+  and c.relkind in ('r', 'p', 'v', 'm', 'f')
+  and c.relowner = current_user::regrole
+\gexec
+\o
 
 -- Grant sequence permissions to appropriate roles
 grant usage, select on all sequences in schema public to :owner_role, :rw_role;

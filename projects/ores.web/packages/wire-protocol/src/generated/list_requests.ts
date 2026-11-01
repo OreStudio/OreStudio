@@ -2271,12 +2271,47 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'refdata.v1.cross_currency_fix_float_conventions.list': {
+    'refdata.v1.cross_currency_fix_float_fixed_legs.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['cross_currency_fix_float_conventions'],
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_fixed_legs'],
     },
-    'refdata.v1.cross_currency_fix_float_conventions_versions.list': {
+    'refdata.v1.cross_currency_fix_float_fixed_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_fixed_legs'],
+    },
+    'refdata.v1.cross_currency_fix_float_fixed_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_fix_float_float_legs.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_float_legs'],
+    },
+    'refdata.v1.cross_currency_fix_float_float_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_float_legs'],
+    },
+    'refdata.v1.cross_currency_fix_float_float_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_fix_float_swap_terms.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_swap_terms'],
+    },
+    'refdata.v1.cross_currency_fix_float_swap_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_fix_float_swap_terms'],
+    },
+    'refdata.v1.cross_currency_fix_float_swap_terms_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

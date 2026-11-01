@@ -44,6 +44,7 @@ import type {
     WorkflowProgress,
     WorkflowStepSummary,
 } from '@ores/wire-protocol/browser';
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 
 /** How often an open run is asked about again. */
 const POLL_INTERVAL_MS = 1500;
@@ -288,11 +289,13 @@ export function TenantForm({
 }): ReactNode {
     const { t } = useTranslation();
     /*
-     * A profile that declares settings opens its form, even when it states its
-     * own details: a setting is something the person is meant to see and change,
-     * and hiding it behind a summary makes it look like a report.
+     * A profile that states its own details opens as a summary: most people
+     * take the demonstration as it stands, and a form of nine numbers is a
+     * demand on someone who only wanted to press Continue. The settings are
+     * stated in the summary so they can be read, and the button opens them for
+     * the person who came to change one.
      */
-    const [open, setOpen] = useState(profile.tenant.name === '' || profile.parameters.length > 0);
+    const [open, setOpen] = useState(profile.tenant.name === '');
     /*
      * The fields a person has typed in themselves. A proposal stops the moment
      * somebody edits the field it proposes, which is what the old client did:
@@ -391,6 +394,12 @@ export function TenantForm({
         : undefined;
 
     if (!open) {
+        /*
+         * Every setting the profile declares is stated here, read-only, so the
+         * book the run will write is visible before anyone commits to it. A
+         * person who wants a different one presses the button, which is the
+         * whole difference between a report and a demand.
+         */
         const rows: readonly (readonly [string, string])[] = [
             [t('journey.details.rows.tenant'), `${details.name} (${details.code})`],
             [t('journey.details.rows.hostname'), details.hostname],
@@ -401,6 +410,13 @@ export function TenantForm({
                     ? t('journey.details.passwordMine')
                     : t('journey.details.passwordTyped'),
             ],
+            ...profile.parameters.map(
+                (parameter) =>
+                    [
+                        parameter.label || parameter.name,
+                        details.parameters[parameter.name] || '—',
+                    ] as const,
+            ),
         ];
         return (
             <div className="space-y-5">
@@ -608,12 +624,49 @@ const STEP_TONE: Record<string, string> = {
 const OPEN_RUN = new Set(['', 'pending', 'in_progress', 'compensating']);
 
 /**
+ * How long a step took, in the units a person reads on a rail: 400ms, 41s,
+ * 2m 05s, 1h 07m.
+ *
+ * The step's own timestamps are the fact. A step that has not started states
+ * none, and a step still running has no end to measure to, so both answer
+ * nothing rather than a zero.
+ */
+function stepDuration(
+    startedAt: WireTimestamp | null,
+    completedAt: WireTimestamp | null,
+): string {
+    if (startedAt === null || completedAt === null) {
+        return '';
+    }
+    const ms =
+        fromWireTimestamp(completedAt).getTime() - fromWireTimestamp(startedAt).getTime();
+    if (ms < 0) {
+        return '';
+    }
+    if (ms < 1000) {
+        return `${ms}ms`;
+    }
+    const totalSeconds = Math.round(ms / 1000);
+    if (totalSeconds < 60) {
+        return `${totalSeconds}s`;
+    }
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60);
+    if (minutes < 60) {
+        return seconds === 0 ? `${minutes}m` : `${minutes}m ${seconds}s`;
+    }
+    const remainder = minutes % 60;
+    return remainder === 0 ? `${Math.floor(minutes / 60)}h` : `${Math.floor(minutes / 60)}h ${remainder}m`;
+}
+
+/**
  * One line of the rail.
  *
  * The run states each step's name and description in a person's words, and the
  * catalogue translates them where somebody has; a run started before a step
  * had words shows the step's identity instead, which is at least the name the
- * server logs.
+ * server logs. A finished step states how long it took, because the rail is
+ * what a person reads to know which part of a long run was slow.
  */
 export function RunStep({
     step,
@@ -625,6 +678,7 @@ export function RunStep({
 }): ReactNode {
     const tone = STEP_TONE[step.status] ?? 'text-ink';
     const label = step.label !== '' ? words(step.label) : step.name;
+    const took = stepDuration(step.started_at ?? step.created_at, step.completed_at);
     /*
      * Why a step finished with a warning. The step's own sentence is the last
      * thing it logged, which is how a step says it had nothing to do rather
@@ -645,7 +699,12 @@ export function RunStep({
                 {STEP_MARK[step.status] ?? '○'}
             </span>
             <span className={step.status === 'pending' ? 'text-ink-faint' : 'text-ink'}>
-                <span className="block">{label}</span>
+                <span className="block">
+                    {label}
+                    {took !== '' && (
+                        <span className="ml-2 text-xs tabular-nums text-ink-faint">{took}</span>
+                    )}
+                </span>
                 {step.description !== '' && (
                     <span className="mt-0.5 block text-xs text-ink-faint">
                         {words(step.description)}

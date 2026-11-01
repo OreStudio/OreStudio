@@ -39,6 +39,9 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 - Enum tables and JSON schemas come from the generator.
 - Nothing in ores.database, ores.diff, ores.eventing, ores.logging, ores.nats, ores.orgmode, ores.platform, ores.service, ores.storage or ores.utility includes reflect-cpp.
 - vcpkg.json and every CMakeLists.txt no longer name reflect-cpp.
+- A codec precompiled header holding =ores.utility/codec/struct_codec.hpp=
+  takes the place of =ores.rfl.pch= in every library that encodes, so the
+  codec headers' leaf includes are parsed once per library, not once per unit.
 - No doc outside the agile history and the plans names reflect-cpp or rfl:
   the knowledge docs, the component overviews and the codegen template docs
   describe the generated codecs. Most of the 53 docs that name it today are

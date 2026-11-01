@@ -18,7 +18,8 @@
  *
  */
 #include "ores.telemetry.service/app/nats_poller.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.telemetry.service/app/nats_monitoring_replies.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -35,67 +36,12 @@
 #include <boost/beast/http/write.hpp>
 #include <boost/system/system_error.hpp>
 #include <chrono>
-#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::telemetry::service::app {
 
 using namespace ores::logging;
 
-// ============================================================================
-// Internal types for parsing NATS monitoring JSON responses
-// ============================================================================
-
-namespace {
-
-/**
- * @brief Maps the relevant fields of the NATS /varz response.
- *
- * Field names match the NATS monitoring HTTP API.
- * Note: NATS reports memory as "mem" (bytes).
- */
-struct varz_response {
-    std::uint64_t in_msgs{0};
-    std::uint64_t out_msgs{0};
-    std::uint64_t in_bytes{0};
-    std::uint64_t out_bytes{0};
-    int connections{0};
-    std::uint64_t mem{0};
-    int slow_consumers{0};
-};
-
-struct jsz_stream_state {
-    std::uint64_t messages{0};
-    std::uint64_t bytes{0};
-    int consumer_count{0};
-};
-
-/**
- * @brief One entry of the per-account "stream_detail" list.
- *
- * In nats-server v2.14 the /jsz "streams" field is the stream *count*
- * (an int), not the stream list — the details live under
- * account_details[].stream_detail[], and each entry is flat (name at
- * top level, not under config).
- */
-struct jsz_stream_detail {
-    std::string name;
-    jsz_stream_state state;
-};
-
-struct jsz_account_detail {
-    std::vector<jsz_stream_detail> stream_detail;
-};
-
-// nats-server tags account_details `omitempty` in its Go struct, so the
-// field is absent from the JSON entirely when there are no JetStream
-// accounts/streams to report (e.g. right after NATS starts). It must be
-// optional or parsing fails every poll cycle in that state.
-struct jsz_response {
-    std::optional<std::vector<jsz_account_detail>> account_details;
-};
-
-} // namespace
 
 // ============================================================================
 // Construction and URL parsing
@@ -162,21 +108,17 @@ std::string nats_poller::http_get(const std::string& target) const {
 
 void nats_poller::poll_server() {
     const auto body = http_get("/varz");
-    const auto parsed = rfl::json::read<varz_response>(body);
-    if (!parsed) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to parse /varz response";
-        return;
-    }
+    const auto parsed = utility::codec::object::read_json<varz_response>(body);
 
     ores::telemetry::messaging::nats_server_sample sample;
     sample.sampled_at = std::chrono::system_clock::now();
-    sample.in_msgs = parsed->in_msgs;
-    sample.out_msgs = parsed->out_msgs;
-    sample.in_bytes = parsed->in_bytes;
-    sample.out_bytes = parsed->out_bytes;
-    sample.connections = parsed->connections;
-    sample.mem_bytes = parsed->mem;
-    sample.slow_consumers = parsed->slow_consumers;
+    sample.in_msgs = parsed.in_msgs;
+    sample.out_msgs = parsed.out_msgs;
+    sample.in_bytes = parsed.in_bytes;
+    sample.out_bytes = parsed.out_bytes;
+    sample.connections = parsed.connections;
+    sample.mem_bytes = parsed.mem;
+    sample.slow_consumers = parsed.slow_consumers;
 
     repo_.insert_server_sample(ctx_, sample);
     BOOST_LOG_SEV(lg(), trace) << "Stored NATS server sample: " << sample.connections
@@ -185,16 +127,11 @@ void nats_poller::poll_server() {
 
 void nats_poller::poll_streams() {
     const auto body = http_get("/jsz?streams=true");
-    const auto parsed = rfl::json::read<jsz_response>(body);
-    if (!parsed) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to parse /jsz response";
-        return;
-    }
+    const auto parsed = utility::codec::object::read_json<jsz_response>(body);
 
     const auto now = std::chrono::system_clock::now();
     std::vector<ores::telemetry::messaging::nats_stream_sample> samples;
-    for (const auto& account :
-         parsed->account_details.value_or(std::vector<jsz_account_detail>{})) {
+    for (const auto& account : parsed.account_details.value_or(std::vector<jsz_account_detail>{})) {
         for (const auto& stream : account.stream_detail) {
             ores::telemetry::messaging::nats_stream_sample s;
             s.sampled_at = now;

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 184
+Tables: 186
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2093,30 +2093,17 @@ package "refdata" #FFF3E0 {
     key (ORE <Id> element).
     end note
 
-    entity ores_refdata_cross_currency_fix_float_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cross_currency_fix_float_fixed_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
-        * settlement_days : integer
-        * settlement_calendar : text
-        * settlement_convention : text
+        * convention_id : uuid <<FK>>
         * fixed_currency : text
         * fixed_frequency : text
         * fixed_convention : text
         * fixed_day_count_fraction : text
-        * index : text
-          eom : boolean
-          is_resettable : boolean
-          float_index_is_resettable : boolean
-          include_spread : boolean
-          lookback : text
-          fixing_days : integer
-          rate_cutoff : integer
-          is_averaged : boolean
-          observation_shift : boolean
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2125,19 +2112,86 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cross_currency_fix_float_conventions_tbl
+    note right of ores_refdata_cross_currency_fix_float_fixed_legs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cross-Currency Fix-Float Convention Table
-    Describes how ORE builds a cross-currency swap whose fixed leg pays one
-    currency and whose floating leg pays an index in another. Corresponds to the
-    <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the
-    natural key (ORE <Id> element).
-    Nine fields are required and nine are optional. The corpus sets all nine
-    required in all forty-one elements and sets none of the optional ones, so the
-    optional half of the mapping is proven by a case that builds the element rather
-    than by the corpus walk.
+    Cross Currency Fix Float Fixed Leg Table
+    The leg a cross-currency fix-float swap pays in the currency it fixes, as
+    ORE's FixedCurrency, FixedFrequency, FixedConvention and
+    FixedDayCounter. It is a part because its four fields hold one invariant: the
+    terms the fixed leg is built from, and a convention either states them or does
+    not. The floating leg beside it holds none of them.
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_float_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * index : text
+          float_index_is_resettable : boolean
+          include_spread : boolean
+          lookback : text
+          fixing_days : integer
+          rate_cutoff : integer
+          is_averaged : boolean
+          observation_shift : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_float_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Fix Float Float Leg Table
+    The leg a cross-currency fix-float swap pays off an index, as ORE's Index
+    with its fixing rules: whether the index is resettable, whether the spread is
+    included in the coupon, the lookback, the fixing days, the rate cutoff, whether
+    coupons are averaged, and whether the observation is shifted. They are a part
+    because a convention that states the floating leg states that block or none of
+    it; the fixed leg beside it holds none of them.
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_swap_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+          eom : boolean
+          is_resettable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_swap_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Fix Float Swap Terms Table
+    The terms a cross-currency fix-float swap states once for both legs, as ORE's
+    SettlementDays, SettlementCalendar, SettlementConvention, EOM and
+    IsResettable. It is a part because its fields hold one invariant: each
+    applies to the whole swap at once, so neither leg can hold it alone. The
+    settlement fields fix the settlement date, the end of month rule rolls the
+    coupons of both legs, and the resettable flag resets the notional of the
+    swap. The fixed and floating legs beside it hold none of them.
     end note
 
     entity ores_refdata_csa_eligible_currencies_tbl <<temporal>> #C6F0D8 {
@@ -6595,6 +6649,9 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_fixed_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_float_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_swap_terms_tbl : "has"
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"

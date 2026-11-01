@@ -21,7 +21,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | STARTED                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Nothing.                             |
 | Waiting on    | Nothing.                               |
@@ -64,6 +64,8 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 | [[id:E34BBE9C-DCD2-4F4C-99E7-CE088A097CEA][Retire the vintage path and make fixings the default]] | DONE | 2026-11-01 | 2026-11-01 | The code no longer reads a vintage, but the notes, the seeds and the config default still describe one. State that ranked public fixings are the only calibration, make the fixing path the default, and keep a fixed level only as a stated fallback. |
 | [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] | DONE | 2026-10-31 | 2026-11-01 | One policy per asset class states the window, whether an inverse is allowed, the provider order and the fallback; a feed derives its candidates from the pair and the catalogue, and pins an item or a window only as an exception. |
 | [[id:6C1F463B-29F6-43F4-A6C5-45EE161BBD35][Compute and serve the calibration measures]] | DONE | 2026-11-01 | 2026-11-01 | Realised volatility, drift, range, sample coverage, jump count, freshness and provider dispersion from the fixings behind a start, served to the calibration screens and recorded for a later policy that learns from them. |
+| [[id:F18A305D-FE28-4EAE-BB7F-01787ACDCF2D][Exercise the calibration screens]] | DONE | 2026-11-01 | 2026-11-01 | Test the calibration list, the feed record and flow tabs, the policy screen and the calibrate action end to end, record the defects, and fix them on this branch. |
+| [[id:CDE59222-34A3-4C5B-B37F-7B56D1F274B0][Accept all public terms at setup]] | BACKLOG | | | One server operation accepts a list of providers at the versions shown; the first run offers it as an accept-all tick box and bootstrap setup does it by default, so a new system fetches public fixings without a manual step. |
 
 * Decisions
 
@@ -76,6 +78,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 - Calibration belongs to the market, not to each feed (2026-10-31). With nothing configured, the defaults calibrate every feed; a policy per asset class and a pin on one feed are optional refinements. A list authored on every feed does not scale and hides the market's actual coverage, so no feed needs one, though a feed may still state one as an exception.
 - The measures are recorded, and only volatility calibrates today (2026-10-31). Realised volatility scales the mixture; drift, jumps, dispersion, freshness and coverage are visible and stored for a later policy that learns from them. A measure never blocks a start.
 - Vintage is decommissioned, and public fixings are the only calibration (2026-10-31). The old path read an observation from a stored vintage; it is gone from the code. The notes, the seeds and the config default follow. A pair with no fixing keeps a fixed level, and the screen says so: that is a stated fallback, not a second source.
+- A calibration is stored as a new version of the feed (2026-11-01). Before, it changed only the running feed and left no record. It now writes the moved level and deviations under =system.calibration=, so the feed's own history is the calibration log, and a running feed takes them at its next start.
 - It supersedes the task [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]], whose five new tables are not built. The design and its history are in [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 
 * Out of scope

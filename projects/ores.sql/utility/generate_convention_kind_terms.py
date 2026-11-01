@@ -52,6 +52,7 @@ TRIGGERS = os.path.join(ROOT, "projects", "ores.sql", "create", "refdata",
                         "refdata_convention_terms_validate_create.sql")
 TRIGGER_DROPS = os.path.join(ROOT, "projects", "ores.sql", "drop", "refdata",
                              "refdata_convention_terms_validate_drop.sql")
+MODELS = os.path.join(ROOT, "projects", "ores.refdata", "modeling")
 
 # The asset classes a kind may serve; a screen draws its kinds under them.
 ASSET_CLASSES = ("interest-rates", "fx", "inflation", "credit", "commodity", "bond")
@@ -85,7 +86,9 @@ READ_ELSEWHERE = {
 }
 
 # The element a kind is written as, where no pack_family call names it.
-ELEMENT_OF = {"TENOR_BASIS_SWAP": "TenorBasisSwap", "CURRENCY_PAIR": "FX"}
+ELEMENT_OF = {"TENOR_BASIS_SWAP": "TenorBasisSwap",
+              "CROSS_CURRENCY_FIX_FLOAT": "CrossCurrencyFixFloat",
+              "CURRENCY_PAIR": "FX"}
 
 FUNCTION = re.compile(r"\n(?:refdata::domain::[\w:]+|[\w:]+)\s+conventions_mapper::map_\w+\([^)]*\)\s*\{"
                       r"(.*?)\n\}", re.S)
@@ -338,16 +341,31 @@ $$ language plpgsql;
 """
 
 
+TABLENAME = re.compile(r"^:tablename:\s+(\w+)\s*$", re.M)
+
+
+def table_of(entity):
+    """The table an entity's model names, which a plural rule cannot derive."""
+    path = os.path.join(MODELS, f"ores.refdata.{entity}.org")
+    if not os.path.exists(path):
+        sys.exit(f"{entity}: no model at {path}, so the generator cannot name its table")
+    match = TABLENAME.search(open(path, encoding="utf-8").read())
+    if match is None:
+        sys.exit(f"{entity}: its model at {path} states no :tablename:")
+    return match.group(1)
+
+
 def render_triggers(all_rows):
     entities = sorted({r["entity"] for r in all_rows})
+    tables = {e: table_of(e) for e in entities}
     # Closing a version updates only valid_to, so the update clause names the
     # term columns: an old row is not checked again against a set that changed.
     columns = {e: sorted({r["column"] for r in all_rows if r["entity"] == e})
                for e in entities}
     triggers = "".join(
-        f"\ncreate or replace trigger ores_refdata_{e}s_terms_trg\n"
+        f"\ncreate or replace trigger {tables[e][:-len('_tbl')]}_terms_trg\n"
         f"before insert or update of {', '.join(columns[e])}\n"
-        f"on ores_refdata_{e}s_tbl\n"
+        f"on {tables[e]}\n"
         f"for each row execute function ores_refdata_validate_convention_terms_fn('{e}');\n"
         for e in entities)
     create = (LICENCE + """
@@ -361,7 +379,7 @@ def render_triggers(all_rows):
  */
 """ + TRIGGER_FUNCTION + triggers)
     drops = "".join(
-        f"drop trigger if exists ores_refdata_{e}s_terms_trg on ores_refdata_{e}s_tbl;\n"
+        f"drop trigger if exists {tables[e][:-len('_tbl')]}_terms_trg on {tables[e]};\n"
         for e in entities)
     drop = (LICENCE + """
 /**

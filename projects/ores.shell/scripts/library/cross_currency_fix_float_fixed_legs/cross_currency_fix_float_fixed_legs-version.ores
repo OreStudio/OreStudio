@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/cross_currency_fix_float_fixed_legs/cross_currency_fix_float_fixed_leg.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cross_currency_fix_float_fixed_legs version 00000000-0000-0000-0000-000000000000 --version 1

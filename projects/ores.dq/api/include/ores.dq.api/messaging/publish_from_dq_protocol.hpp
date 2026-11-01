@@ -25,8 +25,15 @@
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_FROM_DQ_PROTOCOL_HPP
 
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::dq::messaging {
 
@@ -191,6 +198,217 @@ struct publish_badge_mappings_from_dq_request {
     static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The members of publish_from_dq_command, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_from_dq_command&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"dataset_id", &publish_from_dq_command::dataset_id},
+        ::ores::utility::codec::field{"tenant_id", &publish_from_dq_command::tenant_id},
+        ::ores::utility::codec::field{"mode", &publish_from_dq_command::mode},
+        ::ores::utility::codec::field{"params_json", &publish_from_dq_command::params_json},
+    };
 }
+
+/**
+ * @brief The members of publish_from_dq_result, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_from_dq_result&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &publish_from_dq_result::success},
+        ::ores::utility::codec::field{"error_message", &publish_from_dq_result::error_message},
+        ::ores::utility::codec::field{"records_inserted",
+                                      &publish_from_dq_result::records_inserted},
+        ::ores::utility::codec::field{"records_updated", &publish_from_dq_result::records_updated},
+        ::ores::utility::codec::field{"records_skipped", &publish_from_dq_result::records_skipped},
+        ::ores::utility::codec::field{"records_deleted", &publish_from_dq_result::records_deleted},
+    };
+}
+
+/**
+ * @brief The members of publish_ip2country_from_dq_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_ip2country_from_dq_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of publish_coding_schemes_from_dq_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_coding_schemes_from_dq_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of publish_badge_severities_from_dq_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_badge_severities_from_dq_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of publish_badge_definitions_from_dq_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_badge_definitions_from_dq_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of publish_code_domains_from_dq_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_code_domains_from_dq_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of publish_badge_mappings_from_dq_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_badge_mappings_from_dq_request&) {
+    return std::tuple{};
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_from_dq_command> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_from_dq_command& v);
+    static ores::dq::messaging::publish_from_dq_command read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_from_dq_command& v);
+    static ores::dq::messaging::publish_from_dq_command
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_from_dq_result> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_from_dq_result& v);
+    static ores::dq::messaging::publish_from_dq_result read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::publish_from_dq_result& v);
+    static ores::dq::messaging::publish_from_dq_result
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_ip2country_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::publish_ip2country_from_dq_request& v);
+    static ores::dq::messaging::publish_ip2country_from_dq_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_ip2country_from_dq_request& v);
+    static ores::dq::messaging::publish_ip2country_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_coding_schemes_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::publish_coding_schemes_from_dq_request& v);
+    static ores::dq::messaging::publish_coding_schemes_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_coding_schemes_from_dq_request& v);
+    static ores::dq::messaging::publish_coding_schemes_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::publish_badge_severities_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::publish_badge_severities_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_severities_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_badge_severities_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_severities_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::publish_badge_definitions_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::publish_badge_definitions_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_definitions_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_badge_definitions_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_definitions_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_code_domains_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::publish_code_domains_from_dq_request& v);
+    static ores::dq::messaging::publish_code_domains_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_code_domains_from_dq_request& v);
+    static ores::dq::messaging::publish_code_domains_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::publish_badge_mappings_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::publish_badge_mappings_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_mappings_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::publish_badge_mappings_from_dq_request& v);
+    static ores::dq::messaging::publish_badge_mappings_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

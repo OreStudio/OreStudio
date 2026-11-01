@@ -26,10 +26,16 @@
 #define ORES_TELEMETRY_CORE_MESSAGING_SERVICE_SAMPLES_PROTOCOL_HPP
 
 #include "ores.telemetry.core/domain/service_state.hpp"
+#include "ores.telemetry.core/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::telemetry::messaging {
@@ -221,6 +227,205 @@ struct get_service_roster_response {
     std::vector<service_roster_slot> slots;
 };
 
+/**
+ * @brief The members of service_sample, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const service_sample&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sampled_at", &service_sample::sampled_at},
+        ::ores::utility::codec::field{"service_name", &service_sample::service_name},
+        ::ores::utility::codec::field{"instance_id", &service_sample::instance_id},
+        ::ores::utility::codec::field{"host_id", &service_sample::host_id},
+        ::ores::utility::codec::field{"version", &service_sample::version},
+    };
 }
+
+/**
+ * @brief The members of service_heartbeat_message, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const service_heartbeat_message&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"service_name", &service_heartbeat_message::service_name},
+        ::ores::utility::codec::field{"instance_id", &service_heartbeat_message::instance_id},
+        ::ores::utility::codec::field{"host_id", &service_heartbeat_message::host_id},
+        ::ores::utility::codec::field{"version", &service_heartbeat_message::version},
+    };
+}
+
+/**
+ * @brief The members of get_service_samples_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_service_samples_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_service_samples_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_service_samples_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_service_samples_response::success},
+        ::ores::utility::codec::field{"message", &get_service_samples_response::message},
+        ::ores::utility::codec::field{"samples", &get_service_samples_response::samples},
+    };
+}
+
+/**
+ * @brief The members of service_roster_slot, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const service_roster_slot&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"service_name", &service_roster_slot::service_name},
+        ::ores::utility::codec::field{"display_name", &service_roster_slot::display_name},
+        ::ores::utility::codec::field{"description", &service_roster_slot::description},
+        ::ores::utility::codec::field{"service_account", &service_roster_slot::service_account},
+        ::ores::utility::codec::field{"slot", &service_roster_slot::slot},
+        ::ores::utility::codec::field{"state", &service_roster_slot::state},
+        ::ores::utility::codec::field{"instance_id", &service_roster_slot::instance_id},
+        ::ores::utility::codec::field{"host_id", &service_roster_slot::host_id},
+        ::ores::utility::codec::field{"version", &service_roster_slot::version},
+        ::ores::utility::codec::field{"sampled_at", &service_roster_slot::sampled_at},
+    };
+}
+
+/**
+ * @brief The members of get_service_roster_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_service_roster_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_service_roster_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_service_roster_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_service_roster_response::success},
+        ::ores::utility::codec::field{"message", &get_service_roster_response::message},
+        ::ores::utility::codec::field{"slots", &get_service_roster_response::slots},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::service_sample> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::service_sample& v);
+    static ores::telemetry::messaging::service_sample read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::service_sample& v);
+    static ores::telemetry::messaging::service_sample read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::service_heartbeat_message> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::service_heartbeat_message& v);
+    static ores::telemetry::messaging::service_heartbeat_message read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::service_heartbeat_message& v);
+    static ores::telemetry::messaging::service_heartbeat_message
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_service_samples_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::get_service_samples_request& v);
+    static ores::telemetry::messaging::get_service_samples_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_service_samples_request& v);
+    static ores::telemetry::messaging::get_service_samples_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_service_samples_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::telemetry::messaging::get_service_samples_response& v);
+    static ores::telemetry::messaging::get_service_samples_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_service_samples_response& v);
+    static ores::telemetry::messaging::get_service_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT wire_traits<ores::telemetry::messaging::service_roster_slot> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::service_roster_slot& v);
+    static ores::telemetry::messaging::service_roster_slot read_json(std::string_view text);
+    static std::string write_msgpack(const ores::telemetry::messaging::service_roster_slot& v);
+    static ores::telemetry::messaging::service_roster_slot
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_service_roster_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::get_service_roster_request& v);
+    static ores::telemetry::messaging::get_service_roster_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_service_roster_request& v);
+    static ores::telemetry::messaging::get_service_roster_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TELEMETRY_CORE_EXPORT
+    wire_traits<ores::telemetry::messaging::get_service_roster_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::telemetry::messaging::get_service_roster_response& v);
+    static ores::telemetry::messaging::get_service_roster_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::telemetry::messaging::get_service_roster_response& v);
+    static ores::telemetry::messaging::get_service_roster_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

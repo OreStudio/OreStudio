@@ -15,6 +15,8 @@
 
 This page documents a test scenario verifying [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the connectivity screens]] in [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
 
+Superseded by [[id:9F2D549B-56AB-46D7-88D1-28DD051B44D4][Walk the new screens end to end]], which uses the final =/market-data= routes and the shipped screens. It is kept as the record of the first walkthrough.
+
 * Before you start
 
 The tester opens the client on a ready environment. Do this yourself before handing over.
@@ -43,7 +45,7 @@ The tester opens the client on a ready environment. Do this yourself before hand
 | Parent story  | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]   |
 | Target screen | =/connectivity= (Publishers, Suppliers, Adapters, Feeds) and =/public-rates= (Publishers, Compare, Fetch) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | ABANDONED                             |
 
 * Steps
 

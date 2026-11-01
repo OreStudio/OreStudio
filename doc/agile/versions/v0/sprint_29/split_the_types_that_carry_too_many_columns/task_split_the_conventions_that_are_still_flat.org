@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-conventions-that-are-still-flat
+#+pr: 4351
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
-#+environment:
+#+updated: 2026-11-01
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The three remaining convention kinds are on the family's shape: a central conven
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | The cross currency fix float kind is split into a central row and three parts, in review. |
+| Waiting on   | Review of the fix float PR.            |
+| Next         | Split the cross currency basis kind, then commodity future. |
+| Last touched | 2026-11-01                             |
 
 * Acceptance
 
@@ -105,9 +105,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fix float conventions the DQ seed stages | 24 central rows; 24 rows in each of swap terms, fixed leg and float leg | =select count(*)= on =ores_dq_conventions_artefact_tbl= (kind =CROSS_CURRENCY_FIX_FLOAT=) and the three part artefact tables, after =compass db recreate -y -k= | a47616746f |
+| Fix float conventions live after Acme provisioning | 120 conventions over 5 parties, 120 with exactly one row of each part, 0 malformed | =build/ccff_shape.sql= through =compass db sql -u ddl= | a47616746f |
+| Rows one conventions publish writes | 2297 inserted; a second publish skips 2297 | =ores_refdata_publish_conventions_from_dq_fn= in a rolled-back transaction | e1e512ef31 |
+| Convention terms of the fix float kind | 18: the name, 5 swap terms, 4 fixed leg, 8 float leg | =generate_convention_kind_terms.py --check= | a47616746f |
+| Conventions export digests | 72 of 72 files unchanged against main's recorded digests | =ores.ore.core.tests=, "the exported conventions corpus matches its recorded digests" | a47616746f |
 
 * Notes
+
+** Cross currency fix float: where the swap terms go
+
+The flat type had five fields that neither leg holds: =settlement_days=,
+=settlement_calendar=, =settlement_convention=, =eom= and =is_resettable=. The
+first draft put them on the central =convention= row. We rejected that,
+because the central row is shared by every kind. Five columns that only this
+kind states would then sit on every kind's row, and the data-oriented model
+forbids a column that belongs to another kind's part.
+
+The five fields are one part, =cross_currency_fix_float_swap_terms=. The
+name is "swap terms" and not "settlement", because =eom= rolls the coupons
+of both legs and =is_resettable= resets the notional. Neither is a
+settlement term. The cross currency basis kind carries the same five fields,
+so it can use the same part shape.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The terms of one cross currency fix float convention that apply to both legs. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family part: one part of the =cross_currency_fix_float_convention= family. |
+| Invariant, or none | Each field applies to the whole swap at the instant the convention is written, so no leg can hold it alone. The settlement days, calendar and convention fix the settlement date together. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. The part is related to its central row and its two legs by =convention_id=, and the family write puts all four rows in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and a third row in the Parts table. |
+| Generated artefact | =cross_currency_fix_float_swap_terms= with its table, codec, repository, service and protocol, and a =swap_terms= array in =cross_currency_fix_float_convention_item=. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
+| Consistency point | None: the part is not a view of the world. |
+| Forbidden here | Putting kind-specific columns on the shared central row, and nesting the part inside another part's object on the wire. |
 
 * Test Scenarios
 
@@ -124,12 +156,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4351][#4351]] | [refdata,ore,sql] Split the cross currency fix float convention into a central row and three parts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the split dropped the flat kind's shell commands and gave the parts none | =ores.refdata.cross_currency_fix_float_*.org= | Accept | The parts enable =ores.cpp.shell-command=, as the tenor parts do; the flat recipe and scripts are retired. |
+| 2 | Local review: the conventions difference skipped the fix float rows and compared nothing in their place | =conventions_diff.cpp= | Accept | =cross_currency_fix_float_facts= compares them by stated identity. |
+| 3 | Local review: =without_tenor_basis_swap= also skips the fix float rows, so its name is wrong | =conventions_diff.cpp= | Accept | Renamed =without_joined_kinds=. |
+| 4 | Local review: the publisher's name was 68 bytes and PostgreSQL cut it to 63 | =refdata_publish_from_dq_create.sql= | Accept | Renamed =ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn=. |
+| 5 | Local review: the generated DQ artefact indexes of the three parts exceed 63 bytes | =dq_cross_currency_fix_float_*_artefact_create.sql= | Decline | The truncated names stay distinct; the generator builds over-long index names in some forty places on main, so it is a codegen issue of its own. |
+| 6 | Misspell: =LOAD_PROFILE_1_EXPLICT= | =refdata_conventions_seed_populate.sql= | Decline | The id is ORE's own, from its example corpus, and is on main. |
+| 7 | PR #4351, @claude 1: pin that a fix float convention missing a part is refused | =xml_roundtrip_conventions_tests.cpp= | Accept | =conventions_cross_currency_fix_float_without_a_part_is_refused= removes each part in turn and expects the export to throw. |
+| 8 | PR #4351, @claude 2: the join matches parts with a nested loop | =conventions_family_cross_currency_fix_float.cpp= | Decline | A package holds one document, at most 24 fix float conventions, and the tenor basis swap's join is the same loop. |
+| 9 | PR #4351, @claude 3: confirm main fails the checks the PR says it does | gate | Accept | Against main 88065820c9, route-inventory, unity-collisions, bff-list-requests and the web format check pass, so the PR's list was stale; after the rebase only xml-benchmark-recorded still fails on main. bff-list-requests failed on the branch: the generated list request table is regenerated. |
+| 10 | PR #4351, @claude 4: rebuild fully before merging | build | Accept | The branch is rebuilt in full after this round and its suites rerun. |
+| 11 | PR #4351, @claude 5: a check that refuses a truncation collision | codegen | Decline here | Over-long generated names are a codegen issue on main; captured as [[id:8EED0888-B80F-42FB-9B60-EE35ADEBFA1A][Refuse a generated SQL identifier that PostgreSQL truncates into a collision]]. |
 
 * Result

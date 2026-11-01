@@ -71,12 +71,13 @@ export interface WorkAssignmentEvent {
      */
     output_uri: string;
     /**
-     * @brief Pre-assigned upload location for the canonical result rows (HTTP PUT).
+     * @brief Upload location under which each output file goes as its own object.
      *
-     * Beside the archive and granted to the same claim. Empty when the job produces
-     * no rows.
+     * A prefix, granted to the same claim as the archive: the node puts each file
+     * the engine wrote at =<prefix>/<file>.gz= and the manifest that names them at
+     * =<prefix>/manifest.json=, so a reader fetches the files it models by name.
      */
-    results_uri: string;
+    output_files_uri: string;
     /**
      * @brief Pre-assigned upload location for the canonical log rows.
      *
@@ -213,13 +214,13 @@ export interface ClaimWorkResponse {
      */
     output_uri: string;
     /**
-     * @brief Pre-assigned upload location for the canonical result rows.
+     * @brief Upload location under which each output file goes as its own object.
      *
-     * Beside the archive and granted to the same claim: the node writes the rows it
-     * marshalled from the engine's output here, and the reporting service reads them
-     * to load its result table. An empty value means the job produces no rows.
+     * A prefix, granted to the same claim as the archive: the node puts each file
+     * the engine wrote at =<prefix>/<file>.gz= and the manifest that names them at
+     * =<prefix>/manifest.json=, so a reader fetches the files it models by name.
      */
-    results_uri: string;
+    output_files_uri: string;
     /**
      * @brief Pre-assigned upload location for the canonical log rows.
      *

@@ -38,7 +38,9 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
 
+{{^family}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
+{{/family}}
 {{#message_codec_includes}}
 #include "{{{.}}}"
 {{/message_codec_includes}}

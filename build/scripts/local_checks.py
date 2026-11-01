@@ -1003,6 +1003,15 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_history_registrar_composition.py"),
         classes=("services", "cpp", "modeling", "codegen"),
     ),
+    # A handler registrar nothing calls leaves its subjects with no responder, so
+    # every request on them times out. The generated file compiles and the
+    # service serves every other subject, so no build or test notices.
+    Check(
+        id="handler-registrars",
+        title="Every generated handler registrar has a responder",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_handler_registrar_composition.py"),
+        classes=("services", "cpp", "modeling", "codegen"),
+    ),
     # A durable subject with no stream times out at the publisher, and two
     # streams over one subject stop the second service starting. The server
     # refuses both, so no running broker can show them; the check reads the

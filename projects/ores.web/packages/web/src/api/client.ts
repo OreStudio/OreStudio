@@ -724,6 +724,10 @@ const calibratedFeedSchema = z.object({
     refused: z.boolean(),
     start: feedStartSchema,
     candidates: z.array(calibrationCandidateSchema).default([]),
+    running: z.boolean().default(false),
+    /** What an applied calibration did; empty on a read that writes nothing. */
+    outcome: z.enum(['', 'updated', 'unchanged', 'kept', 'refused', 'failed']).default(''),
+    outcome_message: z.string().default(''),
 });
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
@@ -2423,12 +2427,33 @@ export const api = {
     },
 
     /** How every feed of a class resolves under its policy; nothing starts. */
-    async calibration(assetClass: string): Promise<Calibration> {
+    /** A class's calibration, or only the feed that @p configId names when it is given. */
+    async calibration(assetClass: string, configId?: string): Promise<Calibration> {
+        const query = configId === undefined ? '' : `?configId=${encodeURIComponent(configId)}`;
         return calibrationSchema.parse(
-            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}`, {
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}${query}`, {
                 method: 'GET',
             }),
         );
+    },
+
+    /**
+     * Calibrates one feed of a class and stores what moved as a new version of its config.
+     * A running feed takes the stored values at its next start.
+     */
+    async runCalibration(assetClass: string, configId: string): Promise<CalibratedFeed> {
+        const reply = z.object({ feeds: z.array(calibratedFeedSchema) }).parse(
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}/run`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ configId }),
+            }),
+        );
+        const feed = reply.feeds[0];
+        if (feed === undefined) {
+            throw new Error(`The calibration of ${configId} answered no feed.`);
+        }
+        return feed;
     },
 
     /** States a class's calibration policy. Only the system tenant may. */

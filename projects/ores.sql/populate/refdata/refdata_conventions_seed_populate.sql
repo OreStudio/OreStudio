@@ -28,14 +28,14 @@
 -- convention set. One artefact table per live convention table holds the rows;
 -- the publish function ores_refdata_publish_conventions_from_dq_fn resolves
 -- each artefact table to its live table by name. The atomised tenor basis swap
--- stages into the central convention artefact table and its two part artefact
--- tables. Each block is seeded only when its own table holds no rows for the
+-- and cross-currency fix-float swap stage into the central convention artefact
+-- table and their part artefact tables. Each block is seeded only when its own table holds no rows for the
 -- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
 -- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null. The atomised convention's central row stages
--- null, because the kind names two indices and the live write path leaves the
--- column null.
+-- requirement) carries null. An atomised convention's central row stages
+-- null, because the central row is shared by every atomised kind and the live
+-- write path leaves the column null.
 
 
 -- =============================================================================
@@ -1188,38 +1188,140 @@ begin
             (v_dataset_id, v_tenant_id, 'USD-ZMW-XCCY-BASIS', 1, v_party_id, '2', 'ZMW,US', 'ModifiedFollowing', 'USD-LIBOR-3M', 'ZMW-GENERIC-3M', null, 'true', 'true', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M');
     end if;
 
-    -- CrossCurrencyFixFloat: 24 rows
+    -- CrossCurrencyFixFloat central: 24 rows
     if not exists (
-        select 1 from ores_dq_cross_currency_fix_float_conventions_artefact_tbl
+        select 1 from ores_dq_conventions_artefact_tbl
+        where dataset_id = v_dataset_id and kind_code = 'CROSS_CURRENCY_FIX_FLOAT'
+    ) then
+        insert into ores_dq_conventions_artefact_tbl (
+            dataset_id, tenant_id, kind_code, name, oresmd_uri
+        ) values
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'MXN-MXV-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-CLF-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-CLP-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-CNY-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-CNY-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS-3M', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-HUF-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-IDR-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-IDR-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-INR-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-INR-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-KRW-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-KRW-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-MXV-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-MYR-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-PHP-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-PHP-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-TRY-IBOR-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-TRY-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-TWD-ON-XCCY-FIX-FLOAT-CONVENTIONS', null),
+            (v_dataset_id, v_tenant_id, 'CROSS_CURRENCY_FIX_FLOAT', 'USD-TWD-XCCY-FIX-FLOAT-CONVENTIONS', null);
+    end if;
+
+    -- CrossCurrencyFixFloat swap terms: 24 rows
+    if not exists (
+        select 1 from ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        insert into ores_dq_cross_currency_fix_float_conventions_artefact_tbl (
-            dataset_id, tenant_id, id, version, party_id, settlement_days, settlement_calendar, settlement_convention, fixed_currency, fixed_frequency, fixed_convention, fixed_day_count_fraction, index, eom, is_resettable, float_index_is_resettable, include_spread, lookback, fixing_days, rate_cutoff, is_averaged, observation_shift, oresmd_uri
+        insert into ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl (
+            dataset_id, tenant_id, convention_name, kind_code, settlement_days, settlement_calendar, settlement_convention, eom, is_resettable
         ) values
-            (v_dataset_id, v_tenant_id, 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'TARGET,RON', 'ModifiedFollowing', 'RON', 'Annual', 'ModifiedFollowing', 'ACT/360', 'EUR-EURIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'MXN-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'MXN,MXV', 'ModifiedFollowing', 'MXV', 'Monthly', 'ModifiedFollowing', 'ACT/360', 'MXN-TIIE-28D', null, null, null, null, null, null, null, null, null, 'oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE&tenor=28D'),
-            (v_dataset_id, v_tenant_id, 'USD-CLF-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'CLF,US,UK', 'ModifiedFollowing', 'CLF', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-CLP-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'CLP,US,UK', 'ModifiedFollowing', 'CLP', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-CNY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'CNY,US,UK', 'ModifiedFollowing', 'CNY', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-CNY-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'CNY,US,UK', 'ModifiedFollowing', 'CNY', 'Quarterly', 'ModifiedFollowing', 'ACT/360', 'USD-LIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'COP,US,UK', 'Following', 'COP', 'Semiannual', 'Following', 'ACT/360', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS-3M', 1, v_party_id, '2', 'COP,US,UK', 'Following', 'COP', 'Quarterly', 'Following', 'ACT/360', 'USD-LIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'USD-HUF-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'HUF,US,UK', 'ModifiedFollowing', 'HUF', 'Annual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-LIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'USD-IDR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'IDR,US,UK', 'ModifiedFollowing', 'IDR', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-IDR-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'IDR,US,UK', 'ModifiedFollowing', 'IDR', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-INR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'INR,US,UK', 'ModifiedFollowing', 'INR', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-INR-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'INR,US,UK', 'ModifiedFollowing', 'INR', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-KRW-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'KRW,US,UK', 'ModifiedFollowing', 'KRW', 'Quarterly', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-KRW-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'KRW,US,UK', 'ModifiedFollowing', 'KRW', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'MXV,US,UK', 'Following', 'MXV', 'Semiannual', 'Following', 'ACT/365.FIXED', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-MYR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'MYR,US,UK', 'ModifiedFollowing', 'MYR', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-PHP-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'PHP,US,UK', 'ModifiedFollowing', 'PHP', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-PHP-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'PHP,US,UK', 'ModifiedFollowing', 'PHP', 'Semiannual', 'ModifiedFollowing', 'ACT/360', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M'),
-            (v_dataset_id, v_tenant_id, 'USD-TRY-IBOR-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'TRY,US,UK', 'Following', 'TRY', 'Annual', 'Following', 'ACT/360', 'USD-LIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'USD-TRY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'TRY,US', 'Following', 'TRY', 'Annual', 'Following', 'ACT/360', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'US,UK,TRY', 'Following', 'TRY', 'Annual', 'Following', 'ACT/360', 'USD-LIBOR-3M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M'),
-            (v_dataset_id, v_tenant_id, 'USD-TWD-ON-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'TWD,US,UK', 'Following', 'TWD', 'Semiannual', 'Following', 'ACT/365.FIXED', 'USD-SOFR', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-            (v_dataset_id, v_tenant_id, 'USD-TWD-XCCY-FIX-FLOAT-CONVENTIONS', 1, v_party_id, '2', 'TWD,US,UK', 'Following', 'TWD', 'Semiannual', 'Following', 'ACT/365.FIXED', 'USD-LIBOR-6M', null, null, null, null, null, null, null, null, null, 'oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M');
+            (v_dataset_id, v_tenant_id, 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'TARGET,RON', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'MXN-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'MXN,MXV', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CLF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'CLF,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CLP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'CLP,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'CNY,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'CNY,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'COP,US,UK', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS-3M', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'COP,US,UK', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-HUF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'HUF,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'IDR,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'IDR,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-INR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'INR,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-INR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'INR,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'KRW,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'KRW,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'MXV,US,UK', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-MYR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'MYR,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'PHP,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'PHP,US,UK', 'ModifiedFollowing', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-IBOR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'TRY,US,UK', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'TRY,US', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'US,UK,TRY', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'TWD,US,UK', 'Following', null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', '2', 'TWD,US,UK', 'Following', null, null);
+    end if;
+
+    -- CrossCurrencyFixFloat fixed leg: 24 rows
+    if not exists (
+        select 1 from ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
+        where dataset_id = v_dataset_id
+    ) then
+        insert into ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl (
+            dataset_id, tenant_id, convention_name, kind_code, fixed_currency, fixed_frequency, fixed_convention, fixed_day_count_fraction
+        ) values
+            (v_dataset_id, v_tenant_id, 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'RON', 'Annual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'MXN-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'MXV', 'Monthly', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-CLF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'CLF', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-CLP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'CLP', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'CNY', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'CNY', 'Quarterly', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'COP', 'Semiannual', 'Following', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS-3M', 'CROSS_CURRENCY_FIX_FLOAT', 'COP', 'Quarterly', 'Following', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-HUF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'HUF', 'Annual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'IDR', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'IDR', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-INR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'INR', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-INR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'INR', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'KRW', 'Quarterly', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'KRW', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'MXV', 'Semiannual', 'Following', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-MYR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'MYR', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'PHP', 'Semiannual', 'ModifiedFollowing', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'PHP', 'Semiannual', 'ModifiedFollowing', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-IBOR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'TRY', 'Annual', 'Following', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'TRY', 'Annual', 'Following', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'TRY', 'Annual', 'Following', 'ACT/360'),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'TWD', 'Semiannual', 'Following', 'ACT/365.FIXED'),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'TWD', 'Semiannual', 'Following', 'ACT/365.FIXED');
+    end if;
+
+    -- CrossCurrencyFixFloat float leg: 24 rows
+    if not exists (
+        select 1 from ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
+        where dataset_id = v_dataset_id
+    ) then
+        insert into ores_dq_cross_currency_fix_float_float_legs_artefact_tbl (
+            dataset_id, tenant_id, convention_name, kind_code, index, float_index_is_resettable, include_spread, lookback, fixing_days, rate_cutoff, is_averaged, observation_shift
+        ) values
+            (v_dataset_id, v_tenant_id, 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'EUR-EURIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'MXN-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'MXN-TIIE-28D', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CLF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CLP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-CNY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-COP-XCCY-FIX-FLOAT-CONVENTIONS-3M', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-HUF-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-IDR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-INR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-INR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-KRW-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-MXV-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-MYR-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-PHP-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-IBOR-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-3M', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-ON-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-SOFR', null, null, null, null, null, null, null),
+            (v_dataset_id, v_tenant_id, 'USD-TWD-XCCY-FIX-FLOAT-CONVENTIONS', 'CROSS_CURRENCY_FIX_FLOAT', 'USD-LIBOR-6M', null, null, null, null, null, null, null);
     end if;
 
     -- Deposit: 163 rows

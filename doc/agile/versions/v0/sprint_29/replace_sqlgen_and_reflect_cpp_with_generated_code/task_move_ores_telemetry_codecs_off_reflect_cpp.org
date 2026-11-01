@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-telemetry-codecs-off-reflect-cpp
+#+pr: 4350
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.telemetry encodes and decodes without reflect-c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,12 @@ Step 6 of 7, one component. ores.telemetry encodes and decodes without reflect-c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the three operation models (logs, NATS samples, service samples) into
+  the wire codec and regenerate.
+- Give the five NATS monitoring reply types in =nats_poller.cpp= a hand-written
+  =wire_fields= with the member-count guard, and read them through the codec.
+- Prove the bytes with a test that writes each message through reflect-cpp and
+  through the codec, in JSON and MessagePack, and compares them.
 
 * Measurements
 
@@ -58,9 +61,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Telemetry suites | 3 of 3 pass | =compass test run --preset linux-clang-release-ninja -- -R telemetry= | 43766682ea plus this branch |
+| Byte tests against reflect-cpp | 4 cases, 20 assertions pass | =ores.telemetry.core.tests "[messaging]"= | 43766682ea plus this branch |
+| Utility suite, with the anonymous-namespace probe | passes | =compass test run --preset linux-clang-release-ninja -- -R utility= | 43766682ea plus this branch |
+| Codegen member header tests | 10 pass | =pytest projects/ores.codegen/tests/test_member_headers.py= | 43766682ea plus this branch |
+| Targeted checks (drift, sweep, paste blocks, format, codegen tests, unity, types, budget, exports, boost, reachability, twins) | 13 of 14 pass; component drift named the TS twin, then clean | =compass check --only ...= | 88065820c9 plus this branch |
+| reflect-cpp left in telemetry sources, outside tests | 0 includes; 2 =ores.rfl.pch= links | =grep -rn rfl projects/ores.telemetry= | 43766682ea plus this branch |
 
 * Notes
+
+** The generator named the wrong root for a core-owned type
+
+Telemetry's operation models generate into =ores.telemetry.core=, not
+=ores.telemetry.api=. The codec source includes the headers of the enum
+member types, and =_member_headers= put every type of the component under
+=<component>.api=. It now puts a type of the model's own component under the
+model's own root. A test covers a core-owned type.
+
+** The member-count guard and anonymous namespaces
+
+The poller's reply types live in an anonymous namespace. The guard's
+=any_member= declares a conversion it never defines, and clang reports that
+as =-Wundefined-internal= for a type with internal linkage; =-Werror= makes it
+fatal. gcc does not report it. The conversion is only named in an unevaluated
+requirement, so the warning is true and harmless; a clang pragma around
+=any_member= silences it, and a utility test probes a type of that kind.
+
+** The precompiled header stays
+
+The telemetry libraries still link =ores.rfl.pch=. The codec precompiled header
+that replaces it belongs to [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]].
 
 * Test Scenarios
 
@@ -77,12 +107,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4350][#4350]] | [telemetry] Encode and decode without reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The read path of the NATS replies is untested | =nats_poller.cpp= | Accepted | Shapes moved to =nats_monitoring_replies.hpp=; 4 read tests, 18 assertions (b38c3e949c) |
+| 2 | A parse failure drops its cause | =nats_poller.cpp= | Accepted | =read_reply= removed; =poll_once= logs =e.what()= (b38c3e949c) |
+| 3 | The pragma may not cover gcc or a moved warning | =member_count.hpp= | No change | gcc does not warn; the probe test catches a move |
+| 4 | Copyright year of the new test | =messaging_codec_tests.cpp= | Accepted | 2026 |
+| 5 | Run the full check gate | - | Declined | Too slow; ran the 14 checks this change touches. Component drift found the TS twin; fixed |
 
 * Result
+
+ores.telemetry encodes and decodes without reflect-cpp. The three operation
+models use the generated codec, and the NATS monitoring replies read through
+the codec with their shapes stated beside them. The wire bytes match
+reflect-cpp's in both JSON and MessagePack. The generator now finds the header
+of a type owned by a core-rooted model, and the member-count guard compiles on
+clang for a type in an anonymous namespace.

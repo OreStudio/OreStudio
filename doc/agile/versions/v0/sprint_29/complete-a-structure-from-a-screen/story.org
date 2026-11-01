@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] | STARTED | 2026-11-01 | | Replace the route's structure-then-members loop with one call to the completion, so grouping a set of trades makes one structure whose every leg is live and waiting. |
+| [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] | DONE | 2026-11-01 | 2026-11-01 | Replace the route's structure-then-members loop with one call to the completion, so grouping a set of trades makes one structure whose every leg is live and waiting. |
 
 * Decisions
 

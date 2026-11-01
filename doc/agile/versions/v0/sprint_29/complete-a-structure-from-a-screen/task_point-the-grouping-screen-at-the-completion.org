@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] |
-| Now          | Built: the grouping route completes in one call. |
+| Now          | Nothing. |
 | Waiting on   | Marco's review, which this branch waits for. |
-| Next         | Raise the PR and leave it open.        |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

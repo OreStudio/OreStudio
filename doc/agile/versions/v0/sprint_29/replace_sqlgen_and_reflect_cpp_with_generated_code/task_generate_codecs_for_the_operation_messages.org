@@ -8,7 +8,7 @@
 #+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-codecs-for-the-operation-messages
-#+pr:
+#+pr: 4332
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4332][#4332]] | [codegen] Generate wire codecs for operation and family messages |
 
 * Review
 

@@ -222,8 +222,13 @@
 #include "ores.refdata.core/messaging/crm_topology_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cross_currency_basis_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cross_currency_basis_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/cross_currency_fix_float_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cross_currency_fix_float_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_fixed_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_fixed_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_float_leg_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_float_leg_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_swap_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_swap_terms_registrar.hpp"
 #include "ores.refdata.core/messaging/csa_eligible_currency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_calendar_history_provider_registrar.hpp"
@@ -554,6 +559,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_commodity_volatility_config_handlers(nats, ctx, verifier));
     append(register_cross_currency_basis_convention_handlers(nats, ctx, verifier));
     append(register_cross_currency_fix_float_convention_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_fixed_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_float_leg_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_swap_terms_handlers(nats, ctx, verifier));
     append(register_curve_bootstrap_config_handlers(nats, ctx, verifier));
     append(register_curve_configuration_handlers(nats, ctx, verifier));
     append(register_curve_configuration_section_handlers(nats, ctx, verifier));
@@ -797,7 +805,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_convention_history_provider(hist_registry);
         register_credit_limit_history_provider(hist_registry);
         register_cross_currency_basis_convention_history_provider(hist_registry);
-        register_cross_currency_fix_float_convention_history_provider(hist_registry);
+        register_cross_currency_fix_float_fixed_leg_history_provider(hist_registry);
+        register_cross_currency_fix_float_float_leg_history_provider(hist_registry);
+        register_cross_currency_fix_float_swap_terms_history_provider(hist_registry);
         register_curve_bootstrap_config_history_provider(hist_registry);
         register_curve_configuration_history_provider(hist_registry);
         register_curve_configuration_section_history_provider(hist_registry);

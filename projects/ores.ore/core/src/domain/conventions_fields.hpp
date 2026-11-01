@@ -21,6 +21,7 @@
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_FIELDS_HPP
 
 #include "ores.ore.core/xml/record.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -135,6 +136,9 @@ std::string truth(bool v);
 std::string text_flag_field(const record_reader& v, std::string_view name);
 
 std::optional<std::int64_t> as_integer(const std::optional<int>& v);
+
+// A fresh key for a central row and its parts inside one mapped document.
+boost::uuids::uuid provisional_uuid();
 
 std::string bdc_spelling(const std::string& code);
 

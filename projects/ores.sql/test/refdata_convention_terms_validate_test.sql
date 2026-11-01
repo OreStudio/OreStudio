@@ -150,13 +150,20 @@ select is(
     'flag ore_xsd',
     'a leaf the parser reads as a string takes the flag the schema declares');
 
+-- The table is the one the element map names for the entity, because a plural
+-- rule cannot derive it: swap_terms is its own plural.
 select ok(
     (select count(*) > 0
-            and count(*) filter (where not exists (
+            and count(*) filter (where k.table_name is null or not exists (
                 select 1 from pg_trigger t
-                 where t.tgname = 'ores_refdata_' || k.entity_name || 's_terms_trg'
-                   and t.tgrelid = ('ores_refdata_' || k.entity_name || 's_tbl')::regclass)) = 0
-       from (select distinct entity_name from ores_refdata_convention_kind_terms_tbl) k),
+                 where t.tgname = left(k.table_name, -length('_tbl')) || '_terms_trg'
+                   and t.tgrelid = k.table_name::regclass)) = 0
+       from (select distinct terms.entity_name, columns.table_name
+               from ores_refdata_convention_kind_terms_tbl terms
+               left join ores_reporting_ore_element_map_columns_tbl columns
+                 on columns.entity_name = terms.entity_name
+                and columns.valid_to = ores_utility_infinity_timestamp_fn()
+              where terms.valid_to = ores_utility_infinity_timestamp_fn()) k),
     'every entity that holds a term has its trigger');
 
 select * from finish();

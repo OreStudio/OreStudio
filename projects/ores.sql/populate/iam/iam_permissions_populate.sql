@@ -845,9 +845,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::inflation_swap_conventions:delete',         'Delete inflation swap conventions');
 
     -- Cross-currency fix-float conventions permissions
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:read', 'View cross-currency fix-float conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:write', 'Create and modify cross-currency fix-float conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_conventions:delete', 'Delete cross-currency fix-float conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:read', 'View cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:write', 'Create and modify cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_fixed_legs:delete', 'Delete cross-currency fix-float fixed legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:read', 'View cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:write', 'Create and modify cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_float_legs:delete', 'Delete cross-currency fix-float float legs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:read', 'View cross-currency fix-float swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:write', 'Create and modify cross-currency fix-float swap terms');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cross_currency_fix_float_swap_terms:delete', 'Delete cross-currency fix-float swap terms');
 
     -- CMS spread option conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cms_spread_option_conventions:read',        'View CMS spread option conventions');

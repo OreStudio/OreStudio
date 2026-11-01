@@ -32,7 +32,6 @@
 #include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
-#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
@@ -50,6 +49,7 @@
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
 #include <cstddef>
 #include <map>
@@ -146,12 +146,12 @@ public:
     reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v,
                                  xml::record_writer w);
 
-    static refdata::domain::cross_currency_fix_float_convention
+    static ores::refdata::messaging::cross_currency_fix_float_convention_item
     map_cross_currency_fix_float(const xml::record_reader& v);
 
-    static void
-    reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v,
-                                     xml::record_writer w);
+    static void reverse_cross_currency_fix_float(
+        const ores::refdata::messaging::cross_currency_fix_float_convention_item& v,
+        xml::record_writer w);
 
     static refdata::domain::deposit_convention map_deposit(const xml::record_reader& v);
 

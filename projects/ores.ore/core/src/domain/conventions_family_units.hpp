@@ -24,6 +24,8 @@
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include <cstddef>
+#include <map>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -84,10 +86,6 @@ void pack_cross_currency_basis(const xml::record_reader& root,
                                refdata::messaging::conventions_bundle& bundle);
 void join_cross_currency_basis(const package_row& row, xml::record_writer& root);
 
-void pack_cross_currency_fix_float(const xml::record_reader& root,
-                                   refdata::messaging::conventions_bundle& bundle);
-void join_cross_currency_fix_float(const package_row& row, xml::record_writer& root);
-
 void pack_deposit(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
 void join_deposit(const package_row& row, xml::record_writer& root);
 
@@ -139,6 +137,38 @@ void join_zero_inflation_index(const package_row& row, xml::record_writer& root)
 
 void pack_tenor_basis_swap(const xml::record_reader& root,
                            refdata::messaging::conventions_bundle& bundle);
+
+/// The four families a cross-currency fix-float element is: the central
+/// convention row, one part per leg and the swap terms both legs share.
+void pack_cross_currency_fix_float(const xml::record_reader& root,
+                                   refdata::messaging::conventions_bundle& bundle);
+
+/// Writes the elements of the rows that belong to the four fix-float families.
+void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
+                                   xml::record_writer& root);
+
+/// The facts of each cross-currency fix-float swap the rows hold, keyed by the
+/// identity the mapper states and without the provisional keys, so two maps of
+/// one document compare equal.
+std::map<std::string, std::string>
+cross_currency_fix_float_facts(const refdata::messaging::conventions_bundle& bundle);
+
+/// The kind of the central convention row of a cross-currency fix-float swap.
+inline constexpr std::string_view cross_currency_fix_float_kind = "CROSS_CURRENCY_FIX_FLOAT";
+
+/// The families that are one document element, the cross-currency fix-float.
+inline constexpr std::string_view cross_currency_fix_float_families[] = {
+    "convention",
+    "cross_currency_fix_float_fixed_leg",
+    "cross_currency_fix_float_float_leg",
+    "cross_currency_fix_float_swap_terms"};
+
+constexpr bool is_cross_currency_fix_float_family(std::string_view family) {
+    for (const auto f : cross_currency_fix_float_families)
+        if (f == family)
+            return true;
+    return false;
+}
 
 /// Writes the elements of the rows that belong to the three tenor families.
 void join_tenor_basis_swap(const std::vector<const package_row*>& rows, xml::record_writer& root);

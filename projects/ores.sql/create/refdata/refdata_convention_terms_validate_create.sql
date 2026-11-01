@@ -131,10 +131,20 @@ before insert or update of eom, flat_fixing_days, flat_include_spread, flat_inde
 on ores_refdata_cross_currency_basis_conventions_tbl
 for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_basis_convention');
 
-create or replace trigger ores_refdata_cross_currency_fix_float_conventions_terms_trg
-before insert or update of eom, fixed_convention, fixed_currency, fixed_day_count_fraction, fixed_frequency, fixing_days, float_index_is_resettable, id, include_spread, index, is_averaged, is_resettable, lookback, observation_shift, rate_cutoff, settlement_calendar, settlement_convention, settlement_days
-on ores_refdata_cross_currency_fix_float_conventions_tbl
-for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_convention');
+create or replace trigger ores_refdata_cross_currency_fix_float_fixed_legs_terms_trg
+before insert or update of fixed_convention, fixed_currency, fixed_day_count_fraction, fixed_frequency
+on ores_refdata_cross_currency_fix_float_fixed_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_fixed_leg');
+
+create or replace trigger ores_refdata_cross_currency_fix_float_float_legs_terms_trg
+before insert or update of fixing_days, float_index_is_resettable, include_spread, index, is_averaged, lookback, observation_shift, rate_cutoff
+on ores_refdata_cross_currency_fix_float_float_legs_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_float_leg');
+
+create or replace trigger ores_refdata_cross_currency_fix_float_swap_terms_terms_trg
+before insert or update of eom, is_resettable, settlement_calendar, settlement_convention, settlement_days
+on ores_refdata_cross_currency_fix_float_swap_terms_tbl
+for each row execute function ores_refdata_validate_convention_terms_fn('cross_currency_fix_float_swap_terms');
 
 create or replace trigger ores_refdata_currency_pairs_terms_trg
 before insert or update of base_currency, quote_currency

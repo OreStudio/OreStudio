@@ -50,6 +50,16 @@ inline auto& feed_config_handler_lg() {
     return instance;
 }
 
+inline std::vector<ores::synthetic::messaging::provider_dispersion>
+dispersion_of(const ores::marketdata::domain::feed_start& start) {
+    std::vector<ores::synthetic::messaging::provider_dispersion> out;
+    out.reserve(start.dispersion.size());
+    for (const auto& d : start.dispersion)
+        out.push_back(
+            {.provider_code = d.provider_code, .item = d.item, .basis_points = d.basis_points});
+    return out;
+}
+
 /// A run's start in the words of the wire, field for field.
 inline ores::synthetic::messaging::feed_start
 to_wire(const ores::marketdata::domain::feed_start& start) {
@@ -64,7 +74,14 @@ to_wire(const ores::marketdata::domain::feed_start& start) {
             .window_days = start.window_days,
             .used = start.used,
             .hourly_spread = start.hourly_spread,
-            .note = start.note};
+            .note = start.note,
+            .age_days = start.age_days,
+            .daily_spread = start.daily_spread,
+            .annual_drift = start.annual_drift,
+            .min_return = start.min_return,
+            .max_return = start.max_return,
+            .jumps = start.jumps,
+            .dispersion = dispersion_of(start)};
 }
 } // namespace
 

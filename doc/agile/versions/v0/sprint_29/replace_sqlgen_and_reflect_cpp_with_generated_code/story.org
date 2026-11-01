@@ -96,6 +96,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:9994C1B0-0071-4ACA-AA15-B2885D9235C7][State a type's wire shape by its type]] | BACKLOG | | | Name a type's members as a constant, so the four places that walk a value's members with rfl::to_view walk the stated shape instead. |
 | [[id:5891DD57-4FDE-4C99-9009-8299E4479AA1][Generate codecs for the operation messages]] | BACKLOG | | | Give the operation and family models the wire-codec facet an entity has, so a message no entity owns is encoded by generated code. |
 | [[id:BE89C669-2CBF-477D-B87B-1C6996187585][Print every options type through the codec]] | BACKLOG | | | State the shape of the logging, NATS, database and telemetry options and of each service's options, so a service prints its configuration without reflect-cpp. |
+| [[id:C7F11063-A2FD-4C49-819A-EE8F203E3E89][Stop generating the reflectors include where the codec is generated]] | DONE | 2026-11-01 | 2026-11-01 | The NATS integration test and event cache templates write the reflect-cpp reflectors include for every entity; write it only for a model that has no generated wire codec. |
 
 * Decisions
 

@@ -106,7 +106,6 @@ std::expected<std::vector<double>, std::string> scaled_stdevs(
     return out;
 }
 
-
 namespace {
 
 /// The rank of @p provider in @p order, or nothing when a stated order leaves it out.
@@ -120,7 +119,7 @@ std::optional<int> provider_rank(const std::vector<std::string>& order,
     return std::nullopt;
 }
 
-}
+} // namespace
 
 std::vector<ores::synthetic::domain::fx_spot_fixing_item>
 derive_fixing_items(const calibration_policy& policy,
@@ -150,6 +149,8 @@ derive_fixing_items(const calibration_policy& policy,
     std::ranges::sort(kept, [](const ranked& a, const ranked& b) {
         if (a.provider != b.provider)
             return a.provider < b.provider;
+        if (a.provider_code != b.provider_code)
+            return a.provider_code < b.provider_code;
         if (a.direction != b.direction)
             return a.direction < b.direction;
         return a.item < b.item;

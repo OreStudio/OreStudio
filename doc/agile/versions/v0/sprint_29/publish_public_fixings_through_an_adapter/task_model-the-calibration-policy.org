@@ -206,6 +206,15 @@ via its "Verifies task" field.
 | 4 | Calibration tables missing from the schema manifests | synthetic_create.sql | Accept | Found by a recreate; wired in create and drop. |
 | 5 | Calibration event registrars not composed | event_registrar.cpp | Accept | Found by the gate; composed. |
 | 6 | Calibrate subject outside the entity protocol | ores.synthetic.feed_config.org | Accept | Moved to synthetic.v1.ops.calibrate_feeds. |
+| 7 | PR #4322: BFF window bound 3650 vs SQL 2 to 180 | synthetic.ts | Accept | Bounded to 2 to 180. |
+| 8 | PR #4322: empty order sorts by item, not provider code | fixing_calibration.cpp | Accept | Provider code breaks the tie; a test pins it. |
+| 9 | PR #4322: registry comment overstates the window override | feed_kind_registry.cpp | Accept | Says derived items only. |
+| 10 | PR #4322: make_fx_spot_feed doc displaced | fx_spot_feed.hpp | Accept | Moved back. |
+| 11 | PR #4322: repeated policy reads in calibrate | feed_config_handler.hpp | Decline | Two small system reads per feed; the series read is the cost, and its capture covers a shared read. |
+| 12 | PR #4322: say why the policy is read in the system tenant | feed_kind_registry.hpp | Accept | Documented: one market, one policy. |
+| 13 | PR #4322: warn when the series cannot be read | fx_spot_feed.cpp | Accept | Logged at warn. |
+| 14 | PR #4322: unit test the refuse path | fx_spot_feed.cpp | Decline | Needs a NATS stub the api tests lack; the refusal is two lines over a tested resolver. |
+| 15 | PR #4322: duplicate blank line, unnamed namespace close | fixing_calibration.cpp | Accept | Fixed. |
 
 * Result
 

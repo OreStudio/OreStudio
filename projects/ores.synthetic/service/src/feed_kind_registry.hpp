@@ -147,6 +147,9 @@ struct feed_simulation_result final {
 /**
  * @brief The calibration policy of @p asset_class_code, or nothing when the class has no policy
  * row and so calibrates on the defaults.
+ *
+ * The policy is the installation's, read in the system tenant: a market calibrates the same way
+ * for every tenant, so a tenant holds no policy of its own.
  */
 std::optional<feed::calibration_policy>
 read_calibration_policy(const ores::database::context& ctx, const std::string& asset_class_code);

@@ -268,7 +268,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             sensitivity: z.number().positive().default(1),
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
-            calibration_window_days: z.int().positive().max(3650).nullable().default(null),
+            calibration_window_days: z.int().min(2).max(180).nullable().default(null),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {

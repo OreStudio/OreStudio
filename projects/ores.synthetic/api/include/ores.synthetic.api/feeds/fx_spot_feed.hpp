@@ -153,29 +153,6 @@ private:
 };
 
 /**
- * @brief Constructs an FX spot feed from a persisted fx_spot_generation_config and its
- * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
- * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
- * stdevs/weights via process_factory, drawing from a stream keyed by the run seed and the source
- * name, so a run's prices reproduce; the publish subject is derived
- * from the config's source_name via producer_subject().
- *
- * A config with price_source "fixed" starts from gmm_initial_price. One with "fixing" reads @p
- * fixing_items in rank order through @p auth_nats and starts from the first that has a fixing: the
- * latest on or before the date of @p clock, or on the date its policy names. An item that quotes
- * the pair the other way round is read as one over its value. The spread of that item's fixings
- * over its window, in hourly terms, sets the size of the mixture: every component's deviation is
- * scaled by one factor, so its shape is kept. When no item has a fixing, the feed keeps
- * gmm_initial_price and its configured mixture. The feed records where it started, which
- * start_source() reports. The fixings are read once, when the feed is built, so a feed that starts
- * again takes the newest.
- *
- * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
- * non-positive. cfg.process_type is not validated here: it is forwarded to
- * process_factory::make_process(), which falls back to the geometric engine for unrecognised
- * values.
- */
-/**
  * @brief The level and the measured spread a fixing feed starts from, and the mixture's
  * deviations scaled to it; or, when no item has a fixing, the record of the fallback.
  */
@@ -205,6 +182,29 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
                  const calibration_policy& policy,
                  const ores::marketdata::domain::market_clock* clock);
 
+/**
+ * @brief Constructs an FX spot feed from a persisted fx_spot_generation_config and its
+ * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
+ * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
+ * stdevs/weights via process_factory, drawing from a stream keyed by the run seed and the source
+ * name, so a run's prices reproduce; the publish subject is derived
+ * from the config's source_name via producer_subject().
+ *
+ * A config with price_source "fixed" starts from gmm_initial_price. One with "fixing" reads @p
+ * fixing_items in rank order through @p auth_nats and starts from the first that has a fixing: the
+ * latest on or before the date of @p clock, or on the date its policy names. An item that quotes
+ * the pair the other way round is read as one over its value. The spread of that item's fixings
+ * over its window, in hourly terms, sets the size of the mixture: every component's deviation is
+ * scaled by one factor, so its shape is kept. When no item has a fixing, the feed keeps
+ * gmm_initial_price and its configured mixture. The feed records where it started, which
+ * start_source() reports. The fixings are read once, when the feed is built, so a feed that starts
+ * again takes the newest.
+ *
+ * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
+ * non-positive. cfg.process_type is not validated here: it is forwarded to
+ * process_factory::make_process(), which falls back to the geometric engine for unrecognised
+ * values.
+ */
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
 make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,

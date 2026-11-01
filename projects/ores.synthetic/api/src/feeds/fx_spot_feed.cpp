@@ -103,6 +103,9 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     if (items.empty() && cfg.price_source == "fixing") {
         const auto series = md.list_series();
         if (!series) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Feed " << cfg.source_name
+                << " could not read the series that cover its pair: " << series.error();
             out.source.note = "The series that cover the pair could not be read: " + series.error();
             out.refused = policy.fallback_code == "refuse";
             return out;

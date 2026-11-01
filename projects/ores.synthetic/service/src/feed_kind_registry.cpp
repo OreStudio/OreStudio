@@ -168,7 +168,8 @@ feed_kind make_fx_spot_kind() {
                             fixing_items.push_back(std::move(i));
 
                 // A config that names no items calibrates under its class policy, or the
-                // defaults when the class has none. The feed's own window overrides either.
+                // defaults when the class has none. The feed's own window overrides the
+                // policy's for the items it derives; explicit items keep their own windows.
                 auto policy = read_calibration_policy(ctx, fx.asset_class_code)
                                   .value_or(feed::calibration_policy{});
                 if (fx.calibration_window_days)

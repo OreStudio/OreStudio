@@ -228,3 +228,23 @@ TEST_CASE("an item that is not an fx fixing names no pair", tags) {
     CHECK_FALSE(pair_of_item("oresmd://ir/EUR?type=fixing&ccy=USD").has_value());
     CHECK_FALSE(pair_of_item("").has_value());
 }
+
+TEST_CASE("an empty provider order breaks ties by provider code, not by item", tags) {
+    // The item names sort the other way round from the provider codes.
+    const std::vector<calibration_candidate> candidates = {
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=AAA&ccy=USD",
+         .provider_code = "zed",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+        {.item = "oresmd://fx/EUR?type=fixing&index=fx&source=ZZZ&ccy=USD",
+         .provider_code = "abc",
+         .base_currency = "EUR",
+         .quote_currency = "USD"},
+    };
+
+    const auto items = derive_fixing_items(calibration_policy{}, "EUR", "USD", candidates);
+
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].provider_code == "abc");
+    CHECK(items[1].provider_code == "zed");
+}

@@ -88,8 +88,6 @@ do nothing;
 
 \echo '--- Official Rates Vendor Instruments and Mappings ---'
 
-begin;
-
 create temporary table t_official_inventory (
     provider_code text, external_id text, oresmd_uri text
 ) on commit drop;
@@ -307,8 +305,6 @@ where f.tenant_id = ores_utility_system_tenant_id_fn()
         and s.item = m.oresmd_uri
         and s.valid_to = ores_utility_infinity_timestamp_fn()
   );
-
-commit;
 
 \echo '--- Official Rates Subscriptions and Routes of the System Party ---'
 

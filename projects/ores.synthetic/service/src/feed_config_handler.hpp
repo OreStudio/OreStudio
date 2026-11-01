@@ -345,9 +345,11 @@ public:
             return;
         }
         // An applied calibration writes new versions of the configs and their components, and
-        // the services that write them check no permission of their own.
+        // the services that write them check no permission of their own. The feeds it writes run
+        // for every tenant, so, like the policy, only the system tenant may apply it.
         if (req->apply &&
-            (!has_permission(req_ctx, "synthetic::fx_spot_generation_configs:write") ||
+            (!feed_kind_registry::is_system_caller(req_ctx) ||
+             !has_permission(req_ctx, "synthetic::fx_spot_generation_configs:write") ||
              !has_permission(req_ctx, "synthetic::gmm_components:write"))) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -437,13 +439,13 @@ private:
                                                              *series);
                 one.refused = resolved.refused;
                 one.start = to_wire(resolved.source);
-                for (const auto& c : resolved.candidates)
-                    one.candidates.push_back({.item = c.item,
-                                              .provider_code = c.provider_code,
-                                              .inverted = c.inverted,
-                                              .rank = c.rank,
-                                              .state = std::string(feed::to_string(c.state)),
-                                              .reason = c.reason});
+                for (const auto& tried : resolved.candidates)
+                    one.candidates.push_back({.item = tried.item,
+                                              .provider_code = tried.provider_code,
+                                              .inverted = tried.inverted,
+                                              .rank = tried.rank,
+                                              .state = std::string(feed::to_string(tried.state)),
+                                              .reason = tried.reason});
                 if (req.apply)
                     apply_calibration(req_ctx, in, resolved, one);
             }
@@ -573,6 +575,9 @@ private:
                 if (written.result.outcome != outcome::ok) {
                     one.outcome = "failed";
                     one.outcome_message = "The level was not written: " + written.result.message;
+                    if (moved > 0)
+                        one.outcome_message += ". The scaled deviations are stored; calibrating "
+                                               "again writes the level alone.";
                     return;
                 }
             }

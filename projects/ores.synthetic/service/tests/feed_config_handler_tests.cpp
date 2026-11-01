@@ -640,4 +640,19 @@ TEST_CASE("feed_config_calibrate_writes_only_with_the_write_permissions",
 
     const auto read = send(false);
     CHECK_FALSE(read.headers.contains(std::string(ores::nats::headers::x_error)));
+
+    // The feeds run for every tenant, so a tenant holding both writes still may not apply.
+    const auto tenant_writer = mint_token(f.db.tenant_id().to_string(),
+                                          test_party,
+                                          {"synthetic::fx_spot_generation_configs:read",
+                                           "synthetic::fx_spot_generation_configs:write",
+                                           "synthetic::gmm_components:write"});
+    const auto by_tenant =
+        f.nats.request_sync(test_calibrate_subject,
+                            ores::nats::default_wire_codec().encode(calibrate_request{
+                                .asset_class_code = "fx", .config_id = {}, .apply = true}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + tenant_writer}});
+    REQUIRE(by_tenant.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(by_tenant.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }

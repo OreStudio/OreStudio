@@ -94,6 +94,33 @@ Still open:
   create and a notify-trigger drop, but no table drop), so =drop_trading.sql=
   drops only its trigger.
 
+** 2026-11-01 — modelled, built and seeded
+
+- =ores.refdata.product_family_code=: complete, seeded with the eight shapes.
+- =ores.trading.product_type=: the catalogue row, with name, source,
+  source_ref, product_family_code, construction, instrument_table,
+  display_order and knowledge_note; the =product_type_t= enum is deleted.
+- =ores.trading.product_type_asset_class=: the market junction with =is_home=
+  and the partial unique index.
+- The catalogue seeds both tables: 121 product types, 92 with a family, 115
+  native, and 121 market rows of which 115 are home rows, so 6 types carry a
+  second market and 6 carry none.
+- The codegen suite passes (1795 tests). The trading API, core and service and
+  the shell build. The web packages typecheck, and the BFF suite passes (1191
+  tests). The database recreates and the counts above are read from it.
+- The web UI suite is 2384 of 2385: the one failure is in
+  =src/journeys/parts.test.tsx=, which this branch does not touch.
+
+Open:
+
+- Rebase onto main. The rebase conflicts in generated files because main's
+  hotfix #4334 regenerated the reporting cut rules; resolve by regenerating the
+  affected components rather than by keeping either side.
+- The full =compass check= gate: =ctest=, =pgtap= and the smoke checks have not
+  run.
+- The junction generates a create and a notify-trigger drop but no table drop.
+- The descriptions and sources are still empty; that is the authoring task.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

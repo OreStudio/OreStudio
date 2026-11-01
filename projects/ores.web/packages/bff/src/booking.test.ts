@@ -165,6 +165,28 @@ describe('POST /api/trades', () => {
         expect(instrumented.change.write['issue_id']).toBe(ISSUE);
     });
 
+    it('captures a draft when the form states the reason it waits on', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'trading.v1.ops.book_trade': { result: ok, activity_id: ACTIVITY },
+            'trading.v1.trade_identifiers.put': { result: ok },
+            'trading.v1.bond_instruments.put': { result: ok },
+        });
+
+        const reply = await book(server, sessionId, {
+            ...(booking as Record<string, unknown>),
+            draftReasonCode: 'structure_incomplete',
+        });
+        expect(reply.statusCode).toBe(201);
+        const booked = calls[0]?.body as {
+            anchor: Record<string, unknown>;
+            activity_type_code: string;
+        };
+        // The activity is the one that stops at draft, and the reason travels
+        // with the trade so a report of aged drafts can read it.
+        expect(booked.activity_type_code).toBe('draft_capture');
+        expect(booked.anchor['draft_reason_code']).toBe('structure_incomplete');
+    });
+
     it('answers a frozen book with the service reason, as a bad request', async () => {
         const { server, sessionId } = buildTestServer({
             'trading.v1.ops.book_trade': {

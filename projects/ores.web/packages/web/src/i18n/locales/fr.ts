@@ -4009,6 +4009,10 @@ const fr: SourceCatalogue = {
             instrumentSection: 'Instrument — {type}',
             instrumentLead:
                 "Le titre est l'instrument, et le notionnel est la position détenue sur lui. Seule une obligation est routée vers une table aujourd'hui, donc un ticket nomme une obligation.",
+            draftReason: 'Motif du brouillon',
+            draftReasonHint:
+                'Choisissez ce que l’opération attend, elle est enregistrée en brouillon ; laissez vide et elle est active aussitôt.',
+            bookLive: 'Enregistrer active, sans brouillon',
             notionalHint: 'La taille de la position sur le titre ci-dessus.',
             identifierSection: 'Identifiant',
             open: 'Enregistrer une transaction',

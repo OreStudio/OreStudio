@@ -3986,6 +3986,10 @@ const pt: SourceCatalogue = {
             instrumentSection: 'Instrumento — {type}',
             instrumentLead:
                 'O título é o instrumento, e o nocional é a posição detida nele. Só uma obrigação está encaminhada para uma tabela hoje, por isso um bilhete nomeia uma obrigação.',
+            draftReason: 'Motivo do rascunho',
+            draftReasonHint:
+                'Escolha porque a operação espera, e fica como rascunho; deixe vazio e fica ativa de imediato.',
+            bookLive: 'Registar ativa, sem rascunho',
             notionalHint: 'O tamanho da posição no título acima.',
             identifierSection: 'Identificador',
             open: 'Registar uma transação',

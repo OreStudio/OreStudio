@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 96314BCD-3629-43ED-A4C6-F794E7E8A6EB
+:END:
+#+title: Story: Book a trade as a draft
+#+description: A draft is a trade the desk has captured and not concluded, and the completion executes drafts. No screen can book one: the booking screen always books live, so the draft path cannot be reached and a tester cannot create the leg a completion takes live.
+#+type: story
+#+level: s2
+#+filetags: :trading:web:booking:draft:sprint_29:v0:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-01                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F29039C8-EA8E-4CAC-A5F7-F605FC3D4113][Let the booking form state a draft]] | STARTED | 2026-11-01 | | The booking form takes a draft flag and the reason it waits on, so a desk can capture a deal that is not yet concluded and a completion has a leg to take live. |
+
+* Decisions
+
+* Out of scope
+
+-

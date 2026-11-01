@@ -64,6 +64,12 @@ export function BookTradePage(): ReactNode {
     const [notional, setNotional] = useState('');
     const [identifierType, setIdentifierType] = useState('');
     const [identifierValue, setIdentifierValue] = useState('');
+    /*
+     * A draft is a deal the desk has captured and not concluded. The reason is
+     * what a report of aged drafts groups by, and the store refuses a draft
+     * without one, so the form asks before it submits.
+     */
+    const [draftReasonCode, setDraftReasonCode] = useState('');
 
     const [booked, setBooked] = useState('');
     const booking = useMutation({
@@ -91,6 +97,11 @@ export function BookTradePage(): ReactNode {
             await queries.invalidateQueries({ queryKey: ['structures'] });
             void navigate(`${PATHS.structures}/${encodeURIComponent(structureKey)}`);
         },
+    });
+
+    const draftReasons = useQuery({
+        queryKey: ['draft-reasons'],
+        queryFn: () => trades.draftReasons(),
     });
 
     const openBooks = offered.data?.books ?? [];
@@ -154,6 +165,7 @@ export function BookTradePage(): ReactNode {
                             notional,
                             identifierType,
                             identifierValue,
+                            ...(draftReasonCode === '' ? {} : { draftReasonCode }),
                         });
                     }}
                 >
@@ -236,6 +248,24 @@ export function BookTradePage(): ReactNode {
                                             {issue.calendar === null
                                                 ? issue.security_id
                                                 : `${issue.security_id} · ${issue.calendar}`}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field
+                                label={t('trading.booking.draftReason')}
+                                hint={t('trading.booking.draftReasonHint')}
+                            >
+                                <Select
+                                    value={draftReasonCode}
+                                    onChange={(event) => setDraftReasonCode(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.bookLive')}</option>
+                                    {(draftReasons.data ?? []).map((reason) => (
+                                        <option key={reason.code} value={reason.code}>
+                                            {reason.description === ''
+                                                ? reason.code
+                                                : reason.description}
                                         </option>
                                     ))}
                                 </Select>

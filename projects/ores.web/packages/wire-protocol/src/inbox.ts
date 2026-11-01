@@ -393,6 +393,35 @@ export const inboxPublishedSubjectSchema = z.object({
     published_at: nullableWireTimestampSchema,
 });
 
+/**
+ * What a cut-authorisation request authorises, joined from the reporting
+ * component's own reads.
+ *
+ * The counts are the detail row's, taken when the body was frozen, so a decider
+ * reads the size of the population the take fixed rather than the store's size
+ * today. The state and the label are derived by the reporting service and stored
+ * nowhere, so the request page draws the same words the cut's own page draws.
+ *
+ * It is declared before the request view that carries it, because a `const` is in
+ * its temporal dead zone until its own statement runs.
+ */
+export const inboxCutSubjectSchema = z.object({
+    cut_id: z.string().default(''),
+    label: z.string().default(''),
+    kind_code: z.string().default(''),
+    kind_name: z.string().default(''),
+    timepoint: wireTimestampSchema,
+    timepoint_timezone: z.string().default(''),
+    scope_code: z.string().default(''),
+    business_centre_code: z.string().default(''),
+    state: z.string().default(''),
+    deal_count: z.int().nonnegative().default(0),
+    market_data_set_count: z.int().nonnegative().default(0),
+    gap_count: z.int().nonnegative().default(0),
+    applied_by: z.string().default(''),
+    applied_at: nullableWireTimestampSchema,
+});
+
 export const inboxRequestViewSchema = z.object({
     id: z.string().default(''),
     version: z.int().nonnegative().default(0),
@@ -434,32 +463,6 @@ export const inboxRequestViewSchema = z.object({
     cutSubject: inboxCutSubjectSchema.nullable().optional(),
     /** Why a cut request carries no subject: the same two facts as a publish's. */
     cutSubjectState: z.enum(['refused', 'missing']).optional(),
-});
-
-/**
- * What a cut-authorisation request authorises, joined from the reporting
- * component's own reads.
- *
- * The counts are the detail row's, taken when the body was frozen, so a decider
- * reads the size of the population the take fixed rather than the store's size
- * today. The state and the label are derived by the reporting service and stored
- * nowhere, so the request page draws the same words the cut's own page draws.
- */
-export const inboxCutSubjectSchema = z.object({
-    cut_id: z.string().default(''),
-    label: z.string().default(''),
-    kind_code: z.string().default(''),
-    kind_name: z.string().default(''),
-    timepoint: wireTimestampSchema,
-    timepoint_timezone: z.string().default(''),
-    scope_code: z.string().default(''),
-    business_centre_code: z.string().default(''),
-    state: z.string().default(''),
-    deal_count: z.int().nonnegative().default(0),
-    market_data_set_count: z.int().nonnegative().default(0),
-    gap_count: z.int().nonnegative().default(0),
-    applied_by: z.string().default(''),
-    applied_at: nullableWireTimestampSchema,
 });
 
 /**

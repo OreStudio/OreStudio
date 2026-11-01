@@ -26,7 +26,6 @@ import { CurvePublishExtras } from './CurvePublishExtras.js';
 import { CutAuthorisationExtras } from './CutAuthorisationExtras.js';
 import { RoleRequestExtras } from './RoleRequestExtras.js';
 import { kindLabel } from './words.js';
-import { useTranslation } from '../i18n/Provider.js';
 import { Tag } from '../ui/Primitives.js';
 
 /**

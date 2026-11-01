@@ -135,6 +135,40 @@ via its "Verifies task" field.
 
 * Result
 
+The hand take and the authorisation it raises are built and verified as far as
+the environment allows.
+
+- The take: reporting.v1.ops.take_cut serves the assembly and the press, gated by
+  reporting::cuts:take. The assembly reads the parts the store answers (trading's
+  list at the as-of, the published sets, compute's app versions, the component's
+  configuration versions) through the caller's session, and records every part it
+  cannot fill as a cut_gap with item, reason and remedy.
+- The take writes through plan_take (the kind's retention, destination and
+  authorisation basis copied; ordinal, taker and instant set). A body with a gap
+  is kept as an incomplete draft and raises nothing.
+- The approval raise: where the kind names an approval kind, the request is raised
+  in the same transaction, with a new reporting detail entity keyed by the request
+  id (the cut, the counts of the parts, the applied facts empty). The record read
+  answers the detail.
+- The screens: the four-step take flow, the list's take button for the permission
+  holder, the Authorisation tab's subject panel and request link.
+- The seeds: the detail read permission, the taker's engine-version read, and the
+  demo's Finance arm for henry.jones; applied live additively.
+- Tests: 14 new C++ cases (237 cases/1321 assertions in the suite), BFF 1192,
+  web 2389.
+- Live: as henry.jones the assembly answered four of five parts and stood one gap
+  (the environment holds no published curve set), the press wrote the incomplete
+  draft with the kind's retention, and the record and history read back. The
+  request path is proven against the same database by the suite (a waiting
+  reporting.eod_cut_authorisation with its detail: deals 1284, sets 7, gaps 0).
+- The branch was rebased on main after main's own synthetic repair landed; the
+  two local synthetic repair commits were dropped.
+
+Remaining: the decide and the apply (the inbox decides, the reporting side stamps
+by reconciliation); the report's cut selection and the LIVE mint UI; and a
+published curve set in the environment, without which a hand take cannot raise a
+request live.
+
 * Result
 
 The take exists and it raises the authorisation it is for.

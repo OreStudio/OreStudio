@@ -49,7 +49,7 @@ public:
     /// The date that feeds read as today.
     [[nodiscard]] virtual std::chrono::sys_days today() const = 0;
 
-    /// The date as "2026-10-23", the form of a vintage date.
+    /// The date as "2026-10-23", the ISO form a fixing date takes.
     [[nodiscard]] std::string today_text() const {
         return std::format("{:%F}", today());
     }

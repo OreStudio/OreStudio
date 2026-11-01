@@ -69,10 +69,12 @@ screen calls it the feed.
    mean log-return, a standard deviation and a weight. The system shows the raw
    sum of the weights and says that the draw normalises them; a sum that is not
    one is a warning and not a refusal. The save keeps the weights as typed.
-6. *Say where the initial price comes from.* The person chooses =fixed=, where
-   the initial price is the one entered, or =vintage=, where the feed reads the
-   opening price from a named market-data source and date. The system shows the
-   vintage it would read and refuses a source or a date it cannot reach.
+6. *Say where the initial price comes from.* A new feed starts on =fixing=: it
+   reads the newest public fixing of its pair from the candidates its class
+   policy derives, and sizes its mixture to their spread. The person chooses
+   =fixed= only for a pair no public source fixes, and then the initial price is
+   the one entered. The calibration screen shows the item the feed would start
+   from and why.
 7. *Look at the process before it is saved.* The person reads the return
    distribution the mixture implies and a batch of sample price paths. The
    system draws both from the values on the screen and adds a seed and a path
@@ -159,7 +161,7 @@ has a history, and the mixture is stored as rows and never as a blob.
 | Name the instrument | Fill the currency picker | =refdata.v1.currencies.list= | exists |
 | Name the instrument | Offer the quoted pairs | =refdata.v1.currency_pairs.list= | exists |
 | Set the price behaviour | Choose the engine and the tick rate | =synthetic.v1.fx_spot_generation_configs.put= | exists |
-| Say where the price comes from | Store the price source, the initial price or the vintage | =synthetic.v1.fx_spot_generation_configs.put= | exists |
+| Say where the price comes from | Store the price source and the fallback initial price | =synthetic.v1.fx_spot_generation_configs.put= | exists |
 | Say where the price comes from | Browse the vintages the source offers | none | missing |
 | Edit the mixture | Write, add or reorder a component | =synthetic.v1.gmm_components.put=, =.put_many= | exists |
 | Edit the mixture | Remove a component | =synthetic.v1.gmm_components.delete= | exists |

@@ -27,16 +27,12 @@
  * real IR deposit-tenor rate: 3-month USD LIBOR on 2016-02-05, taken
  * directly from ORE's own bundled Legacy/Example_56 sample market data
  * (external/ore/examples/Legacy/Example_56/Input/market.txt, row
- * "MM/RATE/USD/2D/3M 0.007961"). This is the exact DEPOSIT-tenor point
- * ir_curve_generation_config.price_source='vintage' resolves against for
- * a USD-LIBOR-3M config (see resolve_vintage_initial_rate in
- * ir_curve_feed.cpp) -- synthetic.feeds.ore_samples_2016's
- * USD-LIBOR-3M config is seeded to use it.
+ * "MM/RATE/USD/2D/3M 0.007961"). It is reference data for the 2016-02-05
+ * ORE example; no generator starts from it. A curve starts from its stored
+ * initial rate, since no public source fixes a short rate.
  *
- * Scoped to one currency/tenor for now (unlike the FX driver rates'
- * full 14-currency, 25-date spread) -- extend with more
- * currency/tenor/date rows here as more IR curve configs move to
- * price_source='vintage'.
+ * Scoped to one currency and tenor, unlike the FX driver rates' full
+ * 14-currency, 25-date spread.
  *
  * Execution order: this file registers its own dataset and joins the
  * existing marketdata.reference_vintage_2016_02_05 bundle registered by
@@ -67,7 +63,7 @@ DO $$
 BEGIN
     PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'IR Deposit Rates',
-        'Curated, real IR deposit-tenor rates for use as synthetic IR curve vintage-mode seeding.',
+        'Curated, real IR deposit-tenor rates from the ORE example market data.',
         'OreStudio Development Team'
     );
 END $$;
@@ -102,7 +98,7 @@ BEGIN
         'Raw',
         'ORE Bundled Sample Market Data',
         'IR Deposit Rates 2016',
-        'Real IR deposit-tenor rate(s) from ORE''s own bundled Legacy/Example_56 sample, for the 2016-02-05 reference vintage -- currently just USD LIBOR-3M, the DEPOSIT anchor for synthetic.feeds.ore_samples_2016''s USD-LIBOR-3M config.',
+        'Real IR deposit-tenor rate(s) from ORE''s own bundled Legacy/Example_56 sample, for the 2016-02-05 reference vintage -- currently just USD LIBOR-3M.',
         'ORESTUDIO',
         'Seed data for the IR deposit rates Librarian bundle',
         '2016-02-05',
@@ -176,8 +172,8 @@ begin
         -- 2016-02-05: ORE's own bundled reference vintage date (Legacy/Example_56), matching the
         -- FX driver rates dataset's own reference date. The row IS the MM quote ORE's own file
         -- carries, so the key is that file's key and the identity is the series it belongs to:
-        -- the currency and the spot lag, with the DEPOSIT entry's end_tenor_code (see
-        -- select_vintage_anchor_entry) as the term coordinate. datum_uri is the series at
+        -- the currency and the spot lag, with the DEPOSIT entry's end_tenor_code as the
+        -- term coordinate. datum_uri is the series at
         -- that term, which is what the observation stores.
         ('oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D', 'MM/RATE/USD/2D/3M',
          'oresmd://ir/USD?type=quote&instrument=mm&quote=rate&fwd_start=2D&term=3M',

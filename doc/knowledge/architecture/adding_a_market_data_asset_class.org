@@ -25,8 +25,8 @@ ingest loop and the party tick.
 2. A struct in =generator_build_input= and a builder registered in
    =make_default_generator_factory()=.
 3. One =register_kind= call in =make_default_generator_kind_registry()=. It carries
-   the kind's config read permission, loader, build-input resolver, vintage anchor
-   and simulate decode and reply pair.
+   the kind's config read permission, loader, build-input resolver, and simulate
+   decode and reply pair.
 4. A permission row and a role grant in the IAM populate SQL.
 5. Catalogue rows: vendor instruments and mappings for each provider that quotes
    the class, in the system bundle. See [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]].

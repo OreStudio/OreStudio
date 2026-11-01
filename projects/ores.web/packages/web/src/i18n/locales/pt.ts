@@ -6034,7 +6034,7 @@ const pt: SourceCatalogue = {
                 sensitivity:
                     'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
-                    fixed: 'O fluxo parte do preço inicial que indicar.',
+                    fixed: 'O fluxo parte do preço inicial que indicar. Use-o só para um par que nenhuma fonte pública fixa; o caminho do fixing é o padrão.',
                     fixing: 'O fluxo parte do fixing público mais recente do par e tira a volatilidade dos fixings; sem fixing, mantém o preço inicial.',
                 },
                 enabled: 'Um fluxo que não está ativo não pode arrancar.',

@@ -58,12 +58,9 @@ operator test is a separate journey. The model calls this record the
    (=discount=, =projection= or =self_discounting=), names the fixed-leg payment
    frequency that a swap ladder resolves its schedule with, and writes a
    description. The tenor is empty for an overnight family and may be =FOMC=
-   only for =sofr=. The person then chooses =fixed=, which uses the
-   =initial_rate= value as entered, or =vintage=, which reads the starting
-   short rate from a market-data observation; under =vintage= the person sets
-   the source, the date and the series, the last through the oresmd URI editor.
-   The vintage option is unavailable until the currency and the index family are
-   set.
+   only for =sofr=. The curve starts from the =initial_rate= value as entered:
+   no public source fixes a short rate yet, so the fixed rate is the stated
+   fallback for every curve.
 4. *Choose the short-rate process.* On the *Process* tab the person chooses a
    process from the yield curve process type catalogue: =VASICEK=,
    =COX_INGERSOLL_ROSS=, =HULL_WHITE= or =TWO_FACTOR_GAUSSIAN=. Changing the
@@ -88,7 +85,7 @@ operator test is a separate journey. The model calls this record the
    agreement, sets its start to the period's own front tenor. The system refuses
    an empty ladder and a pair of overlapping windows.
 8. *Check the provenance and the history.* On the *Provenance* tab the person
-   reads the price source, the vintage binding, who changed the feed and when,
+   reads the price source, who changed the feed and when,
    and every version with the change from the one before. A revert is a new
    version, not a deletion.
 9. *Save the feed.* The person chooses *Save*. The system writes the config,
@@ -141,7 +138,7 @@ A static page at =doc/prototypes/market_data/author-an-ir-curve-feed/index.html=
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =ir_curve_generation_config= | The feed row: currency, index family, tenor, role, process type, ticks per hour, enabled, auto start, price source, vintage binding, description, source name, folder | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org][ores.synthetic.ir_curve_generation_config]] |
+| =ir_curve_generation_config= | The feed row: currency, index family, tenor, role, process type, ticks per hour, enabled, auto start, price source, description, source name, folder | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org][ores.synthetic.ir_curve_generation_config]] |
 | =ir_curve_template_entry= | The ladder and its order: sequence index, start and end tenor, instrument code | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_template_entry.org][ores.synthetic.ir_curve_template_entry]] |
 | =ir_curve_generation_config_process_parameter_value= | One value per parameter definition of the chosen process | [[proj:projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config_process_parameter_value.org][ores.synthetic.ir_curve_generation_config_process_parameter_value]] |
 | =yield_curve_process_type= | The process engines the feed selects between, and the description the screen shows | [[proj:projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_type.org][ores.synthetic.yield_curve_process_type]] |
@@ -151,8 +148,7 @@ A static page at =doc/prototypes/market_data/author-an-ir-curve-feed/index.html=
 
 The config and its two child row sets are versioned, so each has a history. The
 process types and their parameter definitions are system-tenant reference data:
-the screen reads them and never writes them. The vintage series is referenced by
-an oresmd URI, not by a foreign key.
+the screen reads them and never writes them.
 
 * Operations and messages
 

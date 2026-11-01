@@ -21,16 +21,19 @@ implements =i_generator=, and its =kind()= returns the string constant
 
 ** How the generator is built
 
-=make_fx_spot_generator= is the builder the factory calls with a persisted config
-and its component rows. It does four things.
+=make_fx_spot_feed= is the builder the factory calls with a persisted config,
+its component rows, its fixing items and its calibration policy. It does four
+things.
 
 1. It rejects an empty component set with =std::invalid_argument=, because a
    mixture with no components has no process to build.
-2. It resolves the initial price. Under ="fixed"= it takes
-   =gmm_initial_price=. Under ="vintage"= it reads a real observation from
-   the config's own series, scanning pages of two hundred rows for a match on
-   the vintage source, the config's own datum URI and the vintage date. A
-   miss raises =vintage_data_missing_error=.
+2. It resolves the initial price through =resolve_fx_start=. Under ="fixed"=
+   it takes =gmm_initial_price=. Under ="fixing"= it reads the newest fixing
+   of the first candidate that has one: the config's own items when it names
+   them, or the items the class policy derives from the series that cover the
+   pair. The spread of that item's fixings over the window scales the
+   mixture. With no fixing it keeps =gmm_initial_price=, or refuses to start
+   when the policy says so.
 3. It draws one seed and logs it.
 4. It calls =process_factory::make_process= with the config's
    =process_type= and the means, standard deviations and weights taken from
@@ -63,8 +66,7 @@ Each pass through the loop advances the process once with =next()= and
 builds one adapter tick.
 
 - The tick names the vendor instrument: the provider, the id scheme, the
-  external id and the field. A vintage read finds the datum through the
-  mapping and reads the stored series.
+  external id and the field.
 - =value= is the price as decimal text, produced by =std::format("{}", ...)=
   on the double the process returned.
 - =vendor_time= is the simulator's clock at the tick. The tick carries no source

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/retire-the-vintage-path
+#+pr: 4329
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -27,11 +27,11 @@ calibration and the documents, the seeds and the default say so.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -46,9 +46,22 @@ calibration and the documents, the seeds and the default say so.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+"Vintage" has two senses in the tree. A reference dataset is named by its
+date, =marketdata.reference_vintage_2016_02_05=; that name stays. The retired
+sense is =price_source='vintage'=, an initial price read from a stored
+observation; its code is already gone, so the notes, the seeds and the
+defaults follow.
+
+- Seed the FX calibration policy (ECB, IMF, Bank of Canada, CBRT; 90 days;
+  inverse allowed; keep the fixed level) and stop seeding per-feed fixing
+  items, so every seeded feed derives its candidates.
+- Start a new FX feed on =fixing=; =fixed= is the fallback for a pair no
+  public source fixes. An IR curve keeps its stated initial rate, since no
+  public source fixes a short rate.
+- Remove the dead =SyntheticFeedRun= role and the synthetic service's run
+  grant exchange, which existed to read a vintage price.
+- Rewrite every current note, journey, wireframe and seed comment that
+  describes a vintage as an initial price.
 
 * Measurements
 
@@ -81,12 +94,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4329][#4329]] | [synthetic] Retire the vintage path and make fixings the default |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4329: an existing database keeps its items and the role | populate | Decline | Installations here are recreated from the seeds; no migration path exists, so none is written. |
+| 2 | PR #4329: a tenant created later and the policy | feed_kind_registry.cpp | Decline | The policy is the installation's: every tenant reads the system tenant's row. |
+| 3 | PR #4329: the order guard is all or nothing | synthetic_calibration_policies_populate.sql | Accept | Commented. |
+| 4 | PR #4329: the bundle test is thinner | synthetic_system_bundle_fixing_test.sql | Accept | Asserts the full order, the window, the inverse and the fallback. |
+| 5 | PR #4329: current docs naming SyntheticFeedRun | docs | Decline | None remain outside the sprint 28 history. |
+| 6 | PR #4329: the default initial price of 1 under fixing | fxFeeds.tsx | Decline | It is the stated fallback, and the help says so; a fixing sets the level when one exists. |
 
 * Result
+
+The vintage path is closed. The FX calibration policy is seeded and no feed
+is seeded with items of its own; a new FX feed starts on the fixing path, and
+the fixed level is the stated fallback. The notes, journeys, wireframes and
+seed comments describe the fixing path, and the dead run role and grant are
+gone. A search for =vintage= finds the reference dataset names, the dated
+history, real company names in the LEI seeds, and the backlog investigation
+on backdated data, never a current way to start a feed.

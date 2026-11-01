@@ -40,8 +40,8 @@ salt
     Initial price | 1.0850
     Drift (mu) | 0.010 %
     Volatility (sigma) | 0.450 %
-    Price source | ^fixed^
-    Vintage | none
+    Price source | ^fixing^
+    Starts from | ECB fixing, 2026-10-30
   }
   --
   {#

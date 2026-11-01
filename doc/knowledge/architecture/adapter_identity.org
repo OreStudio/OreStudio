@@ -38,8 +38,8 @@ person and no stored consent.
 
 ** The simulator
 
-The simulator reads vintage prices from the market data service to anchor its
-generators. It reads them as the system tenant, with a service identity. No
+The simulator reads public fixings from the market data service to start and
+calibrate its generators. It reads them as the system tenant, with a service identity. No
 per-collection grant exists. Authoring a generator is a separate act of a person
 with the permission of the system tenant. See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
 

@@ -297,8 +297,8 @@ select ores_utility_allow_version_replace_fn();
 \ir marketdata/marketdata_populate.sql
 
 \echo ''
-\echo '--- Synthetic FX Fixing Items (after the official catalogue) ---'
-\ir synthetic/synthetic_fx_spot_fixing_items_populate.sql
+\echo '--- Synthetic Calibration Policies ---'
+\ir synthetic/synthetic_calibration_policies_populate.sql
 
 -- =============================================================================
 -- Refdata Layer

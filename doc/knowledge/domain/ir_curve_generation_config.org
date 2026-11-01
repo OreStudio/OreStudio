@@ -2,7 +2,7 @@
 :ID: 316F0EA0-2DA4-4E96-87D5-F4EAE7490938
 :END:
 #+title: The IR curve generation config
-#+description: One curve feed, its currency, index family, role and tenor, its vintage binding, and the collision rule that lets a discount and a projection curve coexist.
+#+description: One curve feed, its currency, index family, role and tenor, its initial rate, and the collision rule that lets a discount and a projection curve coexist.
 #+type: knowledge
 #+level: cross
 #+filetags: :synthetic:config:ir:
@@ -64,19 +64,12 @@ an engine or a parameter is therefore seed data and not a schema change. See
 
 ** The initial rate
 
-=price_source= is ="fixed"= by default and ="vintage"= as the alternative.
-Under ="vintage"= the starting short rate is read from a real observation, and
-three columns say which one. =vintage_source= and =vintage_date= name the
-source and the date, and =vintage_series_uri= names the series as an oresmd
-URI.
-
-The comparison with
-[[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
-is worth holding. The FX config defaults to vintage and the curve config
-defaults to fixed, because the curve configs that predate vintage awareness
-migrated in with fixed behaviour. The FX check sentinels the stored initial
-price to zero under vintage and the curve check does not, because a real
-short rate can legitimately be zero or negative and an FX spot price cannot.
+=price_source= holds only ="fixed"=: the curve starts from its stored
+=initial_rate= value row. No public source the installation catalogues fixes
+a short rate today, so the fixed rate is the stated fallback for every curve.
+When a public source covers a curve, the curve takes a ="fixing"= path the
+way [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+does. No curve reads a dated reference observation as its start.
 
 ** The collision rule
 
@@ -92,13 +85,9 @@ it; see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Dat
 
 The curve is named by the config and not discovered from the key. The
 series it publishes into are built from =currency_code= and the index tenor in
-one place, and [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]] describes how they appear in the stored data. The
-=vintage_series_uri= column exists because the dataset that publishes the
-vintage names its own ORE keys, and a series identity is what the catalogue
-is keyed by, so the coupling belongs on the config rather than in a
-decomposition of the key performed at read time.
+one place, and [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]] describes how they appear in the stored data.
 
-=description= carries prose on purpose. It records what regime or vintage the
+=description= carries prose on purpose. It records what regime the
 curve targets, and for a discontinued index such as USD LIBOR it records that
 the curve is historical and why it is still offered.
 

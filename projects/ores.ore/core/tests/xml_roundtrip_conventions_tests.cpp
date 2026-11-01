@@ -31,6 +31,7 @@
 #include <functional>
 #include <map>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -316,6 +317,35 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive",
     again_floats[0].convention_id = out_float.convention_id;
     CHECK(again_terms[0] == out_terms);
     CHECK(again_floats[0] == out_float);
+}
+
+// The export writes a fix float convention only whole. A convention whose part
+// rows are missing cannot be written as the schema states it, so the export
+// refuses it rather than writing an element without the part's leaves.
+TEST_CASE("conventions_cross_currency_fix_float_without_a_part_is_refused",
+          "[ore][xml][roundtrip][conventions]") {
+    const std::string text = R"(<Conventions>
+  <CrossCurrencyFixFloat>
+    <Id>USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS</Id>
+    <SettlementDays>2</SettlementDays>
+    <SettlementCalendar>US,UK,TRY</SettlementCalendar>
+    <SettlementConvention>F</SettlementConvention>
+    <FixedCurrency>TRY</FixedCurrency>
+    <FixedFrequency>Annual</FixedFrequency>
+    <FixedConvention>F</FixedConvention>
+    <FixedDayCounter>A360</FixedDayCounter>
+    <Index>USD-SOFR</Index>
+  </CrossCurrencyFixFloat>
+</Conventions>)";
+
+    for (const std::string part : {"cross_currency_fix_float_swap_terms",
+                                   "cross_currency_fix_float_fixed_leg",
+                                   "cross_currency_fix_float_float_leg"}) {
+        INFO("without " << part);
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows, [&](const auto& row) { return row.family == part; });
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+    }
 }
 
 // The element is one central row and three parts. Every convention in the

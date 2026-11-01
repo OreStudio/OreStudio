@@ -24,7 +24,9 @@
 #include <algorithm>
 #include <format>
 #include <iterator>
+#include <span>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -59,11 +61,29 @@ constexpr family_codec family_codecs[] = {
     {"zero_inflation_index", &pack_zero_inflation_index, &join_zero_inflation_index},
 };
 
+constexpr bool in_registry(std::string_view key) {
+    for (const auto& family : refdata::domain::convention_families)
+        if (family.key == key)
+            return true;
+    return false;
+}
+
+constexpr bool joined_families_in_registry(std::span<const std::string_view> families) {
+    for (const auto f : families)
+        if (!in_registry(f))
+            return false;
+    return true;
+}
+
+// The joined kinds share the central convention family, so the registry is
+// counted family by family rather than by adding up the kinds' lists.
 constexpr bool codecs_cover_the_registry() {
+    std::size_t own_element = 0;
     for (const auto& family : refdata::domain::convention_families) {
         if (is_tenor_basis_swap_family(family.key) ||
             is_cross_currency_fix_float_family(family.key))
             continue;
+        ++own_element;
         std::size_t found = 0;
         for (const auto& codec : family_codecs)
             if (codec.family == family.key)
@@ -71,9 +91,9 @@ constexpr bool codecs_cover_the_registry() {
         if (found != 1)
             return false;
     }
-    return std::size(family_codecs) + std::size(tenor_basis_swap_families) +
-               std::size(cross_currency_fix_float_families) ==
-           std::size(refdata::domain::convention_families);
+    return joined_families_in_registry(tenor_basis_swap_families) &&
+           joined_families_in_registry(cross_currency_fix_float_families) &&
+           std::size(family_codecs) == own_element;
 }
 
 // A family added to the modelling tree has no way to be read from or written

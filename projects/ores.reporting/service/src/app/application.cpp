@@ -32,8 +32,8 @@
 #include "ores.reporting.service/messaging/cut_family_event_registrar.hpp"
 #include "ores.reporting.service/messaging/cut_gap_event_registrar.hpp"
 #include "ores.reporting.service/messaging/cut_kind_event_registrar.hpp"
-#include "ores.reporting.service/messaging/cut_take_registrar.hpp"
 #include "ores.reporting.service/messaging/cut_resolution_rule_event_registrar.hpp"
+#include "ores.reporting.service/messaging/cut_take_registrar.hpp"
 #include "ores.reporting.service/messaging/engine_settings_proposal_registrar.hpp"
 #include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_instance_event_registrar.hpp"
@@ -147,8 +147,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             // freezes the body, so it is registered here and not with the
             // entity handlers, and before them, because it reads the context
             // the proposal registrar takes.
-            auto takes =
-                ores::reporting::messaging::cut_take_registrar::register_handlers(n, c, v);
+            auto takes = ores::reporting::messaging::cut_take_registrar::register_handlers(n, c, v);
             for (auto& sub : takes)
                 subs.push_back(std::move(sub));
             // The proposal operations raise approval requests, so they are

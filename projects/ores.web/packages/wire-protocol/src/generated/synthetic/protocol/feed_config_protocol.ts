@@ -173,6 +173,24 @@ export interface CalibrationPolicySummary {
 }
 
 /**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+export interface CandidateOutcome {
+    /** @brief The candidate's item, as the oresmd URI that names it. */
+    item: string;
+    /** @brief The provider that publishes the item. */
+    provider_code: string;
+    /** @brief True when the item quotes the pair the other way round. */
+    inverted: boolean;
+    /** @brief The candidate's place in the resolution, first tried first. */
+    rank: number;
+    /** @brief chosen, skipped or not_reached. */
+    state: string;
+    /** @brief Why the candidate was chosen, skipped or not reached. */
+    reason: string;
+}
+
+/**
  * @brief How one feed of the class resolved: the item it starts from, or its fallback or
  * refusal, and the exceptions it states against the policy.
  */
@@ -193,6 +211,8 @@ export interface CalibratedFeed {
     refused: boolean;
     /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
     start: FeedStart;
+    /** @brief Every candidate the feed read, in rank order, with its outcome. */
+    candidates: CandidateOutcome[];
 }
 
 /**

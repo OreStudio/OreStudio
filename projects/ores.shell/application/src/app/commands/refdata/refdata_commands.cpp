@@ -52,7 +52,9 @@
 #include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
-#include "ores.shell/app/commands/refdata/cross_currency_basis_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/cross_currency_basis_flat_leg_commands.hpp"
+#include "ores.shell/app/commands/refdata/cross_currency_basis_spread_leg_commands.hpp"
+#include "ores.shell/app/commands/refdata/cross_currency_basis_swap_terms_commands.hpp"
 #include "ores.shell/app/commands/refdata/cross_currency_fix_float_fixed_leg_commands.hpp"
 #include "ores.shell/app/commands/refdata/cross_currency_fix_float_float_leg_commands.hpp"
 #include "ores.shell/app/commands/refdata/cross_currency_fix_float_swap_terms_commands.hpp"
@@ -251,7 +253,9 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     crm_driver_pair_commands::register_commands(root_menu, session);
     crm_enabled_derived_pair_commands::register_commands(root_menu, session);
     crm_topology_config_commands::register_commands(root_menu, session);
-    cross_currency_basis_convention_commands::register_commands(root_menu, session);
+    cross_currency_basis_flat_leg_commands::register_commands(root_menu, session);
+    cross_currency_basis_spread_leg_commands::register_commands(root_menu, session);
+    cross_currency_basis_swap_terms_commands::register_commands(root_menu, session);
     cross_currency_fix_float_fixed_leg_commands::register_commands(root_menu, session);
     cross_currency_fix_float_float_leg_commands::register_commands(root_menu, session);
     cross_currency_fix_float_swap_terms_commands::register_commands(root_menu, session);

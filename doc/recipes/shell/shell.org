@@ -1000,10 +1000,6 @@ tangled into the runnable script library
 
 - [[id:D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9][How do I run the average_ois_conventions commands from the shell?]]
 
-* Cross Currency Basis Conventions
-
-- [[id:15F5D765-33EA-5B26-8005-D711223E6A18][How do I run the cross_currency_basis_conventions commands from the shell?]]
-
 * Tenor Basis Two Swap Conventions
 
 - [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]
@@ -1963,3 +1959,15 @@ tangled into the runnable script library
 * Cross Currency Fix Float Swap Terms
 
 - [[id:1042FCD9-B5F5-5163-A0DF-8737F9935961][How do I run the cross_currency_fix_float_swap_terms commands from the shell?]]
+
+* Cross Currency Basis Flat Legs
+
+- [[id:8F4B58C8-BC9C-5777-96C1-6BA75FEEDAC1][How do I run the cross_currency_basis_flat_legs commands from the shell?]]
+
+* Cross Currency Basis Spread Legs
+
+- [[id:71934350-057D-5029-8E7B-906D5910E6D3][How do I run the cross_currency_basis_spread_legs commands from the shell?]]
+
+* Cross Currency Basis Swap Terms
+
+- [[id:474B4731-0A7B-5F13-85DE-92495F5A8BB8][How do I run the cross_currency_basis_swap_terms commands from the shell?]]

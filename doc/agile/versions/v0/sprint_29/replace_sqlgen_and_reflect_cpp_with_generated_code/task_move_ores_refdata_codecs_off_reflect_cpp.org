@@ -352,6 +352,8 @@ via its "Verifies task" field.
 | 12 | Two acceptance lines are deferred and the page did not say so | task page | Fixed | Status and Acceptance now say which lines wait for the JSON task, and the seven hand-written headers are named |
 | 13 | Commit =9ea273feff= states the suites pass and then names the one that does not | commit message | Accepted | The tree is right and the finding is fair; rewriting a pushed commit adds noise, so the correction is in the review-round commit and here |
 | 14 | The Measurements table breaks its own rule: no commits, no sweep row | task page | Fixed | Every row names a command and a commit, and the sweep, the file count, the suites and the byte comparison are rows |
+| L1 | Local review: a start request with no request_id | =*_apply_workflow.hpp= | Accepted | rfl refused the read; the codec leaves the member empty. Both build no steps. |
+| L2 | Local review: two generated headers were edited by hand | =party_handler.hpp=, =currency_pair_convention_cache.hpp= | Fixed | The drift check refused them. The party model now states the change; the cache waits for its template. |
 
 * Result
 

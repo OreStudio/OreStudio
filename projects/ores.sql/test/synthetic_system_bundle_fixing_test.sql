@@ -70,14 +70,16 @@ select is(
 );
 
 select is(
-    (select o.provider_code from ores_synthetic_calibration_provider_orders_tbl o
-     join ores_synthetic_calibration_policies_tbl p on p.id = o.policy_id
-     where p.asset_class_code = 'fx' and p.allow_inverse
-       and o.rank = 1
+    (select p.window_days || ' ' || p.allow_inverse || ' ' || p.fallback_code || ' '
+            || string_agg(o.provider_code, ',' order by o.rank)
+     from ores_synthetic_calibration_policies_tbl p
+     join ores_synthetic_calibration_provider_orders_tbl o on o.policy_id = p.id
+     where p.asset_class_code = 'fx'
        and o.valid_to = ores_utility_infinity_timestamp_fn()
-       and p.valid_to = ores_utility_infinity_timestamp_fn()),
-    'ecb',
-    'the FX policy reads the ECB first and allows an inverse'
+       and p.valid_to = ores_utility_infinity_timestamp_fn()
+     group by p.window_days, p.allow_inverse, p.fallback_code),
+    '90 true keep_fixed ecb,imf,boc,tcmb',
+    'the FX policy reads ECB, IMF, Bank of Canada then CBRT over 90 days, allows an inverse, and keeps the fixed level'
 );
 
 select ok(

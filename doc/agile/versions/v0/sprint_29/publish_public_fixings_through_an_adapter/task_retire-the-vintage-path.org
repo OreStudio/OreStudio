@@ -100,7 +100,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4329: an existing database keeps its items and the role | populate | Decline | Installations here are recreated from the seeds; no migration path exists, so none is written. |
+| 2 | PR #4329: a tenant created later and the policy | feed_kind_registry.cpp | Decline | The policy is the installation's: every tenant reads the system tenant's row. |
+| 3 | PR #4329: the order guard is all or nothing | synthetic_calibration_policies_populate.sql | Accept | Commented. |
+| 4 | PR #4329: the bundle test is thinner | synthetic_system_bundle_fixing_test.sql | Accept | Asserts the full order, the window, the inverse and the fallback. |
+| 5 | PR #4329: current docs naming SyntheticFeedRun | docs | Decline | None remain outside the sprint 28 history. |
+| 6 | PR #4329: the default initial price of 1 under fixing | fxFeeds.tsx | Decline | It is the stated fallback, and the help says so; a fixing sets the level when one exists. |
 
 * Result
 

@@ -28,7 +28,9 @@
  * candidates from this order; no feed is seeded with items of its own.
  *
  * This script is idempotent: it inserts the policy only when the class has
- * none, and the order only when the policy has none.
+ * none, and the order only when the policy has none. The order is seeded
+ * whole or not at all, so a provider added to the list below reaches a fresh
+ * database only; an installation changes its order on the policy screen.
  */
 
 \echo '--- Calibration Policies ---'

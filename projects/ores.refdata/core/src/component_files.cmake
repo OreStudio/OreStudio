@@ -1175,7 +1175,6 @@ set(files
     "service/convention_family_commodity_future_convention.cpp"
     "service/convention_family_convention.cpp"
     "service/convention_family_cross_currency_basis_convention.cpp"
-    "service/convention_family_cross_currency_fix_float_convention.cpp"
     "service/convention_family_cross_currency_fix_float_fixed_leg.cpp"
     "service/convention_family_cross_currency_fix_float_float_leg.cpp"
     "service/convention_family_deposit_convention.cpp"

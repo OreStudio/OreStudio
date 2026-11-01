@@ -32,7 +32,6 @@
 #include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
-#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
@@ -50,6 +49,7 @@
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
 #include <cstddef>
 #include <map>

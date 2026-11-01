@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-table-a-selection-contract
-#+pr: 4317
+#+pr: 4318
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -26,11 +26,11 @@ Let RecordTable carry an optional selection, so a screen that chooses rows uses 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the table chooses, and the grouping screen draws through it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -83,6 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4318][#4318]] | [agile] Close the selection contract task |
 | [[https://github.com/OreStudio/OreStudio/pull/4317][#4317]] | [web] Let the shared table take a selection, and draw the picker with it |
 
 * Review

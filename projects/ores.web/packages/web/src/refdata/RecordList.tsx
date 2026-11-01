@@ -455,6 +455,7 @@ export function RecordTable<Row>({
     add,
     heard = NOTHING_HEARD,
     rowStyle,
+    selection,
 }: {
     readonly source: ListSource<Row>;
     /** The records' plural, as the empty states name them. */
@@ -467,6 +468,21 @@ export function RecordTable<Row>({
     readonly add?: { readonly label: string; readonly onAdd: () => void };
     /** What the screen has heard change since it loaded; the table marks the rows and says what it cannot point at. */
     readonly heard?: Heard;
+    /**
+     * Whether the rows can be chosen, and which ones are.
+     *
+     * A table that states no selection draws exactly as it did before: choosing
+     * is opt-in, because most tables are for reading. What is chosen stays the
+     * screen's — the count it shows, the rule that refuses a mixed set and the
+     * act the choice is for are all its own. The table only draws the boxes and
+     * reports the toggle.
+     */
+    readonly selection?: {
+        readonly chosen: readonly string[];
+        readonly onToggle: (key: string) => void;
+        /** Whether the whole set may be chosen at once, and whether it is. */
+        readonly all?: { readonly chosen: boolean; readonly onToggle: () => void };
+    };
     /**
      * The colour a row is drawn in, where a row's colour carries meaning.
      *
@@ -650,6 +666,18 @@ export function RecordTable<Row>({
                 <table className="w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-line text-xs text-ink-muted">
+                            {selection !== undefined && (
+                                <th className="w-8 px-4 py-2">
+                                    {selection.all !== undefined && (
+                                        <input
+                                            type="checkbox"
+                                            aria-label={t('refdata.records.chooseAll')}
+                                            checked={selection.all.chosen}
+                                            onChange={() => selection.all?.onToggle()}
+                                        />
+                                    )}
+                                </th>
+                            )}
                             {visible.map((column) => {
                                 const canSort =
                                     column.sort !== undefined && sortable.has(column.sort);
@@ -737,6 +765,16 @@ export function RecordTable<Row>({
                                           },
                                       })}
                             >
+                                {selection !== undefined && (
+                                    <td className="w-8 px-4 py-2">
+                                        <input
+                                            type="checkbox"
+                                            aria-label={rowKey(row, index)}
+                                            checked={selection.chosen.includes(rowKey(row, index))}
+                                            onChange={() => selection.onToggle(rowKey(row, index))}
+                                        />
+                                    </td>
+                                )}
                                 {visible.map((column) => (
                                     <td
                                         key={column.id}

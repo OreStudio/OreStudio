@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: FF4ABC75-429D-4688-A496-F24E394D2F77
+:END:
+#+title: compass check leaves the service fleet running, so the next check cannot rebuild the database
+#+description: ticks-smoke starts the environment's services and does not stop them. The next compass check then fails its db step with 'there are 2 active connection(s)', and ctest runs on a stale database.
+#+type: capture
+#+level: cross
+#+filetags: :compass:testing:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On brave_hopper, the first =compass check= passed its =db= step. Its
+=ticks-smoke= step provisions a tenant on the running fleet. After it, all 25
+services were running. The second =compass check= then failed =db= with
+"there are 2 active connection(s) to ores_dev_brave_hopper", and its ctest ran
+against a database it had not rebuilt. The cause is inferred from that order;
+the check source was not read. Stop the fleet at the end of =ticks-smoke=, or
+stop it before =db=.
+
+* Why
+
+A second check run in one environment reports false failures, and a reviewer
+cannot trust its ctest result.
+
+* References
+
+-
+
+* See also
+
+-

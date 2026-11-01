@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/exercise-the-calibration-screens
-#+pr:
+#+pr: 4354
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4354][#4354]] | [synthetic] Calibrate feed by feed, store each calibration, and make the screens work |
 
 * Review
 

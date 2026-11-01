@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9FC47D80-2F63-4A21-9141-95D29ECA55B8
+:END:
+#+title: Check pooled connections after a postgres restart
+#+description: After PostgreSQL restarts, each service's pool hands out its old connections, so the first request on each fails with 'SSL connection has been closed unexpectedly' before the pool replaces it.
+#+type: capture
+#+level: cross
+#+filetags: :database:resilience:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Before a pool hands out a connection, check that it is still open, or retry a statement once on a fresh connection when it fails because the server closed the connection. Then a PostgreSQL restart costs no failed requests.
+
+* Why
+
+On 2026-11-01 PostgreSQL was restarted to preload pg_stat_statements. The services stayed up. The first FX calibration read after the restart failed for every feed with "Repository error: The pipeline ended without its sync: SSL connection has been closed unexpectedly", and the BFF answered 502. The next reads succeeded, so the pool replaces a connection only after it fails once.
+
+* References
+
+- =projects/ores.database= connection pool
+
+* See also
+
+- [[id:F18A305D-FE28-4EAE-BB7F-01787ACDCF2D][Task: Exercise the calibration screens]]

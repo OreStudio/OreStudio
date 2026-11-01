@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/parse-the-market-state-into-timeseries-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A run's intermediate state is held as rows that a user can query, not as a blob.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,23 @@ A run's intermediate state is held as rows that a user can query, not as a blob.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The metric reader already reads six of the seven families, because each one
+states keys, qualifiers and figures: the cubes are keyed by netting set, date
+and sample with one =Value=, the sensitivity scenarios by trade and factor, and
+the two scenario files by date and scenario with one figure for each factor
+column. Only =todaysmarketcalibration= needs its own reader, because its values
+are text as often as numbers.
+
+1. Give each metric an identity that holds at volume. The metric table's unique
+   index is party, run, family, subject, date and measure, so two factors of one
+   trade, two samples of one cube or two results of one run collide. A figure is
+   identified by its result, the file it came from and the line it was read
+   from. Prove it with a sensitivity of two factors for one trade, red first.
+2. Make the cubes and the sensitivity scenarios run results, so the
+   post-processor stores them as metrics with no new reader.
+3. Give marketdata a figure hypertable for =stress_scenarios= and
+   =scenariostatistics=, and a calibration table, each fed by a reader.
+4. Remove the payload table, the payload index and the base64 writer.
 
 * Measurements
 

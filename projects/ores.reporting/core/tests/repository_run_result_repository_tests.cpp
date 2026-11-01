@@ -107,3 +107,32 @@ TEST_CASE("the screen reads a run's figures through the run result view", "[repo
         std::ranges::find_if(rows, [](const auto& one) { return one.source != "npv"; });
     CHECK(metrics_of_another_family == rows.end());
 }
+
+TEST_CASE("every figure a sensitivity states for one trade is stored", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto instance_id = run_result_new_uuid();
+    const auto definition_id = run_result_new_uuid();
+
+    // A sensitivity file states one row for each factor a trade was shifted by,
+    // and each row states the same headings, so the trade, the date and the
+    // heading do not tell one figure from another.
+    auto first = make_metric(instance_id, definition_id, "Delta", "USD", "", 10.0);
+    first.family = "sensitivity";
+    first.factor = "DiscountCurve/USD/0/1Y";
+    auto second = make_metric(instance_id, definition_id, "Delta", "USD", "", 20.0);
+    second.family = "sensitivity";
+    second.factor = "DiscountCurve/USD/1/2Y";
+    second.party_id = first.party_id;
+
+    report_metric_repository metrics;
+    metrics.insert(h.context(), {first, second});
+
+    const auto rows = metrics.read_latest(h.context());
+    const auto stored = std::ranges::count_if(rows, [&instance_id](const auto& one) {
+        return boost::uuids::to_string(one.report_instance_id) == instance_id &&
+               one.family == "sensitivity";
+    });
+    CHECK(stored == 2);
+}

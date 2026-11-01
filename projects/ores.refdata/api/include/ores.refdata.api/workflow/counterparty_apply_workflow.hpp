@@ -20,20 +20,18 @@
 #ifndef ORES_REFDATA_API_WORKFLOW_COUNTERPARTY_APPLY_WORKFLOW_HPP
 #define ORES_REFDATA_API_WORKFLOW_COUNTERPARTY_APPLY_WORKFLOW_HPP
 
-#include "ores.inbox.api/workflow/apply_step_command.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
-#include "ores.workflow.api/service/workflow_definition.hpp"
-#include "ores.workflow.api/service/workflow_registry.hpp"
-#include <exception>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <vector>
+
+namespace ores::workflow::service {
+class workflow_registry;
+}
 
 namespace ores::refdata::workflow {
-
-using ores::workflow::service::write_step_timeout;
 
 inline constexpr std::string_view counterparty_apply_workflow_type = "counterparty_apply_workflow";
 inline constexpr std::string_view recheck_counterparty_changes_subject =
@@ -53,6 +51,9 @@ struct counterparty_apply_workflow_request {
         utility::codec::field{"request_id", &counterparty_apply_workflow_request::request_id}};
 }
 
+static_assert(::ores::utility::codec::names_every_member<counterparty_apply_workflow_request>(),
+              "counterparty_apply_workflow_request has a member its wire shape does not name");
+
 /**
  * @brief Registers the counterparty_apply_workflow definition.
  *
@@ -68,71 +69,8 @@ struct counterparty_apply_workflow_request {
  * the infrastructure leaves the request approved and the run stopped, for the
  * engine's retry verb to resume.
  */
-inline void
-register_counterparty_apply_workflow(ores::workflow::service::workflow_registry& registry) {
-    using namespace ores::workflow::service;
-
-    workflow_definition def;
-    def.type_name = std::string(counterparty_apply_workflow_type);
-    def.description = "Applies the stored lines of an approved counterparty request: re-checks "
-                      "them against the live rows, writes every line in one transaction, "
-                      "and tells the person who asked. Stops on a failure and keeps the "
-                      "completed steps, because the recovery wanted is a retry.";
-    def.on_failure = failure_policy::stop;
-
-    def.build_steps = [](const std::string& request_json,
-                         const std::string& /*tenant_id*/,
-                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-        // A start that names no request has no steps. The engine logs that and
-        // creates no instance, which is the refusal a caller needs.
-        counterparty_apply_workflow_request parsed;
-        try {
-            parsed = utility::codec::object::read_json<counterparty_apply_workflow_request>(
-                request_json);
-        } catch (const std::exception&) {
-            return {};
-        }
-        if (parsed.request_id.empty())
-            return {};
-
-        const auto command = utility::codec::object::write_json(
-            ores::inbox::workflow::apply_step_command{.request_id = parsed.request_id});
-        const auto build = [command](const std::string& /*request_json*/,
-                                     const workflow_step_results& /*results*/) {
-            return command;
-        };
-
-        workflow_step_def recheck;
-        recheck.name = "recheck";
-        recheck.label = "Re-check the changes";
-        recheck.description = "Read the stored lines against the live rows.";
-        recheck.command_subject = std::string(recheck_counterparty_changes_subject);
-        recheck.timeout = write_step_timeout;
-        recheck.build_command = build;
-
-        workflow_step_def apply;
-        apply.name = "apply";
-        apply.label = "Apply the changes";
-        apply.description = "Write every line in one transaction and mark each applied.";
-        apply.consumes = {"recheck"};
-        apply.command_subject = std::string(apply_counterparty_changes_subject);
-        apply.timeout = write_step_timeout;
-        apply.build_command = build;
-
-        workflow_step_def tell;
-        tell.name = "tell";
-        tell.label = "Tell the person who asked";
-        tell.description = "Say how the apply ended.";
-        tell.consumes = {"apply"};
-        tell.command_subject = std::string(ores::inbox::workflow::tell_apply_result_subject);
-        tell.timeout = write_step_timeout;
-        tell.build_command = build;
-
-        return {recheck, apply, tell};
-    };
-
-    registry.register_definition(std::move(def));
-}
+ORES_REFDATA_API_EXPORT void
+register_counterparty_apply_workflow(ores::workflow::service::workflow_registry& registry);
 
 }
 

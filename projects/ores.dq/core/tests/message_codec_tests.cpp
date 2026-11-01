@@ -21,6 +21,7 @@
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.dq.api/generators/catalog_generator.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
+#include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
@@ -212,4 +213,19 @@ TEST_CASE("a message and the domain type it holds agree about the domain type",
     CHECK(back.catalogs.front().name == catalog.name);
     CHECK(back.total == response.total);
     CHECK(back.result.outcome == ores::utility::domain::outcome::ok);
+}
+
+TEST_CASE("the dq publish messages write the bytes reflect-cpp wrote", "[codec][message]") {
+    ores::dq::messaging::publish_from_dq_command command;
+    command.dataset_id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    command.tenant_id = "00000000-0000-0000-0000-000000000000";
+    command.mode = "upsert";
+    command.params_json = R"({"limit": 10})";
+    same_message_bytes_as_reflect_cpp(command);
+
+    ores::dq::messaging::publish_from_dq_result result;
+    result.success = true;
+    result.records_inserted = 18446744073709551615ULL;
+    result.records_updated = 3;
+    same_message_bytes_as_reflect_cpp(result);
 }

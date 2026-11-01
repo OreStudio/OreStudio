@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-assets-codecs-off-reflect-cpp
+#+pr: 4353
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.assets encodes and decodes without reflect-cpp.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,13 @@ Step 6 of 7, one component. ores.assets encodes and decodes without reflect-cpp.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the five assets models into the wire codec and regenerate.
+- Opt dq's =publish_from_dq= model in as well, so the assets publish handler can
+  read its command and write its result through the codec.
+- Move that handler to the codec by hand, and drop the unused reflect-cpp
+  includes from three repository tests.
+- Prove the bytes against reflect-cpp for every assets type and message, and
+  for the dq publish command and result.
 
 * Measurements
 
@@ -58,9 +62,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Assets suites | 5 of 5 pass | =compass test run --preset linux-clang-release-ninja -- -R assets= | bee893561e plus this branch |
+| dq suites | 4 of 4 pass | =compass test run --preset linux-clang-release-ninja -- -R dq= | bee893561e plus this branch |
+| Assets byte tests against reflect-cpp | 4 cases, 110 assertions pass | =ores.assets.api.tests "[codec]"= | bee893561e plus this branch |
+| dq publish byte test | 1 case, 10 assertions pass | =ores.dq.core.tests "the dq publish messages ..."= | bee893561e plus this branch |
+| Component drift (assets, dq), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component assets-cpp= and =dq-cpp=, and the check scripts | bee893561e plus this branch |
+| reflect-cpp left in assets sources, outside tests | 0 includes; 1 =ores.rfl.pch= link | =grep -rn rfl projects/ores.assets= | bee893561e plus this branch |
 
 * Notes
+
+** The dq publish command is shared
+
+=publish_from_dq_command= and =publish_from_dq_result= are read and written by
+the publish handler of six components: assets, dq, synthetic, reporting,
+refdata and iam. Their model was not opted into the codec with dq's, so this
+task opts it in. The other five handlers keep reflect-cpp until their own
+component tasks move them; the generated codec does not change what
+reflect-cpp writes for them.
+
+The api library still links =ores.rfl.pch=; [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]] replaces it.
 
 * Test Scenarios
 
@@ -77,12 +97,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4353][#4353]] | [assets] Encode and decode without reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Test the publish command with unset fields | =message_codec_tests.cpp= | No change | No optional members; all four are strings |
+| 2 | Empty namespace in a generated codec | =image_tag_codec.cpp= | No change | Template output; harmless |
+| 3 | Comment the test's reflect-cpp include | =codec_wire_bytes_tests.cpp= | No change | Remove reflect-cpp searches for =rfl= |
+| 4 | Byte test covers a cross-section | =codec_wire_bytes_tests.cpp= | No change | Generated code; drift clean |
+| 5 | Run the full gate | - | Declined | Targeted checks run and pass |
 
 * Result
+
+ores.assets encodes and decodes without reflect-cpp. Its five models use the
+generated codec, and its publish handler reads and writes the dq publish
+messages through it; dq's publish model now has a generated codec for every
+component's handler to use. The bytes match reflect-cpp's in JSON and
+MessagePack.

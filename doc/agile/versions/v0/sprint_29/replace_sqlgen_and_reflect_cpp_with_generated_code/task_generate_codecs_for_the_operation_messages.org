@@ -114,7 +114,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1 | No direct test of the map carriers | =codec_wire_form_tests.cpp= | Fixed in c63680d5e6 | Full and empty maps, both formats, against reflect-cpp, with round trips. |
+| R2 | Duplicate keys on read | =json_codec.hpp=, =msgpack_codec.hpp= | Stated | The first value wins; the writer never writes a key twice. |
+| R3 | A map with more than 2^32 entries | =msgpack_codec.hpp= | Dismissed | The vector carrier has the same bound, and no message comes near it. |
+| R4 | struct_name copies name | =core.py= | Noted | The entity path does the same, with the same comment. |
+| R5 | MSVC, macOS and the 9 failing checks | (whole PR) | Noted | No PR CI runs here. The 9 checks are the main-side set on the three PRs merged before this one. |
 
 * Result
 

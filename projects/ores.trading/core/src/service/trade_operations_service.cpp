@@ -531,11 +531,25 @@ trade_operations_service::complete_structure(const messaging::complete_structure
             {boost::uuids::to_string(state.front().status_id)},
             lg(),
             "Checking whether a leg is a draft");
-        if (draft.empty() || draft.front() != "true") {
+        /*
+         * A leg is completed whether it is waiting or already live: a grouping
+         * may take trades that were booked live, which have already asked
+         * Operations, and drafts that have not. A leg in any other state is a
+         * deal that ended, and a structure does not hold those.
+         */
+        const auto live = ores::database::repository::execute_parameterized_string_query(
+            ctx,
+            "select ores_trading_status_is_live_fn($1::uuid)::text",
+            {boost::uuids::to_string(state.front().status_id)},
+            lg(),
+            "Checking whether a leg is live");
+        const auto is_draft = !draft.empty() && draft.front() == "true";
+        const auto is_live = !live.empty() && live.front() == "true";
+        if (!is_draft && !is_live) {
             response.result.outcome = outcome::conflict;
-            response.result.code = "not_draft";
+            response.result.code = "not_live";
             response.result.message =
-                "Trade " + leg_id + " is not a draft, so it completes nothing.";
+                "Trade " + leg_id + " is neither a draft nor live, so it completes nothing.";
             return response;
         }
         if (!members.read_latest(ctx, leg_id).empty()) {
@@ -578,6 +592,17 @@ trade_operations_service::complete_structure(const messaging::complete_structure
     // structure and the structure is never made of drafts.
     std::vector<raised_authorisation> raised;
     for (const auto& leg : request.legs) {
+        // A leg that is already live has asked its own question; only a draft
+        // is taken live here.
+        const auto held_state = states.read_latest(ctx, boost::uuids::to_string(leg.trade_id));
+        const auto still_draft = ores::database::repository::execute_parameterized_string_query(
+            ctx,
+            "select ores_trading_status_is_draft_fn($1::uuid)::text",
+            {boost::uuids::to_string(held_state.front().status_id)},
+            lg(),
+            "Checking whether a leg is still a draft");
+        if (still_draft.empty() || still_draft.front() != "true")
+            continue;
         auto one = execute_within(
             ctx, leg.trade_id, request.change_reason_code, request.change_commentary);
         if (one)

@@ -718,33 +718,33 @@ TEST_CASE("a_refused_completion_leaves_every_leg_a_draft_and_writes_no_member", 
     }
 }
 
-TEST_CASE("a_completion_with_a_leg_that_is_not_a_draft_writes_nothing", "[service]") {
+TEST_CASE("a_completion_takes_a_live_leg_as_it_stands_and_executes_the_drafts", "[service]") {
     fixture f;
     const auto legs = two_drafts(f);
-    // One leg is taken live on its own before the completion, so the completion
-    // cannot hold it. The other leg must stay a draft.
-    const auto execute_ok = trade_operations_service(f.ctx, every_book_open)
-                                .execute_trade(execute(legs[0], version_of(f.ctx, legs[0])));
-    REQUIRE(execute_ok.result.outcome == outcome::ok);
+    // One leg is already live, so it has asked its own question and a grouping
+    // must not ask it again. The other is still a draft.
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .execute_trade(execute(legs[0], version_of(f.ctx, legs[0])))
+                .result.outcome == outcome::ok);
+    REQUIRE(requests_for(f.ctx, legs[0]).size() == 1);
 
-    const auto response =
-        trade_operations_service(f.ctx, every_book_open).complete_structure(completion(f, legs));
-    CHECK(response.result.outcome == outcome::conflict);
-    CHECK(response.result.code == "not_draft");
+    const auto response = trade_operations_service(f.ctx, every_book_open)
+                              .complete_structure(completion(f, legs));
+    REQUIRE(response.result.outcome == outcome::ok);
 
-    const auto states = ores::trading::repository::trade_state_repository().read_latest(
+    for (const auto& id : legs) {
+        const auto members = ores::trading::repository::structure_member_repository().read_latest(
+            f.ctx, boost::uuids::to_string(id));
+        REQUIRE(members.size() == 1);
+        CHECK(members.front().structure_id == *response.structure_id);
+    }
+    // The live leg keeps its one request; the draft gets its own.
+    CHECK(requests_for(f.ctx, legs[0]).size() == 1);
+    CHECK(requests_for(f.ctx, legs[1]).size() == 1);
+    const auto summaries = ores::trading::repository::trade_summary_repository().read_latest(
         f.ctx, boost::uuids::to_string(legs[1]));
-    REQUIRE(states.size() == 1);
-    const auto draft = ores::database::repository::execute_parameterized_string_query(
-        f.ctx,
-        "select ores_trading_status_is_draft_fn($1::uuid)::text",
-        {boost::uuids::to_string(states.front().status_id)},
-        lg(),
-        "Checking whether the untouched leg is still a draft");
-    CHECK(draft.front() == "true");
-    CHECK(ores::trading::repository::structure_member_repository()
-              .read_latest(f.ctx, boost::uuids::to_string(legs[1]))
-              .empty());
+    REQUIRE(summaries.size() == 1);
+    CHECK(summaries.front().status == std::optional<std::string>{"live"});
 }
 
 TEST_CASE("an_execution_of_a_trade_that_moved_since_it_was_read_is_refused", "[service]") {

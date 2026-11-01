@@ -4,7 +4,7 @@ Generates populate SQL for the Northwind Traders dataset.
 
 Northwind Traders is the second demonstration tenant: a fictional UK trading
 company built from the classic Northwind Traders sample. It is deliberately
-lighter than ACME Corporation -- one legal entity, one party, seven books and
+lighter than ACME Corporation -- one legal entity, one party, thirteen books and
 nine staff -- while still carrying a complete set of report configuration
 documents, so its reports run rather than only being defined.
 
@@ -112,7 +112,7 @@ CONFIGURATION_DOCUMENTS = [
       "todays_market_configurations", "todays_market_configuration_bindings"]),
     ("curve_configuration", "Curve Configuration",
      ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
-      "curve_quotes"]),
+      "curve_quotes", "inflation_curve_configs"]),
     ("risk_report_configs", "Risk Report Configurations",
      ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters",
       "configuration_market_bindings"]),
@@ -284,10 +284,13 @@ PORTFOLIOS = [
          parent="northwind.banking", owner="northwind.treasury", ccy="GBP", virtual=False),
 ]
 
-# The books are named for what ORE's trade population writes into them: bonds.
-# The sample's food categories describe what the company sells, and a book's
-# name is read by the reports and by every person who switches to it, so the
-# book names say what the book holds.
+# The books are named for what ORE's trade population writes into them. The
+# sample's food categories describe what the company sells, and a book's name is
+# read by the reports and by every person who switches to it, so the book names
+# say what the book holds. There is one book per asset class the population
+# writes, and a class with more than one book states the trade in each: a bond
+# is held in the book of its currency, and an equity or a scripted trade has one
+# book of its own.
 BOOKS = [
     dict(name="GBP Bonds Book", portfolio="northwind.trading.london", ccy="GBP",
          gl="GL-BND-001", cost="CC-NW-BND", regulatory="Trading", centre="GBLO"),
@@ -299,6 +302,18 @@ BOOKS = [
          gl="GL-CRD-001", cost="CC-NW-CRD", regulatory="Trading", centre="USNY"),
     dict(name="USD Rates Book", portfolio="northwind.trading.seattle", ccy="USD",
          gl="GL-RAT-001", cost="CC-NW-RAT", regulatory="Trading", centre="USNY"),
+    dict(name="GBP FX Book", portfolio="northwind.trading.london", ccy="GBP",
+         gl="GL-FXD-001", cost="CC-NW-FXD", regulatory="Trading", centre="GBLO"),
+    dict(name="USD FX Book", portfolio="northwind.trading.seattle", ccy="USD",
+         gl="GL-FXD-002", cost="CC-NW-FXD", regulatory="Trading", centre="USNY"),
+    dict(name="GBP Equity Book", portfolio="northwind.trading.london", ccy="GBP",
+         gl="GL-EQD-001", cost="CC-NW-EQD", regulatory="Trading", centre="GBLO"),
+    dict(name="USD Commodity Book", portfolio="northwind.trading.seattle", ccy="USD",
+         gl="GL-CMD-001", cost="CC-NW-CMD", regulatory="Trading", centre="USNY"),
+    dict(name="GBP Inflation Book", portfolio="northwind.trading.london", ccy="GBP",
+         gl="GL-INF-001", cost="CC-NW-INF", regulatory="Trading", centre="GBLO"),
+    dict(name="GBP Scripted Book", portfolio="northwind.trading.london", ccy="GBP",
+         gl="GL-SCR-001", cost="CC-NW-SCR", regulatory="Trading", centre="GBLO"),
     dict(name="GBP Treasury Book", portfolio="northwind.treasury", ccy="GBP",
          gl="GL-TRE-001", cost="CC-NW-TRE", regulatory="Banking", centre="GBLO"),
     dict(name="USD Treasury Book", portfolio="northwind.treasury", ccy="USD",
@@ -461,7 +476,7 @@ DO $$
 BEGIN
     PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         '{CATALOG_NAME}',
-        'Fictional UK trading company built from the classic Northwind Traders sample, used as the second demonstration tenant: one legal entity, one party, nine staff and seven books.',
+        'Fictional UK trading company built from the classic Northwind Traders sample, used as the second demonstration tenant: one legal entity, one party, nine staff and thirteen books.',
         'Development Team'
     );
 END $$;

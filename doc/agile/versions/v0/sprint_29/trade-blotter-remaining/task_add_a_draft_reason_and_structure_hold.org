@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-a-draft-reason-and-structure-hold
-#+pr:
+#+pr: 4308
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4308][#4308]] | [trading] Give a draft its reason, and the reason its desk |
 
 * Review
 

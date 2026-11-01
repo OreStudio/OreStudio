@@ -512,7 +512,6 @@ set(files
     "domain/trade_summary_table_io.cpp"
     "domain/trade_table.cpp"
     "domain/trade_table_io.cpp"
-    "domain/trade_type_codec.cpp"
     "domain/vanilla_swap_instrument_codec.cpp"
     "domain/vanilla_swap_instrument_json_io.cpp"
     "domain/vanilla_swap_instrument_table.cpp"
@@ -764,7 +763,6 @@ set(files
     "messaging/trade_protocol_codec.cpp"
     "messaging/trade_state_protocol_codec.cpp"
     "messaging/trade_summary_protocol_codec.cpp"
-    "messaging/trade_type_protocol_codec.cpp"
     "messaging/vanilla_swap_instrument_protocol_codec.cpp"
 )
 
@@ -1431,7 +1429,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/trade_summary_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/trade_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/trade_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/trade_type_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/trade_type_routing.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/vanilla_swap_instrument.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/vanilla_swap_instrument_codec.hpp"

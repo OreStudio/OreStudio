@@ -25,9 +25,18 @@ import {
     subjects as feedSubjects,
     type CalibrateRequest,
 } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
-import { subjects as policySubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
-import { subjects as orderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
-import { subjects as itemSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
+import {
+    subjects as policySubjects,
+    type ListCalibrationPoliciesResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
+import {
+    subjects as orderSubjects,
+    type ListCalibrationProviderOrdersResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
+import {
+    subjects as itemSubjects,
+    type ListFxSpotFixingItemsResponse,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
 import { HttpFailure, notFound, notPermitted } from './errors.js';
 import { input, intentSchema, paramId, readAll, refusal, write } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -121,7 +130,7 @@ const policyBodySchema = z.object({
 const removeBodySchema = z.object({ intent: intentSchema });
 
 async function policyRowOf(session: LiveSession, assetClass: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListCalibrationPoliciesResponse>(
         session,
         policySubjects.list_calibration_policies_request,
         'policies',
@@ -135,7 +144,7 @@ async function policyRowOf(session: LiveSession, assetClass: string) {
 }
 
 async function orderRowsOf(session: LiveSession, policyId: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListCalibrationProviderOrdersResponse>(
         session,
         orderSubjects.list_calibration_provider_orders_request,
         'provider_orders',
@@ -175,7 +184,7 @@ function assetClassOf(request: FastifyRequest): string {
 
 /** The items a feed names, when it names its own instead of deriving them. */
 async function itemRowsOf(session: LiveSession, configId: string) {
-    const rows = await readAll(
+    const rows = await readAll<ListFxSpotFixingItemsResponse>(
         session,
         itemSubjects.list_fx_spot_fixing_items_request,
         'fx_spot_fixing_items',

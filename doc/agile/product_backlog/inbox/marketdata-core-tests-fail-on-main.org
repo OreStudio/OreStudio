@@ -13,11 +13,20 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+ores.marketdata.core.tests does not pass on main. On 36a94808aa it failed four
+cases (two export cases and two provider terms acceptance cases). On 2026-11-01,
+on a fresh database built from main at 0982811df2 plus the result-fan-out
+branch, it fails 40 assertions in service_import_service_tests.cpp and
+service_manual_point_service_tests.cpp. Each one is the market series insert
+refusing an empty =modified_by=: ores_marketdata_market_series_insert_fn calls
+ores_iam_validate_account_username_fn with '' while performed_by is
+ores_swift_curie_test_dml_user. That branch does not touch the series insert,
+its repository or the import service.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+A suite that fails on main hides every new failure a branch adds, so each
+branch has to prove its own failures apart by hand.
 
 * References
 

@@ -33,11 +33,11 @@ run's audit blob and is not the path a reader takes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -109,6 +109,17 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-01: The storage download already gunzips a blob, so the manifest is
+  gzipped like every other object under the prefix (=manifest.json.gz=), and the
+  readers read each object with one blob download.
+- 2026-11-01: The =ReportRun= role never held
+  =marketdata::market_state_payloads:write=, so every run's market state was
+  refused as forbidden. #4321 added the call without an end-to-end run to catch it.
+- 2026-11-01: The run log names ten files no family states yet: =capital_crif=,
+  =cashflow=, =dividends=, =fixings=, =marketdata=, =pricingstats=, =runtimes=,
+  =saccrdetail=, =log.txt= and =log_structured.json=. The manifest names them, so
+  the catalogue work can pick them up.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -133,3 +144,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The node uploads each file a run wrote as its own gzipped object under
+=compute/output/{result_id}/=, and a gzipped manifest that names each file's
+family, sizes and digest. Reporting reads the result files through the
+manifest, and marketdata reads the market-state files the same way. Neither
+unpacks an archive. The run's archive is still uploaded as its audit blob.
+
+Proved end to end on a recreated database with Acme provisioned: Group
+Consolidated Exposure (instance =b15ca172=) completed, the node uploaded 15
+files and the manifest, reporting stored 38 metrics from 4 result files, and
+marketdata stored the run's =todaysmarketcalibration= payload.

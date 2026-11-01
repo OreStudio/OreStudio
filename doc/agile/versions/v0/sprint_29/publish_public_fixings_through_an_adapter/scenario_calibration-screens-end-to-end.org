@@ -20,7 +20,7 @@ This page documents a test scenario verifying [[id:F18A305D-FE28-4EAE-BB7F-01787
 The system must already be in this state before the tester opens the screen:
 
 - The services are rebuilt and running: =compass services status= shows 25 running, none failed.
-- The public terms are accepted for ECB, IMF and BoC, and the public sources adapter has backfilled fixings: =select count(*) from ores_marketdata_market_fixings_tbl;= is not zero. Restart =ores.marketdata.official= if it is.
+- Nobody has accepted the public terms yet. The step "Accept the public terms" below does this.
 - The system tenant holds the FX feed configs, and the calibration tables exist in the database.
 
 * Scenario Info
@@ -44,6 +44,19 @@ The system must already be in this state before the tester opens the screen:
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
+
+PENDING
+
+** Accept the public terms
+- If the first-run journey shows, go to its public sources step. Otherwise open *Market data* → *Public rates* (=/market-data/public-rates=).
+- Each public provider shows its name, what it gives, its terms page as a link, the credit it asks for and whether it allows storage.
+- Accept the terms of ECB, IMF and BoC. Decline TCMB.
+- The adapter then backfills the fixings: =select count(*) from ores_marketdata_market_fixings_tbl where tenant_id = ores_utility_system_tenant_id_fn();= is not zero. Restart =ores.marketdata.official= if it stays at zero.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 PENDING
 
@@ -107,9 +120,81 @@ PENDING
 
 PENDING
 
-** Calibrate all
-- On the list, choose *Calibrate all*.
-- The list re-resolves every feed of the class and states when it last calibrated and how the counts changed, without leaving the page.
+** Calibrate all and watch each feed
+- Go back to the FX list and choose *Calibrate all*.
+- A run panel opens above the list. It shows a progress bar, the count done, and one row per feed.
+- Each row gets a spinner while its feed calibrates, then a mark: ✓ for updated, = for unchanged, ! for kept or refused, ✕ for failed.
+- Each finished row shows the server's words, for example "Calibrated from the ECB fixing of <date>: level X to Y; N deviation(s) scaled ...".
+- At the end the panel shows a summary with the updated, unchanged, kept and failed counts, and a *Close* button.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Calibrate all again
+- Choose *Calibrate all* a second time.
+- No feed is updated again: the feeds that changed in the first run now show = and "unchanged".
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Restart the running feeds
+- Start one FX feed from the synthetic feed screens, then run *Calibrate all* after a policy change that moves its start (for example, set the window to 60 days).
+- The row of the running feed says "The feed is running: the new values apply at its next start."
+- Choose *Restart 1 running feed(s) to apply*. A success notice says the feeds restarted. The feed is running again.
+- Return the policy to automatic.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Calibrate one feed
+- Open the =EUR/USD= feed and choose *Calibrate this feed*.
+- A notice states the outcome in the server's words. The rest of the class is not touched.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Read the calibration log of a feed
+- On the =EUR/USD= feed, open the *Flow* tab.
+- *Recent calibrations* lists each calibration with its time to the second, what changed, and who ran it. The newest is first.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Filter the feed history to calibrations
+- Open the =EUR/USD= feed in the synthetic feed screens and open its *History* tab.
+- The full history shows, including versions that are not calibrations.
+- Choose the *Calibration only (N)* chip. Only the versions with reason =system.calibration= show. Choose it again to see the full history.
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+PENDING
+
+** Follow a fixing URI
+- On the feed record, click the fixing's item URI (=oresmd://...=).
+- The fixing series page opens under *Market data* → *Fixings* for that URI.
 *** Result
 
 | Field  | Value |

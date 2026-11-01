@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-conventions-that-are-still-flat
-#+pr:
+#+pr: 4351
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4351][#4351]] | [refdata,ore,sql] Split the cross currency fix float convention into a central row and three parts |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
 #+owner: marco
 #+branch: feature/hear-the-events-that-move-the-rows
-#+pr: 4312
+#+pr: 4334
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -149,6 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4334][#4334]] | [repo] Put back the last doc records the reverted merge dropped |
 | [[https://github.com/OreStudio/OreStudio/pull/4312][#4312]] | [repo] Restore everything the reverted merge dropped |
 | [[https://github.com/OreStudio/OreStudio/pull/4303][#4303]] | [http] Restore the feed and the door, and fix the stream's pattern |
 | [[https://github.com/OreStudio/OreStudio/pull/4287][#4287]] | [http] Hear the entity events the stores announce |

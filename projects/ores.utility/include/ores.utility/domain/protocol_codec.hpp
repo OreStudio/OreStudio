@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_DOMAIN_PROTOCOL_CODEC_HPP
 #define ORES_UTILITY_DOMAIN_PROTOCOL_CODEC_HPP
 
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/text_form.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -114,6 +115,9 @@ namespace ores::utility::domain {
                       ores::utility::codec::field{"message", &field_failure::message}};
 }
 
+static_assert(::ores::utility::codec::names_every_member<field_failure>(),
+              "field_failure has a member its wire shape does not name");
+
 [[nodiscard]] constexpr auto wire_fields(const result&) {
     return std::tuple{ores::utility::codec::field{"outcome", &result::outcome},
                       ores::utility::codec::field{"code", &result::code},
@@ -121,20 +125,32 @@ namespace ores::utility::domain {
                       ores::utility::codec::field{"fields", &result::fields}};
 }
 
+static_assert(::ores::utility::codec::names_every_member<result>(),
+              "result has a member its wire shape does not name");
+
 [[nodiscard]] constexpr auto wire_fields(const precondition&) {
     return std::tuple{ores::utility::codec::field{"kind", &precondition::kind},
                       ores::utility::codec::field{"version", &precondition::version}};
 }
+
+static_assert(::ores::utility::codec::names_every_member<precondition>(),
+              "precondition has a member its wire shape does not name");
 
 [[nodiscard]] constexpr auto wire_fields(const change_intent&) {
     return std::tuple{ores::utility::codec::field{"reason_code", &change_intent::reason_code},
                       ores::utility::codec::field{"commentary", &change_intent::commentary}};
 }
 
+static_assert(::ores::utility::codec::names_every_member<change_intent>(),
+              "change_intent has a member its wire shape does not name");
+
 [[nodiscard]] constexpr auto wire_fields(const order&) {
     return std::tuple{ores::utility::codec::field{"field", &order::field},
                       ores::utility::codec::field{"descending", &order::descending}};
 }
+
+static_assert(::ores::utility::codec::names_every_member<order>(),
+              "order has a member its wire shape does not name");
 
 }
 

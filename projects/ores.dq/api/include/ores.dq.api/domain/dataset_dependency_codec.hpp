@@ -22,6 +22,7 @@
 
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
@@ -50,6 +51,9 @@ namespace ores::dq::domain {
         utility::codec::field{"performed_by", &dataset_dependency::performed_by},
         utility::codec::field{"recorded_at", &dataset_dependency::recorded_at}};
 }
+
+static_assert(::ores::utility::codec::names_every_member<dataset_dependency>(),
+              "dataset_dependency has a member its wire shape does not name");
 
 }
 

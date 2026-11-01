@@ -56,6 +56,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_instance_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/repository/job_instance_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/action_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/action_payloads.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/job_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/mq_action_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.core/service/nats_publish_action_handler.hpp"

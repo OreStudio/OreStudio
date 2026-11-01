@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3D1E9A64-7C2B-4F58-9E01-6A5D2C4B8E17
 :END:
 #+title: ores.scheduler.scheduling_operations

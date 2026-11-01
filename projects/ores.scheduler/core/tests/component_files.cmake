@@ -24,6 +24,7 @@ set(files
     "main.cpp"
     "repository_job_instance_mapper_tests.cpp"
     "repository_job_instance_repository_tests.cpp"
+    "service_action_payloads_tests.cpp"
     "service_mq_action_handler_tests.cpp"
     "service_nats_publish_action_handler_tests.cpp"
     "service_schedule_decision_tests.cpp"

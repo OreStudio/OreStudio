@@ -138,5 +138,6 @@ the list took up to 26 s and now takes about 3.4 s, a feed's page 0.2 s.
 The database now creates without a warning, pg_stat_statements is installed
 when the server preloads it, and the official catalogue no longer ends the
 populate transaction early. Accepting the public terms at setup is the follow-on
-task; a stale pooled connection after a postgres restart and a gate for unwired
-registrars are captured.
+task, and a stale pooled connection after a postgres restart is captured. A new
+=handler-registrars= check fails when a generated registrar has no responder; it
+covers seven components, and the 54 registrars of the other seven are captured.

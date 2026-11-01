@@ -8,7 +8,7 @@
 #+filetags: :trading:web:booking:draft:sprint_29:v0:book-a-trade-as-a-draft:
 #+owner: marco
 #+branch: feature/let-the-booking-form-state-a-draft
-#+pr:
+#+pr: 4343
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4343][#4343]] | [web] Let the booking form capture a draft and the reason it waits on |
 
 * Review
 

@@ -233,7 +233,9 @@ async function get(
     const response = await server.inject({
         method: 'GET',
         url,
-        headers: { cookie: `${sessionCookieName(siteConfiguration().environment.id)}=${sessionId}` },
+        headers: {
+            cookie: `${sessionCookieName(siteConfiguration().environment.id)}=${sessionId}`,
+        },
     });
     return { statusCode: response.statusCode, json: () => response.json() };
 }

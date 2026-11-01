@@ -1182,8 +1182,7 @@ struct volatility_kind_export {
     const refdata::domain::curve_volatility_proxy_surface* proxy_surface = nullptr;
     const refdata::domain::curve_volatility_moneyness_surface* moneyness_surface = nullptr;
     const refdata::domain::curve_volatility_smile* parametric_smile = nullptr;
-    std::vector<const refdata::domain::curve_volatility_smile_parameter*>
-        smile_parameters;
+    std::vector<const refdata::domain::curve_volatility_smile_parameter*> smile_parameters;
 };
 
 // The kinds one entry holds, in the order the document listed them, and whether
@@ -1276,10 +1275,9 @@ void import_volatility_curve(ores::refdata::messaging::curve_configuration_docum
                                 *quotes);
 }
 
-void import_volatility_parametric_smile(
-    ores::refdata::messaging::curve_configuration_document& out,
-    const boost::uuids::uuid& kind_id,
-    const record_reader& v) {
+void import_volatility_parametric_smile(ores::refdata::messaging::curve_configuration_document& out,
+                                        const boost::uuids::uuid& kind_id,
+                                        const record_reader& v) {
     const auto smile = v.child("ParametricSmileConfiguration");
     if (!smile)
         return;
@@ -1557,8 +1555,7 @@ void export_volatility_parametric_smile(record_writer v, const volatility_kind_e
     }
     auto calibration = smile.child("Calibration");
     calibration.set_integer("MaxCalibrationAttempts", k.parametric_smile->max_calibration_attempts);
-    calibration.set_real("ExitEarlyErrorThreshold",
-                         k.parametric_smile->exit_early_error_threshold);
+    calibration.set_real("ExitEarlyErrorThreshold", k.parametric_smile->exit_early_error_threshold);
     calibration.set_real("MaxAcceptableError", k.parametric_smile->max_acceptable_error);
     if (k.parametric_smile->residual_correction_dimension) {
         auto correction = smile.child("ResidualCorrection");

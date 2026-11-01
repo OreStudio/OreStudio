@@ -45,10 +45,10 @@
 #include "ores.refdata.core/repository/curve_volatility_curve_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_delta_surface_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_kind_repository.hpp"
-#include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
-#include "ores.refdata.core/repository/curve_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_moneyness_surface_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_proxy_surface_repository.hpp"
+#include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
+#include "ores.refdata.core/repository/curve_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_strike_surface_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_configuration_repository.hpp"
@@ -133,8 +133,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     commentary);
     write_amendment(
         ctx_, fx_volatility_config_repository(), std::move(v.fx_volatilities), reason, commentary);
-    write_amendment(
-        ctx_, fx_volatility_smile_repository(), std::move(v.fx_volatility_smiles), reason, commentary);
+    write_amendment(ctx_,
+                    fx_volatility_smile_repository(),
+                    std::move(v.fx_volatility_smiles),
+                    reason,
+                    commentary);
     write_amendment(ctx_,
                     base_correlation_config_repository(),
                     std::move(v.base_correlations),
@@ -304,9 +307,10 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     std::set<boost::uuids::uuid> fx_volatility_entries;
     for (const auto& c : r.fx_volatilities)
         fx_volatility_entries.insert(c.id);
-    r.fx_volatility_smiles = read_where(ctx_, fx_volatility_smile_repository(), [&](const auto& row) {
-        return fx_volatility_entries.contains(row.fx_volatility_config_id);
-    });
+    r.fx_volatility_smiles =
+        read_where(ctx_, fx_volatility_smile_repository(), [&](const auto& row) {
+            return fx_volatility_entries.contains(row.fx_volatility_config_id);
+        });
     r.base_correlations = read_where(ctx_, base_correlation_config_repository(), of_definition);
     r.correlations = read_where(ctx_, curve_correlation_config_repository(), of_definition);
     r.report_configurations =
@@ -338,16 +342,15 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         read_where(ctx_, curve_volatility_moneyness_surface_repository(), of_volatility_kind);
     r.volatility_proxy_surfaces =
         read_where(ctx_, curve_volatility_proxy_surface_repository(), of_volatility_kind);
-    r.volatility_smiles =
-        read_where(ctx_, curve_volatility_smile_repository(), of_volatility_kind);
+    r.volatility_smiles = read_where(ctx_, curve_volatility_smile_repository(), of_volatility_kind);
     std::set<boost::uuids::uuid> volatility_smile_ids;
     for (const auto& m : r.volatility_smiles)
         volatility_smile_ids.insert(m.id);
     const auto of_volatility_smile = [&](const auto& row) {
         return volatility_smile_ids.contains(row.curve_volatility_smile_id);
     };
-    r.volatility_smile_parameters = read_where(
-        ctx_, curve_volatility_smile_parameter_repository(), of_volatility_smile);
+    r.volatility_smile_parameters =
+        read_where(ctx_, curve_volatility_smile_parameter_repository(), of_volatility_smile);
     r.inflation_cap_floor_volatilities =
         read_where(ctx_, inflation_cap_floor_volatility_config_repository(), of_definition);
     std::set<boost::uuids::uuid> inflation_entries;
@@ -433,20 +436,22 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         inflation_cap_floor_volatility_config_repository().remove(
             ctx_, ids_of(d.inflation_cap_floor_volatilities));
     if (!d.volatility_smile_parameters.empty())
-        curve_volatility_smile_parameter_repository().remove(
-            ctx_, ids_of(d.volatility_smile_parameters));
+        curve_volatility_smile_parameter_repository().remove(ctx_,
+                                                             ids_of(d.volatility_smile_parameters));
     if (!d.volatility_smiles.empty())
-        curve_volatility_smile_repository().remove(
-            ctx_, ids_of(d.volatility_smiles));
+        curve_volatility_smile_repository().remove(ctx_, ids_of(d.volatility_smiles));
     if (!d.volatility_moneyness_surfaces.empty())
         curve_volatility_moneyness_surface_repository().remove(
             ctx_, ids_of(d.volatility_moneyness_surfaces));
     if (!d.volatility_proxy_surfaces.empty())
-        curve_volatility_proxy_surface_repository().remove(ctx_, ids_of(d.volatility_proxy_surfaces));
+        curve_volatility_proxy_surface_repository().remove(ctx_,
+                                                           ids_of(d.volatility_proxy_surfaces));
     if (!d.volatility_delta_surfaces.empty())
-        curve_volatility_delta_surface_repository().remove(ctx_, ids_of(d.volatility_delta_surfaces));
+        curve_volatility_delta_surface_repository().remove(ctx_,
+                                                           ids_of(d.volatility_delta_surfaces));
     if (!d.volatility_strike_surfaces.empty())
-        curve_volatility_strike_surface_repository().remove(ctx_, ids_of(d.volatility_strike_surfaces));
+        curve_volatility_strike_surface_repository().remove(ctx_,
+                                                            ids_of(d.volatility_strike_surfaces));
     if (!d.volatility_curves.empty())
         curve_volatility_curve_repository().remove(ctx_, ids_of(d.volatility_curves));
     if (!d.volatility_constants.empty())

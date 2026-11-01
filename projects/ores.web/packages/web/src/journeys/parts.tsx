@@ -292,9 +292,7 @@ export function TenantForm({
      * own details: a setting is something the person is meant to see and change,
      * and hiding it behind a summary makes it look like a report.
      */
-    const [open, setOpen] = useState(
-        profile.tenant.name === '' || profile.parameters.length > 0,
-    );
+    const [open, setOpen] = useState(profile.tenant.name === '' || profile.parameters.length > 0);
     /*
      * The fields a person has typed in themselves. A proposal stops the moment
      * somebody edits the field it proposes, which is what the old client did:

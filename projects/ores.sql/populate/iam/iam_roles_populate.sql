@@ -85,6 +85,7 @@ BEGIN
     -- party and the lookups the resolution reads, and it records the cut it
     -- resolved on the run it admits.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'inbox::approval_kinds:read');
@@ -325,6 +326,7 @@ BEGIN
     -- policy scopes exactly as it scopes the report definitions above. Taking one
     -- by hand is Finance's, and it is the second permission the design names.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'inbox::approval_kinds:read');
@@ -358,6 +360,7 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');
     -- The cuts a desk reads: the close it prices from and the lookups it names.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'inbox::approval_kinds:read');
@@ -461,6 +464,7 @@ BEGIN
     -- kinds, the families, the rules and the gaps, and reads the cuts they
     -- describe. Nothing deletes a cut, so no cuts write or delete code is held.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::cut_gaps:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::cut_gaps:delete');
@@ -832,6 +836,7 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'iam::accounts:read');
     -- Support reads everything it supports, and the cuts are part of that.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'inbox::approval_kinds:read');
@@ -859,6 +864,7 @@ BEGIN
     -- A reader reads the cuts of its own parties and the lookups beside them,
     -- and takes none: the take is Finance's.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'inbox::approval_kinds:read');
@@ -944,7 +950,11 @@ BEGIN
     -- person cannot decide the request they raised, so four eyes is the inbox's
     -- rule and not this role's.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'reporting::cuts:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'reporting::cut_approval_details:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'reporting::cuts:take');
+    -- The take assembles the body as the person who presses it, and the engine
+    -- version is one of the parts it reads, so the taker reads it too.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'compute::app_versions:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'reporting::cut_gaps:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'reporting::cut_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_kinds:read');

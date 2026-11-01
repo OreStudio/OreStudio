@@ -355,6 +355,11 @@ via its "Verifies task" field.
 | 14 | The Measurements table breaks its own rule: no commits, no sweep row | task page | Fixed | Every row names a command and a commit, and the sweep, the file count, the suites and the byte comparison are rows |
 | L1 | Local review: a start request with no request_id | =*_apply_workflow.hpp= | Accepted | rfl refused the read; the codec leaves the member empty. Both build no steps. |
 | L2 | Local review: two generated headers were edited by hand | =party_handler.hpp=, =currency_pair_convention_cache.hpp= | Fixed | The drift check refused them. The party model now states the change; the cache waits for its template. |
+| R1 | Share the try-read block between the two workflows | =*_apply_workflow.hpp= | Declined | Two callers. Reporting's engine settings workflow is the third, and its task moves it; that is the time for a helper. |
+| R2 | Default-constructed request before the read | =*_apply_workflow.hpp= | Declined | One string member. Same reason as R1. |
+| R3 | Long line in the party model | =ores.refdata.party.org= | Dismissed | The generated header is formatted, and format passes. |
+| R4 | Test the refusal path | workflow tests | Already covered | =a_start_that_names_no_request_builds_no_steps= checks an empty id and input that is not JSON, in both suites, and passes. |
+| R5 | Let CI confirm MSVC, macOS and the failure set | (whole PR) | Noted | No PR CI runs here. The nightly builds cover MSVC and macOS. |
 
 * Result
 

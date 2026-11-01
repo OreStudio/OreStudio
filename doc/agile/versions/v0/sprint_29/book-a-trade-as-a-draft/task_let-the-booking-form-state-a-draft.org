@@ -91,3 +91,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A booking states whether the deal it captures is a draft, and why it waits.
+
+| Piece | Where |
+|-------|-------|
+| The reasons | =GET /api/draft-reasons= reads the lookup: the code, what it waits on, and the desk |
+| The body | =draftReasonCode=, absent means the trade goes live at once |
+| The activity | =draft_capture= when a reason is stated, =new_booking= otherwise |
+| The trade | the reason on the anchor, so a report of aged drafts reads it beside the deal |
+| The cases | a draft booking writes the draft activity and the reason; a booking with no reason still writes =new_booking= and none |
+
+The rule is the trading service's, where it already lived: a =draft_capture= with
+no reason is refused, and a reason on a trade that goes live is refused.
+
+What this unblocks: the completion executes drafts, and until now no screen could
+make one, so the path it exists for — capture two deals as drafts, group them,
+and watch each one ask Operations — had no way in.

@@ -225,7 +225,7 @@ describe('a feed calibration record', () => {
 
 describe('the calibration policy', () => {
     it('keeps the screen to the system administrator', () => {
-        const html = render('/market-data/calibration/fx/policy', calibration());
+        const html = render('/market-data/calibration/fx/policy', calibration({ policyWritable: false }));
         expect(html).toContain('Calibration is a system control');
         expect(html).not.toContain('Save the policy');
     });

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5BD2DC7D-2D07-486E-AD1E-41900FDC4DFF
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.trading.trade_operations
 #+description: Codegen operation model for the trading component's trade operations: messages that write a trade across its anchor and components, which no single entity verb can do.

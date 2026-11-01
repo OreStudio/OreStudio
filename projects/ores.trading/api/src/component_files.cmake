@@ -752,6 +752,7 @@ set(files
     "messaging/trade_identifier_protocol_codec.cpp"
     "messaging/trade_link_protocol_codec.cpp"
     "messaging/trade_link_type_protocol_codec.cpp"
+    "messaging/trade_operations_protocol_codec.cpp"
     "messaging/trade_party_role_protocol_codec.cpp"
     "messaging/trade_portfolio_protocol_codec.cpp"
     "messaging/trade_protocol_codec.cpp"

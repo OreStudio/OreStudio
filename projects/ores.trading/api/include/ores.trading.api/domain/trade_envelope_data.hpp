@@ -20,8 +20,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_ENVELOPE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_ENVELOPE_DATA_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::trading::domain {
@@ -64,6 +66,22 @@ struct trade_envelope_data final {
     std::optional<std::vector<std::string>> portfolio_ids;
     std::optional<std::vector<trade_envelope_field>> additional_fields;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const trade_envelope_field&) {
+    return std::tuple{
+        utility::codec::field{"name", &trade_envelope_field::name},
+        utility::codec::field{"value", &trade_envelope_field::value},
+    };
+}
+
+[[nodiscard]] constexpr auto wire_fields(const trade_envelope_data&) {
+    return std::tuple{
+        utility::codec::field{"counter_party", &trade_envelope_data::counter_party},
+        utility::codec::field{"netting_set_id", &trade_envelope_data::netting_set_id},
+        utility::codec::field{"portfolio_ids", &trade_envelope_data::portfolio_ids},
+        utility::codec::field{"additional_fields", &trade_envelope_data::additional_fields},
+    };
+}
 
 }
 

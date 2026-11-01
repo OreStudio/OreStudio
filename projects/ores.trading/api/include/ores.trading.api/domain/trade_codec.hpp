@@ -59,6 +59,7 @@ namespace ores::trading::domain {
         utility::codec::field{"origin", &trade::origin},
         utility::codec::field{"origin_reference", &trade::origin_reference},
         utility::codec::field{"external_version", &trade::external_version},
+        utility::codec::field{"draft_reason_code", &trade::draft_reason_code},
         utility::codec::field{"economic_digest", &trade::economic_digest},
         utility::codec::field{"modified_by", &trade::modified_by},
         utility::codec::field{"performed_by", &trade::performed_by},

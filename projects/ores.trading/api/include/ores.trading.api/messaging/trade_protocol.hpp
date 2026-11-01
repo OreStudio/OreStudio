@@ -325,6 +325,7 @@ inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
         utility::codec::field{"origin", &trade_write::origin},
         utility::codec::field{"origin_reference", &trade_write::origin_reference},
         utility::codec::field{"external_version", &trade_write::external_version},
+        utility::codec::field{"draft_reason_code", &trade_write::draft_reason_code},
         utility::codec::field{"economic_digest", &trade_write::economic_digest},
     };
 }

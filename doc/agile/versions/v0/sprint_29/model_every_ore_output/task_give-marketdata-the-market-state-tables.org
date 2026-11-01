@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-marketdata-the-market-state-tables
-#+pr:
+#+pr: 4321
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -119,7 +119,7 @@ own post-processor hands it over.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4321][#4321]] | [marketdata] Store the market state a run priced against |
 
 * Review
 

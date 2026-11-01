@@ -25,6 +25,7 @@ set(files
     "logging_options_tests.cpp"
     "logging_options_validator_tests.cpp"
     "main.cpp"
+    "messaging_codec_tests.cpp"
     "span_id_tests.cpp"
     "telemetry_context_tests.cpp"
     "trace_id_tests.cpp"

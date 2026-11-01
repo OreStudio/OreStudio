@@ -18,7 +18,9 @@
  *
  */
 #include "ores.telemetry.service/app/nats_poller.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -35,8 +37,9 @@
 #include <boost/beast/http/write.hpp>
 #include <boost/system/system_error.hpp>
 #include <chrono>
-#include <rfl/json.hpp>
+#include <exception>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::telemetry::service::app {
 
@@ -64,11 +67,32 @@ struct varz_response {
     int slow_consumers{0};
 };
 
+using ores::utility::codec::field;
+using ores::utility::codec::names_every_member;
+
+constexpr auto wire_fields(const varz_response&) {
+    return std::tuple{field{"in_msgs", &varz_response::in_msgs},
+                      field{"out_msgs", &varz_response::out_msgs},
+                      field{"in_bytes", &varz_response::in_bytes},
+                      field{"out_bytes", &varz_response::out_bytes},
+                      field{"connections", &varz_response::connections},
+                      field{"mem", &varz_response::mem},
+                      field{"slow_consumers", &varz_response::slow_consumers}};
+}
+static_assert(names_every_member<varz_response>());
+
 struct jsz_stream_state {
     std::uint64_t messages{0};
     std::uint64_t bytes{0};
     int consumer_count{0};
 };
+
+constexpr auto wire_fields(const jsz_stream_state&) {
+    return std::tuple{field{"messages", &jsz_stream_state::messages},
+                      field{"bytes", &jsz_stream_state::bytes},
+                      field{"consumer_count", &jsz_stream_state::consumer_count}};
+}
+static_assert(names_every_member<jsz_stream_state>());
 
 /**
  * @brief One entry of the per-account "stream_detail" list.
@@ -83,9 +107,20 @@ struct jsz_stream_detail {
     jsz_stream_state state;
 };
 
+constexpr auto wire_fields(const jsz_stream_detail&) {
+    return std::tuple{field{"name", &jsz_stream_detail::name},
+                      field{"state", &jsz_stream_detail::state}};
+}
+static_assert(names_every_member<jsz_stream_detail>());
+
 struct jsz_account_detail {
     std::vector<jsz_stream_detail> stream_detail;
 };
+
+constexpr auto wire_fields(const jsz_account_detail&) {
+    return std::tuple{field{"stream_detail", &jsz_account_detail::stream_detail}};
+}
+static_assert(names_every_member<jsz_account_detail>());
 
 // nats-server tags account_details `omitempty` in its Go struct, so the
 // field is absent from the JSON entirely when there are no JetStream
@@ -94,6 +129,21 @@ struct jsz_account_detail {
 struct jsz_response {
     std::optional<std::vector<jsz_account_detail>> account_details;
 };
+
+constexpr auto wire_fields(const jsz_response&) {
+    return std::tuple{field{"account_details", &jsz_response::account_details}};
+}
+static_assert(names_every_member<jsz_response>());
+
+/// A monitoring reply read as T, or nothing when the body is not one.
+template <typename T>
+std::optional<T> read_reply(const std::string& body) {
+    try {
+        return ores::utility::codec::object::read_json<T>(body);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
 
 } // namespace
 
@@ -162,7 +212,7 @@ std::string nats_poller::http_get(const std::string& target) const {
 
 void nats_poller::poll_server() {
     const auto body = http_get("/varz");
-    const auto parsed = rfl::json::read<varz_response>(body);
+    const auto parsed = read_reply<varz_response>(body);
     if (!parsed) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to parse /varz response";
         return;
@@ -185,7 +235,7 @@ void nats_poller::poll_server() {
 
 void nats_poller::poll_streams() {
     const auto body = http_get("/jsz?streams=true");
-    const auto parsed = rfl::json::read<jsz_response>(body);
+    const auto parsed = read_reply<jsz_response>(body);
     if (!parsed) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to parse /jsz response";
         return;

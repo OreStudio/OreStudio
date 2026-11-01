@@ -18,13 +18,13 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
+#include "ores.trading.api/domain/product_type_codec.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_codec.hpp"
-#include "ores.trading.api/domain/trade_type.hpp"
-#include "ores.trading.api/domain/trade_type_codec.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.trading.core/repository/trade_type_entity.hpp"
-#include "ores.trading.core/repository/trade_type_mapper.hpp"
+#include "ores.trading.core/repository/product_type_entity.hpp"
+#include "ores.trading.core/repository/product_type_mapper.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -32,6 +32,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <string>
@@ -111,21 +112,28 @@ ores::trading::domain::trade a_trade() {
     return t;
 }
 
-ores::trading::domain::trade_type a_trade_type() {
-    ores::trading::domain::trade_type tt;
-    tt.version = 2;
-    tt.code = "Swap";
-    tt.description = "Vanilla interest rate swap";
-    tt.product_type = ores::trading::domain::product_type::swap;
-    tt.has_options = true;
-    tt.has_extension = false;
-    tt.modified_by = "admin";
-    tt.performed_by = "admin";
-    tt.change_reason_code = "system.test";
-    tt.change_commentary = "Synthetic test data";
-    tt.recorded_at =
+ores::trading::domain::product_type a_product_type() {
+    ores::trading::domain::product_type pt;
+    pt.version = 2;
+    pt.code = "Swap";
+    pt.name = "Interest rate swap";
+    pt.description = "Vanilla interest rate swap";
+    pt.source = "ore";
+    pt.source_ref = "Swap";
+    pt.product_family_code = "swap";
+    pt.construction = "native";
+    pt.has_options = true;
+    pt.has_extension = false;
+    pt.instrument_table = "ores_trading_vanilla_swap_instruments_tbl";
+    pt.display_order = 7;
+    pt.knowledge_note = "The plain trades.";
+    pt.modified_by = "admin";
+    pt.performed_by = "admin";
+    pt.change_reason_code = "system.test";
+    pt.change_commentary = "Synthetic test data";
+    pt.recorded_at =
         std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
-    return tt;
+    return pt;
 }
 
 /**
@@ -162,10 +170,10 @@ TEST_CASE("a_trade_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") 
     same_bytes_as_reflect_cpp(a_trade());
 }
 
-TEST_CASE("a_trade_type_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
+TEST_CASE("a_product_type_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    same_bytes_as_reflect_cpp(a_trade_type());
+    same_bytes_as_reflect_cpp(a_product_type());
 }
 
 TEST_CASE("an_export_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
@@ -174,25 +182,35 @@ TEST_CASE("an_export_writes_the_bytes_the_reflector_wrote", "[messaging][codec]"
     same_bytes_as_reflect_cpp(an_export());
 }
 
-TEST_CASE("the_mapper_stores_a_product_type_as_its_own_text", "[repository][codec]") {
+TEST_CASE("the_mapper_carries_a_product_type_through_its_columns", "[repository][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    // The column is a Postgres enum whose values are the lowercase names, so the
-    // store spells a product type the way its own header does. The unknown
-    // sentinel has no counterpart in that enum, and its text form is the empty
-    // string, which is what the header states and what the wire already wrote.
-    auto tt = a_trade_type();
-    tt.product_type = ores::trading::domain::product_type::equity;
-    const auto entity = ores::trading::repository::trade_type_mapper::map(tt);
-    CHECK(entity.product_type == "equity");
+    // A product type holds text in every column that names something: its code,
+    // the family and construction it reads, and what it points at. The store
+    // takes each one as written.
+    const auto pt = a_product_type();
+    const auto entity = ores::trading::repository::product_type_mapper::map(pt);
+    CHECK(entity.code == "Swap");
+    CHECK(entity.product_family_code == std::optional<std::string>("swap"));
+    CHECK(entity.construction == "native");
+    CHECK(entity.instrument_table ==
+          std::optional<std::string>("ores_trading_vanilla_swap_instruments_tbl"));
 
-    auto unknown = a_trade_type();
-    unknown.product_type = ores::trading::domain::product_type::unknown;
-    const auto unknown_entity = ores::trading::repository::trade_type_mapper::map(unknown);
-    CHECK(unknown_entity.product_type.empty());
+    // Reading the store back gives the same values, which is what makes the
+    // mapping a round trip rather than a one-way choice.
+    const auto restored = ores::trading::repository::product_type_mapper::map(entity);
+    CHECK(restored.code == pt.code);
+    CHECK(restored.product_family_code == pt.product_family_code);
+    CHECK(restored.construction == pt.construction);
+    CHECK(restored.has_options == pt.has_options);
+    CHECK(restored.display_order == pt.display_order);
 
-    // Reading the store's own text gives the value back, which is what makes the
-    // spelling a round trip rather than a one-way choice.
-    CHECK(ores::trading::repository::trade_type_mapper::map(entity).product_type ==
-          tt.product_type);
+    // A text column the type leaves out is absent from the store, and reads back
+    // as the empty string the type states.
+    auto unstated = a_product_type();
+    unstated.product_family_code.clear();
+    const auto unstated_entity = ores::trading::repository::product_type_mapper::map(unstated);
+    CHECK(unstated_entity.product_family_code == std::nullopt);
+    CHECK(ores::trading::repository::product_type_mapper::map(unstated_entity)
+              .product_family_code.empty());
 }

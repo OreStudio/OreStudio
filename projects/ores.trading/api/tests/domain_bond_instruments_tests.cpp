@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>

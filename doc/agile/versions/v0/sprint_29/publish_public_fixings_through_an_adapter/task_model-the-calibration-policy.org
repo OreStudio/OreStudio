@@ -30,9 +30,9 @@ per-feed exceptions that stay visible.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Service, wire and BFF in review.       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge, then the measures.              |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -141,14 +141,27 @@ page reads the same resolution for one feed.
   resolver. Four cases cover the order, the empty order, the inverse rule and a
   pair that no candidate covers; =ores.synthetic.api.tests= passes.
 
-** What remains
+- The feed resolves under the policy: a config with no items derives them from
+  the policy and the series that cover its pair; its own
+  =calibration_window_days= overrides the policy window; a failed series read
+  is reported, not taken for "no series"; a =refuse= fallback stops the feed,
+  and both start loops skip it with the reason.
+- =read_calibration_policy= is the one policy lookup; no row returns nothing,
+  and the caller takes the defaults.
+- =synthetic.v1.feed_configs.calibrate= resolves every feed of a class without
+  starting one, and returns the policy and each feed's item, exceptions and
+  fallback or refusal. =GET /api/synthetic/calibration/{assetClass}= serves it
+  with the coverage counts.
 
-- The service reads: policy lookup with defaults, candidate derivation, the
-  window override, and the calibration run.
-- The BFF reads and the calibrate call.
-- The three screens from the signed-off prototype.
-- The database has not been recreated for this environment, so the tables are
-  not applied here yet.
+** Decisions
+
+- The derivation applies no terms filter. A provider the adapter may not fetch
+  has no fixings, so the resolver skips it; the policy's provider order is the
+  explicit filter.
+- A calibration is a read. Its response is the record of each feed; runs are
+  not stored, because nothing reads a history yet. The calibration screen
+  task decides whether it needs one.
+- The screens belong to [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]].
 
 * Measurements
 

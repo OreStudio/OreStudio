@@ -28,10 +28,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
+#include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.storage.api/net/object_keys.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/http_client.hpp"
 #include "ores.utility/compression/gzip.hpp"
@@ -497,6 +500,90 @@ void upload_canonical_log(auto& lg,
 }
 
 /**
+ * @brief Upload each file the engine wrote as its own object, then the manifest.
+ *
+ * A reader fetches the files it models by name rather than downloading and
+ * unpacking the whole archive. The manifest goes last, so a manifest that exists
+ * names files that exist. Each file is compressed on its own, so the node holds
+ * one file in memory at a time.
+ */
+void upload_output_files(auto& lg,
+                         const config::options& cfg,
+                         const compute::messaging::work_assignment_event& evt,
+                         const fs::path& output_dir) {
+    if (evt.output_files_uri.empty())
+        return;
+    std::string bucket;
+    std::string prefix;
+    if (!ores::storage::net::storage_paths::split_object_path(evt.output_files_uri, bucket, prefix))
+        throw std::runtime_error("The output files location '" + evt.output_files_uri +
+                                 "' names no object.");
+
+    std::vector<fs::path> paths;
+    for (const auto& entry : fs::directory_iterator(output_dir))
+        if (entry.is_regular_file())
+            paths.push_back(entry.path());
+    std::ranges::sort(paths);
+
+    const auto staging = output_dir.parent_path() / "output_files";
+    fs::create_directories(staging);
+
+    ores::ore::results::output_manifest manifest{.result_id = evt.result_id};
+    for (const auto& path : paths) {
+        const auto name = path.filename().string();
+        const auto object_name = name + ".gz";
+        if (!ores::storage::api::object_keys::is_valid_segment(object_name)) {
+            BOOST_LOG_SEV(lg, warn) << "Output file '" << name << "' of " << evt.result_id
+                                    << " has a name no key can hold, so it is not uploaded.";
+            continue;
+        }
+
+        const auto body = read_file_text(path);
+        const auto compressed = ores::utility::compression::gzip_compress(
+            std::span<const char>(body.data(), body.size()));
+        const auto staged = staging / object_name;
+        {
+            std::ofstream out(staged, std::ios::binary | std::ios::trunc);
+            out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
+        }
+
+        const auto key = prefix + object_name;
+        ores::storage::net::http_client::put(
+            make_url(cfg.http_base_url,
+                     ores::storage::net::storage_paths::make_object_path(bucket, key)),
+            staged,
+            evt.storage_token);
+        fs::remove(staged);
+
+        auto family = ores::ore::results::family_code_of(name);
+        if (family.empty())
+            BOOST_LOG_SEV(lg, info) << "Output file '" << name << "' of " << evt.result_id
+                                    << " belongs to no family; it is named in the manifest.";
+        manifest.files.push_back(ores::ore::results::output_manifest_file{
+            .name = name,
+            .family = std::move(family),
+            .bytes = static_cast<std::int64_t>(body.size()),
+            .compressed_bytes = static_cast<std::int64_t>(compressed.size()),
+            .sha256 = ores::utility::crypto::sha256::hex_digest(body),
+            .key = key});
+    }
+
+    const auto manifest_file = staging / "manifest.json";
+    {
+        std::ofstream out(manifest_file, std::ios::binary | std::ios::trunc);
+        out << ores::ore::results::to_json(manifest);
+    }
+    ores::storage::net::http_client::put(
+        make_url(
+            cfg.http_base_url,
+            ores::storage::net::storage_paths::make_object_path(bucket, prefix + "manifest.json")),
+        manifest_file,
+        evt.storage_token);
+    BOOST_LOG_SEV(lg, info) << "Uploaded " << manifest.files.size() << " output file(s) of "
+                            << evt.result_id << " and their manifest";
+}
+
+/**
  * @brief Make sure the engine package for an app version is unpacked in the cache.
  *
  * The wrappers on one host share the cache directory. A lock file per package
@@ -791,6 +878,8 @@ void process_assignment(ores::nats::service::client& nats,
                                          << " (" << output_bytes << " bytes)";
                 ores::storage::net::http_client::put(
                     make_url(cfg.http_base_url, evt.output_uri), output_archive, evt.storage_token);
+
+                upload_output_files(lg, cfg, evt, output_dir);
 
                 // The engine's own account of the run, in the same shape: every
                 // line it wrote, whatever its severity.

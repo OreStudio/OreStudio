@@ -236,6 +236,7 @@ select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'reporting_s
 select _ores_grant_select_fn('ores_iam_accounts_', :'reporting_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
+select _ores_grant_execute_fn('ores_reporting_unapplied_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
 -- telemetry_service: Telemetry domain service

@@ -77,6 +77,7 @@
 #include "ores.shell/app/commands/reporting/configuration_market_binding_commands.hpp"
 #include "ores.shell/app/commands/reporting/configuration_parameter_commands.hpp"
 #include "ores.shell/app/commands/reporting/configuration_type_commands.hpp"
+#include "ores.shell/app/commands/reporting/cut_approval_detail_commands.hpp"
 #include "ores.shell/app/commands/reporting/cut_commands.hpp"
 #include "ores.shell/app/commands/reporting/cut_family_commands.hpp"
 #include "ores.shell/app/commands/reporting/cut_gap_commands.hpp"
@@ -208,6 +209,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     cut_resolution_rule_commands::register_commands(*root, session_);
     cut_kind_commands::register_commands(*root, session_);
     cut_commands::register_commands(*root, session_);
+    cut_approval_detail_commands::register_commands(*root, session_);
     cut_gap_commands::register_commands(*root, session_);
     event_channel_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_, pagination_);

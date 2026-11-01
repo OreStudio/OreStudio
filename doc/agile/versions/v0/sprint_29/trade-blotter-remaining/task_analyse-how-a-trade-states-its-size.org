@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/analyse-how-a-trade-states-its-size
-#+pr: 4315
+#+pr: 4316
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4316][#4316]] | [agile] Close the size task |
 | [[https://github.com/OreStudio/OreStudio/pull/4315][#4315]] | [web] State a trade's size as the family states it, never as a dash |
 
 * Review

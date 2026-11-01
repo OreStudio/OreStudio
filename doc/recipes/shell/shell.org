@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-08-10
+#+updated: 2026-11-01
 
 Recipes related to *Shell recipes*. Each entry below is a single how-do-I question with executable steps. The link lists are generated from the recipes themselves by =projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py=, so a new recipe appears here as soon as that runs; the paragraph under each heading, and any note beside a link, are hand-written and are kept.
 
@@ -417,6 +417,14 @@ tangled into the runnable script library
 
 - [[id:57D582E9-81E9-5B4C-B129-959A9F584EB6][How do I run the portfolios commands from the shell?]]
 
+* Product Type Asset Classes
+
+- [[id:3FA91152-CD6A-5A1F-A878-89133BEBB393][How do I run the product_type_asset_classes commands from the shell?]]
+
+* Product Types
+
+- [[id:84DC9D5F-4B29-5EC5-BB43-425A06F89010][How do I run the product_types commands from the shell?]]
+
 * Purpose Types
 
 - [[id:B943E13B-E74B-58F4-8D98-CDABD01BD165][How do I run the purpose_types commands from the shell?]]
@@ -739,10 +747,6 @@ tangled into the runnable script library
 * Trade Party Roles
 
 - [[id:3907B9D9-5A0A-5533-910F-C42F701E6BA7][How do I run the trade_party_roles commands from the shell?]]
-
-* Trade Types
-
-- [[id:571DB331-F3D8-5715-86C9-18ED3958B95E][How do I run the trade_types commands from the shell?]]
 
 * Badge Mappings
 

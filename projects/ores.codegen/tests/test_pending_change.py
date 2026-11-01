@@ -145,6 +145,17 @@ def test_the_live_rows_natural_key_is_dropped_and_its_id_renamed():
     assert out.count(":natural_key: true") == 2
 
 
+def with_wire_codec(text):
+    return text.replace(":PROPERTIES:\n:ID:", ":PROPERTIES:\n:ores.cpp.wire-codec.enabled: true\n:ID:", 1)
+
+
+def test_the_wire_codec_opt_in_of_the_source_reaches_the_pending_line():
+    for source, name in ((ENTITY, "widget.org"), (JUNCTION, "party_widget.org")):
+        out = derived(with_wire_codec(source % ":gated: true"), name)
+        assert out.startswith(":PROPERTIES:\n:ores.cpp.wire-codec.enabled: true\n:ID:")
+        assert ":ores.cpp.wire-codec.enabled:" not in derived(source % ":gated: true", name)
+
+
 def test_a_junction_becomes_an_entity_holding_both_halves():
     out = derived(JUNCTION % ":pending_change: true", "party_widget.org")
     assert "#+type: ores.codegen.entity" in out

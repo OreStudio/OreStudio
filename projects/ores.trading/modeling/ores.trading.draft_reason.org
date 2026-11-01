@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 8F2C41B7-9D3E-4A58-B1C0-5E7D2A6F9B43
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.draft_reason
 #+description: Why a trade is a draft, and which desk must unblock it. The lookup a draft_capture names, so a draft that sits in a book says what it waits on.

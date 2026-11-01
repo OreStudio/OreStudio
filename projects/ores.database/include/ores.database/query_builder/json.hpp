@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <yyjson.h>
@@ -60,26 +59,24 @@ std::string write_json(const Entity& v) {
     if (doc == nullptr)
         throw std::runtime_error("Could not make a JSON document");
     auto* object = yyjson_mut_obj(doc);
-    std::apply(
-        [&](const auto&... binding) {
-            (
-                [&](const auto& b) {
-                    using member_type = std::remove_cvref_t<decltype(v.*(b.member))>;
-                    if constexpr (ores::utility::codec::is_optional_member<member_type>) {
-                        if (!(v.*(b.member)))
-                            return;
-                    }
-                    auto* name = yyjson_mut_strncpy(doc, b.name.data(), b.name.size());
-                    auto* value =
-                        ores::utility::codec::json_codec<member_type>::write(doc, v.*(b.member));
-                    if (!yyjson_mut_obj_add(object, name, value)) {
-                        yyjson_mut_doc_free(doc);
-                        throw std::runtime_error("Could not add a member to the document");
-                    }
-                }(binding),
-                ...);
-        },
-        Entity::columns().items);
+    Entity::columns().apply([&](const auto&... binding) {
+        (
+            [&](const auto& b) {
+                using member_type = std::remove_cvref_t<decltype(v.*(b.member))>;
+                if constexpr (ores::utility::codec::is_optional_member<member_type>) {
+                    if (!(v.*(b.member)))
+                        return;
+                }
+                auto* name = yyjson_mut_strncpy(doc, b.name.data(), b.name.size());
+                auto* value =
+                    ores::utility::codec::json_codec<member_type>::write(doc, v.*(b.member));
+                if (!yyjson_mut_obj_add(object, name, value)) {
+                    yyjson_mut_doc_free(doc);
+                    throw std::runtime_error("Could not add a member to the document");
+                }
+            }(binding),
+            ...);
+    });
     yyjson_mut_doc_set_root(doc, object);
     char* text = yyjson_mut_write(doc, 0, nullptr);
     if (text == nullptr) {

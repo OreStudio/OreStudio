@@ -326,7 +326,25 @@ describe('the tenant form', () => {
         expect(html.indexOf('Hostname')).toBeLessThan(html.indexOf('Root LEI'));
     });
 
-    it('opens as a summary, and asks for no settings, when the profile states its own', () => {
+    it('opens as a summary when the profile states its own details and no settings', () => {
+        const settled = { ...profile, parameters: [] };
+        const html = render(
+            <TenantForm
+                profile={settled}
+                details={detailsFor(settled, 'Issued-Password-1')}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Empty operational uses its standard settings.');
+        expect(html).toContain('Northwind Capital (northwind)');
+        expect(html).not.toContain('Root LEI');
+    });
+
+    it('opens its form when the profile states its own details and declares settings', () => {
         const html = render(
             <TenantForm
                 profile={profile}
@@ -338,9 +356,8 @@ describe('the tenant form', () => {
             />,
         );
 
-        expect(html).toContain('Empty operational uses its standard settings.');
-        expect(html).toContain('Northwind Capital (northwind)');
-        expect(html).not.toContain('Root LEI');
+        expect(html).toContain('Root LEI');
+        expect(html).not.toContain('Empty operational uses its standard settings.');
     });
 
     it('states the forced change beside the password it applies to', () => {

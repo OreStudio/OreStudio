@@ -46,7 +46,7 @@ market_state_run the_run() {
                             .as_of = priced_at};
 }
 
-std::string cube_file() {
+std::string two_date_cube_file() {
     return "#Date,Scenario,Numeraire,DiscountCurve/USD/0,DiscountCurve/USD/1\n"
            "2026-10-31,BASE,1.0,0.99,0.98\n"
            "2026-10-31,UP,1.0,1.01,1.00\n"
@@ -59,7 +59,7 @@ TEST_CASE("a cube is stored as one compressed payload with an index of its keys"
           market_state_tags) {
     const auto run = the_run();
     const auto result = boost::uuids::random_generator()();
-    const auto body = cube_file();
+    const auto body = two_date_cube_file();
     const auto outcome = read_market_state(
         {market_state_file{.result_id = result, .name = "stress_scenarios.csv", .body = body}},
         run);
@@ -132,8 +132,9 @@ TEST_CASE("each result of a run keeps its own file of the same name", market_sta
     const auto first = boost::uuids::random_generator()();
     const auto second = boost::uuids::random_generator()();
     const auto outcome = read_market_state(
-        {market_state_file{.result_id = first, .name = "netcube.csv", .body = cube_file()},
-         market_state_file{.result_id = second, .name = "netcube.csv", .body = cube_file()}},
+        {market_state_file{.result_id = first, .name = "netcube.csv", .body = two_date_cube_file()},
+         market_state_file{
+             .result_id = second, .name = "netcube.csv", .body = two_date_cube_file()}},
         the_run());
 
     REQUIRE(outcome.refusals.empty());
@@ -145,8 +146,10 @@ TEST_CASE("each result of a run keeps its own file of the same name", market_sta
 TEST_CASE("a result that states the same file twice is refused", market_state_tags) {
     const auto result = boost::uuids::random_generator()();
     const auto outcome = read_market_state(
-        {market_state_file{.result_id = result, .name = "netcube.csv", .body = cube_file()},
-         market_state_file{.result_id = result, .name = "netcube.csv", .body = cube_file()}},
+        {market_state_file{
+             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()},
+         market_state_file{
+             .result_id = result, .name = "netcube.csv", .body = two_date_cube_file()}},
         the_run());
 
     REQUIRE(outcome.refusals.size() == 1);

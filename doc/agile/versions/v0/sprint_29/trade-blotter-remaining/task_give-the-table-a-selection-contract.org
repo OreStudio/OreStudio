@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-table-a-selection-contract
-#+pr:
+#+pr: 4317
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4317][#4317]] | [web] Let the shared table take a selection, and draw the picker with it |
 
 * Review
 

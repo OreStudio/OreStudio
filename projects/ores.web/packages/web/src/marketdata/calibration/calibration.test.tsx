@@ -114,7 +114,7 @@ function calibration(over: Partial<Calibration> = {}): Calibration {
             provider_order: [],
             version: null,
         },
-        policyWritable: false,
+        policyWritable: true,
         feeds: [eurusd, audusd, gbpusd],
         coverage: { total: 3, fromFixing: 2, keptFixed: 1, refused: 0, overridden: 1 },
         ...over,
@@ -224,12 +224,10 @@ describe('a feed calibration record', () => {
 });
 
 describe('the calibration policy', () => {
-    it('warns that a change affects every feed and keeps the form to the system tenant', () => {
+    it('keeps the screen to the system administrator', () => {
         const html = render('/market-data/calibration/fx/policy', calibration());
-        expect(html).toContain('A change here affects every feed of the class.');
-        expect(html).toContain('only the system tenant changes it');
+        expect(html).toContain('Calibration is a system control');
         expect(html).not.toContain('Save the policy');
-        expect(html).toContain('Calibration record');
     });
 
     it('offers the save and the way back to automatic to the system tenant', () => {

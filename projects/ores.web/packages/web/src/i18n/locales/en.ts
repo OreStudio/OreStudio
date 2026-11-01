@@ -4847,6 +4847,7 @@ export const en: SourceCatalogue = {
         calibration: {
             title: 'Calibration',
             lead: 'How every feed of an asset class takes its starting level and volatility from public fixings.',
+            systemOnly: 'Calibration is a system control. Only a system administrator may open it.',
             calibrateAll: 'Calibrate all',
             calibratedAt: 'Last calibrated {when}.',
             assetClass: 'Asset class',

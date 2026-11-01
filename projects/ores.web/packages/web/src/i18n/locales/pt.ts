@@ -4878,6 +4878,7 @@ const pt: SourceCatalogue = {
         calibration: {
             title: 'Calibração',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
+            systemOnly: 'A calibração é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
             calibrateAll: 'Calibrar tudo',
             calibratedAt: 'Última calibração {when}.',
             assetClass: 'Classe de ativos',

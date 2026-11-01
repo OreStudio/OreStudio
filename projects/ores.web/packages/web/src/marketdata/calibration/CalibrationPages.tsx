@@ -174,6 +174,15 @@ export function CalibrationPage(): ReactNode {
         return <Loading query={calibration} title={title} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const shown = visibleFeeds(data.feeds, filter);
     return (
         <div className="space-y-6">
@@ -463,6 +472,15 @@ export function CalibrationFeedPage(): ReactNode {
         return <Loading query={calibration} title={listTitle} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const feed = data.feeds.find((f) => f.config_id === configId);
     if (feed === undefined) {
         return (
@@ -652,6 +670,15 @@ export function CalibrationPolicyPage(): ReactNode {
         return <Loading query={calibration} title={listTitle} trail={trail} />;
     }
     const data = calibration.data;
+
+    // Calibration is a system control: the feeds belong to the system tenant.
+    if (!data.policyWritable) {
+        return (
+            <div className="space-y-6">
+                <Notice tone="warn">{t('marketdata.calibration.systemOnly')}</Notice>
+            </div>
+        );
+    }
     const p = data.policy;
     const shown = draft ?? {
         windowDays: String(p.window_days),

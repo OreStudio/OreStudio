@@ -211,7 +211,7 @@ export const CARDS = {
         bodyKey: 'marketdata.calibration.lead',
         to: PATHS.calibration,
         icon: 'chart',
-        permission: 'synthetic::fx_spot_generation_configs:read',
+        permission: 'synthetic::fx_spot_generation_configs:write',
         screenTitleKey: 'marketdata.calibration.title',
     },
     publishedCurves: {

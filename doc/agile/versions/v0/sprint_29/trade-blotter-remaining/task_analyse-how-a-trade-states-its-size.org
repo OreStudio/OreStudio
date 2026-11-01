@@ -26,11 +26,11 @@ Decide what the composition screens state about size, and on what rule, from the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Answered: the store states four shapes of size, and no one number. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

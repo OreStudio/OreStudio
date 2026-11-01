@@ -310,7 +310,6 @@
 \ir ./trading_lifecycle_events_notify_trigger_drop.sql
 \ir ./trading_lifecycle_events_drop.sql
 
-\ir ./trading_trade_types_notify_trigger_drop.sql
 \ir ./trading_product_type_asset_classes_notify_trigger_drop.sql
 \ir ./trading_product_types_notify_trigger_drop.sql
 \ir ./trading_product_types_drop.sql

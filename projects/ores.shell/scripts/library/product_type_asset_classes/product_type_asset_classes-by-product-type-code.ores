@@ -1,0 +1,6 @@
+# =by-product-type-code=
+#
+# GENERATED from doc/recipes/shell/product_type_asset_classes/product_type_asset_class.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+product_type_asset_classes by-product-type-code __none__ --limit 1

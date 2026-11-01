@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D4E50E71-CAEC-4D3A-A220-18FA07F3243A
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.product_type_asset_class
 #+description: Codegen junction model: the markets a product type references, one row per market, with one marked as the home market.

@@ -124,7 +124,13 @@ connection::connection(const connection_options& options)
 
 
 bool connection::healthy() const noexcept {
-    return PQstatus(handle_.get()) == CONNECTION_OK;
+    auto* c = handle_.get();
+    if (PQstatus(c) != CONNECTION_OK)
+        return false;
+    // A server that closed the connection, as a restart does, leaves an end of file on the
+    // socket that libpq has not read, so the status still reads ok. Reading what is pending,
+    // which never blocks, is what turns it bad.
+    return PQconsumeInput(c) == 1 && PQstatus(c) == CONNECTION_OK;
 }
 
 bool connection::idle() const noexcept {

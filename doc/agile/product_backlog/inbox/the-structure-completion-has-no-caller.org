@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 31C413BC-DB0B-41E4-B76B-DA6246DAC6FE
+:END:
+#+title: The structure completion has no caller
+#+description: complete_structure writes a structure, its members and takes every leg live in one unit, and nothing calls it: the grouping screen and the book-a-trade flow still write the structure and then each member through the entity writes, which leaves the legs drafts and lets a half-grouped deal stand.
+#+type: capture
+#+level: cross
+#+filetags: :trading:web:structure:completion:grouping:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=trading.v1.ops.complete_structure= writes a structure, its members and takes
+every leg live in one transaction, with two cases proving a refusal leaves every
+leg a draft and writes no member. Nothing calls it.
+
+The grouping screen's route (=POST /api/structures=) still writes the structure
+through the entity write and then each member through the member write, one call
+at a time, and never executes a leg. The book-a-trade flow adds a leg the same
+way. So grouped legs stay drafts and a grouping that fails halfway leaves a
+half-grouped deal standing, which is the state the operation exists to make
+impossible.
+
+* Why
+
+An operation with no caller is not a capability, it is a comment. The arc's own
+acceptance says a completed structure has every leg live and unauthorised, and
+nothing in the product completes one.
+
+Wiring it also forces a decision the arc has not taken: grouping and completing
+are two different acts, and the grouping screen currently does the first while
+pretending it did the second. Either the grouping screen completes (and a leg can
+no longer wait as a draft), or the structure page carries a Complete action and
+the grouping screen keeps making drafts. The prototype drew the structure page's
+own actions, which is the second.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- Decide where completing happens: the structure page's action, or the grouping
+  screen's confirm step.
+- Point the route at the operation: one call carrying the anchor and the legs,
+  in place of the loop of entity writes.
+- State what the screen shows when the store refuses one leg: the completion is
+  all-or-nothing, so the message is about the deal rather than about a row.
+- A render test, since the screen's submit path is what changes.
+
+* What done looks like
+
+Grouping a set of trades, or pressing Complete on a structure, produces one
+structure whose every leg is live and waiting on Operations, and a refusal leaves
+the trades as they were.
+
+* References
+
+- =trading.v1.ops.complete_structure= — the operation, with its four cases.
+- =POST /api/structures= in =packages/bff/src/structures.ts= — the loop that should
+  become one call.
+
+* See also
+
+- [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] — the task that built the operation.
+- [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] — the screen whose actions the prototype draws.

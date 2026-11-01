@@ -1612,3 +1612,204 @@ describe('the subject of a curve publish in the queue', () => {
         expect(body.items[0]).not.toHaveProperty('publishedSubject');
     });
 });
+
+/*
+ * The subject of a cut's authorisation, joined from the reporting component.
+ *
+ * A cut-authorisation request is about one frozen body, and the request's own
+ * header names neither the body nor its occasion: the reporting component keeps
+ * the detail row, and the cut the row names holds the label, the kind, the
+ * instant, the scope and the counts. The page joins it in one read, and a kind
+ * whose subject is not a cut carries no such field at all.
+ */
+describe('the subject of a cut authorisation in the queue', () => {
+    const CUT_REQUEST = '12121212-1212-4212-8212-121212121212';
+    const CUT = '13131313-1313-4313-8313-131313131313';
+
+    function cutRequest(id: string) {
+        return {
+            ...wireRequest(id, DANIEL),
+            kind_code: 'reporting.eod_cut_authorisation',
+            reason: 'The day is closed and the reports wait on the body',
+        };
+    }
+
+    const DETAIL = {
+        id: '14141414-1414-4414-8414-141414141414',
+        request_id: CUT_REQUEST,
+        party_id: SYSTEM_TENANT,
+        cut_id: CUT,
+        deal_count: 1284,
+        market_data_set_count: 7,
+        gap_count: 0,
+        applied_by: '',
+        applied_at: null,
+    };
+
+    const CUT_BODY = {
+        id: CUT,
+        version: 1,
+        kind_code: 'EOD',
+        scope_code: 'ACME-LONDON',
+        business_centre_code: 'GBLO',
+        timepoint: '2026-10-30 19:00:00Z',
+        timepoint_timezone: 'Europe/London',
+        take_ordinal: 1,
+        taken_by: 'henry.jones',
+        taken_at: '2026-10-30 19:01:00Z',
+        requires_authorisation: true,
+        approval_request_id: CUT_REQUEST,
+        approved_by: '',
+        approved_at: null,
+        refused_at: null,
+        refusal_comment: '',
+        retention_months: 25,
+        retention_destination_code: 'cold',
+        legal_hold: false,
+        output_is_indicative: false,
+    };
+
+    /** The two reads the join makes: the detail rows of the page, and the cut. */
+    function cutJoins() {
+        return {
+            'reporting.v1.cut_approval_details.list': {
+                result: OK,
+                details: [DETAIL],
+                total: 1,
+            },
+            'reporting.v1.ops.get_cut_record': {
+                result: OK,
+                cut: CUT_BODY,
+                kind: { code: 'EOD', name: 'End of day cut', family_code: 'end_of_day' },
+                label: 'EOD.ACME-LONDON.2026-10-30',
+                state: 'taken',
+                superseded_by_id: '',
+                gaps: [],
+                run_count: 0,
+                detail: DETAIL,
+            },
+        };
+    }
+
+    it('carries the label, the kind, the instant, the scope and the counts in the row', async () => {
+        const { server, calls, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [cutRequest(CUT_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            ...cutJoins(),
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]?.['cutSubject']).toMatchObject({
+            cut_id: CUT,
+            label: 'EOD.ACME-LONDON.2026-10-30',
+            kind_code: 'EOD',
+            kind_name: 'End of day cut',
+            timepoint: '2026-10-30 19:00:00Z',
+            timepoint_timezone: 'Europe/London',
+            scope_code: 'ACME-LONDON',
+            business_centre_code: 'GBLO',
+            state: 'taken',
+            deal_count: 1284,
+            market_data_set_count: 7,
+            gap_count: 0,
+            applied_by: '',
+            applied_at: null,
+        });
+        // One read answers the page, and it names the requests the page holds.
+        const joined = calls.find(
+            (call) => call.subject === 'reporting.v1.cut_approval_details.list',
+        );
+        expect(joined?.body).toMatchObject({
+            filter: expect.objectContaining({ request_id_one_of: [CUT_REQUEST] }),
+        });
+    });
+
+    it('is read for the one request an address opens', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(CUT_REQUEST, cutRequest(CUT_REQUEST)),
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+            ...cutJoins(),
+            ...joins(),
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${CUT_REQUEST}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as Record<string, unknown>;
+        expect(body['cutSubject']).toMatchObject({ label: 'EOD.ACME-LONDON.2026-10-30' });
+    });
+
+    it('says a refused read is a refusal, and not a read that found nothing', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [cutRequest(CUT_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            'reporting.v1.cut_approval_details.list': () => {
+                throw new Error('Not permitted');
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('cutSubject');
+        expect(body.items[0]?.['cutSubjectState']).toBe('refused');
+    });
+
+    it('says a read that found nothing is a gap, and not a refusal', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [cutRequest(CUT_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            'reporting.v1.cut_approval_details.list': { result: OK, details: [], total: 0 },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('cutSubject');
+        expect(body.items[0]?.['cutSubjectState']).toBe('missing');
+    });
+
+    it('leaves every other kind’s row as it was', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [wireRequest(REQUEST, DANIEL)],
+                total: 1,
+                answered: [],
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('cutSubject');
+    });
+});

@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import type { InboxRequestView, RequestChange } from '@ores/wire-protocol/browser';
 import type { InterpolationValues } from '../i18n/translate.js';
 import { CurvePublishExtras } from './CurvePublishExtras.js';
+import { CutAuthorisationExtras } from './CutAuthorisationExtras.js';
 import { RoleRequestExtras } from './RoleRequestExtras.js';
 import { kindLabel } from './words.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -48,6 +49,7 @@ export type Translate = (key: string, values?: InterpolationValues) => string;
 /** What a descriptor reads of a request: its kind, the roles it names and its subject. */
 export type Summarised = Pick<InboxRequestView, 'kindCode' | 'roles'> & {
     readonly publishedSubject?: InboxRequestView['publishedSubject'];
+    readonly cutSubject?: InboxRequestView['cutSubject'];
 };
 
 export interface KindDescriptor {
@@ -189,15 +191,38 @@ const ENGINE_SETTINGS_CHANGE: KindDescriptor = {
 };
 
 /**
- * What a cut's authorisation request shows that no other kind does.
+ * The subject of a cut's authorisation request, as the queue draws it: the label
+ * a person quotes beside the kind, and the occasion, the scope and the size of
+ * the body under it.
  *
- * The decider reads the body on the cut's own record page. Nothing answers a
- * cut by the request that raised it, so the page says where the body is read and
- * offers no link it cannot build.
+ * The label, the kind name, the instant and the scope are the reporting
+ * component's read, and the counts are the detail row's: none of them is in the
+ * request's own words. A reader who may not read the cut sees the kind alone,
+ * which is still the truth.
  */
-function CutAuthorisationExtras(_props: { readonly request: InboxRequestView }): ReactNode {
-    const { t } = useTranslation();
-    return <p className="text-xs text-ink-muted">{t('inbox.cutAuthorisation.noSubjectLink')}</p>;
+function cutAuthorisationSubject(t: Translate, request: InboxRequestView): ReactNode {
+    const subject = request.cutSubject ?? null;
+    return (
+        <span className="block">
+            <span className="flex flex-wrap items-center gap-2">
+                <Tag tone="accent" small>
+                    <span className="font-mono">{request.kindCode}</span>
+                </Tag>
+                {subject !== null && <span className="font-mono">{subject.label}</span>}
+            </span>
+            {subject !== null && (
+                <span className="mt-0.5 block text-xs text-ink-muted">
+                    {t('inbox.cutAuthorisation.row', {
+                        kind: subject.kind_name,
+                        timepoint: subject.timepoint.slice(0, 10),
+                        scope: subject.scope_code,
+                        deals: String(subject.deal_count),
+                        sets: String(subject.market_data_set_count),
+                    })}
+                </span>
+            )}
+        </span>
+    );
 }
 
 /**
@@ -211,8 +236,19 @@ function cutAuthorisation(code: string): KindDescriptor {
     return {
         code,
         label: (t) => kindLabel(t, code),
-        summary: (t) => kindLabel(t, code),
+        summary: (t, request) => {
+            const subject = request.cutSubject ?? null;
+            if (subject === null || subject.label === '') {
+                return kindLabel(t, code);
+            }
+            return t('inbox.cutAuthorisation.summary', {
+                label: subject.label,
+                scope: subject.scope_code,
+            });
+        },
         approveLabel: (t) => t('inbox.request.approve'),
+        subjectCell: cutAuthorisationSubject,
+        wideSubject: true,
         subjectRoute: () => null,
         fieldLabel: fieldLabelUnder(code),
         drawsDelta: false,

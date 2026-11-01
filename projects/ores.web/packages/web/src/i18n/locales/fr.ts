@@ -315,8 +315,22 @@ const fr: SourceCatalogue = {
             approve: 'Approuver la publication',
         },
         cutAuthorisation: {
-            noSubjectLink:
-                'Le corps que cette demande autorise se trouve sur l’enregistrement de la coupure, sous Reporting, Coupures. Rien ici n’y renvoie encore, car aucune lecture ne répond d’une coupure par la demande qu’elle a levée.',
+            subject: 'Le corps que cette demande autorise',
+            kind: 'Type de coupure',
+            timepoint: 'Instant fixé',
+            scope: 'Périmètre',
+            centre: 'Centre de taux',
+            deals: 'Opérations',
+            sets: 'Ensembles publiés',
+            gaps: 'Écarts',
+            state: 'État du corps',
+            openCut: 'Ouvrir la coupure',
+            row: '{kind} · {timepoint} · {scope} · {deals} opérations · {sets} ensembles',
+            summary: 'Autoriser {label} de {scope}',
+            noSubjectRefused:
+                'Cette demande est une autorisation de coupure, et ce compte ne peut pas lire la coupure qu’elle nomme : son sujet n’est donc pas dessiné ici. La demande elle-même est saine.',
+            noSubjectMissing:
+                'Cette demande est une autorisation de coupure, et le composant de reporting ne détient aucune coupure pour elle. Rien n’a été trouvé à dessiner, plutôt que quelque chose ayant été refusé.',
         },
         mine: {
             none: 'Vous n’avez fait aucune demande.',
@@ -7224,8 +7238,11 @@ const fr: SourceCatalogue = {
             deals: 'Transactions à l’instant',
             sets: 'Ensembles publiés en vigueur',
             gaps: 'Écarts ouverts',
-            applyLater:
-                'L’application n’est pas construite. Quand la demande sera approuvée, le service reporting écrira l’autorisation de la coupure et marquera cet enregistrement, et rien ne l’écrit maintenant.',
+            applied: 'Apposé sur la coupure par {who} le {when}.',
+            appliedLead:
+                'Le service reporting applique une demande décidée par réconciliation : il lit les demandes décidées et pas encore apposées, et écrit la coupure à partir des faits de la décision. L’instant apposé est celui de la décision, donc répéter l’exécution ne peut pas le déplacer.',
+            applyPending:
+                'La décision n’a pas encore atteint cet enregistrement. Quand la demande sera décidée, le service reporting marquera la coupure et cette ligne en moins d’une minute.',
             takeAgain: 'Prendre à nouveau',
             takeAgainLead:
                 'Un refus est définitif pour ce corps, donc le remède est une nouvelle prise. Le nouveau corps porte l’ordinal suivant de son jour dans son libellé.',

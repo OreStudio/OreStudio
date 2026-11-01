@@ -316,8 +316,22 @@ const pt: SourceCatalogue = {
             approve: 'Aprovar a publicação',
         },
         cutAuthorisation: {
-            noSubjectLink:
-                'O corpo que este pedido autoriza está no registo do corte, em Reporting, Cortes. Nada aqui liga a ele ainda, porque nenhuma leitura responde de um corte pelo pedido que levantou.',
+            subject: 'O corpo que este pedido autoriza',
+            kind: 'Tipo de corte',
+            timepoint: 'Instante fixado',
+            scope: 'Âmbito',
+            centre: 'Centro de taxas',
+            deals: 'Operações',
+            sets: 'Conjuntos publicados',
+            gaps: 'Lacunas',
+            state: 'Estado do corpo',
+            openCut: 'Abrir o corte',
+            row: '{kind} · {timepoint} · {scope} · {deals} operações · {sets} conjuntos',
+            summary: 'Autorizar {label} de {scope}',
+            noSubjectRefused:
+                'Este pedido é uma autorização de corte, e esta conta não pode ler o corte que ele nomeia, pelo que o seu assunto não é desenhado aqui. O pedido em si está são.',
+            noSubjectMissing:
+                'Este pedido é uma autorização de corte, e o componente de reporting não detém nenhum corte para ele. Nada foi encontrado para desenhar, em vez de algo ter sido recusado.',
         },
         mine: {
             none: 'Não fez nenhum pedido.',
@@ -7168,8 +7182,11 @@ const pt: SourceCatalogue = {
             deals: 'Negócios no instante',
             sets: 'Conjuntos publicados em uso',
             gaps: 'Lacunas em aberto',
-            applyLater:
-                'A aplicação não está construída. Quando o pedido for aprovado, o serviço de reporting escreverá a autorização do corte e marcará este registo, e nada o escreve agora.',
+            applied: 'Aposto no corte por {who} em {when}.',
+            appliedLead:
+                'O serviço de reporting aplica um pedido decidido por reconciliação: lê os pedidos decididos e ainda não apostos, e escreve o corte a partir dos factos da decisão. O instante aposto é o da decisão, pelo que repetir a execução não o pode mover.',
+            applyPending:
+                'A decisão ainda não chegou a este registo. Quando o pedido for decidido, o serviço de reporting marcará o corte e esta linha dentro de um minuto.',
             takeAgain: 'Tomar de novo',
             takeAgainLead:
                 'Uma recusa é definitiva para este corpo, por isso o remédio é uma nova tomada. O novo corpo leva o ordinal seguinte do seu dia no rótulo.',

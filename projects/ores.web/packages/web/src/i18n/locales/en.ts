@@ -316,8 +316,22 @@ export const en: SourceCatalogue = {
             approve: 'Approve the publish',
         },
         cutAuthorisation: {
-            noSubjectLink:
-                'The body this request authorises is on the cut’s own record, under Reporting, Cuts. Nothing here links to it yet, because no read answers a cut by the request it raised.',
+            subject: 'The body this request authorises',
+            kind: 'Kind of cut',
+            timepoint: 'Instant fixed',
+            scope: 'Scope',
+            centre: 'Rates centre',
+            deals: 'Deals',
+            sets: 'Published sets',
+            gaps: 'Gaps',
+            state: 'State of the body',
+            openCut: 'Open the cut',
+            row: '{kind} · {timepoint} · {scope} · {deals} deals · {sets} sets',
+            summary: 'Authorise {label} of {scope}',
+            noSubjectRefused:
+                'This request is a cut authorisation, and this account may not read the cut it names, so its subject is not drawn here. The request itself is sound.',
+            noSubjectMissing:
+                'This request is a cut authorisation, and the reporting component holds no cut for it. Nothing was found to draw, rather than something being refused.',
         },
         mine: {
             none: 'You have made no requests.',
@@ -7118,8 +7132,11 @@ export const en: SourceCatalogue = {
             deals: 'Deals at the instant',
             sets: 'Published sets in use',
             gaps: 'Gaps standing',
-            applyLater:
-                'The apply is not built. When the request is approved, the reporting service will write the cut\u2019s authorisation and stamp this record, and nothing writes it now.',
+            applied: 'Stamped onto the cut by {who} on {when}.',
+            appliedLead:
+                'The reporting service applies a decided request by reconciliation: it reads the requests that are decided and not yet stamped, and writes the cut from the decision\u2019s own facts. The applied instant is the decision\u2019s, so repeating the run cannot move it.',
+            applyPending:
+                'The decision has not reached this record yet. When the request is decided, the reporting service stamps the cut and this row within a minute.',
             takeAgain: 'Take it again',
             takeAgainLead:
                 'A refusal is terminal for this body, so the remedy is a new take. The new body carries the next ordinal of its day in its label.',

@@ -421,6 +421,45 @@ export const inboxRequestViewSchema = z.object({
      * two are different facts and the screen says each in its own words.
      */
     publishedSubjectState: z.enum(['refused', 'missing']).optional(),
+    /**
+     * The cut a cut-authorisation request authorises, joined from the reporting
+     * component's own read.
+     *
+     * A cut's authorisation is about one frozen body, and the request header
+     * names neither the body nor the occasion: the subject lives in the
+     * reporting component's detail row, keyed by the request's id, and the cut
+     * itself holds the label, the kind, the instant, the scope and the counts of
+     * the parts the decider is asked to sign.
+     */
+    cutSubject: inboxCutSubjectSchema.nullable().optional(),
+    /** Why a cut request carries no subject: the same two facts as a publish's. */
+    cutSubjectState: z.enum(['refused', 'missing']).optional(),
+});
+
+/**
+ * What a cut-authorisation request authorises, joined from the reporting
+ * component's own reads.
+ *
+ * The counts are the detail row's, taken when the body was frozen, so a decider
+ * reads the size of the population the take fixed rather than the store's size
+ * today. The state and the label are derived by the reporting service and stored
+ * nowhere, so the request page draws the same words the cut's own page draws.
+ */
+export const inboxCutSubjectSchema = z.object({
+    cut_id: z.string().default(''),
+    label: z.string().default(''),
+    kind_code: z.string().default(''),
+    kind_name: z.string().default(''),
+    timepoint: wireTimestampSchema,
+    timepoint_timezone: z.string().default(''),
+    scope_code: z.string().default(''),
+    business_centre_code: z.string().default(''),
+    state: z.string().default(''),
+    deal_count: z.int().nonnegative().default(0),
+    market_data_set_count: z.int().nonnegative().default(0),
+    gap_count: z.int().nonnegative().default(0),
+    applied_by: z.string().default(''),
+    applied_at: nullableWireTimestampSchema,
 });
 
 /**
@@ -504,6 +543,7 @@ export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
 export type InboxRequestPartView = z.infer<typeof inboxRequestPartViewSchema>;
 export type InboxRequestDecisionView = z.infer<typeof inboxRequestDecisionViewSchema>;
 export type InboxPublishedSubject = z.infer<typeof inboxPublishedSubjectSchema>;
+export type InboxCutSubject = z.infer<typeof inboxCutSubjectSchema>;
 export type InboxRequestView = z.infer<typeof inboxRequestViewSchema>;
 export type InboxNotificationView = z.infer<typeof inboxNotificationViewSchema>;
 

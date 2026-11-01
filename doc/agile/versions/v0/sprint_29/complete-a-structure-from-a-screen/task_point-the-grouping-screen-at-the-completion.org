@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: F3770BA9-94EF-4A43-8415-262FBC946837
+:END:
+#+title: Task: Point the grouping screen at the completion
+#+description: Replace the route's structure-then-members loop with one call to the completion, so grouping a set of trades makes one structure whose every leg is live and waiting.
+#+type: task
+#+level: s1
+#+filetags: :trading:web:structure:sprint_29:v0:complete-a-structure-from-a-screen:
+#+owner: marco
+#+branch: feature/point-the-grouping-screen-at-the-completion
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] |
+| Now          | Built: the grouping route completes in one call. |
+| Waiting on   | Marco's review, which this branch waits for. |
+| Next         | Raise the PR and leave it open.        |
+| Last touched | 2026-11-01                               |
+
+* Acceptance
+
+- The grouping route completes the structure in one call, and writes no structure or member of its own.
+- Two trades grouped together become one structure whose every leg is live and waiting on Operations.
+- A refusal from the completion reaches the screen as its own message, and nothing is left behind.
+
+* Plan
+
+One edit, in one place: the grouping route's structure-then-members loop becomes
+a single call carrying the anchor and the legs.
+
+The decision the arc left open is taken here — grouping completes. The screen is
+called Group trades and its purpose is to make one deal out of trades already
+booked; a grouping that left its legs as drafts was the screen doing half its
+job. The draft flow keeps its place: booking a trade that waits, or adding a leg
+to a structure that is already live.
+
+What the route keeps is its own checks: the session works for a party, every
+trade is one this session can read, all legs share one counterparty, the kind
+exists, and no trade is already grouped. The completion decides everything that
+needs a transaction.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The completion has a caller: grouping trades makes one structure whose every leg
+is live and waiting on Operations.
+
+| Piece | Where |
+|-------|-------|
+| The call | =POST /api/structures= calls =complete_structure_request= once, with the anchor and the legs in the order chosen |
+| What the route keeps | its checks: a party, readable trades, one counterparty, a known kind, no trade already grouped |
+| What the screen sees | the structure's id and reference on success, the completion's message on refusal |
+| The cases | two: a grouping completes in one call with the legs in order, and a refusal reaches the caller with nothing written |

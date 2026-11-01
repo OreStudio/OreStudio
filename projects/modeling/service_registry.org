@@ -271,6 +271,11 @@
 ** Execute prefixes
 
 - ores_reporting_publish_
+# The apply of an approved cut authorisation is a reconciliation: it reads every
+# tenant's decided requests that the cut has not been stamped with, and writes
+# each cut in its own tenant. The function runs as its owner, so the inbox's
+# tables need no grant here.
+- ores_reporting_unapplied_
 
 ** Extra args
 

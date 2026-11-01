@@ -275,6 +275,7 @@ set(files
     "service/configuration_type_service.cpp"
     "service/cut_approval_detail_service.cpp"
     "service/cut_assembly.cpp"
+    "service/cut_authorisation_applier.cpp"
     "service/cut_family_service.cpp"
     "service/cut_gap_service.cpp"
     "service/cut_kind_service.cpp"

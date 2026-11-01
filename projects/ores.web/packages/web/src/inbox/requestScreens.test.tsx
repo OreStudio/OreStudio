@@ -416,7 +416,49 @@ describe('the review panel', () => {
 });
 
 describe('the request page, for a cut authorisation', () => {
-    it('names the cut ask and says where its body is read', () => {
+    /** The cut's subject as the reporting component joined it to the request. */
+    const CUT_SUBJECT: InboxRequestView['cutSubject'] = {
+        cut_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        label: 'EOD.ACME-LONDON.2026-10-30',
+        kind_code: 'EOD',
+        kind_name: 'End of day cut',
+        timepoint: '2026-10-30 19:00:00Z',
+        timepoint_timezone: 'Europe/London',
+        scope_code: 'ACME-LONDON',
+        business_centre_code: 'GBLO',
+        state: 'taken',
+        deal_count: 1284,
+        market_data_set_count: 7,
+        gap_count: 0,
+        applied_by: '',
+        applied_at: null,
+    };
+
+    it('draws the body the request froze, and links the cut that states it', () => {
+        const html = page('priya', {
+            request: bookRequest({
+                kindCode: 'reporting.eod_cut_authorisation',
+                reason: 'The day is closed and the reports wait on the body.',
+                cutSubject: CUT_SUBJECT,
+            }),
+            changes: [],
+        });
+
+        // The title quotes the body's label, because that is what the decider is
+        // being asked to sign.
+        expect(html).toContain('Asks for EOD.ACME-LONDON.2026-10-30');
+        expect(html).toContain('The body this request authorises');
+        expect(html).toContain('EOD.ACME-LONDON.2026-10-30');
+        expect(html).toContain('End of day cut');
+        expect(html).toContain('ACME-LONDON');
+        expect(html).toContain('GBLO');
+        // The counts the take took when it froze the body.
+        expect(html).toContain('1284');
+        expect(html).toContain('Open the cut');
+        expect(html).toContain(`/reporting/cuts/${CUT_SUBJECT?.cut_id ?? ''}`);
+    });
+
+    it('says a request whose cut was not found holds nothing to draw', () => {
         const html = page('priya', {
             request: bookRequest({
                 kindCode: 'reporting.eod_cut_authorisation',
@@ -426,7 +468,7 @@ describe('the request page, for a cut authorisation', () => {
         });
 
         expect(html).toContain('Asks for End of day cut authorisation');
-        expect(html).toContain('Nothing here links to it yet');
+        expect(html).toContain('holds no cut for it');
     });
 });
 

@@ -219,6 +219,13 @@ public:
     static void process_take_cut(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief list-cut-authorisation-subjects <request_ids>
+     */
+    static void process_list_cut_authorisation_subjects(std::ostream& out,
+                                                        ores::nats::service::nats_client& session,
+                                                        const std::vector<std::string>& args);
 };
 
 }

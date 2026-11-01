@@ -730,6 +730,43 @@ struct cut_body_part {
     std::string snapshot_note = "";
 };
 
+struct cut_authorisation_subject {
+    std::string request_id;
+    std::string cut_id;
+    std::string label;
+    std::string kind_code;
+    std::string kind_name;
+    std::string timepoint;
+    std::string timepoint_timezone;
+    std::string scope_code;
+    std::string business_centre_code;
+    std::string state;
+    int deal_count = 0;
+    int market_data_set_count = 0;
+    int gap_count = 0;
+    std::string applied_by = "";
+    std::string applied_at = "";
+};
+
+struct list_cut_authorisation_subjects_request {
+    using response_type = struct list_cut_authorisation_subjects_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.list_cut_authorisation_subjects";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<std::string> request_ids;
+};
+
+struct list_cut_authorisation_subjects_response {
+    ores::utility::domain::result result;
+    std::vector<cut_authorisation_subject> subjects;
+};
+
 struct take_cut_response {
     ores::utility::domain::result result;
     std::string cut_id = "";

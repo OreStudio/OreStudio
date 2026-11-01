@@ -4153,6 +4153,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.ops.list_cut_authorisation_subjects': {
+        asOf: false,
+        filter: [],
+        rows: ['subjects'],
+    },
     'reporting.v1.ops.list_cut_rows': {
         asOf: false,
         filter: [],

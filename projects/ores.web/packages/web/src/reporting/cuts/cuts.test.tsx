@@ -254,6 +254,8 @@ function cutRecord(over: Partial<CutRecord> = {}): CutRecord {
             dealCount: 1284,
             marketDataSetCount: 7,
             gapCount: 0,
+            appliedBy: 'ores_reporting_service',
+            appliedAt: '2026-10-06 16:20:00.000000Z',
         },
         ...over,
     };
@@ -952,6 +954,32 @@ describe('one cut', () => {
         expect(page).toContain('1284');
         expect(page).toContain('Published sets in use');
         expect(page).not.toContain('Raising and deciding an authorisation');
+    });
+
+    it('states who stamped the decision and when, and that the instant is the decision’s', () => {
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=authorisation`, (client) => {
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id], cutRecord());
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        const page = textOf(html);
+        expect(page).toContain('Stamped onto the cut by ores_reporting_service on 2026-10-06');
+        expect(page).toContain('applies a decided request by reconciliation');
+    });
+
+    it('says the decision has not reached the record while nothing is stamped', () => {
+        const base = cutRecord();
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=authorisation`, (client) => {
+            client.setQueryData(
+                ['cuts', 'cut', AUTHORISED.id],
+                cutRecord({
+                    detail: { ...base.detail!, appliedBy: '', appliedAt: null },
+                }),
+            );
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        const page = textOf(html);
+        expect(page).toContain('The decision has not reached this record yet');
+        expect(page).not.toContain('Stamped onto the cut by');
     });
 
     it('says a cut whose kind requires no authorisation was usable when taken', () => {

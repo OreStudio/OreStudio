@@ -1921,6 +1921,182 @@ What the store cannot state about the part, where it can answer the part and
 record no reference for it. The flow draws it beside the part, so a person reads
 that the body is answered from a live read rather than from a copy.
 
+** cut_authorisation_subject
+:PROPERTIES:
+:END:
+
+One cut's authorisation request as the request page draws it: the body it froze,
+the occasion and scope of that body, the counts of the parts the take fixed, and
+the facts the apply stamped once the request was decided.
+
+The request is the inbox's record of the ask and the decision, and the subject is
+this component's detail row keyed by the request's id. The label and the state are
+derived here and stored nowhere, so the request page draws the same words the
+cut's own page draws and the two cannot disagree about the body. The counts are
+the ones taken when the body was frozen, so a decider reads the size of what they
+sign and not the store's size today.
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The approval request the subject belongs to, in the text form of its id.
+
+*** cut_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The cut whose body the request authorises, in the text form of its id.
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The label a person quotes for the body, derived from its kind, scope and instant.
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the kind the body was taken under.
+
+*** kind_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The kind's name, in the words the kind lookup holds.
+
+*** timepoint
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The instant the body was fixed at, in ISO-8601 UTC.
+
+*** timepoint_timezone
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The IANA clock the instant is stated in, such as =Europe/London=.
+
+*** scope_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The book population the body fixed.
+
+*** business_centre_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rates centre whose market data the scope's books revalue against.
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The state the body's own facts derive, in the wire's word for it, so a decider
+reads whether the body is taken, authorised or refused.
+
+*** deal_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many deals the population held at the cut's instant, as the take counted them.
+
+*** market_data_set_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many published sets were in use at the instant, as the take counted them.
+
+*** gap_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+How many parts the assembly could not fill, which is zero for any body a request
+was raised for.
+
+*** applied_by
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The account the apply stamped the decision onto the cut with, or empty while no
+decision has reached it.
+
+*** applied_at
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+When the decision was stamped, in ISO-8601 UTC, or empty while it waits.
+
+** list_cut_authorisation_subjects_request
+:PROPERTIES:
+:subject: reporting.v1.ops.list_cut_authorisation_subjects
+:response: list_cut_authorisation_subjects_response
+:END:
+
+Reads the body each cut-authorisation request authorises.
+
+A cut's approval request is decided on the request page, and the request is the
+inbox's record: it names neither the body nor its occasion. The subject lives in
+this component's detail row, keyed by the request's id, so the page reads it here
+rather than copying it into the generic record. A page of requests costs one call,
+which is why the request names the requests it wants rather than one identifier.
+
+A request this component holds no detail row for answers nothing, which is what a
+request raised outside a take leaves behind: the caller draws the kind alone and
+says why rather than drawing an empty subject as one about nothing.
+
+*** request_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The requests whose subjects are read, in the text form of their ids.
+
+** list_cut_authorisation_subjects_response
+:PROPERTIES:
+:END:
+
+The subjects the requests named, in the order they were asked for, with any
+request that names none left out.
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+Outcome of the operation. A caller who may read no cut is refused here and not
+answered an empty list, so a screen can tell a refusal from a request about
+nothing.
+
+*** subjects
+:PROPERTIES:
+:cpp_type: std::vector<cut_authorisation_subject>
+:END:
+
+The subject of each request this component holds one for.
+
 ** take_cut_response
 :PROPERTIES:
 :END:

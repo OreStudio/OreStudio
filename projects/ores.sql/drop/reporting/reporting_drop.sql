@@ -48,6 +48,7 @@
 \ir ./reporting_engine_settings_drop.sql
 \ir ./reporting_cut_gaps_notify_trigger_drop.sql
 \ir ./reporting_cut_gaps_drop.sql
+\ir ./reporting_cut_authorisation_functions_drop.sql
 \ir ./reporting_cut_approval_details_notify_trigger_drop.sql
 \ir ./reporting_cut_approval_details_drop.sql
 \ir ./reporting_cuts_notify_trigger_drop.sql

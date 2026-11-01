@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.service/messaging/cut_take_registrar.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include "ores.reporting.service/messaging/cut_authorisation_subject_handler.hpp"
 #include "ores.reporting.service/messaging/cut_take_handler.hpp"
 #include <memory>
 #include <string_view>
@@ -43,11 +44,20 @@ std::vector<ores::nats::service::subscription> cut_take_registrar::register_hand
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    auto h = std::make_shared<cut_take_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<cut_take_handler>(nats, ctx, verifier);
     subs.push_back(nats.queue_subscribe(
         take_cut_request::nats_subject, cut_take_queue_group, [h](ores::nats::message msg) {
             h->take_cut(std::move(msg));
         }));
+
+    // The request page reads what each cut authorisation is about from here,
+    // because the subject is this component's and not the inbox's.
+    auto subjects =
+        std::make_shared<cut_authorisation_subject_handler>(nats, std::move(ctx), std::move(verifier));
+    subs.push_back(nats.queue_subscribe(
+        list_cut_authorisation_subjects_request::nats_subject,
+        cut_take_queue_group,
+        [subjects](ores::nats::message msg) { subjects->list_subjects(std::move(msg)); }));
 
     return subs;
 }

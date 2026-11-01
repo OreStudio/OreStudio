@@ -26,11 +26,11 @@ A decider approves or refuses the request in the inbox, and the cut becomes auth
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Done. The suites, the gates and the live decide are green; the live apply is blocked by market data this environment does not hold. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Close. A live end-to-end walk needs a published curve set in the demo tenant, which is its own task. |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

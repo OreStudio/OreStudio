@@ -28,9 +28,9 @@ A decider approves or refuses the request in the inbox, and the cut becomes auth
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Code complete; the C++ and web suites have not been run. |
+| Waiting on   | The product owner's build: nothing here has been compiled or tested on this branch. |
+| Next         | Run the reporting, inbox and web suites, then walk the live decide on a body the take raised in the demo tenant. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -41,9 +41,45 @@ A decider approves or refuses the request in the inbox, and the cut becomes auth
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The decision is the inbox's, and the cut adds nothing to it
+
+The two cut kinds already name their deciding function: =reporting.eod_cut_authorisation=
+names =inbox::approvals:decide_finance= and =reporting.ipv_cut_authorisation= names
+=inbox::approvals:decide_market_risk=. The inbox's decide operation already resolves a
+kind's permission, refuses a decision by the person who asked, requires a comment on a
+refusal, and moves the request to =approved= or =refused=. Nothing in the decide path
+changed, and the demo already holds the decider: the =Finance= role carries
+=inbox::approvals:decide_finance=, and =rachel.byrd=, =beth.clark=, =graham.pierce= and
+=hoi.yan.lee= hold it in the Acme tenant beside =henry.jones=, who takes the close. No
+new seed was needed; the task's own supply test pins the kind's declarations.
+
+** The apply is a reconciliation, as a role grant is
+
+=ores_reporting_unapplied_cut_authorisations_fn= answers every decided cut-authorisation
+request the cut has not been stamped with, across every tenant that is not terminated. It
+keys on the cut kinds' own =approval_kind_code= and not on a list, so a third cut kind
+needs no code change. =cut_authorisation_applier= writes each cut in its own tenant and as
+the person who decided, stamps the decision's own instant rather than the run's clock, and
+marks the detail row applied in the same unit of work. A row leaves the answer once applied,
+so the second run writes nothing and the cut keeps its version.
+
+The service runs it at start and on every change to an approval request; a sweep every 60
+seconds reads the store for what no event announced.
+
+** What the screens read
+
+The BFF joins the subject a cut's request is about in one read of the detail rows, then
+reads each cut the rows name, so the request page draws the label, the kind, the instant,
+the scope and the counts. The cut's Authorisation tab states who stamped the decision and
+when, from the detail row's applied facts, and the history shows the version the apply
+wrote.
+
+** What is not done
+
+Nothing was built or run: the branch's C++ and web suites have not executed, so the apply's
+cases, the inbox's cases and the BFF and web cases are written and unproven. The live walk
+of the decide needs a cut whose body the take froze in the demo tenant, and the demo tenant
+holds no published curve set, so no live EOD take can raise a request there yet.
 
 * Measurements
 
@@ -85,3 +121,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Built
+
+- =ores_reporting_unapplied_cut_authorisations_fn=, with its drop script and the registry's
+  execute prefix, applied to the live database additively as one function.
+- =cut_authorisation_applier= in =ores.reporting.core=: an approval stamps =approved_by= and
+  =approved_at= and marks the detail applied; a refusal stamps =refused_at= and
+  =refusal_comment=; the stamp is the decision's own instant and the row is skipped when it
+  already holds it.
+- The reporting service runs the reconciliation at start, on the approval request's change
+  event, and every 60 seconds.
+- The BFF's cut-subject join, the request page's subject block, and the cut record's applied
+  facts.
+- Three suites: the apply's five cases, the inbox's four cases on the two cut kinds, and the
+  BFF's five cases on the join, plus the web's two on the applied facts.
+
+** Verified
+
+The function was applied to the live database and answers zero rows:
+
+#+begin_example
+  select request_id, cut_id, approval_kind_code, decision_code, decided_by, decided_at,
+         left(comment,40)
+  from ores_reporting_unapplied_cut_authorisations_fn();
+  -- 0 rows
+#+end_example
+
+That is the right answer for the store as it stands, and it is also the reason the live walk
+did not happen: every waiting =reporting.eod_cut_authorisation= request in the database,
+including =01a1945d-8bbe-76c7-ae2f-9512e37bade1=, belongs to a tenant the integration suite
+provisioned and then terminated (=ores_reporting_core_tests_20261031_234737_3_3676=). A
+terminated tenant admits nobody's sign-in, and the function leaves its rows out, so that
+request cannot be decided and could not be applied if it were.
+
+** Remaining
+
+1. Build and run the three suites; the unity-build name collisions the compiler caught were
+   fixed by declaration only and are unproven.
+2. Walk the live decide end to end in the demo tenant, which needs a published curve set
+   there: =republish_curve= on the seeded =USD-SOFR-FOMC= bootstrap publishes one without an
+   approval gate, after which a live EOD take raises a request that =rachel.byrd= can decide
+   and the apply can stamp.
+3. Nothing on the apply retries a tenant whose write is refused for a permanent reason: it
+   logs and tries again on the next sweep, as a role grant does.

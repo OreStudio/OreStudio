@@ -170,6 +170,76 @@ struct list_feeds_response {
     std::vector<running_feed> running_feeds;
 };
 
+/**
+ * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
+ */
+struct calibration_policy_summary {
+    /** @brief True when the class has a policy row; false when it calibrates on the defaults. */
+    bool from_policy_row = false;
+    /** @brief How many calendar days of fixings measure the spread. */
+    int window_days = 0;
+    /** @brief True when an item that quotes the pair the other way round is read as one over it. */
+    bool allow_inverse = false;
+    /** @brief What a feed does when no candidate has a fixing: keep_fixed or refuse. */
+    std::string fallback_code;
+    /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
+    std::vector<std::string> provider_order;
+};
+
+/**
+ * @brief How one feed of the class resolved: the item it starts from, or its fallback or
+ * refusal, and the exceptions it states against the policy.
+ */
+struct calibrated_feed {
+    /** @brief The feed's config id. */
+    std::string config_id;
+    /** @brief The source name the feed publishes under. */
+    std::string source_name;
+    /** @brief The base currency of the feed's pair. */
+    std::string base_currency_code;
+    /** @brief The quote currency of the feed's pair. */
+    std::string quote_currency_code;
+    /** @brief True when the feed names its own items instead of deriving them from the policy. */
+    bool explicit_items = false;
+    /** @brief The feed's own window, when it overrides the policy's. */
+    std::optional<int> window_days_override;
+    /** @brief True when no candidate has a fixing and the policy refuses to start the feed. */
+    bool refused = false;
+    /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+    feed_start start;
+};
+
+/**
+ * @brief Resolve every feed of one asset class under its policy, without starting any.
+ *
+ * Every feed of the class is resolved; no subset is selected.
+ */
+struct calibrate_request {
+    using response_type = struct calibrate_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.feed_configs.calibrate";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The asset class to calibrate, as its refdata code. */
+    std::string asset_class_code;
+};
+
+/**
+ * @brief The policy the class calibrated under and the outcome of each of its feeds.
+ */
+struct calibrate_response {
+    bool success = false;
+    std::string message;
+    /** @brief The policy the class calibrated under. */
+    calibration_policy_summary policy;
+    /** @brief Every feed of the class, in source name order. */
+    std::vector<calibrated_feed> feeds;
+};
+
 }
 
 #endif

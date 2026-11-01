@@ -268,6 +268,7 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             sensitivity: z.number().positive().default(1),
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
+            calibration_window_days: z.int().positive().max(3650).nullable().default(null),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
     },
     {
@@ -569,6 +570,43 @@ export const feedStartSchema = z.object({
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
+
+/** The policy a class calibrates under, as the service states it. */
+const calibrationPolicySchema = z.object({
+    from_policy_row: z.boolean().default(false),
+    window_days: z.int().default(0),
+    allow_inverse: z.boolean().default(false),
+    fallback_code: z.string().default(''),
+    provider_order: z.array(z.string()).default([]),
+});
+
+/** How one feed of the class resolved under the policy. */
+const calibratedFeedSchema = z.object({
+    config_id: z.string(),
+    source_name: z.string(),
+    base_currency_code: z.string().default(''),
+    quote_currency_code: z.string().default(''),
+    explicit_items: z.boolean().default(false),
+    window_days_override: z.int().nullish(),
+    refused: z.boolean().default(false),
+    start: feedStartSchema,
+});
+
+export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
+
+/**
+ * The counts a class's calibration covers: how many feeds start from a fixing, keep their
+ * fixed level, are refused, and override the policy.
+ */
+export function calibrationCoverage(feeds: readonly CalibratedFeed[]) {
+    return {
+        total: feeds.length,
+        fromFixing: feeds.filter((f) => f.start.from_fixing).length,
+        keptFixed: feeds.filter((f) => !f.start.from_fixing && !f.refused).length,
+        refused: feeds.filter((f) => f.refused).length,
+        overridden: feeds.filter((f) => f.explicit_items || f.window_days_override != null).length,
+    };
+}
 
 /** One feed the service runs now, and where its run started. */
 const runningFeedSchema = z.object({
@@ -943,6 +981,36 @@ export function registerSyntheticRoutes(
                     deletePermission: `${resource.namespace ?? 'synthetic'}::${resourceName(resource)}:delete`,
                 };
             }),
+        };
+    });
+
+    /**
+     * Calibrate an asset class: the policy it calibrates under, and how every feed of the
+     * class resolves, with the coverage counts. Nothing starts; every feed is resolved.
+     */
+    server.get('/api/synthetic/calibration/:assetClass', async (request) => {
+        const session = requireSession(request);
+        const assetClass = input(
+            z
+                .string()
+                .trim()
+                .regex(/^[a-z0-9_]{1,40}$/),
+            (request.params as { assetClass: string }).assetClass,
+        );
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.calibrate_request,
+            { asset_class_code: assetClass },
+            operationReplySchema.extend({
+                policy: calibrationPolicySchema,
+                feeds: z.array(calibratedFeedSchema).default([]),
+            }),
+        );
+        refuseUnless(reply, upstreamFailure);
+        return {
+            assetClass,
+            policy: reply.policy,
+            feeds: reply.feeds,
+            coverage: calibrationCoverage(reply.feeds),
         };
     });
 

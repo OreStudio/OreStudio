@@ -481,6 +481,107 @@ describe('synthetic resource routes', () => {
     });
 });
 
+describe('synthetic calibration', () => {
+    const fixed = (note: string) => ({ from_fixing: false, note });
+    const policy = {
+        from_policy_row: true,
+        window_days: 60,
+        allow_inverse: false,
+        fallback_code: 'refuse',
+        provider_order: ['ecb', 'boe'],
+    };
+
+    it('resolves every feed of a class and counts how each one started', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.feed_configs.calibrate': {
+                success: true,
+                policy,
+                feeds: [
+                    {
+                        config_id: ID,
+                        source_name: 'synthetic.eurusd',
+                        start: { from_fixing: true, item: 'oresmd://fx/EUR?type=fixing&ccy=USD' },
+                    },
+                    {
+                        config_id: OTHER,
+                        source_name: 'synthetic.usdjpy',
+                        explicit_items: true,
+                        start: fixed('No item has a fixing'),
+                    },
+                    {
+                        config_id: COLLECTION,
+                        source_name: 'synthetic.usdtry',
+                        window_days_override: 30,
+                        refused: true,
+                        start: fixed('the class policy refuses to start without a fixing.'),
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            { subject: 'synthetic.v1.feed_configs.calibrate', body: { asset_class_code: 'fx' } },
+        ]);
+        const body = response.json();
+        expect(body.policy).toEqual(policy);
+        expect(body.feeds.map((f: { source_name: string }) => f.source_name)).toEqual([
+            'synthetic.eurusd',
+            'synthetic.usdjpy',
+            'synthetic.usdtry',
+        ]);
+        expect(body.coverage).toEqual({
+            total: 3,
+            fromFixing: 1,
+            keptFixed: 1,
+            refused: 1,
+            overridden: 2,
+        });
+    });
+
+    it('states the defaults when the class has no policy row', async () => {
+        const defaults = {
+            from_policy_row: false,
+            window_days: 90,
+            allow_inverse: true,
+            fallback_code: 'keep_fixed',
+            provider_order: [],
+        };
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.feed_configs.calibrate': { success: true, policy: defaults, feeds: [] },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().policy).toEqual(defaults);
+        expect(response.json().coverage.total).toBe(0);
+    });
+
+    it('refuses an asset class that is not a code, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/calibration/FX%20spot',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('passes on the reason a calibration failed', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.feed_configs.calibrate': {
+                success: false,
+                message: 'A calibration names its asset class.',
+                policy: {},
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBeGreaterThanOrEqual(400);
+        expect(response.body).toContain('A calibration names its asset class.');
+    });
+});
+
 describe('synthetic writes', () => {
     it('saves a reordered mixture in one call, each row claiming the version read', async () => {
         const { server, sessionId, calls } = buildTestServer({

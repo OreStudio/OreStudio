@@ -85,6 +85,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.list(std::move(msg));
         }));
 
+    subs.push_back(nats.queue_subscribe(
+        std::string(calibrate_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, &generators, ctx, verifier, &registry, &scheduler](
+            ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, generators, ctx, verifier, registry, scheduler);
+            h.calibrate(std::move(msg));
+        }));
+
     // The market-wide arrival factor: a read, a pin, its settings and its trace, all for the run.
     BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
         << "SUBSCRIBE: "

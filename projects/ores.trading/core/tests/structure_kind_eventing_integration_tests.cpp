@@ -43,7 +43,6 @@
 #include "ores.trading.api/messaging/structure_kind_protocol.hpp"
 #include "ores.trading.core/repository/structure_kind_repository.hpp"
 #include "ores.trading.core/service/structure_kind_service.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>

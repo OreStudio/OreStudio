@@ -43,7 +43,6 @@
 #include "ores.trading.api/messaging/party_role_type_protocol.hpp"
 #include "ores.trading.core/repository/party_role_type_repository.hpp"
 #include "ores.trading.core/service/party_role_type_service.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>

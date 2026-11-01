@@ -59,7 +59,6 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>

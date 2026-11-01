@@ -51,6 +51,7 @@ function fakeServer(): JourneyServer {
         completeSystemOnboarding: NEVER,
         publicSources: vi.fn(async () => []),
         acceptSourceTerms: NEVER,
+        acceptAllSourceTerms: NEVER,
         declineSourceTerms: NEVER,
         tenantSetupRun: vi.fn(async () => ({ instanceId: '', status: '', error: '' })),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),

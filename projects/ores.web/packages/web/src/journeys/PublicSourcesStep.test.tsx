@@ -21,7 +21,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { PublicRatesProvider } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { decisionOf, everyDecided, PublicSourcesStep } from './PublicSourcesStep.js';
+import {
+    decisionOf,
+    everyDecided,
+    madeAfterAccepting,
+    PublicSourcesStep,
+} from './PublicSourcesStep.js';
 
 function publisher(code: string, over: Partial<PublicRatesProvider> = {}): PublicRatesProvider {
     return {
@@ -58,6 +63,17 @@ describe('a public source decision', () => {
     });
 });
 
+describe('accepting every public source at once', () => {
+    it('marks each publisher the service recorded and leaves a refused one as it was', () => {
+        const made = madeAfterAccepting({ boc: 'declined', tcmb: 'declined' }, [
+            { code: 'ecb', success: true, message: "Accepted the terms of 'ecb'." },
+            { code: 'boc', success: true, message: "Accepted the terms of 'boc'." },
+            { code: 'imf', success: false, message: 'Read them again.' },
+        ]);
+        expect(made).toEqual({ ecb: 'accepted', boc: 'accepted', tcmb: 'declined' });
+    });
+});
+
 describe('the public sources step', () => {
     it('says it is loading until the publishers arrive', () => {
         const html = renderToStaticMarkup(
@@ -66,6 +82,7 @@ describe('the public sources step', () => {
                     server={{
                         publicSources: vi.fn(async () => [publisher('ecb')]),
                         acceptSourceTerms: vi.fn(async () => undefined),
+                        acceptAllSourceTerms: vi.fn(async () => []),
                         declineSourceTerms: vi.fn(async () => undefined),
                     }}
                     onDecided={vi.fn()}

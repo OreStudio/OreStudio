@@ -2979,6 +2979,7 @@ const pt: SourceCatalogue = {
             storage: 'Armazenamento',
             storageAllowed: 'Os seus valores podem ser guardados',
             storageRefused: 'Os seus valores não podem ser guardados, por isso não é consultado',
+            acceptAll: 'Aceitar os termos de todas as fontes públicas',
             accept: 'Aceitar',
             decline: 'Recusar',
             accepted: 'Aceite',

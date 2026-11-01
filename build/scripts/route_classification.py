@@ -973,6 +973,11 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "Records the acceptance of a publisher's terms as the service holds them, or"
          " withdraws it so the adapter no longer fetches the publisher."),
+    Rule("the terms of several public publishers",
+         ("exact", "POST /api/marketdata/public-rates/accept-terms"),
+         BFF, RESOURCE, "market-data",
+         "Accepts the terms of several publishers at the versions read, each as the single"
+         " accept would, and answers every publisher's outcome."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",

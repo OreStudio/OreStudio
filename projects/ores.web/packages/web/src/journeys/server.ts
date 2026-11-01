@@ -30,7 +30,7 @@
  */
 
 import { useMemo } from 'react';
-import { type PublicRatesProvider, api } from '../api/client.js';
+import { type PublicRatesProvider, type TermsOutcome, api } from '../api/client.js';
 import { useBootstrap } from '../session/BootstrapProvider.js';
 import { useSession, type SignInOutcome } from '../session/SessionProvider.js';
 import type {
@@ -64,6 +64,10 @@ export interface JourneyServer {
     readonly publicSources: () => Promise<readonly PublicRatesProvider[]>;
     /** Accepts a publisher's terms at the version the person read. */
     readonly acceptSourceTerms: (code: string, version: number) => Promise<void>;
+    /** Accepts several publishers at the versions read, answering each one's outcome. */
+    readonly acceptAllSourceTerms: (
+        choices: readonly { readonly code: string; readonly version: number }[],
+    ) => Promise<readonly TermsOutcome[]>;
     /** Declines a publisher: any acceptance is withdrawn, so it is not fetched. */
     readonly declineSourceTerms: (code: string) => Promise<void>;
     /**
@@ -115,6 +119,7 @@ export function useJourneyServer(): JourneyServer {
             completeSystemOnboarding: api.completeSystemOnboarding,
             publicSources: () => api.publicRates(),
             acceptSourceTerms: (code, version) => api.acceptProviderTerms(code, version),
+            acceptAllSourceTerms: (choices) => api.acceptProvidersTerms(choices),
             declineSourceTerms: (code) => api.withdrawProviderTerms(code),
             tenantSetupRun: api.tenantSetupRun,
             signIn,

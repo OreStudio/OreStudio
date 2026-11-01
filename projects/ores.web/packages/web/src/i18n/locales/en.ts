@@ -2953,6 +2953,7 @@ export const en: SourceCatalogue = {
             storage: 'Storage',
             storageAllowed: 'Its values may be stored',
             storageRefused: 'Its values may not be stored, so it is not fetched',
+            acceptAll: 'Accept the terms of all public sources',
             accept: 'Accept',
             decline: 'Decline',
             accepted: 'Accepted',

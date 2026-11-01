@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:135FA088-4598-4597-A92D-730680BEB396][Hotfix: Make CI green on every platform]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint row exist on the hotfix branch.

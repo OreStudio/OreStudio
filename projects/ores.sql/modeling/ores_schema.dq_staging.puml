@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 145
+Tables: 147
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -894,23 +894,29 @@ package "dq_staging" #F3E5F5 {
     Describes how ORE builds both legs of a cross-currency basis swap: the two indices, their tenors, their payment lags and their fixing and cutoff rules, and whether the spread is included in a leg's coupons. Corresponds to the <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). - Artefact Table
     end note
 
-    entity ores_dq_cross_currency_fix_float_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
-        * settlement_days : integer
-        * settlement_calendar : text
-        * settlement_convention : text
+        * convention_name : text
+        * kind_code : text
         * fixed_currency : text
         * fixed_frequency : text
         * fixed_convention : text
         * fixed_day_count_fraction : text
+    }
+
+    note right of ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
+    The leg a cross-currency fix-float swap pays in the currency it fixes, as ORE's FixedCurrency, FixedFrequency, FixedConvention and FixedDayCounter. It is a part because its four fields hold one invariant: the terms the fixed leg is built from, and a convention either states them or does not. The floating leg beside it holds none of them. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_float_legs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
         * index : text
-          eom : boolean
-          is_resettable : boolean
           float_index_is_resettable : boolean
           include_spread : boolean
           lookback : text
@@ -918,11 +924,27 @@ package "dq_staging" #F3E5F5 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
-          oresmd_uri : text
     }
 
-    note right of ores_dq_cross_currency_fix_float_conventions_artefact_tbl
-    Describes how ORE builds a cross-currency swap whose fixed leg pays one currency and whose floating leg pays an index in another. Corresponds to the <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). Nine fields are required and nine are optional. The corpus sets all nine required in all forty-one elements and sets none of the optional ones, so the optional half of the mapping is proven by a case that builds the element rather than by the corpus walk. - Artefact Table
+    note right of ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
+    The leg a cross-currency fix-float swap pays off an index, as ORE's Index with its fixing rules: whether the index is resettable, whether the spread is included in the coupon, the lookback, the fixing days, the rate cutoff, whether coupons are averaged, and whether the observation is shifted. They are a part because a convention that states the floating leg states that block or none of it; the fixed leg beside it holds none of them. - Artefact Table
+    end note
+
+    entity ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+          eom : boolean
+          is_resettable : boolean
+    }
+
+    note right of ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
+    The terms a cross-currency fix-float swap states once for both legs, as ORE's SettlementDays, SettlementCalendar, SettlementConvention, EOM and IsResettable. It is a part because its fields hold one invariant: each applies to the whole swap at once, so neither leg can hold it alone. The settlement fields fix the settlement date, the end of month rule rolls the coupons of both legs, and the resettable flag resets the notional of the swap. The fixed and floating legs beside it hold none of them. - Artefact Table
     end note
 
     entity ores_dq_csas_artefact_tbl  #F7E5FF {

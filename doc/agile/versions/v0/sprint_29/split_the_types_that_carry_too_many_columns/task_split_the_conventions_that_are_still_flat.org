@@ -109,6 +109,34 @@ task and name that file in the Command column.
 
 * Notes
 
+** Cross currency fix float: where the swap terms go
+
+The flat type had five fields that neither leg holds: =settlement_days=,
+=settlement_calendar=, =settlement_convention=, =eom= and =is_resettable=. The
+first draft put them on the central =convention= row. We rejected that,
+because the central row is shared by every kind. Five columns that only this
+kind states would then sit on every kind's row, and the data-oriented model
+forbids a column that belongs to another kind's part.
+
+The five fields are one part, =cross_currency_fix_float_swap_terms=. The
+name is "swap terms" and not "settlement", because =eom= rolls the coupons
+of both legs and =is_resettable= resets the notional. Neither is a
+settlement term. The cross currency basis kind carries the same five fields,
+so it can use the same part shape.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The terms of one cross currency fix float convention that apply to both legs. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family part: one part of the =cross_currency_fix_float_convention= family. |
+| Invariant, or none | Each field applies to the whole swap at the instant the convention is written, so no leg can hold it alone. The settlement days, calendar and convention fix the settlement date together. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. The part is related to its central row and its two legs by =convention_id=, and the family write puts all four rows in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and a third row in the Parts table. |
+| Generated artefact | =cross_currency_fix_float_swap_terms= with its table, codec, repository, service and protocol, and a =swap_terms= array in =cross_currency_fix_float_convention_item=. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
+| Consistency point | None: the part is not a view of the world. |
+| Forbidden here | Putting kind-specific columns on the shared central row, and nesting the part inside another part's object on the wire. |
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

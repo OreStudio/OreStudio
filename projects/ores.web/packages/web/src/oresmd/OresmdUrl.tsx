@@ -39,8 +39,8 @@ const URL_CLASSES = 'break-all font-mono text-xs';
  * in a new tab and copies as a link. A series or a quote names a series the party
  * has. One that declares an axis opens on the Evolution page. One with no axis,
  * such as a spot rate, opens on the series page, which draws its values over time.
- * Otherwise the URL is plain text: a fixing has no page, and a series the party
- * does not have is not there. The server's parse and the party's series list say
+ * A fixing opens on the fixing series page, which lists its stored fixings.
+ * Otherwise the URL is plain text: a series the party does not have is not there. The server's parse and the party's series list say
  * which, so the link holds none of the grammar.
  *
  * Beside the URL a button opens the dialog. Where the screen stores the URL, with

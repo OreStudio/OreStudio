@@ -44,6 +44,9 @@ transitively includes =reflectors.hpp= via
 =ores.refdata.client='s standalone cache test, the first TU to
 include this header on its own.
 
+An entity with a generated wire codec encodes through that codec and never
+reaches the reflector, so its cache does not include the header.
+
 ** Authentication
 
 A partition is one tenant's copy of the producer's rows, so it is read inside

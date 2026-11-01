@@ -18,15 +18,17 @@ Describes how ORE builds a cross-currency swap whose fixed leg pays one
 currency and whose floating leg pays an index in another. Corresponds to the
 <CrossCurrencyFixFloat> element in ORE conventions.xml.
 
-The two legs share nothing but the swap they belong to: the fixed leg states a
-currency, a frequency, a convention and a day count fraction, and the floating
-leg states an index and the rules its fixing follows. ORE writes both, so the
-family carries one part for each leg and a convention fills both.
+The fixed leg states a currency, a frequency, a convention and a day count
+fraction, and the floating leg states an index and the rules its fixing
+follows. The swap terms state what applies to both legs at once: the
+settlement days, calendar and convention, whether the coupons roll to the end
+of the month, and whether the notional resets. ORE writes all three blocks, so
+the family carries one part for each and a convention fills all three.
 
 The family's central row is the shared [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][convention]], which names this kind
-with =kind_code= =CROSS_CURRENCY_FIX_FLOAT= and holds the ORE document id, the
-settlement terms the two legs agree on, and whether the schedule rolls end of
-month. Everything one leg alone states is in that leg's part.
+with =kind_code= =CROSS_CURRENCY_FIX_FLOAT= and holds the ORE document id. The
+central row is shared by every kind, so it holds nothing this kind alone
+states: those fields are in this family's parts.
 
 * Flags
 :PROPERTIES:
@@ -39,6 +41,7 @@ month. Everything one leg alone states is in that leg's part.
 |------------+--------------------------------------|
 | fixed_leg  | cross_currency_fix_float_fixed_leg   |
 | float_leg  | cross_currency_fix_float_float_leg   |
+| swap_terms | cross_currency_fix_float_swap_terms  |
 
 * See also
 
@@ -46,4 +49,5 @@ month. Everything one leg alone states is in that leg's part.
 - [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this family carries.
 - [[id:DB6EA8B2-7EDD-421C-84B0-8011E830A052][ores.refdata.cross_currency_fix_float_fixed_leg]] — the fixed leg.
 - [[id:146E8BA0-B83E-4475-B569-C8A2ECEAFF77][ores.refdata.cross_currency_fix_float_float_leg]] — the floating leg.
+- [[id:2EAD4362-CF01-43D3-BB2A-91338D256CA4][ores.refdata.cross_currency_fix_float_swap_terms]] — the terms both legs share.
 - [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that split it.

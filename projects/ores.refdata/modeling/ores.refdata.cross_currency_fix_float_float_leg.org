@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
-:ID: 146E8BA0-B83E-4475-B569-C8A2ECEaff77
+:ID: 146E8BA0-B83E-4475-B569-C8A2ECEAFF77
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.convention-family.enabled: true
 :END:

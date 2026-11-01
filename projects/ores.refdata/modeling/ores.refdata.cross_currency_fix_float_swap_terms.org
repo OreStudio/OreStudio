@@ -1,0 +1,243 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 2EAD4362-CF01-43D3-BB2A-91338D256CA4
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.cross_currency_fix_float_swap_terms
+#+description: Codegen entity model for the refdata =cross_currency_fix_float_swap_terms= part. the terms of a cross-currency fix-float swap that both legs share.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: cross_currency_fix_float_swap_terms
+#+entity_plural: cross_currency_fix_float_swap_terms
+#+entity_title: Cross Currency Fix Float Swap Terms
+#+convention_family: cross_currency_fix_float_swap_terms
+#+convention_write: by_id
+#+brief: the terms of a cross-currency fix-float swap that both legs share.
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+The terms a cross-currency fix-float swap states once for both legs, as ORE's
+=SettlementDays=, =SettlementCalendar=, =SettlementConvention=, =EOM= and
+=IsResettable=. It is a part because its fields hold one invariant: each
+applies to the whole swap at once, so neither leg can hold it alone. The
+settlement fields fix the settlement date, the end of month rule rolls the
+coupons of both legs, and the resettable flag resets the notional of the
+swap. The fixed and floating legs beside it hold none of them.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Number of business days between a trade and its settlement.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** settlement_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Calendars both legs settle on, comma separated when there is more than one.
+
+#+begin_src cpp :name generator
+std::string("US,UK,TRY")
+#+end_src
+
+** settlement_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Business day convention the settlement date rolls on, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** eom
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the coupons of both legs roll to the end of the month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_resettable
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the swap resets its notional, as a mark-to-market cross-currency swap does.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:nullable: false
+:END:
+
+** settlement_calendar
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** settlement_convention
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** eom
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** is_resettable
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cross_currency_fix_float_swap_terms_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency_fix_float_swap_terms
+:entity_plural_short:   cross_currency_fix_float_swap_terms
+:entity_singular_words: cross currency fix float swap terms
+:entity_plural_words:   cross currency fix float swap terms
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:42B27F4A-F09C-4DBC-9B9B-F9EFE601E2EA][ores.refdata.cross_currency_fix_float_convention]] — the family this part belongs to.

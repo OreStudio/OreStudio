@@ -187,6 +187,7 @@ set(files
     "repository_party_type_repository_tests.cpp"
     "repository_regulatory_book_type_repository_tests.cpp"
     "repository_rounding_type_repository_tests.cpp"
+    "repository_store_transform_mapper_tests.cpp"
     "rounding_type_eventing_integration_tests.cpp"
     "sandbox_eventing_integration_tests.cpp"
     "sandbox_member_eventing_integration_tests.cpp"

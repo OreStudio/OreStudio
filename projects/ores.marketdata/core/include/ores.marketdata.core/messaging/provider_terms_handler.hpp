@@ -102,7 +102,7 @@ public:
                 accepted.performed_by = req_ctx.service_account();
                 accepted.change_reason_code = "system.update";
                 accepted.change_commentary = "Accepted the terms at " + accepted.terms_url;
-                repo.write(req_ctx, accepted);
+                repo.write(req_ctx, {accepted}, {claim_of(found.front())});
                 resp.success = true;
                 resp.message = "Accepted the terms of '" + req->provider_code + "'.";
                 resp.accepted_by = accepted.terms_accepted_by;
@@ -155,7 +155,7 @@ public:
                 withdrawn.performed_by = req_ctx.service_account();
                 withdrawn.change_reason_code = "system.update";
                 withdrawn.change_commentary = "Withdrew the acceptance of the terms";
-                repo.write(req_ctx, withdrawn);
+                repo.write(req_ctx, {withdrawn}, {claim_of(found.front())});
                 resp.success = true;
                 resp.message = "Withdrew the acceptance of '" + req->provider_code + "'.";
                 BOOST_LOG_SEV(provider_terms_handler_lg(), info)
@@ -172,6 +172,13 @@ public:
     }
 
 private:
+    // The write claims the version the handler read, so a change that lands between the read
+    // and the write is refused rather than overwritten.
+    static ores::utility::domain::precondition claim_of(const domain::provider& read) {
+        return {ores::utility::domain::precondition_kind::must_match_version,
+                static_cast<std::uint32_t>(read.version)};
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

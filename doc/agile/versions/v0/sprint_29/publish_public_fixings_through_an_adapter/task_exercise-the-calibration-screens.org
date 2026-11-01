@@ -119,6 +119,12 @@ via its "Verifies task" field.
 | 2 | Local review: the shared FX build rows could go stale where offers are kept and built later | feed_kind_registry.cpp | Decline | The runner rebuilds its offers on each apply and builds inside that pass, so the rows live for one pass. |
 | 3 | Local review: a calibration writes the components, then the level; a failed level write leaves the components written | feed_config_handler.hpp | Decline | Each write claims the version it read and the outcome names what was not written; a second run converges, as =change_of= writes only what moved. |
 | 4 | Local review: misspell-fixer flags "existant" and "sucesso" in fr.ts and pt.ts | i18n locales | Decline | Words of those languages, on lines this branch does not touch. |
+| 5 | PR #4354 review: a failed level write leaves the new mixture stored | feed_config_handler.hpp | Accept | The outcome now says the deviations are stored and that calibrating again writes the level alone; writing the level first only moves the gap. |
+| 6 | PR #4354 review: applying does not guard the system feeds as start and stop do | feed_config_handler.hpp | Accept | Applying now needs a system-tenant caller; a test refuses a tenant that holds both writes. |
+| 7 | PR #4354 review: the inner candidate loop shadows the outer one | feed_config_handler.hpp | Accept | Renamed to =tried=. |
+| 8 | PR #4354 review: say why healthy() reads three times and what it does to callers with results pending | connection.cpp | Accept | The comment names the message, the TLS close notice and the end of file, keeps pending results, and the retryable error for a later close. |
+| 9 | PR #4354 review: no test for the half-written calibration | feed_config_handler.hpp | Decline | The handler writes through concrete services, so failing only the second write needs a seam it does not have; the fix is the outcome message. |
+| 10 | PR #4354 review: record the calibration scenario before merge? | scenario | Decline | The user walked the screens and asked to merge. |
 
 * Result
 

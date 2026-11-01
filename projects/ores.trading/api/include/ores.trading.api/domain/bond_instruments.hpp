@@ -340,6 +340,7 @@ struct bond_trs_terms final {
     require_common("A bond total return swap", terms.common);
     require_text("A bond total return swap", "the return it pays", terms.return_type);
     require_text("A bond total return swap", "the leg that funds it", terms.funding_leg_type);
+    require_text("A bond total return swap", "whether the holder pays the return", terms.payer);
     if (!terms.funding_rate.has_value() && terms.funding_index.empty())
         throw bond_product_error("A bond total return swap states a funding rate or the index it "
                                  "funds at, not neither.");
@@ -356,8 +357,7 @@ struct bond_trs_terms final {
     trs.funding_rate = terms.funding_rate;
     if (!terms.funding_index.empty())
         trs.funding_index = terms.funding_index;
-    if (!terms.payer.empty())
-        trs.payer = terms.payer;
+    trs.payer = terms.payer;
     if (!terms.price_type.empty())
         trs.price_type = terms.price_type;
     trs.initial_price = terms.initial_price;

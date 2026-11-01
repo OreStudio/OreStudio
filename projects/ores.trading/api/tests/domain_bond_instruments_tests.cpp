@@ -166,6 +166,7 @@ TEST_CASE("a_total_return_swap_states_its_return_and_its_funding", "[bond]") {
     terms.return_type = "Price";
     terms.funding_leg_type = "Floating";
     terms.funding_index = "EUR-EONIA";
+    terms.payer = "false";
     terms.price_type = "Clean";
     terms.initial_price = bond_money("99.75");
 
@@ -173,6 +174,11 @@ TEST_CASE("a_total_return_swap_states_its_return_and_its_funding", "[bond]") {
     REQUIRE(product.trs.size() == 1u);
     CHECK(product.trs.front().return_type == "Price");
     CHECK(product.trs.front().funding_index.has_value());
+    CHECK(product.trs.front().payer == "false");
+
+    auto no_payer = terms;
+    no_payer.payer.clear();
+    CHECK_THROWS_AS(construct_bond_trs(no_payer), bond_product_error);
 
     terms.return_type.clear();
     CHECK_THROWS_AS(construct_bond_trs(terms), bond_product_error);

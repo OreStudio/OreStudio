@@ -27,6 +27,7 @@ set(files
     "approval_decision_eventing_integration_tests.cpp"
     "approval_decision_type_eventing_integration_tests.cpp"
     "approval_hold_reason_tests.cpp"
+    "approval_cut_authorisation_tests.cpp"
     "approval_kind_eventing_integration_tests.cpp"
     "approval_lifecycle_tests.cpp"
     "approval_maker_checker_tests.cpp"

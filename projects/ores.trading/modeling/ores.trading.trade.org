@@ -274,7 +274,7 @@ The counterparty. Temporal, so a trigger check.
 
 ** trade_type
 :PROPERTIES:
-:table:             ores_trading_trade_types_tbl
+:table:             ores_trading_product_types_tbl
 :target_column:     code
 :use_system_tenant: true
 :nullable:          false

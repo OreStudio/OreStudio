@@ -28,7 +28,7 @@
 \echo '=== Trade Population ==='
 \echo ''
 
-\ir ./trading_trade_types_populate.sql
+\ir ./trading_product_types_populate.sql
 \ir ./trading_fpml_event_types_populate.sql
 \ir ./trading_activity_types_populate.sql
 \ir ./trading_party_role_types_populate.sql

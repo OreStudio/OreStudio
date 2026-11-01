@@ -72,6 +72,8 @@ set(files
     "party_role_type_commands_tests.cpp"
     "payoff_type_commands_tests.cpp"
     "price_type_commands_tests.cpp"
+    "product_type_asset_class_commands_tests.cpp"
+    "product_type_commands_tests.cpp"
     "range_bound_commands_tests.cpp"
     "rate_instrument_commands_tests.cpp"
     "return_type_commands_tests.cpp"
@@ -96,6 +98,5 @@ set(files
     "trade_party_role_commands_tests.cpp"
     "trade_state_commands_tests.cpp"
     "trade_summary_commands_tests.cpp"
-    "trade_type_commands_tests.cpp"
     "vanilla_swap_instrument_commands_tests.cpp"
 )

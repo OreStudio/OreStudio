@@ -115,6 +115,8 @@ set(files
     "messaging/party_role_type_event_registrar.cpp"
     "messaging/payoff_type_event_registrar.cpp"
     "messaging/price_type_event_registrar.cpp"
+    "messaging/product_type_asset_class_event_registrar.cpp"
+    "messaging/product_type_event_registrar.cpp"
     "messaging/range_bound_event_registrar.cpp"
     "messaging/rate_instrument_event_registrar.cpp"
     "messaging/return_type_event_registrar.cpp"
@@ -144,7 +146,6 @@ set(files
     "messaging/trade_party_role_event_registrar.cpp"
     "messaging/trade_portfolio_event_registrar.cpp"
     "messaging/trade_state_event_registrar.cpp"
-    "messaging/trade_type_event_registrar.cpp"
     "messaging/vanilla_swap_instrument_event_registrar.cpp"
 )
 
@@ -247,6 +248,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/party_role_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/payoff_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/price_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/product_type_asset_class_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/product_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/range_bound_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/rate_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/return_type_event_registrar.hpp"
@@ -276,7 +279,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_portfolio_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_state_event_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"
 )

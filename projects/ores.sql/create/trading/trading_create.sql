@@ -30,12 +30,13 @@
 -- checks against, so the function must precede the table.
 \ir ./trading_basket_constituent_functions_create.sql
 
--- Product type discriminator enum (must precede trade_types and instrument tables)
-\ir ./trading_product_type_create.sql
+-- Product type catalogue and the markets it references
 
 -- Trade reference data (no inter-dependencies within reference data)
-\ir ./trading_trade_types_create.sql
-\ir ./trading_trade_types_notify_trigger_create.sql
+\ir ./trading_product_types_create.sql
+\ir ./trading_product_types_notify_trigger_create.sql
+\ir ./trading_product_type_asset_class_create.sql
+\ir ./trading_product_type_asset_classes_notify_trigger_create.sql
 
 \ir ./trading_fpml_event_types_create.sql
 \ir ./trading_fpml_event_types_notify_trigger_create.sql

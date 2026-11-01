@@ -5,33 +5,55 @@
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Template: sql_trade_type_catalogue_populate.mustache
  *
- * Trade Types Population Script
+ * Product Types Population Script
  *
- * Seeds every trade type ORE knows. Generated from
- * ores.trading.trade_type_catalogue, which also routes each type to the
- * instrument table that holds it.
+ * Seeds every product type ORE knows, and the markets each one references.
+ * Generated from ores.trading.trade_type_catalogue, which also routes each
+ * type to the instrument table that holds it.
  *
  * This script is idempotent.
  */
 
-\echo '--- Trade Types ---'
+\echo '--- Product Types ---'
 
-insert into ores_trading_trade_types_tbl (
-    code, tenant_id, version, description,
-    product_type, has_options, has_extension,
+insert into ores_trading_product_types_tbl (
+    code, tenant_id, version, name, description,
+    product_family_code, construction,
+    has_options, has_extension, instrument_table, display_order,
     modified_by, change_reason_code, change_commentary
 ) values
 {{#trade_type_catalogue}}
 {{#rows}}
-    ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{description_sql}}',
-     '{{product_type}}', {{has_options}}, {{has_extension}},
-     'ores_trading_service', 'system.initial_load', 'Seed trade types'){{comma}}
+    ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{name_sql}}', '{{description_sql}}',
+     {{family_literal}}, '{{construction}}',
+     {{has_options}}, {{has_extension}}, {{instrument_literal}}, {{display_order}},
+     'ores_trading_service', 'system.initial_load', 'Seed product types'){{comma}}
 {{/rows}}
 {{/trade_type_catalogue}}
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
-select 'Trade Types' as entity, count(*) as count
-from ores_trading_trade_types_tbl
+\echo '--- Product Type Markets ---'
+
+insert into ores_trading_product_type_asset_classes_tbl (
+    product_type_code, asset_class_code, tenant_id, version, is_home,
+    modified_by, change_reason_code, change_commentary
+) values
+{{#trade_type_catalogue}}
+{{#market_rows}}
+    ('{{product_type_code}}', '{{asset_class_code}}', ores_utility_system_tenant_id_fn(), 0, {{is_home}},
+     'ores_trading_service', 'system.initial_load', 'Seed product type markets'){{comma}}
+{{/market_rows}}
+{{/trade_type_catalogue}}
+on conflict (tenant_id, product_type_code, asset_class_code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+select 'Product Types' as entity, count(*) as count
+from ores_trading_product_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+select 'Product Type Markets' as entity, count(*) as count
+from ores_trading_product_type_asset_classes_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();

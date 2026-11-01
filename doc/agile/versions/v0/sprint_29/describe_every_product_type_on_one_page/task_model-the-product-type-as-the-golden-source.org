@@ -67,6 +67,33 @@ task and name that file in the Command column.
 
 * Notes
 
+* Notes
+
+** 2026-11-01 — work in progress
+
+Done on `feature/model-the-product-type-as-the-golden-source`:
+
+- =ores.refdata.product_family_code=, complete: model, generated layers, seeds,
+  orchestration, permissions, and the codegen suite green.
+- =ores.trading.product_type= replaces the trade type: the model was renamed and
+  gained name, source, source_ref, product_family_code, construction, the
+  routing table, display order and the knowledge note; the =product_type_t=
+  enum is deleted, and its header path now holds the generated entity.
+- =ores.trading.product_type_asset_class=, the market junction, with =is_home=
+  and a partial unique index for the home row.
+- The catalogue template and loader now emit both tables, and the 121 rows carry
+  their construction and markets, with 92 families filled from the notes.
+
+Still open:
+
+- The catalogue's own codegen tests still build the old row shape.
+- The C++ and web fallout of the rename: every consumer of the deleted
+  =trade_type= artefacts and of the enum header.
+- The build, the database recreate, and the suites.
+- The junction has no generated table drop (a codegen gap: junctions generate a
+  create and a notify-trigger drop, but no table drop), so =drop_trading.sql=
+  drops only its trigger.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

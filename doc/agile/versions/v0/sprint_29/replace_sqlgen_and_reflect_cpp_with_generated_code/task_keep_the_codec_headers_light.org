@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/keep-the-codec-headers-light
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The codec headers declare the leaf text forms and define them in ores.utility, s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned: see Result.                 |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -55,9 +55,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A real unity unit, =ores.refdata.api= unity 10 (16 sources, codecs among them) | 5.64s in all; backend 4.06s; all header parsing 0.76s | its compile command with =-c -ftime-trace= | 05b079692b |
+| =struct_codec.hpp= inside that unit, inclusive | 0.386s | the same trace, Source begin and end pairs | 05b079692b |
+| =text_form.hpp= inside that unit, inclusive | 0.077s | the same trace | 05b079692b |
+| Sources that include a codec header | 1051, about 66 unity units | =grep= over =projects= | 05b079692b |
 
 * Notes
+
+** The premise did not hold in a real build
+
+The numbers this task was filed on came from a file that included one header
+and nothing else. A real unit compiles 16 sources against a precompiled
+header, and every codec library precompiles =ores.utility/rfl/reflectors.hpp=,
+which already includes =decimal.hpp=, =boost/asio/ip/address.hpp=,
+=boost/lexical_cast.hpp=, =uuid_io.hpp=, =<format>= and =<chrono>=: the set
+this task meant to move out of =text_form.hpp=. Inside a real unit
+=text_form.hpp= costs 0.077s, so splitting it would save about 5 CPU seconds
+over the whole build. The backend is 72% of the unit.
+
+** Where the lever is
+
+The weight returns when reflect-cpp goes, because its precompiled header goes
+with it. The fix then is a codec precompiled header holding
+=struct_codec.hpp= in place of =ores.rfl.pch=, which makes the codec headers
+nearly free in every unit with no split of declarations from definitions.
+That is now part of the acceptance of [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]].
 
 * Test Scenarios
 
@@ -83,3 +105,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on measurement: the header costs 0.077s in a real unit, because the
+reflect-cpp precompiled header already carries its heavy includes. The lever
+moved to [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]], which replaces that precompiled header with a
+codec one.

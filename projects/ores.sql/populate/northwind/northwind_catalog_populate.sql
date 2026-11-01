@@ -37,7 +37,7 @@ DO $$
 BEGIN
     PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Northwind Traders',
-        'Fictional UK trading company built from the classic Northwind Traders sample, used as the second demonstration tenant: one legal entity, one party, nine staff and seven books.',
+        'Fictional UK trading company built from the classic Northwind Traders sample, used as the second demonstration tenant: one legal entity, one party, nine staff and thirteen books.',
         'Development Team'
     );
 END $$;

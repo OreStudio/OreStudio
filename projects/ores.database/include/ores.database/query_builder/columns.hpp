@@ -19,8 +19,9 @@
 #ifndef ORES_DATABASE_QUERY_BUILDER_COLUMNS_HPP
 #define ORES_DATABASE_QUERY_BUILDER_COLUMNS_HPP
 
+#include <cstddef>
 #include <string_view>
-#include <tuple>
+#include <utility>
 
 /*
  * The columns of a repository entity: each one's name, the member that holds
@@ -81,13 +82,62 @@ constexpr text_column_binding<Entity, Member> key_text(std::string_view name,
     return {name, member, true};
 }
 
+namespace detail {
+
+template <std::size_t Index, typename Binding>
+struct column_slot {
+    Binding binding;
+};
+
+/*
+ * Every slot is a direct base, so a list of n columns instantiates n slots and
+ * nothing deeper. A std::tuple grown one column at a time instantiates every
+ * prefix, and the MSVC library's recursive tuple makes that quadratic: both
+ * Windows compilers gave up on the larger entities.
+ */
+template <typename Indices, typename... Bindings>
+struct column_slots;
+
+template <std::size_t... Indices, typename... Bindings>
+struct column_slots<std::index_sequence<Indices...>, Bindings...>
+    : column_slot<Indices, Bindings>... {};
+
+}
+
 /**
  * @brief The columns of an entity, gathered one at a time with operator|, so a
  * generated list needs no separator rule for its last entry.
  */
 template <typename... Bindings>
 struct column_list {
-    std::tuple<Bindings...> items;
+    detail::column_slots<std::index_sequence_for<Bindings...>, Bindings...> slots;
+
+    /**
+     * @brief Calls f with every binding, in the order the entity states them.
+     */
+    template <typename F>
+    constexpr decltype(auto) apply(F&& f) const {
+        return apply_at(std::forward<F>(f), std::index_sequence_for<Bindings...>{});
+    }
+
+    template <typename Binding>
+    constexpr column_list<Bindings..., Binding> append(Binding b) const {
+        return append_at(b, std::index_sequence_for<Bindings...>{});
+    }
+
+private:
+    template <typename F, std::size_t... Indices>
+    constexpr decltype(auto) apply_at(F&& f, std::index_sequence<Indices...>) const {
+        return std::forward<F>(f)(
+            static_cast<const detail::column_slot<Indices, Bindings>&>(slots).binding...);
+    }
+
+    template <typename Binding, std::size_t... Indices>
+    constexpr column_list<Bindings..., Binding> append_at(Binding b,
+                                                          std::index_sequence<Indices...>) const {
+        return {{{static_cast<const detail::column_slot<Indices, Bindings>&>(slots).binding}...,
+                 {b}}};
+    }
 };
 
 template <typename Entity>
@@ -96,8 +146,9 @@ constexpr column_list<> columns() {
 }
 
 template <typename... Bindings, typename Binding>
-constexpr column_list<Bindings..., Binding> operator|(column_list<Bindings...> list, Binding b) {
-    return {std::tuple_cat(list.items, std::make_tuple(b))};
+constexpr column_list<Bindings..., Binding> operator|(const column_list<Bindings...>& list,
+                                                      Binding b) {
+    return list.append(b);
 }
 
 }

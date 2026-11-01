@@ -34,7 +34,6 @@
 #include <format>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -84,7 +83,7 @@ template <typename Entity>
 const std::string& select_list() {
     static const std::string list = [] {
         std::string out;
-        std::apply(
+        Entity::columns().apply(
             [&](const auto&... b) {
                 (([&] {
                      std::string column(b.name);
@@ -96,8 +95,7 @@ const std::string& select_list() {
                      out += (out.empty() ? "" : ", ") + column;
                  }()),
                  ...);
-            },
-            Entity::columns().items);
+            });
         return out;
     }();
     return list;
@@ -107,7 +105,7 @@ template <typename Entity>
 const std::string& insert_sql(bool replace) {
     static const auto build = [](bool upsert) {
         std::string names, values, keys, sets;
-        std::apply(
+        Entity::columns().apply(
             [&](const auto&... b) {
                 (([&] {
                      const std::string n(b.name);
@@ -119,8 +117,7 @@ const std::string& insert_sql(bool replace) {
                          sets += (sets.empty() ? "" : ", ") + n + " = excluded." + n;
                  }()),
                  ...);
-            },
-            Entity::columns().items);
+            });
         std::string sql =
             "insert into " + table<Entity>() + " (" + names + ") values (" + values + ")";
         if (upsert)
@@ -135,7 +132,7 @@ const std::string& insert_sql(bool replace) {
 template <typename Entity>
 std::vector<pq::param> row_params(const Entity& e) {
     std::vector<pq::param> out;
-    std::apply(
+    Entity::columns().apply(
         [&](const auto&... b) {
             (([&] {
                  if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
@@ -144,8 +141,7 @@ std::vector<pq::param> row_params(const Entity& e) {
                      out.push_back(pq::encode_param(e.*(b.member)));
              }()),
              ...);
-        },
-        Entity::columns().items);
+        });
     return out;
 }
 
@@ -154,7 +150,7 @@ std::vector<Entity> entity_rows(const pq::result& r) {
     std::vector<Entity> out(static_cast<std::size_t>(r.rows()));
     for (int row = 0; row < r.rows(); ++row) {
         int column = 0;
-        std::apply(
+        Entity::columns().apply(
             [&](const auto&... b) {
                 (([&] {
                      using member_type = std::remove_cvref_t<decltype(out[0].*(b.member))>;
@@ -168,8 +164,7 @@ std::vector<Entity> entity_rows(const pq::result& r) {
                      ++column;
                  }()),
                  ...);
-            },
-            Entity::columns().items);
+            });
     }
     return out;
 }

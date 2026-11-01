@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <yyjson.h>
@@ -60,7 +59,7 @@ std::string write_json(const Entity& v) {
     if (doc == nullptr)
         throw std::runtime_error("Could not make a JSON document");
     auto* object = yyjson_mut_obj(doc);
-    std::apply(
+    Entity::columns().apply(
         [&](const auto&... binding) {
             (
                 [&](const auto& b) {
@@ -78,8 +77,7 @@ std::string write_json(const Entity& v) {
                     }
                 }(binding),
                 ...);
-        },
-        Entity::columns().items);
+        });
     yyjson_mut_doc_set_root(doc, object);
     char* text = yyjson_mut_write(doc, 0, nullptr);
     if (text == nullptr) {

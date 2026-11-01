@@ -1727,6 +1727,7 @@ def _member_headers(cpp_types, model_path, domain_entity):
     root = "ores." + (
         domain_entity.get("component_include") or (
             f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}"))
+    own = "ores." + str(domain_entity.get("component") or "")
     out = []
 
     def add(header):
@@ -1754,7 +1755,10 @@ def _member_headers(cpp_types, model_path, domain_entity):
             # The wire envelope's own types arrive through its header.
             if parts[1] == "utility":
                 continue
-            add_named(name, f"{parts[0]}.{parts[1]}.api")
+            # A type of the model's own component is under the model's own
+            # root, which is its api subcomponent for most and core for some.
+            owner = f"{parts[0]}.{parts[1]}"
+            add_named(name, root if owner == own else f"{owner}.api")
         for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
             add_named(name, None)
     return out

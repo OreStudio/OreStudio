@@ -33,12 +33,21 @@ namespace detail {
  * an aggregate with N of them compiles exactly when it has at least N members.
  *
  * The conversion is declared and never defined: it is only named in an
- * unevaluated requirement.
+ * unevaluated requirement. For a member type with internal linkage, such as a
+ * type in an anonymous namespace, clang reports that undefined conversion as an
+ * internal function never defined, which is true and harmless here.
  */
+#if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wundefined-internal"
+#endif
 struct any_member {
     template <typename T>
     operator T() const noexcept;
 };
+#if defined(__clang__)
+#    pragma clang diagnostic pop
+#endif
 
 template <typename T, typename... Seen>
 consteval std::size_t count_members() {

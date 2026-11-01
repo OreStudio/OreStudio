@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: F83BEB1B-FD97-4159-887F-B30AFAF64E0E
 :END:
 #+title: ores.telemetry.logs
@@ -418,9 +419,6 @@ serve the UI and the log pipeline rather than a REPL session.
 #+begin_src cpp :name comment
 /**
  * @brief A single log entry for the fire-and-forget publish protocol.
- *
- * It uses primitive types only, to avoid rfl serialisation issues with
- * boost::uuids::uuid and std::chrono::time_point.
  */
 #+end_src
 

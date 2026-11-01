@@ -196,8 +196,8 @@ journey's.
 
 * What the branch holds
 
-The branch carries 21 commits over its base. Two of them are `[synthetic]`, and
-neither leaves a change in the tree:
+The branch's history holds two `[synthetic]` commits, and neither leaves a change
+in the tree:
 
 - `e83da91dec` `[synthetic] Build the inflation swap the planner draws` adds the
   inflation branch to the rate planner's visitor, because the component did not

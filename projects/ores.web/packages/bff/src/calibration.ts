@@ -21,7 +21,10 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { SYSTEM_TENANT_ID } from '@ores/wire-protocol';
-import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
+import {
+    subjects as feedSubjects,
+    type CalibrateRequest,
+} from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
 import { subjects as policySubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_policy_protocol';
 import { subjects as orderSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/calibration_provider_order_protocol';
 import { subjects as itemSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/fx_spot_fixing_item_protocol';
@@ -236,7 +239,11 @@ export function registerCalibrationRoutes(
         const assetClass = assetClassOf(request);
         const reply = await session.client.callAuthenticated(
             feedSubjects.calibrate_request,
-            { asset_class_code: assetClass },
+            {
+                asset_class_code: assetClass,
+                config_id: '',
+                apply: false,
+            } satisfies CalibrateRequest,
             operationReplySchema.extend({
                 policy: calibrationPolicySchema,
                 feeds: z.array(calibratedFeedSchema).default([]),
@@ -269,7 +276,11 @@ export function registerCalibrationRoutes(
         const body = input(runBodySchema, request.body ?? {});
         const reply = await session.client.callAuthenticated(
             feedSubjects.calibrate_request,
-            { asset_class_code: assetClass, config_id: body.configId ?? '', apply: true },
+            {
+                asset_class_code: assetClass,
+                config_id: body.configId ?? '',
+                apply: true,
+            } satisfies CalibrateRequest,
             operationReplySchema.extend({
                 feeds: z.array(calibratedFeedSchema).default([]),
             }),

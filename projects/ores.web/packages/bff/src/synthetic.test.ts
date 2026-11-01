@@ -539,7 +539,7 @@ describe('synthetic calibration', () => {
         expect(response.statusCode).toBe(200);
         expect(calls[0]).toEqual({
             subject: 'synthetic.v1.ops.calibrate_feeds',
-            body: { asset_class_code: 'fx' },
+            body: { asset_class_code: 'fx', config_id: '', apply: false },
         });
         const body = response.json();
         expect(body.policy).toEqual({ ...policy, version: 3 });

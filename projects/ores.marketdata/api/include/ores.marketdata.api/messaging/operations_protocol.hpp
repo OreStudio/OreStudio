@@ -1312,14 +1312,15 @@ struct get_series_ticks_response {
 /**
  * @brief Asks this component to keep the market state a run priced against.
  *
- * The state is the output files the run left in its output archives, and those
- * files are far too large for a message: a cube states a column for every curve
- * and tenor the run built. The caller therefore names the archives and lends the
- * token that reads them — the run's own, the same one the run's other steps use
- * — and this reads the files rather than receiving them.
+ * The state is the output files the run wrote, and those files are far too
+ * large for a message: a cube states a column for every curve and tenor the run
+ * built. The node uploads each file as its own object with a manifest that names
+ * them, so the caller names each result's manifest and lends the token that reads
+ * them — the run's own, the same one the run's other steps use — and this fetches
+ * the market-state files rather than receiving them.
  *
- * The archives are named by their storage location, so this learns no other
- * component's layout. A file whose family is not a market state is left alone:
+ * A manifest names each file by its storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is not fetched:
  * the run's results belong to reporting.
  */
 struct store_market_state_request {
@@ -1337,8 +1338,7 @@ struct store_market_state_request {
     std::string report_definition_id;
     std::string as_of;
     std::string storage_token;
-    std::vector<std::string> output_uris;
-    std::vector<std::string> result_ids;
+    std::vector<std::string> manifest_uris;
 };
 
 struct store_market_state_response {

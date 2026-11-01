@@ -49,9 +49,8 @@
  *   - PostgreSQL must be restarted after modifying shared_preload_libraries
  *
  * PREREQUISITES FOR PG_STAT_STATEMENTS (optional):
- *   - It ships with PostgreSQL, but must be added to shared_preload_libraries
- *     beside timescaledb, and PostgreSQL restarted:
- *       shared_preload_libraries = 'timescaledb,pg_stat_statements'
+ *   - It ships with PostgreSQL, but must be in shared_preload_libraries:
+ *       build/scripts/setup_postgres_extensions.sh --configure --restart
  *
  * TIMESCALEDB LICENSE:
  *   Some features (compression, retention policies, continuous aggregates)

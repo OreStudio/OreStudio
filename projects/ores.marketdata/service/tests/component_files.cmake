@@ -38,6 +38,7 @@ set(files
     "app_tick_plan_tests.cpp"
     "app_tick_writer_tests.cpp"
     "app_usage_planner_tests.cpp"
+    "config_options_tests.cpp"
     "config_parser_tests.cpp"
     "curve_pillar_reader_tests.cpp"
     "curve_republish_resolver_fomc_tests.cpp"

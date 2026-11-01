@@ -18,13 +18,13 @@
  *
  */
 #include "ores.refdata.service/config/options.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl/json/write.hpp>
 
 namespace ores::refdata::service::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

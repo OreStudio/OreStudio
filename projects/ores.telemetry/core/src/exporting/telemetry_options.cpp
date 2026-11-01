@@ -18,13 +18,12 @@
  *
  */
 #include "ores.telemetry.core/exporting/telemetry_options.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::telemetry::exporting {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_options& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

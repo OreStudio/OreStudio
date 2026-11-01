@@ -28,8 +28,10 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <optional>
+#include <tuple>
 
 namespace ores::storage::service::config {
 
@@ -57,6 +59,15 @@ struct options final {
      */
     std::string storage_dir;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"database", &options::database},
+        ::ores::utility::codec::field{"storage_dir", &options::storage_dir},
+    };
+}
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

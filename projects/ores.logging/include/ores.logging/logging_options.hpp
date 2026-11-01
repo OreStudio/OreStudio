@@ -21,10 +21,13 @@
 #define ORES_LOGGING_LOGGING_OPTIONS_HPP
 
 #include "ores.logging/export.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <filesystem>
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::logging {
 
@@ -68,6 +71,21 @@ struct logging_options final {
      */
     std::string tag;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const logging_options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"severity", &logging_options::severity},
+        ::ores::utility::codec::field{"filename", &logging_options::filename},
+        ::ores::utility::codec::field{"output_to_console", &logging_options::output_to_console},
+        ::ores::utility::codec::field{"output_directory", &logging_options::output_directory},
+        ::ores::utility::codec::field{"include_pid", &logging_options::include_pid},
+        ::ores::utility::codec::field{"replica_index", &logging_options::replica_index},
+        ::ores::utility::codec::field{"tag", &logging_options::tag},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<logging_options>(),
+              "logging_options has a member its wire shape does not name");
 
 ORES_LOGGING_EXPORT std::ostream& operator<<(std::ostream& s, const logging_options& v);
 

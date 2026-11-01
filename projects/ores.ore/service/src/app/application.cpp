@@ -63,10 +63,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
-    ores::nats::service::nats_client svc_nats(
-        nats,
-        ores::iam::client::make_service_token_provider(
-            nats, cfg.database.user, cfg.database.password()));
+    ores::nats::service::nats_client svc_nats(nats,
+                                              ores::iam::client::make_service_token_provider(
+                                                  nats, cfg.database.user, cfg.database.password));
 
     co_await ores::service::service::run(
         io_ctx,

@@ -80,7 +80,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // is what the downstream service checks.
     nats::service::nats_client service_nats(
         nats,
-        iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password()));
+        iam::client::make_service_token_provider(nats, cfg.database.user, cfg.database.password));
 
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{

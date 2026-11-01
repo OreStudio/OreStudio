@@ -127,20 +127,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // reference data for FX quote convention checking during import. The
     // token provider authenticates with the service's own database
     // account credentials.
-    ores::nats::service::nats_client svc_nats(
-        nats,
-        ores::iam::client::make_service_token_provider(
-            nats, cfg.database.user, cfg.database.password()));
+    ores::nats::service::nats_client svc_nats(nats,
+                                              ores::iam::client::make_service_token_provider(
+                                                  nats, cfg.database.user, cfg.database.password));
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     std::shared_ptr<tick_writer> ticks;
     if (!cfg.tick_writer_user.empty()) {
-        ticks = std::make_shared<tick_writer>(
-            tick_writer_options{.user = cfg.tick_writer_user,
-                                .password = cfg.tick_writer_password(),
-                                .host = cfg.database.host,
-                                .database = cfg.database.database,
-                                .port = cfg.database.port});
+        ticks =
+            std::make_shared<tick_writer>(tick_writer_options{.user = cfg.tick_writer_user,
+                                                              .password = cfg.tick_writer_password,
+                                                              .host = cfg.database.host,
+                                                              .database = cfg.database.database,
+                                                              .port = cfg.database.port});
         BOOST_LOG_SEV(lg(), info) << "Ticks are stored in the tick table as '"
                                   << cfg.tick_writer_user << "'";
     } else {

@@ -23,9 +23,12 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <tuple>
 
 namespace ores::compute::service::config {
 
@@ -52,6 +55,19 @@ struct options final {
      */
     std::uint32_t telemetry_interval_seconds{30};
 };
+
+[[nodiscard]] constexpr auto wire_fields(const options&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"logging", &options::logging},
+        ::ores::utility::codec::field{"nats", &options::nats},
+        ::ores::utility::codec::field{"database", &options::database},
+        ::ores::utility::codec::field{"telemetry_interval_seconds",
+                                      &options::telemetry_interval_seconds},
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

@@ -18,8 +18,7 @@
  *
  */
 #include "ores.iam.service/config/options.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::iam::service::config {
 
@@ -35,7 +34,7 @@ namespace ores::iam::service::config {
 std::ostream& operator<<(std::ostream& s, const options& v) {
     auto redacted(v);
     redacted.jwt_private_key = "***";
-    rfl::json::write(redacted, s);
+    s << ores::utility::codec::json::write(redacted);
     return s;
 }
 

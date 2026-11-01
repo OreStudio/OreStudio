@@ -195,7 +195,7 @@ export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
-    calibrate_request: 'synthetic.v1.feed_configs.calibrate',
+    calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

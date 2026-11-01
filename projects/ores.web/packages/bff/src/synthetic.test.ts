@@ -493,7 +493,7 @@ describe('synthetic calibration', () => {
 
     it('resolves every feed of a class and counts how each one started', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.feed_configs.calibrate': {
+            'synthetic.v1.ops.calibrate_feeds': {
                 success: true,
                 policy,
                 feeds: [
@@ -521,7 +521,7 @@ describe('synthetic calibration', () => {
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
         expect(calls).toEqual([
-            { subject: 'synthetic.v1.feed_configs.calibrate', body: { asset_class_code: 'fx' } },
+            { subject: 'synthetic.v1.ops.calibrate_feeds', body: { asset_class_code: 'fx' } },
         ]);
         const body = response.json();
         expect(body.policy).toEqual(policy);
@@ -548,7 +548,7 @@ describe('synthetic calibration', () => {
             provider_order: [],
         };
         const { server, sessionId } = buildTestServer({
-            'synthetic.v1.feed_configs.calibrate': { success: true, policy: defaults, feeds: [] },
+            'synthetic.v1.ops.calibrate_feeds': { success: true, policy: defaults, feeds: [] },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
@@ -570,7 +570,7 @@ describe('synthetic calibration', () => {
 
     it('passes on the reason a calibration failed', async () => {
         const { server, sessionId } = buildTestServer({
-            'synthetic.v1.feed_configs.calibrate': {
+            'synthetic.v1.ops.calibrate_feeds': {
                 success: false,
                 message: 'A calibration names its asset class.',
                 policy: {},

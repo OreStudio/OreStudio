@@ -98,8 +98,8 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
     auto delegated = auth_nats.with_delegation({});
     ores::marketdata::client::market_data_client md(delegated);
 
-    // A config that names no items is calibrated from its class policy: every accepted series
-    // that covers the pair becomes an item, in the policy's provider order.
+    // A config that names no items is calibrated from its class policy: every series that
+    // covers the pair from a provider the policy keeps becomes an item, in the policy's order.
     if (items.empty() && cfg.price_source == "fixing") {
         const auto series = md.list_series();
         if (!series) {
@@ -107,21 +107,19 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
             out.refused = policy.fallback_code == "refuse";
             return out;
         }
-        {
-            std::vector<calibration_candidate> candidates;
-            candidates.reserve(series->size());
-            for (const auto& s : *series) {
-                const auto pair = pair_of_item(s.oresmd_uri);
-                if (!pair)
-                    continue;
-                candidates.push_back({.item = s.oresmd_uri,
-                                      .provider_code = s.provider_code,
-                                      .base_currency = pair->first,
-                                      .quote_currency = pair->second});
-            }
-            items = derive_fixing_items(
-                policy, cfg.base_currency_code, cfg.quote_currency_code, candidates);
+        std::vector<calibration_candidate> candidates;
+        candidates.reserve(series->size());
+        for (const auto& s : *series) {
+            const auto pair = pair_of_item(s.oresmd_uri);
+            if (!pair)
+                continue;
+            candidates.push_back({.item = s.oresmd_uri,
+                                  .provider_code = s.provider_code,
+                                  .base_currency = pair->first,
+                                  .quote_currency = pair->second});
         }
+        items = derive_fixing_items(
+            policy, cfg.base_currency_code, cfg.quote_currency_code, candidates);
     }
 
     std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);

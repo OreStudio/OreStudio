@@ -426,7 +426,7 @@ feeds it answers with, because a caller reads it beside the config list.
 
 ** calibrate_request
 :PROPERTIES:
-:subject: synthetic.v1.feed_configs.calibrate
+:subject: synthetic.v1.ops.calibrate_feeds
 :response: calibrate_response
 :END:
 #+begin_src cpp :name comment

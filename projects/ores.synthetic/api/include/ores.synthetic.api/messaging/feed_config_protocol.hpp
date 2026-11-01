@@ -216,7 +216,7 @@ struct calibrated_feed {
  */
 struct calibrate_request {
     using response_type = struct calibrate_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.feed_configs.calibrate";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.calibrate_feeds";
     /**
      * @brief Whether the caller must have established a session first.
      *

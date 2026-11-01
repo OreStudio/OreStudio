@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/complete-a-structure-in-one-unit
-#+pr: 4310
+#+pr: 4311
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -26,11 +26,11 @@ The completion operation takes leg ids, roles and the leg count. It checks the l
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built.                                 |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4311][#4311]] | [agile] Close the structure completion task |
 | [[https://github.com/OreStudio/OreStudio/pull/4310][#4310]] | [trading] Complete a structure in one unit |
 
 * Review

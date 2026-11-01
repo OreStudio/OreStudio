@@ -28,6 +28,7 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <iosfwd>
 #include <optional>
@@ -68,6 +69,9 @@ struct options final {
         ::ores::utility::codec::field{"storage_dir", &options::storage_dir},
     };
 }
+
+static_assert(::ores::utility::codec::names_every_member<options>(),
+              "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 

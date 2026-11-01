@@ -58,9 +58,11 @@ std::string cube_file() {
 TEST_CASE("a cube is stored as one compressed payload with an index of its keys",
           market_state_tags) {
     const auto run = the_run();
+    const auto result = boost::uuids::random_generator()();
     const auto body = cube_file();
-    const auto outcome =
-        read_market_state({market_state_file{.name = "stress_scenarios.csv", .body = body}}, run);
+    const auto outcome = read_market_state(
+        {market_state_file{.result_id = result, .name = "stress_scenarios.csv", .body = body}},
+        run);
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.payloads.size() == 1);
@@ -76,7 +78,7 @@ TEST_CASE("a cube is stored as one compressed payload with an index of its keys"
     CHECK(payload.row_count == 3);
     CHECK(payload.column_count == 5);
     CHECK_FALSE(payload.keys_truncated);
-    CHECK(payload.source == "stress_scenarios");
+    CHECK(payload.result_id == result);
 
     // The headings and the keys are read out of the index the reader wrote, so a
     // screen can find a slice without unpacking the file.
@@ -124,4 +126,29 @@ TEST_CASE("a market-state file with no heading stops the run's state", market_st
     REQUIRE_FALSE(outcome.refusals.empty());
     CHECK(outcome.refusals.front().find("rawcube") != std::string::npos);
     CHECK(outcome.payloads.empty());
+}
+
+TEST_CASE("each result of a run keeps its own file of the same name", market_state_tags) {
+    const auto first = boost::uuids::random_generator()();
+    const auto second = boost::uuids::random_generator()();
+    const auto outcome = read_market_state(
+        {market_state_file{.result_id = first, .name = "netcube.csv", .body = cube_file()},
+         market_state_file{.result_id = second, .name = "netcube.csv", .body = cube_file()}},
+        the_run());
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.payloads.size() == 2);
+    CHECK(outcome.payloads[0].result_id == first);
+    CHECK(outcome.payloads[1].result_id == second);
+}
+
+TEST_CASE("a result that states the same file twice is refused", market_state_tags) {
+    const auto result = boost::uuids::random_generator()();
+    const auto outcome = read_market_state(
+        {market_state_file{.result_id = result, .name = "netcube.csv", .body = cube_file()},
+         market_state_file{.result_id = result, .name = "netcube.csv", .body = cube_file()}},
+        the_run());
+
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals.front().find("twice") != std::string::npos);
 }

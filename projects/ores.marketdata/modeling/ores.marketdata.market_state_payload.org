@@ -67,6 +67,17 @@ The party that owns the run the state came from.
 
 The run whose engine read this state.
 
+** result_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The compute result that wrote the file. A run split into trade sets runs the
+engine once for each set, and each run writes a file of the same name, so the
+result is what tells two of them apart.
+
 ** report_definition_id
 :PROPERTIES:
 :type:         uuid
@@ -177,14 +188,6 @@ than from the length of the text.
 The digest of the file as the engine wrote it, so two runs of the same state are
 one payload and a corrupted one is detected.
 
-** source
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:END:
-
-The family the payload came from, for provenance.
-
 * SQL
 
 ** Flags
@@ -209,6 +212,7 @@ key, and the key names the run, so one run never closes another run's payload.
 |--------------------+----------|
 | party_id           | false    |
 | report_instance_id | false    |
+| result_id          | false    |
 | as_of              | false    |
 | family             | false    |
 | file_name          | false    |

@@ -36,6 +36,7 @@ export interface MarketStatePayloadWrite {
     id: string;
     party_id: string;
     report_instance_id: string;
+    result_id: string;
     family: string;
     file_name: string;
     as_of: string;
@@ -48,7 +49,6 @@ export interface MarketStatePayloadWrite {
     payload: string;
     payload_bytes: number;
     content_sha256: string;
-    source: string;
 }
 
 export interface MarketStatePayloadChange {

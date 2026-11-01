@@ -3043,6 +3043,15 @@ rather than minted, because the run's grant is the reporting service's to hold.
 
 Where each archive of the run's output is, as bucket and key.
 
+*** result_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The compute result that wrote each archive, in the order of =output_uris=. A
+run split into trade sets writes a file of the same name once for each set, and
+the result tells them apart.
+
 ** store_market_state_response
 
 *** result

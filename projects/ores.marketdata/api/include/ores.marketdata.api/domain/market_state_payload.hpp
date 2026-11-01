@@ -74,6 +74,13 @@ struct market_state_payload final {
     boost::uuids::uuid report_instance_id;
 
     /**
+     * @brief The compute result that wrote the file. A run split into trade sets runs the engine
+     * once for each set, and each run writes a file of the same name, so the result is what tells
+     * two of them apart.
+     */
+    boost::uuids::uuid result_id;
+
+    /**
      * @brief The family the file belongs to, as the catalogue names it: stress_scenarios,
      * scenariostatistics, rawcube, todaysmarketcalibration.
      */
@@ -141,11 +148,6 @@ struct market_state_payload final {
      * payload and a corrupted one is detected.
      */
     std::string content_sha256;
-
-    /**
-     * @brief The family the payload came from, for provenance.
-     */
-    std::string source;
 
     /**
      * @brief Value equality.

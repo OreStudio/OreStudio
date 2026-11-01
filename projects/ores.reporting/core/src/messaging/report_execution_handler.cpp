@@ -1067,6 +1067,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             state.as_of = std::format("{:%F}", std::chrono::floor<std::chrono::days>(as_of));
             state.storage_token = run_token_value;
             state.output_uris = output_uris;
+            state.result_ids = result_ids;
 
             std::string state_error;
             auto owner = svc_nats_.with_delegation(run_token_value);

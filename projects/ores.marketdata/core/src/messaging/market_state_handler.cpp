@@ -50,7 +50,23 @@ bool collect_output_files(const messaging::store_market_state_request& req,
                           std::string& failure) {
     ores::storage::net::storage_transfer transfer(http_base_url, req.storage_token);
 
-    for (const auto& uri : req.output_uris) {
+    if (req.result_ids.size() != req.output_uris.size()) {
+        failure = std::format("The request names {} archive(s) and {} result(s).",
+                              req.output_uris.size(),
+                              req.result_ids.size());
+        return false;
+    }
+
+    boost::uuids::string_generator sg;
+    for (std::size_t at = 0; at < req.output_uris.size(); ++at) {
+        const auto& uri = req.output_uris[at];
+        boost::uuids::uuid result_id;
+        try {
+            result_id = sg(req.result_ids[at]);
+        } catch (const std::exception&) {
+            failure = std::format("The result '{}' is not a readable id.", req.result_ids[at]);
+            return false;
+        }
         std::string bucket;
         std::string key;
         if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
@@ -97,11 +113,13 @@ bool collect_output_files(const messaging::store_market_state_request& req,
                 auto name = file.filename().string();
                 const auto* family = ores::ore::results::family_of_file(name);
                 if (family == nullptr || !ores::ore::results::is_market_state(*family)) {
-                    files.push_back(service::market_state_file{.name = std::move(name)});
+                    files.push_back(service::market_state_file{.result_id = result_id,
+                                                               .name = std::move(name)});
                     continue;
                 }
                 std::ifstream in(file, std::ios::binary);
                 files.push_back(service::market_state_file{
+                    .result_id = result_id,
                     .name = std::move(name),
                     .body = std::string{std::istreambuf_iterator<char>(in),
                                         std::istreambuf_iterator<char>()}});
@@ -168,6 +186,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     auto outcome = service::read_market_state(files, run);
     response.left_alone = outcome.left_alone;
     response.refusals = outcome.refusals;
+    // A run's state is stored whole or not at all, because a partial store
+    // reads as the state the run priced against.
     if (!outcome.refusals.empty()) {
         refuse("The run's market state was refused: " + outcome.refusals.front());
         return;

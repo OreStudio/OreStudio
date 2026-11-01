@@ -41,6 +41,7 @@ render_market_state_payload_fields(const domain::market_state_payload& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Report Instance ID", .value = boost::uuids::to_string(v.report_instance_id)});
+    fields.push_back({.name = "Result ID", .value = boost::uuids::to_string(v.result_id)});
     fields.push_back({.name = "Family", .value = v.family});
     fields.push_back({.name = "File Name", .value = v.file_name});
     fields.push_back(
@@ -55,7 +56,6 @@ render_market_state_payload_fields(const domain::market_state_payload& v) {
     fields.push_back({.name = "Payload", .value = v.payload});
     fields.push_back({.name = "Payload Bytes", .value = std::to_string(v.payload_bytes)});
     fields.push_back({.name = "Content Sha256", .value = v.content_sha256});
-    fields.push_back({.name = "Source", .value = v.source});
 
     return fields;
 }

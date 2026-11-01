@@ -1116,6 +1116,7 @@ export interface StoreMarketStateRequest {
     as_of: string;
     storage_token: string;
     output_uris: string[];
+    result_ids: string[];
 }
 
 export interface StoreMarketStateResponse {

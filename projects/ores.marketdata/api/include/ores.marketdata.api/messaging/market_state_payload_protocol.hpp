@@ -43,6 +43,7 @@ struct market_state_payload_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     boost::uuids::uuid report_instance_id;
+    boost::uuids::uuid result_id;
     std::string family;
     std::string file_name;
     std::chrono::system_clock::time_point as_of;
@@ -55,7 +56,6 @@ struct market_state_payload_write {
     std::string payload;
     int payload_bytes;
     std::string content_sha256;
-    std::string source;
 };
 
 struct market_state_payload_change {

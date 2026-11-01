@@ -51,6 +51,7 @@ market_state_payload_mapper::map(const market_state_payload_entity& v) {
     r.id = v.id;
     r.party_id = v.party_id;
     r.report_instance_id = v.report_instance_id;
+    r.result_id = v.result_id;
     r.family = v.family;
     r.file_name = v.file_name;
     r.as_of = v.as_of;
@@ -63,7 +64,6 @@ market_state_payload_mapper::map(const market_state_payload_entity& v) {
     r.payload = v.payload;
     r.payload_bytes = v.payload_bytes;
     r.content_sha256 = v.content_sha256;
-    r.source = v.source;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -78,6 +78,7 @@ market_state_payload_mapper::map(const domain::market_state_payload& v) {
     r.tenant_id = v.tenant_id;
     r.party_id = v.party_id;
     r.report_instance_id = v.report_instance_id;
+    r.result_id = v.result_id;
     r.family = v.family;
     r.file_name = v.file_name;
     r.as_of = v.as_of;
@@ -90,7 +91,6 @@ market_state_payload_mapper::map(const domain::market_state_payload& v) {
     r.payload = v.payload;
     r.payload_bytes = v.payload_bytes;
     r.content_sha256 = v.content_sha256;
-    r.source = v.source;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

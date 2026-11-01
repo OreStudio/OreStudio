@@ -27,7 +27,9 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <cstdint>
 #include <format>
+#include <set>
 #include <span>
+#include <tuple>
 
 namespace ores::marketdata::service {
 namespace {
@@ -58,11 +60,20 @@ std::string keys_json(const std::vector<std::pair<std::string, std::vector<std::
 market_state_outcome read_market_state(const std::vector<market_state_file>& files,
                                        const market_state_run& run) {
     market_state_outcome outcome;
+    std::set<std::tuple<boost::uuids::uuid, std::string>> stated;
 
     for (const auto& file : files) {
         const auto* family = ores::ore::results::family_of_file(file.name);
         if (family == nullptr || !ores::ore::results::is_market_state(*family)) {
             outcome.left_alone.push_back(file.name);
+            continue;
+        }
+
+        // The store keeps one current payload for each result and file, so a
+        // second file of the same name would close the first in the same
+        // statement. It is refused here, where the reason can be named.
+        if (!stated.emplace(file.result_id, file.name).second) {
+            outcome.refusals.push_back(file.name + ": the result states this file twice.");
             continue;
         }
 
@@ -85,6 +96,7 @@ market_state_outcome read_market_state(const std::vector<market_state_file>& fil
             .id = boost::uuids::random_generator()(),
             .party_id = run.party_id,
             .report_instance_id = run.report_instance_id,
+            .result_id = file.result_id,
             .family = family->code,
             .file_name = file.name,
             .as_of = run.as_of,
@@ -96,8 +108,7 @@ market_state_outcome read_market_state(const std::vector<market_state_file>& fil
             .keys_truncated = index.truncated,
             .payload = encoded,
             .payload_bytes = static_cast<int>(compressed.size()),
-            .content_sha256 = ores::utility::crypto::sha256::hex_digest(file.body),
-            .source = family->code});
+            .content_sha256 = ores::utility::crypto::sha256::hex_digest(file.body)});
     }
 
     return outcome;

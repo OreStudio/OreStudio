@@ -56,6 +56,8 @@ struct market_state_payload_entity {
 
     boost::uuids::uuid report_instance_id;
 
+    boost::uuids::uuid result_id;
+
 
     std::string family;
 
@@ -73,7 +75,6 @@ struct market_state_payload_entity {
     std::string payload;
     int payload_bytes = 0;
     std::string content_sha256;
-    std::string source;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 
@@ -87,6 +88,7 @@ struct market_state_payload_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("report_instance_id", &e::report_instance_id) |
+               query_builder::bind("result_id", &e::result_id) |
                query_builder::bind("family", &e::family) |
                query_builder::bind("file_name", &e::file_name) |
                query_builder::bind("as_of", &e::as_of) |
@@ -99,7 +101,6 @@ struct market_state_payload_entity {
                query_builder::bind("payload", &e::payload) |
                query_builder::bind("payload_bytes", &e::payload_bytes) |
                query_builder::bind("content_sha256", &e::content_sha256) |
-               query_builder::bind("source", &e::source) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }

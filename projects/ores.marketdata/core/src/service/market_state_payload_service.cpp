@@ -103,6 +103,7 @@ market_state_payload_to_domain(const messaging::market_state_payload_write& writ
     v.id = write.id;
     v.party_id = write.party_id;
     v.report_instance_id = write.report_instance_id;
+    v.result_id = write.result_id;
     v.family = write.family;
     v.file_name = write.file_name;
     v.as_of = write.as_of;
@@ -115,7 +116,6 @@ market_state_payload_to_domain(const messaging::market_state_payload_write& writ
     v.payload = write.payload;
     v.payload_bytes = write.payload_bytes;
     v.content_sha256 = write.content_sha256;
-    v.source = write.source;
     return v;
 }
 

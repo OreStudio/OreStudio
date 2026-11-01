@@ -34,6 +34,13 @@ namespace ores::marketdata::service {
  */
 struct market_state_file {
     /**
+     * @brief The compute result that wrote the file.
+     *
+     * A run split into trade sets runs the engine once for each set, and each
+     * run writes a file of the same name.
+     */
+    boost::uuids::uuid result_id;
+    /**
      * @brief The file's name, without a directory.
      */
     std::string name;

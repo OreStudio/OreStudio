@@ -1338,6 +1338,7 @@ struct store_market_state_request {
     std::string as_of;
     std::string storage_token;
     std::vector<std::string> output_uris;
+    std::vector<std::string> result_ids;
 };
 
 struct store_market_state_response {

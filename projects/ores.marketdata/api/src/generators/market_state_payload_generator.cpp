@@ -47,6 +47,7 @@ generate_synthetic_market_state_payload(utility::generation::generation_context&
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.report_instance_id = ctx.generate_uuid();
+    r.result_id = ctx.generate_uuid();
     r.family = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.file_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.as_of = ctx.past_timepoint();
@@ -55,7 +56,6 @@ generate_synthetic_market_state_payload(utility::generation::generation_context&
     r.key_values = std::string(faker::word::noun());
     r.payload = std::string(faker::word::noun());
     r.content_sha256 = std::string(faker::word::noun());
-    r.source = std::string(faker::word::noun());
     return r;
 }
 

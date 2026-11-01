@@ -45,6 +45,7 @@ create table if not exists "ores_marketdata_market_state_payloads_tbl" (
     "tenant_id" uuid not null,
     "party_id" uuid not null,
     "report_instance_id" uuid not null,
+    "result_id" uuid not null,
     "family" text not null,
     "file_name" text not null,
     "as_of" timestamp with time zone not null,
@@ -57,7 +58,6 @@ create table if not exists "ores_marketdata_market_state_payloads_tbl" (
     "payload" text not null,
     "payload_bytes" integer not null,
     "content_sha256" text not null,
-    "source" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, as_of),
@@ -66,8 +66,8 @@ create table if not exists "ores_marketdata_market_state_payloads_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists market_state_payloads_party_id_report_instance_id_family_file_name_as_of_uniq_idx
-on "ores_marketdata_market_state_payloads_tbl" (tenant_id, party_id, report_instance_id, family, file_name, as_of)
+create unique index if not exists market_state_payloads_party_id_report_instance_id_result_id_family_file_name_as_of_uniq_idx
+on "ores_marketdata_market_state_payloads_tbl" (tenant_id, party_id, report_instance_id, result_id, family, file_name, as_of)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 
@@ -82,6 +82,7 @@ begin
     where tenant_id = new.tenant_id
       and party_id = new.party_id
       and report_instance_id = new.report_instance_id
+      and result_id = new.result_id
       and as_of = new.as_of
       and family = new.family
       and file_name = new.file_name
@@ -106,6 +107,7 @@ begin
     where tenant_id = old.tenant_id
       and party_id = old.party_id
       and report_instance_id = old.report_instance_id
+      and result_id = old.result_id
       and as_of = old.as_of
       and family = old.family
       and file_name = old.file_name

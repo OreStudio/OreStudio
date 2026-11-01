@@ -5146,7 +5146,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- one-artefact-to-one-live-table transform cannot express. The function
 -- delegates each to its own publisher,
 -- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn and
--- ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn, and
+-- ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn, and
 -- folds the counts they return into its own, so the dataset keeps one entry
 -- point, one artefact type and one subject. The dataset is not split because an
 -- atomised kind's identity row is staged in the same central artefact table
@@ -5289,7 +5289,7 @@ begin
         select * from ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
             p_dataset_id, p_target_tenant_id, p_mode, p_params)
         union all
-        select * from ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn(
+        select * from ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn(
             p_dataset_id, p_target_tenant_id, p_mode, p_params)
     loop
         if r.action = 'inserted' then
@@ -5564,7 +5564,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- the tenor basis swap there is no other form to close. A part is written only
 -- when the convention has no live row of it, and the mode has no effect: like
 -- the flat publisher, this one only inserts what is absent.
-create or replace function ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn(
+create or replace function ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',

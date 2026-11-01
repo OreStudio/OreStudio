@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-scheduler-codecs-off-reflect-cpp
-#+pr:
+#+pr: 4357
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4357][#4357]] | [scheduler] Encode and decode without reflect-cpp |
 
 * Review
 

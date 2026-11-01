@@ -8,7 +8,7 @@
 #+filetags: :make_ci_green_on_every_platform:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/make-ci-green-on-every-platform
-#+pr:
+#+pr: 4338
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4338][#4338]] | [repo] Fix the CI failures on Linux, macOS, Windows and the check workflows |
 
 * Review
 

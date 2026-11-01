@@ -57,6 +57,8 @@ namespace {
 /** A party, an account that takes, and the context the take acts in. */
 struct apply_world {
     boost::uuids::uuid party_id;
+    /** The taking account: the store refuses a request raised for an account it does not hold. */
+    boost::uuids::uuid taker_id;
     std::string taker;
     ores::database::context ctx;
 
@@ -129,6 +131,7 @@ apply_world apply_seed_world(ores::testing::scoped_database_helper& h, const std
     ores::refdata::repository::business_centre_repository{}.write(base, centre);
 
     return {.party_id = party.id,
+            .taker_id = account.id,
             .taker = taker,
             .ctx = base.with_party(base.tenant_id(), party.id, {party.id}, taker)};
 }
@@ -358,8 +361,7 @@ TEST_CASE("a_request_of_another_kind_is_left_alone", "[cut_authorisation_apply]"
     const auto taken = apply_take_eod(w);
     const auto cut_id = boost::uuids::string_generator{}(taken.cut_id);
 
-    const auto other_request =
-        raise_a_request_of_kind(w, "iam.role_grant", boost::uuids::random_generator{}());
+    const auto other_request = raise_a_request_of_kind(w, "iam.role_grant", w.taker_id);
     {
         domain::cut_approval_detail detail;
         detail.id = boost::uuids::random_generator{}();

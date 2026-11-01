@@ -117,7 +117,6 @@
 #include "ores.trading.service/messaging/trade_state_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>

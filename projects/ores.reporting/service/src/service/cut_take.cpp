@@ -219,10 +219,11 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     response.reference_data_version = facts.reference_data_version.value_or(std::string{});
     response.engine_version = facts.engine_version.value_or(std::string{});
     response.code_version = facts.code_version.value_or(std::string{});
-    response.requires_authorisation = kind.approval_kind_code.has_value();
-    response.output_is_indicative = kind.output_is_indicative;
-    response.retention_months = kind.retention_months;
-    response.retention_destination_code = kind.retention_destination_code;
+    const auto kind_facts = kind_facts_of(kind);
+    response.requires_authorisation = kind_facts.requires_authorisation;
+    response.output_is_indicative = kind_facts.output_is_indicative;
+    response.retention_months = kind_facts.retention_months;
+    response.retention_destination_code = kind_facts.retention_destination_code;
     if (kind.approval_kind_code) {
         response.approval_kind_code = *kind.approval_kind_code;
         ores::inbox::service::approval_lifecycle lifecycle(ctx_);

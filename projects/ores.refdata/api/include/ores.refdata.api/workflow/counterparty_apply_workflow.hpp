@@ -49,7 +49,8 @@ struct counterparty_apply_workflow_request {
 };
 
 [[nodiscard]] constexpr auto wire_fields(const counterparty_apply_workflow_request&) {
-    return std::tuple{utility::codec::field{"request_id", &counterparty_apply_workflow_request::request_id}};
+    return std::tuple{
+        utility::codec::field{"request_id", &counterparty_apply_workflow_request::request_id}};
 }
 
 /**
@@ -86,7 +87,8 @@ register_counterparty_apply_workflow(ores::workflow::service::workflow_registry&
         // creates no instance, which is the refusal a caller needs.
         counterparty_apply_workflow_request parsed;
         try {
-            parsed = utility::codec::object::read_json<counterparty_apply_workflow_request>(request_json);
+            parsed = utility::codec::object::read_json<counterparty_apply_workflow_request>(
+                request_json);
         } catch (const std::exception&) {
             return {};
         }

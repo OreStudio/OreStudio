@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
 #include "ores.marketdata.core/repository/market_state_payload_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
@@ -89,10 +90,19 @@ bool collect_output_files(const messaging::store_market_state_request& req,
                     paths.push_back(entry.path());
             }
             std::ranges::sort(paths);
+            // A result file can be far larger than the state, so only the
+            // state is read; the rest is named, so the reply can say what was
+            // left alone.
             for (const auto& file : paths) {
+                auto name = file.filename().string();
+                const auto* family = ores::ore::results::family_of_file(name);
+                if (family == nullptr || !ores::ore::results::is_market_state(*family)) {
+                    files.push_back(service::market_state_file{.name = std::move(name)});
+                    continue;
+                }
                 std::ifstream in(file, std::ios::binary);
                 files.push_back(service::market_state_file{
-                    .name = file.filename().string(),
+                    .name = std::move(name),
                     .body = std::string{std::istreambuf_iterator<char>(in),
                                         std::istreambuf_iterator<char>()}});
             }

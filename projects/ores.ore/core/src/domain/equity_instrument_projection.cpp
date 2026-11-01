@@ -1005,8 +1005,11 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
 void write_equity_position(record_writer& trade, const equity_position_instrument& v) {
     auto data = trade.child("EquityPositionData");
     set_decimal_from_double(data, "Quantity", v.quantity);
-    if (!v.underlying_name.empty())
-        data.append("Underlying").set_text("Name", v.underlying_name);
+    if (!v.underlying_name.empty()) {
+        auto underlying = data.append("Underlying");
+        underlying.set_text("Type", "Equity");
+        underlying.set_text("Name", v.underlying_name);
+    }
 }
 
 void write_equity_option_position(record_writer& trade,
@@ -1026,6 +1029,7 @@ void write_equity_option_position(record_writer& trade,
     for (const auto* row : ordered) {
         auto entry = data.append("Underlying");
         auto underlying = entry.child("Underlying");
+        underlying.set_text("Type", "Equity");
         underlying.set_text("Name", row->underlying_name);
         if (row->weight)
             set_decimal_from_double(underlying, "Weight", *row->weight);

@@ -5999,7 +5999,7 @@ export const en: SourceCatalogue = {
                 sensitivity:
                     'How strongly a market-wide regime moves this pair, where one is the average. It does nothing until the market regime lands.',
                 price_source: {
-                    fixed: 'The feed starts from the initial price you give.',
+                    fixed: 'The feed starts from the initial price you give. Use it only for a pair no public source fixes; the fixing path is the default.',
                     fixing: 'The feed starts from the newest public fixing of the pair and takes its volatility from the fixings; without one it keeps the initial price.',
                 },
                 enabled: 'A feed that is not enabled cannot start.',

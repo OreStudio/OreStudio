@@ -6080,7 +6080,7 @@ const fr: SourceCatalogue = {
                 sensitivity:
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
-                    fixed: 'Le flux part du prix initial que vous donnez.',
+                    fixed: 'Le flux part du prix initial que vous donnez. À réserver à une paire qu’aucune source publique ne fixe ; le chemin du fixing est le défaut.',
                     fixing: 'Le flux part du fixing public le plus récent de la paire et en tire sa volatilité ; sans fixing, il garde le prix initial.',
                 },
                 enabled: 'Un flux non activé ne peut pas démarrer.',

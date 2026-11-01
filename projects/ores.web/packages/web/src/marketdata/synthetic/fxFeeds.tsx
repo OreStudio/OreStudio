@@ -195,7 +195,7 @@ const COMPONENT_FIELDS: readonly FieldSpec[] = [
 const NEW_FEED: FieldValues = {
     process_type: 'geometric',
     ticks_per_hour: '3600',
-    price_source: 'fixed',
+    price_source: 'fixing',
     gmm_initial_price: '1',
     enabled: 'false',
     auto_start: 'false',

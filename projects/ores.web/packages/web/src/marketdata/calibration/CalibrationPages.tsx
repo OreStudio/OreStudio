@@ -31,7 +31,12 @@ import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
 import { ReasonFields, useReason } from '../../refdata/shared.js';
 import { AreaTrail } from '../../shell/AreaTrail.js';
 import { ScreenFrame } from '../../shell/ScreenFrame.js';
-import { calibrationFeedPath, calibrationPath, calibrationPolicyPath } from '../../shell/paths.js';
+import {
+    PATHS,
+    calibrationFeedPath,
+    calibrationPath,
+    calibrationPolicyPath,
+} from '../../shell/paths.js';
 import { Metric } from '../../ui/Metric.js';
 import {
     Button,
@@ -344,9 +349,17 @@ export function CalibrationPage(): ReactNode {
                                     {feed.start.from_fixing ? feed.start.value : '—'}
                                 </td>
                                 <td className="py-2">
-                                    {feed.start.from_fixing
-                                        ? `${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`
-                                        : '—'}
+                                    {feed.start.from_fixing ? (
+                                        <Link
+                                            className="text-accent hover:underline"
+                                            to={`${PATHS.fixingSeries}?uri=${encodeURIComponent(feed.start.item)}`}
+                                            title={feed.start.item}
+                                        >
+                                            {`${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`}
+                                        </Link>
+                                    ) : (
+                                        '—'
+                                    )}
                                 </td>
                                 <td className="space-x-1 py-2">
                                     <OutcomeTag outcome={outcomeOf(feed)} />

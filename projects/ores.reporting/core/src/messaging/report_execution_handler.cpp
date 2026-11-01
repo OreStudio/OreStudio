@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_cashflow_repository.hpp"
@@ -42,7 +43,6 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
-#include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
@@ -925,10 +925,10 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             return;
         }
 
-        // One result is one run of the engine, and its output archive is the
-        // whole of what the engine wrote. The readers know each file's family,
-        // so this downloads the archive and reads it rather than asking the
-        // node to project the figures it happens to know about.
+        // One result is one run of the engine, and the node uploaded each file it
+        // wrote as its own object, with a manifest that names them. The readers
+        // know each file's family, so this fetches the result files by name and
+        // leaves the rest where they are.
         const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
         const results::run_stamp run{.party_id = instance->party_id,
                                      .report_instance_id = sg(req.report_instance_id),
@@ -936,76 +936,42 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                      .priced_at = as_of};
 
         results::run_output_outcome output;
-        std::vector<std::string> output_uris;
+        std::vector<std::string> manifest_uris;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
+        const std::string bucket(ores::compute::net::compute_storage::bucket);
         for (const auto& result_id : result_ids) {
-            const auto uri = ores::compute::net::compute_storage::output_path(result_id);
-            output_uris.push_back(uri);
-            std::string bucket;
-            std::string key;
-            if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
-                refuse(std::format("The result {} names no readable output location.", result_id));
-                return;
-            }
-            std::vector<char> archive;
+            const auto manifest_key =
+                ores::compute::net::compute_storage::output_manifest_key(result_id);
+            manifest_uris.push_back(
+                ores::storage::net::storage_paths::make_object_path(bucket, manifest_key));
+
+            std::vector<results::output_file> files;
             try {
-                archive = transfer.download_blob(bucket, key);
+                const auto text = transfer.download_blob(bucket, manifest_key);
+                const auto manifest = ores::ore::results::manifest_from_json(
+                    std::string_view(text.data(), text.size()));
+                if (manifest.result_id != result_id)
+                    throw std::runtime_error("its manifest states result " + manifest.result_id);
+                for (const auto& file :
+                     ores::ore::results::located_files(manifest, manifest_key)) {
+                    if (!ores::ore::results::is_result_file(file))
+                        continue;
+                    const auto body = transfer.download_blob(bucket, file.key);
+                    std::string text_body(body.begin(), body.end());
+                    ores::ore::results::verify_body(file, text_body);
+                    files.push_back(
+                        results::output_file{.name = file.name, .body = std::move(text_body)});
+                }
             } catch (const std::exception& read) {
                 refuse(std::format(
                     "The output of result {} was not read: {}", result_id, read.what()));
                 return;
             }
 
-            const auto staging = std::filesystem::temp_directory_path() /
-                                 boost::uuids::to_string(boost::uuids::random_generator()());
-            const auto unload = [&staging]() {
-                std::error_code ignored;
-                std::filesystem::remove_all(staging, ignored);
-            };
-            std::vector<results::output_file> files;
-            try {
-                std::filesystem::create_directories(staging);
-                const auto archive_path = staging / "output.tar.gz";
-                {
-                    std::ofstream out(archive_path, std::ios::binary | std::ios::trunc);
-                    out.write(archive.data(), static_cast<std::streamsize>(archive.size()));
-                }
-                const auto unpacked = staging / "output";
-                std::filesystem::create_directories(unpacked);
-                ores::storage::filesystem::archiver::extract(archive_path, unpacked);
-
-                // Sorted, so a run reads the same whichever order the archive
-                // happens to hold its entries in.
-                std::vector<std::filesystem::path> paths;
-                for (const auto& entry : std::filesystem::recursive_directory_iterator(unpacked)) {
-                    if (entry.is_regular_file() && entry.path().extension() == ".csv")
-                        paths.push_back(entry.path());
-                }
-                std::ranges::sort(paths);
-                for (const auto& path : paths) {
-                    std::ifstream in(path, std::ios::binary);
-                    std::string body{std::istreambuf_iterator<char>(in),
-                                     std::istreambuf_iterator<char>()};
-                    files.push_back(results::output_file{.name = path.filename().string(),
-                                                         .body = std::move(body)});
-                }
-            } catch (const std::exception& read) {
-                unload();
-                refuse(std::format(
-                    "The output of result {} was not unpacked: {}", result_id, read.what()));
-                return;
-            }
-            unload();
-
             auto read = results::read_run_outputs(files, run);
             if (!read.refusals.empty()) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
                 return;
-            }
-            for (const auto& name : read.files_not_modelled) {
-                BOOST_LOG_SEV(lg(), warn) << "The run wrote a file no family states, so it was "
-                                             "left in its archive: "
-                                          << name;
             }
             BOOST_LOG_SEV(lg(), info)
                 << "Read " << read.files_read.size() << " output file(s) of " << "result "
@@ -1054,7 +1020,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         const auto loaded = output.metrics.size() + output.cashflows.size();
 
         // The market state the run priced against belongs to the market data
-        // store, and it is far too large to travel in a message: the archives
+        // store, and it is far too large to travel in a message: the manifests
         // are named and the run's own token is lent, so marketdata reads them.
         // A state that is not stored leaves the run's figures intact, so it is
         // stated and carried on with rather than failing the run.
@@ -1066,8 +1032,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             state.report_definition_id = boost::uuids::to_string(instance->definition_id);
             state.as_of = std::format("{:%F}", std::chrono::floor<std::chrono::days>(as_of));
             state.storage_token = run_token_value;
-            state.output_uris = output_uris;
-            state.result_ids = result_ids;
+            state.manifest_uris = manifest_uris;
 
             std::string state_error;
             auto owner = svc_nats_.with_delegation(run_token_value);

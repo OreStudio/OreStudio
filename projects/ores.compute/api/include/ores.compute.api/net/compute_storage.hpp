@@ -41,6 +41,8 @@ namespace ores::compute::net {
  *   compute/input/{workunit_id}[.ext]    — workunit input archive
  *   compute/config/{workunit_id}[.ext]   — workunit configuration file
  *   compute/output/{result_id}.tar.gz    — result output archive
+ *   compute/output/{result_id}/{file}.gz — one output file of a result
+ *   compute/output/{result_id}/manifest.json.gz — the files a result wrote
  *
  * Use @c storage_paths::make_object_path / @c make_object_url to build
  * the full HTTP path or URL from the helpers below.
@@ -164,17 +166,41 @@ struct compute_storage {
     }
 
     /**
-     * @brief Key for the canonical result rows a job produced.
+     * @brief Key prefix under which each file of a result's output is its own object.
+     *
+     * Ends in a separator, so a grant on it admits this result's files and no
+     * other result's.
      *
      * @param result_id  Result UUID as string.
      */
-    static std::string results_key(std::string_view result_id) {
-        return ores::storage::api::object_keys::make(
-            service, "results", std::string(result_id) + ".csv");
+    static std::string output_files_key(std::string_view result_id) {
+        return ores::storage::api::object_keys::make(service, "output", std::string(result_id)) +
+               "/";
     }
 
-    static std::string results_path(std::string_view result_id) {
-        return ores::storage::net::storage_paths::make_object_path(bucket, results_key(result_id));
+    static std::string output_files_path(std::string_view result_id) {
+        return ores::storage::net::storage_paths::make_object_path(bucket,
+                                                                   output_files_key(result_id));
+    }
+
+    /**
+     * @brief Key for one output file, as the engine named it, gzipped.
+     *
+     * @param result_id  Result UUID as string.
+     * @param file_name  The file's name, without a directory.
+     */
+    static std::string output_file_key(std::string_view result_id, std::string_view file_name) {
+        return ores::storage::api::object_keys::make(
+            service, "output", result_id, std::string(file_name) + ".gz");
+    }
+
+    /**
+     * @brief Key for the manifest that names a result's output files.
+     *
+     * @param result_id  Result UUID as string.
+     */
+    static std::string output_manifest_key(std::string_view result_id) {
+        return ores::storage::api::object_keys::make(service, "output", result_id, "manifest.json.gz");
     }
 
     /**

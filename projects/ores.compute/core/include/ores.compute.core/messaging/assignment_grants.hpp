@@ -48,7 +48,7 @@ inline std::optional<ores::security::jwt::storage_grant> grant_for_path(const st
 
 /**
  * @brief The grants a node needs to run one job: read the package and the input,
- * and write the output, the canonical result rows and the canonical log rows.
+ * and write the output archive, each output file and the canonical log rows.
  *
  * A node holds no standing storage credential, so each assignment carries a
  * capability for exactly these five objects. The whole set is refused when any
@@ -58,7 +58,7 @@ inline std::optional<std::vector<ores::security::jwt::storage_grant>>
 storage_grants_for(const std::string& package_uri,
                    const std::string& input_uri,
                    const std::string& output_path,
-                   const std::string& results_path,
+                   const std::string& output_files_path,
                    const std::string& logs_path) {
     std::vector<ores::security::jwt::storage_grant> grants;
     const struct {
@@ -67,7 +67,7 @@ storage_grants_for(const std::string& package_uri,
     } sources[] = {{package_uri, "get"},
                    {input_uri, "get"},
                    {output_path, "put"},
-                   {results_path, "put"},
+                   {output_files_path, "put"},
                    {logs_path, "put"}};
     for (const auto& source : sources) {
         auto grant = grant_for_path(source.path, source.op);

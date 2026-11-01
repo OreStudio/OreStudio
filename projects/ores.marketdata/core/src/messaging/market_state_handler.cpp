@@ -20,18 +20,14 @@
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
 #include "ores.marketdata.core/repository/market_state_payload_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
-#include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
-#include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
-#include <filesystem>
 #include <format>
-#include <fstream>
 #include <string>
 #include <vector>
 
@@ -39,97 +35,49 @@ namespace ores::marketdata::messaging {
 namespace {
 
 /**
- * @brief The run's output as one list of files, read out of its archives.
+ * @brief The run's market-state files, fetched by name through each manifest.
  *
- * Each archive is a directory the engine wrote, so its entries are rebased: the
- * family is a file's name and not a path inside a particular host.
+ * A manifest names every file one result wrote. Only the market-state files are
+ * fetched, because a result file can be far larger than the state; the rest are
+ * named, so the reply can say what was left alone.
  */
 bool collect_output_files(const messaging::store_market_state_request& req,
                           const std::string& http_base_url,
                           std::vector<service::market_state_file>& files,
                           std::string& failure) {
     ores::storage::net::storage_transfer transfer(http_base_url, req.storage_token);
-
-    if (req.result_ids.size() != req.output_uris.size()) {
-        failure = std::format("The request names {} archive(s) and {} result(s).",
-                              req.output_uris.size(),
-                              req.result_ids.size());
-        return false;
-    }
-
     boost::uuids::string_generator sg;
-    for (std::size_t at = 0; at < req.output_uris.size(); ++at) {
-        const auto& uri = req.output_uris[at];
-        boost::uuids::uuid result_id;
-        try {
-            result_id = sg(req.result_ids[at]);
-        } catch (const std::exception&) {
-            failure = std::format("The result '{}' is not a readable id.", req.result_ids[at]);
-            return false;
-        }
+
+    for (const auto& uri : req.manifest_uris) {
         std::string bucket;
         std::string key;
         if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
-            failure = std::format("The output archive '{}' names no readable location.", uri);
+            failure = std::format("The manifest '{}' names no readable location.", uri);
             return false;
         }
 
-        std::vector<char> archive;
         try {
-            archive = transfer.download_blob(bucket, key);
-        } catch (const std::exception& e) {
-            failure = std::format("The output archive '{}' was not read: {}", uri, e.what());
-            return false;
-        }
-
-        const auto staging = std::filesystem::temp_directory_path() /
-                             boost::uuids::to_string(boost::uuids::random_generator()());
-        const auto unload = [&staging]() {
-            std::error_code ignored;
-            std::filesystem::remove_all(staging, ignored);
-        };
-        try {
-            std::filesystem::create_directories(staging);
-            const auto path = staging / "output.tar.gz";
-            {
-                std::ofstream out(path, std::ios::binary | std::ios::trunc);
-                out.write(archive.data(), static_cast<std::streamsize>(archive.size()));
-            }
-            const auto unpacked = staging / "output";
-            std::filesystem::create_directories(unpacked);
-            ores::storage::filesystem::archiver::extract(path, unpacked);
-
-            // Sorted, so a run reads the same whatever order its archive holds.
-            std::vector<std::filesystem::path> paths;
-            for (const auto& entry : std::filesystem::recursive_directory_iterator(unpacked)) {
-                if (entry.is_regular_file() && entry.path().extension() == ".csv")
-                    paths.push_back(entry.path());
-            }
-            std::ranges::sort(paths);
-            // A result file can be far larger than the state, so only the
-            // state is read; the rest is named, so the reply can say what was
-            // left alone.
-            for (const auto& file : paths) {
-                auto name = file.filename().string();
-                const auto* family = ores::ore::results::family_of_file(name);
-                if (family == nullptr || !ores::ore::results::is_market_state(*family)) {
-                    files.push_back(service::market_state_file{.result_id = result_id,
-                                                               .name = std::move(name)});
+            const auto text = transfer.download_blob(bucket, key);
+            const auto manifest =
+                ores::ore::results::manifest_from_json(std::string_view(text.data(), text.size()));
+            const auto located = ores::ore::results::located_files(manifest, key);
+            const auto result_id = sg(manifest.result_id);
+            for (const auto& file : located) {
+                if (!ores::ore::results::is_market_state_file(file)) {
+                    files.push_back(
+                        service::market_state_file{.result_id = result_id, .name = file.name});
                     continue;
                 }
-                std::ifstream in(file, std::ios::binary);
+                const auto body = transfer.download_blob(bucket, file.key);
+                std::string text_body(body.begin(), body.end());
+                ores::ore::results::verify_body(file, text_body);
                 files.push_back(service::market_state_file{
-                    .result_id = result_id,
-                    .name = std::move(name),
-                    .body = std::string{std::istreambuf_iterator<char>(in),
-                                        std::istreambuf_iterator<char>()}});
+                    .result_id = result_id, .name = file.name, .body = std::move(text_body)});
             }
         } catch (const std::exception& e) {
-            unload();
-            failure = std::format("The output archive '{}' was not unpacked: {}", uri, e.what());
+            failure = std::format("The output named by '{}' was not read: {}", uri, e.what());
             return false;
         }
-        unload();
     }
 
     return true;

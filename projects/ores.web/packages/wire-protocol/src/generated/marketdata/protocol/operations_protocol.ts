@@ -1099,14 +1099,15 @@ export interface GetSeriesTicksResponse {
 /**
  * @brief Asks this component to keep the market state a run priced against.
  *
- * The state is the output files the run left in its output archives, and those
- * files are far too large for a message: a cube states a column for every curve
- * and tenor the run built. The caller therefore names the archives and lends the
- * token that reads them — the run's own, the same one the run's other steps use
- * — and this reads the files rather than receiving them.
+ * The state is the output files the run wrote, and those files are far too
+ * large for a message: a cube states a column for every curve and tenor the run
+ * built. The node uploads each file as its own object with a manifest that names
+ * them, so the caller names each result's manifest and lends the token that reads
+ * them — the run's own, the same one the run's other steps use — and this fetches
+ * the market-state files rather than receiving them.
  *
- * The archives are named by their storage location, so this learns no other
- * component's layout. A file whose family is not a market state is left alone:
+ * A manifest names each file by its storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is not fetched:
  * the run's results belong to reporting.
  */
 export interface StoreMarketStateRequest {
@@ -1115,8 +1116,7 @@ export interface StoreMarketStateRequest {
     report_definition_id: string;
     as_of: string;
     storage_token: string;
-    output_uris: string[];
-    result_ids: string[];
+    manifest_uris: string[];
 }
 
 export interface StoreMarketStateResponse {

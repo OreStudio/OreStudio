@@ -52,9 +52,9 @@ using namespace ores::logging;
 /**
  * @brief Keeps the market state a run priced against.
  *
- * A cube is far too large to travel in a message, so the caller names the run's
- * output archives and lends the token that reads them. This downloads each
- * archive, unpacks it and stores every market-state file it holds as one
+ * A cube is far too large to travel in a message, so the caller names the
+ * manifest of each result of the run and lends the token that reads them. This
+ * fetches the market-state files each manifest names and stores each one as a
  * compressed payload with an index of what it covers.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_state_handler {

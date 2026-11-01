@@ -30,4 +30,5 @@ set(files
     "main.cpp"
     "messaging_assignment_expiry_tests.cpp"
     "messaging_claim_pacing_tests.cpp"
+    "net_compute_storage_tests.cpp"
 )

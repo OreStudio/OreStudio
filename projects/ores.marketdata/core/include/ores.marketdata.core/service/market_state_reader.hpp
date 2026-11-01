@@ -30,7 +30,7 @@
 namespace ores::marketdata::service {
 
 /**
- * @brief One file of a run's output archive.
+ * @brief One file a run wrote.
  */
 struct market_state_file {
     /**
@@ -77,7 +77,7 @@ struct market_state_run {
  *
  * A file whose family is not a market state is left alone rather than refused:
  * the run's results belong to reporting, and the two components read the same
- * archive.
+ * manifest.
  */
 struct market_state_outcome {
     /**

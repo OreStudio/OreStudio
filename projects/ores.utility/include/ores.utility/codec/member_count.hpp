@@ -52,6 +52,10 @@ consteval std::size_t count_members() {
 
 /**
  * @brief The number of members an aggregate declares.
+ *
+ * It counts by brace-initialising the type, so it holds for an aggregate
+ * without C-array members: brace elision would let an array take several
+ * initialisers and the count would be too high.
  */
 template <typename T>
 inline constexpr std::size_t member_count = detail::count_members<T>();
@@ -63,6 +67,10 @@ inline constexpr std::size_t member_count = detail::count_members<T>();
  * a member added to the struct but not to its =wire_fields= is silently absent
  * from the wire. A header that states a shape by hand asserts this beside it,
  * naming how many members it leaves out on purpose, such as a password.
+ *
+ * The members left out are a count, not names: a shape that left out the wrong
+ * member and named the password would still pass. The guard catches a member
+ * forgotten, not one swapped.
  */
 template <typename T>
 consteval bool names_every_member(std::size_t left_out = 0) {

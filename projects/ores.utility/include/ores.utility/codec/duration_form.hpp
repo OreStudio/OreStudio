@@ -75,6 +75,7 @@ constexpr const char* unit_name() {
 
 template <typename Rep, typename Period>
 duration_form to_duration_form(const std::chrono::duration<Rep, Period>& d) {
+    static_assert(std::is_integral_v<Rep>, "The wire carries a duration as a whole count");
     return {static_cast<std::int64_t>(d.count()), detail::unit_name<Period>()};
 }
 

@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/compute-the-calibration-measures
-#+pr:
+#+pr: 4324
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4324][#4324]] | [synthetic] Compute and serve the calibration measures |
 
 * Review
 

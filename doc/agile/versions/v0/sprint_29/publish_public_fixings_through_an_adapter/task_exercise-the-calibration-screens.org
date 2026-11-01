@@ -138,6 +138,7 @@ the list took up to 26 s and now takes about 3.4 s, a feed's page 0.2 s.
 The database now creates without a warning, pg_stat_statements is installed
 when the server preloads it, and the official catalogue no longer ends the
 populate transaction early. Accepting the public terms at setup is the follow-on
-task, and a stale pooled connection after a postgres restart is captured. A new
+task. A pooled connection the server closed, as a postgres restart does, is now
+reset before it is leased, where it used to fail the first request on it. A new
 =handler-registrars= check fails when a generated registrar has no responder; it
 covers seven components, and the 54 registrars of the other seven are captured.

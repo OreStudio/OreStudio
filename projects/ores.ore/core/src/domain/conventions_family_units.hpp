@@ -136,12 +136,12 @@ void join_zero_inflation_index(const package_row& row, xml::record_writer& root)
 void pack_tenor_basis_swap(const xml::record_reader& root,
                            refdata::messaging::conventions_bundle& bundle);
 
-/// The three families a cross-currency fix-float element is: the central
-/// convention row and one part per leg.
+/// The four families a cross-currency fix-float element is: the central
+/// convention row, one part per leg and the swap terms both legs share.
 void pack_cross_currency_fix_float(const xml::record_reader& root,
                                    refdata::messaging::conventions_bundle& bundle);
 
-/// Writes the elements of the rows that belong to the three fix-float families.
+/// Writes the elements of the rows that belong to the four fix-float families.
 void join_cross_currency_fix_float(const std::vector<const package_row*>& rows,
                                    xml::record_writer& root);
 
@@ -153,7 +153,8 @@ inline constexpr std::string_view cross_currency_fix_float_kind =
 inline constexpr std::string_view cross_currency_fix_float_families[] = {
     "convention",
     "cross_currency_fix_float_fixed_leg",
-    "cross_currency_fix_float_float_leg"};
+    "cross_currency_fix_float_float_leg",
+    "cross_currency_fix_float_swap_terms"};
 
 constexpr bool is_cross_currency_fix_float_family(std::string_view family) {
     for (const auto f : cross_currency_fix_float_families)

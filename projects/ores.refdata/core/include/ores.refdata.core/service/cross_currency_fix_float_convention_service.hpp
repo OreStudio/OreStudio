@@ -30,11 +30,13 @@
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_fixed_leg.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_float_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_fixed_leg_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_float_leg_repository.hpp"
+#include "ores.refdata.core/repository/cross_currency_fix_float_swap_terms_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
@@ -102,6 +104,7 @@ private:
     repository::convention_repository central_repo_;
     repository::cross_currency_fix_float_fixed_leg_repository fixed_leg_repo_;
     repository::cross_currency_fix_float_float_leg_repository float_leg_repo_;
+    repository::cross_currency_fix_float_swap_terms_repository swap_terms_repo_;
 
     /**
      * @brief Assembles the family item: the central row and every part live
@@ -169,6 +172,30 @@ private:
         const context& ctx,
         const domain::convention& central,
         const std::vector<::ores::refdata::messaging::cross_currency_fix_float_float_leg_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_swap_terms(
+        const ::ores::refdata::messaging::cross_currency_fix_float_swap_terms_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::cross_currency_fix_float_swap_terms& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_swap_terms(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::cross_currency_fix_float_swap_terms_change>&
             requested,
         const ores::utility::domain::change_intent& intent);
 };

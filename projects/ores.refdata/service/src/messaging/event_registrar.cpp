@@ -90,6 +90,7 @@
 #include "ores.refdata.service/messaging/cross_currency_basis_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cross_currency_fix_float_fixed_leg_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cross_currency_fix_float_float_leg_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cross_currency_fix_float_swap_terms_event_registrar.hpp"
 #include "ores.refdata.service/messaging/csa_eligible_currency_event_registrar.hpp"
 #include "ores.refdata.service/messaging/csa_event_registrar.hpp"
 #include "ores.refdata.service/messaging/currency_calendar_event_registrar.hpp"
@@ -338,6 +339,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
         register_cross_currency_fix_float_fixed_leg_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_cross_currency_fix_float_float_leg_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cross_currency_fix_float_swap_terms_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_csa_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_csa_eligible_currency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_group_event_mapping(event_source, event_bus, nats));

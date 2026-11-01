@@ -127,6 +127,12 @@ inline constexpr convention_family_entry convention_families[] = {
      "refdata.v1.cross_currency_fix_float_float_legs",
      true,
      convention_write_mode::by_id},
+    {"cross_currency_fix_float_swap_terms",
+     "cross_currency_fix_float_swap_terms",
+     "ores::refdata::domain::cross_currency_fix_float_swap_terms",
+     "refdata.v1.cross_currency_fix_float_swap_terms",
+     true,
+     convention_write_mode::by_id},
     {"deposit",
      "deposit_convention",
      "ores::refdata::domain::deposit_convention",
@@ -247,6 +253,7 @@ enum class convention_family_key : std::size_t {
     cross_currency_basis,
     cross_currency_fix_float_fixed_leg,
     cross_currency_fix_float_float_leg,
+    cross_currency_fix_float_swap_terms,
     deposit,
     fra,
     future,
@@ -292,6 +299,9 @@ static_assert(convention_families[static_cast<std::size_t>(
 static_assert(convention_families[static_cast<std::size_t>(
                                       convention_family_key::cross_currency_fix_float_float_leg)]
                   .key == "cross_currency_fix_float_float_leg");
+static_assert(convention_families[static_cast<std::size_t>(
+                                      convention_family_key::cross_currency_fix_float_swap_terms)]
+                  .key == "cross_currency_fix_float_swap_terms");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::deposit)].key ==
               "deposit");
 static_assert(convention_families[static_cast<std::size_t>(convention_family_key::fra)].key ==

@@ -25,9 +25,11 @@
 import type { Convention } from '../domain/convention.js';
 import type { CrossCurrencyFixFloatFixedLeg } from '../domain/cross_currency_fix_float_fixed_leg.js';
 import type { CrossCurrencyFixFloatFloatLeg } from '../domain/cross_currency_fix_float_float_leg.js';
+import type { CrossCurrencyFixFloatSwapTerms } from '../domain/cross_currency_fix_float_swap_terms.js';
 import type { ConventionChange } from './convention_protocol.js';
 import type { CrossCurrencyFixFloatFixedLegChange } from './cross_currency_fix_float_fixed_leg_protocol.js';
 import type { CrossCurrencyFixFloatFloatLegChange } from './cross_currency_fix_float_float_leg_protocol.js';
+import type { CrossCurrencyFixFloatSwapTermsChange } from './cross_currency_fix_float_swap_terms_protocol.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
@@ -40,12 +42,14 @@ export interface CrossCurrencyFixFloatConventionItem {
     convention: Convention | null;
     fixed_leg: CrossCurrencyFixFloatFixedLeg[];
     float_leg: CrossCurrencyFixFloatFloatLeg[];
+    swap_terms: CrossCurrencyFixFloatSwapTerms[];
 }
 
 export interface CrossCurrencyFixFloatConventionWrite {
     change: ConventionChange;
     fixed_leg: CrossCurrencyFixFloatFixedLegChange[];
     float_leg: CrossCurrencyFixFloatFloatLegChange[];
+    swap_terms: CrossCurrencyFixFloatSwapTermsChange[];
 }
 
 export interface GetCrossCurrencyFixFloatConventionRequest {

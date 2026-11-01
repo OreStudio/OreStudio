@@ -28,9 +28,11 @@
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_fixed_leg.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_float_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/messaging/convention_protocol.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_fixed_leg_protocol.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_float_leg_protocol.hpp"
+#include "ores.refdata.api/messaging/cross_currency_fix_float_swap_terms_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -49,12 +51,14 @@ struct cross_currency_fix_float_convention_item {
     std::optional<ores::refdata::domain::convention> convention;
     std::vector<ores::refdata::domain::cross_currency_fix_float_fixed_leg> fixed_leg;
     std::vector<ores::refdata::domain::cross_currency_fix_float_float_leg> float_leg;
+    std::vector<ores::refdata::domain::cross_currency_fix_float_swap_terms> swap_terms;
 };
 
 struct cross_currency_fix_float_convention_write {
     convention_change change;
     std::vector<cross_currency_fix_float_fixed_leg_change> fixed_leg;
     std::vector<cross_currency_fix_float_float_leg_change> float_leg;
+    std::vector<cross_currency_fix_float_swap_terms_change> swap_terms;
 };
 
 struct get_cross_currency_fix_float_convention_request {

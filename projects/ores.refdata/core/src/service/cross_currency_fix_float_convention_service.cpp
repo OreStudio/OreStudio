@@ -30,10 +30,12 @@
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_fixed_leg.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_float_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_swap_terms.hpp"
 #include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_fixed_leg_repository.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_float_leg_repository.hpp"
+#include "ores.refdata.core/repository/cross_currency_fix_float_swap_terms_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -176,6 +178,47 @@ key_from_float_leg(const domain::cross_currency_fix_float_float_leg& v) {
     return key;
 }
 
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::cross_currency_fix_float_swap_terms>
+read_swap_terms(repository::cross_currency_fix_float_swap_terms_repository& repo,
+                const ores::database::context& ctx,
+                const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::cross_currency_fix_float_swap_terms
+to_domain_swap_terms(const messaging::cross_currency_fix_float_swap_terms_write& write) {
+    domain::cross_currency_fix_float_swap_terms v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
+    v.settlement_days = write.settlement_days;
+    v.settlement_calendar = write.settlement_calendar;
+    v.settlement_convention = write.settlement_convention;
+    v.eom = write.eom;
+    v.is_resettable = write.is_resettable;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::cross_currency_fix_float_swap_terms_key
+key_from_swap_terms(const domain::cross_currency_fix_float_swap_terms& v) {
+    messaging::cross_currency_fix_float_swap_terms_key key;
+    key.id = v.id;
+    return key;
+}
+
 }
 
 cross_currency_fix_float_convention_service::cross_currency_fix_float_convention_service(
@@ -239,6 +282,9 @@ cross_currency_fix_float_convention_service::put_cross_currency_fix_float_conven
     response.result = reconcile_float_leg(ctx, central, request.item.float_leg, request.intent);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
+    response.result = reconcile_swap_terms(ctx, central, request.item.swap_terms, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
 
     auto stored = read_convention(central_repo_, ctx, key);
     if (stored.empty()) {
@@ -276,6 +322,9 @@ cross_currency_fix_float_convention_service::put_many_cross_currency_fix_float_c
         response.result = reconcile_float_leg(ctx, central, write.float_leg, request.intent);
         if (response.result.outcome != ores::utility::domain::outcome::ok)
             return response;
+        response.result = reconcile_swap_terms(ctx, central, write.swap_terms, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
         auto stored = read_convention(central_repo_, ctx, key);
         if (stored.empty()) {
             response.result = refuse(outcome_code::not_found, {.entity = "convention"});
@@ -300,6 +349,8 @@ cross_currency_fix_float_convention_service::assemble(
         item.fixed_leg = read_fixed_leg(fixed_leg_repo_, ctx, *central);
     if (central)
         item.float_leg = read_float_leg(float_leg_repo_, ctx, *central);
+    if (central)
+        item.swap_terms = read_swap_terms(swap_terms_repo_, ctx, *central);
     return item;
 }
 
@@ -523,6 +574,94 @@ ores::utility::domain::result cross_currency_fix_float_convention_service::recon
     // store checks each row's claim inside it.
     if (!wanted.empty())
         float_leg_repo_.write(ctx, wanted, claims);
+    return {};
+}
+
+ores::utility::domain::result cross_currency_fix_float_convention_service::prepare_swap_terms(
+    const messaging::cross_currency_fix_float_swap_terms_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::cross_currency_fix_float_swap_terms& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_swap_terms(change.write);
+    const auto key = key_from_swap_terms(out);
+    const auto current = swap_terms_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "cross_currency_fix_float_swap_terms"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "cross_currency_fix_float_swap_terms"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "cross_currency_fix_float_swap_terms",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+ores::utility::domain::result cross_currency_fix_float_convention_service::reconcile_swap_terms(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::cross_currency_fix_float_swap_terms_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::cross_currency_fix_float_swap_terms> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::cross_currency_fix_float_swap_terms row;
+        const auto result = prepare_swap_terms(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_swap_terms(swap_terms_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            swap_terms_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        swap_terms_repo_.write(ctx, wanted, claims);
     return {};
 }
 }

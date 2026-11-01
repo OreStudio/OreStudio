@@ -28,7 +28,12 @@ namespace ores::reporting::messaging {
 
 namespace {
 
-constexpr std::string_view queue_group = "ores.reporting.service";
+/*
+ * The queue the reporting service competes on. It is named here and not shared
+ * with the proposal registrar's own constant, because a unity build puts both
+ * files in one translation unit and one name would be two definitions.
+ */
+constexpr std::string_view cut_take_queue_group = "ores.reporting.service";
 
 }
 
@@ -41,7 +46,7 @@ std::vector<ores::nats::service::subscription> cut_take_registrar::register_hand
     auto h = std::make_shared<cut_take_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         take_cut_request::nats_subject,
-        queue_group,
+        cut_take_queue_group,
         [h](ores::nats::message msg) { h->take_cut(std::move(msg)); }));
 
     return subs;

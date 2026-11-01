@@ -75,38 +75,19 @@
 // system-tenant grand-parent is read rather than generated.
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-// Soft-FK parent seeding (ores_reporting_cuts_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.reporting.api/generators/cut_generator.hpp"
-#include "ores.reporting.core/repository/cut_repository.hpp"
-// Grand-parent seeding (ores_reporting_cut_families_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.reporting.api/generators/cut_family_generator.hpp"
-#include "ores.reporting.core/repository/cut_family_repository.hpp"
-// Grand-parent seeding (ores_reporting_cut_resolution_rules_tbl): the parent's own mandatory soft
-// FKs reference rows the test seeds before the parent, so their generator and repository headers
-// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
-// nothing, and a system-tenant grand-parent is read rather than generated.
-#include "ores.reporting.api/generators/cut_resolution_rule_generator.hpp"
-#include "ores.reporting.core/repository/cut_resolution_rule_repository.hpp"
-// Grand-parent seeding (ores_reporting_cut_kinds_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.reporting.api/generators/cut_kind_generator.hpp"
-#include "ores.reporting.core/repository/cut_kind_repository.hpp"
-// Grand-parent seeding (ores_refdata_business_centres_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
+// Parent-seed snippet includes (ores_reporting_cuts_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
 #include "ores.refdata.api/generators/business_centre_generator.hpp"
 #include "ores.refdata.core/repository/business_centre_repository.hpp"
+#include "ores.reporting.api/generators/cut_family_generator.hpp"
+#include "ores.reporting.api/generators/cut_generator.hpp"
+#include "ores.reporting.api/generators/cut_kind_generator.hpp"
+#include "ores.reporting.api/generators/cut_resolution_rule_generator.hpp"
+#include "ores.reporting.core/repository/cut_family_repository.hpp"
+#include "ores.reporting.core/repository/cut_kind_repository.hpp"
+#include "ores.reporting.core/repository/cut_repository.hpp"
+#include "ores.reporting.core/repository/cut_resolution_rule_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -236,14 +217,10 @@ TEST_CASE("write_cut_approval_detail_publishes_an_event", "[eventing][integratio
     ores::refdata::repository::party_repository party_id_repo;
     party_id_repo.write(party_ctx, party_id_parent);
     v.party_id = party_id_parent.id;
-    // Seed the active cut row ores_reporting_cuts_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
     auto cut_id_parent = ores::reporting::generators::generate_synthetic_cut(ctx);
-    // The cut is party-isolated, so it carries the
-    // session party: under any other party the child's insert trigger could
-    // not see it, and the existence check would reject the child.
-    cut_id_parent.party_id = *party_ctx.party_id();
+    // The detail is tenant-scoped, so the session names no party: the cut the
+    // detail names carries the party the detail itself names, and no other.
+    cut_id_parent.party_id = v.party_id;
     auto cut_id_parent_cut_kind_parent_cut_family_parent =
         ores::reporting::generators::generate_synthetic_cut_family(ctx);
     auto cut_id_parent_cut_kind_parent_cut_resolution_rule_parent =
@@ -252,33 +229,21 @@ TEST_CASE("write_cut_approval_detail_publishes_an_event", "[eventing][integratio
         ores::reporting::generators::generate_synthetic_cut_kind(ctx);
     auto cut_id_parent_business_centre_parent =
         ores::refdata::generators::generate_synthetic_business_centre(ctx);
-    // Seed the active cut_family row ores_reporting_cut_families_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
     ores::reporting::repository::cut_family_repository
         cut_id_parent_cut_kind_parent_cut_family_parent_repo;
     cut_id_parent_cut_kind_parent_cut_family_parent_repo.write(
         party_ctx, cut_id_parent_cut_kind_parent_cut_family_parent);
     cut_id_parent_cut_kind_parent.family_code =
         cut_id_parent_cut_kind_parent_cut_family_parent.code;
-    // Seed the active cut_resolution_rule row ores_reporting_cut_resolution_rules_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
     ores::reporting::repository::cut_resolution_rule_repository
         cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo;
     cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo.write(
         party_ctx, cut_id_parent_cut_kind_parent_cut_resolution_rule_parent);
     cut_id_parent_cut_kind_parent.resolution_rule_code =
         cut_id_parent_cut_kind_parent_cut_resolution_rule_parent.code;
-    // Seed the active cut_kind row ores_reporting_cut_kinds_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
     ores::reporting::repository::cut_kind_repository cut_id_parent_cut_kind_parent_repo;
     cut_id_parent_cut_kind_parent_repo.write(party_ctx, cut_id_parent_cut_kind_parent);
     cut_id_parent.kind_code = cut_id_parent_cut_kind_parent.code;
-    // Seed the active business_centre row ores_refdata_business_centres_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
     ores::refdata::repository::business_centre_repository cut_id_parent_business_centre_parent_repo;
     cut_id_parent_business_centre_parent_repo.write(party_ctx,
                                                     cut_id_parent_business_centre_parent);

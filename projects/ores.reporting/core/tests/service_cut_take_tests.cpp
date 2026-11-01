@@ -23,7 +23,9 @@
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/generators/business_centre_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/business_centre_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
@@ -106,6 +108,14 @@ world seed_world(ores::testing::scoped_database_helper& h, const std::string& su
     }
     ores::refdata::repository::party_repository{}.write(base, party);
 
+    // A cut names the rates centre its scope revalues against, and the store
+    // checks the code against the business centres the session may see, so the
+    // tenant a case writes into needs one.
+    auto centre = ores::refdata::generators::generate_synthetic_business_centre(gen);
+    centre.code = "GBLO";
+    centre.change_reason_code = "system.test";
+    ores::refdata::repository::business_centre_repository{}.write(base, centre);
+
     return {.party_id = party.id,
             .taker = taker,
             .ctx = base.with_party(base.tenant_id(), party.id, {party.id}, taker)};
@@ -177,7 +187,7 @@ TEST_CASE("a take writes the body with the kind's retention and raises its reque
     const auto request = lifecycle.request(answer.approval_request_id);
     REQUIRE(request.has_value());
     REQUIRE(request->kind_code == "reporting.eod_cut_authorisation");
-    REQUIRE(request->state_code == "pending");
+    REQUIRE(request->state_code == "waiting");
 
     // The subject the request is about: the cut, with the counts of its parts.
     repository::cut_approval_detail_repository details;
@@ -332,15 +342,20 @@ TEST_CASE("a retake of one instant is the second body of that occasion", "[cut_t
     reader.answer = full_answers();
     service::cut_take_service take(w.ctx, reader);
 
-    const auto first = take.take(a_take("EOD"));
+    // One instant, twice: a retake is a second body of the same occasion.
+    const auto request = a_take("EOD");
+    const auto first = take.take(request);
     REQUIRE(first.result.outcome == ores::utility::domain::outcome::ok);
-    const auto second = take.take(a_take("EOD"));
+    const auto second = take.take(request);
     REQUIRE(second.result.outcome == ores::utility::domain::outcome::ok);
 
     const auto rows = repository::cut_repository{}.read_latest(w.ctx, second.cut_id);
     REQUIRE(rows.size() == 1);
     REQUIRE(rows.front().take_ordinal == 2);
-    // The label states the ordinal, so a person reads which body is meant.
-    REQUIRE(second.cut_label.find(".2") != std::string::npos);
-    REQUIRE(first.cut_label.find(".2") == std::string::npos);
+    // The label states the ordinal, so a person reads which body is meant. The
+    // first body's label carries a date and no ordinal, and the second states
+    // its own at the end.
+    REQUIRE(second.cut_label.ends_with(".2"));
+    REQUIRE_FALSE(first.cut_label.ends_with(".2"));
+    REQUIRE(first.cut_label == second.cut_label.substr(0, second.cut_label.size() - 2));
 }

@@ -513,4 +513,25 @@ cut_approval_detail_repository::read_latest_by_request(context ctx, const std::s
     return rows.front();
 }
 
+std::optional<domain::cut_approval_detail>
+cut_approval_detail_repository::read_latest_by_cut(context ctx, const std::string& cut_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of cut: " << cut_id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<cut_approval_detail_entity>> |
+        query_builder::where("tenant_id"_c == tid && "cut_id"_c == cut_id && "valid_to"_c == max);
+
+    auto rows =
+        query_builder::execute_read_query<cut_approval_detail_entity, domain::cut_approval_detail>(
+            ctx,
+            query,
+            [](const auto& entities) { return cut_approval_detail_mapper::map(entities); },
+            lg(),
+            "Reading the cut approval detail of a cut.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+
 }

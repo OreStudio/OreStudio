@@ -161,6 +161,16 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
     const auto assembly = assemble_cut_body(kind, facts);
 
     response.parts = assembly.parts;
+    // The gaps are the answer the person reads, beside the parts that closed:
+    // a body that could not be assembled says which parts and why.
+    for (const auto& gap : assembly.gaps) {
+        domain::cut_gap row;
+        row.party_id = *party;
+        row.part_code = gap.part_code;
+        row.item = gap.item;
+        row.reason = gap.reason;
+        response.gaps.push_back(std::move(row));
+    }
     response.deal_count = assembly.deal_count;
     response.market_data_set_count = assembly.market_data_set_count;
     response.reference_data_version = facts.reference_data_version.value_or(std::string{});
@@ -235,7 +245,7 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
     plan.code_version = facts.code_version;
     plan.taken_by = actor;
     plan.taken_at = taken_at;
-    plan.change_reason_code = "system.cut_taken";
+    plan.change_reason_code = "system.new_record";
     plan.change_commentary = request.reason.empty() ? "Cut taken by hand" : request.reason;
 
     auto cut = plan_take(plan, kind, boost::uuids::random_generator{}(),
@@ -287,7 +297,7 @@ ores::reporting::messaging::take_cut_response cut_take_service::take(
             row.reason = g.reason;
             row.modified_by = actor;
             row.performed_by = ctx.service_account();
-            row.change_reason_code = "system.cut_gap";
+            row.change_reason_code = "system.new_record";
             row.change_commentary = g.reason;
             gaps.push_back(std::move(row));
         }

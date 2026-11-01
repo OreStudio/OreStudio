@@ -265,13 +265,70 @@ authorises nothing.
 
 ** cut_id
 :PROPERTIES:
-:table:         ores_reporting_cuts_tbl
-:target_column: id
-:parent_entity: cut
-:nullable:      false
-:list_by:       true
-:error_message: Invalid cut_id: %. No active cut found with this id.
+:table:                 ores_reporting_cuts_tbl
+:target_column:         id
+:parent_entity:         cut
+:seed_parent_party_id:  true
+:nullable:              false
+:list_by:               true
+:error_message:         Invalid cut_id: %. No active cut found with this id.
 :END:
+
+The cut the request authorises.
+
+The detail is tenant-scoped and not party-scoped, so its session names no party
+to hand its parents. The cut it seeds therefore carries the party the detail
+names, which is the party the take fixed the body for.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.refdata.api/generators/business_centre_generator.hpp"
+#include "ores.refdata.core/repository/business_centre_repository.hpp"
+#include "ores.reporting.api/generators/cut_family_generator.hpp"
+#include "ores.reporting.api/generators/cut_generator.hpp"
+#include "ores.reporting.api/generators/cut_kind_generator.hpp"
+#include "ores.reporting.api/generators/cut_resolution_rule_generator.hpp"
+#include "ores.reporting.core/repository/cut_family_repository.hpp"
+#include "ores.reporting.core/repository/cut_kind_repository.hpp"
+#include "ores.reporting.core/repository/cut_repository.hpp"
+#include "ores.reporting.core/repository/cut_resolution_rule_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    auto cut_id_parent = ores::reporting::generators::generate_synthetic_cut(ctx);
+    // The detail is tenant-scoped, so the session names no party: the cut the
+    // detail names carries the party the detail itself names, and no other.
+    cut_id_parent.party_id = v.party_id;
+    auto cut_id_parent_cut_kind_parent_cut_family_parent =
+        ores::reporting::generators::generate_synthetic_cut_family(ctx);
+    auto cut_id_parent_cut_kind_parent_cut_resolution_rule_parent =
+        ores::reporting::generators::generate_synthetic_cut_resolution_rule(ctx);
+    auto cut_id_parent_cut_kind_parent =
+        ores::reporting::generators::generate_synthetic_cut_kind(ctx);
+    auto cut_id_parent_business_centre_parent =
+        ores::refdata::generators::generate_synthetic_business_centre(ctx);
+    ores::reporting::repository::cut_family_repository
+        cut_id_parent_cut_kind_parent_cut_family_parent_repo;
+    cut_id_parent_cut_kind_parent_cut_family_parent_repo.write(
+        party_ctx, cut_id_parent_cut_kind_parent_cut_family_parent);
+    cut_id_parent_cut_kind_parent.family_code =
+        cut_id_parent_cut_kind_parent_cut_family_parent.code;
+    ores::reporting::repository::cut_resolution_rule_repository
+        cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo;
+    cut_id_parent_cut_kind_parent_cut_resolution_rule_parent_repo.write(
+        party_ctx, cut_id_parent_cut_kind_parent_cut_resolution_rule_parent);
+    cut_id_parent_cut_kind_parent.resolution_rule_code =
+        cut_id_parent_cut_kind_parent_cut_resolution_rule_parent.code;
+    ores::reporting::repository::cut_kind_repository cut_id_parent_cut_kind_parent_repo;
+    cut_id_parent_cut_kind_parent_repo.write(party_ctx, cut_id_parent_cut_kind_parent);
+    cut_id_parent.kind_code = cut_id_parent_cut_kind_parent.code;
+    ores::refdata::repository::business_centre_repository cut_id_parent_business_centre_parent_repo;
+    cut_id_parent_business_centre_parent_repo.write(party_ctx,
+                                                    cut_id_parent_business_centre_parent);
+    cut_id_parent.business_centre_code = cut_id_parent_business_centre_parent.code;
+    ores::reporting::repository::cut_repository cut_id_repo;
+    cut_id_repo.write(party_ctx, cut_id_parent);
+    v.cut_id = cut_id_parent.id;
+#+end_src
 
 * C++
 
@@ -350,7 +407,7 @@ read_latest_by_cut(context ctx, const std::string& cut_id);
 #include <string>
 #+end_src
 
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46DDB364BF9E
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::cut_approval_detail>
 cut_approval_detail_repository::read_latest_by_cut(context ctx, const std::string& cut_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the cut approval detail of cut: " << cut_id;

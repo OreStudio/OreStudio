@@ -315,25 +315,6 @@ KINDS = {
         ("FlatIsAveraged", "flat_is_averaged", "bool"),
         ("FlatObservationShift", "flat_observation_shift", "bool"),
     ]),
-    "CrossCurrencyFixFloat": ("cross_currency_fix_float", [
-        ("SettlementDays", "settlement_days", "int"),
-        ("SettlementCalendar", "settlement_calendar", "text"),
-        ("SettlementConvention", "settlement_convention", "bdc"),
-        ("FixedCurrency", "fixed_currency", "text"),
-        ("FixedFrequency", "fixed_frequency", "frequency"),
-        ("FixedConvention", "fixed_convention", "bdc"),
-        ("FixedDayCounter", "fixed_day_count_fraction", "daycounter"),
-        ("Index", "index", "text"),
-        ("EOM", "eom", "bool"),
-        ("IsResettable", "is_resettable", "bool"),
-        ("FloatIndexIsResettable", "float_index_is_resettable", "bool"),
-        ("IncludeSpread", "include_spread", "bool"),
-        ("Lookback", "lookback", "text"),
-        ("FixingDays", "fixing_days", "int"),
-        ("RateCutoff", "rate_cutoff", "int"),
-        ("IsAveraged", "is_averaged", "bool"),
-        ("ObservationShift", "observation_shift", "bool"),
-    ]),
     "Deposit": ("deposit", [
         ("IndexBased", "index_based", "bool"),
         ("Index", "index", "text"),
@@ -463,16 +444,69 @@ CUT_KINDS = {
 }
 
 # Kinds whose live shape is a composite: one canonical entry becomes a central
-# convention row plus one row in exactly one of the kind's part tables. Each
-# live table gets its own artefact table, and a part names the central row by
-# its name and kind rather than by a uuid, because the uuid is made by the
-# publish. The form is the mapper's choice: a row that carries PayIndex or
-# ReceiveIndex is the paying and receiving form, every other row is the long
-# and short form.
+# convention row plus one row in each part table its parts_of names. Each live
+# table gets its own artefact table, and a part names the central row by its
+# name and kind rather than by a uuid, because the uuid is made by the publish.
+#
+# A tenor basis swap fills exactly one of its two parts, and the form is the
+# mapper's choice: a row that carries PayIndex or ReceiveIndex is the paying and
+# receiving form, every other row is the long and short form. A cross-currency
+# fix-float swap fills all three of its parts.
+def tenor_basis_swap_parts(fields):
+    pay_receive = (fields.get("PayIndex", "").strip()
+                   or fields.get("ReceiveIndex", "").strip())
+    return ["pay_receive" if pay_receive else "long_short"]
+
+
 COMPOSITE_KINDS = {
+    "CrossCurrencyFixFloat": {
+        "kind_code": "CROSS_CURRENCY_FIX_FLOAT",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": lambda fields: ["swap_terms", "fixed_leg", "float_leg"],
+        "parts": {
+            "swap_terms": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl",
+                "mapping": [
+                    ("SettlementDays", "settlement_days", "int"),
+                    ("SettlementCalendar", "settlement_calendar", "text"),
+                    ("SettlementConvention", "settlement_convention", "bdc"),
+                    ("EOM", "eom", "bool"),
+                    ("IsResettable", "is_resettable", "bool"),
+                ],
+            },
+            "fixed_leg": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl",
+                "mapping": [
+                    ("FixedCurrency", "fixed_currency", "text"),
+                    ("FixedFrequency", "fixed_frequency", "frequency"),
+                    ("FixedConvention", "fixed_convention", "bdc"),
+                    ("FixedDayCounter", "fixed_day_count_fraction",
+                     "daycounter"),
+                ],
+            },
+            "float_leg": {
+                "table":
+                    "ores_dq_cross_currency_fix_float_float_legs_artefact_tbl",
+                "mapping": [
+                    ("Index", "index", "text"),
+                    ("FloatIndexIsResettable", "float_index_is_resettable",
+                     "bool"),
+                    ("IncludeSpread", "include_spread", "bool"),
+                    ("Lookback", "lookback", "text"),
+                    ("FixingDays", "fixing_days", "int"),
+                    ("RateCutoff", "rate_cutoff", "int"),
+                    ("IsAveraged", "is_averaged", "bool"),
+                    ("ObservationShift", "observation_shift", "bool"),
+                ],
+            },
+        },
+    },
     "TenorBasisSwap": {
         "kind_code": "TENOR_BASIS_SWAP",
         "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts_of": tenor_basis_swap_parts,
         "parts": {
             "pay_receive": {
                 "table":
@@ -530,14 +564,13 @@ INDEX_KINDS = ("IborIndex", "OvernightIndex", "ZeroInflationIndex", "SwapIndex")
 # the kind does not define the index in its id. The model doc string names the
 # same field. A kind absent here names no index, so its rows carry no URI: it is
 # a requirement, per the model doc string. An atomised kind is not a flat row
-# and is not listed here: its central row stages no URI, because the kind names
-# two indices and the column holds the URI of a kind that names one.
+# and is not listed here: its central row stages no URI, because the index the
+# kind names lives on one of its parts.
 PRIMARY_INDEX = {
     "AverageOIS": ("Index",),
     "BMABasisSwap": ("Index", "BMAIndex"),
     "CommodityFuture": ("IndexName",),
     "CrossCurrencyBasis": ("FlatIndex", "SpreadIndex"),
-    "CrossCurrencyFixFloat": ("Index",),
     "Deposit": ("Index",),
     "FRA": ("Index",),
     "Future": ("Index",),
@@ -795,16 +828,15 @@ def build_rows(rows, kind, spec, index_map):
 def build_composite_rows(rows, kind):
     """Return the staging blocks an atomised convention kind seeds.
 
-    One canonical entry stages a central convention row and one row in exactly
-    one of the kind's part tables. The part names the central row by the
+    One canonical entry stages a central convention row and one row in each
+    part table the kind's parts_of names for it. The part names the central row by the
     convention's name and kind, never by a uuid: the uuid is made by the
     publish, and the kind is part of the central identity.
 
-    The central row stages no oresmd_uri. The column holds the URI of a kind
-    that names one index, and an atomised kind names two: PayIndex and
-    ReceiveIndex, or LongIndex and ShortIndex. The live write path leaves the
-    column null for every kind, so staging null here keeps the corpus and the
-    store in agreement.
+    The central row stages no oresmd_uri. The central row is shared by every
+    atomised kind, and the index a kind names lives on one of its parts. The
+    live write path leaves the column null for every kind, so staging null here
+    keeps the corpus and the store in agreement.
     """
     spec = COMPOSITE_KINDS[kind]
     kind_code = sql_literal(spec["kind_code"])
@@ -837,19 +869,17 @@ def build_composite_rows(rows, kind):
         blocks["central"]["rows"].append(
             ["v_dataset_id", "v_tenant_id", kind_code, name, "null"])
 
-        pay_receive = (fields.get("PayIndex", "").strip()
-                       or fields.get("ReceiveIndex", "").strip())
-        part = "pay_receive" if pay_receive else "long_short"
-        part_spec = spec["parts"][part]
-        cells = ["v_dataset_id", "v_tenant_id", name, kind_code]
-        for field, column, ptype in part_spec["mapping"]:
-            if field not in fields:
-                cells.append("null")
-                continue
-            raw = fields[field]
-            parsed = raw if ptype == "text" else PARSERS[ptype](kind, field, raw)
-            cells.append(sql_literal(parsed))
-        blocks[part]["rows"].append(cells)
+        for part in spec["parts_of"](fields):
+            part_spec = spec["parts"][part]
+            cells = ["v_dataset_id", "v_tenant_id", name, kind_code]
+            for field, column, ptype in part_spec["mapping"]:
+                if field not in fields:
+                    cells.append("null")
+                    continue
+                raw = fields[field]
+                parsed = raw if ptype == "text" else PARSERS[ptype](kind, field, raw)
+                cells.append(sql_literal(parsed))
+            blocks[part]["rows"].append(cells)
     return list(blocks.values())
 
 
@@ -941,14 +971,14 @@ HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*
 -- convention set. One artefact table per live convention table holds the rows;
 -- the publish function ores_refdata_publish_conventions_from_dq_fn resolves
 -- each artefact table to its live table by name. The atomised tenor basis swap
--- stages into the central convention artefact table and its two part artefact
--- tables. Each block is seeded only when its own table holds no rows for the
+-- and cross-currency fix-float swap stage into the central convention artefact
+-- table and their part artefact tables. Each block is seeded only when its own table holds no rows for the
 -- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
 -- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null. The atomised convention's central row stages
--- null, because the kind names two indices and the live write path leaves the
--- column null.
+-- requirement) carries null. An atomised convention's central row stages
+-- null, because the central row is shared by every atomised kind and the live
+-- write path leaves the column null.
 
 """
 

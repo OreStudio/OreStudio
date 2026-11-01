@@ -5140,24 +5140,27 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- The copied column list is read from the live table itself, so there is no
 -- second per-kind list to keep in step either.
 --
--- The atomised tenor basis swap kind is not in the kind list: its live shape is
--- the central ores_refdata_conventions_tbl plus two part tables, which the
+-- The atomised kinds, the tenor basis swap and the cross-currency fix-float
+-- swap, are not in the kind list: the live shape of each is the central
+-- ores_refdata_conventions_tbl plus its part tables, which the
 -- one-artefact-to-one-live-table transform cannot express. The function
--- delegates that kind to
--- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn and folds the
--- counts it returns into its own, so the dataset keeps one entry point, one
--- artefact type and one subject. The dataset is not split because the atomised
--- kind's identity row is staged in the same central artefact table every other
--- kind's identity uses, and a second dataset would duplicate that staging.
+-- delegates each to its own publisher,
+-- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn and
+-- ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn, and
+-- folds the counts they return into its own, so the dataset keeps one entry
+-- point, one artefact type and one subject. The dataset is not split because an
+-- atomised kind's identity row is staged in the same central artefact table
+-- every other kind's identity uses, and a second dataset would duplicate that
+-- staging.
 --
 -- Rows the target party already carries are skipped, so a republish converges
 -- on the same set. Ids the engine does not ask for are inert: the engine
 -- resolves a convention by id.
 --
 -- The oresmd_uri column is copied through as staged: a flat kind stages the
--- URI of the one index it names, and the atomised central row stages null
--- because a tenor basis swap names two indices. The live write path leaves the
--- column null for every kind, so the seed and the write path agree. See the
+-- URI of the one index it names, and an atomised central row stages null
+-- because the index an atomised kind names lives on a part. The live write
+-- path leaves the column null for every kind, so the seed and the write path agree. See the
 -- README under tools/ore_conventions/.
 create or replace function ores_refdata_publish_conventions_from_dq_fn(
     p_dataset_id uuid,
@@ -5189,7 +5192,7 @@ declare
     v_kinds text[] := array[
         'average_ois', 'bma_basis_swap', 'bond_yield', 'cds',
         'cms_spread_option', 'commodity_forward', 'commodity_future',
-        'cross_currency_basis', 'cross_currency_fix_float', 'deposit', 'fra',
+        'cross_currency_basis', 'deposit', 'fra',
         'future', 'fx_option', 'ibor_index', 'inflation_swap',
         'intraday_power_load', 'ois', 'overnight_index', 'swap', 'swap_index',
         'tenor_basis_two_swap', 'zero',
@@ -5279,11 +5282,14 @@ begin
         v_total_inserted := v_total_inserted + v_inserted;
     end loop;
 
-    -- The atomised kind has no entry in the kind list above, because its live
-    -- shape is not one artefact table to one live table. It is published by its
-    -- own function and its counts are folded into this function's.
+    -- The atomised kinds have no entry in the kind list above, because their
+    -- live shape is not one artefact table to one live table. Each is published
+    -- by its own function and its counts are folded into this function's.
     for r in
         select * from ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
+            p_dataset_id, p_target_tenant_id, p_mode, p_params)
+        union all
+        select * from ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn(
             p_dataset_id, p_target_tenant_id, p_mode, p_params)
     loop
         if r.action = 'inserted' then
@@ -5539,6 +5545,196 @@ begin
     where (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part) > 0
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Atomised Instrument Conventions: the cross-currency fix-float composite
+-- =============================================================================
+
+-- The cross-currency fix-float kind's live shape is one central
+-- ores_refdata_conventions_tbl row plus one row in each of three part tables:
+-- the swap terms both legs share, the fixed leg and the floating leg. The flat
+-- name transform cannot express that shape, so this function owns the kind and
+-- the flat publisher delegates to it.
+--
+-- The staged central row names the convention by (kind, name), never by a uuid;
+-- the publish supplies the uuid and the party. A part names its central row by
+-- the same (kind, name) pair. Every convention fills all three parts, so unlike
+-- the tenor basis swap there is no other form to close. A part is written only
+-- when the convention has no live row of it, and the mode has no effect: like
+-- the flat publisher, this one only inserts what is absent.
+create or replace function ores_refdata_publish_cross_currency_fix_float_conventions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_commentary text;
+    v_staged_central bigint := 0;
+    v_staged_part bigint := 0;
+    v_inserted_central bigint := 0;
+    v_inserted_part bigint := 0;
+    v_batch bigint := 0;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    select count(*) into v_staged_central
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'CROSS_CURRENCY_FIX_FLOAT';
+
+    select count(*) into v_staged_part
+    from (
+        select 1
+        from ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_cross_currency_fix_float_float_legs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+    ) parts;
+
+    -- The central row is created only when the party holds no live row for the
+    -- identity, so a republish leaves the row it already wrote as it is. The
+    -- store's trigger stamps the version.
+    insert into ores_refdata_conventions_tbl (
+        tenant_id, id, version, party_id, kind_code, name, oresmd_uri,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id,
+        dq.kind_code, dq.name, dq.oresmd_uri,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'CROSS_CURRENCY_FIX_FLOAT'
+      and not exists (
+          select 1 from ores_refdata_conventions_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.party_id = v_party_id
+            and o.kind_code = dq.kind_code
+            and o.name = dq.name
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted_central = row_count;
+
+    -- The swap terms both legs share.
+    insert into ores_refdata_cross_currency_fix_float_swap_terms_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        settlement_days, settlement_calendar, settlement_convention, eom, is_resettable,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.settlement_days, a.settlement_calendar, a.settlement_convention, a.eom, a.is_resettable,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_fix_float_swap_terms_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The fixed leg.
+    insert into ores_refdata_cross_currency_fix_float_fixed_legs_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        fixed_currency, fixed_frequency, fixed_convention, fixed_day_count_fraction,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.fixed_currency, a.fixed_frequency, a.fixed_convention, a.fixed_day_count_fraction,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_fix_float_fixed_legs_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The floating leg.
+    insert into ores_refdata_cross_currency_fix_float_float_legs_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        index, float_index_is_resettable, include_spread, lookback, fixing_days, rate_cutoff, is_averaged, observation_shift,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.index, a.float_index_is_resettable, a.include_spread, a.lookback, a.fixing_days, a.rate_cutoff, a.is_averaged, a.observation_shift,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_fix_float_float_legs_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_fix_float_float_legs_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    return query
+    select 'inserted'::text, v_inserted_central + v_inserted_part
+    where v_inserted_central + v_inserted_part > 0
+    union all select 'skipped'::text,
+        (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part)
+    where (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part) > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 

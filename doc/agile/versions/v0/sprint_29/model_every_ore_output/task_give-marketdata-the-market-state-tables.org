@@ -127,3 +127,10 @@ own post-processor hands it over.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the index scanned a key's values once for every row | =payload_index.cpp= | Accept | A hash set beside the ordered list (27fc8c82c9). |
 | 2 | Local review: the store read every result file into memory to drop it | =market_state_handler.cpp= | Accept | Only the market-state files are read (07b088b517). |
+| 3 | Two results of one run that write the same file collide on the natural key | =market_state_reader.cpp= | Accept | The payload carries =result_id= in its key, in place of =source=, which repeated the family. A result that states a file twice is refused by name. |
+| 4 | Memory use for large cubes, and =int= casts on sizes | =market_state_handler.cpp= | Decline | Fan-out at the node removes the archive copy, and keeping the cube in the object store removes the base64 copy. Both are tasks of this story. |
+| 5 | The reply message gained a trailing period | =report_execution_handler.cpp= | Decline | No test or screen matches the text. |
+| 6 | The market-state family list is a second source of truth | =output_catalogue.cpp= | Accept | A test requires the listed codes to be exactly the catalogue's market-state families. |
+| 7 | One refused file drops the whole run's state | =market_state_handler.cpp= | Accept | Intended. A comment now says a partial store reads as the state the run priced against. |
+| 8 | The temp directory is removed by hand rather than by a guard | =market_state_handler.cpp= | Decline | Fan-out at the node deletes this code. |
+| 9 | Is the lent token logged, and is the subject permissioned? | =market_state_handler.cpp= | Decline | =log_handler_entry= logs the subject, correlation id and session only, and the handler requires =marketdata::market_state_payloads:write=. |

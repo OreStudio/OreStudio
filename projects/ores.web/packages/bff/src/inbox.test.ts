@@ -1634,59 +1634,31 @@ describe('the subject of a cut authorisation in the queue', () => {
         };
     }
 
-    const DETAIL = {
-        id: '14141414-1414-4414-8414-141414141414',
+    /** The subject the reporting component answers for the request. */
+    const SUBJECT = {
         request_id: CUT_REQUEST,
-        party_id: SYSTEM_TENANT,
         cut_id: CUT,
+        label: 'EOD.ACME-LONDON.2026-10-30',
+        kind_code: 'EOD',
+        kind_name: 'End of day cut',
+        timepoint: '2026-10-30 19:00:00Z',
+        timepoint_timezone: 'Europe/London',
+        scope_code: 'ACME-LONDON',
+        business_centre_code: 'GBLO',
+        state: 'taken',
         deal_count: 1284,
         market_data_set_count: 7,
         gap_count: 0,
         applied_by: '',
-        applied_at: null,
+        applied_at: '',
     };
 
-    const CUT_BODY = {
-        id: CUT,
-        version: 1,
-        kind_code: 'EOD',
-        scope_code: 'ACME-LONDON',
-        business_centre_code: 'GBLO',
-        timepoint: '2026-10-30 19:00:00Z',
-        timepoint_timezone: 'Europe/London',
-        take_ordinal: 1,
-        taken_by: 'henry.jones',
-        taken_at: '2026-10-30 19:01:00Z',
-        requires_authorisation: true,
-        approval_request_id: CUT_REQUEST,
-        approved_by: '',
-        approved_at: null,
-        refused_at: null,
-        refusal_comment: '',
-        retention_months: 25,
-        retention_destination_code: 'cold',
-        legal_hold: false,
-        output_is_indicative: false,
-    };
-
-    /** The two reads the join makes: the detail rows of the page, and the cut. */
+    /** The one read the join makes: the subjects of the requests on the page. */
     function cutJoins() {
         return {
-            'reporting.v1.cut_approval_details.list': {
+            'reporting.v1.ops.list_cut_authorisation_subjects': {
                 result: OK,
-                details: [DETAIL],
-                total: 1,
-            },
-            'reporting.v1.ops.get_cut_record': {
-                result: OK,
-                cut: CUT_BODY,
-                kind: { code: 'EOD', name: 'End of day cut', family_code: 'end_of_day' },
-                label: 'EOD.ACME-LONDON.2026-10-30',
-                state: 'taken',
-                superseded_by_id: '',
-                gaps: [],
-                run_count: 0,
-                detail: DETAIL,
+                subjects: [SUBJECT],
             },
         };
     }
@@ -1726,11 +1698,9 @@ describe('the subject of a cut authorisation in the queue', () => {
         });
         // One read answers the page, and it names the requests the page holds.
         const joined = calls.find(
-            (call) => call.subject === 'reporting.v1.cut_approval_details.list',
+            (call) => call.subject === 'reporting.v1.ops.list_cut_authorisation_subjects',
         );
-        expect(joined?.body).toMatchObject({
-            filter: expect.objectContaining({ request_id_one_of: [CUT_REQUEST] }),
-        });
+        expect(joined?.body).toMatchObject({ request_ids: [CUT_REQUEST] });
     });
 
     it('is read for the one request an address opens', async () => {
@@ -1761,7 +1731,7 @@ describe('the subject of a cut authorisation in the queue', () => {
                 total: 1,
                 answered: [],
             },
-            'reporting.v1.cut_approval_details.list': () => {
+            'reporting.v1.ops.list_cut_authorisation_subjects': () => {
                 throw new Error('Not permitted');
             },
             ...joins(),
@@ -1783,7 +1753,10 @@ describe('the subject of a cut authorisation in the queue', () => {
                 total: 1,
                 answered: [],
             },
-            'reporting.v1.cut_approval_details.list': { result: OK, details: [], total: 0 },
+            'reporting.v1.ops.list_cut_authorisation_subjects': {
+                result: OK,
+                subjects: [],
+            },
             ...joins(),
         });
 

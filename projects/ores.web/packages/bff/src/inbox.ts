@@ -19,7 +19,7 @@
  *
  */
 
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     askForRoles,
@@ -316,8 +316,9 @@ async function withPublishedSubjects<
 async function withSubjects<Request extends { readonly id: string; readonly kindCode: string }>(
     session: LiveSession,
     requests: readonly Request[],
+    log: FastifyBaseLogger,
 ): Promise<readonly Request[]> {
-    return withCutSubjects(session, await withPublishedSubjects(session, requests));
+    return withCutSubjects(session, await withPublishedSubjects(session, requests), log);
 }
 
 /** The kind of request the Operations queue works. */
@@ -601,8 +602,8 @@ export function registerInboxRoutes(
         const queue = await readRequestQueue(session.client, page, viewerOf(session));
         return {
             ...queue,
-            items: await withSubjects(session, queue.items),
-            answered: await withSubjects(session, queue.answered),
+            items: await withSubjects(session, queue.items, request.log),
+            answered: await withSubjects(session, queue.answered, request.log),
         };
     });
 
@@ -640,7 +641,7 @@ export function registerInboxRoutes(
         const id = requestIdOf(request);
         const detail = await readRequest(session.client, id, viewerOf(session));
         if (detail === null) throw notFound('No such request.');
-        const [withSubject] = await withSubjects(session, [detail]);
+        const [withSubject] = await withSubjects(session, [detail], request.log);
         return { ...(withSubject ?? detail), subjects: await subjectsOf(session, id) };
     });
 

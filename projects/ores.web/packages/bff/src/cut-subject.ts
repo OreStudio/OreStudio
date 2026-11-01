@@ -19,15 +19,15 @@
  *
  */
 
+import type { FastifyBaseLogger } from 'fastify';
 import { z } from 'zod';
-import { subjects as detailSubjects } from '@ores/wire-protocol/generated/reporting/protocol/cut_approval_detail_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
  * What a cut-authorisation request authorises, joined from the reporting
- * component's own reads.
+ * component's own read.
  *
  * A request is a header. What it is about lives in the kind's own detail row,
  * keyed by the request's id, and the cut that row names holds the label, the
@@ -35,11 +35,13 @@ import type { LiveSession } from './sessions.js';
  * record page, so the request page draws the subject and points at the body
  * rather than copying it.
  *
- * One read answers the whole page: the detail rows come back in one call, and
- * the cuts they name are read beside each other. A reader who may not read a cut
- * keeps the page and loses the subject, and the two reasons a subject can be
- * absent - a refused read and a missing row - travel apart, because a screen
- * that says only "not readable" tells a person nothing they can act on.
+ * One read answers the whole page: the component answers every request the page
+ * holds in one call, and the label and the state it answers with are its derived
+ * words, so the request page and the cut's own page cannot disagree about the
+ * body. A reader who may not read a cut keeps the page and loses the subject, and
+ * the two reasons a subject can be absent - a refused read and a missing row -
+ * travel apart, because a screen that says only "not readable" tells a person
+ * nothing they can act on.
  */
 
 /** The kinds of approval request whose subject a cut's detail row holds. */
@@ -48,34 +50,14 @@ const CUT_AUTHORISATION_KINDS: ReadonlySet<string> = new Set([
     'reporting.ipv_cut_authorisation',
 ]);
 
-/** The detail row as this module reads it: the subject and the counts it holds. */
-const detailSchema = z.looseObject({
-    request_id: z.string().default(''),
-    cut_id: z.string().default(''),
-    deal_count: z.number().default(0),
-    market_data_set_count: z.number().default(0),
-    gap_count: z.number().default(0),
-    applied_by: z.string().default(''),
-    applied_at: z.string().nullable().optional(),
-});
-
-const detailsReplySchema = z.looseObject({
+/** The subjects reply, as this module reads it. */
+const subjectsReplySchema = z.looseObject({
     result: resultSchema,
-    details: z.array(detailSchema).default([]),
-    total: z.number().default(0),
-});
-
-/** One cut's record, as the record read answers it. */
-const cutRecordReplySchema = z.looseObject({
-    result: resultSchema,
-    cut: row.nullable().default(null),
-    kind: row.nullable().default(null),
-    label: z.string().default(''),
-    state: z.string().default(''),
+    subjects: z.array(row).default([]),
 });
 
 /** One subject as the screen draws it. */
-type CutSubject = Readonly<Record<string, unknown>>;
+export type CutSubject = Readonly<Record<string, unknown>>;
 
 /**
  * The cut each request on the page authorises, and why one has none.
@@ -83,6 +65,7 @@ type CutSubject = Readonly<Record<string, unknown>>;
 export async function cutSubjectsOf(
     session: LiveSession,
     requests: readonly { readonly id: string; readonly kindCode: string }[],
+    log: FastifyBaseLogger,
 ): Promise<{
     readonly byRequest: ReadonlyMap<string, CutSubject>;
     readonly absentBecause: 'refused' | 'missing';
@@ -92,72 +75,45 @@ export async function cutSubjectsOf(
         .map((request) => request.id);
     if (ids.length === 0) return { byRequest: new Map(), absentBecause: 'missing' };
 
-    let details: readonly z.infer<typeof detailSchema>[];
+    let subjects: readonly Record<string, unknown>[];
     try {
         const reply = await session.client.callAuthenticated(
-            detailSubjects.list_cut_approval_details_request,
-            {
-                offset: 0,
-                limit: ids.length,
-                order: { field: '', descending: false },
-                filter: {
-                    request_id: null,
-                    cut_id: null,
-                    party_id: null,
-                    id_one_of: null,
-                    request_id_one_of: ids,
-                    cut_id_one_of: null,
-                    party_id_one_of: null,
-                },
-                as_of: null,
-            },
-            detailsReplySchema,
+            operationSubjects.list_cut_authorisation_subjects_request,
+            { request_ids: ids },
+            subjectsReplySchema,
         );
         if (reply.result.outcome !== 'ok') {
+            log.warn({ result: reply.result }, 'the cut authorisation subjects were refused');
             return { byRequest: new Map(), absentBecause: 'refused' };
         }
-        details = reply.details;
-    } catch {
+        subjects = reply.subjects;
+    } catch (error) {
+        log.warn({ err: error }, 'the cut authorisation subjects could not be read');
         return { byRequest: new Map(), absentBecause: 'refused' };
     }
 
-    const records = await Promise.all(
-        details.map(async (detail) => {
-            if (detail.cut_id === '') return null;
-            try {
-                const reply = await session.client.callAuthenticated(
-                    operationSubjects.get_cut_record_request,
-                    { cut_id: detail.cut_id },
-                    cutRecordReplySchema,
-                );
-                if (reply.result.outcome !== 'ok' || reply.cut === null) return null;
-                return { detail, record: reply };
-            } catch {
-                return null;
-            }
-        }),
-    );
-
     const byRequest = new Map<string, CutSubject>();
-    for (const entry of records) {
-        if (entry === null) continue;
-        const { detail, record } = entry;
-        const cut = record.cut ?? {};
-        byRequest.set(detail.request_id, {
-            cut_id: text(cut['id']),
-            label: record.label,
-            kind_code: text(cut['kind_code']),
-            kind_name: record.kind === null ? '' : text(record.kind['name']),
-            timepoint: text(cut['timepoint']),
-            timepoint_timezone: text(cut['timepoint_timezone']),
-            scope_code: text(cut['scope_code']),
-            business_centre_code: text(cut['business_centre_code']),
-            state: record.state,
-            deal_count: detail.deal_count,
-            market_data_set_count: detail.market_data_set_count,
-            gap_count: detail.gap_count,
-            applied_by: detail.applied_by,
-            applied_at: detail.applied_at ?? null,
+    for (const subject of subjects) {
+        const requestId = text(subject['request_id']);
+        if (requestId === '') continue;
+        // The wire states an absent instant as the empty string, and the screen's
+        // schema states it as null.
+        const appliedAt = text(subject['applied_at']);
+        byRequest.set(requestId, {
+            cut_id: text(subject['cut_id']),
+            label: text(subject['label']),
+            kind_code: text(subject['kind_code']),
+            kind_name: text(subject['kind_name']),
+            timepoint: text(subject['timepoint']),
+            timepoint_timezone: text(subject['timepoint_timezone']),
+            scope_code: text(subject['scope_code']),
+            business_centre_code: text(subject['business_centre_code']),
+            state: text(subject['state']),
+            deal_count: Number(subject['deal_count'] ?? 0),
+            market_data_set_count: Number(subject['market_data_set_count'] ?? 0),
+            gap_count: Number(subject['gap_count'] ?? 0),
+            applied_by: text(subject['applied_by']),
+            applied_at: appliedAt === '' ? null : appliedAt,
         });
     }
     return { byRequest, absentBecause: 'missing' };
@@ -171,11 +127,14 @@ export async function cutSubjectsOf(
  * kind's row is the row it was before this join existed. A cut request whose
  * subject is absent says why, in the same field a publish request does.
  */
-export async function withCutSubjects<Request extends { readonly id: string; readonly kindCode: string }>(
+export async function withCutSubjects<
+    Request extends { readonly id: string; readonly kindCode: string },
+>(
     session: LiveSession,
     requests: readonly Request[],
+    log: FastifyBaseLogger,
 ): Promise<readonly Request[]> {
-    const { byRequest, absentBecause } = await cutSubjectsOf(session, requests);
+    const { byRequest, absentBecause } = await cutSubjectsOf(session, requests, log);
     return requests.map((request) => {
         if (!CUT_AUTHORISATION_KINDS.has(request.kindCode)) return request;
         const subject = byRequest.get(request.id);

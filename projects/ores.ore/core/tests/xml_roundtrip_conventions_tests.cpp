@@ -130,8 +130,6 @@ std::vector<family> families() {
         make_family<rd::commodity_future_convention>("commodity_future", "CommodityFuture", 5),
         make_family<rd::cross_currency_basis_convention>(
             "cross_currency_basis", "CrossCurrencyBasis", 49),
-        make_family<rd::cross_currency_fix_float_convention>(
-            "cross_currency_fix_float", "CrossCurrencyFixFloat", 18),
         make_family<rd::deposit_convention>("deposit", "Deposit", 67),
         make_family<rd::fra_convention>("fra", "FRA", 53),
         make_family<rd::future_convention>("future", "Future", 39),
@@ -279,30 +277,109 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive",
     REQUIRE(xml_roundtrip_conventions_root_of(document).children("CrossCurrencyFixFloat").size() ==
             1);
 
+    namespace rd = ores::refdata::domain;
     const auto mapped = split_conventions(document);
-    const auto rows = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-        mapped, "cross_currency_fix_float");
-    REQUIRE(rows.size() == 1);
-    const auto& out = rows[0];
-    CHECK(out.eom.has_value());
-    CHECK(out.is_resettable.has_value());
-    CHECK(out.float_index_is_resettable == false);
-    CHECK(out.include_spread.has_value());
-    REQUIRE(out.lookback.has_value());
-    CHECK(*out.lookback == "1D");
-    REQUIRE(out.fixing_days.has_value());
-    CHECK(*out.fixing_days == 0);
-    REQUIRE(out.rate_cutoff.has_value());
-    CHECK(*out.rate_cutoff == 2);
-    CHECK(out.is_averaged.has_value());
-    CHECK(out.observation_shift.has_value());
+    const auto terms = rows_of<rd::cross_currency_fix_float_swap_terms>(
+        mapped, "cross_currency_fix_float_swap_terms");
+    const auto floats = rows_of<rd::cross_currency_fix_float_float_leg>(
+        mapped, "cross_currency_fix_float_float_leg");
+    REQUIRE(terms.size() == 1);
+    REQUIRE(floats.size() == 1);
+    const auto& out_terms = terms[0];
+    const auto& out_float = floats[0];
+    CHECK(out_terms.eom.has_value());
+    CHECK(out_terms.is_resettable.has_value());
+    CHECK(out_float.float_index_is_resettable == false);
+    CHECK(out_float.include_spread.has_value());
+    REQUIRE(out_float.lookback.has_value());
+    CHECK(*out_float.lookback == "1D");
+    REQUIRE(out_float.fixing_days.has_value());
+    CHECK(*out_float.fixing_days == 0);
+    REQUIRE(out_float.rate_cutoff.has_value());
+    CHECK(*out_float.rate_cutoff == 2);
+    CHECK(out_float.is_averaged.has_value());
+    CHECK(out_float.observation_shift.has_value());
 
+    // Each map mints new provisional keys, so the parts are compared with the
+    // keys of the first map put on them.
     const auto remapped = split_conventions(
         conventions_mapper::read(conventions_mapper::write(join_conventions(mapped))));
-    const auto again = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-        remapped, "cross_currency_fix_float");
-    REQUIRE(again.size() == 1);
-    CHECK(again[0] == out);
+    auto again_terms = rows_of<rd::cross_currency_fix_float_swap_terms>(
+        remapped, "cross_currency_fix_float_swap_terms");
+    auto again_floats = rows_of<rd::cross_currency_fix_float_float_leg>(
+        remapped, "cross_currency_fix_float_float_leg");
+    REQUIRE(again_terms.size() == 1);
+    REQUIRE(again_floats.size() == 1);
+    again_terms[0].id = out_terms.id;
+    again_terms[0].convention_id = out_terms.convention_id;
+    again_floats[0].id = out_float.id;
+    again_floats[0].convention_id = out_float.convention_id;
+    CHECK(again_terms[0] == out_terms);
+    CHECK(again_floats[0] == out_float);
+}
+
+// The element is one central row and three parts. Every convention in the
+// corpus lands its central row and exactly one of each part, the parts carry
+// what the element states, and the export writes the document back unchanged.
+TEST_CASE("conventions_cross_currency_fix_float_round_trips",
+          "[ore][xml][roundtrip][conventions]") {
+    namespace rd = ores::refdata::domain;
+    int files = 0;
+
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
+        const auto document = load(path);
+        const auto swaps =
+            xml_roundtrip_conventions_root_of(document).children("CrossCurrencyFixFloat");
+        if (swaps.empty())
+            continue;
+
+        ++files;
+        INFO(path.string());
+        const auto mapped = split_conventions(document);
+        std::vector<rd::convention> centrals;
+        for (const auto& c : rows_of<rd::convention>(mapped, "convention"))
+            if (c.identity.kind_code == "CROSS_CURRENCY_FIX_FLOAT")
+                centrals.push_back(c);
+        const auto terms = rows_of<rd::cross_currency_fix_float_swap_terms>(
+            mapped, "cross_currency_fix_float_swap_terms");
+        const auto fixeds = rows_of<rd::cross_currency_fix_float_fixed_leg>(
+            mapped, "cross_currency_fix_float_fixed_leg");
+        const auto floats = rows_of<rd::cross_currency_fix_float_float_leg>(
+            mapped, "cross_currency_fix_float_float_leg");
+        REQUIRE(centrals.size() == swaps.size());
+        REQUIRE(terms.size() == swaps.size());
+        REQUIRE(fixeds.size() == swaps.size());
+        REQUIRE(floats.size() == swaps.size());
+
+        for (std::size_t i = 0; i < swaps.size(); ++i) {
+            const auto& in = swaps[i];
+            const auto& central = centrals[i];
+            CHECK(central.payload.name == in.text("Id").value_or(std::string()));
+
+            const auto belongs = [&](const auto& part) {
+                return part.convention_id == central.identity.id;
+            };
+            CHECK(std::ranges::count_if(terms, belongs) == 1);
+            CHECK(std::ranges::count_if(fixeds, belongs) == 1);
+            CHECK(std::ranges::count_if(floats, belongs) == 1);
+
+            const auto t = std::ranges::find_if(terms, belongs);
+            const auto f = std::ranges::find_if(floats, belongs);
+            REQUIRE(t != terms.end());
+            REQUIRE(f != floats.end());
+            CHECK(t->settlement_calendar == in.text("SettlementCalendar").value_or(std::string()));
+            CHECK(f->index == in.text("Index").value_or(std::string()));
+        }
+
+        const std::string exported = conventions_mapper::write(join_conventions(mapped));
+        CHECK(element_count(exported, "CrossCurrencyFixFloat") == static_cast<int>(swaps.size()));
+
+        const auto reparsed = conventions_mapper::read(exported, path.string());
+        CHECK(conventions_difference(document, reparsed, path.string()).empty());
+    }
+
+    CHECK(files == 18);
 }
 
 TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled",

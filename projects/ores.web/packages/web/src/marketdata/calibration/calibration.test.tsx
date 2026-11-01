@@ -136,6 +136,12 @@ function calibration(over: Partial<Calibration> = {}): Calibration {
 function render(path: string, data: Calibration): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['calibration', 'fx'], data);
+    for (const feed of data.feeds) {
+        client.setQueryData(['calibration', 'fx', feed.config_id], {
+            ...data,
+            feeds: [feed],
+        });
+    }
     client.setQueryData(['public-rates'], []);
     client.setQueryData(['reference-data-reasons', 'amend'], []);
     return renderToStaticMarkup(

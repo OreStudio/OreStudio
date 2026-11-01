@@ -2427,9 +2427,11 @@ export const api = {
     },
 
     /** How every feed of a class resolves under its policy; nothing starts. */
-    async calibration(assetClass: string): Promise<Calibration> {
+    /** A class's calibration, or only the feed that @p configId names when it is given. */
+    async calibration(assetClass: string, configId?: string): Promise<Calibration> {
+        const query = configId === undefined ? '' : `?configId=${encodeURIComponent(configId)}`;
         return calibrationSchema.parse(
-            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}`, {
+            await request(`/api/synthetic/calibration/${encodeURIComponent(assetClass)}${query}`, {
                 method: 'GET',
             }),
         );

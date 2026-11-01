@@ -575,6 +575,39 @@ describe('synthetic calibration', () => {
         expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
     });
 
+    it('resolves only the feed a read names', async () => {
+        const defaults = {
+            from_policy_row: false,
+            window_days: 90,
+            allow_inverse: true,
+            fallback_code: 'keep_fixed',
+            provider_order: [],
+        };
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': { success: true, policy: defaults, feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/calibration/fx?configId=${ID}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ asset_class_code: 'fx', config_id: ID, apply: false });
+    });
+
+    it('refuses a read that names a feed by anything but its id', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/calibration/fx?configId=eurusd',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('refuses an asset class that is not a code, before any call', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(

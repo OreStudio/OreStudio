@@ -42,6 +42,9 @@ import { input, intentSchema, paramId, readAll, refusal, write } from './refdata
 import type { LiveSession } from './sessions.js';
 import { feedStartSchema, operationReplySchema, upstreamFailure } from './synthetic.js';
 
+/** A calibration read: every feed of the class, or the one feed it names. */
+const readQuerySchema = z.object({ configId: z.uuid().optional() });
+
 /** A calibration run: every feed of the class, or the one feed it names. */
 const runBodySchema = z.object({ configId: z.uuid().optional() }).strict().default({});
 
@@ -246,11 +249,12 @@ export function registerCalibrationRoutes(
     server.get('/api/synthetic/calibration/:assetClass', async (request) => {
         const session = requireSession(request);
         const assetClass = assetClassOf(request);
+        const { configId } = input(readQuerySchema, request.query ?? {});
         const reply = await session.client.callAuthenticated(
             feedSubjects.calibrate_request,
             {
                 asset_class_code: assetClass,
-                config_id: '',
+                config_id: configId ?? '',
                 apply: false,
             } satisfies CalibrateRequest,
             operationReplySchema.extend({

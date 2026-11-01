@@ -69,10 +69,17 @@ import {
     type FeedOutcome,
 } from './calibration.js';
 
-function useCalibration(assetClass: string) {
+/**
+ * A class's calibration. A screen of one feed names it, so the service resolves that feed
+ * alone; the key still starts with the class, so a change to the class refreshes it.
+ */
+function useCalibration(assetClass: string, configId?: string) {
     return useQuery({
-        queryKey: ['calibration', assetClass],
-        queryFn: () => api.calibration(assetClass),
+        queryKey:
+            configId === undefined
+                ? ['calibration', assetClass]
+                : ['calibration', assetClass, configId],
+        queryFn: () => api.calibration(assetClass, configId),
     });
 }
 
@@ -758,7 +765,7 @@ export function CalibrationFeedPage(): ReactNode {
     const { t } = useTranslation();
     const assetClass = useAssetClass();
     const { configId = '' } = useParams();
-    const calibration = useCalibration(assetClass);
+    const calibration = useCalibration(assetClass, configId);
     const client = useQueryClient();
     const reason = useReason('amend');
     const [commentary, setCommentary] = useState('');

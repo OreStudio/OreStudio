@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/model-the-calibration-policy
-#+pr:
+#+pr: 4322
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -194,7 +194,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4322][#4322]] | [synthetic] Calibrate each feed under its asset class policy |
 
 * Review
 

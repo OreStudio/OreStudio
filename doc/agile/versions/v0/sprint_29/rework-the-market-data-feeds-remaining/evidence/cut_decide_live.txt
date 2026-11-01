@@ -158,6 +158,18 @@ no body, because nothing froze one. The subject block draws the kind alone and
 says the component holds no cut for it. The branch that draws a subject is
 exercised by the BFF's own cases.
 
+The read itself, through the shell, answers an empty subject list with an ok
+result, which is the difference the page needs: a refusal is refused and an empty
+answer is a request about nothing.
+
+    compass shell -l tmp/evidence/subjects_read.sh
+
+    > login rachel.byrd@acme_corporation Secure-Password-123
+    ✓ Login successful!
+    > report_operations list-cut-authorisation-subjects \
+        01a19810-f11f-739b-90f8-19c51e4209ad,01a19811-30b3-74ae-8bd6-b7bd7b3e43f9
+    {"result":{"outcome":"ok","code":"","message":"","fields":[]},"subjects":[]}
+
 The story shows the decision beside the ask:
 
     curl -s -b jar :21402/api/requests/01a19810-f11f-739b-90f8-19c51e4209ad/story

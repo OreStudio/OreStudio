@@ -193,6 +193,17 @@ def keyword(front, name):
     return m.group(1).strip() if m else ""
 
 
+def inherited_drawer(front):
+    """The source drawer's wire-codec opt-in, which a pending line keeps.
+
+    The pending line is carried on the wire like its source, so it takes the
+    same codec. The line sits before :ID:, where the source's drawer has it.
+    """
+    if re.search(r"(?m)^:ores\.cpp\.wire-codec\.enabled:\s*true\s*$", front):
+        return ":ores.cpp.wire-codec.enabled: true\n"
+    return ""
+
+
 def is_gated(text):
     _, sections = split_sections(text)
     for s in sections:
@@ -337,6 +348,7 @@ def derive_junction(source, text):
     out = []
     out.append(
         ":PROPERTIES:\n"
+        f"{inherited_drawer(front)}"
         f":ID: {str(uuid.uuid5(NAMESPACE, source.name)).upper()}\n"
         ":END:\n"
         f"#+title: ores.{component}.{new_singular}\n"
@@ -400,6 +412,7 @@ def derive(source, text):
     out = []
     out.append(
         ":PROPERTIES:\n"
+        f"{inherited_drawer(front)}"
         f":ID: {str(uuid.uuid5(NAMESPACE, keyword(front, 'title') or source.name)).upper()}\n"
         ":END:\n"
         f"#+title: ores.{component}.{new_singular}\n"

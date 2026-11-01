@@ -296,8 +296,8 @@ The book and counterparty apply workflows read their start request and wrote
 the step command with =rfl::json=. Both requests, and inbox's
 =apply_step_command=, now state their one member as a wire shape, and the
 workflows use the struct codec. The party handler writes =put_party_response=
-through its generated =wire_traits=. Two units lose an unused reflectors
-include.
+through its generated =wire_traits=, which the party model's paste block now
+states. =application.cpp= loses an unused reflectors include.
 
 **What is left, and which task owns each one.**
 - =publish_from_dq_handler.cpp= reads =publish_from_dq_command= and writes its
@@ -305,9 +305,10 @@ include.
   [[id:5891DD57-4FDE-4C99-9009-8299E4479AA1][Generate codecs for the operation messages]].
 - =service/src/config/options.cpp= prints the service configuration. Owner:
   [[id:BE89C669-2CBF-477D-B87B-1C6996187585][Print every options type through the codec]].
-- 151 generated NATS integration tests include the reflectors header, because
-  =cpp_nats_integration_test.cpp.mustache= includes it for every entity. That
-  is one template change for every component. Owner: the next PR in this story.
+- 151 generated NATS integration tests and the generated client caches include
+  the reflectors header, because =cpp_nats_integration_test.cpp.mustache= and
+  =cpp_nats_event_cache.hpp.mustache= write it for every entity. That is one
+  template change each, for every component. Owner: the next PR in this story.
 - 30 hand-written tests compare with =rfl::json= or read through it. Owner:
   [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]], which replaces the reflector comparisons.
 

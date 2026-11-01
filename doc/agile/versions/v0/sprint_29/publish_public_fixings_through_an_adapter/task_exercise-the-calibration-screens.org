@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person runs a calibration and sees it happen, feed by feed, and can read
+later what each calibration changed. The calibration screens match the
+accepted prototype, and every oresmd URI on them opens its market data.
 
 * Status
 
@@ -28,20 +30,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Built and tested; the C++ build waits for a build slot. |
+| Waiting on   | A build slot.                          |
+| Next         | Build, run the scenario, raise the PR. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
 
--
+- Calibrate all calibrates one feed a call, and each feed's row shows a mark
+  and the server's words as it finishes.
+- An applied calibration writes each moved level and deviation as a new
+  version of the feed, under =system.calibration=, with a commentary that names
+  the fixing; a run on the same fixings writes nothing.
+- A running feed whose calibration changed says it applies at its next start,
+  and the run offers to restart those feeds.
+- A feed's History tab keeps every version and filters to its calibrations.
+- The feed page follows the prototype: banner, record tab, flow tab with the
+  recent calibrations.
+- A fixing URI links to its fixing series page.
+- The two points the PR #4331 review asked before merge are addressed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+DSH started the task and built the list action, the system-only guard, the
+outcome filter and a progress panel. The panel ticked three fixed stages around
+one read, and the events tab restated that read; calibration stored nothing, so
+there was no log to show.
+
+1. Server: the calibrate request names one feed and asks to apply. The handler
+   compares the resolved level and deviations with the stored ones
+   (=change_of=, a pure function) and writes what moved through the generated
+   services, claiming the versions it read.
+2. BFF: =POST /api/synthetic/calibration/:assetClass/run=.
+3. Web: a run panel driven one feed a call; the feed page rebuilt to the
+   prototype; a Calibration only filter on the History tab; fixing URIs link to
+   the fixing series page.
+4. The PR #4331 review: claimed writes in accept and withdraw, two tests.
 
 * Measurements
 
@@ -58,6 +82,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Calibration writes versions (2026-11-01, chosen by the user). The stored
+  level becomes the last calibrated value, so =keep_fixed= keeps that one; the
+  hand-entered value stays in the history.
+- A running feed is not restarted by a run: a restart moves the series to the
+  new level in one step, so the run offers it and the person chooses.
 
 * Test Scenarios
 

@@ -104,6 +104,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local: the generated provider write accepted acceptance fields from a client | provider_service.cpp | Accept | Server owned and carried forward by codegen; a codegen test pins it. |
 | 2 | Local: the accept handler test failed on main | messaging_provider_terms_handler_tests.cpp | Accept | The reader is a real account. |
+| 3 | PR #4331: withdraw writes with no version claim, so a concurrent change is overwritten | provider_terms_handler.hpp | Accept | The PR merged before the review was handled. Fixed on the calibration screens branch: accept and withdraw claim the version they read. |
+| 4 | PR #4331: no handler test for a withdraw without the permission, or of an unknown provider | messaging_provider_terms_handler_tests.cpp | Accept | Both added on the calibration screens branch. |
+| 5 | PR #4331: confirm the shell, BFF and web show the message of a failed withdraw | public-rates.ts | No change | The BFF answers a failure with its message, and the web shows the request error. |
+| 6 | PR #4331: a changed flag would tell withdrew from nothing to do | provider_terms_operations.org | Decline | The message says which; no screen acts on the difference today. |
+| 7 | PR #4331: check system.update for a withdrawal and the audit columns | provider_terms_handler.hpp | No change | system.update is a seeded amend reason; the handler sets the audit columns, codegen carries only the acceptance fields. |
+| 8 | PR #4331: test the first-run step in a browser | PublicSourcesStep.tsx | Defer | Covered by the calibration screens scenario run. |
+| 9 | PR #4331: confirm the component drift is not from this PR | org_loader.py | No change | The listed drift was in refdata, reporting and SQL, which the PR does not touch. |
 
 * Result
 

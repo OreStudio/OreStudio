@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F29039C8-EA8E-4CAC-A5F7-F605FC3D4113][Let the booking form state a draft]] | STARTED | 2026-11-01 | | The booking form takes a draft flag and the reason it waits on, so a desk can capture a deal that is not yet concluded and a completion has a leg to take live. |
+| [[id:F29039C8-EA8E-4CAC-A5F7-F605FC3D4113][Let the booking form state a draft]] | DONE | 2026-11-01 | 2026-11-01 | The booking form takes a draft flag and the reason it waits on, so a desk can capture a deal that is not yet concluded and a completion has a leg to take live. |
 
 * Decisions
 

@@ -922,6 +922,16 @@ RULES = (
          BFF, COMPOSED, "simulation",
          "The policy a class calibrates under and how every feed of it resolves, with the"
          " coverage counts; nothing starts."),
+    Rule("the calibration policy of an asset class",
+         ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/:assetClass/policy$"),
+         BFF, RESOURCE, "simulation",
+         "States a class's policy and brings its provider order to the list given, or returns"
+         " the class to automatic calibration; two collections written together."),
+    Rule("the pinned item of a feed",
+         ("regex", r"^(PUT|DELETE) /api/synthetic/calibration/feeds/:id/pin$"),
+         BFF, RESOURCE, "simulation",
+         "Pins one candidate on a feed as the exception to its class policy, or clears the"
+         " feed's own items so it follows the policy again."),
     Rule("the synthetic feeds",
          ("regex", r"^(GET|POST|DELETE) /api/synthetic/(synthetic|feeds|folder-feeds)"),
          BFF, RESOURCE, "simulation",
@@ -1157,6 +1167,11 @@ VIEWS = {
         "the role catalogue and what each role grants against the grants the person "
         "already holds",
         "ETag on the whole view, stale after 5 min"),
+    "the calibration of an asset class": (
+        "ores.synthetic",
+        "every feed of the class resolved as a start would, with its candidates and their "
+        "reasons, under the class policy or the defaults; nothing starts",
+        "No cache: a resolution reads the newest fixings each time"),
     "the market trace": (
         "ores.synthetic",
         "the scheduler's recent decisions: every tick with the gap its law drew and the "

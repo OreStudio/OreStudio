@@ -125,6 +125,13 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'decimal', positive: true },
     },
     {
+        field: 'calibration_window_days',
+        history: 'Calibration Window Days',
+        kind: { kind: 'int', min: 2, max: 180 },
+        optional: true,
+        help: 'marketdata.fxFeeds.help.calibration_window_days',
+    },
+    {
         field: 'enabled',
         history: 'Enabled',
         kind: { kind: 'bool' },
@@ -162,6 +169,7 @@ const FEED_WRITE_FIELDS = [
     'enabled',
     'auto_start',
     'folder_id',
+    'calibration_window_days',
 ] as const;
 
 /** The feed as written back with a change, such as a new engine. */

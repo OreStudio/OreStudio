@@ -4534,6 +4534,7 @@ const fr: SourceCatalogue = {
             ticks_per_hour: 'Ticks par heure',
             price_source: 'Prix initial depuis',
             gmm_initial_price: 'Prix initial',
+            calibration_window_days: 'Fenêtre de calibrage (jours)',
             enabled: 'Activé',
             auto_start: 'Démarre avec le service',
             mean: 'Moyenne (μ)',
@@ -4885,6 +4886,131 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        calibration: {
+            title: 'Calibrage',
+            lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
+            assetClass: "Classe d'actifs",
+            classes: {
+                fx: 'Change au comptant',
+            },
+            policyLine: {
+                automatic:
+                    'Automatique : fenêtre de {window} jours, {inverse}, {order}, {fallback}.',
+                custom: 'Politique de la classe : fenêtre de {window} jours, {inverse}, {order}, {fallback}.',
+                open: 'Voir la politique',
+            },
+            inverse: {
+                allowed: 'inverse permis',
+                refused: 'inverse non permis',
+            },
+            order: {
+                everyProvider: 'chaque fournisseur, par code',
+            },
+            fallback: {
+                keep_fixed: 'garder le niveau fixe',
+                refuse: 'refuser de démarrer',
+            },
+            coverage: {
+                total: 'Flux',
+                fromFixing: "D'un fixing",
+                keptFixed: 'Niveau gardé',
+                refused: 'Refusés',
+                overridden: 'Dérogent à la politique',
+            },
+            filter: {
+                label: 'Afficher',
+                all: 'Tous',
+                attention: 'À examiner',
+                overridden: 'Dérogations',
+            },
+            columns: {
+                feed: 'Flux',
+                start: 'Départ',
+                source: 'Source',
+                state: 'État',
+            },
+            outcome: {
+                fixing: "d'un fixing",
+                fixed: 'niveau gardé',
+                refused: 'refusé',
+            },
+            overrides: 'déroge',
+            empty: 'Aucun flux ne correspond à ce filtre.',
+            candidateState: {
+                chosen: 'démarre ici',
+                skipped: 'écarté',
+                not_reached: 'non atteint',
+            },
+            feed: {
+                title: 'Flux',
+                tabs: 'Calibrage du flux',
+                tab: {
+                    record: 'Fiche du flux',
+                    flow: 'Parcours',
+                },
+                back: 'Retour à la liste',
+                missing: "Ce flux n'est pas dans la classe.",
+                start: 'Où un lancement démarre maintenant',
+                level: 'Niveau',
+                provider: 'Fournisseur',
+                date: 'Date du fixing',
+                invertedNote:
+                    "L'élément cote la paire dans l'autre sens, donc sa valeur est lue comme son inverse.",
+                candidates: 'Candidats',
+                noCandidates: 'Aucun candidat ne couvre cette paire.',
+                candidate: 'Candidat',
+                readAs: 'Lu comme',
+                direct: 'direct',
+                inverse: '1/x',
+                pin: 'Épingler',
+                exceptions: 'Dérogations',
+                followsPolicy: 'Ce flux suit la politique de sa classe.',
+                overridesItems:
+                    'Ce flux nomme ses propres éléments, donc il déroge à la politique de la classe.',
+                overridesWindow:
+                    'Ce flux mesure sur sa propre fenêtre de {days} jours, donc il déroge à la politique de la classe.',
+                clearPin: 'Effacer les éléments et suivre la politique',
+                editWindow: 'Modifier la fenêtre du flux',
+                toPolicy: 'Aller à la politique',
+            },
+            flow: {
+                policy: '1. Politique',
+                candidates: '2. Candidats',
+                resolver: '3. Résolution',
+                process: '4. Processus',
+                explicit: 'Le flux nomme ses propres {count} élément(s).',
+                derived: '{count} candidat(s) dérivé(s) de la paire et de la politique.',
+                chosen: 'Démarre du fixing {provider} de {value} au {date}.',
+                fixed: "Aucun candidat n'a de fixing, donc le flux garde son niveau fixe.",
+                refused:
+                    "Aucun candidat n'a de fixing, et la politique refuse de démarrer le flux.",
+                mixtureScaled: 'La volatilité mesurée met à l’échelle les écarts du mélange.',
+                mixtureKept: 'Le mélange configuré est gardé.',
+            },
+            policy: {
+                title: 'Politique de calibrage',
+                affectsEvery: 'Un changement ici touche chaque flux de la classe.',
+                automatic:
+                    "La classe n'a pas de politique, donc elle se calibre sur les valeurs par défaut.",
+                custom: 'La classe a sa propre politique.',
+                systemOnly:
+                    "La politique appartient à l'installation, donc seul le locataire système la change.",
+                window: 'Fenêtre (jours)',
+                windowRange: 'De 2 à 180 jours.',
+                inverse: 'Inverse',
+                fallback: 'Sans fixing',
+                order: 'Ordre des fournisseurs',
+                up: 'Monter {provider}',
+                down: 'Descendre {provider}',
+                remove: 'Retirer',
+                add: 'Ajouter un fournisseur',
+                addPrompt: 'Choisir un fournisseur',
+                save: 'Enregistrer la politique',
+                reset: "Revenir à l'automatique",
+                coverage: 'Couverture',
+                record: 'Registre du calibrage',
+            },
+        },
         publicRates: {
             title: 'Taux publics',
             lead: 'Les taux et courbes que les organismes publics publient, ce que nous détenons, et s’ils arrivent.',
@@ -5959,6 +6085,8 @@ const fr: SourceCatalogue = {
                 },
                 enabled: 'Un flux non activé ne peut pas démarrer.',
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
+                calibration_window_days:
+                    'La fenêtre propre au flux, de 2 à 180 jours, à la place de celle de la politique de sa classe. Laissez vide pour suivre la politique.',
             },
             start: {
                 title: "D'où part cette exécution",

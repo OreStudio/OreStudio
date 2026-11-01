@@ -153,6 +153,39 @@ private:
 };
 
 /**
+ * @brief What became of one candidate when a feed resolved its start.
+ */
+enum class candidate_state { chosen, skipped, not_reached };
+
+/**
+ * @brief The wire name of @p state.
+ */
+[[nodiscard]] inline std::string_view to_string(candidate_state state) {
+    switch (state) {
+        case candidate_state::chosen:
+            return "chosen";
+        case candidate_state::skipped:
+            return "skipped";
+        case candidate_state::not_reached:
+            return "not_reached";
+    }
+    return "skipped";
+}
+
+/**
+ * @brief One candidate of a resolution, in rank order, and why it was or was not taken.
+ */
+struct candidate_outcome final {
+    std::string item;
+    std::string provider_code;
+    /// True when the item quotes the pair the other way round, as far as it was read.
+    bool inverted = false;
+    int rank = 0;
+    candidate_state state = candidate_state::skipped;
+    std::string reason;
+};
+
+/**
  * @brief The level and the measured spread a fixing feed starts from, and the mixture's
  * deviations scaled to it; or, when no item has a fixing, the record of the fallback.
  */
@@ -164,6 +197,8 @@ struct resolved_start final {
     std::optional<std::vector<double>> stdevs;
     /// The policy refuses to start a feed with no usable fixing.
     bool refused = false;
+    /// Every candidate read, in rank order, with its outcome.
+    std::vector<candidate_outcome> candidates;
 };
 
 /**

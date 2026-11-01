@@ -482,6 +482,7 @@ describe('synthetic resource routes', () => {
 });
 
 describe('synthetic calibration', () => {
+    const POLICY_ID = '99999999-9999-4999-8999-999999999999';
     const fixed = (note: string) => ({ from_fixing: false, note });
     const policy = {
         from_policy_row: true,
@@ -490,9 +491,16 @@ describe('synthetic calibration', () => {
         fallback_code: 'refuse',
         provider_order: ['ecb', 'boe'],
     };
+    const policyRows = {
+        'synthetic.v1.calibration_policies.list': {
+            result: ok,
+            calibration_policies: [{ id: POLICY_ID, version: 3, asset_class_code: 'fx' }],
+        },
+    };
 
     it('resolves every feed of a class and counts how each one started', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            ...policyRows,
             'synthetic.v1.ops.calibrate_feeds': {
                 success: true,
                 policy,
@@ -501,6 +509,15 @@ describe('synthetic calibration', () => {
                         config_id: ID,
                         source_name: 'synthetic.eurusd',
                         start: { from_fixing: true, item: 'oresmd://fx/EUR?type=fixing&ccy=USD' },
+                        candidates: [
+                            {
+                                item: 'oresmd://fx/EUR?type=fixing&ccy=USD',
+                                provider_code: 'ecb',
+                                rank: 1,
+                                state: 'chosen',
+                                reason: 'the first candidate with a fixing',
+                            },
+                        ],
                     },
                     {
                         config_id: OTHER,
@@ -520,16 +537,17 @@ describe('synthetic calibration', () => {
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
-        expect(calls).toEqual([
-            { subject: 'synthetic.v1.ops.calibrate_feeds', body: { asset_class_code: 'fx' } },
-        ]);
+        expect(calls[0]).toEqual({
+            subject: 'synthetic.v1.ops.calibrate_feeds',
+            body: { asset_class_code: 'fx' },
+        });
         const body = response.json();
-        expect(body.policy).toEqual(policy);
-        expect(body.feeds.map((f: { source_name: string }) => f.source_name)).toEqual([
-            'synthetic.eurusd',
-            'synthetic.usdjpy',
-            'synthetic.usdtry',
-        ]);
+        expect(body.policy).toEqual({ ...policy, version: 3 });
+        expect(body.policyWritable).toBe(false);
+        expect(body.feeds[0].candidates[0]).toMatchObject({
+            provider_code: 'ecb',
+            state: 'chosen',
+        });
         expect(body.coverage).toEqual({
             total: 3,
             fromFixing: 1,
@@ -539,7 +557,7 @@ describe('synthetic calibration', () => {
         });
     });
 
-    it('states the defaults when the class has no policy row', async () => {
+    it('states the defaults, with no version, when the class has no policy row', async () => {
         const defaults = {
             from_policy_row: false,
             window_days: 90,
@@ -547,13 +565,14 @@ describe('synthetic calibration', () => {
             fallback_code: 'keep_fixed',
             provider_order: [],
         };
-        const { server, sessionId } = buildTestServer({
+        const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.calibrate_feeds': { success: true, policy: defaults, feeds: [] },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBe(200);
-        expect(response.json().policy).toEqual(defaults);
+        expect(response.json().policy).toEqual({ ...defaults, version: null });
         expect(response.json().coverage.total).toBe(0);
+        expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
     });
 
     it('refuses an asset class that is not a code, before any call', async () => {
@@ -579,6 +598,287 @@ describe('synthetic calibration', () => {
         const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
         expect(response.statusCode).toBeGreaterThanOrEqual(400);
         expect(response.body).toContain('A calibration names its asset class.');
+    });
+
+    const statedPolicy = {
+        intent: INTENT,
+        version: 3,
+        window_days: 120,
+        allow_inverse: true,
+        fallback_code: 'keep_fixed',
+        provider_order: ['boe', 'imf'],
+    };
+
+    it('refuses a policy change outside the system tenant, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            statedPolicy,
+        );
+        expect(response.statusCode).toBe(403);
+        expect(calls).toEqual([]);
+    });
+
+    const ordered = (rungs: readonly [string, string, number, number][]) => ({
+        ...policyRows,
+        'synthetic.v1.calibration_provider_orders.list': {
+            result: ok,
+            calibration_provider_orders: rungs.map(([id, provider_code, rank, version]) => ({
+                id,
+                version,
+                policy_id: POLICY_ID,
+                provider_code,
+                rank,
+            })),
+        },
+        'synthetic.v1.calibration_policies.put_many': { result: ok },
+        'synthetic.v1.calibration_provider_orders.put_many': { result: ok },
+        'synthetic.v1.calibration_provider_orders.delete_many': { result: ok },
+    });
+    type Change = { write: Record<string, unknown>; precondition: unknown };
+    const changesOf = (calls: { subject: string; body: unknown }[], subject: string): Change[] =>
+        (calls.find((c) => c.subject === subject)?.body as { changes: Change[] }).changes;
+
+    it('writes the policy against its version and the order from rank 1', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            ordered([
+                [ID, 'ecb', 1, 1],
+                [OTHER, 'boe', 2, 2],
+            ]),
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            statedPolicy,
+        );
+        expect(response.statusCode).toBe(204);
+
+        expect(changesOf(calls, 'synthetic.v1.calibration_policies.put_many')).toEqual([
+            {
+                write: {
+                    id: POLICY_ID,
+                    asset_class_code: 'fx',
+                    window_days: 120,
+                    allow_inverse: true,
+                    fallback_code: 'keep_fixed',
+                },
+                precondition: { kind: 'must_match_version', version: 3 },
+            },
+        ]);
+        const removed = calls.find(
+            (c) => c.subject === 'synthetic.v1.calibration_provider_orders.delete_many',
+        );
+        expect(removed?.body).toMatchObject({
+            removals: [{ key: { id: ID } }, { key: { id: OTHER } }],
+        });
+        const rungs = changesOf(calls, 'synthetic.v1.calibration_provider_orders.put_many');
+        expect(rungs.map((c) => [c.write['provider_code'], c.write['rank']])).toEqual([
+            ['boe', 1],
+            ['imf', 2],
+        ]);
+        expect(
+            rungs.every((c) => (c.precondition as { kind: string }).kind === 'must_not_exist'),
+        ).toBe(true);
+    });
+
+    it('swaps two providers by rewriting the order, never by moving a rank in place', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            ordered([
+                [ID, 'ecb', 1, 1],
+                [OTHER, 'imf', 2, 1],
+            ]),
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            {
+                ...statedPolicy,
+                provider_order: ['imf', 'ecb'],
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        const subjects = calls.map((c) => c.subject);
+        expect(
+            subjects.indexOf('synthetic.v1.calibration_provider_orders.delete_many'),
+        ).toBeLessThan(subjects.indexOf('synthetic.v1.calibration_provider_orders.put_many'));
+        const removed = calls.find(
+            (c) => c.subject === 'synthetic.v1.calibration_provider_orders.delete_many',
+        );
+        expect(removed?.body).toMatchObject({
+            removals: [{ key: { id: ID } }, { key: { id: OTHER } }],
+        });
+        const rungs = changesOf(calls, 'synthetic.v1.calibration_provider_orders.put_many');
+        expect(rungs.map((c) => [c.write['provider_code'], c.write['rank']])).toEqual([
+            ['imf', 1],
+            ['ecb', 2],
+        ]);
+    });
+
+    it('writes no order when the order is the one stored', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            ordered([
+                [ID, 'boe', 1, 1],
+                [OTHER, 'imf', 2, 1],
+            ]),
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            statedPolicy,
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).not.toContain(
+            'synthetic.v1.calibration_provider_orders.put_many',
+        );
+        expect(calls.map((c) => c.subject)).not.toContain(
+            'synthetic.v1.calibration_provider_orders.delete_many',
+        );
+    });
+
+    it('refuses a provider order that names a provider twice', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/calibration/fx/policy',
+            {
+                ...statedPolicy,
+                provider_order: ['ecb', 'ecb'],
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('pins one candidate on a feed in place of the items it named', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_fixing_items.list': {
+                result: ok,
+                fx_spot_fixing_items: [{ id: OTHER, version: 1 }],
+            },
+            'synthetic.v1.fx_spot_fixing_items.delete_many': { result: ok },
+            'synthetic.v1.fx_spot_fixing_items.put_many': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/synthetic/calibration/feeds/${ID}/pin`,
+            {
+                intent: INTENT,
+                item: 'oresmd://fx/EUR?type=fixing&ccy=USD',
+                provider_code: 'ecb',
+                window_days: 90,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).toEqual([
+            'synthetic.v1.fx_spot_fixing_items.list',
+            'synthetic.v1.fx_spot_fixing_items.delete_many',
+            'synthetic.v1.fx_spot_fixing_items.put_many',
+        ]);
+        expect(calls[2]?.body).toMatchObject({
+            changes: [
+                {
+                    write: {
+                        fx_spot_config_id: ID,
+                        rank: 1,
+                        item: 'oresmd://fx/EUR?type=fixing&ccy=USD',
+                        provider_code: 'ecb',
+                        policy: 'latest_on_or_before_clock',
+                        window_days: 90,
+                    },
+                    precondition: { kind: 'must_not_exist', version: null },
+                },
+            ],
+        });
+    });
+
+    it('refuses to pin an item that is not an FX fixing, before any call', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/synthetic/calibration/feeds/${ID}/pin`,
+            {
+                intent: INTENT,
+                item: 'oresmd://fx/EUR?type=fixing_other&ccy=USD',
+                provider_code: 'ecb',
+                window_days: 90,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('clears a pin so the feed derives its candidates again', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.fx_spot_fixing_items.list': { result: ok, fx_spot_fixing_items: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'DELETE',
+            `/api/synthetic/calibration/feeds/${ID}/pin`,
+            {
+                intent: INTENT,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.fx_spot_fixing_items.list']);
+    });
+
+    it('returns a class to automatic by removing its order and its policy', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                ...policyRows,
+                'synthetic.v1.calibration_provider_orders.list': {
+                    result: ok,
+                    calibration_provider_orders: [
+                        { id: ID, version: 1, policy_id: POLICY_ID, provider_code: 'ecb', rank: 0 },
+                    ],
+                },
+                'synthetic.v1.calibration_provider_orders.delete_many': { result: ok },
+                'synthetic.v1.calibration_policies.delete': { result: ok },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'DELETE',
+            '/api/synthetic/calibration/fx/policy',
+            {
+                intent: INTENT,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).toEqual([
+            'synthetic.v1.calibration_policies.list',
+            'synthetic.v1.calibration_provider_orders.list',
+            'synthetic.v1.calibration_provider_orders.delete_many',
+            'synthetic.v1.calibration_policies.delete',
+        ]);
+        expect(calls[3]?.body).toMatchObject({
+            removal: {
+                key: { id: POLICY_ID },
+                precondition: { kind: 'must_match_version', version: 3 },
+            },
+        });
     });
 });
 

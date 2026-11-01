@@ -127,16 +127,27 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
 
     std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
     std::vector<std::string> skipped;
-    for (const auto& item : items) {
+    for (std::size_t index = 0; index < items.size(); ++index) {
+        const auto& item = items[index];
         const auto orientation =
             orientation_of(item.item, cfg.base_currency_code, cfg.quote_currency_code);
+        const bool item_inverted = orientation && *orientation == item_orientation::inverted;
+        const auto skip = [&](const std::string& reason) {
+            skipped.push_back(item.item + ": " + reason);
+            out.candidates.push_back({.item = item.item,
+                                      .provider_code = item.provider_code,
+                                      .inverted = item_inverted,
+                                      .rank = item.rank,
+                                      .state = candidate_state::skipped,
+                                      .reason = reason});
+        };
         if (!orientation) {
-            skipped.push_back(orientation.error());
+            skip(orientation.error());
             continue;
         }
         const auto date = policy_date(item.policy, clock);
         if (!date) {
-            skipped.push_back(item.item + ": " + date.error());
+            skip(date.error());
             continue;
         }
         // The feed reads fixings for the party that owns its config: a fixing is entitled by
@@ -147,28 +158,26 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
                                            .party_id = party_id,
                                            .on_or_before = *date});
         if (!latest) {
-            skipped.push_back(item.item + ": " + latest.error());
+            skip(latest.error());
             continue;
         }
         // An exact policy names one date; the latest fixing on or before it is that date's or
         // none.
         const bool exact = item.policy != "latest_on_or_before_clock";
         if (!latest->fixing_date || (exact && *latest->fixing_date != *date)) {
-            skipped.push_back(item.item + ": no fixing on or before " +
-                              std::format("{:%F}", std::chrono::sys_days(*date)));
+            skip("no fixing on or before " + std::format("{:%F}", std::chrono::sys_days(*date)));
             continue;
         }
         const auto value = number_of(latest->value);
         if (!value) {
-            skipped.push_back(item.item + ": the fixing '" + latest->value + "' is not a price");
+            skip("the fixing '" + latest->value + "' is not a price");
             continue;
         }
         // The record keeps the publisher's value exactly; a spelling the decimal type cannot
         // hold is refused rather than rounded.
         const auto published = ores::utility::decimal::decimal::from_string(latest->value);
         if (!published) {
-            skipped.push_back(item.item + ": the fixing '" + latest->value +
-                              "' is not an exact decimal");
+            skip("the fixing '" + latest->value + "' is not an exact decimal");
             continue;
         }
 
@@ -183,6 +192,23 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
         s.received_at = latest->received_at;
         out.level = s.inverted ? 1.0 / *value : *value;
         s.window_days = item.window_days;
+        out.candidates.push_back({.item = item.item,
+                                  .provider_code = item.provider_code,
+                                  .inverted = s.inverted,
+                                  .rank = item.rank,
+                                  .state = candidate_state::chosen,
+                                  .reason = "the first candidate with a fixing"});
+        for (std::size_t later = index + 1; later < items.size(); ++later) {
+            const auto later_orientation =
+                orientation_of(items[later].item, cfg.base_currency_code, cfg.quote_currency_code);
+            out.candidates.push_back(
+                {.item = items[later].item,
+                 .provider_code = items[later].provider_code,
+                 .inverted = later_orientation && *later_orientation == item_orientation::inverted,
+                 .rank = items[later].rank,
+                 .state = candidate_state::not_reached,
+                 .reason = "a candidate ranked higher was chosen"});
+        }
         // The read is on or before the date, so a fixing is never younger than it.
         s.age_days = std::max(0,
                               static_cast<int>((std::chrono::sys_days(*date) -

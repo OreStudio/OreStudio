@@ -213,6 +213,24 @@ struct calibration_policy_summary {
 };
 
 /**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+struct candidate_outcome {
+    /** @brief The candidate's item, as the oresmd URI that names it. */
+    std::string item;
+    /** @brief The provider that publishes the item. */
+    std::string provider_code;
+    /** @brief True when the item quotes the pair the other way round. */
+    bool inverted = false;
+    /** @brief The candidate's place in the resolution, first tried first. */
+    int rank = 0;
+    /** @brief chosen, skipped or not_reached. */
+    std::string state;
+    /** @brief Why the candidate was chosen, skipped or not reached. */
+    std::string reason;
+};
+
+/**
  * @brief How one feed of the class resolved: the item it starts from, or its fallback or
  * refusal, and the exceptions it states against the policy.
  */
@@ -233,6 +251,8 @@ struct calibrated_feed {
     bool refused = false;
     /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
     feed_start start;
+    /** @brief Every candidate the feed read, in rank order, with its outcome. */
+    std::vector<candidate_outcome> candidates;
 };
 
 /**

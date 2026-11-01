@@ -438,6 +438,63 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The accepted providers, first preferred. Empty means every provider, by code. */
 #+end_src
 
+** candidate_outcome
+#+begin_src cpp :name comment
+/**
+ * @brief One candidate of a feed's resolution, in rank order, and why it was or was not taken.
+ */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The candidate's item, as the oresmd URI that names it. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider that publishes the item. */
+#+end_src
+
+*** inverted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the item quotes the pair the other way round. */
+#+end_src
+
+*** rank
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief The candidate's place in the resolution, first tried first. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief chosen, skipped or not_reached. */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the candidate was chosen, skipped or not reached. */
+#+end_src
+
 ** calibrated_feed
 #+begin_src cpp :name comment
 /**
@@ -510,6 +567,14 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief Where the feed starts: the item and its fixing, or why it keeps its fixed level. */
+#+end_src
+
+*** candidates
+:PROPERTIES:
+:cpp_type: std::vector<candidate_outcome>
+:END:
+#+begin_src cpp :name comment
+/** @brief Every candidate the feed read, in rank order, with its outcome. */
 #+end_src
 
 ** calibrate_request

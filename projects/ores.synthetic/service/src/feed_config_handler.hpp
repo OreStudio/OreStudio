@@ -396,6 +396,13 @@ private:
                     auth_nats_, in.config, in.components, in.fixing_items, in.policy, &clock);
                 one.refused = resolved.refused;
                 one.start = to_wire(resolved.source);
+                for (const auto& c : resolved.candidates)
+                    one.candidates.push_back({.item = c.item,
+                                              .provider_code = c.provider_code,
+                                              .inverted = c.inverted,
+                                              .rank = c.rank,
+                                              .state = std::string(feed::to_string(c.state)),
+                                              .reason = c.reason});
             }
             resp.feeds.push_back(std::move(one));
         }

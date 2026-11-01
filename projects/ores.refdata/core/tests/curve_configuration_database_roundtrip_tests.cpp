@@ -26,7 +26,6 @@
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"

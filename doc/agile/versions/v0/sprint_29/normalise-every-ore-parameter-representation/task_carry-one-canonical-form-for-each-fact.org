@@ -462,6 +462,23 @@ list of day counters ORE's schema names, which a person may read -- and states n
 rule. Which spellings a column accepts, and which form a configuration holds, is
 the value set's.
 
+** The mapper no longer restates the store's form
+
+The refdata repository converted a stated convention into the stored form before
+the row existed, in =stored_business_day_convention=, which is a fourth copy of a
+fact the value set states. The guard converts on the way in, so the copy goes:
+eleven models drop their =store_transform=, the header and its twenty call sites
+are deleted, and the test that asserted the transform goes with the feature it
+tested.
+
+The mapper now states the value the caller stated, and the guard stores the form
+the set names -- one conversion, at the boundary every writer passes. What the
+executable map still holds is the *reader's* table, which converts a document's
+spelling to the form the store holds. That conversion belongs to the codec and
+stays: without it the export would write a spelling the store does not hold, and
+the corpus round trip, which runs without a database, would certify documents
+production never writes.
+
 ** What the next slice needs
 
 Slice 2 adds =ores_reporting_canonical_value_fn(set_code, value)= and calls it

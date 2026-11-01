@@ -78,4 +78,11 @@ fetch_jwks_public_key(client& nats, std::chrono::seconds per_request_timeout) {
     co_return pub_key;
 }
 
+boost::asio::awaitable<std::string> fetch_jwks_public_key_once(client& nats,
+                                                               std::chrono::seconds timeout) {
+    std::string pub_key;
+    co_await fetch_jwks_once{nats, timeout, pub_key}();
+    co_return pub_key;
+}
+
 } // namespace ores::nats::service

@@ -71,15 +71,25 @@ std::optional<ores::nats::config::nats_options> fleet_options() {
     return options;
 }
 
-/// The public key IAM publishes, so this process can verify what IAM mints.
-std::optional<std::string> fetch_public_key(ores::nats::service::nats_client& session) {
+/**
+ * @brief The public key IAM publishes, so this process can verify what IAM mints.
+ *
+ * One attempt and no retry: NATS can be up while IAM is not, and the retrying
+ * fetch a service uses would wait for IAM for as long as it stays down.
+ */
+std::optional<std::string> fetch_public_key(ores::nats::service::nats_client& session,
+                                            std::string& why_not) {
     std::optional<std::string> key;
     asio::io_context io;
     asio::co_spawn(
         io,
         [&]() -> asio::awaitable<void> {
-            key = co_await ores::nats::service::fetch_jwks_public_key(session.transport(),
-                                                                      std::chrono::seconds(5));
+            try {
+                key = co_await ores::nats::service::fetch_jwks_public_key_once(
+                    session.transport(), std::chrono::seconds(5));
+            } catch (const std::exception& e) {
+                why_not = e.what();
+            }
         },
         asio::detached);
     io.run();
@@ -107,8 +117,10 @@ TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_sessio
         SKIP(std::string("The fleet is not reachable: ") + e.what());
     }
 
-    const auto public_key = fetch_public_key(session);
-    REQUIRE(public_key.has_value());
+    std::string why_not;
+    const auto public_key = fetch_public_key(session, why_not);
+    if (!public_key)
+        SKIP("IAM is not answering: " + why_not);
 
     auto store = std::make_shared<session_store>(std::chrono::hours(1));
     cookie_settings settings;

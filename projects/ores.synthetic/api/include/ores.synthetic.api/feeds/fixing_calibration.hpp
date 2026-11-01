@@ -63,6 +63,40 @@ orientation_of(const std::string& item, const std::string& base, const std::stri
 ORES_SYNTHETIC_API_EXPORT std::optional<double>
 business_day_log_return_spread(const std::vector<double>& values);
 
+/// The business days in a year, which annualise a business-day measure.
+inline constexpr double business_days_per_year = 252.0;
+
+/**
+ * @brief What a window's business-day log returns did.
+ *
+ * Only the spread changes a calibration today; the rest are recorded for a later policy.
+ */
+struct window_measures final {
+    double daily_spread = 0.0;
+    double annual_drift = 0.0;
+    double min_return = 0.0;
+    double max_return = 0.0;
+    int jumps = 0;
+};
+
+/**
+ * @brief The measures of @p values, a window of fixings oldest first, in the feed's
+ * orientation.
+ *
+ * An inverted item's returns are the negation of its own, so the drift changes sign and the
+ * range turns round; the spread and the jumps are unchanged. A jump is a return more than three
+ * spreads from zero. The window needs the same three values the spread needs.
+ */
+ORES_SYNTHETIC_API_EXPORT std::optional<window_measures>
+measure_window(const std::vector<double>& values, bool inverted);
+
+/**
+ * @brief The distance of @p other from @p level, in basis points of @p level.
+ */
+[[nodiscard]] inline double basis_points_from(double level, double other) {
+    return std::abs(other - level) / level * 10'000.0;
+}
+
 /**
  * @brief A business-day spread in the hourly terms of the feeds.
  *
@@ -71,9 +105,8 @@ business_day_log_return_spread(const std::vector<double>& values);
  * business day's times the root of 252 over 8,760.
  */
 [[nodiscard]] inline double hourly_spread_of(double business_day_spread) {
-    constexpr double business_days = 252.0;
     constexpr double hours = 365.0 * 24.0;
-    return business_day_spread * std::sqrt(business_days / hours);
+    return business_day_spread * std::sqrt(business_days_per_year / hours);
 }
 
 /**

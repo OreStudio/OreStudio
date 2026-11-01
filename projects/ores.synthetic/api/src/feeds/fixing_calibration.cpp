@@ -67,6 +67,25 @@ std::optional<double> business_day_log_return_spread(const std::vector<double>& 
     return std::sqrt(squares / static_cast<double>(returns.size() - 1));
 }
 
+std::optional<window_measures> measure_window(const std::vector<double>& values, bool inverted) {
+    const auto spread = business_day_log_return_spread(values);
+    if (!spread)
+        return std::nullopt;
+    std::vector<double> returns;
+    for (std::size_t i = 1; i < values.size(); ++i)
+        returns.push_back(std::log(values[i] / values[i - 1]) * (inverted ? -1.0 : 1.0));
+    const auto [lo, hi] = std::ranges::minmax(returns);
+    window_measures out;
+    out.daily_spread = *spread;
+    out.annual_drift = std::accumulate(returns.begin(), returns.end(), 0.0) /
+                       static_cast<double>(returns.size()) * business_days_per_year;
+    out.min_return = lo;
+    out.max_return = hi;
+    out.jumps = static_cast<int>(
+        std::ranges::count_if(returns, [&](double r) { return std::abs(r) > 3.0 * *spread; }));
+    return out;
+}
+
 std::expected<std::vector<double>, std::string> scaled_stdevs(
     const std::vector<mixture_component>& components, double hourly_spread, int ticks_per_hour) {
     if (components.empty())

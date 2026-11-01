@@ -684,6 +684,15 @@ export const feedStartSchema = z.object({
     used: z.int(),
     hourly_spread: z.number().nullish(),
     note: z.string(),
+    age_days: z.int().nullish(),
+    daily_spread: z.number().nullish(),
+    annual_drift: z.number().nullish(),
+    min_return: z.number().nullish(),
+    max_return: z.number().nullish(),
+    jumps: z.int().nullish(),
+    dispersion: z
+        .array(z.object({ provider_code: z.string(), item: z.string(), basis_points: z.number() }))
+        .default([]),
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;

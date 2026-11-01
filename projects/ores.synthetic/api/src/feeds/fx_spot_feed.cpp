@@ -183,6 +183,41 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
         s.received_at = latest->received_at;
         out.level = s.inverted ? 1.0 / *value : *value;
         s.window_days = item.window_days;
+        // The read is on or before the date, so a fixing is never younger than it.
+        s.age_days = std::max(0,
+                              static_cast<int>((std::chrono::sys_days(*date) -
+                                                std::chrono::sys_days(*latest->fixing_date))
+                                                   .count()));
+
+        // The other providers' fixings of the pair, read on the same date and turned to the
+        // feed's orientation. Each provider is compared once, through its first candidate. They
+        // describe the start; a missing one never blocks it.
+        for (const auto& other : items) {
+            if (other.provider_code == latest->provider_code ||
+                std::ranges::any_of(s.dispersion, [&](const auto& d) {
+                    return d.provider_code == other.provider_code;
+                }))
+                continue;
+            const auto other_orientation =
+                orientation_of(other.item, cfg.base_currency_code, cfg.quote_currency_code);
+            if (!other_orientation)
+                continue;
+            const auto fixing = md.get_fixing({.item = other.item,
+                                               .provider_code = other.provider_code,
+                                               .party_id = party_id,
+                                               .on_or_before = *date});
+            if (!fixing)
+                continue;
+            const auto other_value = number_of(fixing->value);
+            if (!other_value || *other_value <= 0.0)
+                continue;
+            const double other_level = *other_orientation == item_orientation::inverted ?
+                                           1.0 / *other_value :
+                                           *other_value;
+            s.dispersion.push_back({.provider_code = other.provider_code,
+                                    .item = other.item,
+                                    .basis_points = basis_points_from(out.level, other_level)});
+        }
 
         const auto window = md.get_fixing_window({.item = item.item,
                                                   .provider_code = item.provider_code,
@@ -204,6 +239,13 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
             return out;
         }
         s.hourly_spread = hourly_spread_of(*spread);
+        if (const auto m = measure_window(values, s.inverted)) {
+            s.daily_spread = m->daily_spread;
+            s.annual_drift = m->annual_drift;
+            s.min_return = m->min_return;
+            s.max_return = m->max_return;
+            s.jumps = m->jumps;
+        }
         std::vector<mixture_component> mixture;
         for (const auto& c : components)
             mixture.push_back({.mean = c.mean, .stdev = c.stdev, .weight = c.weight});
@@ -216,8 +258,8 @@ resolve_fx_start(ores::nats::service::nats_client& auth_nats,
         return out;
     }
     out.source.note = items.empty() ? "The config names no fixing item, and no series covers its "
-                                      "pair." :
-                                      "No item has a fixing";
+                                      "pair, so there is nothing to measure." :
+                                      "No item has a fixing, so there is nothing to measure";
     for (const auto& reason : skipped)
         out.source.note += "; " + reason;
     out.refused = policy.fallback_code == "refuse";

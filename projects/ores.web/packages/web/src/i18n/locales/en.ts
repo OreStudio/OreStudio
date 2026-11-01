@@ -5894,6 +5894,16 @@ export const en: SourceCatalogue = {
                 inverted:
                     'The item quotes the pair the other way round, so its value was read as one over it.',
                 window: '{used} fixings over {days} days measured its spread.',
+                measures: {
+                    volatility:
+                        'Realised volatility {daily} daily, {hourly} hourly: this changed the calibration, since it scales the mixture.',
+                    recorded: 'Recorded for a later policy, not used today:',
+                    drift: 'Drift, annualised: {value}',
+                    range: 'Daily returns from {min} to {max}',
+                    age: 'The fixing is {days} day(s) old',
+                    jumps: 'Moves above three deviations: {count}',
+                    dispersion: '{provider} stands {bp} bp away',
+                },
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',

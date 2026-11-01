@@ -24,8 +24,20 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::domain {
+
+/**
+ * @brief How far another provider's fixing of the pair stands from the one a feed took.
+ */
+struct provider_dispersion final {
+    std::string provider_code;
+    /// The other provider's item, as the oresmd URI that names it.
+    std::string item;
+    /// The distance from the level the feed took, in basis points of that level.
+    double basis_points = 0.0;
+};
 
 /**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
@@ -63,6 +75,20 @@ struct feed_start final {
     int used = 0;
     /// The measured hourly spread, when the window had one.
     std::optional<double> hourly_spread;
+    /// How many days the fixing is older than the date the feed read on or before.
+    std::optional<int> age_days;
+    /// The spread of the window's business-day log returns, in the feed's orientation.
+    std::optional<double> daily_spread;
+    /// The mean business-day log return, times 252.
+    std::optional<double> annual_drift;
+    /// The smallest business-day log return in the window.
+    std::optional<double> min_return;
+    /// The largest business-day log return in the window.
+    std::optional<double> max_return;
+    /// How many returns lie more than three spreads from zero.
+    std::optional<int> jumps;
+    /// The other providers' fixings of the pair, and how far each stands from the level.
+    std::vector<provider_dispersion> dispersion;
     /// Why the feed kept its fixed level, or why its spread was not measured.
     std::string note;
 };

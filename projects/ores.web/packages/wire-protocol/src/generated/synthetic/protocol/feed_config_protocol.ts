@@ -70,6 +70,18 @@ export interface StopFeedResponse {
 }
 
 /**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+export interface ProviderDispersion {
+    /** @brief The other provider. */
+    provider_code: string;
+    /** @brief The other provider's item, as the oresmd URI that names it. */
+    item: string;
+    /** @brief The distance from the level the feed took, in basis points of that level. */
+    basis_points: number;
+}
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -100,6 +112,20 @@ export interface FeedStart {
     hourly_spread: number | null;
     /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
     note: string;
+    /** @brief How many days the fixing is older than the date the feed read on or before. */
+    age_days: number | null;
+    /** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+    daily_spread: number | null;
+    /** @brief The mean business-day log return, times 252. */
+    annual_drift: number | null;
+    /** @brief The smallest business-day log return in the window. */
+    min_return: number | null;
+    /** @brief The largest business-day log return in the window. */
+    max_return: number | null;
+    /** @brief How many returns lie more than three spreads from zero. */
+    jumps: number | null;
+    /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+    dispersion: ProviderDispersion[];
 }
 
 /**

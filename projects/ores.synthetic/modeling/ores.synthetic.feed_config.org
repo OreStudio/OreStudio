@@ -130,6 +130,38 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 
+** provider_dispersion
+#+begin_src cpp :name comment
+/**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The other provider. */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The other provider's item, as the oresmd URI that names it. */
+#+end_src
+
+*** basis_points
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+#+begin_src cpp :name comment
+/** @brief The distance from the level the feed took, in basis points of that level. */
+#+end_src
+
 ** feed_start
 #+begin_src cpp :name comment
 /**
@@ -238,6 +270,62 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
+#+end_src
+
+*** age_days
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief How many days the fixing is older than the date the feed read on or before. */
+#+end_src
+
+*** daily_spread
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+#+end_src
+
+*** annual_drift
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The mean business-day log return, times 252. */
+#+end_src
+
+*** min_return
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The smallest business-day log return in the window. */
+#+end_src
+
+*** max_return
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The largest business-day log return in the window. */
+#+end_src
+
+*** jumps
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+#+begin_src cpp :name comment
+/** @brief How many returns lie more than three spreads from zero. */
+#+end_src
+
+*** dispersion
+:PROPERTIES:
+:cpp_type: std::vector<provider_dispersion>
+:END:
+#+begin_src cpp :name comment
+/** @brief The other providers' fixings of the pair, and how far each stands from the level. */
 #+end_src
 
 ** running_feed

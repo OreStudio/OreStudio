@@ -100,6 +100,18 @@ struct stop_feed_response {
 };
 
 /**
+ * @brief How far another provider's fixing of the pair stands from the level a feed took.
+ */
+struct provider_dispersion {
+    /** @brief The other provider. */
+    std::string provider_code;
+    /** @brief The other provider's item, as the oresmd URI that names it. */
+    std::string item;
+    /** @brief The distance from the level the feed took, in basis points of that level. */
+    double basis_points = 0.0;
+};
+
+/**
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * The record belongs to the run, not to the config: a feed that stops and
@@ -130,6 +142,20 @@ struct feed_start {
     std::optional<double> hourly_spread;
     /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
     std::string note;
+    /** @brief How many days the fixing is older than the date the feed read on or before. */
+    std::optional<int> age_days;
+    /** @brief The spread of the window's business-day log returns, in the feed's orientation. */
+    std::optional<double> daily_spread;
+    /** @brief The mean business-day log return, times 252. */
+    std::optional<double> annual_drift;
+    /** @brief The smallest business-day log return in the window. */
+    std::optional<double> min_return;
+    /** @brief The largest business-day log return in the window. */
+    std::optional<double> max_return;
+    /** @brief How many returns lie more than three spreads from zero. */
+    std::optional<int> jumps;
+    /** @brief The other providers' fixings of the pair, and how far each stands from the level. */
+    std::vector<provider_dispersion> dispersion;
 };
 
 /**

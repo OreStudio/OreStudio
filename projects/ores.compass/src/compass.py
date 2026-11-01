@@ -6376,14 +6376,19 @@ def resolve_build_targets(targets, claude=False, dsh=False):
     return resolved
 
 
-def _build_log_dir() -> Path:
-    """The directory the build logs live in: this checkout's own tmp/.
+def _checkout_log_dir(checkout) -> Path:
+    """Where a checkout's build logs live: its own tmp/.
 
     A log under the checkout is readable by everything that can read the
     checkout. The host's /tmp is not: a sandbox mounts a private /tmp, so a
     log written there is invisible to the very reader the log exists to
     inform. tmp/ is gitignored apart from its .gitkeep."""
-    path = PROJECT_ROOT / "tmp"
+    return Path(checkout) / "tmp"
+
+
+def _build_log_dir() -> Path:
+    """This checkout's build log directory, created when it is missing."""
+    path = _checkout_log_dir(PROJECT_ROOT)
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -7239,7 +7244,7 @@ def _build_log_path(slot_name, checkout=None):
     runs is under that checkout, which checkout names."""
     if checkout is None:
         return _build_log_dir() / f"ores-build.log.{slot_name}"
-    return Path(checkout) / "tmp" / f"ores-build.log.{slot_name}"
+    return _checkout_log_dir(checkout) / f"ores-build.log.{slot_name}"
 
 
 def _build_lock_holder_checkout(identity):

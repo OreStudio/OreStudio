@@ -8,7 +8,7 @@
 #+filetags: :trading:web:structure:sprint_29:v0:complete-a-structure-from-a-screen:
 #+owner: marco
 #+branch: feature/point-the-grouping-screen-at-the-completion
-#+pr: 4335
+#+pr: 4339
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] |
-| Now          | Built: the grouping route completes in one call. |
+| Now          | Nothing. |
 | Waiting on   | Marco's review, which this branch waits for. |
-| Next         | Raise the PR and leave it open.        |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -86,6 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4339][#4339]] | [agile] Close the grouping task and its story |
 | [[https://github.com/OreStudio/OreStudio/pull/4335][#4335]] | [web] Group trades by completing a structure, not by writing its rows |
 
 * Review

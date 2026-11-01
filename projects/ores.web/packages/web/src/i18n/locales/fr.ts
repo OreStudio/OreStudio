@@ -2973,6 +2973,23 @@ const fr: SourceCatalogue = {
                 "L'administrateur n'a pas d'entité système à laquelle se connecter ; l'installation ne peut donc pas être amorcée.",
         },
 
+        sources: {
+            title: 'Lire les conditions des sources publiques',
+            lead: 'L’installation peut charger les taux quotidiens d’éditeurs publics. Lisez les conditions de chacun, puis acceptez-les ou refusez-les ; un éditeur refusé n’est jamais interrogé, et vous pouvez changer d’avis plus tard sur l’écran des taux publics.',
+            next: 'Continuer',
+            none: 'Aucun éditeur public n’énonce de conditions, donc il n’y a rien à accepter.',
+            gives: 'Publie {count} séries de taux quotidiens.',
+            terms: 'Conditions',
+            credit: 'Mention demandée',
+            storage: 'Stockage',
+            storageAllowed: 'Ses valeurs peuvent être stockées',
+            storageRefused: 'Ses valeurs ne peuvent pas être stockées, donc il n’est pas interrogé',
+            accept: 'Accepter',
+            decline: 'Refuser',
+            accepted: 'Accepté',
+            declined: 'Refusé',
+        },
+
         profile: {
             title: 'Choisir un point de départ',
             lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
@@ -5057,6 +5074,7 @@ const fr: SourceCatalogue = {
                 acceptedBy: 'Par {who} le {when}',
                 notAccepted: 'Non acceptées',
                 accept: 'Accepter les conditions',
+                withdraw: 'Retirer l’acceptation',
                 read: 'Lire les conditions',
             },
             detail: {

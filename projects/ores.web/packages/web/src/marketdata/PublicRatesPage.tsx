@@ -100,11 +100,13 @@ function TermsCell({
     provider,
     mayAccept,
     onAccept,
+    onWithdraw,
     pending,
 }: {
     readonly provider: PublicRatesProvider;
     readonly mayAccept: boolean;
     readonly onAccept: () => void;
+    readonly onWithdraw: () => void;
     readonly pending: boolean;
 }): ReactNode {
     const { t } = useTranslation();
@@ -120,6 +122,11 @@ function TermsCell({
                         when: (provider.terms_accepted_at ?? '').slice(0, 10),
                     })}
                 </p>
+                {mayAccept && (
+                    <Button size="sm" onClick={onWithdraw} disabled={pending}>
+                        {t('marketdata.publicRates.terms.withdraw')}
+                    </Button>
+                )}
             </div>
         );
     }
@@ -557,6 +564,10 @@ export function PublicRatesPage(): ReactNode {
             api.acceptProviderTerms(provider.code, provider.version),
         onSettled: () => queries.invalidateQueries({ queryKey: ['public-rates'] }),
     });
+    const withdraw = useMutation({
+        mutationFn: (provider: PublicRatesProvider) => api.withdrawProviderTerms(provider.code),
+        onSettled: () => queries.invalidateQueries({ queryKey: ['public-rates'] }),
+    });
     const load = { dataUpdatedAt: providers.dataUpdatedAt, isFetching: providers.isFetching };
     const news = useEntityChanges([{ component: 'marketdata', entity: 'providers' }], load);
     const trail = <AreaTrail area="marketdata" screen={t('marketdata.publicRates.title')} />;
@@ -603,6 +614,7 @@ export function PublicRatesPage(): ReactNode {
                 />
             </div>
             {accept.isError && <Notice tone="error">{accept.error.message}</Notice>}
+            {withdraw.isError && <Notice tone="error">{withdraw.error.message}</Notice>}
             <nav
                 className="flex flex-wrap gap-1"
                 aria-label={t('marketdata.publicRates.tabs.label')}
@@ -699,8 +711,11 @@ export function PublicRatesPage(): ReactNode {
                                                     <TermsCell
                                                         provider={p}
                                                         mayAccept={mayAccept}
-                                                        pending={accept.isPending}
+                                                        pending={
+                                                            accept.isPending || withdraw.isPending
+                                                        }
                                                         onAccept={() => accept.mutate(p)}
+                                                        onWithdraw={() => withdraw.mutate(p)}
                                                     />
                                                 </td>
                                                 <td className="py-2 align-top font-mono text-xs">

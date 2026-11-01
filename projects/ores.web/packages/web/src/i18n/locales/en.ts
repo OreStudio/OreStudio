@@ -2936,6 +2936,23 @@ export const en: SourceCatalogue = {
                 'The administrator has no system party to sign in to, so the installation cannot be bootstrapped.',
         },
 
+        sources: {
+            title: 'Read the public sources’ terms',
+            lead: 'The installation can load daily rates from public publishers. Read each one’s terms and accept or decline it; a declined publisher is never fetched, and you can change this later on the Public rates screen.',
+            next: 'Continue',
+            none: 'No public publisher states terms, so there is nothing to accept.',
+            gives: 'Publishes {count} series of daily rates.',
+            terms: 'Terms',
+            credit: 'Credit it asks for',
+            storage: 'Storage',
+            storageAllowed: 'Its values may be stored',
+            storageRefused: 'Its values may not be stored, so it is not fetched',
+            accept: 'Accept',
+            decline: 'Decline',
+            accepted: 'Accepted',
+            declined: 'Declined',
+        },
+
         profile: {
             title: 'Choose a starting point',
             lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
@@ -4984,6 +5001,7 @@ export const en: SourceCatalogue = {
                 acceptedBy: 'By {who} on {when}',
                 notAccepted: 'Not accepted',
                 accept: 'Accept terms',
+                withdraw: 'Withdraw acceptance',
                 read: 'Read the terms',
             },
             detail: {

@@ -339,4 +339,41 @@ describe('the public rates routes', () => {
         expect(response.statusCode).toBe(400);
         expect(response.json().message).toContain('Read them again');
     });
+
+    it('withdraws an acceptance, naming only the publisher', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.withdraw_provider_terms': {
+                success: true,
+                message: "Withdrew the acceptance of 'ecb'.",
+            },
+        });
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/public-rates/ecb/withdraw-terms',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'marketdata.v1.ops.withdraw_provider_terms',
+                body: { provider_code: 'ecb' },
+            },
+        ]);
+    });
+
+    it('reports a withdrawal the service refused', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.withdraw_provider_terms': {
+                success: false,
+                message: "No provider 'zzz'.",
+            },
+        });
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/public-rates/zzz/withdraw-terms',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toContain("No provider 'zzz'.");
+    });
 });

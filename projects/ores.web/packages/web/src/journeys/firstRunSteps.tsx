@@ -85,6 +85,10 @@ export interface FirstRunStepsInput {
     readonly administratorForm: ReactNode;
     /** The form that signs back in as an administrator the deployment holds. */
     readonly administratorSignIn: ReactNode;
+    /** The public sources step: each publisher's terms, accepted or declined. */
+    readonly publicSources: ReactNode;
+    /** Whether every publisher with terms has been accepted or declined. */
+    readonly sourcesDecided: boolean;
     /** Creates the administrator and enters the deployment as it. */
     readonly onCreateAdministrator: () => Promise<void>;
     /** Signs in as the administrator the deployment already has. */
@@ -163,6 +167,18 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
                           administrator.acceptable,
                       run: async () => input.onCreateAdministrator(),
                   },
+        },
+        {
+            /*
+             * The administrator reads each public source's terms before any of
+             * its quotes are fetched, so the step follows the administrator,
+             * whose session records who accepted, and precedes the tenant.
+             */
+            id: 'sources',
+            title: t('journey.sources.title'),
+            lead: t('journey.sources.lead'),
+            body: input.publicSources,
+            next: { label: t('journey.sources.next'), enabled: input.sourcesDecided },
         },
         ...tenantSteps,
         {

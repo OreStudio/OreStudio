@@ -2554,6 +2554,13 @@ export const api = {
         });
     },
 
+    /** Withdraws a publisher's acceptance, so it is no longer fetched. */
+    async withdrawProviderTerms(code: string): Promise<void> {
+        await request(`/api/marketdata/public-rates/${encodeURIComponent(code)}/withdraw-terms`, {
+            method: 'POST',
+        });
+    },
+
     /** The delivery catalogue: publishers, suppliers, adapters, sessions and feeds. */
     async connectivity(): Promise<Connectivity> {
         return connectivitySchema.parse(

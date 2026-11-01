@@ -45,6 +45,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { JourneyPage } from './JourneyPage.js';
+import { PublicSourcesStep } from './PublicSourcesStep.js';
 import { JourneyHeader } from './parts.js';
 import { indexOfStep, type StepId } from './runtime.js';
 import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './firstRunSteps.js';
@@ -318,6 +319,7 @@ export function FirstRunJourney({
      * and the position stays inside both rails.
      */
     const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
+    const [sourcesDecided, setSourcesDecided] = useState(false);
     /*
      * Where the rail stands. Nothing is stated until somebody moves: the
      * deployment decides where the journey opens, which is the step that signs
@@ -482,6 +484,8 @@ export function FirstRunJourney({
         choice,
         onChoose: setChoice,
         welcome: <WelcomeIntro />,
+        publicSources: <PublicSourcesStep server={server} onDecided={setSourcesDecided} />,
+        sourcesDecided,
         administratorForm: (
             <AdministratorForm
                 policy={policy}

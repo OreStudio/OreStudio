@@ -407,6 +407,28 @@ export function registerPublicRatesRoutes(
      * Accepts a provider's terms at the version the person read; the service refuses when
      * the provider changed since, and records who and when.
      */
+    /**
+     * Withdraws a publisher's acceptance, so the adapter no longer fetches it. A person
+     * who declines a publisher, or changes their mind, withdraws it; the service clears
+     * the record of who accepted and when.
+     */
+    server.post('/api/marketdata/public-rates/:code/withdraw-terms', async (request) => {
+        const session = requireSession(request);
+        const { code } = input(z.object({ code: z.string().min(1) }), request.params);
+        const reply = await session.client.callAuthenticated(
+            termsSubjects.withdraw_provider_terms_request,
+            { provider_code: code },
+            z.looseObject({
+                success: z.boolean().default(false),
+                message: z.string().default(''),
+            }),
+        );
+        if (!reply.success) {
+            throw invalidRequest(reply.message);
+        }
+        return { message: reply.message };
+    });
+
     server.post('/api/marketdata/public-rates/:code/accept-terms', async (request) => {
         const session = requireSession(request);
         const { code } = input(z.object({ code: z.string().min(1) }), request.params);

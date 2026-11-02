@@ -48,3 +48,11 @@ def test_an_unknown_generator_gets_no_option(tmp_path):
 def test_an_unknown_preset_name_before_configure_means_make(tmp_path):
     assert keep_going_args(tmp_path, "linux-gcc-debug") == ["--", "-k"]
     assert keep_going_args(tmp_path, "Linux-Clang-Ninja") == ["--", "-k", "0"]
+
+
+def test_ninja_takes_the_failure_count_given(tmp_path):
+    assert keep_going_args(_cache(tmp_path, "Ninja"), "x", 3) == ["--", "-k", "3"]
+
+
+def test_make_ignores_the_failure_count(tmp_path):
+    assert keep_going_args(_cache(tmp_path, "Unix Makefiles"), "x", 3) == ["--", "-k"]

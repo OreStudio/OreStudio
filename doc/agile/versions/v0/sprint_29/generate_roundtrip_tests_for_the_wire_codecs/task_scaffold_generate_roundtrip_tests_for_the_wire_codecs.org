@@ -80,7 +80,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Scaffold task has placeholders | scaffold task | Fixed | Goal, acceptance and plan written. |
+| 2 | PR body counts eight items | PR body | Noted | Scaffold plus seven tasks. |
+| 3 | Measurements lack a command | story.org | Fixed | Survey scripts in evidence/, remeasured at 17019adff8. |
+| 4 | Sample rules incomplete | story.org | Fixed | A rule per type and a second value when a sample equals the default. |
+| 5 | Floating point equality | story.org | Fixed | Exact equality on exactly representable values. |
+| 6 | Status table widths | story.org | No change | Template output; org realigns. |
+| 7 | Dependency order | story.org, two tasks | Fixed | Order section and blocked_on. |
 
 * Result
 

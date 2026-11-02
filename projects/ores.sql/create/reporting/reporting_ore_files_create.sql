@@ -73,7 +73,6 @@ create table if not exists "ores_reporting_ore_files_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("code" ~ '^[a-z][a-z0-9_]*$'),
     check ("name" <> ''),
     check ("origin" in ('supplied', 'produced', 'packaged')),
     check ("format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz')),

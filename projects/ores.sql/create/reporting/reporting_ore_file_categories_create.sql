@@ -58,7 +58,6 @@ create table if not exists "ores_reporting_ore_file_categories_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("code" ~ '^[a-z][a-z0-9_]*$'),
     check ("name" <> ''),
     check ("origin" in ('supplied', 'produced', 'packaged'))
 );

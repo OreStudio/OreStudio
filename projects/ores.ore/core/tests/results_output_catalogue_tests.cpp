@@ -241,7 +241,7 @@ TEST_CASE("a family selection stores every family it does not skip", catalogue_t
     CHECK(none.skipped.empty());
     CHECK(none.stores("raw_cube"));
 
-    const auto some = ores::ore::results::family_selection_of(" rawcube, netcube ,,rawcube");
+    const auto some = ores::ore::results::family_selection_of(" raw_cube, net_cube ,,raw_cube");
     CHECK(some.skipped == std::vector<std::string>{"net_cube", "raw_cube"});
     CHECK_FALSE(some.stores("raw_cube"));
     CHECK_FALSE(some.stores("net_cube"));

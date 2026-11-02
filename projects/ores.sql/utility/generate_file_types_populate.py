@@ -431,6 +431,10 @@ def check_ore_files():
     codes = [f["code"] for f in ore_files.FILES]
     for code in sorted({c for c in codes if codes.count(c) > 1}):
         problems.append(f"the ORE file {code} is listed twice")
+    for code in sorted(categories | set(codes)):
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", code):
+            problems.append(f"{code} is not a code: lower case letters, digits and underscores, "
+                            "starting with a letter")
     for f in ore_files.FILES:
         if f["category_code"] not in categories:
             problems.append(f"{f['code']} names the category {f['category_code']}, which "

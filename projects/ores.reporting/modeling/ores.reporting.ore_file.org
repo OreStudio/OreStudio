@@ -208,7 +208,6 @@ checks the template emits on its own.
 
 | expression |
 |------------|
-| "code" ~ '^[a-z][a-z0-9_]*$' |
 | "name" <> '' |
 | "origin" in ('supplied', 'produced', 'packaged') |
 | "format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz') |

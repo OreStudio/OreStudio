@@ -104,7 +104,6 @@ The order the category appears in a list.
 
 | expression |
 |------------|
-| "code" ~ '^[a-z][a-z0-9_]*$' |
 | "name" <> '' |
 | "origin" in ('supplied', 'produced', 'packaged') |
 

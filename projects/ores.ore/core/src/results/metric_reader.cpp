@@ -198,11 +198,17 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         for (const auto& [name, at] : qualifier_at)
             lift(name, field_at(at));
         // A key that is neither the subject nor the observation date states
-        // context, so it travels with the metric.
+        // context, so it travels with the metric. A scenario or a factor has a
+        // column of its own, so it fills it even when it is also the subject,
+        // as it is in a family that states no record.
+        const auto has_own_column = [](std::string_view name) {
+            return name == "Scenario" || name == "ScenarioLabel" || name == "Factor";
+        };
         for (std::size_t i = 0; i < family.key_columns.size(); ++i) {
-            if (i == subject_key || family.key_columns[i] == "Date")
+            const auto& name = family.key_columns[i];
+            if (name == "Date" || (i == subject_key && !has_own_column(name)))
                 continue;
-            lift(family.key_columns[i], field_at(key_at[i]));
+            lift(name, field_at(key_at[i]));
         }
 
         for (const auto& measure : measures) {

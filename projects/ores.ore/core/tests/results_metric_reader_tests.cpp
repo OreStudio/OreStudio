@@ -119,6 +119,23 @@ TEST_CASE("a key that is not the subject travels with the metric", metric_tags) 
     CHECK(metric_named(outcome.metrics, "EPE") != nullptr);
 }
 
+TEST_CASE("a scenario that is the row's only key still names the scenario", metric_tags) {
+    const auto* family = family_named("stress_scenarios");
+    REQUIRE(family != nullptr);
+
+    const auto outcome = read_metrics("#Date,Scenario,Numeraire,DiscountCurve/USD/0\n"
+                                      "2026-10-31,UP,1.0,1.01\n",
+                                      *family);
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.metrics.size() == 2);
+    for (const auto& one : outcome.metrics) {
+        CHECK(one.scenario == "UP");
+        CHECK(one.as_of == "2026-10-31");
+        CHECK(one.line == 2);
+    }
+}
+
 TEST_CASE("a row whose key is empty keeps its figure and its other keys", metric_tags) {
     const auto* family = family_named("xva");
     REQUIRE(family != nullptr);

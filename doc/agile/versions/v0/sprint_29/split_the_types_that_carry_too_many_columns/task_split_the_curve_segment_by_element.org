@@ -26,11 +26,11 @@ A curve segment's element is its type, not a value of one of its columns. Each e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -99,7 +99,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Segment model columns before and after the split | 33 before, 28 of them nullable and every nullable one an element setting; 5 after: id, party_id, curve_definition_id, segment_type, position | the =* Columns= headings of =ores.refdata.curve_segment.org=, =git show 2c52d7fdfd:= against the branch | d45830eed7 |
+| Segment row columns after the split | 13: id, tenant_id, version, party_id, curve_definition_id, segment_type, position and the six audit and temporal columns | =information_schema.columns= of =ores_refdata_curve_segments_tbl= on the live database | d45830eed7 |
+| Parts the elements fill | 10 tables, each at most one row per segment | the Parts table in Notes; =refdata_curve_segment_parts_validate_fn_create.sql= | d45830eed7 |
+| Acme segments and their convention parts after provisioning | 35 segments, 35 conventions, 0 segments without one, 0 orphan parts, 0 pillar rules | =seg_shape.sql= against the provisioned database | d45830eed7 |
+| Suites | every ctest suite passed except ores.web, which passed once the saved family count was 44; ores.refdata.core 508 test cases | =ctest -j 4=, then =ctest -R ores.web.tests= | f6abfc4332 |
 
 * Notes
 
@@ -187,6 +191,41 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Discount ratio export writes an empty curve where the old export refused a missing one | curve_configuration_projection.cpp | Declined | The schema requires the three curves, and the import stores what the document states with =required_text=, the same rule every required leaf of a segment follows; the old refusal was for a null column, which the part's not-null column now rules out. |
+| 2 | The convention validator checks the flat convention tables and the central row by name, not the family's parts | refdata_conventions_validate_fn_create.sql | Declined | Unchanged by this task; the segment's convention reference is the same reference as before, now on its part. |
+| 3 | The Acme configuration generator rewrites pricing_model_product_parameters.json, which main never regenerated | generate_configuration_data.py | Captured | Not this task's data; the file was restored and the drift captured. |
+| 4 | The section generator reads the projection by regular expression | generate_curve_section_parameters.py | Declined | The generator already worked this way; the part readers keep the statement shapes it reads, and =curve-sections-wiring= fails the gate if the generated TypeScript or SQL drifts from the projection. |
+| 5 | Each part's eventing test seeds its segment through a hand-written helper | curve_segment_seed.hpp | Accepted | A generic test cannot satisfy a rule across two rows; the models name the helper in =parent_seed=, so the generated tests stay generated. |
 
 * Result
+
+The element is the reason for the split, not the column count. A curve
+segment's =Type= fixes one of twelve ORE elements, and the schema and the
+projection agree on what each element states: no setting is shared by all
+twelve, not even the convention or the pillar settings. So the segment row
+keeps only what every element has, its definition, its type and its place,
+and each component of settings is a part of the segment keyed by its id: the
+convention, the pillar rules, the projection curve, the tenor basis curves,
+the cross currency terms, the reference curve, the weighted average, the
+discount ratio, the flat extrapolation flag and the ibor fallback. A shared
+component is one part rather than a column repeated on a part per element,
+because the pillar rules are the same three rules wherever they appear.
+
+The projection's =import_segments= is the one statement of which element has
+which part: each element's loop calls one reader per part. The section
+generator follows those calls, so the screen's leaves name the part each is
+in, and it writes the SQL functions each part's trigger calls to refuse a part
+its segment's element does not have. The export takes each segment's parts
+from an index and refuses a part of the wrong element, a part of no segment
+and a second row of one part. A part of optional fields is written only when
+the element states one of them, so no part row is empty.
+
+The ORE round trip of every corpus file and of every element is unchanged,
+the live Acme publish stores 35 segments with 35 convention parts and no
+other part, and the database refuses a part on the wrong element.
+
+The component audit: =validate_docs.sh= passes for all 39 components. The ten
+parts are refdata entities of the shape =curve_segment_curve= already has, a
+child keyed by the segment's id, so no component gains a part or a boundary;
+the ore projection, the document service, the shell aggregator, the SQL lists
+and the BFF only name the new entities.

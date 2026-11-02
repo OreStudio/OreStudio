@@ -36,8 +36,10 @@
 \ir ./marketdata_market_observations_create.sql
 -- The market state a run priced against, kept as the file the engine wrote with
 -- an index of what it covers.
-\ir ./marketdata_market_state_payloads_create.sql
-\ir ./marketdata_market_state_payloads_notify_trigger_create.sql
+\ir ./marketdata_market_scenario_values_create.sql
+\ir ./marketdata_market_scenario_values_notify_trigger_create.sql
+\ir ./marketdata_market_calibration_values_create.sql
+\ir ./marketdata_market_calibration_values_notify_trigger_create.sql
 \ir ./marketdata_ticks_create.sql
 \ir ./marketdata_tick_coords_create.sql
 \ir ./marketdata_observation_lineages_create.sql

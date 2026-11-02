@@ -1044,8 +1044,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 market_state_note = "Its market state was not stored: " + answer->result.message;
             } else {
                 BOOST_LOG_SEV(lg(), info)
-                    << "Stored " << answer->payloads << " market-state payload(s) for "
-                    << req.report_instance_id << " (" << answer->payload_bytes << " bytes)";
+                    << "Stored " << answer->rows << " market-state value(s) from "
+                    << answer->files << " file(s) for " << req.report_instance_id;
             }
         } catch (const std::exception& e) {
             market_state_note = std::string("Its market state was not stored: ") + e.what();

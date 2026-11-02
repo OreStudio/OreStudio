@@ -3004,7 +3004,7 @@ manifest and lends the token that reads them.
 :cpp_type: std::string
 :END:
 
-The party that owns the run, so every payload carries it.
+The party that owns the run, so every value carries it.
 
 *** report_instance_id
 :PROPERTIES:
@@ -3061,9 +3061,9 @@ run's state, because a partial state reads as a complete one.
 :cpp_type: std::vector<std::string>
 :END:
 
-The families a payload was stored for, in the order they were read.
+The families rows were stored for, in the order they were read.
 
-*** payloads
+*** files
 :PROPERTIES:
 :cpp_type: int
 :default: 0
@@ -3071,13 +3071,13 @@ The families a payload was stored for, in the order they were read.
 
 The files whose family states a market state and which were read.
 
-*** payload_bytes
+*** rows
 :PROPERTIES:
 :cpp_type: std::int64_t
 :default: 0
 :END:
 
-The compressed size of what was stored, so a caller can account for it.
+The values stored, across every file, so a caller can account for them.
 
 *** left_alone
 :PROPERTIES:

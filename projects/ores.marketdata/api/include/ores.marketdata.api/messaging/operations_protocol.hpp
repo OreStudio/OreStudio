@@ -1344,8 +1344,8 @@ struct store_market_state_request {
 struct store_market_state_response {
     ores::utility::domain::result result;
     std::vector<std::string> families;
-    int payloads = 0;
-    std::int64_t payload_bytes = 0;
+    int files = 0;
+    std::int64_t rows = 0;
     std::vector<std::string> left_alone;
     std::vector<std::string> refusals;
 };

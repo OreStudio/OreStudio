@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/results/calibration_reader.hpp"
 #include "ores.ore.core/results/cashflow_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
@@ -35,18 +36,16 @@ using ores::ore::results::family_of_file;
 using ores::ore::results::output_families;
 using ores::ore::results::output_family;
 using ores::ore::results::is_cashflow_family;
-using ores::ore::results::is_market_state;
+using ores::ore::results::is_calibration_family;
+using ores::ore::results::read_calibration;
 using ores::ore::results::read_cashflows;
 using ores::ore::results::read_metrics;
 
-enum class shape { metric, cashflow, payload };
+enum class shape { metric, cashflow, calibration };
 
 shape shape_of(const output_family& family) {
-    // A market state is stored as one payload by the market data store, so no
-    // reader in this component claims it, and the gate says so rather than
-    // skipping it silently.
-    if (is_market_state(family))
-        return shape::payload;
+    if (is_calibration_family(family))
+        return shape::calibration;
     // A family whose key names a payment states a cashflow, and every other
     // family states figures about a subject.
     if (is_cashflow_family(family))
@@ -60,19 +59,18 @@ bool reads_whole(const output_family& family, const std::string& csv) {
             return read_cashflows(csv, family).refusals.empty();
         case shape::metric:
             return read_metrics(csv, family).refusals.empty();
-        case shape::payload:
-            break;
+        case shape::calibration:
+            return read_calibration(csv, family).refusals.empty();
     }
-    return true;
+    return false;
 }
-
 
 }
 
 TEST_CASE("every family states the shape that reads it", gate_tags) {
     std::size_t metrics = 0;
     std::size_t cashflows = 0;
-    std::size_t payloads = 0;
+    std::size_t calibrations = 0;
 
     for (const auto& family : output_families()) {
         INFO("the family is " << family.code);
@@ -83,8 +81,8 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
                 CHECK_FALSE(family.measure_columns.empty());
                 ++metrics;
                 break;
-            case shape::payload:
-                ++payloads;
+            case shape::calibration:
+                ++calibrations;
                 break;
             case shape::cashflow:
                 // A cashflow family states the numbering of a payment, or its
@@ -96,9 +94,9 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
         }
     }
 
-    CHECK(metrics == 54);
+    CHECK(metrics == 56);
     CHECK(cashflows == 3);
-    CHECK(payloads == 3);
+    CHECK(calibrations == 1);
 }
 
 TEST_CASE("the checked-in corpus reads whole with the reader each family states", gate_tags) {
@@ -119,9 +117,6 @@ TEST_CASE("the checked-in corpus reads whole with the reader each family states"
             const auto* family = family_of_file(entry.path().filename().string());
             INFO("the file is " << entry.path().string());
             REQUIRE(family != nullptr);
-            if (shape_of(*family) == shape::payload)
-                continue;
-
             INFO("the family is " << family->code);
             const auto csv = ores::testing::read_file(entry.path());
             CHECK(reads_whole(*family, csv));

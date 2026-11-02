@@ -1390,6 +1390,19 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.market_calibration_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'market_object_type',
+            'market_object_id',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'market_object_type_one_of',
+            'market_object_id_one_of',
+        ],
+        rows: ['values'],
+    },
     'marketdata.v1.market_data_mappings.list': {
         asOf: true,
         filter: [
@@ -1459,6 +1472,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['market_observations'],
     },
+    'marketdata.v1.market_scenario_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'factor',
+            'family',
+            'scenario',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'factor_one_of',
+            'family_one_of',
+            'scenario_one_of',
+        ],
+        rows: ['values'],
+    },
     'marketdata.v1.market_series.list': {
         asOf: true,
         filter: ['provider_code', 'id_one_of', 'provider_code_one_of'],
@@ -1478,17 +1506,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
-    },
-    'marketdata.v1.market_state_payloads.list': {
-        asOf: true,
-        filter: [
-            'report_instance_id',
-            'family',
-            'id_one_of',
-            'report_instance_id_one_of',
-            'family_one_of',
-        ],
-        rows: ['payloads'],
     },
     'marketdata.v1.observation_lineages.list': {
         asOf: true,
@@ -4458,14 +4475,14 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: true,
         filter: [
             'report_instance_id',
+            'measure',
             'family',
             'subject_id',
-            'measure',
             'id_one_of',
             'report_instance_id_one_of',
+            'measure_one_of',
             'family_one_of',
             'subject_id_one_of',
-            'measure_one_of',
         ],
         rows: ['metrics'],
     },

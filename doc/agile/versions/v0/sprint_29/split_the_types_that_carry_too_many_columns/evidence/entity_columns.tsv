@@ -1,41 +1,41 @@
 model	component	entity	members	columns	nullable	grouped	groups	parts	profile
 projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org	marketdata	market_series_identity	57	57	54	0		0	read-only-current-state
-projects/ores.refdata/modeling/ores.refdata.commodity_future_convention.org	refdata	commodity_future_convention	53	53	49	0		0	simple-lookup
-projects/ores.refdata/modeling/ores.refdata.cap_floor_volatility_config.org	refdata	cap_floor_volatility_config	39	39	35	0		0	uuid-identified-lookup
-projects/ores.refdata/modeling/ores.refdata.curve_segment.org	refdata	curve_segment	33	33	28	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.instrument_option.org	trading	instrument_option	33	33	27	0		0	
-projects/ores.refdata/modeling/ores.refdata.curve_volatility_config.org	refdata	curve_volatility_config	32	32	26	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.cap_floor_volatility_config.org	refdata	cap_floor_volatility_config	31	31	28	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_leg_rate.org	trading	bond_leg_rate	29	29	24	0		0	
 projects/ores.trading/modeling/ores.trading.commodity_instrument.org	trading	commodity_instrument	27	30	22	4	identity	0	trading-instrument
-projects/ores.refdata/modeling/ores.refdata.cross_currency_basis_convention.org	refdata	cross_currency_basis_convention	27	27	21	0		0	simple-lookup
-projects/ores.refdata/modeling/ores.refdata.default_curve_configuration.org	refdata	default_curve_configuration	27	27	21	0		0	uuid-identified-lookup
-projects/ores.refdata/modeling/ores.refdata.swaption_volatility_config.org	refdata	swaption_volatility_config	27	27	23	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_issue_leg_rate.org	trading	bond_issue_leg_rate	27	27	24	0		0	
+projects/ores.reporting/modeling/ores.reporting.cut.org	reporting	cut	26	26	10	0		0	uuid-identified-lookup
 projects/ores.dq/modeling/ores.dq.lei_entity.org	dq	lei_entity	25	25	20	0		0	simple-lookup, read-only-current-state, artefact-staging-only
-projects/ores.refdata/modeling/ores.refdata.commodity_curve_config.org	refdata	commodity_curve_config	24	24	17	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.csa.org	refdata	csa	23	23	19	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.book_change.org	refdata	book_change	22	22	5	0		0	uuid-identified-lookup
-projects/ores.refdata/modeling/ores.refdata.fx_volatility_config.org	refdata	fx_volatility_config	22	22	18	0		0	uuid-identified-lookup
-projects/ores.refdata/modeling/ores.refdata.inflation_cap_floor_volatility_config.org	refdata	inflation_cap_floor_volatility_config	22	22	7	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.instrument_schedule.org	trading	instrument_schedule	22	22	15	0		0	
+projects/ores.refdata/modeling/ores.refdata.commodity_future_contract_terms.org	refdata	commodity_future_contract_terms	21	21	16	0		0	
+projects/ores.refdata/modeling/ores.refdata.swaption_volatility_config.org	refdata	swaption_volatility_config	21	21	18	0		0	uuid-identified-lookup
+projects/ores.reporting/modeling/ores.reporting.report_instance.org	reporting	report_instance	21	21	13	0		0	fk-scoped-child
 projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org	synthetic	ir_curve_generation_config	21	21	2	0		0	uuid-identified-lookup
 projects/ores.dq/modeling/ores.dq.dataset.org	dq	dataset	20	20	5	0		0	uuid-surrogate-lookup
-projects/ores.refdata/modeling/ores.refdata.cross_currency_fix_float_convention.org	refdata	cross_currency_fix_float_convention	20	20	10	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.inflation_curve_config.org	refdata	inflation_curve_config	20	20	10	0		0	uuid-identified-lookup
+projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org	synthetic	fx_spot_generation_config	20	20	2	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_issue_leg_schedule.org	trading	bond_issue_leg_schedule	20	20	15	0		0	
 projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org	refdata	base_correlation_config	19	19	10	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.inflation_cap_floor_volatility_config.org	refdata	inflation_cap_floor_volatility_config	19	19	4	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.inflation_swap_convention.org	refdata	inflation_swap_convention	19	19	8	0		0	simple-lookup
-projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org	synthetic	fx_spot_generation_config	19	19	1	0		0	uuid-identified-lookup
+projects/ores.reporting/modeling/ores.reporting.report_cashflow.org	reporting	report_cashflow	19	19	4	0		0	readonly-timeseries
 projects/ores.refdata/modeling/ores.refdata.curve_global_report.org	refdata	curve_global_report	18	18	12	0		0	uuid-identified-lookup
+projects/ores.reporting/modeling/ores.reporting.report_definition.org	reporting	report_definition	18	18	7	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_issue.org	trading	bond_issue	18	18	16	0		0	
+projects/ores.marketdata/modeling/ores.marketdata.market_calibration_value.org	marketdata	market_calibration_value	17	17	1	0		0	readonly-timeseries
 projects/ores.refdata/modeling/ores.refdata.curve_correlation_config.org	refdata	curve_correlation_config	17	17	13	0		0	uuid-identified-lookup
-projects/ores.reporting/modeling/ores.reporting.report_instance.org	reporting	report_instance	17	17	9	0		0	fk-scoped-child
+projects/ores.reporting/modeling/ores.reporting.report_metric.org	reporting	report_metric	17	17	3	0		0	readonly-timeseries
 projects/ores.trading/modeling/ores.trading.bond_leg.org	trading	bond_leg	17	17	13	0		0	
 projects/ores.workflow/modeling/ores.workflow.workflow_step.org	workflow	workflow_step	17	17	6	0		0	uuid-identified-lookup
 projects/ores.compute/modeling/ores.compute.grid_sample.org	compute	grid_sample	16	16	1	0		0	readonly-timeseries
 projects/ores.refdata/modeling/ores.refdata.book.org	refdata	book	16	16	5	0		0	fk-scoped-child
+projects/ores.refdata/modeling/ores.refdata.commodity_future_option_expiry.org	refdata	commodity_future_option_expiry	16	16	13	0		0	
 projects/ores.refdata/modeling/ores.refdata.commodity_volatility_config.org	refdata	commodity_volatility_config	16	16	11	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.currency.org	refdata	currency	16	16	2	0		0	fully-featured-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_delta_surface.org	refdata	curve_volatility_delta_surface	16	16	3	0		0	
 projects/ores.refdata/modeling/ores.refdata.equity_curve_config.org	refdata	equity_curve_config	16	16	7	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.ore_parameter.org	reporting	ore_parameter	16	16	1	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.equity_cliquet_option_instrument.org	trading	equity_cliquet_option_instrument	16	16	9	0		0	
@@ -43,10 +43,11 @@ projects/ores.trading/modeling/ores.trading.equity_barrier_option_instrument.org
 projects/ores.iam/modeling/ores.iam.seed_profile.org	iam	seed_profile	15	15	1	0		0	uuid-identified-lookup
 projects/ores.marketdata/modeling/ores.marketdata.curve_publish.org	marketdata	curve_publish	15	15	6	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_report_configuration.org	refdata	curve_report_configuration	15	15	12	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.fx_volatility_config.org	refdata	fx_volatility_config	15	15	11	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.ois_convention.org	refdata	ois_convention	15	15	10	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.yield_curve_config.org	refdata	yield_curve_config	15	15	9	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.file_type.org	reporting	file_type	15	15	4	0		0	simple-lookup
-projects/ores.reporting/modeling/ores.reporting.report_definition.org	reporting	report_definition	15	15	5	0		0	uuid-identified-lookup
+projects/ores.reporting/modeling/ores.reporting.report_text_value.org	reporting	report_text_value	15	15	1	0		0	readonly-timeseries
 projects/ores.synthetic/modeling/ores.synthetic.trade_generation_config.org	synthetic	trade_generation_config	15	15	1	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_issue_leg.org	trading	bond_issue_leg	15	15	13	0		0	
 projects/ores.trading/modeling/ores.trading.credit_default_swap_instrument.org	trading	credit_default_swap_instrument	15	15	13	0		0	
@@ -63,13 +64,16 @@ projects/ores.trading/modeling/ores.trading.fx_digital_option_instrument.org	tra
 projects/ores.analytics/modeling/ores.analytics.credit_simulation_config.org	analytics	credit_simulation_config	13	13	10	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.average_ois_convention.org	refdata	average_ois_convention	13	13	5	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.cds_convention.org	refdata	cds_convention	13	13	3	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.cross_currency_basis_flat_leg.org	refdata	cross_currency_basis_flat_leg	13	13	9	0		0	
 projects/ores.refdata/modeling/ores.refdata.curve_bootstrap_config.org	refdata	curve_bootstrap_config	13	13	10	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_moneyness_surface.org	refdata	curve_volatility_moneyness_surface	13	13	2	0		0	
 projects/ores.refdata/modeling/ores.refdata.party_contact_information.org	refdata	party_contact_information	13	13	9	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.tenor_basis_two_swap_convention.org	refdata	tenor_basis_two_swap_convention	13	13	2	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_error_event.org	reporting	report_error_event	13	13	6	0		0	
 projects/ores.trading/modeling/ores.trading.bond_forward.org	trading	bond_forward	13	13	11	0		0	
 projects/ores.trading/modeling/ores.trading.index_credit_default_swap_instrument.org	trading	index_credit_default_swap_instrument	13	13	10	0		0	
 projects/ores.trading/modeling/ores.trading.synthetic_cdo_instrument.org	trading	synthetic_cdo_instrument	13	13	7	0		0	
+projects/ores.trading/modeling/ores.trading.trade_summary.org	trading	trade_summary	13	13	5	0		0	read-model
 projects/ores.workflow/modeling/ores.workflow.workflow_instance.org	workflow	workflow_instance	13	13	7	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.equity_digital_option_instrument.org	trading	equity_digital_option_instrument	12	15	6	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.equity_option_instrument.org	trading	equity_option_instrument	12	15	3	4	identity	0	trading-instrument
@@ -79,44 +83,56 @@ projects/ores.dq/modeling/ores.dq.lei_relationship.org	dq	lei_relationship	12	12
 projects/ores.iam/modeling/ores.iam.account.org	iam	account	12	12	6	0		0	
 projects/ores.iam/modeling/ores.iam.session.org	iam	session	12	12	1	0		0	readonly-timeseries
 projects/ores.inbox/modeling/ores.inbox.approval_kind.org	inbox	approval_kind	12	12	4	0		0	simple-lookup
-projects/ores.marketdata/modeling/ores.marketdata.provider.org	marketdata	provider	12	12	1	0		0	simple-lookup
+projects/ores.marketdata/modeling/ores.marketdata.market_input_value.org	marketdata	market_input_value	12	12	1	0		0	readonly-timeseries
+projects/ores.marketdata/modeling/ores.marketdata.market_scenario_value.org	marketdata	market_scenario_value	12	12	0	0		0	readonly-timeseries
+projects/ores.marketdata/modeling/ores.marketdata.provider.org	marketdata	provider	12	12	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.bond_future_volatility_config.org	refdata	bond_future_volatility_config	12	12	7	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_curve_basis.org	refdata	commodity_curve_basis	12	12	9	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.counterparty_contact_information.org	refdata	counterparty_contact_information	12	12	9	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.counterparty_identifier_change.org	refdata	counterparty_identifier_change	12	12	1	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.cross_currency_basis_spread_leg.org	refdata	cross_currency_basis_spread_leg	12	12	8	0		0	
 projects/ores.refdata/modeling/ores.refdata.curve_quote.org	refdata	curve_quote	12	12	8	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org	refdata	ir_curve_bootstrap_config	12	12	1	0		0	uuid-surrogate-lookup
 projects/ores.refdata/modeling/ores.refdata.party.org	refdata	party	12	12	3	0		0	self-referencing-hierarchy
 projects/ores.refdata/modeling/ores.refdata.tenor_basis_swap_pay_receive.org	refdata	tenor_basis_swap_pay_receive	12	12	9	0		0	
 projects/ores.refdata/modeling/ores.refdata.yield_volatility_config.org	refdata	yield_volatility_config	12	12	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.zero_convention.org	refdata	zero_convention	12	12	8	0		0	simple-lookup
-projects/ores.reporting/modeling/ores.reporting.report_result_row.org	reporting	report_result_row	12	12	1	0		0	readonly-timeseries
+projects/ores.reporting/modeling/ores.reporting.run_result.org	reporting	run_result	12	12	1	0		0	read-model
 projects/ores.synthetic/modeling/ores.synthetic.yield_curve_process_parameter_definition.org	synthetic	yield_curve_process_parameter_definition	12	12	3	0		0	uuid-surrogate-lookup
-projects/ores.analytics/modeling/ores.analytics.pricing_pair_setting.org	analytics	pricing_pair_setting	11	11	3	0		0	simple-lookup
+projects/ores.trading/modeling/ores.trading.product_type.org	trading	product_type	12	12	6	0		0	simple-lookup
+projects/ores.trading/modeling/ores.trading.trade.org	trading	trade	12	12	4	0		0	
 projects/ores.analytics/modeling/ores.analytics.stress_test_shift.org	analytics	stress_test_shift	11	11	5	0		0	uuid-identified-lookup
 projects/ores.compute/modeling/ores.compute.result.org	compute	result	11	11	8	0		0	uuid-identified-lookup
 projects/ores.dq/modeling/ores.dq.publication.org	dq	publication	11	11	0	0		0	readonly-timeseries
 projects/ores.iam/modeling/ores.iam.account_contact_information.org	iam	account_contact_information	11	11	9	0		0	uuid-identified-lookup
 projects/ores.iam/modeling/ores.iam.run_grant.org	iam	run_grant	11	11	5	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.calendar_rule.org	refdata	calendar_rule	11	11	7	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_future_averaging_terms.org	refdata	commodity_future_averaging_terms	11	11	4	0		0	
 projects/ores.refdata/modeling/ores.refdata.commodity_price_segment.org	refdata	commodity_price_segment	11	11	4	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.cross_currency_fix_float_float_leg.org	refdata	cross_currency_fix_float_float_leg	11	11	7	0		0	
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_strike_surface.org	refdata	curve_volatility_strike_surface	11	11	1	0		0	
+projects/ores.refdata/modeling/ores.refdata.default_curve_configuration.org	refdata	default_curve_configuration	11	11	6	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.fx_option_convention.org	refdata	fx_option_convention	11	11	8	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.portfolio.org	refdata	portfolio	11	11	5	0		0	fk-scoped-child
+projects/ores.reporting/modeling/ores.reporting.cut_kind.org	reporting	cut_kind	11	11	1	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.bond_leg_amortization.org	trading	bond_leg_amortization	11	11	5	0		0	
-projects/ores.trading/modeling/ores.trading.trade.org	trading	trade	11	11	3	0		0	
-projects/ores.trading/modeling/ores.trading.trade_summary.org	trading	trade_summary	11	11	4	0		0	read-model
 projects/ores.trading/modeling/ores.trading.equity_swap_instrument.org	trading	equity_swap_instrument	10	13	2	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.fx_vanilla_option_instrument.org	trading	fx_vanilla_option_instrument	10	13	2	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.fx_variance_swap_instrument.org	trading	fx_variance_swap_instrument	10	13	1	4	identity	0	trading-instrument
 projects/ores.iam/modeling/ores.iam.run_token_issue.org	iam	run_token_issue	10	10	0	0		0	
 projects/ores.iam/modeling/ores.iam.seed_profile_parameter.org	iam	seed_profile_parameter	10	10	2	0		0	uuid-identified-lookup
 projects/ores.marketdata/modeling/ores.marketdata.observation_lineage.org	marketdata	observation_lineage	10	10	2	0		0	uuid-surrogate-lookup
+projects/ores.marketdata/modeling/ores.marketdata.session.org	marketdata	session	10	10	0	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.cap_floor_proxy_config.org	refdata	cap_floor_proxy_config	10	10	7	0		0	
 projects/ores.refdata/modeling/ores.refdata.cms_spread_option_convention.org	refdata	cms_spread_option_convention	10	10	1	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.commodity_forward_convention.org	refdata	commodity_forward_convention	10	10	8	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_future_expiry_anchor.org	refdata	commodity_future_expiry_anchor	10	10	7	0		0	
 projects/ores.refdata/modeling/ores.refdata.deposit_convention.org	refdata	deposit_convention	10	10	7	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.fx_volatility_smile.org	refdata	fx_volatility_smile	10	10	7	0		0	
 projects/ores.refdata/modeling/ores.refdata.netting_set.org	refdata	netting_set	10	10	7	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.swap_convention.org	refdata	swap_convention	10	10	5	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.tenor_basis_swap_long_short.org	refdata	tenor_basis_swap_long_short	10	10	7	0		0	
-projects/ores.reporting/modeling/ores.reporting.engine_settings_group_setting.org	reporting	engine_settings_group_setting	10	10	2	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_set.org	reporting	ore_parameter_value_set	10	10	4	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.equity_position_option_underlying.org	trading	equity_position_option_underlying	10	10	4	0		0	
 projects/ores.trading/modeling/ores.trading.instrument_option_premium.org	trading	instrument_option_premium	10	10	3	0		0	
 projects/ores.trading/modeling/ores.trading.equity_forward_instrument.org	trading	equity_forward_instrument	9	12	3	4	identity	0	trading-instrument
@@ -124,17 +140,22 @@ projects/ores.trading/modeling/ores.trading.equity_variance_swap_instrument.org	
 projects/ores.trading/modeling/ores.trading.fx_accumulator_instrument.org	trading	fx_accumulator_instrument	9	12	2	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.swap_leg.org	trading	swap_leg	9	12	3	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.instrument_strike.org	trading	instrument_strike	9	10	6	2	identity	0	
+projects/ores.analytics/modeling/ores.analytics.pricing_pair_setting.org	analytics	pricing_pair_setting	9	9	2	0		0	simple-lookup
 projects/ores.analytics/modeling/ores.analytics.todays_market_entry.org	analytics	todays_market_entry	9	9	3	0		0	uuid-identified-lookup
 projects/ores.compute/modeling/ores.compute.workunit.org	compute	workunit	9	9	3	0		0	uuid-identified-lookup
 projects/ores.iam/modeling/ores.iam.auth_event.org	iam	auth_event	9	9	0	0		0	
+projects/ores.marketdata/modeling/ores.marketdata.adapter.org	marketdata	adapter	9	9	0	0		0	simple-lookup
 projects/ores.marketdata/modeling/ores.marketdata.subscription_interval.org	marketdata	subscription_interval	9	9	1	0		0	
 projects/ores.refdata/modeling/ores.refdata.bond_yield_convention.org	refdata	bond_yield_convention	9	9	6	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.cds_volatility_config.org	refdata	cds_volatility_config	9	9	6	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_discount_ratio.org	refdata	curve_segment_discount_ratio	9	9	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_kind.org	refdata	curve_volatility_kind	9	9	5	0		0	
 projects/ores.refdata/modeling/ores.refdata.sandbox.org	refdata	sandbox	9	9	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.zero_inflation_index_convention.org	refdata	zero_inflation_index_convention	9	9	1	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.cut_approval_detail.org	reporting	cut_approval_detail	9	9	1	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.engine_settings_building.org	reporting	engine_settings_building	9	9	6	0		0	fk-scoped-child
 projects/ores.reporting/modeling/ores.reporting.engine_settings_fixings.org	reporting	engine_settings_fixings	9	9	6	0		0	fk-scoped-child
-projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_set.org	reporting	ore_parameter_value_set	9	9	4	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.ore_parameter_vocabulary.org	reporting	ore_parameter_vocabulary	9	9	0	0		0	simple-lookup
 projects/ores.scheduler/modeling/ores.scheduler.job_definition.org	scheduler	job_definition	9	9	1	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.activity_type.org	trading	activity_type	9	9	3	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.bond_issue_leg_amortization.org	trading	bond_issue_leg_amortization	9	9	5	0		0	
@@ -153,20 +174,26 @@ projects/ores.iam/modeling/ores.iam.tenant.org	iam	tenant	8	8	1	0		0	uuid-identi
 projects/ores.inbox/modeling/ores.inbox.approval_decision.org	inbox	approval_decision	8	8	2	0		0	uuid-identified-lookup
 projects/ores.inbox/modeling/ores.inbox.approval_policy.org	inbox	approval_policy	8	8	1	0		0	simple-lookup
 projects/ores.marketdata/modeling/ores.marketdata.delivery_count.org	marketdata	delivery_count	8	8	0	0		0	
+projects/ores.marketdata/modeling/ores.marketdata.feed.org	marketdata	feed	8	8	0	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.market_observation.org	marketdata	market_observation	8	8	1	0		0	readonly-timeseries
 projects/ores.marketdata/modeling/ores.marketdata.market_series.org	marketdata	market_series	8	8	0	0		0	uuid-surrogate-lookup
 projects/ores.marketdata/modeling/ores.marketdata.rate_card_component.org	marketdata	rate_card_component	8	8	1	0		0	
 projects/ores.refdata/modeling/ores.refdata.business_unit.org	refdata	business_unit	8	8	4	0		0	self-referencing-hierarchy
 projects/ores.refdata/modeling/ores.refdata.calendar.org	refdata	calendar	8	8	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.counterparty.org	refdata	counterparty	8	8	3	0		0	self-referencing-hierarchy
+projects/ores.refdata/modeling/ores.refdata.cross_currency_basis_swap_terms.org	refdata	cross_currency_basis_swap_terms	8	8	3	0		0	
+projects/ores.refdata/modeling/ores.refdata.cross_currency_fix_float_swap_terms.org	refdata	cross_currency_fix_float_swap_terms	8	8	2	0		0	
 projects/ores.refdata/modeling/ores.refdata.currency_pair_convention.org	refdata	currency_pair_convention	8	8	4	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_security_config.org	refdata	curve_security_config	8	8	5	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_segment_curve.org	refdata	curve_segment_curve	8	8	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.default_curve_benchmark.org	refdata	default_curve_benchmark	8	8	5	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.default_curve_cds_terms.org	refdata	default_curve_cds_terms	8	8	5	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.future_convention.org	refdata	future_convention	8	8	5	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_pillar.org	refdata	ir_curve_bootstrap_pillar	8	8	0	0		0	uuid-surrogate-lookup
 projects/ores.refdata/modeling/ores.refdata.party_counterparty_change.org	refdata	party_counterparty_change	8	8	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.swaption_proxy_config.org	refdata	swaption_proxy_config	8	8	5	0		0	
 projects/ores.reporting/modeling/ores.reporting.engine_settings_change.org	reporting	engine_settings_change	8	8	1	0		0	uuid-identified-lookup
-projects/ores.reporting/modeling/ores.reporting.ore_parameter_vocabulary.org	reporting	ore_parameter_vocabulary	8	8	0	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_set_value.org	reporting	ore_parameter_value_set_value	8	8	1	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_trigger_event.org	reporting	report_trigger_event	8	8	2	0		0	
 projects/ores.synthetic/modeling/ores.synthetic.fx_spot_fixing_item.org	synthetic	fx_spot_fixing_item	8	8	0	0		0	uuid-identified-lookup
 projects/ores.synthetic/modeling/ores.synthetic.gmm_component.org	synthetic	gmm_component	8	8	0	0		0	uuid-identified-lookup
@@ -186,14 +213,24 @@ projects/ores.inbox/modeling/ores.inbox.notification_delivery.org	inbox	notifica
 projects/ores.marketdata/modeling/ores.marketdata.demand_interval.org	marketdata	demand_interval	7	7	1	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.market_data_vendor_instrument.org	marketdata	market_data_vendor_instrument	7	7	1	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.series_classification_rule.org	marketdata	series_classification_rule	7	7	1	0		0	simple-lookup
+projects/ores.marketdata/modeling/ores.marketdata.supplier.org	marketdata	supplier	7	7	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.bundle_import_item.org	refdata	bundle_import_item	7	7	1	0		0	
 projects/ores.refdata/modeling/ores.refdata.calendar_event.org	refdata	calendar_event	7	7	2	0		0	uuid-surrogate-lookup
 projects/ores.refdata/modeling/ores.refdata.cds_volatility_term.org	refdata	cds_volatility_term	7	7	1	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_future_off_peak_index.org	refdata	commodity_future_off_peak_index	7	7	0	0		0	
 projects/ores.refdata/modeling/ores.refdata.convention_kind_term.org	refdata	convention_kind_term	7	7	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.country.org	refdata	country	7	7	2	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.cross_currency_fix_float_fixed_leg.org	refdata	cross_currency_fix_float_fixed_leg	7	7	0	0		0	
 projects/ores.refdata/modeling/ores.refdata.curve_definition.org	refdata	curve_definition	7	7	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_parametric_smile.org	refdata	curve_parametric_smile	7	7	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_parametric_smile_parameter.org	refdata	curve_parametric_smile_parameter	7	7	1	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_cross_currency_terms.org	refdata	curve_segment_cross_currency_terms	7	7	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_ibor_fallback.org	refdata	curve_segment_ibor_fallback	7	7	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_tenor_basis_curves.org	refdata	curve_segment_tenor_basis_curves	7	7	4	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_weighted_average.org	refdata	curve_segment_weighted_average	7	7	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_proxy_surface.org	refdata	curve_volatility_proxy_surface	7	7	3	0		0	
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_smile.org	refdata	curve_volatility_smile	7	7	1	0		0	
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_smile_parameter.org	refdata	curve_volatility_smile_parameter	7	7	1	0		0	
 projects/ores.refdata/modeling/ores.refdata.equity_underlying.org	refdata	equity_underlying	7	7	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.ibor_index_convention.org	refdata	ibor_index_convention	7	7	1	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.instrument_code.org	refdata	instrument_code	7	7	2	0		0	simple-lookup
@@ -201,7 +238,7 @@ projects/ores.refdata/modeling/ores.refdata.intraday_power_curve_config.org	refd
 projects/ores.refdata/modeling/ores.refdata.netting_agreement.org	refdata	netting_agreement	7	7	2	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.tenor.org	refdata	tenor	7	7	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.tenor_schedule.org	refdata	tenor_schedule	7	7	2	0		0	simple-lookup
-projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_set_value.org	reporting	ore_parameter_value_set_value	7	7	0	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.ore_element_map_column.org	reporting	ore_element_map_column	7	7	0	0		0	simple-lookup
 projects/ores.synthetic/modeling/ores.synthetic.ir_curve_template_entry.org	synthetic	ir_curve_template_entry	7	7	0	0		0	uuid-identified-lookup
 projects/ores.synthetic/modeling/ores.synthetic.market_data_generation_config.org	synthetic	market_data_generation_config	7	7	2	0		0	uuid-identified-lookup
 projects/ores.trading/modeling/ores.trading.bond_future.org	trading	bond_future	7	7	2	0		0	
@@ -225,7 +262,6 @@ projects/ores.dq/modeling/ores.dq.fsm_transition.org	dq	fsm_transition	6	6	2	0		
 projects/ores.inbox/modeling/ores.inbox.approval_part.org	inbox	approval_part	6	6	0	0		0	simple-lookup
 projects/ores.inbox/modeling/ores.inbox.notification_kind.org	inbox	notification_kind	6	6	0	0		0	simple-lookup
 projects/ores.marketdata/modeling/ores.marketdata.composite.org	marketdata	composite	6	6	0	0		0	
-projects/ores.marketdata/modeling/ores.marketdata.market_data_source.org	marketdata	market_data_source	6	6	0	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org	marketdata	market_fixing	6	6	1	0		0	readonly-timeseries
 projects/ores.marketdata/modeling/ores.marketdata.subscription.org	marketdata	subscription	6	6	0	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.tick.org	marketdata	tick	6	6	0	0		0	
@@ -233,12 +269,18 @@ projects/ores.refdata/modeling/ores.refdata.bundle_import.org	refdata	bundle_imp
 projects/ores.refdata/modeling/ores.refdata.business_centre.org	refdata	business_centre	6	6	4	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.business_unit_type.org	refdata	business_unit_type	6	6	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.commodity.org	refdata	commodity	6	6	0	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_curve_cross_currency.org	refdata	commodity_curve_cross_currency	6	6	3	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_curve_direct.org	refdata	commodity_curve_direct	6	6	2	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.convention_kind.org	refdata	convention_kind	6	6	1	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.counterparty_identifier.org	refdata	counterparty_identifier	6	6	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.credit_limit.org	refdata	credit_limit	6	6	2	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.crm_driver_pair.org	refdata	crm_driver_pair	6	6	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.crm_enabled_derived_pair.org	refdata	crm_enabled_derived_pair	6	6	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_configuration_column.org	refdata	curve_configuration_column	6	6	0	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_pillar_rule.org	refdata	curve_segment_pillar_rule	6	6	3	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_curve.org	refdata	curve_volatility_curve	6	6	1	0		0	
+projects/ores.refdata/modeling/ores.refdata.default_curve_market_terms.org	refdata	default_curve_market_terms	6	6	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.legal_entity.org	refdata	legal_entity	6	6	3	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.netting_set_identifier.org	refdata	netting_set_identifier	6	6	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.party_id_scheme.org	refdata	party_id_scheme	6	6	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.payment_frequency.org	refdata	payment_frequency	6	6	1	0		0	simple-lookup
@@ -249,7 +291,9 @@ projects/ores.reporting/modeling/ores.reporting.configuration_analytic_parameter
 projects/ores.reporting/modeling/ores.reporting.configuration_market_binding.org	reporting	configuration_market_binding	6	6	0	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.configuration_parameter.org	reporting	configuration_parameter	6	6	0	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.configuration_type.org	reporting	configuration_type	6	6	1	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.cut_gap.org	reporting	cut_gap	6	6	0	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.engine_settings_execution.org	reporting	engine_settings_execution	6	6	3	0		0	fk-scoped-child
+projects/ores.reporting/modeling/ores.reporting.engine_settings_group_setting.org	reporting	engine_settings_group_setting	6	6	0	0		0	simple-lookup
 projects/ores.synthetic/modeling/ores.synthetic.folder.org	synthetic	folder	6	6	2	0		0	self-referencing-hierarchy
 projects/ores.trading/modeling/ores.trading.balance_guaranteed_swap_tranche.org	trading	balance_guaranteed_swap_tranche	6	6	1	0		0	
 projects/ores.trading/modeling/ores.trading.balance_guaranteed_swap_tranche_notional.org	trading	balance_guaranteed_swap_tranche_notional	6	6	1	0		0	
@@ -280,12 +324,19 @@ projects/ores.iam/modeling/ores.iam.tenant_type.org	iam	tenant_type	5	5	1	0		0	s
 projects/ores.inbox/modeling/ores.inbox.approval_decision_type.org	inbox	approval_decision_type	5	5	0	0		0	simple-lookup
 projects/ores.inbox/modeling/ores.inbox.approval_request_state.org	inbox	approval_request_state	5	5	0	0		0	simple-lookup
 projects/ores.marketdata/modeling/ores.marketdata.composite_input.org	marketdata	composite_input	5	5	0	0		0	
+projects/ores.marketdata/modeling/ores.marketdata.feed_scope.org	marketdata	feed_scope	5	5	1	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.market_data_mapping.org	marketdata	market_data_mapping	5	5	1	0		0	
+projects/ores.marketdata/modeling/ores.marketdata.route.org	marketdata	route	5	5	0	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.series_axis_value.org	marketdata	series_axis_value	5	5	0	0		0	read-only-current-state
 projects/ores.refdata/modeling/ores.refdata.calendar_exception.org	refdata	calendar_exception	5	5	1	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_curve_config.org	refdata	commodity_curve_config	5	5	1	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.commodity_curve_interpolation.org	refdata	commodity_curve_interpolation	5	5	2	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.convention.org	refdata	convention	5	5	1	0		0	
 projects/ores.refdata/modeling/ores.refdata.crm_topology_config.org	refdata	crm_topology_config	5	5	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_configuration.org	refdata	curve_configuration	5	5	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment.org	refdata	curve_segment	5	5	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.default_curve_transition_matrix.org	refdata	default_curve_transition_matrix	5	5	2	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.inflation_cap_floor_volatility_strikes.org	refdata	inflation_cap_floor_volatility_strikes	5	5	0	0		0	
 projects/ores.refdata/modeling/ores.refdata.inflation_seasonality_factor.org	refdata	inflation_seasonality_factor	5	5	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.intraday_power_load_convention.org	refdata	intraday_power_load_convention	5	5	3	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.overnight_index_convention.org	refdata	overnight_index_convention	5	5	1	0		0	simple-lookup
@@ -296,6 +347,7 @@ projects/ores.reporting/modeling/ores.reporting.engine_settings.org	reporting	en
 projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_set_catalogue.org	reporting	ore_parameter_value_set_catalogue	5	5	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_configuration.org	reporting	report_configuration	5	5	0	0		0	uuid-identified-lookup
 projects/ores.reporting/modeling/ores.reporting.report_type.org	reporting	report_type	5	5	0	0		0	simple-lookup
+projects/ores.synthetic/modeling/ores.synthetic.calibration_policy.org	synthetic	calibration_policy	5	5	0	0		0	
 projects/ores.synthetic/modeling/ores.synthetic.market_data_provider.org	synthetic	market_data_provider	5	5	0	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.bond_repo.org	trading	bond_repo	5	5	2	0		0	
 projects/ores.trading/modeling/ores.trading.commodity_basket_constituent.org	trading	commodity_basket_constituent	5	5	1	0		0	
@@ -306,7 +358,6 @@ projects/ores.trading/modeling/ores.trading.structure_template_role.org	trading	
 projects/ores.trading/modeling/ores.trading.trade_additional_field.org	trading	trade_additional_field	5	5	0	0		0	
 projects/ores.trading/modeling/ores.trading.trade_identifier.org	trading	trade_identifier	5	5	1	0		0	
 projects/ores.trading/modeling/ores.trading.trade_link_type.org	trading	trade_link_type	5	5	1	0		0	simple-lookup
-projects/ores.trading/modeling/ores.trading.trade_type.org	trading	trade_type	5	5	1	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.equity_instrument.org	trading	equity_instrument	4	7	3	4	identity	0	trading-instrument
 projects/ores.trading/modeling/ores.trading.rate_instruments.org	trading	rate_instrument	4	7	3	4	identity	0	trading-instrument
 projects/ores.analytics/modeling/ores.analytics.pricing_method.org	analytics	pricing_method	4	4	1	0		0	simple-lookup
@@ -322,7 +373,6 @@ projects/ores.iam/modeling/ores.iam.account_type.org	iam	account_type	4	4	0	0		0
 projects/ores.inbox/modeling/ores.inbox.hold_reason.org	inbox	hold_reason	4	4	0	0		0	simple-lookup
 projects/ores.inbox/modeling/ores.inbox.notification_channel.org	inbox	notification_channel	4	4	0	0		0	simple-lookup
 projects/ores.inbox/modeling/ores.inbox.notification_preference.org	inbox	notification_preference	4	4	0	0		0	simple-lookup
-projects/ores.marketdata/modeling/ores.marketdata.route.org	marketdata	route	4	4	0	0		0	
 projects/ores.marketdata/modeling/ores.marketdata.series_axis.org	marketdata	series_axis	4	4	0	0		0	read-only-current-state
 projects/ores.refdata/modeling/ores.refdata.asset_class.org	refdata	asset_class	4	4	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.asset_class_code.org	refdata	asset_class_code	4	4	0	0		0	simple-lookup
@@ -342,8 +392,15 @@ projects/ores.refdata/modeling/ores.refdata.currency_pair.org	refdata	currency_p
 projects/ores.refdata/modeling/ores.refdata.currency_pair_classification.org	refdata	currency_pair_classification	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_configuration_section.org	refdata	curve_configuration_section	4	4	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.curve_role.org	refdata	curve_role	4	4	0	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_convention.org	refdata	curve_segment_convention	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_extrapolation.org	refdata	curve_segment_extrapolation	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_projection.org	refdata	curve_segment_projection	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_segment_reference.org	refdata	curve_segment_reference	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_config.org	refdata	curve_volatility_config	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.curve_volatility_constant.org	refdata	curve_volatility_constant	4	4	0	0		0	
 projects/ores.refdata/modeling/ores.refdata.day_count_fraction_type.org	refdata	day_count_fraction_type	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.default_curve_config.org	refdata	default_curve_config	4	4	0	0		0	uuid-identified-lookup
+projects/ores.refdata/modeling/ores.refdata.default_curve_yield_reinterpretation.org	refdata	default_curve_yield_reinterpretation	4	4	1	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.derivation_kind.org	refdata	derivation_kind	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.diary_entry_type.org	refdata	diary_entry_type	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.entity_classification.org	refdata	entity_classification	4	4	2	0		0	simple-lookup
@@ -358,6 +415,7 @@ projects/ores.refdata/modeling/ores.refdata.party_type.org	refdata	party_type	4	
 projects/ores.refdata/modeling/ores.refdata.person_role.org	refdata	person_role	4	4	2	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.portfolio_right.org	refdata	portfolio_right	4	4	0	0		0	uuid-identified-lookup
 projects/ores.refdata/modeling/ores.refdata.producer_kind.org	refdata	producer_kind	4	4	0	0		0	simple-lookup
+projects/ores.refdata/modeling/ores.refdata.product_family_code.org	refdata	product_family_code	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.purpose_type.org	refdata	purpose_type	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.regulatory_book_type.org	refdata	regulatory_book_type	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.regulatory_corporate_sector.org	refdata	regulatory_corporate_sector	4	4	2	0		0	simple-lookup
@@ -372,12 +430,16 @@ projects/ores.refdata/modeling/ores.refdata.tenor_resolution_algorithm.org	refda
 projects/ores.refdata/modeling/ores.refdata.tenor_unit.org	refdata	tenor_unit	4	4	0	0		0	simple-lookup
 projects/ores.refdata/modeling/ores.refdata.trading_account_type.org	refdata	trading_account_type	4	4	2	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.concurrency_policy.org	reporting	concurrency_policy	4	4	0	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.cut_family.org	reporting	cut_family	4	4	0	0		0	simple-lookup
+projects/ores.reporting/modeling/ores.reporting.cut_resolution_rule.org	reporting	cut_resolution_rule	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.engine_settings_group.org	reporting	engine_settings_group	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.ore_parameter_setting_value_set.org	reporting	ore_parameter_setting_value_set	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.ore_parameter_value_domain.org	reporting	ore_parameter_value_domain	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_error_scope.org	reporting	report_error_scope	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_instance_kind.org	reporting	report_instance_kind	4	4	0	0		0	simple-lookup
 projects/ores.reporting/modeling/ores.reporting.report_trigger_type.org	reporting	report_trigger_type	4	4	0	0		0	simple-lookup
+projects/ores.synthetic/modeling/ores.synthetic.calibration_fallback.org	synthetic	calibration_fallback	4	4	0	0		0	simple-lookup
+projects/ores.synthetic/modeling/ores.synthetic.calibration_provider_order.org	synthetic	calibration_provider_order	4	4	0	0		0	
 projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config_process_parameter_value.org	synthetic	ir_curve_generation_config_process_parameter_value	4	4	0	0		0	uuid-identified-lookup
 projects/ores.synthetic/modeling/ores.synthetic.trade_generation_book.org	synthetic	trade_generation_book	4	4	0	0		0	uuid-identified-lookup
 projects/ores.synthetic/modeling/ores.synthetic.trade_generation_counterparty.org	synthetic	trade_generation_counterparty	4	4	0	0		0	uuid-identified-lookup
@@ -410,6 +472,7 @@ projects/ores.refdata/modeling/ores.refdata.sandbox_member.org	refdata	sandbox_m
 projects/ores.refdata/modeling/ores.refdata.tenor_anchor.org	refdata	tenor_anchor	3	3	1	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.ascot.org	trading	ascot	3	3	0	0		0	
 projects/ores.trading/modeling/ores.trading.bond_issue_call_date.org	trading	bond_issue_call_date	3	3	0	0		0	
+projects/ores.trading/modeling/ores.trading.draft_reason.org	trading	draft_reason	3	3	2	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.flexi_swap_instrument.org	trading	flexi_swap_instrument	3	3	0	0		0	
 projects/ores.trading/modeling/ores.trading.lifecycle_event.org	trading	lifecycle_event	3	3	2	0		0	simple-lookup
 projects/ores.trading/modeling/ores.trading.structure_kind.org	trading	structure_kind	3	3	1	0		0	simple-lookup

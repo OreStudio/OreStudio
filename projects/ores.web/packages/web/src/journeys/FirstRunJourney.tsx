@@ -76,14 +76,16 @@ function reasonOf(error: unknown): string {
  * has to be told what they are starting. A deployment that has one, and a
  * browser that is not signed in as it, opens at the administrator: the account
  * exists, and only its owner may carry on. A browser already signed in has
- * nothing to authenticate, so the rail resumes at the starting point, which is
- * the first question that is genuinely open.
+ * nothing to authenticate, so the rail resumes at the public sources, the first
+ * step after the administrator. Their terms decide whether the installation
+ * fetches anything, so the step is never passed unseen; when every source is
+ * already decided, it continues at once.
  */
 export function startStep(signInRequired: boolean, signedIn: boolean): StepId {
     if (signInRequired) {
         return 'administrator';
     }
-    return signedIn ? 'profile' : 'welcome';
+    return signedIn ? 'sources' : 'welcome';
 }
 
 /**

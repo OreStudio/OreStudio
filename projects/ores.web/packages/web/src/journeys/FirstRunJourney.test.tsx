@@ -171,10 +171,10 @@ describe('the step a first run opens on', () => {
         expect(startStep(true, false)).toBe('administrator');
     });
 
-    it('the starting point, when the browser is already signed in as it', () => {
+    it('the public sources, when the browser is already signed in as it', () => {
         // Asking a browser that holds the account's session to sign in asks for
-        // a session it already has, which is how the person who made the
-        // administrator a moment ago was asked to sign in as it.
-        expect(startStep(false, true)).toBe('profile');
+        // a session it already has, and resuming any later passes the sources'
+        // terms unseen, so nothing is ever fetched.
+        expect(startStep(false, true)).toBe('sources');
     });
 });

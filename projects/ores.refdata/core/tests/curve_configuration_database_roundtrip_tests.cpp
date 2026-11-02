@@ -280,8 +280,8 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused",
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
     curve_segment_repository().write(h.context(), mapped.segments);
-    CHECK_THROWS(
-        curve_segment_convention_repository().write(h.context(), mapped.segment_conventions.front()));
+    CHECK_THROWS(curve_segment_convention_repository().write(h.context(),
+                                                             mapped.segment_conventions.front()));
 }
 
 TEST_CASE("a yield curve naming a day counter ORE does not spell is refused",

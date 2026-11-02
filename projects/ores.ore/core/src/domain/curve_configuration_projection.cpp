@@ -355,54 +355,65 @@ using curve_configuration_document = ores::refdata::messaging::curve_configurati
 
 // Each part of a segment: the document vector that holds its rows, and its name
 // in a refusal. The section generator reads this table to find a part's vector.
-template <class Part> struct segment_part;
+template <class Part>
+struct segment_part;
 
-template <> struct segment_part<refdata::domain::curve_segment_convention> {
+template <>
+struct segment_part<refdata::domain::curve_segment_convention> {
     static constexpr auto vector = &curve_configuration_document::segment_conventions;
     static constexpr std::string_view name = "convention";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_pillar_rule> {
+template <>
+struct segment_part<refdata::domain::curve_segment_pillar_rule> {
     static constexpr auto vector = &curve_configuration_document::segment_pillar_rules;
     static constexpr std::string_view name = "pillar rule";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_projection> {
+template <>
+struct segment_part<refdata::domain::curve_segment_projection> {
     static constexpr auto vector = &curve_configuration_document::segment_projections;
     static constexpr std::string_view name = "projection curve";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_tenor_basis_curves> {
+template <>
+struct segment_part<refdata::domain::curve_segment_tenor_basis_curves> {
     static constexpr auto vector = &curve_configuration_document::segment_tenor_basis_curves;
     static constexpr std::string_view name = "tenor basis curves";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_cross_currency_terms> {
+template <>
+struct segment_part<refdata::domain::curve_segment_cross_currency_terms> {
     static constexpr auto vector = &curve_configuration_document::segment_cross_currency_terms;
     static constexpr std::string_view name = "cross currency terms";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_reference> {
+template <>
+struct segment_part<refdata::domain::curve_segment_reference> {
     static constexpr auto vector = &curve_configuration_document::segment_references;
     static constexpr std::string_view name = "reference curve";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_weighted_average> {
+template <>
+struct segment_part<refdata::domain::curve_segment_weighted_average> {
     static constexpr auto vector = &curve_configuration_document::segment_weighted_averages;
     static constexpr std::string_view name = "weighted average";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_discount_ratio> {
+template <>
+struct segment_part<refdata::domain::curve_segment_discount_ratio> {
     static constexpr auto vector = &curve_configuration_document::segment_discount_ratios;
     static constexpr std::string_view name = "discount ratio";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_extrapolation> {
+template <>
+struct segment_part<refdata::domain::curve_segment_extrapolation> {
     static constexpr auto vector = &curve_configuration_document::segment_extrapolations;
     static constexpr std::string_view name = "extrapolation";
 };
 
-template <> struct segment_part<refdata::domain::curve_segment_ibor_fallback> {
+template <>
+struct segment_part<refdata::domain::curve_segment_ibor_fallback> {
     static constexpr auto vector = &curve_configuration_document::segment_ibor_fallbacks;
     static constexpr std::string_view name = "ibor fallback";
 };
@@ -413,7 +424,8 @@ struct import_context {
     ores::refdata::messaging::curve_configuration_document& out;
     boost::uuids::uuid definition_id;
 
-    template <class Part> void keep(const boost::uuids::uuid& segment_id, Part p) {
+    template <class Part>
+    void keep(const boost::uuids::uuid& segment_id, Part p) {
         p.id = curve_configuration_projection_new_uuid();
         p.curve_segment_id = segment_id;
         curve_configuration_projection_set_audit(p);
@@ -2472,11 +2484,15 @@ void export_index_curves(record_writer out,
 // The parts of one document's segments, by segment. Exporting a segment takes
 // the parts its element writes, so a part still here when the export ends
 // belongs to an element that has no such part, or to no segment at all.
-template <class... Parts> class part_index {
+template <class... Parts>
+class part_index {
 public:
-    explicit part_index(const curve_configuration_document& d) { (index<Parts>(d), ...); }
+    explicit part_index(const curve_configuration_document& d) {
+        (index<Parts>(d), ...);
+    }
 
-    template <class Part> const Part* take(const boost::uuids::uuid& segment_id) {
+    template <class Part>
+    const Part* take(const boost::uuids::uuid& segment_id) {
         auto& by_segment = std::get<rows<Part>>(rows_);
         const auto it = by_segment.find(segment_id);
         if (it == by_segment.end())
@@ -2486,7 +2502,8 @@ public:
         return p;
     }
 
-    template <class Part> const Part& require(const refdata::domain::curve_segment& s) {
+    template <class Part>
+    const Part& require(const refdata::domain::curve_segment& s) {
         const auto* p = take<Part>(s.id);
         if (p == nullptr)
             throw refusal("segment " + boost::uuids::to_string(s.id) + " of type '" +
@@ -2494,19 +2511,24 @@ public:
         return *p;
     }
 
-    void refuse_leftovers() const { (refuse_leftover<Parts>(), ...); }
+    void refuse_leftovers() const {
+        (refuse_leftover<Parts>(), ...);
+    }
 
 private:
-    template <class Part> using rows = std::map<boost::uuids::uuid, const Part*>;
+    template <class Part>
+    using rows = std::map<boost::uuids::uuid, const Part*>;
 
-    template <class Part> void index(const curve_configuration_document& d) {
+    template <class Part>
+    void index(const curve_configuration_document& d) {
         for (const auto& p : d.*segment_part<Part>::vector)
             if (!std::get<rows<Part>>(rows_).emplace(p.curve_segment_id, &p).second)
                 throw refusal("segment " + boost::uuids::to_string(p.curve_segment_id) +
                               " has two " + std::string(segment_part<Part>::name) + " rows");
     }
 
-    template <class Part> void refuse_leftover() const {
+    template <class Part>
+    void refuse_leftover() const {
         const auto& left = std::get<rows<Part>>(rows_);
         if (!left.empty())
             throw refusal("segment " + boost::uuids::to_string(left.begin()->first) + " has a " +

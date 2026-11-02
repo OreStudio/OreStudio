@@ -23,9 +23,9 @@
 #include "ores.testing/project_root.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -398,8 +398,7 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export",
     }
 }
 
-TEST_CASE("a_segment_holds_only_the_parts_its_element_has",
-          "[ore][xml][roundtrip][curveconfig]") {
+TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>

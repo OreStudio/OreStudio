@@ -47,9 +47,9 @@
 #include "ores.refdata.core/repository/curve_segment_pillar_rule_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_projection_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_reference_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_tenor_basis_curves_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_weighted_average_repository.hpp"
-#include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_constant_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_curve_repository.hpp"
@@ -454,18 +454,26 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     std::set<boost::uuids::uuid> segments;
     for (const auto& s : r.segments)
         segments.insert(s.id);
-    const auto of_segment = [&](const auto& row) { return segments.contains(row.curve_segment_id); };
+    const auto of_segment = [&](const auto& row) {
+        return segments.contains(row.curve_segment_id);
+    };
     r.segment_curves = read_where(ctx_, curve_segment_curve_repository(), of_segment);
     r.segment_conventions = read_where(ctx_, curve_segment_convention_repository(), of_segment);
     r.segment_pillar_rules = read_where(ctx_, curve_segment_pillar_rule_repository(), of_segment);
     r.segment_projections = read_where(ctx_, curve_segment_projection_repository(), of_segment);
-    r.segment_tenor_basis_curves = read_where(ctx_, curve_segment_tenor_basis_curves_repository(), of_segment);
-    r.segment_cross_currency_terms = read_where(ctx_, curve_segment_cross_currency_terms_repository(), of_segment);
+    r.segment_tenor_basis_curves =
+        read_where(ctx_, curve_segment_tenor_basis_curves_repository(), of_segment);
+    r.segment_cross_currency_terms =
+        read_where(ctx_, curve_segment_cross_currency_terms_repository(), of_segment);
     r.segment_references = read_where(ctx_, curve_segment_reference_repository(), of_segment);
-    r.segment_weighted_averages = read_where(ctx_, curve_segment_weighted_average_repository(), of_segment);
-    r.segment_discount_ratios = read_where(ctx_, curve_segment_discount_ratio_repository(), of_segment);
-    r.segment_extrapolations = read_where(ctx_, curve_segment_extrapolation_repository(), of_segment);
-    r.segment_ibor_fallbacks = read_where(ctx_, curve_segment_ibor_fallback_repository(), of_segment);
+    r.segment_weighted_averages =
+        read_where(ctx_, curve_segment_weighted_average_repository(), of_segment);
+    r.segment_discount_ratios =
+        read_where(ctx_, curve_segment_discount_ratio_repository(), of_segment);
+    r.segment_extrapolations =
+        read_where(ctx_, curve_segment_extrapolation_repository(), of_segment);
+    r.segment_ibor_fallbacks =
+        read_where(ctx_, curve_segment_ibor_fallback_repository(), of_segment);
     return r;
 }
 
@@ -480,13 +488,16 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
     if (!d.segment_projections.empty())
         curve_segment_projection_repository().remove(ctx_, ids_of(d.segment_projections));
     if (!d.segment_tenor_basis_curves.empty())
-        curve_segment_tenor_basis_curves_repository().remove(ctx_, ids_of(d.segment_tenor_basis_curves));
+        curve_segment_tenor_basis_curves_repository().remove(ctx_,
+                                                             ids_of(d.segment_tenor_basis_curves));
     if (!d.segment_cross_currency_terms.empty())
-        curve_segment_cross_currency_terms_repository().remove(ctx_, ids_of(d.segment_cross_currency_terms));
+        curve_segment_cross_currency_terms_repository().remove(
+            ctx_, ids_of(d.segment_cross_currency_terms));
     if (!d.segment_references.empty())
         curve_segment_reference_repository().remove(ctx_, ids_of(d.segment_references));
     if (!d.segment_weighted_averages.empty())
-        curve_segment_weighted_average_repository().remove(ctx_, ids_of(d.segment_weighted_averages));
+        curve_segment_weighted_average_repository().remove(ctx_,
+                                                           ids_of(d.segment_weighted_averages));
     if (!d.segment_discount_ratios.empty())
         curve_segment_discount_ratio_repository().remove(ctx_, ids_of(d.segment_discount_ratios));
     if (!d.segment_extrapolations.empty())

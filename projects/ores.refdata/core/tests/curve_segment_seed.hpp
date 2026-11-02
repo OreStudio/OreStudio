@@ -49,10 +49,9 @@ namespace ores::refdata::tests {
  * that part, so a test of a part seeds its segment through this with an element
  * that has the part, rather than with whatever kind the generator names.
  */
-inline boost::uuids::uuid seed_curve_segment_of_kind(
-    utility::generation::generation_context& ctx,
-    const database::context& party_ctx,
-    std::string_view kind) {
+inline boost::uuids::uuid seed_curve_segment_of_kind(utility::generation::generation_context& ctx,
+                                                     const database::context& party_ctx,
+                                                     std::string_view kind) {
     const auto party = *party_ctx.party_id();
 
     auto configuration = generators::generate_synthetic_curve_configuration(ctx);

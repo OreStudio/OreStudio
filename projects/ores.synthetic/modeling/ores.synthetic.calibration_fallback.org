@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 548D95B8-1587-47CD-8990-1947ED8BBD11
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.calibration_fallback
 #+description: Reference data naming what a calibration does when no candidate has a usable fixing: keep_fixed or refuse.

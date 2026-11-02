@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 72BA2E46-94E9-4149-9C7C-66475AA34FE7
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.calibration_provider_order
 #+description: One provider in a calibration policy's order, with the rank that decides which accepted provider wins.

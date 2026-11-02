@@ -25,9 +25,15 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_OPERATIONS_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -160,6 +166,230 @@ struct preview_ir_curve_shape_response {
     std::vector<preview_ir_curve_shape_point> points;
 };
 
+/**
+ * @brief The members of parameter_spec, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const parameter_spec&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"parameter_name", &parameter_spec::parameter_name},
+        ::ores::utility::codec::field{"parameter_value", &parameter_spec::parameter_value},
+    };
 }
+
+/**
+ * @brief The members of simulate_ir_curve_paths_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const simulate_ir_curve_paths_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"process_type",
+                                      &simulate_ir_curve_paths_request::process_type},
+        ::ores::utility::codec::field{"parameters", &simulate_ir_curve_paths_request::parameters},
+        ::ores::utility::codec::field{"num_ticks", &simulate_ir_curve_paths_request::num_ticks},
+        ::ores::utility::codec::field{"num_paths", &simulate_ir_curve_paths_request::num_paths},
+        ::ores::utility::codec::field{"seed", &simulate_ir_curve_paths_request::seed},
+    };
+}
+
+/**
+ * @brief The members of simulate_ir_curve_paths_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const simulate_ir_curve_paths_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &simulate_ir_curve_paths_response::success},
+        ::ores::utility::codec::field{"message", &simulate_ir_curve_paths_response::message},
+        ::ores::utility::codec::field{"paths", &simulate_ir_curve_paths_response::paths},
+    };
+}
+
+/**
+ * @brief The members of preview_ir_curve_template_row, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_template_row&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sequence_index",
+                                      &preview_ir_curve_template_row::sequence_index},
+        ::ores::utility::codec::field{"start_tenor_code",
+                                      &preview_ir_curve_template_row::start_tenor_code},
+        ::ores::utility::codec::field{"end_tenor_code",
+                                      &preview_ir_curve_template_row::end_tenor_code},
+        ::ores::utility::codec::field{"instrument_code",
+                                      &preview_ir_curve_template_row::instrument_code},
+    };
+}
+
+/**
+ * @brief The members of preview_ir_curve_shape_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"process_type",
+                                      &preview_ir_curve_shape_request::process_type},
+        ::ores::utility::codec::field{"parameters", &preview_ir_curve_shape_request::parameters},
+        ::ores::utility::codec::field{
+            "fixed_leg_payment_frequency_code",
+            &preview_ir_curve_shape_request::fixed_leg_payment_frequency_code},
+        ::ores::utility::codec::field{"entries", &preview_ir_curve_shape_request::entries},
+    };
+}
+
+/**
+ * @brief The members of preview_ir_curve_shape_point, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_point&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sequence_index",
+                                      &preview_ir_curve_shape_point::sequence_index},
+        ::ores::utility::codec::field{"start_tenor_code",
+                                      &preview_ir_curve_shape_point::start_tenor_code},
+        ::ores::utility::codec::field{"end_tenor_code",
+                                      &preview_ir_curve_shape_point::end_tenor_code},
+        ::ores::utility::codec::field{"rate", &preview_ir_curve_shape_point::rate},
+    };
+}
+
+/**
+ * @brief The members of preview_ir_curve_shape_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_ir_curve_shape_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &preview_ir_curve_shape_response::success},
+        ::ores::utility::codec::field{"message", &preview_ir_curve_shape_response::message},
+        ::ores::utility::codec::field{"points", &preview_ir_curve_shape_response::points},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::parameter_spec> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::parameter_spec& v);
+    static ores::synthetic::messaging::parameter_spec read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::parameter_spec& v);
+    static ores::synthetic::messaging::parameter_spec read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::simulate_ir_curve_paths_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::simulate_ir_curve_paths_request& v);
+    static ores::synthetic::messaging::simulate_ir_curve_paths_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::simulate_ir_curve_paths_request& v);
+    static ores::synthetic::messaging::simulate_ir_curve_paths_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::simulate_ir_curve_paths_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::simulate_ir_curve_paths_response& v);
+    static ores::synthetic::messaging::simulate_ir_curve_paths_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::simulate_ir_curve_paths_response& v);
+    static ores::synthetic::messaging::simulate_ir_curve_paths_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::preview_ir_curve_template_row> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::preview_ir_curve_template_row& v);
+    static ores::synthetic::messaging::preview_ir_curve_template_row
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::preview_ir_curve_template_row& v);
+    static ores::synthetic::messaging::preview_ir_curve_template_row
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::preview_ir_curve_shape_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::preview_ir_curve_shape_request& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::preview_ir_curve_shape_request& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::preview_ir_curve_shape_point> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::preview_ir_curve_shape_point& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_point
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::preview_ir_curve_shape_point& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_point
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::preview_ir_curve_shape_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::preview_ir_curve_shape_response& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::preview_ir_curve_shape_response& v);
+    static ores::synthetic::messaging::preview_ir_curve_shape_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

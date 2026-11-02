@@ -26,11 +26,17 @@
 #define ORES_SYNTHETIC_API_MESSAGING_FX_SPOT_FIXING_ITEM_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -280,7 +286,798 @@ inline constexpr std::string_view created = "synthetic.v1.fx_spot_fixing_items_e
 inline constexpr std::string_view updated = "synthetic.v1.fx_spot_fixing_items_events.updated";
 inline constexpr std::string_view deleted = "synthetic.v1.fx_spot_fixing_items_events.deleted";
 }
+/**
+ * @brief The members of fx_spot_fixing_item_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &fx_spot_fixing_item_key::id},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &fx_spot_fixing_item_write::id},
+        utility::codec::field{"fx_spot_config_id", &fx_spot_fixing_item_write::fx_spot_config_id},
+        utility::codec::field{"rank", &fx_spot_fixing_item_write::rank},
+        utility::codec::field{"item", &fx_spot_fixing_item_write::item},
+        utility::codec::field{"provider_code", &fx_spot_fixing_item_write::provider_code},
+        utility::codec::field{"policy", &fx_spot_fixing_item_write::policy},
+        utility::codec::field{"window_days", &fx_spot_fixing_item_write::window_days},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &fx_spot_fixing_item_change::write},
+        utility::codec::field{"precondition", &fx_spot_fixing_item_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &fx_spot_fixing_item_removal::key},
+        utility::codec::field{"precondition", &fx_spot_fixing_item_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &fx_spot_fixing_item_lookup::key},
+        utility::codec::field{"fx_spot_fixing_item",
+                              &fx_spot_fixing_item_lookup::fx_spot_fixing_item},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_items_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_items_filter&) {
+    return std::tuple{
+        utility::codec::field{"fx_spot_config_id", &fx_spot_fixing_items_filter::fx_spot_config_id},
+        utility::codec::field{"id_one_of", &fx_spot_fixing_items_filter::id_one_of},
+        utility::codec::field{"fx_spot_config_id_one_of",
+                              &fx_spot_fixing_items_filter::fx_spot_config_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &fx_spot_fixing_item_event::event_id},
+        utility::codec::field{"key", &fx_spot_fixing_item_event::key},
+        utility::codec::field{"action", &fx_spot_fixing_item_event::action},
+        utility::codec::field{"version", &fx_spot_fixing_item_event::version},
+        utility::codec::field{"occurred_at", &fx_spot_fixing_item_event::occurred_at},
+        utility::codec::field{"correlation_id", &fx_spot_fixing_item_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_version_key&) {
+    return std::tuple{
+        utility::codec::field{"fx_spot_fixing_item",
+                              &fx_spot_fixing_item_version_key::fx_spot_fixing_item},
+        utility::codec::field{"version", &fx_spot_fixing_item_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of fx_spot_fixing_item_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fx_spot_fixing_item_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &fx_spot_fixing_item_versions_filter::version},
+        utility::codec::field{"from_version", &fx_spot_fixing_item_versions_filter::from_version},
+        utility::codec::field{"to_version", &fx_spot_fixing_item_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_fx_spot_fixing_items_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fx_spot_fixing_items_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_fx_spot_fixing_items_request::offset},
+        utility::codec::field{"limit", &list_fx_spot_fixing_items_request::limit},
+        utility::codec::field{"order", &list_fx_spot_fixing_items_request::order},
+        utility::codec::field{"filter", &list_fx_spot_fixing_items_request::filter},
+        utility::codec::field{"as_of", &list_fx_spot_fixing_items_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_fx_spot_fixing_items_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fx_spot_fixing_items_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_fx_spot_fixing_items_response::result},
+        utility::codec::field{"fx_spot_fixing_items",
+                              &list_fx_spot_fixing_items_response::fx_spot_fixing_items},
+        utility::codec::field{"total", &list_fx_spot_fixing_items_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_fx_spot_fixing_item_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fx_spot_fixing_item_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_fx_spot_fixing_item_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_fx_spot_fixing_item_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fx_spot_fixing_item_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_fx_spot_fixing_item_response::result},
+        utility::codec::field{"fx_spot_fixing_item",
+                              &get_fx_spot_fixing_item_response::fx_spot_fixing_item},
+    };
+}
+
+/**
+ * @brief The members of get_many_fx_spot_fixing_items_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_fx_spot_fixing_items_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_fx_spot_fixing_items_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_fx_spot_fixing_items_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_fx_spot_fixing_items_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_fx_spot_fixing_items_response::result},
+        utility::codec::field{"entries", &get_many_fx_spot_fixing_items_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_fx_spot_fixing_item_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_fx_spot_fixing_item_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_fx_spot_fixing_item_request::change},
+        utility::codec::field{"intent", &put_fx_spot_fixing_item_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_fx_spot_fixing_item_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_fx_spot_fixing_item_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_fx_spot_fixing_item_response::result},
+        utility::codec::field{"fx_spot_fixing_item",
+                              &put_fx_spot_fixing_item_response::fx_spot_fixing_item},
+    };
+}
+
+/**
+ * @brief The members of put_many_fx_spot_fixing_items_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_fx_spot_fixing_items_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_fx_spot_fixing_items_request::changes},
+        utility::codec::field{"intent", &put_many_fx_spot_fixing_items_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_fx_spot_fixing_items_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_fx_spot_fixing_items_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_fx_spot_fixing_items_response::result},
+        utility::codec::field{"fx_spot_fixing_items",
+                              &put_many_fx_spot_fixing_items_response::fx_spot_fixing_items},
+    };
+}
+
+/**
+ * @brief The members of delete_fx_spot_fixing_item_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_fx_spot_fixing_item_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_fx_spot_fixing_item_request::removal},
+        utility::codec::field{"intent", &delete_fx_spot_fixing_item_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_fx_spot_fixing_item_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_fx_spot_fixing_item_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_fx_spot_fixing_item_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_fx_spot_fixing_items_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_spot_fixing_items_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_fx_spot_fixing_items_request::removals},
+        utility::codec::field{"intent", &delete_many_fx_spot_fixing_items_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_fx_spot_fixing_items_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_spot_fixing_items_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_fx_spot_fixing_items_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_fx_spot_fixing_item_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fx_spot_fixing_item_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_fx_spot_fixing_item_versions_request::key},
+        utility::codec::field{"offset", &list_fx_spot_fixing_item_versions_request::offset},
+        utility::codec::field{"limit", &list_fx_spot_fixing_item_versions_request::limit},
+        utility::codec::field{"order", &list_fx_spot_fixing_item_versions_request::order},
+        utility::codec::field{"filter", &list_fx_spot_fixing_item_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_fx_spot_fixing_item_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fx_spot_fixing_item_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_fx_spot_fixing_item_versions_response::result},
+        utility::codec::field{"versions", &list_fx_spot_fixing_item_versions_response::versions},
+        utility::codec::field{"total", &list_fx_spot_fixing_item_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_fx_spot_fixing_item_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fx_spot_fixing_item_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_fx_spot_fixing_item_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_fx_spot_fixing_item_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fx_spot_fixing_item_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_fx_spot_fixing_item_version_response::result},
+        utility::codec::field{"version", &get_fx_spot_fixing_item_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_key& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_key& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_write& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_write& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_change& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_change& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_removal& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_removal& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_lookup& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_lookup& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_items_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_items_filter& v);
+    static ores::synthetic::messaging::fx_spot_fixing_items_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_items_filter& v);
+    static ores::synthetic::messaging::fx_spot_fixing_items_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::fx_spot_fixing_item_event& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_event& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::fx_spot_fixing_item_version_key& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_version_key& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::fx_spot_fixing_item_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::fx_spot_fixing_item_versions_filter& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::fx_spot_fixing_item_versions_filter& v);
+    static ores::synthetic::messaging::fx_spot_fixing_item_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_fx_spot_fixing_items_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_items_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_items_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_fx_spot_fixing_items_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_items_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_items_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_fx_spot_fixing_item_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_fx_spot_fixing_item_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_many_fx_spot_fixing_items_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::get_many_fx_spot_fixing_items_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::get_many_fx_spot_fixing_items_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_many_fx_spot_fixing_items_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::get_many_fx_spot_fixing_items_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::get_many_fx_spot_fixing_items_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_fx_spot_fixing_item_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::put_fx_spot_fixing_item_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::put_fx_spot_fixing_item_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_fx_spot_fixing_item_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::put_fx_spot_fixing_item_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::put_fx_spot_fixing_item_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_many_fx_spot_fixing_items_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::put_many_fx_spot_fixing_items_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::put_many_fx_spot_fixing_items_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_many_fx_spot_fixing_items_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::put_many_fx_spot_fixing_items_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::put_many_fx_spot_fixing_items_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_fx_spot_fixing_item_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::delete_fx_spot_fixing_item_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_fx_spot_fixing_item_request& v);
+    static ores::synthetic::messaging::delete_fx_spot_fixing_item_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_fx_spot_fixing_item_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::delete_fx_spot_fixing_item_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_fx_spot_fixing_item_response& v);
+    static ores::synthetic::messaging::delete_fx_spot_fixing_item_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_fx_spot_fixing_items_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::delete_many_fx_spot_fixing_items_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_fx_spot_fixing_items_request& v);
+    static ores::synthetic::messaging::delete_many_fx_spot_fixing_items_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_fx_spot_fixing_items_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::delete_many_fx_spot_fixing_items_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_fx_spot_fixing_items_response& v);
+    static ores::synthetic::messaging::delete_many_fx_spot_fixing_items_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_fx_spot_fixing_item_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_fx_spot_fixing_item_versions_request& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_item_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_fx_spot_fixing_item_versions_request& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_item_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_fx_spot_fixing_item_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_fx_spot_fixing_item_versions_response& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_item_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_fx_spot_fixing_item_versions_response& v);
+    static ores::synthetic::messaging::list_fx_spot_fixing_item_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_fx_spot_fixing_item_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_fx_spot_fixing_item_version_request& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_fx_spot_fixing_item_version_request& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_fx_spot_fixing_item_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_fx_spot_fixing_item_version_response& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_fx_spot_fixing_item_version_response& v);
+    static ores::synthetic::messaging::get_fx_spot_fixing_item_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

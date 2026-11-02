@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 601001b1-bf8b-4cdf-acc0-18a61b4a0a73
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.feed_config
 #+description: Codegen operation model for the feed start, stop and list operations.

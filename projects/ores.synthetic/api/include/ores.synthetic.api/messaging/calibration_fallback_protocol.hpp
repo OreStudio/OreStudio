@@ -26,11 +26,17 @@
 #define ORES_SYNTHETIC_API_MESSAGING_CALIBRATION_FALLBACK_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/calibration_fallback.hpp"
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -275,7 +281,794 @@ inline constexpr std::string_view created = "synthetic.v1.calibration_fallbacks_
 inline constexpr std::string_view updated = "synthetic.v1.calibration_fallbacks_events.updated";
 inline constexpr std::string_view deleted = "synthetic.v1.calibration_fallbacks_events.deleted";
 }
+/**
+ * @brief The members of calibration_fallback_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &calibration_fallback_key::code},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &calibration_fallback_write::code},
+        utility::codec::field{"name", &calibration_fallback_write::name},
+        utility::codec::field{"description", &calibration_fallback_write::description},
+        utility::codec::field{"display_order", &calibration_fallback_write::display_order},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &calibration_fallback_change::write},
+        utility::codec::field{"precondition", &calibration_fallback_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &calibration_fallback_removal::key},
+        utility::codec::field{"precondition", &calibration_fallback_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &calibration_fallback_lookup::key},
+        utility::codec::field{"calibration_fallback",
+                              &calibration_fallback_lookup::calibration_fallback},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallbacks_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallbacks_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &calibration_fallbacks_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &calibration_fallback_event::event_id},
+        utility::codec::field{"key", &calibration_fallback_event::key},
+        utility::codec::field{"action", &calibration_fallback_event::action},
+        utility::codec::field{"version", &calibration_fallback_event::version},
+        utility::codec::field{"occurred_at", &calibration_fallback_event::occurred_at},
+        utility::codec::field{"correlation_id", &calibration_fallback_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_version_key&) {
+    return std::tuple{
+        utility::codec::field{"calibration_fallback",
+                              &calibration_fallback_version_key::calibration_fallback},
+        utility::codec::field{"version", &calibration_fallback_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of calibration_fallback_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const calibration_fallback_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &calibration_fallback_versions_filter::version},
+        utility::codec::field{"from_version", &calibration_fallback_versions_filter::from_version},
+        utility::codec::field{"to_version", &calibration_fallback_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_calibration_fallbacks_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calibration_fallbacks_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_calibration_fallbacks_request::offset},
+        utility::codec::field{"limit", &list_calibration_fallbacks_request::limit},
+        utility::codec::field{"order", &list_calibration_fallbacks_request::order},
+        utility::codec::field{"filter", &list_calibration_fallbacks_request::filter},
+        utility::codec::field{"as_of", &list_calibration_fallbacks_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_calibration_fallbacks_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calibration_fallbacks_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_calibration_fallbacks_response::result},
+        utility::codec::field{"fallbacks", &list_calibration_fallbacks_response::fallbacks},
+        utility::codec::field{"total", &list_calibration_fallbacks_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_calibration_fallback_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calibration_fallback_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_calibration_fallback_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_calibration_fallback_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calibration_fallback_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_calibration_fallback_response::result},
+        utility::codec::field{"calibration_fallback",
+                              &get_calibration_fallback_response::calibration_fallback},
+    };
+}
+
+/**
+ * @brief The members of get_many_calibration_fallbacks_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_calibration_fallbacks_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_calibration_fallbacks_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_calibration_fallbacks_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_calibration_fallbacks_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_calibration_fallbacks_response::result},
+        utility::codec::field{"entries", &get_many_calibration_fallbacks_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_calibration_fallback_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_calibration_fallback_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_calibration_fallback_request::change},
+        utility::codec::field{"intent", &put_calibration_fallback_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_calibration_fallback_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_calibration_fallback_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_calibration_fallback_response::result},
+        utility::codec::field{"calibration_fallback",
+                              &put_calibration_fallback_response::calibration_fallback},
+    };
+}
+
+/**
+ * @brief The members of put_many_calibration_fallbacks_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_calibration_fallbacks_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_calibration_fallbacks_request::changes},
+        utility::codec::field{"intent", &put_many_calibration_fallbacks_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_calibration_fallbacks_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_calibration_fallbacks_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_calibration_fallbacks_response::result},
+        utility::codec::field{"fallbacks", &put_many_calibration_fallbacks_response::fallbacks},
+    };
+}
+
+/**
+ * @brief The members of delete_calibration_fallback_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_calibration_fallback_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_calibration_fallback_request::removal},
+        utility::codec::field{"intent", &delete_calibration_fallback_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_calibration_fallback_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_calibration_fallback_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_calibration_fallback_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_calibration_fallbacks_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_calibration_fallbacks_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_calibration_fallbacks_request::removals},
+        utility::codec::field{"intent", &delete_many_calibration_fallbacks_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_calibration_fallbacks_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_calibration_fallbacks_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_calibration_fallbacks_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_calibration_fallback_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calibration_fallback_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_calibration_fallback_versions_request::key},
+        utility::codec::field{"offset", &list_calibration_fallback_versions_request::offset},
+        utility::codec::field{"limit", &list_calibration_fallback_versions_request::limit},
+        utility::codec::field{"order", &list_calibration_fallback_versions_request::order},
+        utility::codec::field{"filter", &list_calibration_fallback_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_calibration_fallback_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_calibration_fallback_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_calibration_fallback_versions_response::result},
+        utility::codec::field{"versions", &list_calibration_fallback_versions_response::versions},
+        utility::codec::field{"total", &list_calibration_fallback_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_calibration_fallback_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calibration_fallback_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_calibration_fallback_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_calibration_fallback_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_calibration_fallback_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_calibration_fallback_version_response::result},
+        utility::codec::field{"version", &get_calibration_fallback_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::calibration_fallback_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_fallback_key& v);
+    static ores::synthetic::messaging::calibration_fallback_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::calibration_fallback_key& v);
+    static ores::synthetic::messaging::calibration_fallback_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_fallback_write& v);
+    static ores::synthetic::messaging::calibration_fallback_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_write& v);
+    static ores::synthetic::messaging::calibration_fallback_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_fallback_change& v);
+    static ores::synthetic::messaging::calibration_fallback_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_change& v);
+    static ores::synthetic::messaging::calibration_fallback_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::calibration_fallback_removal& v);
+    static ores::synthetic::messaging::calibration_fallback_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_removal& v);
+    static ores::synthetic::messaging::calibration_fallback_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_fallback_lookup& v);
+    static ores::synthetic::messaging::calibration_fallback_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_lookup& v);
+    static ores::synthetic::messaging::calibration_fallback_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallbacks_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::calibration_fallbacks_filter& v);
+    static ores::synthetic::messaging::calibration_fallbacks_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallbacks_filter& v);
+    static ores::synthetic::messaging::calibration_fallbacks_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::calibration_fallback_event& v);
+    static ores::synthetic::messaging::calibration_fallback_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_event& v);
+    static ores::synthetic::messaging::calibration_fallback_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::calibration_fallback_version_key& v);
+    static ores::synthetic::messaging::calibration_fallback_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_version_key& v);
+    static ores::synthetic::messaging::calibration_fallback_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::calibration_fallback_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::calibration_fallback_versions_filter& v);
+    static ores::synthetic::messaging::calibration_fallback_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::calibration_fallback_versions_filter& v);
+    static ores::synthetic::messaging::calibration_fallback_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_calibration_fallbacks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::list_calibration_fallbacks_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::list_calibration_fallbacks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_calibration_fallbacks_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::list_calibration_fallbacks_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::list_calibration_fallbacks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_calibration_fallback_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_calibration_fallback_request& v);
+    static ores::synthetic::messaging::get_calibration_fallback_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_calibration_fallback_request& v);
+    static ores::synthetic::messaging::get_calibration_fallback_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_calibration_fallback_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_calibration_fallback_response& v);
+    static ores::synthetic::messaging::get_calibration_fallback_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_calibration_fallback_response& v);
+    static ores::synthetic::messaging::get_calibration_fallback_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_many_calibration_fallbacks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::get_many_calibration_fallbacks_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::get_many_calibration_fallbacks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_many_calibration_fallbacks_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::get_many_calibration_fallbacks_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::get_many_calibration_fallbacks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_calibration_fallback_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_calibration_fallback_request& v);
+    static ores::synthetic::messaging::put_calibration_fallback_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_calibration_fallback_request& v);
+    static ores::synthetic::messaging::put_calibration_fallback_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_calibration_fallback_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_calibration_fallback_response& v);
+    static ores::synthetic::messaging::put_calibration_fallback_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_calibration_fallback_response& v);
+    static ores::synthetic::messaging::put_calibration_fallback_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_many_calibration_fallbacks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::put_many_calibration_fallbacks_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::put_many_calibration_fallbacks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::put_many_calibration_fallbacks_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::put_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::put_many_calibration_fallbacks_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::put_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::put_many_calibration_fallbacks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_calibration_fallback_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_calibration_fallback_request& v);
+    static ores::synthetic::messaging::delete_calibration_fallback_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_calibration_fallback_request& v);
+    static ores::synthetic::messaging::delete_calibration_fallback_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_calibration_fallback_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_calibration_fallback_response& v);
+    static ores::synthetic::messaging::delete_calibration_fallback_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_calibration_fallback_response& v);
+    static ores::synthetic::messaging::delete_calibration_fallback_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_calibration_fallbacks_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::delete_many_calibration_fallbacks_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_calibration_fallbacks_request& v);
+    static ores::synthetic::messaging::delete_many_calibration_fallbacks_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::delete_many_calibration_fallbacks_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::delete_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::delete_many_calibration_fallbacks_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::delete_many_calibration_fallbacks_response& v);
+    static ores::synthetic::messaging::delete_many_calibration_fallbacks_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_calibration_fallback_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_calibration_fallback_versions_request& v);
+    static ores::synthetic::messaging::list_calibration_fallback_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_calibration_fallback_versions_request& v);
+    static ores::synthetic::messaging::list_calibration_fallback_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_calibration_fallback_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::list_calibration_fallback_versions_response& v);
+    static ores::synthetic::messaging::list_calibration_fallback_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_calibration_fallback_versions_response& v);
+    static ores::synthetic::messaging::list_calibration_fallback_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_calibration_fallback_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_calibration_fallback_version_request& v);
+    static ores::synthetic::messaging::get_calibration_fallback_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_calibration_fallback_version_request& v);
+    static ores::synthetic::messaging::get_calibration_fallback_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::get_calibration_fallback_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::get_calibration_fallback_version_response& v);
+    static ores::synthetic::messaging::get_calibration_fallback_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::get_calibration_fallback_version_response& v);
+    static ores::synthetic::messaging::get_calibration_fallback_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

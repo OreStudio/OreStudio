@@ -61,7 +61,6 @@
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <array>
 #include <chrono>

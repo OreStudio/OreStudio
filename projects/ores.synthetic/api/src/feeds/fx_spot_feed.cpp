@@ -29,7 +29,6 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
@@ -37,6 +36,7 @@
 #include <cmath>
 #include <expected>
 #include <format>
+#include <optional>
 #include <stdexcept>
 
 namespace ores::synthetic::feed {

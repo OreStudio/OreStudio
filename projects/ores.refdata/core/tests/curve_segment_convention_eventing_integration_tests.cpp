@@ -43,39 +43,10 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/service/curve_segment_convention_service.hpp"
 #include "test_suite.hpp"
-// Soft-FK parent seeding (ores_refdata_curve_segments_tbl): the parent may live in another
-// component, so its own component names the headers. A system-tenant parent
-// is read rather than generated, so it needs no generator.
-#include "ores.refdata.api/generators/curve_segment_generator.hpp"
-#include "ores.refdata.core/repository/curve_segment_repository.hpp"
-// Grand-parent seeding (ores_refdata_curve_configurations_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.refdata.api/generators/curve_configuration_generator.hpp"
-#include "ores.refdata.core/repository/curve_configuration_repository.hpp"
-// Grand-parent seeding (ores_refdata_curve_sections_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.refdata.api/generators/curve_section_generator.hpp"
-#include "ores.refdata.core/repository/curve_section_repository.hpp"
-// Grand-parent seeding (ores_refdata_curve_definitions_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.refdata.api/generators/curve_definition_generator.hpp"
-#include "ores.refdata.core/repository/curve_definition_repository.hpp"
-// Grand-parent seeding (ores_refdata_curve_segment_types_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too. A system-tenant parent is read
-// rather than seeded, so its grand-parents need nothing, and a
-// system-tenant grand-parent is read rather than generated.
-#include "ores.refdata.api/generators/curve_segment_type_generator.hpp"
-#include "ores.refdata.core/repository/curve_segment_type_repository.hpp"
+// Parent-seed snippet includes (ores_refdata_curve_segments_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+#include "curve_segment_seed.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -174,67 +145,8 @@ TEST_CASE("write_curve_segment_convention_publishes_an_event", "[eventing][integ
     auto v = generate_synthetic_curve_segment_convention(ctx);
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
-    // Seed the active curve_segment row ores_refdata_curve_segments_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto curve_segment_id_parent = ores::refdata::generators::generate_synthetic_curve_segment(ctx);
-    // The curve_segment is party-isolated, so it carries the
-    // session party: under any other party the child's insert trigger could
-    // not see it, and the existence check would reject the child.
-    curve_segment_id_parent.party_id = *party_ctx.party_id();
-    auto curve_segment_id_parent_curve_definition_parent_curve_configuration_parent =
-        ores::refdata::generators::generate_synthetic_curve_configuration(ctx);
-    auto curve_segment_id_parent_curve_definition_parent_curve_section_parent =
-        ores::refdata::generators::generate_synthetic_curve_section(ctx);
-    auto curve_segment_id_parent_curve_definition_parent =
-        ores::refdata::generators::generate_synthetic_curve_definition(ctx);
-    auto curve_segment_id_parent_curve_segment_type_parent =
-        ores::refdata::generators::generate_synthetic_curve_segment_type(ctx);
-    // curve_configuration is party-isolated, so it carries the session
-    // party, or the row that references it could not see it.
-    curve_segment_id_parent_curve_definition_parent_curve_configuration_parent.party_id =
-        *party_ctx.party_id();
-    // Seed the active curve_configuration row ores_refdata_curve_configurations_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::curve_configuration_repository
-        curve_segment_id_parent_curve_definition_parent_curve_configuration_parent_repo;
-    curve_segment_id_parent_curve_definition_parent_curve_configuration_parent_repo.write(
-        party_ctx, curve_segment_id_parent_curve_definition_parent_curve_configuration_parent);
-    curve_segment_id_parent_curve_definition_parent.curve_configuration_id =
-        curve_segment_id_parent_curve_definition_parent_curve_configuration_parent.id;
-    // Seed the active curve_section row ores_refdata_curve_sections_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::curve_section_repository
-        curve_segment_id_parent_curve_definition_parent_curve_section_parent_repo;
-    curve_segment_id_parent_curve_definition_parent_curve_section_parent_repo.write(
-        party_ctx, curve_segment_id_parent_curve_definition_parent_curve_section_parent);
-    curve_segment_id_parent_curve_definition_parent.section_code =
-        curve_segment_id_parent_curve_definition_parent_curve_section_parent.code;
-    // curve_definition is party-isolated, so it carries the session
-    // party, or the row that references it could not see it.
-    curve_segment_id_parent_curve_definition_parent.party_id = *party_ctx.party_id();
-    // Seed the active curve_definition row ores_refdata_curve_definitions_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::curve_definition_repository
-        curve_segment_id_parent_curve_definition_parent_repo;
-    curve_segment_id_parent_curve_definition_parent_repo.write(
-        party_ctx, curve_segment_id_parent_curve_definition_parent);
-    curve_segment_id_parent.curve_definition_id =
-        curve_segment_id_parent_curve_definition_parent.id;
-    // Seed the active curve_segment_type row ores_refdata_curve_segment_types_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::curve_segment_type_repository
-        curve_segment_id_parent_curve_segment_type_parent_repo;
-    curve_segment_id_parent_curve_segment_type_parent_repo.write(
-        party_ctx, curve_segment_id_parent_curve_segment_type_parent);
-    curve_segment_id_parent.segment_type = curve_segment_id_parent_curve_segment_type_parent.code;
-    ores::refdata::repository::curve_segment_repository curve_segment_id_repo;
-    curve_segment_id_repo.write(party_ctx, curve_segment_id_parent);
-    v.curve_segment_id = curve_segment_id_parent.id;
+    v.curve_segment_id = ores::refdata::tests::seed_curve_segment_of_kind(ctx, party_ctx, "Simple");
+    ores::refdata::tests::seed_convention_named(ctx, party_ctx, v.conventions);
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Curve Segment Convention: " << v;
 

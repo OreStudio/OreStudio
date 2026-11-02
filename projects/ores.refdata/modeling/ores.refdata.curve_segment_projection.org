@@ -100,6 +100,17 @@ std::string("EUR-EURIBOR-6M")
 :error_message: Invalid curve_segment_id: %. No active curve segment found with this id.
 :END:
 
+The part's trigger refuses a segment whose element does not have this part, so
+the test seeds a Simple segment rather than the kind the generator names.
+
+#+begin_src cpp :name parent_seed_includes
+#include "curve_segment_seed.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    v.curve_segment_id = ores::refdata::tests::seed_curve_segment_of_kind(ctx, party_ctx, "Simple");
+#+end_src
+
 * Insert trigger
 ** Validations
 

@@ -274,18 +274,20 @@ inline constexpr std::string_view deleted = "reporting.v1.report_metrics_events.
         utility::codec::field{"id", &report_metric_write::id},
         utility::codec::field{"party_id", &report_metric_write::party_id},
         utility::codec::field{"report_instance_id", &report_metric_write::report_instance_id},
+        utility::codec::field{"result_id", &report_metric_write::result_id},
+        utility::codec::field{"as_of", &report_metric_write::as_of},
+        utility::codec::field{"measure", &report_metric_write::measure},
+        utility::codec::field{"source", &report_metric_write::source},
+        utility::codec::field{"line", &report_metric_write::line},
+        utility::codec::field{"report_definition_id", &report_metric_write::report_definition_id},
         utility::codec::field{"family", &report_metric_write::family},
         utility::codec::field{"subject_type", &report_metric_write::subject_type},
         utility::codec::field{"subject_id", &report_metric_write::subject_id},
-        utility::codec::field{"as_of", &report_metric_write::as_of},
-        utility::codec::field{"measure", &report_metric_write::measure},
-        utility::codec::field{"report_definition_id", &report_metric_write::report_definition_id},
         utility::codec::field{"currency", &report_metric_write::currency},
         utility::codec::field{"scenario", &report_metric_write::scenario},
         utility::codec::field{"factor", &report_metric_write::factor},
         utility::codec::field{"qualifiers", &report_metric_write::qualifiers},
         utility::codec::field{"value", &report_metric_write::value},
-        utility::codec::field{"source", &report_metric_write::source},
     };
 }
 
@@ -345,15 +347,15 @@ inline constexpr std::string_view deleted = "reporting.v1.report_metrics_events.
 [[nodiscard]] constexpr auto wire_fields(const report_metrics_filter&) {
     return std::tuple{
         utility::codec::field{"report_instance_id", &report_metrics_filter::report_instance_id},
+        utility::codec::field{"measure", &report_metrics_filter::measure},
         utility::codec::field{"family", &report_metrics_filter::family},
         utility::codec::field{"subject_id", &report_metrics_filter::subject_id},
-        utility::codec::field{"measure", &report_metrics_filter::measure},
         utility::codec::field{"id_one_of", &report_metrics_filter::id_one_of},
         utility::codec::field{"report_instance_id_one_of",
                               &report_metrics_filter::report_instance_id_one_of},
+        utility::codec::field{"measure_one_of", &report_metrics_filter::measure_one_of},
         utility::codec::field{"family_one_of", &report_metrics_filter::family_one_of},
         utility::codec::field{"subject_id_one_of", &report_metrics_filter::subject_id_one_of},
-        utility::codec::field{"measure_one_of", &report_metrics_filter::measure_one_of},
     };
 }
 

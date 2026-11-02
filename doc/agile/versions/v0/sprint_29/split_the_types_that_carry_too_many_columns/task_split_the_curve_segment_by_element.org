@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-curve-segment-by-element
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A curve segment's element is its type, not a value of one of its columns. Each e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -102,6 +102,69 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The settings each element reads
+
+The ORE schema (=external/ore/xsd/curveconfig.xsd=) and the projection's
+=import_segments= agree on what each of the twelve elements states. Neither
+the convention nor the pillar settings are shared by every element, so neither
+can stay on the segment row:
+
+| Element          | Conventions | Pillar settings | Its own settings                        |
+|------------------+-------------+-----------------+-----------------------------------------|
+| Direct           | optional    | yes             | none                                    |
+| Simple           | required    | yes             | the projection curve                    |
+| AverageOIS       | required    | yes             | the projection curve                    |
+| TenorBasis       | required    | yes             | four projection curves                  |
+| CrossCurrency    | required    | yes             | discount curve, spot rate, two curves   |
+| ZeroSpread       | required    | yes             | the reference curve                     |
+| DiscountRatio    | optional    | yes             | three curves and their currencies       |
+| FittedBond       | none        | yes             | the flat extrapolation flag             |
+| BondYieldShifted | required    | none            | the reference curve, the flat flag      |
+| WeightedAverage  | none        | none            | two reference curves and two weights    |
+| YieldPlusDefault | none        | none            | the reference curve                     |
+| IborFallback     | none        | yes             | the ibor index, the RFR curve and index, the spread |
+
+** The parts
+
+A part is one component: fields that hold one invariant. An element has a part
+when it states that component, and a segment holds at most one row of each
+part, so each part's =curve_segment_id= is unique on the live rows. The parts
+are children of the segment, keyed by its id, as =curve_segment_curve= is:
+
+| Part                               | Columns                                              | Elements                                                                  |
+|------------------------------------+------------------------------------------------------+---------------------------------------------------------------------------|
+| curve_segment_convention           | conventions                                          | Direct, Simple, AverageOIS, TenorBasis, CrossCurrency, ZeroSpread, DiscountRatio, BondYieldShifted |
+| curve_segment_pillar_rule          | pillar_choice, priority, min_distance                | Direct, Simple, AverageOIS, TenorBasis, CrossCurrency, ZeroSpread, DiscountRatio, FittedBond, IborFallback |
+| curve_segment_projection           | projection_curve                                     | Simple, AverageOIS                                                        |
+| curve_segment_tenor_basis_curves   | projection_curve_pay, _receive, _long, _short        | TenorBasis                                                                |
+| curve_segment_cross_currency_terms | discount_curve, spot_rate, projection_curve_domestic, _foreign | CrossCurrency                                                   |
+| curve_segment_reference            | reference_curve                                      | ZeroSpread, BondYieldShifted, YieldPlusDefault                            |
+| curve_segment_weighted_average     | reference_curve_1, reference_curve_2, weight_1, weight_2 | WeightedAverage                                                       |
+| curve_segment_discount_ratio       | base_curve, numerator_curve, denominator_curve and their currencies | DiscountRatio                                              |
+| curve_segment_extrapolation        | extrapolate_flat                                     | FittedBond, BondYieldShifted                                              |
+| curve_segment_ibor_fallback        | ibor_index, rfr_curve, rfr_index, spread             | IborFallback                                                              |
+
+The shared components are parts of their own, rather than columns repeated on
+a part per element, because each holds one invariant every element that states
+it agrees on: the pillar settings are the same three rules wherever they
+appear. A part per element would repeat the convention column on eight tables
+and the pillar settings on nine. The volatility split did the same with the
+proxy block two kinds share.
+
+A part's row exists only when the element states it. A required field makes
+the part present on every segment of the elements that require it; a part of
+optional fields is written only when the document states one of them, so no
+part row is all null.
+
+** Where the element-to-part rule lives
+
+The projection's =import_segments= is the one statement of which element
+reads which part: each element's loop calls one reader per part it has. The
+section generator already reads that function to tell the screen which leaves
+a kind shows. It now also reads which part each leaf is in, and it writes the
+SQL that refuses a part row whose segment's element does not have that part.
+So the screen, the database and the projection cannot disagree about it.
 
 * Test Scenarios
 

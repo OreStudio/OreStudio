@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.node_sample
 #+description: Codegen entity model for the compute node_samples hypertable, one wrapper node's report of what it has done.

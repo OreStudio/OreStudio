@@ -25,8 +25,14 @@
 #ifndef ORES_ORE_API_MESSAGING_ORE_DOCUMENT_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_ORE_DOCUMENT_PROTOCOL_HPP
 
+#include "ores.ore.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::ore::messaging {
@@ -39,6 +45,34 @@ struct ore_document {
     std::string content;
 };
 
+/**
+ * @brief The members of ore_document, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_document&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"name", &ore_document::name},
+        ::ores::utility::codec::field{"content", &ore_document::content},
+    };
 }
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::ore_document> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::ore_document& v);
+    static ores::ore::messaging::ore_document read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::ore_document& v);
+    static ores::ore::messaging::ore_document read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

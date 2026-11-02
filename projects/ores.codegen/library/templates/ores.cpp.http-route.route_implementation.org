@@ -71,15 +71,28 @@ The full template source. Edit here and re-tangle with
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
+{{^has_generated_wire_codec}}
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+{{/has_generated_wire_codec}}
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <exception>
 #include <memory>
+{{#has_generated_wire_codec}}
+#include <optional>
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
 #include <rfl/json.hpp>
+{{/has_generated_wire_codec}}
 #include <stdexcept>
 #include <string>
+{{#has_generated_wire_codec}}
+#include <string_view>
+{{/has_generated_wire_codec}}
 #include <type_traits>
 #include <utility>
 
@@ -92,6 +105,23 @@ using ores::nats::service::nats_client;
 namespace messaging = ores::{{component}}::messaging;
 
 namespace {
+
+{{#has_generated_wire_codec}}
+/**
+ * @brief The request a body states, or nothing when it states none.
+ *
+ * The request's own codec reads it, so this unit needs no shape of the types the
+ * request holds.
+ */
+template <typename T>
+std::optional<T> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body(std::string_view body) {
+    try {
+        return ores::utility::codec::wire_traits<T>::read_json(body);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
+{{/has_generated_wire_codec}}
 
 /**
  * @brief Read one path or query parameter as the member's own type.
@@ -160,7 +190,7 @@ boost::asio::awaitable<http_response>
             co_return http_response::internal_error(std::string("Failed to decode response: ") +
                                                     decoded.error().what());
         }
-        co_return http_response::json(rfl::json::write(*decoded));
+        co_return http_response::json({{#has_generated_wire_codec}}ores::utility::codec::wire_traits<typename Request::response_type>::write_json(*decoded){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::write(*decoded){{/has_generated_wire_codec}});
     } catch (const ores::nats::service::session_expired_error& e) {
         co_return http_response::unauthorized(e.what());
     } catch (const std::exception& e) {
@@ -221,7 +251,7 @@ boost::asio::awaitable<http_response>
 {{#is_get_many}}
     using request_type = messaging::{{request}};
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = {{#has_generated_wire_codec}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::read<request_type>(req.body){{/has_generated_wire_codec}};
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -233,7 +263,7 @@ boost::asio::awaitable<http_response>
 {{#is_put}}
     using request_type = messaging::{{request}};
     try {
-        auto parsed = rfl::json::read<request_type>(req.body);
+        auto parsed = {{#has_generated_wire_codec}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::read<request_type>(req.body){{/has_generated_wire_codec}};
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -255,7 +285,7 @@ boost::asio::awaitable<http_response>
 {{#is_put_many}}
     using request_type = messaging::{{request}};
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = {{#has_generated_wire_codec}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::read<request_type>(req.body){{/has_generated_wire_codec}};
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -294,7 +324,7 @@ boost::asio::awaitable<http_response>
 {{#is_delete_many}}
     using request_type = messaging::{{request}};
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = {{#has_generated_wire_codec}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::read<request_type>(req.body){{/has_generated_wire_codec}};
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }

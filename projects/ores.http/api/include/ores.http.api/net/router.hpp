@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cstdint>
 #include <functional>
 #include <memory>

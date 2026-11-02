@@ -66,14 +66,6 @@ begin
         where tenant_id = p_tenant_id and id = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
         union all
-        select 1 from ores_refdata_commodity_future_conventions_tbl
-        where tenant_id = p_tenant_id and id = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-        union all
-        select 1 from ores_refdata_cross_currency_basis_conventions_tbl
-        where tenant_id = p_tenant_id and id = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-        union all
         select 1 from ores_refdata_deposit_conventions_tbl
         where tenant_id = p_tenant_id and id = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
@@ -120,7 +112,8 @@ begin
         union all
         select 1 from ores_refdata_conventions_tbl
         where tenant_id = p_tenant_id and name = p_value
-          and kind_code in ('CROSS_CURRENCY_FIX_FLOAT', 'TENOR_BASIS_SWAP')
+          and kind_code in ('COMMODITY_FUTURE', 'CROSS_CURRENCY_BASIS', 'CROSS_CURRENCY_FIX_FLOAT',
+                            'TENOR_BASIS_SWAP')
           and valid_to = ores_utility_infinity_timestamp_fn()
         union all
         select 1 from ores_refdata_tenor_basis_two_swap_conventions_tbl

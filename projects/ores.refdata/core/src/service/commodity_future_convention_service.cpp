@@ -25,81 +25,145 @@
 #include "ores.refdata.core/service/commodity_future_convention_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.refdata.api/domain/commodity_future_convention.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/commodity_future_averaging_terms.hpp"
+#include "ores.refdata.api/domain/commodity_future_contract_terms.hpp"
+#include "ores.refdata.api/domain/commodity_future_expiry_anchor.hpp"
+#include "ores.refdata.api/domain/commodity_future_off_peak_index.hpp"
+#include "ores.refdata.api/domain/commodity_future_option_expiry.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/messaging/commodity_future_convention_protocol.hpp"
-#include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_averaging_terms_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_contract_terms_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_expiry_anchor_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_off_peak_index_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_option_expiry_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <iterator>
+#include <boost/uuid/uuid_io.hpp>
+#include <limits>
 #include <optional>
-#include <stdexcept>
+#include <ranges>
 #include <string>
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::stamp;
-// Every refusal names its outcome; the catalogue supplies the code and the
-// sentence, so a service states what happened and nothing about how to say it.
-using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_future_convention_service::commodity_future_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
 namespace {
 
 /**
- * @brief The current row a key names, or an empty vector when there is none.
- *
- * A key record carries each column with the column's own type, and the
- * repository takes the text form every one of its key parameters shares, so
- * the conversion lives here rather than at every call site.
- *
- * The key record carries the key the model declares, which is the one a caller
- * holds. When that is not the storage key the row is found by it and the
- * repository's storage-key read is not used at all.
+ * @brief The current central row a family key names, or an empty vector.
  */
-std::vector<domain::commodity_future_convention>
-commodity_future_convention_read_one(repository::commodity_future_convention_repository& repo,
-                                     const ores::database::context& ctx,
-                                     const messaging::commodity_future_convention_key& key) {
-    return repo.read_latest(ctx, key.id);
+std::vector<domain::convention>
+read_convention(repository::convention_repository& repo,
+                const ores::database::context& ctx,
+                const messaging::commodity_future_convention_key& key) {
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
- * @brief The key a domain object states, so a written row can be read back.
- *
- * A create states its own key in the write record, so the key of the row a
- * write produced is the one the object carries.
+ * @brief The key a central domain row states, so the row read back is
+ * addressed exactly as the request addressed it.
  */
 messaging::commodity_future_convention_key
-commodity_future_convention_key_from(const domain::commodity_future_convention& v) {
+commodity_future_convention_key_from(const domain::convention& v) {
     messaging::commodity_future_convention_key key;
+    key.id = v.identity.id;
+    return key;
+}
+
+/**
+ * @brief Builds the central domain object a change's write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy, the
+ * provenance, the version and the validity window are the service's and the
+ * database's to state.
+ */
+domain::convention commodity_future_convention_to_domain(const messaging::convention_write& write) {
+    domain::convention v;
+    v.identity.id = write.id;
+    v.identity.kind_code = write.kind_code;
+    v.payload.name = write.name;
+    v.payload.oresmd_uri = write.oresmd_uri;
+    return v;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::commodity_future_averaging_terms>
+read_averaging_terms(repository::commodity_future_averaging_terms_repository& repo,
+                     const ores::database::context& ctx,
+                     const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::commodity_future_averaging_terms
+to_domain_averaging_terms(const messaging::commodity_future_averaging_terms_write& write) {
+    domain::commodity_future_averaging_terms v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
+    v.averaging_commodity_name = write.averaging_commodity_name;
+    v.averaging_period = write.averaging_period;
+    v.averaging_pricing_calendar = write.averaging_pricing_calendar;
+    v.averaging_conventions = write.averaging_conventions;
+    v.averaging_use_business_days = write.averaging_use_business_days;
+    v.averaging_delivery_roll_days = write.averaging_delivery_roll_days;
+    v.averaging_future_month_offset = write.averaging_future_month_offset;
+    v.averaging_daily_expiry_offset = write.averaging_daily_expiry_offset;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::commodity_future_averaging_terms_key
+key_from_averaging_terms(const domain::commodity_future_averaging_terms& v) {
+    messaging::commodity_future_averaging_terms_key key;
     key.id = v.id;
     return key;
 }
 
 /**
- * @brief Builds the domain object a write record states.
- *
- * The record carries the user-owned fields and nothing else: tenancy,
- * provenance, the version and the validity window are the service's and the
- * database's to state, and are set after this conversion.
+ * @brief The live rows of one part kind that belong to one central row.
  */
-domain::commodity_future_convention
-commodity_future_convention_to_domain(const messaging::commodity_future_convention_write& write) {
-    domain::commodity_future_convention v;
+std::vector<domain::commodity_future_contract_terms>
+read_contract_terms(repository::commodity_future_contract_terms_repository& repo,
+                    const ores::database::context& ctx,
+                    const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::commodity_future_contract_terms
+to_domain_contract_terms(const messaging::commodity_future_contract_terms_write& write) {
+    domain::commodity_future_contract_terms v;
     v.id = write.id;
+    v.convention_id = write.convention_id;
     v.contract_frequency = write.contract_frequency;
     v.calendar = write.calendar;
     v.expiry_calendar = write.expiry_calendar;
@@ -110,6 +174,50 @@ commodity_future_convention_to_domain(const messaging::commodity_future_conventi
     v.adjust_before_offset = write.adjust_before_offset;
     v.is_averaging = write.is_averaging;
     v.valid_contract_months = write.valid_contract_months;
+    v.hours_per_day = write.hours_per_day;
+    v.index_name = write.index_name;
+    v.savings_time = write.savings_time;
+    v.delivery_location = write.delivery_location;
+    v.balance_of_the_month = write.balance_of_the_month;
+    v.balance_of_the_month_pricing_calendar = write.balance_of_the_month_pricing_calendar;
+    v.prohibited_expiries = write.prohibited_expiries;
+    v.future_continuation_mappings = write.future_continuation_mappings;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::commodity_future_contract_terms_key
+key_from_contract_terms(const domain::commodity_future_contract_terms& v) {
+    messaging::commodity_future_contract_terms_key key;
+    key.id = v.id;
+    return key;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::commodity_future_expiry_anchor>
+read_expiry_anchor(repository::commodity_future_expiry_anchor_repository& repo,
+                   const ores::database::context& ctx,
+                   const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::commodity_future_expiry_anchor
+to_domain_expiry_anchor(const messaging::commodity_future_expiry_anchor_write& write) {
+    domain::commodity_future_expiry_anchor v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
     v.anchor_day_of_month = write.anchor_day_of_month;
     v.anchor_calendar_days_before = write.anchor_calendar_days_before;
     v.anchor_business_days_after = write.anchor_business_days_after;
@@ -117,6 +225,82 @@ commodity_future_convention_to_domain(const messaging::commodity_future_conventi
     v.anchor_nth_weekday = write.anchor_nth_weekday;
     v.anchor_last_weekday = write.anchor_last_weekday;
     v.anchor_weekly_day_of_the_week = write.anchor_weekly_day_of_the_week;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::commodity_future_expiry_anchor_key
+key_from_expiry_anchor(const domain::commodity_future_expiry_anchor& v) {
+    messaging::commodity_future_expiry_anchor_key key;
+    key.id = v.id;
+    return key;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::commodity_future_off_peak_index>
+read_off_peak_index(repository::commodity_future_off_peak_index_repository& repo,
+                    const ores::database::context& ctx,
+                    const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::commodity_future_off_peak_index
+to_domain_off_peak_index(const messaging::commodity_future_off_peak_index_write& write) {
+    domain::commodity_future_off_peak_index v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
+    v.off_peak_index = write.off_peak_index;
+    v.peak_index = write.peak_index;
+    v.off_peak_hours = write.off_peak_hours;
+    v.peak_calendar = write.peak_calendar;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::commodity_future_off_peak_index_key
+key_from_off_peak_index(const domain::commodity_future_off_peak_index& v) {
+    messaging::commodity_future_off_peak_index_key key;
+    key.id = v.id;
+    return key;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::commodity_future_option_expiry>
+read_option_expiry(repository::commodity_future_option_expiry_repository& repo,
+                   const ores::database::context& ctx,
+                   const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.identity.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::commodity_future_option_expiry
+to_domain_option_expiry(const messaging::commodity_future_option_expiry_write& write) {
+    domain::commodity_future_option_expiry v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
     v.option_expiry_month_lag = write.option_expiry_month_lag;
     v.option_contract_frequency = write.option_contract_frequency;
     v.option_expiry_offset = write.option_expiry_offset;
@@ -128,79 +312,37 @@ commodity_future_convention_to_domain(const messaging::commodity_future_conventi
     v.option_expiry_last_weekday_of_month = write.option_expiry_last_weekday_of_month;
     v.option_expiry_weekly_day_of_the_week = write.option_expiry_weekly_day_of_the_week;
     v.option_business_day_convention = write.option_business_day_convention;
-    v.hours_per_day = write.hours_per_day;
-    v.off_peak_index = write.off_peak_index;
-    v.peak_index = write.peak_index;
-    v.off_peak_hours = write.off_peak_hours;
-    v.peak_calendar = write.peak_calendar;
-    v.index_name = write.index_name;
-    v.savings_time = write.savings_time;
-    v.delivery_location = write.delivery_location;
-    v.balance_of_the_month = write.balance_of_the_month;
-    v.balance_of_the_month_pricing_calendar = write.balance_of_the_month_pricing_calendar;
     v.option_underlying_future_convention = write.option_underlying_future_convention;
-    v.averaging_commodity_name = write.averaging_commodity_name;
-    v.averaging_period = write.averaging_period;
-    v.averaging_pricing_calendar = write.averaging_pricing_calendar;
-    v.averaging_conventions = write.averaging_conventions;
-    v.averaging_use_business_days = write.averaging_use_business_days;
-    v.averaging_delivery_roll_days = write.averaging_delivery_roll_days;
-    v.averaging_future_month_offset = write.averaging_future_month_offset;
-    v.averaging_daily_expiry_offset = write.averaging_daily_expiry_offset;
-    v.prohibited_expiries = write.prohibited_expiries;
-    v.future_continuation_mappings = write.future_continuation_mappings;
     v.option_continuation_mappings = write.option_continuation_mappings;
-    v.oresmd_uri = write.oresmd_uri;
     return v;
 }
 
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::commodity_future_option_expiry_key
+key_from_option_expiry(const domain::commodity_future_option_expiry& v) {
+    messaging::commodity_future_option_expiry_key key;
+    key.id = v.id;
+    return key;
+}
 
 }
 
-messaging::list_commodity_future_conventions_response
-commodity_future_convention_service::list_commodity_future_conventions(
-    const messaging::list_commodity_future_conventions_request& request) {
-    messaging::list_commodity_future_conventions_response response;
-    if (!request.order.field.empty() &&
-        !repository::commodity_future_convention_repository::is_sortable(request.order.field)) {
-        response.result =
-            refuse(outcome_code::order_not_supported,
-                   {.entity = "commodity future conventions", .field = request.order.field});
-        return response;
-    }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
-        return response;
-    }
-    // A stated instant is checked here, so a malformed one is the caller's
-    // mistake rather than a database error. The caller's text is what the
-    // store reads, so a fraction of a second is kept.
-    std::optional<std::string> as_of;
-    if (request.as_of) {
-        as_of = ores::database::repository::parse_as_of(*request.as_of);
-        if (!as_of) {
-            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
-            return response;
-        }
-    }
-    response.commodity_future_conventions = repo_.read_latest(
-        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
-    response.total = repo_.get_total_commodity_future_convention_count(ctx_, request.filter, as_of);
-    return response;
-}
+commodity_future_convention_service::commodity_future_convention_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 messaging::get_commodity_future_convention_response
 commodity_future_convention_service::get_commodity_future_convention(
     const messaging::get_commodity_future_convention_request& request) {
     messaging::get_commodity_future_convention_response response;
-    auto found = commodity_future_convention_read_one(repo_, ctx_, request.key);
+    auto found = read_convention(central_repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "commodity_future_convention"});
         return response;
     }
-    response.commodity_future_convention = std::move(found.front());
+    response.item = assemble(ctx_, request.key, found.front());
     return response;
 }
 
@@ -208,17 +350,14 @@ messaging::get_many_commodity_future_conventions_response
 commodity_future_convention_service::get_many_commodity_future_conventions(
     const messaging::get_many_commodity_future_conventions_request& request) {
     messaging::get_many_commodity_future_conventions_response response;
-    // One entry per requested key, in the order asked for, so the reply is
-    // positional and a caller reads absence from an empty entry rather than
-    // from a missing one.
-    response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
-        messaging::commodity_future_convention_lookup entry;
-        entry.key = k;
-        auto found = commodity_future_convention_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.commodity_future_convention = std::move(found.front());
-        response.entries.push_back(std::move(entry));
+    // One request answers the whole set: every central row and every part it
+    // owns is read and assembled in this one call.
+    response.items.reserve(request.keys.size());
+    for (const auto& key : request.keys) {
+        auto found = read_convention(central_repo_, ctx_, key);
+        if (found.empty())
+            continue;
+        response.items.push_back(assemble(ctx_, key, found.front()));
     }
     return response;
 }
@@ -227,15 +366,51 @@ messaging::put_commodity_future_convention_response
 commodity_future_convention_service::put_commodity_future_convention(
     const messaging::put_commodity_future_convention_request& request) {
     messaging::put_commodity_future_convention_response response;
-    domain::commodity_future_convention value;
-    response.result = prepare_change(request.change, request.intent, value);
+    // The central row and every part land in one transaction, so no reader
+    // sees a part disagree with the central version.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    domain::convention central;
+    response.result = prepare_convention(request.item.change, request.intent, ctx, central);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    repo_.write(ctx_, value, request.change.precondition);
-    auto written = commodity_future_convention_read_one(
-        repo_, ctx_, commodity_future_convention_key_from(value));
-    if (!written.empty())
-        response.commodity_future_convention = std::move(written.front());
+    central_repo_.write(ctx, central, request.item.change.precondition);
+
+    // The store owns the key and the window, so the key the row was written
+    // under is the one the write stated rather than assumed from the request.
+    const auto key = commodity_future_convention_key_from(central);
+    // A part write bumps the central row through the part table's own trigger,
+    // so the central row is read back after the parts land and the item carries
+    // the version the write produced.
+    response.result =
+        reconcile_averaging_terms(ctx, central, request.item.averaging_terms, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    response.result =
+        reconcile_contract_terms(ctx, central, request.item.contract_terms, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    response.result =
+        reconcile_expiry_anchor(ctx, central, request.item.expiry_anchor, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    response.result =
+        reconcile_off_peak_index(ctx, central, request.item.off_peak_index, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    response.result =
+        reconcile_option_expiry(ctx, central, request.item.option_expiry, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+
+    auto stored = read_convention(central_repo_, ctx, key);
+    if (stored.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "convention"});
+        return response;
+    }
+    uow.commit();
+    response.item = assemble(ctx_, key, stored.front());
     return response;
 }
 
@@ -243,182 +418,104 @@ messaging::put_many_commodity_future_conventions_response
 commodity_future_convention_service::put_many_commodity_future_conventions(
     const messaging::put_many_commodity_future_conventions_request& request) {
     messaging::put_many_commodity_future_conventions_response response;
-    std::vector<domain::commodity_future_convention> batch;
-    batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
-        domain::commodity_future_convention value;
-        const auto result = prepare_change(change, request.intent, value);
-        if (result.outcome != ores::utility::domain::outcome::ok) {
-            // Nothing has been written: the whole set is checked before any
-            // of it lands, so a refused element refuses the batch.
-            response.result = result;
+    // One transaction for the whole batch. Each element states its own claim,
+    // and the store checks each row's claim as it is written; an element that
+    // is refused leaves the transaction uncommitted and nothing lands.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    response.items.reserve(request.items.size());
+    for (const auto& write : request.items) {
+        domain::convention central;
+        response.result = prepare_convention(write.change, request.intent, ctx, central);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        central_repo_.write(ctx, central, write.change.precondition);
+
+        const auto key = commodity_future_convention_key_from(central);
+        // A part write bumps the central row, so it is read back after them.
+        response.result =
+            reconcile_averaging_terms(ctx, central, write.averaging_terms, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        response.result =
+            reconcile_contract_terms(ctx, central, write.contract_terms, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        response.result =
+            reconcile_expiry_anchor(ctx, central, write.expiry_anchor, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        response.result =
+            reconcile_off_peak_index(ctx, central, write.off_peak_index, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        response.result =
+            reconcile_option_expiry(ctx, central, write.option_expiry, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        auto stored = read_convention(central_repo_, ctx, key);
+        if (stored.empty()) {
+            response.result = refuse(outcome_code::not_found, {.entity = "convention"});
             return response;
         }
-        batch.push_back(std::move(value));
+        response.items.push_back(assemble(ctx_, key, stored.front()));
     }
-    // One statement, so the set lands together. The store checks each row's
-    // claim inside that statement, which is what makes the check above and the
-    // write one decision rather than two.
-    std::vector<ores::utility::domain::precondition> claims;
-    claims.reserve(request.changes.size());
-    for (const auto& change : request.changes)
-        claims.push_back(change.precondition);
-    repo_.write(ctx_, batch, claims);
-    response.commodity_future_conventions.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = commodity_future_convention_read_one(
-            repo_, ctx_, commodity_future_convention_key_from(value));
-        response.commodity_future_conventions.push_back(
-            written.empty() ? value : std::move(written.front()));
-    }
+
+    uow.commit();
     return response;
 }
 
-messaging::delete_commodity_future_convention_response
-commodity_future_convention_service::delete_commodity_future_convention(
-    const messaging::delete_commodity_future_convention_request& request) {
-    messaging::delete_commodity_future_convention_response response;
-    using ores::utility::domain::outcome;
-    using ores::utility::domain::precondition_kind;
-    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
-        response.result = refuse(outcome_code::precondition_not_supported);
-        return response;
-    }
-    std::optional<std::uint32_t> expected;
-    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
-        if (!request.removal.precondition.version) {
-            response.result = refuse(outcome_code::precondition_incomplete);
-            return response;
-        }
-        expected = request.removal.precondition.version;
-    }
-    switch (repo_.remove(ctx_, request.removal.key.id, expected)) {
-        case repository::commodity_future_convention_repository::remove_status::removed:
-            break;
-        case repository::commodity_future_convention_repository::remove_status::missing:
-            response.result =
-                refuse(outcome_code::not_found, {.entity = "commodity_future_convention"});
-            break;
-        case repository::commodity_future_convention_repository::remove_status::conflicting: {
-            // A conflicting removal states the version it expected but not the one
-            // the row now holds, and the sentence wants both. The row is read only
-            // on the refusal path.
-            const auto live =
-                commodity_future_convention_read_one(repo_, ctx_, request.removal.key);
-            response.result = refuse(
-                outcome_code::version_conflict,
-                {.entity = "commodity_future_convention",
-                 .field = "id",
-                 .expected = expected ? std::to_string(*expected) : std::string{},
-                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
-            break;
-        }
-        case repository::commodity_future_convention_repository::remove_status::unsupported:
-            response.result = refuse(outcome_code::precondition_not_supported);
-            break;
-    }
-    return response;
+messaging::commodity_future_convention_item
+commodity_future_convention_service::assemble(const context& ctx,
+                                              const messaging::commodity_future_convention_key& key,
+                                              const std::optional<domain::convention>& central) {
+    messaging::commodity_future_convention_item item;
+    item.key = key;
+    item.convention = central;
+    if (central)
+        item.averaging_terms = read_averaging_terms(averaging_terms_repo_, ctx, *central);
+    if (central)
+        item.contract_terms = read_contract_terms(contract_terms_repo_, ctx, *central);
+    if (central)
+        item.expiry_anchor = read_expiry_anchor(expiry_anchor_repo_, ctx, *central);
+    if (central)
+        item.off_peak_index = read_off_peak_index(off_peak_index_repo_, ctx, *central);
+    if (central)
+        item.option_expiry = read_option_expiry(option_expiry_repo_, ctx, *central);
+    return item;
 }
 
-messaging::delete_many_commodity_future_conventions_response
-commodity_future_convention_service::delete_many_commodity_future_conventions(
-    const messaging::delete_many_commodity_future_conventions_request& request) {
-    messaging::delete_many_commodity_future_conventions_response response;
-    using ores::utility::domain::outcome;
-    using ores::utility::domain::precondition_kind;
-    for (const auto& removal : request.removals) {
-        if (removal.precondition.kind != precondition_kind::any) {
-            // The store removes a set in one statement, which carries no
-            // per-row version. Refusing is the only answer that keeps the
-            // batch atomic: serving it as a sequence of single removals would
-            // leave a partial batch behind as soon as one row had moved on.
-            response.result = refuse(outcome_code::batch_removal_is_unconditional);
-            return response;
-        }
-    }
-    if (request.removals.empty())
-        return response;
-    std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(removal.key.id);
-    repo_.remove(ctx_, id_keys);
-    return response;
-}
-
-messaging::list_commodity_future_convention_versions_response
-commodity_future_convention_service::list_commodity_future_convention_versions(
-    const messaging::list_commodity_future_convention_versions_request& request) {
-    messaging::list_commodity_future_convention_versions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
-        response.result =
-            refuse(outcome_code::order_not_supported,
-                   {.entity = "commodity future conventions", .field = request.order.field});
-        return response;
-    }
-    if (request.filter) {
-        response.result =
-            refuse(outcome_code::filter_not_supported, {.entity = "commodity future conventions"});
-        return response;
-    }
-    auto all = repo_.read_all(ctx_, request.key.id);
-    // The store reads versions newest first, and the order a caller gets when
-    // it states none is key order, which for a version key is oldest first.
-    std::reverse(all.begin(), all.end());
-    response.total = all.size();
-    const auto begin = std::min<std::size_t>(request.offset, all.size());
-    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
-    response.versions.assign(std::make_move_iterator(all.begin() + begin),
-                             std::make_move_iterator(all.begin() + end));
-    return response;
-}
-
-messaging::get_commodity_future_convention_version_response
-commodity_future_convention_service::get_commodity_future_convention_version(
-    const messaging::get_commodity_future_convention_version_request& request) {
-    messaging::get_commodity_future_convention_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, request.key.commodity_future_convention.id, request.key.version);
-    if (!found) {
-        response.result =
-            refuse(outcome_code::not_found, {.entity = "commodity_future_convention"});
-        return response;
-    }
-    response.version = std::move(*found);
-    return response;
-}
-
-ores::utility::domain::result commodity_future_convention_service::prepare_change(
-    const messaging::commodity_future_convention_change& change,
+ores::utility::domain::result commodity_future_convention_service::prepare_convention(
+    const messaging::convention_change& change,
     const ores::utility::domain::change_intent& intent,
-    domain::commodity_future_convention& out) {
+    const context& ctx,
+    domain::convention& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = commodity_future_convention_to_domain(change.write);
-    const auto current = commodity_future_convention_read_one(
-        repo_, ctx_, commodity_future_convention_key_from(out));
+    const auto current =
+        read_convention(central_repo_, ctx, commodity_future_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
-                return refuse(outcome_code::already_exists,
-                              {.entity = "commodity_future_convention", .field = "id"});
+                return refuse(outcome_code::already_exists, {.entity = "convention"});
             break;
         case precondition_kind::must_match_version:
             if (current.empty())
-                return refuse(outcome_code::not_found, {.entity = "commodity_future_convention"});
+                return refuse(outcome_code::not_found, {.entity = "convention"});
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
-                              {.entity = "commodity_future_convention",
-                               .field = "id",
+                              {.entity = "convention",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -428,7 +525,51 @@ ores::utility::domain::result commodity_future_convention_service::prepare_chang
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
     stamp(out,
-          ctx_,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.audit.change_commentary = intent.commentary;
+    return result;
+}
+
+ores::utility::domain::result commodity_future_convention_service::prepare_averaging_terms(
+    const messaging::commodity_future_averaging_terms_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::commodity_future_averaging_terms& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_averaging_terms(change.write);
+    const auto key = key_from_averaging_terms(out);
+    const auto current = averaging_terms_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "commodity_future_averaging_terms"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "commodity_future_averaging_terms"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "commodity_future_averaging_terms",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
@@ -436,87 +577,399 @@ ores::utility::domain::result commodity_future_convention_service::prepare_chang
     return result;
 }
 
-
-std::vector<domain::commodity_future_convention>
-commodity_future_convention_service::list_commodity_future_conventions(std::uint32_t offset,
-                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all commodity future conventions";
-    return repo_.read_latest(ctx_, offset, limit);
-}
-
-std::uint32_t commodity_future_convention_service::count_commodity_future_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total commodity future conventions count";
-    return repo_.get_total_commodity_future_convention_count(ctx_);
-}
-
-
-std::optional<domain::commodity_future_convention>
-commodity_future_convention_service::get_commodity_future_convention_at_version(
-    const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity future convention at version. " << "id: " << id
-                               << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
-}
-
-std::optional<domain::commodity_future_convention>
-commodity_future_convention_service::get_commodity_future_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity future convention. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
-}
-
-std::vector<domain::commodity_future_convention>
-commodity_future_convention_service::get_commodity_future_conventions(
-    const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
-}
-
-void commodity_future_convention_service::save_commodity_future_convention(
-    const domain::commodity_future_convention& v) {
-    if (v.id.empty())
-        throw std::invalid_argument("Commodity Future Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity future convention. " << "id: " << v.id;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity future convention. " << "id: " << v.id;
-}
-
-void commodity_future_convention_service::save_commodity_future_conventions(
-    const std::vector<domain::commodity_future_convention>& commodity_future_conventions) {
-    for (const auto& e : commodity_future_conventions) {
-        if (e.id.empty())
-            throw std::invalid_argument("Commodity Future Convention id cannot be empty.");
+ores::utility::domain::result commodity_future_convention_service::reconcile_averaging_terms(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::commodity_future_averaging_terms_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::commodity_future_averaging_terms> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::commodity_future_averaging_terms row;
+        const auto result = prepare_averaging_terms(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << commodity_future_conventions.size()
-                               << " commodity future conventions";
-    auto ts = commodity_future_conventions;
-    for (auto& e : ts) {
-        stamp(e, ctx_);
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_averaging_terms(averaging_terms_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            averaging_terms_repo_.remove(ctx, boost::uuids::to_string(row.id));
     }
-    repo_.write(ctx_, ts);
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        averaging_terms_repo_.write(ctx, wanted, claims);
+    return {};
 }
 
-void commodity_future_convention_service::delete_commodity_future_convention(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity future convention. " << "id: " << id;
-    repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed commodity future convention. " << "id: " << id;
+ores::utility::domain::result commodity_future_convention_service::prepare_contract_terms(
+    const messaging::commodity_future_contract_terms_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::commodity_future_contract_terms& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_contract_terms(change.write);
+    const auto key = key_from_contract_terms(out);
+    const auto current = contract_terms_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "commodity_future_contract_terms"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "commodity_future_contract_terms"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "commodity_future_contract_terms",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
 }
 
-void commodity_future_convention_service::delete_commodity_future_conventions(
-    const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+ores::utility::domain::result commodity_future_convention_service::reconcile_contract_terms(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::commodity_future_contract_terms_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::commodity_future_contract_terms> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::commodity_future_contract_terms row;
+        const auto result = prepare_contract_terms(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_contract_terms(contract_terms_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            contract_terms_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        contract_terms_repo_.write(ctx, wanted, claims);
+    return {};
 }
 
-std::vector<domain::commodity_future_convention>
-commodity_future_convention_service::get_commodity_future_convention_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity future convention. "
-                               << "id: " << id;
-    return repo_.read_all(ctx_, id);
+ores::utility::domain::result commodity_future_convention_service::prepare_expiry_anchor(
+    const messaging::commodity_future_expiry_anchor_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::commodity_future_expiry_anchor& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_expiry_anchor(change.write);
+    const auto key = key_from_expiry_anchor(out);
+    const auto current = expiry_anchor_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "commodity_future_expiry_anchor"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "commodity_future_expiry_anchor"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "commodity_future_expiry_anchor",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
 }
 
+ores::utility::domain::result commodity_future_convention_service::reconcile_expiry_anchor(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::commodity_future_expiry_anchor_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::commodity_future_expiry_anchor> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::commodity_future_expiry_anchor row;
+        const auto result = prepare_expiry_anchor(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_expiry_anchor(expiry_anchor_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            expiry_anchor_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        expiry_anchor_repo_.write(ctx, wanted, claims);
+    return {};
+}
+
+ores::utility::domain::result commodity_future_convention_service::prepare_off_peak_index(
+    const messaging::commodity_future_off_peak_index_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::commodity_future_off_peak_index& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_off_peak_index(change.write);
+    const auto key = key_from_off_peak_index(out);
+    const auto current = off_peak_index_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "commodity_future_off_peak_index"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "commodity_future_off_peak_index"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "commodity_future_off_peak_index",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+ores::utility::domain::result commodity_future_convention_service::reconcile_off_peak_index(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::commodity_future_off_peak_index_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::commodity_future_off_peak_index> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::commodity_future_off_peak_index row;
+        const auto result = prepare_off_peak_index(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_off_peak_index(off_peak_index_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            off_peak_index_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        off_peak_index_repo_.write(ctx, wanted, claims);
+    return {};
+}
+
+ores::utility::domain::result commodity_future_convention_service::prepare_option_expiry(
+    const messaging::commodity_future_option_expiry_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::commodity_future_option_expiry& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_option_expiry(change.write);
+    const auto key = key_from_option_expiry(out);
+    const auto current = option_expiry_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "commodity_future_option_expiry"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found,
+                              {.entity = "commodity_future_option_expiry"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "commodity_future_option_expiry",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+ores::utility::domain::result commodity_future_convention_service::reconcile_option_expiry(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::commodity_future_option_expiry_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::commodity_future_option_expiry> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::commodity_future_option_expiry row;
+        const auto result = prepare_option_expiry(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.identity.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.identity.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_option_expiry(option_expiry_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            option_expiry_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        option_expiry_repo_.write(ctx, wanted, claims);
+    return {};
+}
 }

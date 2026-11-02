@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1247BD25-29F5-4857-8D59-E599E86DB31A
+:END:
+#+title: A workflow compensation that cannot decode its step's comman…
+#+description: A workflow compensation that cannot decode its step's command or result rolls back nothing and reports no error. In ores.ore.api's ore_import_workflow.hpp and run_configuration_import_workflow.hpp, build_compensation reads cmd_json and result_json with json::try_read and, when either read fails, still returns a rollback request with empty saved-id lists, so the rollback step deletes nothing and succeeds. The saved currencies, portfolios, books, trades or documents stay behind with no trace of why. The behaviour predates the codec move (reflect-cpp's failed reads did the same). Make a failed read fail the compensation, or at least log it, and check the other workflows' compensations for the same pattern. Raised by the review of PR #4360.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

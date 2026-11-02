@@ -29,6 +29,7 @@
  * never asks a person for a party.
  */
 
+import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useState, type ReactNode } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, type RouteRow, type SubscriptionRow } from '../api/client.js';
@@ -118,7 +119,13 @@ function RightField({
     );
 }
 
-export function SubscriptionsPage({ partyId }: { readonly partyId: string }): ReactNode {
+export function SubscriptionsPage({
+    partyId,
+    mode,
+}: {
+    readonly partyId: string;
+    readonly mode: SessionMode;
+}): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const holds = useHeld();
@@ -136,7 +143,7 @@ export function SubscriptionsPage({ partyId }: { readonly partyId: string }): Re
     const subscriptions = useSubscriptions();
     const routes = useRoutes();
     const catalogue = useCatalogue();
-    const names = usePartyNames();
+    const names = usePartyNames(mode === 'system-administration');
     const reason = useReason('delete');
 
     const load = {

@@ -85,10 +85,19 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
         CHECK(rows_of("zero_inflation_index") == count(document, "ZeroInflationIndex"));
         CHECK(rows_of("tenor_basis_two_swap") == count(document, "TenorBasisTwoSwap"));
 
-        // The two document elements that are a central row and its parts. The
-        // central convention family holds the central row of both.
+        // The four document elements that are a central row and its parts. The
+        // central convention family holds the central row of each.
         CHECK(rows_of("convention") ==
-              count(document, "TenorBasisSwap") + count(document, "CrossCurrencyFixFloat"));
+              count(document, "TenorBasisSwap") + count(document, "CrossCurrencyFixFloat") +
+                  count(document, "CrossCurrencyBasis") + count(document, "CommodityFuture"));
+        CHECK(rows_of("commodity_future_contract_terms") == count(document, "CommodityFuture"));
+        CHECK(rows_of("commodity_future_expiry_anchor") <= count(document, "CommodityFuture"));
+        CHECK(rows_of("commodity_future_option_expiry") <= count(document, "CommodityFuture"));
+        CHECK(rows_of("commodity_future_off_peak_index") <= count(document, "CommodityFuture"));
+        CHECK(rows_of("commodity_future_averaging_terms") <= count(document, "CommodityFuture"));
+        CHECK(rows_of("cross_currency_basis_swap_terms") == count(document, "CrossCurrencyBasis"));
+        CHECK(rows_of("cross_currency_basis_flat_leg") == count(document, "CrossCurrencyBasis"));
+        CHECK(rows_of("cross_currency_basis_spread_leg") == count(document, "CrossCurrencyBasis"));
         CHECK(rows_of("cross_currency_fix_float_swap_terms") ==
               count(document, "CrossCurrencyFixFloat"));
         CHECK(rows_of("cross_currency_fix_float_fixed_leg") ==
@@ -102,7 +111,6 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
             count(document, "AverageOIS") + count(document, "BMABasisSwap") +
             count(document, "BondYield") + count(document, "CDS") +
             count(document, "CmsSpreadOption") + count(document, "CommodityForward") +
-            count(document, "CommodityFuture") + count(document, "CrossCurrencyBasis") +
             count(document, "Deposit") + count(document, "FRA") + count(document, "Future") +
             count(document, "FxOption") + count(document, "IborIndex") +
             count(document, "InflationSwap") + count(document, "IntradayPowerLoad") +
@@ -114,7 +122,12 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conve
             rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short") -
             rows_of("cross_currency_fix_float_swap_terms") -
             rows_of("cross_currency_fix_float_fixed_leg") -
-            rows_of("cross_currency_fix_float_float_leg");
+            rows_of("cross_currency_fix_float_float_leg") -
+            rows_of("cross_currency_basis_swap_terms") - rows_of("cross_currency_basis_flat_leg") -
+            rows_of("cross_currency_basis_spread_leg") -
+            rows_of("commodity_future_contract_terms") - rows_of("commodity_future_expiry_anchor") -
+            rows_of("commodity_future_option_expiry") - rows_of("commodity_future_off_peak_index") -
+            rows_of("commodity_future_averaging_terms");
         CHECK(outside_central_and_parts == elements);
         ++checked;
     }

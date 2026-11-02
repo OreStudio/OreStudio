@@ -42,6 +42,7 @@
 #include "ores.reporting.core/messaging/configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
+#include "ores.reporting.core/messaging/cut_approval_detail_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_family_handler.hpp"
 #include "ores.reporting.core/messaging/cut_family_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_family_registrar.hpp"
@@ -49,7 +50,6 @@
 #include "ores.reporting.core/messaging/cut_gap_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_gap_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_handler.hpp"
-#include "ores.reporting.core/messaging/cut_approval_detail_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/cut_kind_handler.hpp"
 #include "ores.reporting.core/messaging/cut_kind_history_provider_registrar.hpp"
@@ -108,6 +108,7 @@
 #include "ores.reporting.core/messaging/report_run_health_handler.hpp"
 #include "ores.reporting.core/messaging/report_run_pricing_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
+#include "ores.reporting.core/messaging/report_text_value_registrar.hpp"
 #include "ores.reporting.core/messaging/report_trigger_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
@@ -772,6 +773,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_report_metric_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_report_cashflow_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_report_text_value_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_run_result_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));

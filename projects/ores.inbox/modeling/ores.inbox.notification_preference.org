@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 70AA8E99-D6C6-41A0-BAD0-7FF9698A3CEB
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.notification_preference
 #+description: Codegen entity model for the inbox =notification_preference= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

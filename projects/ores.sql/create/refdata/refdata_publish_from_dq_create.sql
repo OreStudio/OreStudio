@@ -5140,13 +5140,15 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- The copied column list is read from the live table itself, so there is no
 -- second per-kind list to keep in step either.
 --
--- The atomised kinds, the tenor basis swap and the cross-currency fix-float
--- swap, are not in the kind list: the live shape of each is the central
+-- The atomised kinds, the tenor basis swap, the two cross-currency swaps and
+-- the commodity future, are not in the kind list: the live shape of each is the central
 -- ores_refdata_conventions_tbl plus its part tables, which the
 -- one-artefact-to-one-live-table transform cannot express. The function
 -- delegates each to its own publisher,
--- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn and
--- ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn, and
+-- ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn,
+-- ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn,
+-- ores_refdata_publish_xccy_basis_conventions_from_dq_fn and
+-- ores_refdata_publish_commodity_future_conventions_from_dq_fn, and
 -- folds the counts they return into its own, so the dataset keeps one entry
 -- point, one artefact type and one subject. The dataset is not split because an
 -- atomised kind's identity row is staged in the same central artefact table
@@ -5191,8 +5193,8 @@ declare
     v_atom_deleted bigint := 0;
     v_kinds text[] := array[
         'average_ois', 'bma_basis_swap', 'bond_yield', 'cds',
-        'cms_spread_option', 'commodity_forward', 'commodity_future',
-        'cross_currency_basis', 'deposit', 'fra',
+        'cms_spread_option', 'commodity_forward',
+        'deposit', 'fra',
         'future', 'fx_option', 'ibor_index', 'inflation_swap',
         'intraday_power_load', 'ois', 'overnight_index', 'swap', 'swap_index',
         'tenor_basis_two_swap', 'zero',
@@ -5290,6 +5292,12 @@ begin
             p_dataset_id, p_target_tenant_id, p_mode, p_params)
         union all
         select * from ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn(
+            p_dataset_id, p_target_tenant_id, p_mode, p_params)
+        union all
+        select * from ores_refdata_publish_xccy_basis_conventions_from_dq_fn(
+            p_dataset_id, p_target_tenant_id, p_mode, p_params)
+        union all
+        select * from ores_refdata_publish_commodity_future_conventions_from_dq_fn(
             p_dataset_id, p_target_tenant_id, p_mode, p_params)
     loop
         if r.action = 'inserted' then
@@ -5722,6 +5730,451 @@ begin
     where a.dataset_id = p_dataset_id
       and not exists (
           select 1 from ores_refdata_cross_currency_fix_float_float_legs_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    return query
+    select 'inserted'::text, v_inserted_central + v_inserted_part
+    where v_inserted_central + v_inserted_part > 0
+    union all select 'skipped'::text,
+        (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part)
+    where (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part) > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Atomised Instrument Conventions: the cross-currency basis composite
+-- =============================================================================
+
+-- The cross-currency basis kind's live shape is one central
+-- ores_refdata_conventions_tbl row plus one row in each of three part tables:
+-- the swap terms both legs share, the flat leg and the spread leg. The flat
+-- name transform cannot express that shape, so this function owns the kind and
+-- the flat publisher delegates to it.
+--
+-- The staged central row names the convention by (kind, name), never by a uuid;
+-- the publish supplies the uuid and the party. A part names its central row by
+-- the same (kind, name) pair. Every convention fills all three parts, so unlike
+-- the tenor basis swap there is no other form to close. A part is written only
+-- when the convention has no live row of it, and the mode has no effect: like
+-- the flat publisher, this one only inserts what is absent.
+create or replace function ores_refdata_publish_xccy_basis_conventions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_commentary text;
+    v_staged_central bigint := 0;
+    v_staged_part bigint := 0;
+    v_inserted_central bigint := 0;
+    v_inserted_part bigint := 0;
+    v_batch bigint := 0;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    select count(*) into v_staged_central
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'CROSS_CURRENCY_BASIS';
+
+    select count(*) into v_staged_part
+    from (
+        select 1
+        from ores_dq_cross_currency_basis_swap_terms_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_cross_currency_basis_flat_legs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_cross_currency_basis_spread_legs_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+    ) parts;
+
+    -- The central row is created only when the party holds no live row for the
+    -- identity, so a republish leaves the row it already wrote as it is. The
+    -- store's trigger stamps the version.
+    insert into ores_refdata_conventions_tbl (
+        tenant_id, id, version, party_id, kind_code, name, oresmd_uri,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id,
+        dq.kind_code, dq.name, dq.oresmd_uri,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'CROSS_CURRENCY_BASIS'
+      and not exists (
+          select 1 from ores_refdata_conventions_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.party_id = v_party_id
+            and o.kind_code = dq.kind_code
+            and o.name = dq.name
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted_central = row_count;
+
+    -- The swap terms both legs share.
+    insert into ores_refdata_cross_currency_basis_swap_terms_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        settlement_days, settlement_calendar, roll_convention, eom, is_resettable,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.settlement_days, a.settlement_calendar, a.roll_convention, a.eom, a.is_resettable,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_basis_swap_terms_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_basis_swap_terms_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The flat leg.
+    insert into ores_refdata_cross_currency_basis_flat_legs_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        flat_index, flat_index_is_resettable, flat_tenor, flat_payment_lag, flat_include_spread, flat_lookback, flat_fixing_days, flat_rate_cutoff, flat_is_averaged, flat_observation_shift,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.flat_index, a.flat_index_is_resettable, a.flat_tenor, a.flat_payment_lag, a.flat_include_spread, a.flat_lookback, a.flat_fixing_days, a.flat_rate_cutoff, a.flat_is_averaged, a.flat_observation_shift,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_basis_flat_legs_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_basis_flat_legs_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The spread leg.
+    insert into ores_refdata_cross_currency_basis_spread_legs_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        spread_index, spread_tenor, spread_payment_lag, spread_include_spread, spread_lookback, spread_fixing_days, spread_rate_cutoff, spread_is_averaged, spread_observation_shift,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.spread_index, a.spread_tenor, a.spread_payment_lag, a.spread_include_spread, a.spread_lookback, a.spread_fixing_days, a.spread_rate_cutoff, a.spread_is_averaged, a.spread_observation_shift,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_cross_currency_basis_spread_legs_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_cross_currency_basis_spread_legs_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    return query
+    select 'inserted'::text, v_inserted_central + v_inserted_part
+    where v_inserted_central + v_inserted_part > 0
+    union all select 'skipped'::text,
+        (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part)
+    where (v_staged_central - v_inserted_central) + (v_staged_part - v_inserted_part) > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Atomised Instrument Conventions: the commodity future composite
+-- =============================================================================
+
+-- The commodity future kind's live shape is one central
+-- ores_refdata_conventions_tbl row, its contract terms, and up to one row in
+-- each of four optional part tables: the expiry anchor, the option expiry, the
+-- off-peak power index and the averaging data. The flat name transform cannot
+-- express that shape, so this function owns the kind and the flat publisher
+-- delegates to it.
+--
+-- The staged central row names the convention by (kind, name), never by a uuid;
+-- the publish supplies the uuid and the party. A part names its central row by
+-- the same (kind, name) pair. A convention stages only the parts it states, and
+-- the optional parts are not alternatives, so there is no other form to close. A part is written only
+-- when the convention has no live row of it, and the mode has no effect: like
+-- the flat publisher, this one only inserts what is absent.
+create or replace function ores_refdata_publish_commodity_future_conventions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_commentary text;
+    v_staged_central bigint := 0;
+    v_staged_part bigint := 0;
+    v_inserted_central bigint := 0;
+    v_inserted_part bigint := 0;
+    v_batch bigint := 0;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    select count(*) into v_staged_central
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'COMMODITY_FUTURE';
+
+    select count(*) into v_staged_part
+    from (
+        select 1
+        from ores_dq_commodity_future_contract_terms_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_commodity_future_expiry_anchors_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_commodity_future_option_expiries_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_commodity_future_off_peak_indexes_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+        union all
+        select 1
+        from ores_dq_commodity_future_averaging_terms_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+    ) parts;
+
+    -- The central row is created only when the party holds no live row for the
+    -- identity, so a republish leaves the row it already wrote as it is. The
+    -- store's trigger stamps the version.
+    insert into ores_refdata_conventions_tbl (
+        tenant_id, id, version, party_id, kind_code, name, oresmd_uri,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id,
+        dq.kind_code, dq.name, dq.oresmd_uri,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_conventions_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and dq.kind_code = 'COMMODITY_FUTURE'
+      and not exists (
+          select 1 from ores_refdata_conventions_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.party_id = v_party_id
+            and o.kind_code = dq.kind_code
+            and o.name = dq.name
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted_central = row_count;
+
+    -- The contract terms every convention fills.
+    insert into ores_refdata_commodity_future_contract_terms_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        contract_frequency, calendar, expiry_calendar, expiry_month_lag, one_contract_month, offset_days, business_day_convention, adjust_before_offset, is_averaging, valid_contract_months, hours_per_day, index_name, savings_time, delivery_location, balance_of_the_month, balance_of_the_month_pricing_calendar, prohibited_expiries, future_continuation_mappings,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.contract_frequency, a.calendar, a.expiry_calendar, a.expiry_month_lag, a.one_contract_month, a.offset_days, a.business_day_convention, a.adjust_before_offset, a.is_averaging, a.valid_contract_months, a.hours_per_day, a.index_name, a.savings_time, a.delivery_location, a.balance_of_the_month, a.balance_of_the_month_pricing_calendar, a.prohibited_expiries, a.future_continuation_mappings,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_commodity_future_contract_terms_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_commodity_future_contract_terms_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The expiry anchor, when the convention states one.
+    insert into ores_refdata_commodity_future_expiry_anchors_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        anchor_day_of_month, anchor_calendar_days_before, anchor_business_days_after, anchor_nth_nth, anchor_nth_weekday, anchor_last_weekday, anchor_weekly_day_of_the_week,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.anchor_day_of_month, a.anchor_calendar_days_before, a.anchor_business_days_after, a.anchor_nth_nth, a.anchor_nth_weekday, a.anchor_last_weekday, a.anchor_weekly_day_of_the_week,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_commodity_future_expiry_anchors_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_commodity_future_expiry_anchors_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The option expiry, when the convention states options.
+    insert into ores_refdata_commodity_future_option_expiries_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        option_expiry_month_lag, option_contract_frequency, option_expiry_offset, option_calendar_days_before, option_min_business_days_before, option_expiry_day, option_nth_nth, option_nth_weekday, option_expiry_last_weekday_of_month, option_expiry_weekly_day_of_the_week, option_business_day_convention, option_underlying_future_convention, option_continuation_mappings,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.option_expiry_month_lag, a.option_contract_frequency, a.option_expiry_offset, a.option_calendar_days_before, a.option_min_business_days_before, a.option_expiry_day, a.option_nth_nth, a.option_nth_weekday, a.option_expiry_last_weekday_of_month, a.option_expiry_weekly_day_of_the_week, a.option_business_day_convention, a.option_underlying_future_convention, a.option_continuation_mappings,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_commodity_future_option_expiries_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_commodity_future_option_expiries_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The off-peak power index, when the convention is a power future.
+    insert into ores_refdata_commodity_future_off_peak_indexes_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        off_peak_index, peak_index, off_peak_hours, peak_calendar,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.off_peak_index, a.peak_index, a.off_peak_hours, a.peak_calendar,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_commodity_future_off_peak_indexes_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_commodity_future_off_peak_indexes_tbl o
+          where o.tenant_id = p_target_tenant_id
+            and o.convention_id = c.id
+            and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_batch = row_count;
+    v_inserted_part := v_inserted_part + v_batch;
+
+    -- The averaging data, when the future averages.
+    insert into ores_refdata_commodity_future_averaging_terms_tbl (
+        tenant_id, id, version, convention_id, party_id,
+        averaging_commodity_name, averaging_period, averaging_pricing_calendar, averaging_conventions, averaging_use_business_days, averaging_delivery_roll_days, averaging_future_month_offset, averaging_daily_expiry_offset,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        p_target_tenant_id, gen_random_uuid(), 0, c.id, v_party_id,
+        a.averaging_commodity_name, a.averaging_period, a.averaging_pricing_calendar, a.averaging_conventions, a.averaging_use_business_days, a.averaging_delivery_roll_days, a.averaging_future_month_offset, a.averaging_daily_expiry_offset,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', v_commentary
+    from ores_dq_commodity_future_averaging_terms_artefact_tbl a
+    join ores_refdata_conventions_tbl c
+      on c.tenant_id = p_target_tenant_id
+     and c.party_id = v_party_id
+     and c.kind_code = a.kind_code
+     and c.name = a.convention_name
+     and c.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+          select 1 from ores_refdata_commodity_future_averaging_terms_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
             and o.valid_to = ores_utility_infinity_timestamp_fn());

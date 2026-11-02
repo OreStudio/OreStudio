@@ -25,12 +25,18 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PLAN_DEPENDENCY_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PLAN_DEPENDENCY_PROTOCOL_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
+#include "ores.workflow.api/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::workflow::messaging {
@@ -305,7 +311,891 @@ inline constexpr std::string_view created = "workflow.v1.workflow_plan_dependenc
 inline constexpr std::string_view updated = "workflow.v1.workflow_plan_dependencies_events.updated";
 inline constexpr std::string_view deleted = "workflow.v1.workflow_plan_dependencies_events.deleted";
 }
+/**
+ * @brief The members of workflow_plan_dependency_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &workflow_plan_dependency_key::id},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_write, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &workflow_plan_dependency_write::id},
+        utility::codec::field{"workflow_id", &workflow_plan_dependency_write::workflow_id},
+        utility::codec::field{"consumer_step_index",
+                              &workflow_plan_dependency_write::consumer_step_index},
+        utility::codec::field{"producer_step_index",
+                              &workflow_plan_dependency_write::producer_step_index},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &workflow_plan_dependency_change::write},
+        utility::codec::field{"precondition", &workflow_plan_dependency_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &workflow_plan_dependency_removal::key},
+        utility::codec::field{"precondition", &workflow_plan_dependency_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &workflow_plan_dependency_lookup::key},
+        utility::codec::field{"workflow_plan_dependency",
+                              &workflow_plan_dependency_lookup::workflow_plan_dependency},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependencies_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependencies_filter&) {
+    return std::tuple{
+        utility::codec::field{"workflow_id", &workflow_plan_dependencies_filter::workflow_id},
+        utility::codec::field{"id_one_of", &workflow_plan_dependencies_filter::id_one_of},
+        utility::codec::field{"workflow_id_one_of",
+                              &workflow_plan_dependencies_filter::workflow_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_event, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &workflow_plan_dependency_event::event_id},
+        utility::codec::field{"key", &workflow_plan_dependency_event::key},
+        utility::codec::field{"action", &workflow_plan_dependency_event::action},
+        utility::codec::field{"version", &workflow_plan_dependency_event::version},
+        utility::codec::field{"occurred_at", &workflow_plan_dependency_event::occurred_at},
+        utility::codec::field{"correlation_id", &workflow_plan_dependency_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_version_key, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_version_key&) {
+    return std::tuple{
+        utility::codec::field{"workflow_plan_dependency",
+                              &workflow_plan_dependency_version_key::workflow_plan_dependency},
+        utility::codec::field{"version", &workflow_plan_dependency_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of workflow_plan_dependency_versions_filter, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_plan_dependency_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &workflow_plan_dependency_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &workflow_plan_dependency_versions_filter::from_version},
+        utility::codec::field{"to_version", &workflow_plan_dependency_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_plan_dependencies_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependencies_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_workflow_plan_dependencies_request::offset},
+        utility::codec::field{"limit", &list_workflow_plan_dependencies_request::limit},
+        utility::codec::field{"order", &list_workflow_plan_dependencies_request::order},
+        utility::codec::field{"filter", &list_workflow_plan_dependencies_request::filter},
+        utility::codec::field{"as_of", &list_workflow_plan_dependencies_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_plan_dependencies_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependencies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_workflow_plan_dependencies_response::result},
+        utility::codec::field{"plan_dependencies",
+                              &list_workflow_plan_dependencies_response::plan_dependencies},
+        utility::codec::field{"total", &list_workflow_plan_dependencies_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_plan_dependency_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_workflow_plan_dependency_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_plan_dependency_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_workflow_plan_dependency_response::result},
+        utility::codec::field{"workflow_plan_dependency",
+                              &get_workflow_plan_dependency_response::workflow_plan_dependency},
+    };
+}
+
+/**
+ * @brief The members of get_many_workflow_plan_dependencies_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_plan_dependencies_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_workflow_plan_dependencies_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_workflow_plan_dependencies_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_plan_dependencies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_workflow_plan_dependencies_response::result},
+        utility::codec::field{"entries", &get_many_workflow_plan_dependencies_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_workflow_plan_dependency_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_workflow_plan_dependency_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_workflow_plan_dependency_request::change},
+        utility::codec::field{"intent", &put_workflow_plan_dependency_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_workflow_plan_dependency_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_workflow_plan_dependency_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_workflow_plan_dependency_response::result},
+        utility::codec::field{"workflow_plan_dependency",
+                              &put_workflow_plan_dependency_response::workflow_plan_dependency},
+    };
+}
+
+/**
+ * @brief The members of put_many_workflow_plan_dependencies_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_plan_dependencies_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_workflow_plan_dependencies_request::changes},
+        utility::codec::field{"intent", &put_many_workflow_plan_dependencies_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_workflow_plan_dependencies_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_plan_dependencies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_workflow_plan_dependencies_response::result},
+        utility::codec::field{"plan_dependencies",
+                              &put_many_workflow_plan_dependencies_response::plan_dependencies},
+    };
+}
+
+/**
+ * @brief The members of delete_workflow_plan_dependency_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_workflow_plan_dependency_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_workflow_plan_dependency_request::removal},
+        utility::codec::field{"intent", &delete_workflow_plan_dependency_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_workflow_plan_dependency_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_workflow_plan_dependency_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_workflow_plan_dependency_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_workflow_plan_dependencies_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_plan_dependencies_request&) {
+    return std::tuple{
+        utility::codec::field{"removals",
+                              &delete_many_workflow_plan_dependencies_request::removals},
+        utility::codec::field{"intent", &delete_many_workflow_plan_dependencies_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_workflow_plan_dependencies_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_plan_dependencies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_workflow_plan_dependencies_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_workflow_id_workflow_plan_dependencies_request, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_workflow_id_workflow_plan_dependencies_request&) {
+    return std::tuple{
+        utility::codec::field{"workflow_id",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::workflow_id},
+        utility::codec::field{"scope",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::offset},
+        utility::codec::field{"limit",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::limit},
+        utility::codec::field{"order",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::order},
+        utility::codec::field{"filter",
+                              &list_by_workflow_id_workflow_plan_dependencies_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_workflow_id_workflow_plan_dependencies_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_workflow_id_workflow_plan_dependencies_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_workflow_id_workflow_plan_dependencies_response::result},
+        utility::codec::field{
+            "plan_dependencies",
+            &list_by_workflow_id_workflow_plan_dependencies_response::plan_dependencies},
+        utility::codec::field{"total",
+                              &list_by_workflow_id_workflow_plan_dependencies_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_plan_dependency_versions_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependency_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_workflow_plan_dependency_versions_request::key},
+        utility::codec::field{"offset", &list_workflow_plan_dependency_versions_request::offset},
+        utility::codec::field{"limit", &list_workflow_plan_dependency_versions_request::limit},
+        utility::codec::field{"order", &list_workflow_plan_dependency_versions_request::order},
+        utility::codec::field{"filter", &list_workflow_plan_dependency_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_plan_dependency_versions_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_plan_dependency_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_workflow_plan_dependency_versions_response::result},
+        utility::codec::field{"versions",
+                              &list_workflow_plan_dependency_versions_response::versions},
+        utility::codec::field{"total", &list_workflow_plan_dependency_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_plan_dependency_version_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_workflow_plan_dependency_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_plan_dependency_version_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_plan_dependency_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_workflow_plan_dependency_version_response::result},
+        utility::codec::field{"version", &get_workflow_plan_dependency_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::workflow_plan_dependency_key& v);
+    static ores::workflow::messaging::workflow_plan_dependency_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_key& v);
+    static ores::workflow::messaging::workflow_plan_dependency_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_write& v);
+    static ores::workflow::messaging::workflow_plan_dependency_write
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_write& v);
+    static ores::workflow::messaging::workflow_plan_dependency_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_change& v);
+    static ores::workflow::messaging::workflow_plan_dependency_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_change& v);
+    static ores::workflow::messaging::workflow_plan_dependency_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_removal& v);
+    static ores::workflow::messaging::workflow_plan_dependency_removal
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_removal& v);
+    static ores::workflow::messaging::workflow_plan_dependency_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_lookup& v);
+    static ores::workflow::messaging::workflow_plan_dependency_lookup
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_lookup& v);
+    static ores::workflow::messaging::workflow_plan_dependency_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependencies_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependencies_filter& v);
+    static ores::workflow::messaging::workflow_plan_dependencies_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependencies_filter& v);
+    static ores::workflow::messaging::workflow_plan_dependencies_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_event& v);
+    static ores::workflow::messaging::workflow_plan_dependency_event
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_event& v);
+    static ores::workflow::messaging::workflow_plan_dependency_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_version_key& v);
+    static ores::workflow::messaging::workflow_plan_dependency_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_version_key& v);
+    static ores::workflow::messaging::workflow_plan_dependency_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_plan_dependency_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_plan_dependency_versions_filter& v);
+    static ores::workflow::messaging::workflow_plan_dependency_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_plan_dependency_versions_filter& v);
+    static ores::workflow::messaging::workflow_plan_dependency_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_plan_dependencies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::list_workflow_plan_dependencies_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::list_workflow_plan_dependencies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_plan_dependencies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::list_workflow_plan_dependencies_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::list_workflow_plan_dependencies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_workflow_plan_dependency_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_workflow_plan_dependency_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_many_workflow_plan_dependencies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::get_many_workflow_plan_dependencies_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::get_many_workflow_plan_dependencies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_many_workflow_plan_dependencies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::get_many_workflow_plan_dependencies_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::get_many_workflow_plan_dependencies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::put_workflow_plan_dependency_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::put_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::put_workflow_plan_dependency_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::put_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::put_workflow_plan_dependency_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::put_workflow_plan_dependency_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::put_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::put_workflow_plan_dependency_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::put_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::put_workflow_plan_dependency_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::put_many_workflow_plan_dependencies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::put_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::put_many_workflow_plan_dependencies_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::put_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::put_many_workflow_plan_dependencies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::put_many_workflow_plan_dependencies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::put_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::put_many_workflow_plan_dependencies_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::put_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::put_many_workflow_plan_dependencies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::delete_workflow_plan_dependency_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::delete_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::delete_workflow_plan_dependency_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::delete_workflow_plan_dependency_request& v);
+    static ores::workflow::messaging::delete_workflow_plan_dependency_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::delete_workflow_plan_dependency_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::delete_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::delete_workflow_plan_dependency_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::delete_workflow_plan_dependency_response& v);
+    static ores::workflow::messaging::delete_workflow_plan_dependency_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::delete_many_workflow_plan_dependencies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::delete_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::delete_many_workflow_plan_dependencies_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::delete_many_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::delete_many_workflow_plan_dependencies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::delete_many_workflow_plan_dependencies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::delete_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::delete_many_workflow_plan_dependencies_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::delete_many_workflow_plan_dependencies_response& v);
+    static ores::workflow::messaging::delete_many_workflow_plan_dependencies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request& v);
+    static ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<
+    ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response&
+            v);
+    static ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response&
+            v);
+    static ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_plan_dependency_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_plan_dependency_versions_request& v);
+    static ores::workflow::messaging::list_workflow_plan_dependency_versions_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::list_workflow_plan_dependency_versions_request& v);
+    static ores::workflow::messaging::list_workflow_plan_dependency_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_plan_dependency_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_plan_dependency_versions_response& v);
+    static ores::workflow::messaging::list_workflow_plan_dependency_versions_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::list_workflow_plan_dependency_versions_response& v);
+    static ores::workflow::messaging::list_workflow_plan_dependency_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_workflow_plan_dependency_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_workflow_plan_dependency_version_request& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_workflow_plan_dependency_version_request& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_workflow_plan_dependency_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::get_workflow_plan_dependency_version_response& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_version_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::workflow::messaging::get_workflow_plan_dependency_version_response& v);
+    static ores::workflow::messaging::get_workflow_plan_dependency_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

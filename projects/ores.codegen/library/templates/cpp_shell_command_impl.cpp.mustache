@@ -8,7 +8,12 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
+{{^has_generated_wire_codec}}
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+{{/has_generated_wire_codec}}
 {{#has_base64_columns}}
 #include "ores.utility/convert/base64_converter.hpp"
 {{/has_base64_columns}}
@@ -21,8 +26,10 @@
 #include <functional>
 #include <optional>
 #include <ostream>
+{{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+{{/has_generated_wire_codec}}
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -343,7 +350,14 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     if (!result)
         return;
 
+{{#has_generated_wire_codec}}
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
     out << rfl::json::write(*result) << std::endl;
+{{/has_generated_wire_codec}}
 }
 {{/shell.commands}}
 

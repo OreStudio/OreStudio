@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: 42696101-091F-49BE-92A2-061B7787C227
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.registration_policy_messages
 #+description: Codegen operation model for the registration policy protocol, rendered to C++ and TypeScript from one source.

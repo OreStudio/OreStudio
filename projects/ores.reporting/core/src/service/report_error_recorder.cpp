@@ -22,13 +22,13 @@
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
 #include <map>
-#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -95,7 +95,8 @@ std::map<std::string, int> trade_versions_of_run(const ores::database::context& 
         repository::report_input_bundle_repository().find_by_instance_id(ctx, report_instance_id);
     if (!bundle || !bundle->trade_versions)
         return {};
-    const auto parsed = rfl::json::read<std::map<std::string, int>>(*bundle->trade_versions);
+    const auto parsed =
+        ores::utility::codec::json::try_read<std::map<std::string, int>>(*bundle->trade_versions);
     if (!parsed)
         return {};
     return *parsed;

@@ -101,18 +101,20 @@ domain::report_metric report_metric_to_domain(const messaging::report_metric_wri
     v.id = write.id;
     v.party_id = write.party_id;
     v.report_instance_id = write.report_instance_id;
+    v.result_id = write.result_id;
+    v.as_of = write.as_of;
+    v.measure = write.measure;
+    v.source = write.source;
+    v.line = write.line;
+    v.report_definition_id = write.report_definition_id;
     v.family = write.family;
     v.subject_type = write.subject_type;
     v.subject_id = write.subject_id;
-    v.as_of = write.as_of;
-    v.measure = write.measure;
-    v.report_definition_id = write.report_definition_id;
     v.currency = write.currency;
     v.scenario = write.scenario;
     v.factor = write.factor;
     v.qualifiers = write.qualifiers;
     v.value = write.value;
-    v.source = write.source;
     return v;
 }
 
@@ -139,6 +141,12 @@ report_metric_service::list_report_metrics(const messaging::list_report_metrics_
                                  {.field = "report_instance_id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->measure_one_of &&
+        request.filter->measure_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "measure_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.filter && request.filter->family_one_of &&
         request.filter->family_one_of->size() > 1000) {
         response.result =
@@ -149,12 +157,6 @@ report_metric_service::list_report_metrics(const messaging::list_report_metrics_
         request.filter->subject_id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "subject_id_one_of", .limit = "1000"});
-        return response;
-    }
-    if (request.filter && request.filter->measure_one_of &&
-        request.filter->measure_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "measure_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

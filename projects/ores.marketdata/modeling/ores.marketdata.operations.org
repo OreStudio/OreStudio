@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 76a0467e-3dd0-4516-924b-5c16a10b9bf7
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.operations
 #+description: Codegen operation model for the marketdata component's domain operations: the subjects that are not entity verbs and so do not belong in the common resource grammar.
@@ -3004,7 +3005,7 @@ manifest and lends the token that reads them.
 :cpp_type: std::string
 :END:
 
-The party that owns the run, so every payload carries it.
+The party that owns the run, so every value carries it.
 
 *** report_instance_id
 :PROPERTIES:
@@ -3046,6 +3047,15 @@ Where the manifest of each result of the run is, as bucket and key. A manifest
 names the result that wrote the files and where each file is, so the store
 fetches the market-state files by name and never unpacks an archive.
 
+*** skipped_families
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The market-state families the run does not store as rows, as its definition
+names them. A skipped file is not fetched and is named in the reply as left
+alone; it stays in the object store.
+
 ** store_market_state_response
 
 *** result
@@ -3061,9 +3071,9 @@ run's state, because a partial state reads as a complete one.
 :cpp_type: std::vector<std::string>
 :END:
 
-The families a payload was stored for, in the order they were read.
+The families rows were stored for, in the order they were read.
 
-*** payloads
+*** files
 :PROPERTIES:
 :cpp_type: int
 :default: 0
@@ -3071,13 +3081,13 @@ The families a payload was stored for, in the order they were read.
 
 The files whose family states a market state and which were read.
 
-*** payload_bytes
+*** rows
 :PROPERTIES:
 :cpp_type: std::int64_t
 :default: 0
 :END:
 
-The compressed size of what was stored, so a caller can account for it.
+The values stored, across every file, so a caller can account for them.
 
 *** left_alone
 :PROPERTIES:

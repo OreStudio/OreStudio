@@ -37,7 +37,7 @@ namespace ores::marketdata::client {
  * @brief Typed, authenticated facade over the marketdata NATS protocol.
  *
  * Centralises request/response (de)serialisation and service authentication
- * so callers never hand-roll request_sync + rfl::json + auth headers. Every
+ * so callers never hand-roll request_sync, the wire codec and auth headers. Every
  * call is issued through an authenticated nats_client, so the caller must
  * supply one backed by a valid token provider (e.g. a service-token provider
  * for service-to-service calls, or a user session for the GUI).

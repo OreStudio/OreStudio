@@ -2,6 +2,7 @@
 :ores.cpp.shell-command.enabled: true
 :ores.cpp.http-route.enabled: true
 :ID: 9B4F1C62-7E3A-4D58-8A21-6C0E5B9D4F31
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.geo_operations
 #+description: Codegen operation model for resolving an address to the country it came from.

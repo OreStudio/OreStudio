@@ -37,9 +37,11 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/http_client.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/compression/gzip.hpp"
 #include "ores.utility/crypto/sha256.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect_pipe.hpp>
@@ -63,9 +65,9 @@
 #include <fstream>
 #include <iterator>
 #include <mutex>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
+#include <tuple>
 
 namespace ores::compute::wrapper::app {
 
@@ -401,6 +403,12 @@ struct manifest {
     std::vector<std::string> args;
 };
 
+[[nodiscard]] constexpr auto wire_fields(const manifest&) {
+    return std::tuple{ores::utility::codec::field{"executable", &manifest::executable},
+                      ores::utility::codec::field{"args", &manifest::args}};
+}
+static_assert(ores::utility::codec::names_every_member<manifest>());
+
 /**
  * @brief Read and parse manifest.json from the unpacked package directory.
  */
@@ -411,10 +419,11 @@ manifest read_manifest(const fs::path& package_dir) {
         throw std::runtime_error("manifest.json not found in " + package_dir.string());
     // Extra parentheses avoid the vexing parse.
     const std::string json((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-    const auto m = rfl::json::read<manifest>(json);
-    if (!m)
-        throw std::runtime_error("Failed to parse manifest.json: " + m.error().what());
-    return *m;
+    try {
+        return ores::utility::codec::object::read_json<manifest>(json);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("Failed to parse manifest.json: ") + e.what());
+    }
 }
 
 /**
@@ -524,9 +533,9 @@ void upload_output_files(auto& lg,
         if (entry.is_regular_file())
             paths.push_back(entry.path());
         else
-            BOOST_LOG_SEV(lg, warn) << "Output entry '" << entry.path().filename().string()
-                                    << "' of " << evt.result_id
-                                    << " is not a file, so it is not uploaded; the archive holds it.";
+            BOOST_LOG_SEV(lg, warn)
+                << "Output entry '" << entry.path().filename().string() << "' of " << evt.result_id
+                << " is not a file, so it is not uploaded; the archive holds it.";
     }
     std::ranges::sort(paths);
 
@@ -585,8 +594,8 @@ void upload_output_files(auto& lg,
     }
     ores::storage::net::http_client::put(
         make_url(cfg.http_base_url,
-                 ores::storage::net::storage_paths::make_object_path(
-                     bucket, prefix + "manifest.json.gz")),
+                 ores::storage::net::storage_paths::make_object_path(bucket,
+                                                                     prefix + "manifest.json.gz")),
         manifest_file,
         evt.storage_token);
     fs::remove(manifest_file);

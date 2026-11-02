@@ -26,11 +26,17 @@
 #define ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::compute::messaging {
@@ -276,7 +282,689 @@ inline constexpr std::string_view created = "compute.v1.hosts_events.created";
 inline constexpr std::string_view updated = "compute.v1.hosts_events.updated";
 inline constexpr std::string_view deleted = "compute.v1.hosts_events.deleted";
 }
+/**
+ * @brief The members of host_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_key&) {
+    return std::tuple{
+        utility::codec::field{"external_id", &host_key::external_id},
+    };
+}
+
+/**
+ * @brief The members of host_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &host_write::id},
+        utility::codec::field{"external_id", &host_write::external_id},
+        utility::codec::field{"location", &host_write::location},
+        utility::codec::field{"cpu_count", &host_write::cpu_count},
+        utility::codec::field{"ram_mb", &host_write::ram_mb},
+        utility::codec::field{"gpu_type", &host_write::gpu_type},
+        utility::codec::field{"display_name", &host_write::display_name},
+        utility::codec::field{"credit_total", &host_write::credit_total},
+    };
+}
+
+/**
+ * @brief The members of host_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &host_change::write},
+        utility::codec::field{"precondition", &host_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of host_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &host_removal::key},
+        utility::codec::field{"precondition", &host_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of host_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &host_lookup::key},
+        utility::codec::field{"host", &host_lookup::host},
+    };
+}
+
+/**
+ * @brief The members of hosts_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const hosts_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &hosts_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of host_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &host_event::event_id},
+        utility::codec::field{"key", &host_event::key},
+        utility::codec::field{"action", &host_event::action},
+        utility::codec::field{"version", &host_event::version},
+        utility::codec::field{"occurred_at", &host_event::occurred_at},
+        utility::codec::field{"correlation_id", &host_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of host_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_version_key&) {
+    return std::tuple{
+        utility::codec::field{"host", &host_version_key::host},
+        utility::codec::field{"version", &host_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of host_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const host_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &host_versions_filter::version},
+        utility::codec::field{"from_version", &host_versions_filter::from_version},
+        utility::codec::field{"to_version", &host_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_hosts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_hosts_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_hosts_request::offset},
+        utility::codec::field{"limit", &list_hosts_request::limit},
+        utility::codec::field{"order", &list_hosts_request::order},
+        utility::codec::field{"filter", &list_hosts_request::filter},
+        utility::codec::field{"as_of", &list_hosts_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_hosts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_hosts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_hosts_response::result},
+        utility::codec::field{"hosts", &list_hosts_response::hosts},
+        utility::codec::field{"total", &list_hosts_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_host_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_host_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_host_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_host_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_host_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_host_response::result},
+        utility::codec::field{"host", &get_host_response::host},
+    };
+}
+
+/**
+ * @brief The members of get_many_hosts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_hosts_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_hosts_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_hosts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_hosts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_hosts_response::result},
+        utility::codec::field{"entries", &get_many_hosts_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_host_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_host_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_host_request::change},
+        utility::codec::field{"intent", &put_host_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_host_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_host_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_host_response::result},
+        utility::codec::field{"host", &put_host_response::host},
+    };
+}
+
+/**
+ * @brief The members of put_many_hosts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_hosts_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_hosts_request::changes},
+        utility::codec::field{"intent", &put_many_hosts_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_hosts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_hosts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_hosts_response::result},
+        utility::codec::field{"hosts", &put_many_hosts_response::hosts},
+    };
+}
+
+/**
+ * @brief The members of delete_host_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_host_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_host_request::removal},
+        utility::codec::field{"intent", &delete_host_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_host_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_host_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_host_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_hosts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_hosts_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_hosts_request::removals},
+        utility::codec::field{"intent", &delete_many_hosts_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_hosts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_hosts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_hosts_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_host_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_host_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_host_versions_request::key},
+        utility::codec::field{"offset", &list_host_versions_request::offset},
+        utility::codec::field{"limit", &list_host_versions_request::limit},
+        utility::codec::field{"order", &list_host_versions_request::order},
+        utility::codec::field{"filter", &list_host_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_host_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_host_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_host_versions_response::result},
+        utility::codec::field{"versions", &list_host_versions_response::versions},
+        utility::codec::field{"total", &list_host_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_host_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_host_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_host_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_host_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_host_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_host_version_response::result},
+        utility::codec::field{"version", &get_host_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_key& v);
+    static ores::compute::messaging::host_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_key& v);
+    static ores::compute::messaging::host_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_write& v);
+    static ores::compute::messaging::host_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_write& v);
+    static ores::compute::messaging::host_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_change& v);
+    static ores::compute::messaging::host_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_change& v);
+    static ores::compute::messaging::host_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_removal& v);
+    static ores::compute::messaging::host_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_removal& v);
+    static ores::compute::messaging::host_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_lookup& v);
+    static ores::compute::messaging::host_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_lookup& v);
+    static ores::compute::messaging::host_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::hosts_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::hosts_filter& v);
+    static ores::compute::messaging::hosts_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::hosts_filter& v);
+    static ores::compute::messaging::hosts_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_event& v);
+    static ores::compute::messaging::host_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_event& v);
+    static ores::compute::messaging::host_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_version_key& v);
+    static ores::compute::messaging::host_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_version_key& v);
+    static ores::compute::messaging::host_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::host_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::host_versions_filter& v);
+    static ores::compute::messaging::host_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::host_versions_filter& v);
+    static ores::compute::messaging::host_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_hosts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_hosts_request& v);
+    static ores::compute::messaging::list_hosts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_hosts_request& v);
+    static ores::compute::messaging::list_hosts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_hosts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_hosts_response& v);
+    static ores::compute::messaging::list_hosts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_hosts_response& v);
+    static ores::compute::messaging::list_hosts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_host_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_host_request& v);
+    static ores::compute::messaging::get_host_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_host_request& v);
+    static ores::compute::messaging::get_host_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_host_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_host_response& v);
+    static ores::compute::messaging::get_host_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_host_response& v);
+    static ores::compute::messaging::get_host_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_hosts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_hosts_request& v);
+    static ores::compute::messaging::get_many_hosts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_many_hosts_request& v);
+    static ores::compute::messaging::get_many_hosts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_hosts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_hosts_response& v);
+    static ores::compute::messaging::get_many_hosts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_many_hosts_response& v);
+    static ores::compute::messaging::get_many_hosts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_host_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_host_request& v);
+    static ores::compute::messaging::put_host_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_host_request& v);
+    static ores::compute::messaging::put_host_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_host_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_host_response& v);
+    static ores::compute::messaging::put_host_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_host_response& v);
+    static ores::compute::messaging::put_host_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_hosts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_hosts_request& v);
+    static ores::compute::messaging::put_many_hosts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_many_hosts_request& v);
+    static ores::compute::messaging::put_many_hosts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_hosts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_hosts_response& v);
+    static ores::compute::messaging::put_many_hosts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_many_hosts_response& v);
+    static ores::compute::messaging::put_many_hosts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_host_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_host_request& v);
+    static ores::compute::messaging::delete_host_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_host_request& v);
+    static ores::compute::messaging::delete_host_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_host_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_host_response& v);
+    static ores::compute::messaging::delete_host_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_host_response& v);
+    static ores::compute::messaging::delete_host_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_many_hosts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_many_hosts_request& v);
+    static ores::compute::messaging::delete_many_hosts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_many_hosts_request& v);
+    static ores::compute::messaging::delete_many_hosts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_many_hosts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_many_hosts_response& v);
+    static ores::compute::messaging::delete_many_hosts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_many_hosts_response& v);
+    static ores::compute::messaging::delete_many_hosts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_host_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_host_versions_request& v);
+    static ores::compute::messaging::list_host_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_host_versions_request& v);
+    static ores::compute::messaging::list_host_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_host_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_host_versions_response& v);
+    static ores::compute::messaging::list_host_versions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_host_versions_response& v);
+    static ores::compute::messaging::list_host_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_host_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_host_version_request& v);
+    static ores::compute::messaging::get_host_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_host_version_request& v);
+    static ores::compute::messaging::get_host_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_host_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_host_version_response& v);
+    static ores::compute::messaging::get_host_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_host_version_response& v);
+    static ores::compute::messaging::get_host_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

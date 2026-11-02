@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 474B4731-0A7B-5F13-85DE-92495F5A8BB8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cross_currency_basis_swap_terms commands from the shell?
+#+description: Every command the cross_currency_basis_swap_terms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cross_currency_basis_swap_terms:
+
+This file documents the cross_currency_basis_swap_terms resource at the shell, one section per command. Every command is a subcommand of =cross_currency_basis_swap_terms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 970CB898-8B38-5866-ABA7-B53BE89613AD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.list=.
+
+#+name: cross_currency_basis_swap_terms-list
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-list.ores :exports none
+cross_currency_basis_swap_terms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B599E93C-B468-5994-96F1-2A51CD076CDE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.get=.
+
+#+name: cross_currency_basis_swap_terms-get
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-get.ores :exports none
+cross_currency_basis_swap_terms get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 12017FF1-3CD3-5BD3-88F0-BB39DC465FD8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.get_many=.
+
+#+name: cross_currency_basis_swap_terms-get-many
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-get-many.ores :exports none
+cross_currency_basis_swap_terms get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 2EFDAC9B-5F30-59CC-BA7D-A07B73B1F57E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms add <convention_id> <settlement_days> <settlement_calendar> <roll_convention> <eom> <is_resettable> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.put=.
+
+#+name: cross_currency_basis_swap_terms-add
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-add.ores :exports none
+cross_currency_basis_swap_terms add 00000000-0000-0000-0000-000000000000 0 - __none__ - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 831C3480-85A1-5C1A-AEE7-2EFFBD717026
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms set <id> <convention_id> <settlement_days> <settlement_calendar> <roll_convention> <eom> <is_resettable> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.put=.
+
+#+name: cross_currency_basis_swap_terms-set
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-set.ores :exports none
+cross_currency_basis_swap_terms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 - __none__ - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 09701847-432C-5C0A-9343-417225E65263
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms put-many --count <n> <id> <convention_id> <settlement_days> <settlement_calendar> <roll_convention> <eom> <is_resettable> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.put_many=.
+
+#+name: cross_currency_basis_swap_terms-put-many
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-put-many.ores :exports none
+cross_currency_basis_swap_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 - __none__ - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 414F52EA-57F3-5695-9AB3-CCCA34FBB762
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.delete=.
+
+#+name: cross_currency_basis_swap_terms-delete
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-delete.ores :exports none
+cross_currency_basis_swap_terms delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A63CE796-B9D1-5703-BCC2-D7980A81BEBB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.delete_many=.
+
+#+name: cross_currency_basis_swap_terms-delete-many
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-delete-many.ores :exports none
+cross_currency_basis_swap_terms delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: ECA49D06-4127-5EF6-8A1C-54798210437A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms.list_by_convention_id=.
+
+#+name: cross_currency_basis_swap_terms-by-convention-id
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-by-convention-id.ores :exports none
+cross_currency_basis_swap_terms by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 03425EE7-FA13-5EC8-AC95-145CE6ABA890
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms_versions.list=.
+
+#+name: cross_currency_basis_swap_terms-versions
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-versions.ores :exports none
+cross_currency_basis_swap_terms versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A36DB2F2-4F63-5D67-B96D-9D2E77A1F4C3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_swap_terms version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_swap_terms_versions.get=.
+
+#+name: cross_currency_basis_swap_terms-version
+#+begin_src ores-shell :tangle cross_currency_basis_swap_terms-version.ores :exports none
+cross_currency_basis_swap_terms version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

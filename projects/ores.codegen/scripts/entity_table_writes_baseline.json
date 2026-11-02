@@ -680,6 +680,18 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_refdata_publish_xccy_basis_conventions_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "the publish-from-dq function of the atomised cross-currency basis convention: it writes the central convention row and its three part tables, as the fix-float convention's publisher does"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_commodity_future_conventions_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "the publish-from-dq function of the atomised commodity future convention: it writes the central convention row, its contract terms and its four optional part tables, as the cross-currency basis convention's publisher does"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "the publish-from-dq function of the atomised cross-currency fix-float convention: it writes the central convention row and its three part tables, as the tenor basis swap's publisher does"

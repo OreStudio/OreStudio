@@ -25,10 +25,16 @@
 #ifndef ORES_ORE_API_MESSAGING_PRICING_ENGINES_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_PRICING_ENGINES_PROTOCOL_HPP
 
+#include "ores.ore.api/export.hpp"
 #include "ores.ore.api/messaging/ore_document_protocol.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::ore::messaging {
@@ -233,6 +239,343 @@ struct import_pricing_engines_response {
     std::vector<pricing_engines_import_error> errors;
 };
 
+/**
+ * @brief The members of pricing_engines_export_problem, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_engines_export_problem&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"code", &pricing_engines_export_problem::code},
+        ::ores::utility::codec::field{"message", &pricing_engines_export_problem::message},
+    };
 }
+
+/**
+ * @brief The members of export_pricing_engines_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const export_pricing_engines_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"configuration_id",
+                                      &export_pricing_engines_request::configuration_id},
+    };
+}
+
+/**
+ * @brief The members of export_pricing_engines_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const export_pricing_engines_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &export_pricing_engines_response::success},
+        ::ores::utility::codec::field{"message", &export_pricing_engines_response::message},
+        ::ores::utility::codec::field{"count", &export_pricing_engines_response::count},
+        ::ores::utility::codec::field{"files", &export_pricing_engines_response::files},
+        ::ores::utility::codec::field{"problems", &export_pricing_engines_response::problems},
+    };
+}
+
+/**
+ * @brief The members of pricing_engines_import_product, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_product&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"type_code", &pricing_engines_import_product::type_code},
+        ::ores::utility::codec::field{"model", &pricing_engines_import_product::model},
+        ::ores::utility::codec::field{"engine", &pricing_engines_import_product::engine},
+        ::ores::utility::codec::field{"parameters", &pricing_engines_import_product::parameters},
+    };
+}
+
+/**
+ * @brief The members of pricing_engines_import_row, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_row&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"key", &pricing_engines_import_row::key},
+        ::ores::utility::codec::field{"entity", &pricing_engines_import_row::entity},
+        ::ores::utility::codec::field{"change", &pricing_engines_import_row::change},
+        ::ores::utility::codec::field{"owner", &pricing_engines_import_row::owner},
+        ::ores::utility::codec::field{"name", &pricing_engines_import_row::name},
+        ::ores::utility::codec::field{"what", &pricing_engines_import_row::what},
+    };
+}
+
+/**
+ * @brief The members of pricing_engines_import_issue, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_issue&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"kind", &pricing_engines_import_issue::kind},
+        ::ores::utility::codec::field{"subject", &pricing_engines_import_issue::subject},
+        ::ores::utility::codec::field{"detail", &pricing_engines_import_issue::detail},
+    };
+}
+
+/**
+ * @brief The members of preview_pricing_engines_import_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_pricing_engines_import_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"content", &preview_pricing_engines_import_request::content},
+        ::ores::utility::codec::field{
+            "target_configuration_id",
+            &preview_pricing_engines_import_request::target_configuration_id},
+    };
+}
+
+/**
+ * @brief The members of preview_pricing_engines_import_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_pricing_engines_import_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &preview_pricing_engines_import_response::success},
+        ::ores::utility::codec::field{"message", &preview_pricing_engines_import_response::message},
+        ::ores::utility::codec::field{"root_element",
+                                      &preview_pricing_engines_import_response::root_element},
+        ::ores::utility::codec::field{"in_file_products",
+                                      &preview_pricing_engines_import_response::in_file_products},
+        ::ores::utility::codec::field{"in_file_parameters",
+                                      &preview_pricing_engines_import_response::in_file_parameters},
+        ::ores::utility::codec::field{"products",
+                                      &preview_pricing_engines_import_response::products},
+        ::ores::utility::codec::field{"global_parameters",
+                                      &preview_pricing_engines_import_response::global_parameters},
+        ::ores::utility::codec::field{"target_name",
+                                      &preview_pricing_engines_import_response::target_name},
+        ::ores::utility::codec::field{"held", &preview_pricing_engines_import_response::held},
+        ::ores::utility::codec::field{"added", &preview_pricing_engines_import_response::added},
+        ::ores::utility::codec::field{"changed", &preview_pricing_engines_import_response::changed},
+        ::ores::utility::codec::field{"removed", &preview_pricing_engines_import_response::removed},
+        ::ores::utility::codec::field{"rows", &preview_pricing_engines_import_response::rows},
+        ::ores::utility::codec::field{"issues", &preview_pricing_engines_import_response::issues},
+    };
+}
+
+/**
+ * @brief The members of import_pricing_engines_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const import_pricing_engines_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"content", &import_pricing_engines_request::content},
+        ::ores::utility::codec::field{"target_configuration_id",
+                                      &import_pricing_engines_request::target_configuration_id},
+        ::ores::utility::codec::field{"new_configuration_name",
+                                      &import_pricing_engines_request::new_configuration_name},
+        ::ores::utility::codec::field{"new_configuration_variant",
+                                      &import_pricing_engines_request::new_configuration_variant},
+        ::ores::utility::codec::field{"removals_kept",
+                                      &import_pricing_engines_request::removals_kept},
+        ::ores::utility::codec::field{"reason_code", &import_pricing_engines_request::reason_code},
+        ::ores::utility::codec::field{"commentary", &import_pricing_engines_request::commentary},
+    };
+}
+
+/**
+ * @brief The members of pricing_engines_import_error, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const pricing_engines_import_error&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"key", &pricing_engines_import_error::key},
+        ::ores::utility::codec::field{"message", &pricing_engines_import_error::message},
+    };
+}
+
+/**
+ * @brief The members of import_pricing_engines_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const import_pricing_engines_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &import_pricing_engines_response::success},
+        ::ores::utility::codec::field{"message", &import_pricing_engines_response::message},
+        ::ores::utility::codec::field{"configuration_id",
+                                      &import_pricing_engines_response::configuration_id},
+        ::ores::utility::codec::field{"configuration_name",
+                                      &import_pricing_engines_response::configuration_name},
+        ::ores::utility::codec::field{"added", &import_pricing_engines_response::added},
+        ::ores::utility::codec::field{"changed", &import_pricing_engines_response::changed},
+        ::ores::utility::codec::field{"deleted", &import_pricing_engines_response::deleted},
+        ::ores::utility::codec::field{"kept", &import_pricing_engines_response::kept},
+        ::ores::utility::codec::field{"errors", &import_pricing_engines_response::errors},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::pricing_engines_export_problem> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::pricing_engines_export_problem& v);
+    static ores::ore::messaging::pricing_engines_export_problem read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::pricing_engines_export_problem& v);
+    static ores::ore::messaging::pricing_engines_export_problem
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::export_pricing_engines_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::export_pricing_engines_request& v);
+    static ores::ore::messaging::export_pricing_engines_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::export_pricing_engines_request& v);
+    static ores::ore::messaging::export_pricing_engines_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::export_pricing_engines_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::export_pricing_engines_response& v);
+    static ores::ore::messaging::export_pricing_engines_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::export_pricing_engines_response& v);
+    static ores::ore::messaging::export_pricing_engines_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::pricing_engines_import_product> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::pricing_engines_import_product& v);
+    static ores::ore::messaging::pricing_engines_import_product read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::pricing_engines_import_product& v);
+    static ores::ore::messaging::pricing_engines_import_product
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::pricing_engines_import_row> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::pricing_engines_import_row& v);
+    static ores::ore::messaging::pricing_engines_import_row read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::pricing_engines_import_row& v);
+    static ores::ore::messaging::pricing_engines_import_row
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::pricing_engines_import_issue> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::pricing_engines_import_issue& v);
+    static ores::ore::messaging::pricing_engines_import_issue read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::pricing_engines_import_issue& v);
+    static ores::ore::messaging::pricing_engines_import_issue
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT
+    wire_traits<ores::ore::messaging::preview_pricing_engines_import_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::ore::messaging::preview_pricing_engines_import_request& v);
+    static ores::ore::messaging::preview_pricing_engines_import_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::preview_pricing_engines_import_request& v);
+    static ores::ore::messaging::preview_pricing_engines_import_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT
+    wire_traits<ores::ore::messaging::preview_pricing_engines_import_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::ore::messaging::preview_pricing_engines_import_response& v);
+    static ores::ore::messaging::preview_pricing_engines_import_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::preview_pricing_engines_import_response& v);
+    static ores::ore::messaging::preview_pricing_engines_import_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::import_pricing_engines_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::import_pricing_engines_request& v);
+    static ores::ore::messaging::import_pricing_engines_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::import_pricing_engines_request& v);
+    static ores::ore::messaging::import_pricing_engines_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::pricing_engines_import_error> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::pricing_engines_import_error& v);
+    static ores::ore::messaging::pricing_engines_import_error read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::pricing_engines_import_error& v);
+    static ores::ore::messaging::pricing_engines_import_error
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::import_pricing_engines_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::import_pricing_engines_response& v);
+    static ores::ore::messaging::import_pricing_engines_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::import_pricing_engines_response& v);
+    static ores::ore::messaging::import_pricing_engines_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

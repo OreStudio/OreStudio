@@ -28,7 +28,8 @@
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
-#include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_contract_terms_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
@@ -36,6 +37,7 @@
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.testing/conventions_rows.hpp"
@@ -136,6 +138,50 @@ void write_missing(const ores::database::context& ctx,
             missing.push_back(r);
     if (!missing.empty())
         repo.write(ctx, missing);
+}
+
+// Writes the commodity futures the tenant does not hold yet, matched by name:
+// each one's central row and the contract terms every commodity future fills,
+// as the tenant's system party, because the central table refuses a row with no
+// party. The volatilities resolve a future by its central row, so the optional
+// parts are not written.
+void write_missing_commodity_futures(ores::testing::scoped_database_helper& h,
+                                     const conventions_package& mapped) {
+    const auto& ctx = h.context();
+    boost::uuids::uuid system_party{};
+    for (const auto& p : party_repository().read_latest(ctx))
+        if (p.tenant_id == h.tenant_id() && p.party_category == "System")
+            system_party = p.id;
+    REQUIRE(system_party != boost::uuids::uuid{});
+
+    convention_repository conventions;
+    std::set<std::string> held;
+    for (const auto& r : conventions.read_latest(ctx))
+        if (r.identity.kind_code == "COMMODITY_FUTURE")
+            held.insert(r.payload.name);
+
+    std::vector<ores::refdata::domain::convention> central;
+    std::set<boost::uuids::uuid> written;
+    for (auto r : rows_of<ores::refdata::domain::convention>(mapped, "convention")) {
+        if (r.identity.kind_code != "COMMODITY_FUTURE" || held.contains(r.payload.name))
+            continue;
+        r.identity.party_id = system_party;
+        written.insert(r.identity.id);
+        central.push_back(std::move(r));
+    }
+    std::vector<ores::refdata::domain::commodity_future_contract_terms> terms;
+    for (auto r : rows_of<ores::refdata::domain::commodity_future_contract_terms>(
+             mapped, "commodity_future_contract_terms")) {
+        if (!written.contains(r.convention_id))
+            continue;
+        r.party_id = system_party;
+        terms.push_back(std::move(r));
+    }
+    REQUIRE(terms.size() == central.size());
+    if (central.empty())
+        return;
+    conventions.write(ctx, central);
+    commodity_future_contract_terms_repository().write(ctx, terms);
 }
 
 // The conventions the example's curves name, written so the segment trigger
@@ -337,10 +383,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     ores::testing::scoped_database_helper h;
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
-    write_missing(h.context(),
-                  commodity_future_convention_repository(),
-                  rows_of<ores::refdata::domain::commodity_future_convention>(split_conventions(c),
-                                                                              "commodity_future"));
+    write_missing_commodity_futures(h, split_conventions(c));
 
     const auto full = load_document(products_example);
     curve_document original;

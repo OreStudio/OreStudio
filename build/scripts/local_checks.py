@@ -1145,8 +1145,11 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "external/ore/*",
             "projects/ores.ore/scripts/generate_output_catalogue.py",
+            "projects/ores.ore/scripts/output_family_docs.py",
+            "projects/ores.ore/data/samples/*",
             "projects/ores.ore/core/include/ores.ore.core/results/output_catalogue.hpp",
             "projects/ores.ore/core/src/results/output_catalogue_data.*",
+            "doc/knowledge/external/ore_output_formats.org",
         ),
         fix="Run projects/ores.ore/scripts/generate_output_catalogue.py and commit"
             " the data it writes, or state in the generator why the sample is not"

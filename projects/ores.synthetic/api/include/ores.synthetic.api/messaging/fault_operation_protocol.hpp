@@ -25,8 +25,15 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FAULT_OPERATION_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FAULT_OPERATION_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::synthetic::messaging {
 
@@ -58,6 +65,63 @@ struct set_faults_response {
     std::string message;
 };
 
+/**
+ * @brief The members of set_faults_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const set_faults_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"connection_lost", &set_faults_request::connection_lost},
+        ::ores::utility::codec::field{"tick_delay_ms", &set_faults_request::tick_delay_ms},
+        ::ores::utility::codec::field{"repeat_ticks", &set_faults_request::repeat_ticks},
+        ::ores::utility::codec::field{"out_of_range", &set_faults_request::out_of_range},
+        ::ores::utility::codec::field{"not_entitled", &set_faults_request::not_entitled},
+    };
 }
+
+/**
+ * @brief The members of set_faults_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const set_faults_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &set_faults_response::success},
+        ::ores::utility::codec::field{"message", &set_faults_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::set_faults_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::set_faults_request& v);
+    static ores::synthetic::messaging::set_faults_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::set_faults_request& v);
+    static ores::synthetic::messaging::set_faults_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::set_faults_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::set_faults_response& v);
+    static ores::synthetic::messaging::set_faults_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::set_faults_response& v);
+    static ores::synthetic::messaging::set_faults_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

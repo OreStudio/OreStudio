@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :ore:results:reporting:external:knowledge:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-02
 
 * Summary
 
@@ -16,9 +16,10 @@ publishes no schema for any of them. A writer declares its columns
 imperatively through a generic =Report= sink and often adds them in a loop over
 the run's configuration, so a file's shape follows the run that produced it.
 ORE Studio therefore treats the samples ORE ships as the authority: a
-generated catalogue names 60 families and 1 584 columns, one reader driven by
-that catalogue turns their figures into metrics, and only the three cashflow
-families get a typed reader of their own. The format, the read model and the
+generated catalogue names every family, one reader driven by that catalogue
+turns most of them into metrics, and the payments, the calibration, the market
+inputs and the text-valued outputs each get a reader of their own. Every family
+is listed, column by column, in [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]]. The format, the read model and the
 readers are =ores.ore='s; the tables belong to the component that stores them.
 
 * Detail
@@ -141,6 +142,7 @@ because the corpus cannot state their shape. They are filed as
 
 * See also
 
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — every family, its columns, what its figures measure and their units.
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — what upstream is, and how we relate to it.
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the inputs a run reads, and the parameters that name these outputs.
 - [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk reporting]] — the measures and the report catalogue a person sees.

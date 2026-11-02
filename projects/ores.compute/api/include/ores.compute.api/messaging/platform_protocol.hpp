@@ -26,11 +26,17 @@
 #define ORES_COMPUTE_API_MESSAGING_PLATFORM_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/platform.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::compute::messaging {
@@ -276,7 +282,710 @@ inline constexpr std::string_view created = "compute.v1.platforms_events.created
 inline constexpr std::string_view updated = "compute.v1.platforms_events.updated";
 inline constexpr std::string_view deleted = "compute.v1.platforms_events.deleted";
 }
+/**
+ * @brief The members of platform_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &platform_key::code},
+    };
+}
+
+/**
+ * @brief The members of platform_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &platform_write::id},
+        utility::codec::field{"code", &platform_write::code},
+        utility::codec::field{"display_name", &platform_write::display_name},
+        utility::codec::field{"description", &platform_write::description},
+        utility::codec::field{"os_family", &platform_write::os_family},
+        utility::codec::field{"cpu_arch", &platform_write::cpu_arch},
+        utility::codec::field{"abi", &platform_write::abi},
+        utility::codec::field{"is_active", &platform_write::is_active},
+    };
+}
+
+/**
+ * @brief The members of platform_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &platform_change::write},
+        utility::codec::field{"precondition", &platform_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of platform_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &platform_removal::key},
+        utility::codec::field{"precondition", &platform_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of platform_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &platform_lookup::key},
+        utility::codec::field{"platform", &platform_lookup::platform},
+    };
+}
+
+/**
+ * @brief The members of platforms_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platforms_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &platforms_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of platform_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &platform_event::event_id},
+        utility::codec::field{"key", &platform_event::key},
+        utility::codec::field{"action", &platform_event::action},
+        utility::codec::field{"version", &platform_event::version},
+        utility::codec::field{"occurred_at", &platform_event::occurred_at},
+        utility::codec::field{"correlation_id", &platform_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of platform_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_version_key&) {
+    return std::tuple{
+        utility::codec::field{"platform", &platform_version_key::platform},
+        utility::codec::field{"version", &platform_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of platform_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const platform_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &platform_versions_filter::version},
+        utility::codec::field{"from_version", &platform_versions_filter::from_version},
+        utility::codec::field{"to_version", &platform_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_platforms_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_platforms_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_platforms_request::offset},
+        utility::codec::field{"limit", &list_platforms_request::limit},
+        utility::codec::field{"order", &list_platforms_request::order},
+        utility::codec::field{"filter", &list_platforms_request::filter},
+        utility::codec::field{"as_of", &list_platforms_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_platforms_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_platforms_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_platforms_response::result},
+        utility::codec::field{"platforms", &list_platforms_response::platforms},
+        utility::codec::field{"total", &list_platforms_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_platform_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_platform_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_platform_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_platform_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_platform_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_platform_response::result},
+        utility::codec::field{"platform", &get_platform_response::platform},
+    };
+}
+
+/**
+ * @brief The members of get_many_platforms_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_platforms_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_platforms_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_platforms_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_platforms_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_platforms_response::result},
+        utility::codec::field{"entries", &get_many_platforms_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_platform_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_platform_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_platform_request::change},
+        utility::codec::field{"intent", &put_platform_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_platform_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_platform_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_platform_response::result},
+        utility::codec::field{"platform", &put_platform_response::platform},
+    };
+}
+
+/**
+ * @brief The members of put_many_platforms_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_platforms_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_platforms_request::changes},
+        utility::codec::field{"intent", &put_many_platforms_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_platforms_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_platforms_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_platforms_response::result},
+        utility::codec::field{"platforms", &put_many_platforms_response::platforms},
+    };
+}
+
+/**
+ * @brief The members of delete_platform_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_platform_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_platform_request::removal},
+        utility::codec::field{"intent", &delete_platform_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_platform_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_platform_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_platform_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_platforms_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_platforms_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_platforms_request::removals},
+        utility::codec::field{"intent", &delete_many_platforms_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_platforms_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_platforms_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_platforms_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_platform_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_platform_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_platform_versions_request::key},
+        utility::codec::field{"offset", &list_platform_versions_request::offset},
+        utility::codec::field{"limit", &list_platform_versions_request::limit},
+        utility::codec::field{"order", &list_platform_versions_request::order},
+        utility::codec::field{"filter", &list_platform_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_platform_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_platform_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_platform_versions_response::result},
+        utility::codec::field{"versions", &list_platform_versions_response::versions},
+        utility::codec::field{"total", &list_platform_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_platform_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_platform_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_platform_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_platform_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_platform_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_platform_version_response::result},
+        utility::codec::field{"version", &get_platform_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_key& v);
+    static ores::compute::messaging::platform_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_key& v);
+    static ores::compute::messaging::platform_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_write& v);
+    static ores::compute::messaging::platform_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_write& v);
+    static ores::compute::messaging::platform_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_change& v);
+    static ores::compute::messaging::platform_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_change& v);
+    static ores::compute::messaging::platform_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_removal& v);
+    static ores::compute::messaging::platform_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_removal& v);
+    static ores::compute::messaging::platform_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_lookup& v);
+    static ores::compute::messaging::platform_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_lookup& v);
+    static ores::compute::messaging::platform_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platforms_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platforms_filter& v);
+    static ores::compute::messaging::platforms_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platforms_filter& v);
+    static ores::compute::messaging::platforms_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_event& v);
+    static ores::compute::messaging::platform_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_event& v);
+    static ores::compute::messaging::platform_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_version_key& v);
+    static ores::compute::messaging::platform_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_version_key& v);
+    static ores::compute::messaging::platform_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::platform_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::platform_versions_filter& v);
+    static ores::compute::messaging::platform_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::platform_versions_filter& v);
+    static ores::compute::messaging::platform_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_platforms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_platforms_request& v);
+    static ores::compute::messaging::list_platforms_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_platforms_request& v);
+    static ores::compute::messaging::list_platforms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_platforms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_platforms_response& v);
+    static ores::compute::messaging::list_platforms_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_platforms_response& v);
+    static ores::compute::messaging::list_platforms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_platform_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_platform_request& v);
+    static ores::compute::messaging::get_platform_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_platform_request& v);
+    static ores::compute::messaging::get_platform_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_platform_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_platform_response& v);
+    static ores::compute::messaging::get_platform_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_platform_response& v);
+    static ores::compute::messaging::get_platform_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_platforms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_platforms_request& v);
+    static ores::compute::messaging::get_many_platforms_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_many_platforms_request& v);
+    static ores::compute::messaging::get_many_platforms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_many_platforms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_platforms_response& v);
+    static ores::compute::messaging::get_many_platforms_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_many_platforms_response& v);
+    static ores::compute::messaging::get_many_platforms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_platform_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_platform_request& v);
+    static ores::compute::messaging::put_platform_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_platform_request& v);
+    static ores::compute::messaging::put_platform_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_platform_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_platform_response& v);
+    static ores::compute::messaging::put_platform_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_platform_response& v);
+    static ores::compute::messaging::put_platform_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_platforms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_platforms_request& v);
+    static ores::compute::messaging::put_many_platforms_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_many_platforms_request& v);
+    static ores::compute::messaging::put_many_platforms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_many_platforms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_platforms_response& v);
+    static ores::compute::messaging::put_many_platforms_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::put_many_platforms_response& v);
+    static ores::compute::messaging::put_many_platforms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_platform_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_platform_request& v);
+    static ores::compute::messaging::delete_platform_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_platform_request& v);
+    static ores::compute::messaging::delete_platform_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_platform_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_platform_response& v);
+    static ores::compute::messaging::delete_platform_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_platform_response& v);
+    static ores::compute::messaging::delete_platform_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::delete_many_platforms_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_many_platforms_request& v);
+    static ores::compute::messaging::delete_many_platforms_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_platforms_request& v);
+    static ores::compute::messaging::delete_many_platforms_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::delete_many_platforms_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::delete_many_platforms_response& v);
+    static ores::compute::messaging::delete_many_platforms_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_platforms_response& v);
+    static ores::compute::messaging::delete_many_platforms_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_platform_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_platform_versions_request& v);
+    static ores::compute::messaging::list_platform_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_platform_versions_request& v);
+    static ores::compute::messaging::list_platform_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_platform_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_platform_versions_response& v);
+    static ores::compute::messaging::list_platform_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_platform_versions_response& v);
+    static ores::compute::messaging::list_platform_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_platform_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_platform_version_request& v);
+    static ores::compute::messaging::get_platform_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_platform_version_request& v);
+    static ores::compute::messaging::get_platform_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::get_platform_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_platform_version_response& v);
+    static ores::compute::messaging::get_platform_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_platform_version_response& v);
+    static ores::compute::messaging::get_platform_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

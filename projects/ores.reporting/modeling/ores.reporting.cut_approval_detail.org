@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5E0C7A24-6B93-4F18-9D2A-7C4E1B8F3A61
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut_approval_detail
 #+description: Codegen entity model for the reporting =cut_approval_detail= table; the subject a reporting cut authorisation request names, the counts of the body's parts, and the facts its apply records.

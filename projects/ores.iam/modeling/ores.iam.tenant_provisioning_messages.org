@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E37DCAAC-30A3-4E7E-890D-EBD226538690
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.tenant_provisioning_messages
 #+description: Codegen operation model for the tenant_provisioning protocol, rendered to C++ and TypeScript from one source.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6C025639-ED94-4E53-8BD9-A89D80A5AA88
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.pricing_model
 #+description: Codegen entity model for the analytics =pricing_model= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

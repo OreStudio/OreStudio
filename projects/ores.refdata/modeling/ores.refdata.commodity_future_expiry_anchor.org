@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: CAF794E6-9247-4A3B-9836-8C6A0A4EE4DE
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.commodity_future_expiry_anchor
+#+description: Codegen entity model for the refdata =commodity_future_expiry_anchor= part: the day of the contract month a commodity future's expiry is anchored to.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: commodity_future_expiry_anchor
+#+entity_plural: commodity_future_expiry_anchors
+#+entity_title: Commodity Future Expiry Anchor
+#+convention_family: commodity_future_expiry_anchor
+#+convention_write: by_id
+#+brief: The day of the contract month a commodity future's expiry is anchored to.
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The day the expiry of a commodity future is anchored to, as ORE's
+=AnchorDay=: a day of the month, a number of calendar days before the month
+end, a number of business days after the month start, the nth weekday, the last
+weekday, or a weekly day. It is a part because its fields hold one invariant:
+together they state one anchor, and ORE allows one form of it at a time. The
+element is optional, so a convention fills this part at most once.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** anchor_day_of_month
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Day of the month the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_calendar_days_before
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Calendar days before the anchor that the contract starts.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_business_days_after
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days after the anchor that the contract starts.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_nth_nth
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Position of the anchor's weekday within its month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_nth_weekday
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Weekday the anchor falls on, when it is the nth of them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_last_weekday
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Last weekday of the month the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_weekly_day_of_the_week
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Day of the week the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** anchor_day_of_month
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** anchor_calendar_days_before
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** anchor_business_days_after
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** anchor_nth_nth
+:PROPERTIES:
+:type: integer
+:nullable: true
+:END:
+
+** anchor_nth_weekday
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** anchor_last_weekday
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** anchor_weekly_day_of_the_week
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_future_expiry_anchors_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_future_expiry_anchor
+:entity_plural_short:   commodity_future_expiry_anchors
+:entity_singular_words: commodity future expiry anchor
+:entity_plural_words:   commodity future expiry anchors
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:5B1B2D2B-6B2A-4C6B-9C25-9E1D1F4A7C31][ores.refdata.commodity_future_convention]] — the family this part belongs to.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that introduced it.

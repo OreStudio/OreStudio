@@ -22,6 +22,7 @@
 
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include <functional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -78,9 +79,13 @@ struct metric {
      */
     double value = 0.0;
     /**
-     * @brief The file the metric came from.
+     * @brief The family the metric came from.
      */
     std::string source;
+    /**
+     * @brief The line of the file that states the figure, counting the heading as line one.
+     */
+    int line = 0;
 };
 
 /**
@@ -122,6 +127,30 @@ struct metric_read_outcome {
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT metric_read_outcome read_metrics(std::string_view csv,
                                                                     const output_family& family);
+
+/**
+ * @brief Where a reader hands the metrics it has read, a block at a time.
+ *
+ * The block is the reader's own; the sink takes what it keeps from it, and the
+ * reader clears it before reading on.
+ */
+using metric_block_sink = std::function<void(std::vector<metric>& block)>;
+
+/**
+ * @brief Reads a family as @ref read_metrics does, handing the metrics over a
+ * block at a time, so a large file never holds all its metrics at once.
+ *
+ * Every block but the last holds exactly @p block_size metrics. A refusal does
+ * not stop the blocks already handed over: the caller writes them in a
+ * transaction it rolls back when the refusals are not empty.
+ *
+ * @return the reasons the file could not be read whole.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<std::string>
+read_metrics_in_blocks(std::string_view csv,
+                       const output_family& family,
+                       std::size_t block_size,
+                       const metric_block_sink& sink);
 
 /**
  * @brief Reads a file by its name, asking the catalogue which family it is.

@@ -25,7 +25,14 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_SELECTION_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FEED_SELECTION_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -144,6 +151,147 @@ struct stop_selected_feeds_response {
     int stopped = 0;
 };
 
+/**
+ * @brief The members of start_selected_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_selected_feeds_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"folder_id", &start_selected_feeds_request::folder_id},
+        ::ores::utility::codec::field{"provider_code",
+                                      &start_selected_feeds_request::provider_code},
+        ::ores::utility::codec::field{"should_run", &start_selected_feeds_request::should_run},
+        ::ores::utility::codec::field{"search", &start_selected_feeds_request::search},
+        ::ores::utility::codec::field{"state", &start_selected_feeds_request::state},
+        ::ores::utility::codec::field{"asset_class", &start_selected_feeds_request::asset_class},
+        ::ores::utility::codec::field{"feed_ids", &start_selected_feeds_request::feed_ids},
+        ::ores::utility::codec::field{"excluded_ids", &start_selected_feeds_request::excluded_ids},
+    };
 }
+
+/**
+ * @brief The members of start_selected_feeds_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_selected_feeds_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &start_selected_feeds_response::success},
+        ::ores::utility::codec::field{"message", &start_selected_feeds_response::message},
+        ::ores::utility::codec::field{"started", &start_selected_feeds_response::started},
+        ::ores::utility::codec::field{"already_running",
+                                      &start_selected_feeds_response::already_running},
+        ::ores::utility::codec::field{"skipped", &start_selected_feeds_response::skipped},
+        ::ores::utility::codec::field{"stopped", &start_selected_feeds_response::stopped},
+    };
+}
+
+/**
+ * @brief The members of stop_selected_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_selected_feeds_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"folder_id", &stop_selected_feeds_request::folder_id},
+        ::ores::utility::codec::field{"provider_code", &stop_selected_feeds_request::provider_code},
+        ::ores::utility::codec::field{"should_run", &stop_selected_feeds_request::should_run},
+        ::ores::utility::codec::field{"search", &stop_selected_feeds_request::search},
+        ::ores::utility::codec::field{"state", &stop_selected_feeds_request::state},
+        ::ores::utility::codec::field{"asset_class", &stop_selected_feeds_request::asset_class},
+        ::ores::utility::codec::field{"feed_ids", &stop_selected_feeds_request::feed_ids},
+        ::ores::utility::codec::field{"excluded_ids", &stop_selected_feeds_request::excluded_ids},
+    };
+}
+
+/**
+ * @brief The members of stop_selected_feeds_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const stop_selected_feeds_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &stop_selected_feeds_response::success},
+        ::ores::utility::codec::field{"message", &stop_selected_feeds_response::message},
+        ::ores::utility::codec::field{"started", &stop_selected_feeds_response::started},
+        ::ores::utility::codec::field{"already_running",
+                                      &stop_selected_feeds_response::already_running},
+        ::ores::utility::codec::field{"skipped", &stop_selected_feeds_response::skipped},
+        ::ores::utility::codec::field{"stopped", &stop_selected_feeds_response::stopped},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::start_selected_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::start_selected_feeds_request& v);
+    static ores::synthetic::messaging::start_selected_feeds_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::start_selected_feeds_request& v);
+    static ores::synthetic::messaging::start_selected_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::start_selected_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::start_selected_feeds_response& v);
+    static ores::synthetic::messaging::start_selected_feeds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::start_selected_feeds_response& v);
+    static ores::synthetic::messaging::start_selected_feeds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::stop_selected_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::stop_selected_feeds_request& v);
+    static ores::synthetic::messaging::stop_selected_feeds_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::stop_selected_feeds_request& v);
+    static ores::synthetic::messaging::stop_selected_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::stop_selected_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::stop_selected_feeds_response& v);
+    static ores::synthetic::messaging::stop_selected_feeds_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::stop_selected_feeds_response& v);
+    static ores::synthetic::messaging::stop_selected_feeds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

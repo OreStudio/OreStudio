@@ -29,16 +29,15 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -287,7 +286,9 @@ void account_operations_operations_commands::process_save_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_update_account(
@@ -347,7 +348,9 @@ void account_operations_operations_commands::process_update_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_delete_account(
@@ -399,7 +402,9 @@ void account_operations_operations_commands::process_delete_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_lock_account(
@@ -451,7 +456,9 @@ void account_operations_operations_commands::process_lock_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_unlock_account(
@@ -503,7 +510,9 @@ void account_operations_operations_commands::process_unlock_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_reset_password(
@@ -556,7 +565,9 @@ void account_operations_operations_commands::process_reset_password(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_update_my_email(
@@ -608,7 +619,9 @@ void account_operations_operations_commands::process_update_my_email(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_set_my_default_party(
@@ -660,7 +673,9 @@ void account_operations_operations_commands::process_set_my_default_party(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_select_party(
@@ -722,7 +737,9 @@ void account_operations_operations_commands::process_select_party(
         session.set_auth(std::move(info));
     }
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_switch_party(
@@ -784,7 +801,9 @@ void account_operations_operations_commands::process_switch_party(
         session.set_auth(std::move(info));
     }
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_change_password(
@@ -837,7 +856,9 @@ void account_operations_operations_commands::process_change_password(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_update_self_account(
@@ -896,7 +917,9 @@ void account_operations_operations_commands::process_update_self_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_update_self_account_contact_information(
@@ -960,7 +983,9 @@ void account_operations_operations_commands::process_update_self_account_contact
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_my_account_contact_information(
@@ -1011,7 +1036,9 @@ void account_operations_operations_commands::process_get_my_account_contact_info
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_my_account(
@@ -1061,7 +1088,9 @@ void account_operations_operations_commands::process_get_my_account(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_my_login_info(
@@ -1111,7 +1140,9 @@ void account_operations_operations_commands::process_get_my_login_info(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_my_sessions(
@@ -1161,7 +1192,9 @@ void account_operations_operations_commands::process_get_my_sessions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_my_parties(
@@ -1211,7 +1244,9 @@ void account_operations_operations_commands::process_get_my_parties(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_set_reporting_line(
@@ -1267,7 +1302,9 @@ void account_operations_operations_commands::process_set_reporting_line(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_get_reporting_tree(
@@ -1319,7 +1356,9 @@ void account_operations_operations_commands::process_get_reporting_tree(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void account_operations_operations_commands::process_attach_account_pictures(
@@ -1369,7 +1408,9 @@ void account_operations_operations_commands::process_attach_account_pictures(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

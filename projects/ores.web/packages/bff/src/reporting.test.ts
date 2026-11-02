@@ -166,6 +166,7 @@ function definition(
         pre_processing: 'none',
         prepared_input_key: 'acme/daily',
         post_processing: 'none',
+        skipped_families: '',
         is_official: true,
         regulatory_book_type: null,
         modified_by: 'priya',
@@ -921,6 +922,7 @@ describe('one report definition', () => {
             pre_processing: 'none',
             prepared_input_key: 'acme/daily',
             post_processing: 'none',
+            skipped_families: '',
             version: 3,
             modified_by: 'priya',
             performed_by: 'priya',
@@ -1115,6 +1117,7 @@ describe('one report definition', () => {
                     pre_processing: 'none',
                     prepared_input_key: 'acme/daily',
                     post_processing: 'none',
+                    skipped_families: '',
                 },
                 intent: INTENT,
             },
@@ -1141,6 +1144,7 @@ describe('one report definition', () => {
             pre_processing: 'none',
             prepared_input_key: 'acme/daily',
             post_processing: 'none',
+            skipped_families: '',
             is_official: false,
             regulatory_book_type: null,
         });
@@ -1176,6 +1180,7 @@ describe('one report definition', () => {
                     pre_processing: 'none',
                     prepared_input_key: 'acme/daily',
                     post_processing: 'none',
+                    skipped_families: '',
                     ...stated,
                 },
                 intent: INTENT,
@@ -1221,6 +1226,7 @@ describe('one report definition', () => {
                 pre_processing: 'none',
                 prepared_input_key: 'acme/daily',
                 post_processing: 'none',
+                skipped_families: '',
             },
             intent: INTENT,
         });
@@ -1245,6 +1251,7 @@ describe('one report definition', () => {
                 pre_processing: 'none',
                 prepared_input_key: 'acme/daily',
                 post_processing: 'none',
+                skipped_families: '',
             },
         });
         expect(response.statusCode).toBe(400);

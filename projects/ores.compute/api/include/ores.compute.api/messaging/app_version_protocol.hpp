@@ -26,11 +26,17 @@
 #define ORES_COMPUTE_API_MESSAGING_APP_VERSION_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::compute::messaging {
@@ -300,7 +306,798 @@ inline constexpr std::string_view created = "compute.v1.app_versions_events.crea
 inline constexpr std::string_view updated = "compute.v1.app_versions_events.updated";
 inline constexpr std::string_view deleted = "compute.v1.app_versions_events.deleted";
 }
+/**
+ * @brief The members of app_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &app_version_key::id},
+    };
+}
+
+/**
+ * @brief The members of app_version_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &app_version_write::id},
+        utility::codec::field{"app_id", &app_version_write::app_id},
+        utility::codec::field{"wrapper_version", &app_version_write::wrapper_version},
+        utility::codec::field{"engine_version", &app_version_write::engine_version},
+        utility::codec::field{"min_ram_mb", &app_version_write::min_ram_mb},
+        utility::codec::field{"release_note", &app_version_write::release_note},
+    };
+}
+
+/**
+ * @brief The members of app_version_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &app_version_change::write},
+        utility::codec::field{"precondition", &app_version_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of app_version_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &app_version_removal::key},
+        utility::codec::field{"precondition", &app_version_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of app_version_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &app_version_lookup::key},
+        utility::codec::field{"app_version", &app_version_lookup::app_version},
+    };
+}
+
+/**
+ * @brief The members of app_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"app_id", &app_versions_filter::app_id},
+        utility::codec::field{"id_one_of", &app_versions_filter::id_one_of},
+        utility::codec::field{"app_id_one_of", &app_versions_filter::app_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of app_version_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &app_version_event::event_id},
+        utility::codec::field{"key", &app_version_event::key},
+        utility::codec::field{"action", &app_version_event::action},
+        utility::codec::field{"version", &app_version_event::version},
+        utility::codec::field{"occurred_at", &app_version_event::occurred_at},
+        utility::codec::field{"correlation_id", &app_version_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of app_version_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_version_key&) {
+    return std::tuple{
+        utility::codec::field{"app_version", &app_version_version_key::app_version},
+        utility::codec::field{"version", &app_version_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of app_version_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const app_version_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &app_version_versions_filter::version},
+        utility::codec::field{"from_version", &app_version_versions_filter::from_version},
+        utility::codec::field{"to_version", &app_version_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_app_versions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_app_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_app_versions_request::offset},
+        utility::codec::field{"limit", &list_app_versions_request::limit},
+        utility::codec::field{"order", &list_app_versions_request::order},
+        utility::codec::field{"filter", &list_app_versions_request::filter},
+        utility::codec::field{"as_of", &list_app_versions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_app_versions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_app_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_app_versions_response::result},
+        utility::codec::field{"app_versions", &list_app_versions_response::app_versions},
+        utility::codec::field{"total", &list_app_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_app_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_app_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_app_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_app_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_app_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_app_version_response::result},
+        utility::codec::field{"app_version", &get_app_version_response::app_version},
+    };
+}
+
+/**
+ * @brief The members of get_many_app_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_app_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_app_versions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_app_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_app_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_app_versions_response::result},
+        utility::codec::field{"entries", &get_many_app_versions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_app_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_app_version_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_app_version_request::change},
+        utility::codec::field{"intent", &put_app_version_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_app_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_app_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_app_version_response::result},
+        utility::codec::field{"app_version", &put_app_version_response::app_version},
+    };
+}
+
+/**
+ * @brief The members of put_many_app_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_app_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_app_versions_request::changes},
+        utility::codec::field{"intent", &put_many_app_versions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_app_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_app_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_app_versions_response::result},
+        utility::codec::field{"app_versions", &put_many_app_versions_response::app_versions},
+    };
+}
+
+/**
+ * @brief The members of delete_app_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_app_version_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_app_version_request::removal},
+        utility::codec::field{"intent", &delete_app_version_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_app_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_app_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_app_version_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_app_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_app_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_app_versions_request::removals},
+        utility::codec::field{"intent", &delete_many_app_versions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_app_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_app_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_app_versions_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_app_id_app_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_app_id_app_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"app_id", &list_by_app_id_app_versions_request::app_id},
+        utility::codec::field{"scope", &list_by_app_id_app_versions_request::scope},
+        utility::codec::field{"offset", &list_by_app_id_app_versions_request::offset},
+        utility::codec::field{"limit", &list_by_app_id_app_versions_request::limit},
+        utility::codec::field{"order", &list_by_app_id_app_versions_request::order},
+        utility::codec::field{"filter", &list_by_app_id_app_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_app_id_app_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_app_id_app_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_app_id_app_versions_response::result},
+        utility::codec::field{"app_versions", &list_by_app_id_app_versions_response::app_versions},
+        utility::codec::field{"total", &list_by_app_id_app_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_app_version_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_app_version_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_app_version_versions_request::key},
+        utility::codec::field{"offset", &list_app_version_versions_request::offset},
+        utility::codec::field{"limit", &list_app_version_versions_request::limit},
+        utility::codec::field{"order", &list_app_version_versions_request::order},
+        utility::codec::field{"filter", &list_app_version_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_app_version_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_app_version_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_app_version_versions_response::result},
+        utility::codec::field{"versions", &list_app_version_versions_response::versions},
+        utility::codec::field{"total", &list_app_version_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_app_version_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_app_version_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_app_version_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_app_version_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_app_version_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_app_version_version_response::result},
+        utility::codec::field{"version", &get_app_version_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_key& v);
+    static ores::compute::messaging::app_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_key& v);
+    static ores::compute::messaging::app_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_write& v);
+    static ores::compute::messaging::app_version_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_write& v);
+    static ores::compute::messaging::app_version_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_change& v);
+    static ores::compute::messaging::app_version_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_change& v);
+    static ores::compute::messaging::app_version_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_removal& v);
+    static ores::compute::messaging::app_version_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_removal& v);
+    static ores::compute::messaging::app_version_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_lookup& v);
+    static ores::compute::messaging::app_version_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_lookup& v);
+    static ores::compute::messaging::app_version_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_versions_filter& v);
+    static ores::compute::messaging::app_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_versions_filter& v);
+    static ores::compute::messaging::app_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_event& v);
+    static ores::compute::messaging::app_version_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_event& v);
+    static ores::compute::messaging::app_version_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_version_key& v);
+    static ores::compute::messaging::app_version_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::app_version_version_key& v);
+    static ores::compute::messaging::app_version_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::app_version_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::app_version_versions_filter& v);
+    static ores::compute::messaging::app_version_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::app_version_versions_filter& v);
+    static ores::compute::messaging::app_version_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_app_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_app_versions_request& v);
+    static ores::compute::messaging::list_app_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_app_versions_request& v);
+    static ores::compute::messaging::list_app_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::list_app_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::list_app_versions_response& v);
+    static ores::compute::messaging::list_app_versions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::list_app_versions_response& v);
+    static ores::compute::messaging::list_app_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_app_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_app_version_request& v);
+    static ores::compute::messaging::get_app_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_app_version_request& v);
+    static ores::compute::messaging::get_app_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::get_app_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_app_version_response& v);
+    static ores::compute::messaging::get_app_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::get_app_version_response& v);
+    static ores::compute::messaging::get_app_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::get_many_app_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::get_many_app_versions_request& v);
+    static ores::compute::messaging::get_many_app_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_many_app_versions_request& v);
+    static ores::compute::messaging::get_many_app_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::get_many_app_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::get_many_app_versions_response& v);
+    static ores::compute::messaging::get_many_app_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_many_app_versions_response& v);
+    static ores::compute::messaging::get_many_app_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_app_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_app_version_request& v);
+    static ores::compute::messaging::put_app_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_app_version_request& v);
+    static ores::compute::messaging::put_app_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::put_app_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_app_version_response& v);
+    static ores::compute::messaging::put_app_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::put_app_version_response& v);
+    static ores::compute::messaging::put_app_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::put_many_app_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::put_many_app_versions_request& v);
+    static ores::compute::messaging::put_many_app_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::put_many_app_versions_request& v);
+    static ores::compute::messaging::put_many_app_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::put_many_app_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::put_many_app_versions_response& v);
+    static ores::compute::messaging::put_many_app_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::put_many_app_versions_response& v);
+    static ores::compute::messaging::put_many_app_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_app_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_app_version_request& v);
+    static ores::compute::messaging::delete_app_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::delete_app_version_request& v);
+    static ores::compute::messaging::delete_app_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::delete_app_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::delete_app_version_response& v);
+    static ores::compute::messaging::delete_app_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_app_version_response& v);
+    static ores::compute::messaging::delete_app_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::delete_many_app_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::delete_many_app_versions_request& v);
+    static ores::compute::messaging::delete_many_app_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_app_versions_request& v);
+    static ores::compute::messaging::delete_many_app_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::delete_many_app_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::delete_many_app_versions_response& v);
+    static ores::compute::messaging::delete_many_app_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::delete_many_app_versions_response& v);
+    static ores::compute::messaging::delete_many_app_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_by_app_id_app_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_by_app_id_app_versions_request& v);
+    static ores::compute::messaging::list_by_app_id_app_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_by_app_id_app_versions_request& v);
+    static ores::compute::messaging::list_by_app_id_app_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_by_app_id_app_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_by_app_id_app_versions_response& v);
+    static ores::compute::messaging::list_by_app_id_app_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_by_app_id_app_versions_response& v);
+    static ores::compute::messaging::list_by_app_id_app_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_app_version_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_app_version_versions_request& v);
+    static ores::compute::messaging::list_app_version_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_app_version_versions_request& v);
+    static ores::compute::messaging::list_app_version_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::list_app_version_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::list_app_version_versions_response& v);
+    static ores::compute::messaging::list_app_version_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::list_app_version_versions_response& v);
+    static ores::compute::messaging::list_app_version_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::get_app_version_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::get_app_version_version_request& v);
+    static ores::compute::messaging::get_app_version_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_app_version_version_request& v);
+    static ores::compute::messaging::get_app_version_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT
+    wire_traits<ores::compute::messaging::get_app_version_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::compute::messaging::get_app_version_version_response& v);
+    static ores::compute::messaging::get_app_version_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::compute::messaging::get_app_version_version_response& v);
+    static ores::compute::messaging::get_app_version_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

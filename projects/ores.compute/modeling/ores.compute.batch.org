@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.batch
 #+description: Codegen entity model for the compute =batch= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

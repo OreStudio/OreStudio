@@ -5,7 +5,6 @@
 #+description: The public contract of object storage: the bucket and key path and URL helpers its consumers link, and the modelled operation surface.
 #+type: ores.codegen.component
 #+component_kind: api
-#+header_only: true
 #+level: cross
 #+filetags: :storage:api:component:
 #+created: 2026-09-26
@@ -37,18 +36,25 @@ generated from. It holds no bucket name of its own.
 
 * Dependencies
 
-- None beyond the standard library. The part is header-only, so a consumer
-  linking it takes on no socket, no archive library and no logging.
+- =ores.utility= for the generated wire codecs of the operation messages.
+  A consumer that links the part takes on no socket and no archive library.
 
 * See also
 
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.
 - [[id:9C11A981-EAA8-4AE2-AAEA-7FEE01982CE4][ores.storage.core]] — the implementation both interfaces call.
 
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.utility.lib)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.utility.lib
         ores.testing.lib
         ores.logging.lib
         Catch2::Catch2

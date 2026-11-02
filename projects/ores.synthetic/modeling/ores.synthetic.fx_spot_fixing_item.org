@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A319B2CE-F6D5-4798-99BD-C5993A126E4E
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.synthetic.fx_spot_fixing_item

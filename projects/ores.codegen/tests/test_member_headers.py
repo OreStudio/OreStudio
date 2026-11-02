@@ -62,6 +62,13 @@ def test_a_bare_member_takes_the_same_codec_header(tmp_path):
     assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
 
 
+def test_a_member_named_from_the_own_namespace_takes_the_same_codec_header(tmp_path):
+    """A message in the component's own namespace writes "domain::x"."""
+    headers = _member_headers(["std::vector<domain::widget_role>"], a_model_dir(tmp_path),
+                              a_model())
+    assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
+
+
 def test_a_field_group_takes_its_own_header(tmp_path):
     """A group states its shape in its own header, not in a codec header."""
     headers = _member_headers(["widget_details"], a_model_dir(tmp_path), a_model())

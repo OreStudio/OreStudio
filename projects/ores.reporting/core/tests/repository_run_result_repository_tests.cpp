@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/repository/run_result_repository.hpp"
+#include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -45,16 +48,18 @@ ores::reporting::domain::report_metric make_metric(const std::string& instance_i
         .id = boost::uuids::random_generator()(),
         .party_id = boost::uuids::random_generator()(),
         .report_instance_id = boost::uuids::string_generator()(instance_id),
+        .result_id = boost::uuids::random_generator()(),
+        .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31},
+        .measure = measure,
+        .source = "npv.csv",
+        .line = 2,
+        .report_definition_id = boost::uuids::string_generator()(definition_id),
         .family = "npv",
         .subject_type = "trade",
         .subject_id = "Swap_20y",
-        .as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31},
-        .measure = measure,
-        .report_definition_id = boost::uuids::string_generator()(definition_id),
         .currency = currency,
         .qualifiers = qualifiers,
-        .value = value,
-        .source = "npv"};
+        .value = value};
 }
 
 }
@@ -104,6 +109,83 @@ TEST_CASE("the screen reads a run's figures through the run result view", "[repo
 
     // A family that is not a result row does not reach the screen through it.
     const auto metrics_of_another_family =
-        std::ranges::find_if(rows, [](const auto& one) { return one.source != "npv"; });
+        std::ranges::find_if(rows, [](const auto& one) { return one.source != "npv.csv"; });
     CHECK(metrics_of_another_family == rows.end());
+}
+
+TEST_CASE("every figure a sensitivity states for one trade is stored", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto instance_id = run_result_new_uuid();
+    const auto definition_id = run_result_new_uuid();
+
+    // A sensitivity file states one row for each factor a trade was shifted by,
+    // and each row states the same headings, so the trade, the date and the
+    // heading do not tell one figure from another.
+    auto first = make_metric(instance_id, definition_id, "Delta", "USD", "", 10.0);
+    first.family = "sensitivity";
+    first.factor = "DiscountCurve/USD/0/1Y";
+    auto second = make_metric(instance_id, definition_id, "Delta", "USD", "", 20.0);
+    second.family = "sensitivity";
+    second.factor = "DiscountCurve/USD/1/2Y";
+    second.party_id = first.party_id;
+    second.result_id = first.result_id;
+    first.source = "sensitivity.csv";
+    second.source = "sensitivity.csv";
+    second.line = 3;
+
+    report_metric_repository metrics;
+    metrics.insert(h.context(), {first, second});
+
+    const auto rows = metrics.read_latest(h.context());
+    const auto stored = std::ranges::count_if(rows, [&instance_id](const auto& one) {
+        return boost::uuids::to_string(one.report_instance_id) == instance_id &&
+               one.family == "sensitivity";
+    });
+    CHECK(stored == 2);
+}
+
+TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[repository]") {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    namespace results = ores::reporting::results;
+
+    const auto instance = boost::uuids::random_generator()();
+    const results::run_stamp run{.party_id = boost::uuids::random_generator()(),
+                                 .report_instance_id = instance,
+                                 .report_definition_id = boost::uuids::random_generator()(),
+                                 .result_id = boost::uuids::random_generator()(),
+                                 .priced_at =
+                                     std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}};
+
+    // Two good lines, written a block at a time, then a figure that is not one.
+    const results::output_file file{.name = "rawcube.csv",
+                                    .body = "#Id,NettingSet,DateIndex,Date,Sample,Depth,Value\n"
+                                            "Swap_1,CPTY_A,0,2026-11-02,0,0,1.5\n"
+                                            "Swap_1,CPTY_A,1,2026-11-03,0,0,2.5\n"
+                                            "Swap_1,CPTY_A,2,2026-11-04,0,0,soon\n"};
+
+    std::size_t written = 0;
+    {
+        ores::database::repository::unit_of_work uow(h.context());
+        const results::run_output_sinks sinks{
+            .metrics =
+                [&](std::vector<ores::reporting::domain::report_metric>& block) {
+                    report_metric_repository{}.insert(uow.ctx(), block);
+                    written += block.size();
+                },
+            .cashflows = [](auto&) {},
+            .text_values =
+                [](auto&) {
+                }};
+        results::run_output_outcome outcome;
+        results::read_run_output(file, run, 1, sinks, outcome);
+        REQUIRE_FALSE(outcome.refusals.empty());
+    }
+    CHECK(written == 2);
+
+    const auto rows = report_metric_repository{}.read_latest(h.context());
+    CHECK(std::ranges::none_of(
+        rows, [&](const auto& one) { return one.report_instance_id == instance; }));
 }

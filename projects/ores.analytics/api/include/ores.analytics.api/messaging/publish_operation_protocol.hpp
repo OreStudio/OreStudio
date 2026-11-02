@@ -25,7 +25,14 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_PUBLISH_OPERATION_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_PUBLISH_OPERATION_PROTOCOL_HPP
 
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
+#include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::analytics::messaging {
 
@@ -65,6 +72,62 @@ struct publish_todays_market_from_dq_request {
     static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The members of publish_pricing_engines_from_dq_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_pricing_engines_from_dq_request&) {
+    return std::tuple{};
 }
+
+/**
+ * @brief The members of publish_todays_market_from_dq_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publish_todays_market_from_dq_request&) {
+    return std::tuple{};
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::publish_pricing_engines_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::publish_pricing_engines_from_dq_request& v);
+    static ores::analytics::messaging::publish_pricing_engines_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::publish_pricing_engines_from_dq_request& v);
+    static ores::analytics::messaging::publish_pricing_engines_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::publish_todays_market_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::publish_todays_market_from_dq_request& v);
+    static ores::analytics::messaging::publish_todays_market_from_dq_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::publish_todays_market_from_dq_request& v);
+    static ores::analytics::messaging::publish_todays_market_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

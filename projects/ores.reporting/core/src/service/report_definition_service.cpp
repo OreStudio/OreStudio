@@ -115,6 +115,7 @@ report_definition_to_domain(const messaging::report_definition_write& write) {
     v.pre_processing = write.pre_processing;
     v.prepared_input_key = write.prepared_input_key;
     v.post_processing = write.post_processing;
+    v.skipped_families = write.skipped_families;
     v.is_official = write.is_official;
     v.regulatory_book_type = write.regulatory_book_type;
     v.cut_kind_code = write.cut_kind_code;

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E07B21AB-F875-4549-BDFC-04EE98C246D0
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.role_grant_request_role
 #+description: Codegen junction model for role_grant_request_roles: the roles one iam.role_grant approval request asks for.

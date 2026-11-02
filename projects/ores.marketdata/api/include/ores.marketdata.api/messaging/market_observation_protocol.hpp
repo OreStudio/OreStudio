@@ -26,11 +26,17 @@
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_OBSERVATION_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -256,7 +262,692 @@ inline constexpr std::string_view created = "marketdata.v1.market_observations_e
 inline constexpr std::string_view updated = "marketdata.v1.market_observations_events.updated";
 inline constexpr std::string_view deleted = "marketdata.v1.market_observations_events.deleted";
 }
+/**
+ * @brief The members of market_observation_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &market_observation_key::id},
+    };
+}
+
+/**
+ * @brief The members of market_observation_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &market_observation_write::id},
+        utility::codec::field{"party_id", &market_observation_write::party_id},
+        utility::codec::field{"series_id", &market_observation_write::series_id},
+        utility::codec::field{"observation_datetime",
+                              &market_observation_write::observation_datetime},
+        utility::codec::field{"oresmd_uri", &market_observation_write::oresmd_uri},
+        utility::codec::field{"value", &market_observation_write::value},
+        utility::codec::field{"source", &market_observation_write::source},
+        utility::codec::field{"feed_id", &market_observation_write::feed_id},
+    };
+}
+
+/**
+ * @brief The members of market_observation_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &market_observation_change::write},
+        utility::codec::field{"precondition", &market_observation_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of market_observation_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &market_observation_removal::key},
+        utility::codec::field{"precondition", &market_observation_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of market_observation_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &market_observation_lookup::key},
+        utility::codec::field{"market_observation", &market_observation_lookup::market_observation},
+    };
+}
+
+/**
+ * @brief The members of market_observations_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observations_filter&) {
+    return std::tuple{
+        utility::codec::field{"series_id", &market_observations_filter::series_id},
+        utility::codec::field{"observation_datetime",
+                              &market_observations_filter::observation_datetime},
+        utility::codec::field{"id_one_of", &market_observations_filter::id_one_of},
+        utility::codec::field{"series_id_one_of", &market_observations_filter::series_id_one_of},
+        utility::codec::field{"observation_datetime_one_of",
+                              &market_observations_filter::observation_datetime_one_of},
+        utility::codec::field{"observation_datetime_from",
+                              &market_observations_filter::observation_datetime_from},
+        utility::codec::field{"observation_datetime_to",
+                              &market_observations_filter::observation_datetime_to},
+    };
+}
+
+/**
+ * @brief The members of market_observation_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const market_observation_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &market_observation_event::event_id},
+        utility::codec::field{"key", &market_observation_event::key},
+        utility::codec::field{"action", &market_observation_event::action},
+        utility::codec::field{"version", &market_observation_event::version},
+        utility::codec::field{"occurred_at", &market_observation_event::occurred_at},
+        utility::codec::field{"correlation_id", &market_observation_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_market_observations_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_market_observations_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_market_observations_request::offset},
+        utility::codec::field{"limit", &list_market_observations_request::limit},
+        utility::codec::field{"order", &list_market_observations_request::order},
+        utility::codec::field{"filter", &list_market_observations_request::filter},
+        utility::codec::field{"as_of", &list_market_observations_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_market_observations_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_market_observations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_market_observations_response::result},
+        utility::codec::field{"market_observations",
+                              &list_market_observations_response::market_observations},
+        utility::codec::field{"total", &list_market_observations_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_market_observation_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_observation_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_market_observation_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_market_observation_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_market_observation_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_market_observation_response::result},
+        utility::codec::field{"market_observation",
+                              &get_market_observation_response::market_observation},
+    };
+}
+
+/**
+ * @brief The members of get_many_market_observations_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_market_observations_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_market_observations_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_market_observations_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_market_observations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_market_observations_response::result},
+        utility::codec::field{"entries", &get_many_market_observations_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_market_observation_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_market_observation_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_market_observation_request::change},
+        utility::codec::field{"intent", &put_market_observation_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_market_observation_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_market_observation_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_market_observation_response::result},
+        utility::codec::field{"market_observation",
+                              &put_market_observation_response::market_observation},
+    };
+}
+
+/**
+ * @brief The members of put_many_market_observations_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_market_observations_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_market_observations_request::changes},
+        utility::codec::field{"intent", &put_many_market_observations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_market_observations_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_market_observations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_market_observations_response::result},
+        utility::codec::field{"market_observations",
+                              &put_many_market_observations_response::market_observations},
+    };
+}
+
+/**
+ * @brief The members of delete_market_observation_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_market_observation_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_market_observation_request::removal},
+        utility::codec::field{"intent", &delete_market_observation_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_market_observation_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_market_observation_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_market_observation_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_market_observations_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_market_observations_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_market_observations_request::removals},
+        utility::codec::field{"intent", &delete_many_market_observations_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_market_observations_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_market_observations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_market_observations_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_series_id_market_observations_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_series_id_market_observations_request&) {
+    return std::tuple{
+        utility::codec::field{"series_id",
+                              &list_by_series_id_market_observations_request::series_id},
+        utility::codec::field{"scope", &list_by_series_id_market_observations_request::scope},
+        utility::codec::field{"offset", &list_by_series_id_market_observations_request::offset},
+        utility::codec::field{"limit", &list_by_series_id_market_observations_request::limit},
+        utility::codec::field{"order", &list_by_series_id_market_observations_request::order},
+        utility::codec::field{"filter", &list_by_series_id_market_observations_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_series_id_market_observations_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_series_id_market_observations_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_series_id_market_observations_response::result},
+        utility::codec::field{"market_observations",
+                              &list_by_series_id_market_observations_response::market_observations},
+        utility::codec::field{"total", &list_by_series_id_market_observations_response::total},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::market_observation_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_key& v);
+    static ores::marketdata::messaging::market_observation_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::market_observation_key& v);
+    static ores::marketdata::messaging::market_observation_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observation_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_write& v);
+    static ores::marketdata::messaging::market_observation_write read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observation_write& v);
+    static ores::marketdata::messaging::market_observation_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observation_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_change& v);
+    static ores::marketdata::messaging::market_observation_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observation_change& v);
+    static ores::marketdata::messaging::market_observation_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observation_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_removal& v);
+    static ores::marketdata::messaging::market_observation_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observation_removal& v);
+    static ores::marketdata::messaging::market_observation_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observation_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_lookup& v);
+    static ores::marketdata::messaging::market_observation_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observation_lookup& v);
+    static ores::marketdata::messaging::market_observation_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observations_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observations_filter& v);
+    static ores::marketdata::messaging::market_observations_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observations_filter& v);
+    static ores::marketdata::messaging::market_observations_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::market_observation_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_observation_event& v);
+    static ores::marketdata::messaging::market_observation_event read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::market_observation_event& v);
+    static ores::marketdata::messaging::market_observation_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_market_observations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_market_observations_request& v);
+    static ores::marketdata::messaging::list_market_observations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_market_observations_request& v);
+    static ores::marketdata::messaging::list_market_observations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_market_observations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_market_observations_response& v);
+    static ores::marketdata::messaging::list_market_observations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_market_observations_response& v);
+    static ores::marketdata::messaging::list_market_observations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_market_observation_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_market_observation_request& v);
+    static ores::marketdata::messaging::get_market_observation_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_market_observation_request& v);
+    static ores::marketdata::messaging::get_market_observation_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_market_observation_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_market_observation_response& v);
+    static ores::marketdata::messaging::get_market_observation_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_market_observation_response& v);
+    static ores::marketdata::messaging::get_market_observation_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_market_observations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_market_observations_request& v);
+    static ores::marketdata::messaging::get_many_market_observations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_market_observations_request& v);
+    static ores::marketdata::messaging::get_many_market_observations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_many_market_observations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_many_market_observations_response& v);
+    static ores::marketdata::messaging::get_many_market_observations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_many_market_observations_response& v);
+    static ores::marketdata::messaging::get_many_market_observations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_market_observation_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_market_observation_request& v);
+    static ores::marketdata::messaging::put_market_observation_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_market_observation_request& v);
+    static ores::marketdata::messaging::put_market_observation_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_market_observation_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_market_observation_response& v);
+    static ores::marketdata::messaging::put_market_observation_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_market_observation_response& v);
+    static ores::marketdata::messaging::put_market_observation_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_market_observations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_market_observations_request& v);
+    static ores::marketdata::messaging::put_many_market_observations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_market_observations_request& v);
+    static ores::marketdata::messaging::put_many_market_observations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::put_many_market_observations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::put_many_market_observations_response& v);
+    static ores::marketdata::messaging::put_many_market_observations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::put_many_market_observations_response& v);
+    static ores::marketdata::messaging::put_many_market_observations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_market_observation_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_market_observation_request& v);
+    static ores::marketdata::messaging::delete_market_observation_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_market_observation_request& v);
+    static ores::marketdata::messaging::delete_market_observation_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_market_observation_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_market_observation_response& v);
+    static ores::marketdata::messaging::delete_market_observation_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_market_observation_response& v);
+    static ores::marketdata::messaging::delete_market_observation_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_market_observations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_market_observations_request& v);
+    static ores::marketdata::messaging::delete_many_market_observations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_many_market_observations_request& v);
+    static ores::marketdata::messaging::delete_many_market_observations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::delete_many_market_observations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::delete_many_market_observations_response& v);
+    static ores::marketdata::messaging::delete_many_market_observations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::delete_many_market_observations_response& v);
+    static ores::marketdata::messaging::delete_many_market_observations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_by_series_id_market_observations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_by_series_id_market_observations_request& v);
+    static ores::marketdata::messaging::list_by_series_id_market_observations_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::list_by_series_id_market_observations_request& v);
+    static ores::marketdata::messaging::list_by_series_id_market_observations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_by_series_id_market_observations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::marketdata::messaging::list_by_series_id_market_observations_response& v);
+    static ores::marketdata::messaging::list_by_series_id_market_observations_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::list_by_series_id_market_observations_response& v);
+    static ores::marketdata::messaging::list_by_series_id_market_observations_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

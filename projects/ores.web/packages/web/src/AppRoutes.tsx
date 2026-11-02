@@ -817,7 +817,7 @@ export function AppRoutes({
                     session,
                     shell,
                     (view) => (
-                        <SubscriptionsPage partyId={view.party.id} />
+                        <SubscriptionsPage partyId={view.party.id} mode={view.mode} />
                     ),
                     'workspace',
                 )}

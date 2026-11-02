@@ -46,7 +46,7 @@ jobs:
           arch: x64
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.4
+        uses: lukka/get-cmake@v4.4.5
 
       - name: Install dev packages
         run: ./projects/ores.compass/compass.sh env install-packages

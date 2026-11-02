@@ -26,11 +26,17 @@
 #define ORES_INBOX_API_MESSAGING_NOTIFICATION_RECIPIENT_PROTOCOL_HPP
 
 #include "ores.inbox.api/domain/notification_recipient.hpp"
+#include "ores.inbox.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::inbox::messaging {
@@ -224,6 +230,648 @@ struct list_by_account_id_notification_recipients_response {
     std::uint64_t total;
 };
 
+/**
+ * @brief The members of notification_recipient_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipient_key&) {
+    return std::tuple{
+        utility::codec::field{"notification_id", &notification_recipient_key::notification_id},
+        utility::codec::field{"account_id", &notification_recipient_key::account_id},
+    };
 }
+
+/**
+ * @brief The members of notification_recipient_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipient_write&) {
+    return std::tuple{
+        utility::codec::field{"notification_id", &notification_recipient_write::notification_id},
+        utility::codec::field{"account_id", &notification_recipient_write::account_id},
+        utility::codec::field{"read_at", &notification_recipient_write::read_at},
+        utility::codec::field{"cleared_at", &notification_recipient_write::cleared_at},
+    };
+}
+
+/**
+ * @brief The members of notification_recipient_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipient_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &notification_recipient_change::write},
+        utility::codec::field{"precondition", &notification_recipient_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of notification_recipient_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipient_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &notification_recipient_removal::key},
+        utility::codec::field{"precondition", &notification_recipient_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of notification_recipient_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipient_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &notification_recipient_lookup::key},
+        utility::codec::field{"notification_recipient",
+                              &notification_recipient_lookup::notification_recipient},
+    };
+}
+
+/**
+ * @brief The members of notification_recipients_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const notification_recipients_filter&) {
+    return std::tuple{
+        utility::codec::field{"account_id", &notification_recipients_filter::account_id},
+        utility::codec::field{"account_id_one_of",
+                              &notification_recipients_filter::account_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of list_notification_recipients_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_recipients_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_notification_recipients_request::offset},
+        utility::codec::field{"limit", &list_notification_recipients_request::limit},
+        utility::codec::field{"order", &list_notification_recipients_request::order},
+        utility::codec::field{"filter", &list_notification_recipients_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_notification_recipients_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_notification_recipients_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_notification_recipients_response::result},
+        utility::codec::field{"notification_recipients",
+                              &list_notification_recipients_response::notification_recipients},
+        utility::codec::field{"total", &list_notification_recipients_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_notification_recipient_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_recipient_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_notification_recipient_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_notification_recipient_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_notification_recipient_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_notification_recipient_response::result},
+        utility::codec::field{"notification_recipient",
+                              &get_notification_recipient_response::notification_recipient},
+    };
+}
+
+/**
+ * @brief The members of get_many_notification_recipients_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_notification_recipients_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_notification_recipients_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_notification_recipients_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_notification_recipients_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_notification_recipients_response::result},
+        utility::codec::field{"entries", &get_many_notification_recipients_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_notification_recipient_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_notification_recipient_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_notification_recipient_request::change},
+        utility::codec::field{"intent", &put_notification_recipient_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_notification_recipient_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_notification_recipient_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_notification_recipient_response::result},
+        utility::codec::field{"notification_recipient",
+                              &put_notification_recipient_response::notification_recipient},
+    };
+}
+
+/**
+ * @brief The members of put_many_notification_recipients_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_notification_recipients_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_notification_recipients_request::changes},
+        utility::codec::field{"intent", &put_many_notification_recipients_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_notification_recipients_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_notification_recipients_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_notification_recipients_response::result},
+        utility::codec::field{"notification_recipients",
+                              &put_many_notification_recipients_response::notification_recipients},
+    };
+}
+
+/**
+ * @brief The members of delete_notification_recipient_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_notification_recipient_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_notification_recipient_request::removal},
+        utility::codec::field{"intent", &delete_notification_recipient_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_notification_recipient_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_notification_recipient_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_notification_recipient_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_notification_recipients_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_recipients_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_notification_recipients_request::removals},
+        utility::codec::field{"intent", &delete_many_notification_recipients_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_notification_recipients_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_recipients_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_notification_recipients_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_account_id_notification_recipients_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_account_id_notification_recipients_request&) {
+    return std::tuple{
+        utility::codec::field{"account_id",
+                              &list_by_account_id_notification_recipients_request::account_id},
+        utility::codec::field{"scope", &list_by_account_id_notification_recipients_request::scope},
+        utility::codec::field{"offset",
+                              &list_by_account_id_notification_recipients_request::offset},
+        utility::codec::field{"limit", &list_by_account_id_notification_recipients_request::limit},
+        utility::codec::field{"order", &list_by_account_id_notification_recipients_request::order},
+        utility::codec::field{"filter",
+                              &list_by_account_id_notification_recipients_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_account_id_notification_recipients_response, named as the wire
+ * names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_account_id_notification_recipients_response&) {
+    return std::tuple{
+        utility::codec::field{"result",
+                              &list_by_account_id_notification_recipients_response::result},
+        utility::codec::field{
+            "notification_recipients",
+            &list_by_account_id_notification_recipients_response::notification_recipients},
+        utility::codec::field{"total", &list_by_account_id_notification_recipients_response::total},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipient_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipient_key& v);
+    static ores::inbox::messaging::notification_recipient_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_recipient_key& v);
+    static ores::inbox::messaging::notification_recipient_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipient_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipient_write& v);
+    static ores::inbox::messaging::notification_recipient_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::notification_recipient_write& v);
+    static ores::inbox::messaging::notification_recipient_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipient_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipient_change& v);
+    static ores::inbox::messaging::notification_recipient_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_recipient_change& v);
+    static ores::inbox::messaging::notification_recipient_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipient_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipient_removal& v);
+    static ores::inbox::messaging::notification_recipient_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_recipient_removal& v);
+    static ores::inbox::messaging::notification_recipient_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipient_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipient_lookup& v);
+    static ores::inbox::messaging::notification_recipient_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_recipient_lookup& v);
+    static ores::inbox::messaging::notification_recipient_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::notification_recipients_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::notification_recipients_filter& v);
+    static ores::inbox::messaging::notification_recipients_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::notification_recipients_filter& v);
+    static ores::inbox::messaging::notification_recipients_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_notification_recipients_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_notification_recipients_request& v);
+    static ores::inbox::messaging::list_notification_recipients_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_recipients_request& v);
+    static ores::inbox::messaging::list_notification_recipients_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_notification_recipients_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_notification_recipients_response& v);
+    static ores::inbox::messaging::list_notification_recipients_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::list_notification_recipients_response& v);
+    static ores::inbox::messaging::list_notification_recipients_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_notification_recipient_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_notification_recipient_request& v);
+    static ores::inbox::messaging::get_notification_recipient_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_recipient_request& v);
+    static ores::inbox::messaging::get_notification_recipient_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_notification_recipient_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_notification_recipient_response& v);
+    static ores::inbox::messaging::get_notification_recipient_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_notification_recipient_response& v);
+    static ores::inbox::messaging::get_notification_recipient_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_notification_recipients_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_notification_recipients_request& v);
+    static ores::inbox::messaging::get_many_notification_recipients_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_notification_recipients_request& v);
+    static ores::inbox::messaging::get_many_notification_recipients_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::get_many_notification_recipients_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::get_many_notification_recipients_response& v);
+    static ores::inbox::messaging::get_many_notification_recipients_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::get_many_notification_recipients_response& v);
+    static ores::inbox::messaging::get_many_notification_recipients_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_notification_recipient_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_notification_recipient_request& v);
+    static ores::inbox::messaging::put_notification_recipient_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_notification_recipient_request& v);
+    static ores::inbox::messaging::put_notification_recipient_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_notification_recipient_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_notification_recipient_response& v);
+    static ores::inbox::messaging::put_notification_recipient_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_notification_recipient_response& v);
+    static ores::inbox::messaging::put_notification_recipient_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_notification_recipients_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_notification_recipients_request& v);
+    static ores::inbox::messaging::put_many_notification_recipients_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_notification_recipients_request& v);
+    static ores::inbox::messaging::put_many_notification_recipients_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::put_many_notification_recipients_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::put_many_notification_recipients_response& v);
+    static ores::inbox::messaging::put_many_notification_recipients_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::put_many_notification_recipients_response& v);
+    static ores::inbox::messaging::put_many_notification_recipients_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_notification_recipient_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_notification_recipient_request& v);
+    static ores::inbox::messaging::delete_notification_recipient_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_notification_recipient_request& v);
+    static ores::inbox::messaging::delete_notification_recipient_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_notification_recipient_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_notification_recipient_response& v);
+    static ores::inbox::messaging::delete_notification_recipient_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_notification_recipient_response& v);
+    static ores::inbox::messaging::delete_notification_recipient_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_notification_recipients_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_notification_recipients_request& v);
+    static ores::inbox::messaging::delete_many_notification_recipients_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_notification_recipients_request& v);
+    static ores::inbox::messaging::delete_many_notification_recipients_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::delete_many_notification_recipients_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::delete_many_notification_recipients_response& v);
+    static ores::inbox::messaging::delete_many_notification_recipients_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::inbox::messaging::delete_many_notification_recipients_response& v);
+    static ores::inbox::messaging::delete_many_notification_recipients_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_by_account_id_notification_recipients_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::inbox::messaging::list_by_account_id_notification_recipients_request& v);
+    static ores::inbox::messaging::list_by_account_id_notification_recipients_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::inbox::messaging::list_by_account_id_notification_recipients_request& v);
+    static ores::inbox::messaging::list_by_account_id_notification_recipients_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT
+    wire_traits<ores::inbox::messaging::list_by_account_id_notification_recipients_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::inbox::messaging::list_by_account_id_notification_recipients_response& v);
+    static ores::inbox::messaging::list_by_account_id_notification_recipients_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::inbox::messaging::list_by_account_id_notification_recipients_response& v);
+    static ores::inbox::messaging::list_by_account_id_notification_recipients_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

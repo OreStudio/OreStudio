@@ -22,18 +22,34 @@
 set(name "ores.ore.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-# Headers only: the source glob below has nothing to compile, so the part is an
-# INTERFACE library that carries its include path and no compiled body.
-add_library(${lib_target_name} INTERFACE)
 
-target_include_directories(${lib_target_name} INTERFACE
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
+
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_API_LIBRARY)
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-# A header-only part still declares what the profile cannot know: the
-# libraries its interface headers need in their consumers.
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
 
 target_link_libraries(${lib_target_name}
-    INTERFACE
+    PUBLIC
         ores.platform.lib
         ores.storage.api.lib
         ores.logging.lib
@@ -41,4 +57,4 @@ target_link_libraries(${lib_target_name}
         ores.eventing.api.lib
         ores.utility.lib)
 
-install(TARGETS ${lib_target_name})
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

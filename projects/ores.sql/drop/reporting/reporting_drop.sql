@@ -23,6 +23,8 @@
 \ir ./reporting_report_error_events_notify_trigger_drop.sql
 \ir ./reporting_report_error_events_drop.sql
 \ir ./reporting_report_input_bundles_drop.sql
+\ir ./reporting_report_text_values_notify_trigger_drop.sql
+\ir ./reporting_report_text_values_drop.sql
 \ir ./reporting_report_metrics_notify_trigger_drop.sql
 \ir ./reporting_report_metrics_drop.sql
 \ir ./reporting_run_results_drop.sql

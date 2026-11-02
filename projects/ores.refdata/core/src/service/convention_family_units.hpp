@@ -71,11 +71,40 @@ void apply_commodity_forward(const ores::database::context& ctx,
 
 std::vector<std::string> read_commodity_forward_payloads(const ores::database::context& ctx);
 
-void apply_commodity_future(const ores::database::context& ctx,
-                            const std::string& payload,
-                            conventions_apply_result& result);
+void apply_commodity_future_averaging_terms(const ores::database::context& ctx,
+                                            const std::string& payload,
+                                            conventions_apply_result& result);
 
-std::vector<std::string> read_commodity_future_payloads(const ores::database::context& ctx);
+std::vector<std::string>
+read_commodity_future_averaging_terms_payloads(const ores::database::context& ctx);
+
+void apply_commodity_future_contract_terms(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_commodity_future_contract_terms_payloads(const ores::database::context& ctx);
+
+void apply_commodity_future_expiry_anchor(const ores::database::context& ctx,
+                                          const std::string& payload,
+                                          conventions_apply_result& result);
+
+std::vector<std::string>
+read_commodity_future_expiry_anchor_payloads(const ores::database::context& ctx);
+
+void apply_commodity_future_off_peak_index(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_commodity_future_off_peak_index_payloads(const ores::database::context& ctx);
+
+void apply_commodity_future_option_expiry(const ores::database::context& ctx,
+                                          const std::string& payload,
+                                          conventions_apply_result& result);
+
+std::vector<std::string>
+read_commodity_future_option_expiry_payloads(const ores::database::context& ctx);
 
 void apply_convention(const ores::database::context& ctx,
                       const std::string& payload,
@@ -83,11 +112,26 @@ void apply_convention(const ores::database::context& ctx,
 
 std::vector<std::string> read_convention_payloads(const ores::database::context& ctx);
 
-void apply_cross_currency_basis(const ores::database::context& ctx,
-                                const std::string& payload,
-                                conventions_apply_result& result);
+void apply_cross_currency_basis_flat_leg(const ores::database::context& ctx,
+                                         const std::string& payload,
+                                         conventions_apply_result& result);
 
-std::vector<std::string> read_cross_currency_basis_payloads(const ores::database::context& ctx);
+std::vector<std::string>
+read_cross_currency_basis_flat_leg_payloads(const ores::database::context& ctx);
+
+void apply_cross_currency_basis_spread_leg(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_cross_currency_basis_spread_leg_payloads(const ores::database::context& ctx);
+
+void apply_cross_currency_basis_swap_terms(const ores::database::context& ctx,
+                                           const std::string& payload,
+                                           conventions_apply_result& result);
+
+std::vector<std::string>
+read_cross_currency_basis_swap_terms_payloads(const ores::database::context& ctx);
 
 void apply_cross_currency_fix_float_fixed_leg(const ores::database::context& ctx,
                                               const std::string& payload,

@@ -35,16 +35,18 @@ export interface ReportMetric {
     id: string;
     party_id: string;
     report_instance_id: string;
+    result_id: string;
+    as_of: string;
+    measure: string;
+    source: string;
+    line: number;
+    report_definition_id: string;
     family: string;
     subject_type: string;
     subject_id: string;
-    as_of: string;
-    measure: string;
-    report_definition_id: string;
     currency: string;
     scenario: string;
     factor: string;
     qualifiers: string;
     value: number;
-    source: string;
 }

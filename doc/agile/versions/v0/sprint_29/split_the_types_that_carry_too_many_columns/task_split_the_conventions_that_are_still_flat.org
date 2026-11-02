@@ -8,11 +8,11 @@
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-conventions-that-are-still-flat
-#+pr: 4351
+#+pr: 4369
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-11-01
+#+updated: 2026-11-02
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The three remaining convention kinds are on the family's shape: a central conven
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The cross currency fix float kind is split into a central row and three parts, in review. |
-| Waiting on   | Review of the fix float PR.            |
-| Next         | Split the cross currency basis kind, then commodity future. |
-| Last touched | 2026-11-01                             |
+| Now          | Nothing. |
+| Waiting on   | The review of the commodity future PR. |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                             |
 
 * Acceptance
 
@@ -110,6 +110,18 @@ task and name that file in the Command column.
 | Rows one conventions publish writes | 2297 inserted; a second publish skips 2297 | =ores_refdata_publish_conventions_from_dq_fn= in a rolled-back transaction | e1e512ef31 |
 | Convention terms of the fix float kind | 18: the name, 5 swap terms, 4 fixed leg, 8 float leg | =generate_convention_kind_terms.py --check= | a47616746f |
 | Conventions export digests | 72 of 72 files unchanged against main's recorded digests | =ores.ore.core.tests=, "the exported conventions corpus matches its recorded digests" | a47616746f |
+| Basis conventions the DQ seed stages | 207 central rows; 207 rows in each of swap terms, flat leg and spread leg; the flat table is gone | =build/xccb_counts.sql= through =compass db sql -u ddl=, after =compass db recreate -y -k= | 413fdf5e3c |
+| Basis conventions live after Acme provisioning | 1035 conventions over 5 parties, 1035 with exactly one row of each part, 0 malformed; fix float still 120 of 120 | =build/xccb_shape.sql= and =build/ccff_shape.sql= through =compass db sql -u ddl= | 413fdf5e3c |
+| Convention terms of the basis kind | 25: the name, 5 swap terms, 10 flat leg, 9 spread leg; 3 term triggers | =generate_convention_kind_terms.py --check= and =build/xccb_counts.sql= | 413fdf5e3c |
+| Basis corpus round trip | 49 files hold a basis convention; each maps to one central row and one row of each part, and exports with no difference | =ores.ore.core.tests=, =conventions_cross_currency_basis_round_trips= | 413fdf5e3c |
+| Basis part shell recipes | 33 of 33 answered, 11 per part | =check_shell_recipes.py= on the three part groups, with the release preset's shell | 413fdf5e3c |
+| Test suites after the basis split | 98 of 98 pass | =compass test run=, then =ores.ore.core.tests= again after its fix | 413fdf5e3c |
+| Commodity future conventions the DQ seed stages | 790 central rows and 790 contract terms; 645 expiry anchors, 38 option expiries, 26 off-peak indexes and 60 averaging terms; the flat table is gone | =build/cf_counts.sql= through =compass db sql -u ddl=, after =compass db recreate -y -k= | 6d50def26e |
+| Commodity future conventions live after Acme provisioning | 3950 conventions over 5 parties, each with its contract terms; 3225 anchors, 190 option expiries, 130 off-peak indexes, 300 averaging terms; 0 malformed | =build/cf_shape.sql= through =compass db sql -u ddl= | 6d50def26e |
+| Commodity future republish | 2349 rows skipped, none inserted | =ores_refdata_publish_commodity_future_conventions_from_dq_fn= for one Acme party in a rolled-back transaction (=build/cf_publish.sql=) | 6d50def26e |
+| Commodity future part shell recipes | 55 of 55 answered, 11 per part | =check_shell_recipes.py= on the five part groups, with the release preset's shell | 15f4507f7f |
+| Convention terms of the commodity future kind | 47, the same columns as the flat table, now on the parts; 5 term triggers | =generate_convention_kind_terms.py --check= and =build/cf_counts.sql= | 6d50def26e |
+| DQ seed rows | 4477 over 24 kinds | =tools/ore_conventions/generate_dq_seed.py= | 6d50def26e |
 
 * Notes
 
@@ -141,6 +153,91 @@ so it can use the same part shape.
 | Consistency point | None: the part is not a view of the world. |
 | Forbidden here | Putting kind-specific columns on the shared central row, and nesting the part inside another part's object on the wire. |
 
+** Cross currency basis: three parts, and why the leg columns keep their prefix
+
+The basis kind takes the fix float kind's shape: the central =convention=
+row, the swap terms both legs share, and one part per leg. The swap terms are
+=SettlementDays=, =SettlementCalendar=, =RollConvention=, =EOM= and
+=IsResettable=; the fix float kind states a settlement convention where this
+kind states a roll convention, so the two kinds do not share one part type.
+=FlatIndexIsResettable= goes on the flat leg, because it states whether that
+leg's index resets. =oresmd_uri= goes to the central row, which every kind
+carries; an atomised central row stages no URI, as the fix float kind's does.
+
+The two legs carry the same fields, and the screen shows a composite as one
+row with every part's columns laid over it. A leg column named =index= or
+=tenor= would then be written twice, and the spread leg would hide the flat
+leg. So each leg column keeps the leg prefix that ORE's element states:
+=flat_index=, =flat_tenor=, =spread_index=, =spread_tenor= and so on. That is
+what the fix float fixed leg (=fixed_currency=) and the tenor basis swap
+parts (=pay_index=, =long_index=) already do, and the column names stay the
+ones the flat table had.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The swap terms, the flat leg and the spread leg of one cross currency basis convention. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family parts: three parts of the =cross_currency_basis_convention= family. |
+| Invariant, or none | The swap terms apply to the whole swap at once. Each leg's fields state how that one leg builds its coupon, and ORE requires each leg's index, so a convention fills all three parts. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. Each part is related to its central row by =convention_id=, and the family write puts all four rows in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and three rows in the Parts table. |
+| Generated artefact | =cross_currency_basis_swap_terms=, =cross_currency_basis_flat_leg= and =cross_currency_basis_spread_leg=, each with its table, codec, repository, service, protocol and shell commands. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its three parts. |
+| Consistency point | None: the parts are not a view of the world. |
+| Forbidden here | Kind-specific columns on the shared central row, and two parts of one family that state a column of the same name. |
+
+** Commodity future: contract terms and four optional parts
+
+The commodity future kind takes the family's shape, but its blocks are not all
+present, as the cross currency legs are. ORE requires the contract frequency
+and the calendar of every commodity future, and makes each other block
+optional. So the kind has one part every convention fills and four it fills at
+most once:
+
+| Part | Columns | Filled in the seed |
+|------+---------+--------------------|
+| =commodity_future_contract_terms= | 18: the frequency, the calendars, the expiry rules, the contract months, the hours per day, the index name, the savings time, the delivery location, the balance of the month fields, the prohibited expiries, the future continuations | 790 of 790 |
+| =commodity_future_expiry_anchor= | 7 =anchor_*= columns: one form of =AnchorDay= | 645 |
+| =commodity_future_option_expiry= | 13 =option_*= columns, with the option underlying and the option continuations | 38 |
+| =commodity_future_off_peak_index= | 4: =OffPeakPowerIndexData=, all required | 26 |
+| =commodity_future_averaging_terms= | 8 =averaging_*= columns: =AveragingData=, four of them required | 60 |
+
+The seed counts are the rows the DQ seed stages from the corpus. No seeded
+anchor states more than one form.
+
+A part makes required what ORE requires together. The flat row held the
+off-peak and the averaging fields as nullable columns, and only the mapper
+knew that the four off-peak fields come together. Each is now a part whose
+required columns are not null, so the table holds that rule.
+
+=hours_per_day= and =savings_time= stay on the contract terms. They are not
+inside =OffPeakPowerIndexData=, and the seed states the hours per day on more
+conventions (31) than it states the off-peak data on (26), so they are not
+that part's invariant. The lists stay text columns, as on the flat row.
+
+The column names already differ from part to part, so no column needs a new
+prefix. =oresmd_uri= goes to the central row, as for the other atomised kinds,
+and the central row stages no URI. The flat row took its URI from
+=IndexName=, so the 34 seeded conventions that state an index name no longer
+stage one. This is the same loss the fix float and basis kinds accepted.
+
+The seed does not decode =OptionNthWeekday=, so it stages no
+=option_nth_nth= or =option_nth_weekday=. The flat seed did not stage them
+either. The ORE mapper reads and writes both.
+
+| Field | Answer |
+|-------+--------|
+| Data and operation | The contract terms, the expiry anchor, the option expiry, the off-peak power index and the averaging data of one commodity future convention. The ORE conventions import writes them, and the export and the convention screens read them. |
+| Classification | Family parts: five parts of the =commodity_future_convention= family. |
+| Invariant, or none | The contract terms state the listed contract, and ORE requires them. Each optional part's fields mean something only when the convention states that block, and the off-peak and averaging parts require the fields ORE requires together. |
+| Owners | One: ores.refdata. |
+| Bundle or package, and why | Neither. Each part is related to its central row by =convention_id=, and the family write puts all the rows of one convention in one unit of work. |
+| Sanctioned pattern | =ores.codegen.family= with =central_entity: convention= and five rows in the Parts table. |
+| Generated artefact | The five part entities, each with its table, codec, repository, service, protocol and shell commands. |
+| Atomicity scope | One owner, one transaction: the family write of the central row and its parts. |
+| Consistency point | None: the parts are not a view of the world. |
+| Forbidden here | Kind-specific columns on the shared central row, two rows of one optional part for one convention, and two parts of one family that state a column of the same name. |
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -156,6 +253,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4369][#4369]] | [refdata,ore,sql] Split the commodity future convention into parts |
+| [[https://github.com/OreStudio/OreStudio/pull/4359][#4359]] | [refdata,ore,sql] Split the cross currency basis convention into a central row and three parts |
 | [[https://github.com/OreStudio/OreStudio/pull/4351][#4351]] | [refdata,ore,sql] Split the cross currency fix float convention into a central row and three parts |
 
 * Review
@@ -173,5 +272,53 @@ via its "Verifies task" field.
 | 9 | PR #4351, @claude 3: confirm main fails the checks the PR says it does | gate | Accept | Against main 88065820c9, route-inventory, unity-collisions, bff-list-requests and the web format check pass, so the PR's list was stale; after the rebase only xml-benchmark-recorded still fails on main. bff-list-requests failed on the branch: the generated list request table is regenerated. |
 | 10 | PR #4351, @claude 4: rebuild fully before merging | build | Accept | The branch is rebuilt in full after this round and its suites rerun. |
 | 11 | PR #4351, @claude 5: a check that refuses a truncation collision | codegen | Decline here | Over-long generated names are a codegen issue on main; captured as [[id:8EED0888-B80F-42FB-9B60-EE35ADEBFA1A][Refuse a generated SQL identifier that PostgreSQL truncates into a collision]]. |
+| 12 | Basis tests: the round trip read =SettlementDays= as text, and the reader refuses text from an integer element | =xml_roundtrip_conventions_tests.cpp= | Accept | The test reads it with =integer()=; fixed in 413fdf5e3c. |
+| 13 | Basis gate: =xml-benchmark-recorded= fails | gate | Decline here | The measured change is 3446abdb44, which is on main; this branch changes no measured XML code. |
+| 14 | Basis live check: a recreate under a running fleet leaves the workflow pool on the dropped database, and provisioning fails | services | Decline here | A service defect on main; captured as [[id:7BE089B8-384B-43CF-AAC8-66CFC583F4CF][Reconnect a service's connection pool after the database is recreated]]. |
+| 15 | Basis live check: =check_shell_recipes.py= hard-codes the debug preset's shell | codegen | Decline here | Captured as [[id:9AE00373-65AF-4864-8D7B-3F6AB99876C4][Take the shell binary from the preset in the shell recipe check]]; the 33 recipes were replayed with the release shell. |
+| 16 | Basis review: the three composite publishers repeat one shape | =refdata_publish_from_dq_create.sql= | Decline here | Each names its own part tables and columns; generating them is codegen work for when commodity future adds the fourth. |
+| 17 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
+| 18 | Commodity future tests: the curve test wrote flat commodity future rows, and the central table refuses a row with no party | =curve_configuration_database_roundtrip_tests.cpp= | Accept | The fixture writes each future's central row and contract terms as the system party; fixed in 6d50def26e and fe2f96477a. |
+| 19 | Commodity future review: the family put checks no part count, so a future with no contract terms is accepted and the export refuses it | generated family service | Decline here | Every composite kind has the gap, and the Parts table states no cardinality; captured as [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]. |
+| 20 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
+| 21 | PR #4369, @claude 1: an empty =AnchorDay= is dropped on a round trip | =conventions_family_commodity_future.cpp= | Decline | The flat mapper on main drops it the same way, and the export digests pin that output; ORE's schema gives the element a child. |
+| 22 | PR #4369, @claude 2: a part with no central row is dropped silently by the join | =conventions_family_commodity_future.cpp= | Accept | The join refuses a part whose convention is not in the bundle; the refusal test removes the central row and expects the throw. |
+| 23 | PR #4369, @claude 3: =at_most_one= and the size guard are two sources of truth | =conventions_family_commodity_future.cpp= | Accept | =at_most_one= refuses more than one row itself, and the guard checks only the central row and the contract terms. |
+| 24 | PR #4369, @claude 4: the ="Mon"= fallback invents half of an nth weekday | =conventions_family_commodity_future.cpp= | Decline | It is main's export behaviour, moved unchanged; the seed stages no such half pair. |
+| 25 | PR #4369, @claude 5: the parts' shell recipes were not replayed live | shell | Accept | 55 of 55 recipes answer, 11 per part, with the release preset's shell. |
 
 * Result
+
+No convention kind is a flat row any more. The three kinds this task found
+flat now take the family's shape: a central =convention= row that carries the
+kind and the ORE document id, and one part per block or leg, each joined by
+=convention_id= and written with the central row in one family write.
+
+| Kind | Parts | The invariant each part holds |
+|------+-------+-------------------------------|
+| Cross currency fix float (PR #4351) | swap terms, fixed leg, float leg | The swap terms apply to the whole swap at once. Each leg states how that one leg pays. ORE requires every block, so a convention fills all three. |
+| Cross currency basis (PR #4359) | swap terms, flat leg, spread leg | As for the fix float kind. The legs keep their =flat_= and =spread_= prefixes, because the screen lays every part over one row by column name. |
+| Commodity future | contract terms, expiry anchor, option expiry, off-peak index, averaging terms | The contract terms state the listed contract, and ORE requires them. Each other part means something only when the element states that block, so a convention fills it at most once. The off-peak and averaging parts make required the fields ORE requires together, a rule the flat row left to the mapper. |
+
+The acceptance holds as follows:
+
+- No kind's row or part carries another kind's column. Only the central row
+  carries the kind, and the central row carries nothing a kind alone states.
+- The commodity future's anchor, option expiry, power and averaging blocks are
+  parts. The two cross currency kinds model each leg as a part.
+- The wire carries one typed array per part, the ORE projection maps each part
+  on its own and round trips the corpus with no difference, and the DQ seed
+  stages one block per part.
+- Each part's invariant is in the table above and in the notes of each kind.
+
+The live data proves the shape: after a recreate and Acme provisioning, every
+convention of the three kinds has its required parts, none has two rows of
+one part, and a republish inserts nothing. The measurements table has the
+counts.
+
+Three things are left as they were, and each is recorded. The atomised
+kinds' central rows stage no =oresmd_uri=, so the commodity future's 34
+seeded index names, like the cross currency indices, carry no staged URI.
+The seed does not decode the option's nth weekday, as the flat seed did not.
+And the three composite publishers repeat one shape; generating them is
+codegen work.

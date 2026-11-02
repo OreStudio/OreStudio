@@ -59,6 +59,7 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
     r.pre_processing = std::string("execute");
     r.prepared_input_key = std::string{};
     r.post_processing = std::string("execute");
+    r.skipped_families = std::string{};
     r.is_official = true;
     r.regulatory_book_type = std::nullopt;
     r.cut_kind_code = std::nullopt;

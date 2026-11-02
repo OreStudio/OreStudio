@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: D11C0127-09DE-4419-A179-BA2792E98C97
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.provider_terms_list_operations
+#+description: Codegen operation model for accepting the terms of several providers in one request, each as the single accept would.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: provider_terms_list_operations
+#+namespace: ores::marketdata::messaging
+#+brief: Accepting the terms of several providers at once.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+A system that is set up, or a person who reads every public source's terms in one
+screen, accepts them in one request. Each provider goes through the same checks as
+the single accept in [[id:7E2B91D4-3C58-4F0A-8D61-2A9E5B7C4F13][ores.marketdata.provider_terms_operations]], and one refusal
+does not stop the others. The request carries a list of providers, which the shell's
+token form cannot fill, so this model renders no shell command; the shell accepts
+all public terms with a command of its own.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** provider_terms_choice
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One provider whose terms a person accepts, at the version they read.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider whose terms are accepted.
+ */
+#+end_src
+
+*** provider_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the provider the person read, or zero for the latest.
+ */
+#+end_src
+
+** provider_terms_outcome
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What became of one provider in a list accept.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider the outcome is for.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether its acceptance was recorded.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, or what was recorded.
+ */
+#+end_src
+
+*** accepted_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account recorded as accepting.
+ */
+#+end_src
+
+*** accepted_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the acceptance was recorded.
+ */
+#+end_src
+
+** accept_many_provider_terms_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.accept_many_provider_terms
+:response: accept_many_provider_terms_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Accepts the terms of several providers in one request.
+ *
+ * Each provider is accepted as the single accept would accept it, with the same
+ * checks, so one refusal does not stop the others: a setup that accepts every
+ * public source, or a screen that accepts all it shows, learns which were recorded.
+ */
+#+end_src
+
+*** providers
+:PROPERTIES:
+:cpp_type: std::vector<provider_terms_choice>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The providers whose terms are accepted, each at the version read.
+ */
+#+end_src
+
+** accept_many_provider_terms_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One outcome a provider, in the order they were named.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether every provider's acceptance was recorded.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many were recorded, and how many were not.
+ */
+#+end_src
+
+*** outcomes
+:PROPERTIES:
+:cpp_type: std::vector<provider_terms_outcome>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What became of each provider, in the order they were named.
+ */
+#+end_src
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:7E2B91D4-3C58-4F0A-8D61-2A9E5B7C4F13][ores.marketdata.provider_terms_operations]] — the single accept and the withdrawal.

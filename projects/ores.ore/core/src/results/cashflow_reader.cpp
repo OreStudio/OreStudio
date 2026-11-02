@@ -21,7 +21,10 @@
 #include "output_csv.hpp"
 #include <algorithm>
 #include <array>
+#include <iterator>
+#include <limits>
 #include <string>
+#include <vector>
 
 namespace ores::ore::results {
 namespace {
@@ -62,14 +65,23 @@ bool is_cashflow_family(const output_family& family) {
     return names_number("CashflowNo") && names_number("LegNo");
 }
 
-cashflow_read_outcome read_cashflows(std::string_view csv, const output_family& family) {
+std::vector<std::string> read_cashflows_in_blocks(std::string_view csv,
+                                                  const output_family& family,
+                                                  std::size_t block_size,
+                                                  const cashflow_block_sink& sink) {
     cashflow_read_outcome outcome;
+    const auto hand_over = [&] {
+        if (outcome.rows.empty())
+            return;
+        sink(outcome.rows);
+        outcome.rows.clear();
+    };
 
     if (csv.substr(0, 3) == "\xEF\xBB\xBF")
         csv.remove_prefix(3);
     if (csv.empty()) {
         outcome.refusals.push_back(family.code + " is empty.");
-        return outcome;
+        return std::move(outcome.refusals);
     }
 
     const auto first_break = csv.find('\n');
@@ -84,7 +96,7 @@ cashflow_read_outcome read_cashflows(std::string_view csv, const output_family& 
         if (std::ranges::find(headings, required) == headings.end()) {
             outcome.refusals.push_back(family.code + " states no " + required +
                                        " column; it states: " + joined(headings) + ".");
-            return outcome;
+            return std::move(outcome.refusals);
         }
     }
 
@@ -200,9 +212,26 @@ cashflow_read_outcome read_cashflows(std::string_view csv, const output_family& 
             row.part = std::move(part);
             row.value = figure;
             outcome.rows.push_back(std::move(row));
+            if (outcome.rows.size() >= block_size)
+                hand_over();
         }
     }
 
+    hand_over();
+    return std::move(outcome.refusals);
+}
+
+cashflow_read_outcome read_cashflows(std::string_view csv, const output_family& family) {
+    cashflow_read_outcome outcome;
+    outcome.refusals =
+        read_cashflows_in_blocks(csv,
+                                 family,
+                                 std::numeric_limits<std::size_t>::max(),
+                                 [&](std::vector<cashflow_row>& block) {
+                                     outcome.rows.insert(outcome.rows.end(),
+                                                         std::make_move_iterator(block.begin()),
+                                                         std::make_move_iterator(block.end()));
+                                 });
     return outcome;
 }
 

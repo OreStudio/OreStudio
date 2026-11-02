@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4A81F2C6-9D37-42E0-B5A8-0C61D94E7B23
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut
 #+description: Codegen entity model for the reporting =cut= table. The body a run prices from: the occasion, the timepoint with its clock, the scope, the four input references, the gaps, the acts, the retention copy.

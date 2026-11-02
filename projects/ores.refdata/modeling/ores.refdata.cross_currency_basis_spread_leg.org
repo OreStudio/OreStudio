@@ -1,0 +1,321 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 5B422717-9228-439D-B425-C66478735ECB
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.cross_currency_basis_spread_leg
+#+description: Codegen entity model for the refdata =cross_currency_basis_spread_leg= part. the spread leg of a cross-currency basis swap, which pays its index plus the basis.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: cross_currency_basis_spread_leg
+#+entity_plural: cross_currency_basis_spread_legs
+#+entity_title: Cross Currency Basis Spread Leg
+#+convention_family: cross_currency_basis_spread_leg
+#+convention_write: by_id
+#+brief: the spread leg of a cross-currency basis swap, which pays its index plus the basis.
+#+created: 2026-11-01
+#+updated: 2026-11-01
+
+The leg of a cross-currency basis swap that pays its index plus the basis
+spread, as ORE's =SpreadIndex= with the =Spread*= fixing rules: the tenor, the
+payment lag, whether the spread is included in the coupon, the lookback, the
+fixing days, the rate cutoff, whether coupons are averaged, and whether the
+observation is shifted. They are a part because each states how this one leg
+builds its coupon; the flat leg beside it states its own. Each column keeps the
+=spread_= prefix of ORE's element, for the reason the flat leg's columns do.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** spread_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The index the spread leg pays.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-3M")
+#+end_src
+
+** spread_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The tenor of the leg's index, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_payment_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Business days between the leg's period end and its payment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_include_spread
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the spread is included in the coupon the index builds.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_lookback
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The lookback the fixing takes, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_fixing_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Business days before the period start at which the leg fixes.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_rate_cutoff
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Business days before the period end at which the leg's rate is cut off.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_is_averaged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether coupons are averaged rather than compounded.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_observation_shift
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the observation is shifted to the payment date.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** spread_index
+:PROPERTIES:
+:type:     text
+:nullable: false
+:END:
+
+** spread_tenor
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** spread_payment_lag
+:PROPERTIES:
+:type:     integer
+:nullable: true
+:END:
+
+** spread_include_spread
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** spread_lookback
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** spread_fixing_days
+:PROPERTIES:
+:type:     integer
+:nullable: true
+:END:
+
+** spread_rate_cutoff
+:PROPERTIES:
+:type:     integer
+:nullable: true
+:END:
+
+** spread_is_averaged
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** spread_observation_shift
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cross_currency_basis_spread_legs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency_basis_spread_leg
+:entity_plural_short:   cross_currency_basis_spread_legs
+:entity_singular_words: cross currency basis spread leg
+:entity_plural_words:   cross currency basis spread legs
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:88382103-22A1-4B77-A76E-AF20076F6E1C][ores.refdata.cross_currency_basis_convention]] — the family this part belongs to.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that introduced it.

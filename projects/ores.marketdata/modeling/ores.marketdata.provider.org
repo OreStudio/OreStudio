@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5604CFFC-EDD8-4291-BF56-AB7EEE0007E7
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.provider
 #+description: The catalogue of market data providers: data vendors, exchanges, brokers and reference sets. A provider owns a namespace of vendor ids, and its sources share one mapping.

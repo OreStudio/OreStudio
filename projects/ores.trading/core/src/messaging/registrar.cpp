@@ -57,6 +57,7 @@
 #include "ores.trading.core/messaging/credit_basket_constituent_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/credit_default_swap_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/credit_linked_swap_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/draft_reason_registrar.hpp"
 #include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
@@ -182,6 +183,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_barrier_type_handlers(nats, ctx, verifier));
     append(register_booking_nature_type_handlers(nats, ctx, verifier));
     append(register_counterparty_scope_type_handlers(nats, ctx, verifier));
+    append(register_draft_reason_handlers(nats, ctx, verifier));
     append(register_entry_channel_type_handlers(nats, ctx, verifier));
     append(register_exercise_type_handlers(nats, ctx, verifier));
     append(register_fpml_event_type_handlers(nats, ctx, verifier));

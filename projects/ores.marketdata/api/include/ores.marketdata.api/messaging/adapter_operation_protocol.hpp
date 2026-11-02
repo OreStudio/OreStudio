@@ -25,9 +25,16 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_ADAPTER_OPERATION_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_ADAPTER_OPERATION_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -174,6 +181,315 @@ struct list_adapter_status_response {
     std::string message;
 };
 
+/**
+ * @brief The members of vendor_id, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const vendor_id&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id_scheme", &vendor_id::id_scheme},
+        ::ores::utility::codec::field{"external_id", &vendor_id::external_id},
+        ::ores::utility::codec::field{"field", &vendor_id::field},
+    };
 }
+
+/**
+ * @brief The members of rejected_id, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const rejected_id&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &rejected_id::id},
+        ::ores::utility::codec::field{"reason", &rejected_id::reason},
+    };
+}
+
+/**
+ * @brief The members of adapter_announce_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_announce_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"adapter_id", &adapter_announce_request::adapter_id},
+        ::ores::utility::codec::field{"adapter_code", &adapter_announce_request::adapter_code},
+        ::ores::utility::codec::field{"module_version", &adapter_announce_request::module_version},
+        ::ores::utility::codec::field{"provider_code", &adapter_announce_request::provider_code},
+        ::ores::utility::codec::field{"universe", &adapter_announce_request::universe},
+    };
+}
+
+/**
+ * @brief The members of adapter_announce_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_announce_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &adapter_announce_response::success},
+        ::ores::utility::codec::field{"message", &adapter_announce_response::message},
+        ::ores::utility::codec::field{"served_count", &adapter_announce_response::served_count},
+        ::ores::utility::codec::field{"unknown_count", &adapter_announce_response::unknown_count},
+    };
+}
+
+/**
+ * @brief The members of adapter_demand_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_demand_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"ids", &adapter_demand_request::ids},
+    };
+}
+
+/**
+ * @brief The members of adapter_demand_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_demand_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"accepted", &adapter_demand_response::accepted},
+        ::ores::utility::codec::field{"rejected", &adapter_demand_response::rejected},
+    };
+}
+
+/**
+ * @brief The members of adapter_tick, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_tick&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id_scheme", &adapter_tick::id_scheme},
+        ::ores::utility::codec::field{"external_id", &adapter_tick::external_id},
+        ::ores::utility::codec::field{"field", &adapter_tick::field},
+        ::ores::utility::codec::field{"value", &adapter_tick::value},
+        ::ores::utility::codec::field{"vendor_time", &adapter_tick::vendor_time},
+        ::ores::utility::codec::field{"sequence", &adapter_tick::sequence},
+    };
+}
+
+/**
+ * @brief The members of adapter_heartbeat, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_heartbeat&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"adapter_id", &adapter_heartbeat::adapter_id},
+        ::ores::utility::codec::field{"counter", &adapter_heartbeat::counter},
+    };
+}
+
+/**
+ * @brief The members of adapter_status, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const adapter_status&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"adapter_id", &adapter_status::adapter_id},
+        ::ores::utility::codec::field{"adapter_code", &adapter_status::adapter_code},
+        ::ores::utility::codec::field{"module_version", &adapter_status::module_version},
+        ::ores::utility::codec::field{"provider_code", &adapter_status::provider_code},
+        ::ores::utility::codec::field{"state", &adapter_status::state},
+        ::ores::utility::codec::field{"last_heartbeat_at", &adapter_status::last_heartbeat_at},
+        ::ores::utility::codec::field{"heartbeat_counter", &adapter_status::heartbeat_counter},
+        ::ores::utility::codec::field{"served_count", &adapter_status::served_count},
+        ::ores::utility::codec::field{"unknown_count", &adapter_status::unknown_count},
+        ::ores::utility::codec::field{"demanded_count", &adapter_status::demanded_count},
+        ::ores::utility::codec::field{"routes_seen", &adapter_status::routes_seen},
+        ::ores::utility::codec::field{"ticks_last_minute", &adapter_status::ticks_last_minute},
+        ::ores::utility::codec::field{"last_tick_age_ms", &adapter_status::last_tick_age_ms},
+        ::ores::utility::codec::field{"accepted", &adapter_status::accepted},
+        ::ores::utility::codec::field{"rejected", &adapter_status::rejected},
+    };
+}
+
+/**
+ * @brief The members of list_adapter_status_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapter_status_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of list_adapter_status_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_adapter_status_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"adapters", &list_adapter_status_response::adapters},
+        ::ores::utility::codec::field{"success", &list_adapter_status_response::success},
+        ::ores::utility::codec::field{"message", &list_adapter_status_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::vendor_id> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::vendor_id& v);
+    static ores::marketdata::messaging::vendor_id read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::vendor_id& v);
+    static ores::marketdata::messaging::vendor_id read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::rejected_id> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::rejected_id& v);
+    static ores::marketdata::messaging::rejected_id read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::rejected_id& v);
+    static ores::marketdata::messaging::rejected_id read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::adapter_announce_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_announce_request& v);
+    static ores::marketdata::messaging::adapter_announce_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::adapter_announce_request& v);
+    static ores::marketdata::messaging::adapter_announce_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::adapter_announce_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_announce_response& v);
+    static ores::marketdata::messaging::adapter_announce_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::adapter_announce_response& v);
+    static ores::marketdata::messaging::adapter_announce_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_demand_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_demand_request& v);
+    static ores::marketdata::messaging::adapter_demand_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_demand_request& v);
+    static ores::marketdata::messaging::adapter_demand_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::adapter_demand_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_demand_response& v);
+    static ores::marketdata::messaging::adapter_demand_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_demand_response& v);
+    static ores::marketdata::messaging::adapter_demand_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_tick> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_tick& v);
+    static ores::marketdata::messaging::adapter_tick read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_tick& v);
+    static ores::marketdata::messaging::adapter_tick read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_heartbeat> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_heartbeat& v);
+    static ores::marketdata::messaging::adapter_heartbeat read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_heartbeat& v);
+    static ores::marketdata::messaging::adapter_heartbeat
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::adapter_status> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::adapter_status& v);
+    static ores::marketdata::messaging::adapter_status read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::adapter_status& v);
+    static ores::marketdata::messaging::adapter_status
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_adapter_status_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_adapter_status_request& v);
+    static ores::marketdata::messaging::list_adapter_status_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_adapter_status_request& v);
+    static ores::marketdata::messaging::list_adapter_status_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_adapter_status_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_adapter_status_response& v);
+    static ores::marketdata::messaging::list_adapter_status_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_adapter_status_response& v);
+    static ores::marketdata::messaging::list_adapter_status_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

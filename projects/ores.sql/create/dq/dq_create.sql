@@ -120,8 +120,14 @@
 \ir ./dq_cds_conventions_artefact_create.sql
 \ir ./dq_cms_spread_option_conventions_artefact_create.sql
 \ir ./dq_commodity_forward_conventions_artefact_create.sql
-\ir ./dq_commodity_future_conventions_artefact_create.sql
-\ir ./dq_cross_currency_basis_conventions_artefact_create.sql
+\ir ./dq_commodity_future_averaging_terms_artefact_create.sql
+\ir ./dq_commodity_future_contract_terms_artefact_create.sql
+\ir ./dq_commodity_future_expiry_anchors_artefact_create.sql
+\ir ./dq_commodity_future_off_peak_indexes_artefact_create.sql
+\ir ./dq_commodity_future_option_expiries_artefact_create.sql
+\ir ./dq_cross_currency_basis_flat_legs_artefact_create.sql
+\ir ./dq_cross_currency_basis_spread_legs_artefact_create.sql
+\ir ./dq_cross_currency_basis_swap_terms_artefact_create.sql
 \ir ./dq_cross_currency_fix_float_fixed_legs_artefact_create.sql
 \ir ./dq_cross_currency_fix_float_float_legs_artefact_create.sql
 \ir ./dq_cross_currency_fix_float_swap_terms_artefact_create.sql

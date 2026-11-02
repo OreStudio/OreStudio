@@ -46,8 +46,7 @@ const cashflow_row* figure_named(const std::vector<cashflow_row>& rows,
 }
 
 std::string cashflow_sample_text(const std::string& sample_file) {
-    const auto relative = std::filesystem::path(sample_file).lexically_relative("external/ore");
-    return ores::testing::read_file(ores::testing::ore_path(relative.string()));
+    return ores::testing::read_file(ores::testing::project_root::resolve(sample_file));
 }
 
 /**
@@ -230,4 +229,26 @@ TEST_CASE("a null figure states nothing and is not a refusal", cashflow_tags) {
     // The payment still states the other figures of its row, so the file holds
     // rows; what it must not hold is a figure the engine stated as null.
     CHECK(figure_named(outcome.rows, "Amount", "") == nullptr);
+}
+
+TEST_CASE("a cashflow family read in blocks hands over what it reads whole", cashflow_tags) {
+    const auto* family = family_named("flows");
+    REQUIRE(family != nullptr);
+    const auto csv = cashflow_sample_text(family->sample_file);
+
+    const auto whole = read_cashflows(csv, *family);
+    REQUIRE(whole.refusals.empty());
+    REQUIRE(whole.rows.size() > 3);
+
+    std::size_t handed = 0;
+    std::size_t largest = 0;
+    const auto refusals = ores::ore::results::read_cashflows_in_blocks(
+        csv, *family, 3, [&](std::vector<cashflow_row>& block) {
+            handed += block.size();
+            largest = std::max(largest, block.size());
+        });
+
+    CHECK(refusals.empty());
+    CHECK(handed == whole.rows.size());
+    CHECK(largest == 3);
 }

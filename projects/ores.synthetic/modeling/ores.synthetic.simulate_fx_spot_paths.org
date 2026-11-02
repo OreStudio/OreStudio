@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 16150ab3-4bcc-4336-b6ae-ab70a268673c
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.simulate_fx_spot_paths
 #+description: Codegen operation model for the FX spot sample-path simulation.

@@ -20,7 +20,10 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_DEFINITION_TEMPLATE_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_DEFINITION_TEMPLATE_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <string>
+#include <tuple>
 
 namespace ores::reporting::domain {
 
@@ -63,6 +66,17 @@ struct report_definition_template final {
      */
     int display_order = 0;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const report_definition_template&) {
+    using t = report_definition_template;
+    return std::tuple{utility::codec::field{"name", &t::name},
+                      utility::codec::field{"description", &t::description},
+                      utility::codec::field{"report_type", &t::report_type},
+                      utility::codec::field{"schedule_expression", &t::schedule_expression},
+                      utility::codec::field{"concurrency_policy", &t::concurrency_policy},
+                      utility::codec::field{"display_order", &t::display_order}};
+}
+static_assert(utility::codec::names_every_member<report_definition_template>());
 
 }
 

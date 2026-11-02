@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1A5D21AC-3452-4D5E-86BA-FDAA203AFF7F
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.shift_type
 #+description: Codegen entity model for the analytics =shift_type= table. How an ORE shift is applied.

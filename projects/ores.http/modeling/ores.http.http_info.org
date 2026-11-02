@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C38934D1-3262-4DCF-9CC9-3289B8A668A8
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.http.http_info
 #+description: Codegen operation model for the HTTP service-discovery protocol, rendered to C++ and TypeScript from one source.

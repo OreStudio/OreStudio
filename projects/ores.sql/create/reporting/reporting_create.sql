@@ -132,6 +132,8 @@
 -- run it belongs to, so these load after the run tables above them.
 \ir ./reporting_report_metrics_create.sql
 \ir ./reporting_report_metrics_notify_trigger_create.sql
+\ir ./reporting_report_text_values_create.sql
+\ir ./reporting_report_text_values_notify_trigger_create.sql
 \ir ./reporting_report_cashflows_create.sql
 \ir ./reporting_report_cashflows_notify_trigger_create.sql
 -- The screen's view of a run's figures. It reads the metric table, so it loads

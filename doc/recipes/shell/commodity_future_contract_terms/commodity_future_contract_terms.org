@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 2FC439A0-5094-5D78-8048-642BBE40522C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_future_contract_terms commands from the shell?
+#+description: Every command the commodity_future_contract_terms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_future_contract_terms:
+
+This file documents the commodity_future_contract_terms resource at the shell, one section per command. Every command is a subcommand of =commodity_future_contract_terms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 363C5343-6B16-5D22-B916-9A0DF5721F0F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.list=.
+
+#+name: commodity_future_contract_terms-list
+#+begin_src ores-shell :tangle commodity_future_contract_terms-list.ores :exports none
+commodity_future_contract_terms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 25E52845-F3CA-54E4-80FF-33C8CD44874D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.get=.
+
+#+name: commodity_future_contract_terms-get
+#+begin_src ores-shell :tangle commodity_future_contract_terms-get.ores :exports none
+commodity_future_contract_terms get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3649DB81-49AA-5A10-91CE-6B06FCD225DE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.get_many=.
+
+#+name: commodity_future_contract_terms-get-many
+#+begin_src ores-shell :tangle commodity_future_contract_terms-get-many.ores :exports none
+commodity_future_contract_terms get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 2FFC00B3-E045-5D3C-AD26-483A148610AB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms add <convention_id> <contract_frequency> <calendar> <expiry_calendar> <expiry_month_lag> <one_contract_month> <offset_days> <business_day_convention> <adjust_before_offset> <is_averaging> <valid_contract_months> <hours_per_day> <index_name> <savings_time> <delivery_location> <balance_of_the_month> <balance_of_the_month_pricing_calendar> <prohibited_expiries> <future_continuation_mappings> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.put=.
+
+#+name: commodity_future_contract_terms-add
+#+begin_src ores-shell :tangle commodity_future_contract_terms-add.ores :exports none
+commodity_future_contract_terms add 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3D774D35-9662-5B91-AFB1-0229623FB0A7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms set <id> <convention_id> <contract_frequency> <calendar> <expiry_calendar> <expiry_month_lag> <one_contract_month> <offset_days> <business_day_convention> <adjust_before_offset> <is_averaging> <valid_contract_months> <hours_per_day> <index_name> <savings_time> <delivery_location> <balance_of_the_month> <balance_of_the_month_pricing_calendar> <prohibited_expiries> <future_continuation_mappings> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.put=.
+
+#+name: commodity_future_contract_terms-set
+#+begin_src ores-shell :tangle commodity_future_contract_terms-set.ores :exports none
+commodity_future_contract_terms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6CF71CFE-0E35-5BFF-9C67-06E79D3CCCAF
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms put-many --count <n> <id> <convention_id> <contract_frequency> <calendar> <expiry_calendar> <expiry_month_lag> <one_contract_month> <offset_days> <business_day_convention> <adjust_before_offset> <is_averaging> <valid_contract_months> <hours_per_day> <index_name> <savings_time> <delivery_location> <balance_of_the_month> <balance_of_the_month_pricing_calendar> <prohibited_expiries> <future_continuation_mappings> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.put_many=.
+
+#+name: commodity_future_contract_terms-put-many
+#+begin_src ores-shell :tangle commodity_future_contract_terms-put-many.ores :exports none
+commodity_future_contract_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 878BC185-B400-5152-AF20-B4F40669D78F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.delete=.
+
+#+name: commodity_future_contract_terms-delete
+#+begin_src ores-shell :tangle commodity_future_contract_terms-delete.ores :exports none
+commodity_future_contract_terms delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7A6373E4-02DC-5299-AA45-88E85E487757
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.delete_many=.
+
+#+name: commodity_future_contract_terms-delete-many
+#+begin_src ores-shell :tangle commodity_future_contract_terms-delete-many.ores :exports none
+commodity_future_contract_terms delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: 7DB9A316-64E2-50F7-A64C-99335A717A85
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms.list_by_convention_id=.
+
+#+name: commodity_future_contract_terms-by-convention-id
+#+begin_src ores-shell :tangle commodity_future_contract_terms-by-convention-id.ores :exports none
+commodity_future_contract_terms by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E2DBF40A-8A33-5098-BC0B-03C84FE1FB15
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms_versions.list=.
+
+#+name: commodity_future_contract_terms-versions
+#+begin_src ores-shell :tangle commodity_future_contract_terms-versions.ores :exports none
+commodity_future_contract_terms versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8F0E871C-B67D-546E-AB9E-B54F345312D8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_contract_terms version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_contract_terms_versions.get=.
+
+#+name: commodity_future_contract_terms-version
+#+begin_src ores-shell :tangle commodity_future_contract_terms-version.ores :exports none
+commodity_future_contract_terms version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

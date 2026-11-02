@@ -25,9 +25,16 @@
 #ifndef ORES_REPORTING_API_MESSAGING_ENGINE_SETTINGS_PROPOSAL_OPERATIONS_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_ENGINE_SETTINGS_PROPOSAL_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
@@ -186,6 +193,285 @@ struct recheck_engine_settings_changes_response {
     std::vector<std::string> part_codes;
 };
 
+/**
+ * @brief The members of engine_settings_value_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_value_change&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"column_name", &engine_settings_value_change::column_name},
+        ::ores::utility::codec::field{"ore_name", &engine_settings_value_change::ore_name},
+        ::ores::utility::codec::field{"before", &engine_settings_value_change::before},
+        ::ores::utility::codec::field{"after", &engine_settings_value_change::after},
+        ::ores::utility::codec::field{"changed", &engine_settings_value_change::changed},
+    };
 }
+
+/**
+ * @brief The members of engine_settings_change_line, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_change_line&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"line_no", &engine_settings_change_line::line_no},
+        ::ores::utility::codec::field{"group_code", &engine_settings_change_line::group_code},
+        ::ores::utility::codec::field{"engine_settings_id",
+                                      &engine_settings_change_line::engine_settings_id},
+        ::ores::utility::codec::field{"base_version", &engine_settings_change_line::base_version},
+        ::ores::utility::codec::field{"applied", &engine_settings_change_line::applied},
+        ::ores::utility::codec::field{"fields", &engine_settings_change_line::fields},
+    };
+}
+
+/**
+ * @brief The members of engine_settings_value, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const engine_settings_value&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"setting_code", &engine_settings_value::setting_code},
+        ::ores::utility::codec::field{"text_value", &engine_settings_value::text_value},
+    };
+}
+
+/**
+ * @brief The members of raise_engine_settings_change_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const raise_engine_settings_change_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"engine_settings_id",
+                                      &raise_engine_settings_change_request::engine_settings_id},
+        ::ores::utility::codec::field{"group_code",
+                                      &raise_engine_settings_change_request::group_code},
+        ::ores::utility::codec::field{"base_version",
+                                      &raise_engine_settings_change_request::base_version},
+        ::ores::utility::codec::field{"values", &raise_engine_settings_change_request::values},
+        ::ores::utility::codec::field{"reason", &raise_engine_settings_change_request::reason},
+    };
+}
+
+/**
+ * @brief The members of raise_engine_settings_change_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const raise_engine_settings_change_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &raise_engine_settings_change_response::result},
+        ::ores::utility::codec::field{"request_id",
+                                      &raise_engine_settings_change_response::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_changes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_changes_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id",
+                                      &get_engine_settings_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_engine_settings_changes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_changes_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_engine_settings_changes_response::result},
+        ::ores::utility::codec::field{"changes", &get_engine_settings_changes_response::changes},
+    };
+}
+
+/**
+ * @brief The members of recheck_engine_settings_changes_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const recheck_engine_settings_changes_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id",
+                                      &recheck_engine_settings_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of recheck_engine_settings_changes_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const recheck_engine_settings_changes_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &recheck_engine_settings_changes_response::result},
+        ::ores::utility::codec::field{"changes",
+                                      &recheck_engine_settings_changes_response::changes},
+        ::ores::utility::codec::field{"refusals",
+                                      &recheck_engine_settings_changes_response::refusals},
+        ::ores::utility::codec::field{"part_codes",
+                                      &recheck_engine_settings_changes_response::part_codes},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_value_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::engine_settings_value_change& v);
+    static ores::reporting::messaging::engine_settings_value_change
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_value_change& v);
+    static ores::reporting::messaging::engine_settings_value_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::engine_settings_change_line> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::engine_settings_change_line& v);
+    static ores::reporting::messaging::engine_settings_change_line read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::engine_settings_change_line& v);
+    static ores::reporting::messaging::engine_settings_change_line
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::engine_settings_value> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::engine_settings_value& v);
+    static ores::reporting::messaging::engine_settings_value read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::engine_settings_value& v);
+    static ores::reporting::messaging::engine_settings_value
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::raise_engine_settings_change_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::raise_engine_settings_change_request& v);
+    static ores::reporting::messaging::raise_engine_settings_change_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::raise_engine_settings_change_request& v);
+    static ores::reporting::messaging::raise_engine_settings_change_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::raise_engine_settings_change_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::raise_engine_settings_change_response& v);
+    static ores::reporting::messaging::raise_engine_settings_change_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::raise_engine_settings_change_response& v);
+    static ores::reporting::messaging::raise_engine_settings_change_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_changes_request& v);
+    static ores::reporting::messaging::get_engine_settings_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_changes_request& v);
+    static ores::reporting::messaging::get_engine_settings_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_engine_settings_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_engine_settings_changes_response& v);
+    static ores::reporting::messaging::get_engine_settings_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_engine_settings_changes_response& v);
+    static ores::reporting::messaging::get_engine_settings_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::recheck_engine_settings_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::recheck_engine_settings_changes_request& v);
+    static ores::reporting::messaging::recheck_engine_settings_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::recheck_engine_settings_changes_request& v);
+    static ores::reporting::messaging::recheck_engine_settings_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::recheck_engine_settings_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::recheck_engine_settings_changes_response& v);
+    static ores::reporting::messaging::recheck_engine_settings_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::recheck_engine_settings_changes_response& v);
+    static ores::reporting::messaging::recheck_engine_settings_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

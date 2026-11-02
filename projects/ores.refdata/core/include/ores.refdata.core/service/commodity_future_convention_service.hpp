@@ -27,11 +27,21 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/commodity_future_convention.hpp"
+#include "ores.refdata.api/domain/commodity_future_averaging_terms.hpp"
+#include "ores.refdata.api/domain/commodity_future_contract_terms.hpp"
+#include "ores.refdata.api/domain/commodity_future_expiry_anchor.hpp"
+#include "ores.refdata.api/domain/commodity_future_off_peak_index.hpp"
+#include "ores.refdata.api/domain/commodity_future_option_expiry.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/messaging/commodity_future_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
-#include <chrono>
+#include "ores.refdata.core/repository/commodity_future_averaging_terms_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_contract_terms_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_expiry_anchor_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_off_peak_index_repository.hpp"
+#include "ores.refdata.core/repository/commodity_future_option_expiry_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -40,10 +50,13 @@
 namespace ores::refdata::service {
 
 /**
- * @brief Service for managing commodity future conventions.
+ * @brief Service for the composite commodity future convention family.
  *
- * Provides a higher-level interface for commodity future convention operations,
- * wrapping the underlying repository.
+ * The family is one central row plus its parts. A read answers the central
+ * row and every part live at the same instant; a write lands the central row
+ * and reconciles each part in one transaction, so no reader sees the parts
+ * disagree with the central version. See the "The atomised entity" and
+ * "Temporal composite entity versioning" architecture documents.
  */
 class ORES_REFDATA_CORE_EXPORT commodity_future_convention_service {
 private:
@@ -67,18 +80,13 @@ public:
     explicit commodity_future_convention_service(context ctx);
 
     /**
-     * @brief The protocol operations, one method per subject.
+     * @brief The family's protocol operations, one method per subject.
      *
      * A method takes the canonical request and answers its response, so the
      * handler that serves the subject decodes, calls and replies without
-     * deciding anything. The result a caller reads -- missing, conflicting,
-     * denied -- is filled here, where the storage call that decided it is
-     * made, rather than being inferred from an exception.
+     * deciding anything.
      */
     /**@{*/
-    ::ores::refdata::messaging::list_commodity_future_conventions_response
-    list_commodity_future_conventions(
-        const ::ores::refdata::messaging::list_commodity_future_conventions_request& request);
     ::ores::refdata::messaging::get_commodity_future_convention_response
     get_commodity_future_convention(
         const ::ores::refdata::messaging::get_commodity_future_convention_request& request);
@@ -91,123 +99,157 @@ public:
     ::ores::refdata::messaging::put_many_commodity_future_conventions_response
     put_many_commodity_future_conventions(
         const ::ores::refdata::messaging::put_many_commodity_future_conventions_request& request);
-    ::ores::refdata::messaging::delete_commodity_future_convention_response
-    delete_commodity_future_convention(
-        const ::ores::refdata::messaging::delete_commodity_future_convention_request& request);
-    ::ores::refdata::messaging::delete_many_commodity_future_conventions_response
-    delete_many_commodity_future_conventions(
-        const ::ores::refdata::messaging::delete_many_commodity_future_conventions_request&
-            request);
-    ::ores::refdata::messaging::list_commodity_future_convention_versions_response
-    list_commodity_future_convention_versions(
-        const ::ores::refdata::messaging::list_commodity_future_convention_versions_request&
-            request);
-    ::ores::refdata::messaging::get_commodity_future_convention_version_response
-    get_commodity_future_convention_version(
-        const ::ores::refdata::messaging::get_commodity_future_convention_version_request& request);
     /**@}*/
-
-    /**
-     * @brief Lists commodity future conventions with pagination support.
-     *
-     * @param offset Number of records to skip.
-     * @param limit Maximum number of records to return.
-     * @return Vector of commodity future conventions for the requested page.
-     */
-    std::vector<domain::commodity_future_convention>
-    list_commodity_future_conventions(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active commodity future conventions.
-     *
-     * @return Total number of active commodity future conventions.
-     */
-    std::uint32_t count_commodity_future_conventions();
-
-
-    /**
-     * @brief Retrieves a single commodity future convention as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The commodity future convention at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::commodity_future_convention>
-    get_commodity_future_convention_at_version(const std::string& id, std::uint32_t version);
-
-    /**
-     * @brief Retrieves a single commodity future convention by its primary key.
-     *
-     * @return The commodity future convention if found, std::nullopt otherwise.
-     */
-    std::optional<domain::commodity_future_convention>
-    get_commodity_future_convention(const std::string& id);
-
-    /**
-     * @brief Retrieves a batch of commodity future conventions by primary key.
-     */
-    std::vector<domain::commodity_future_convention>
-    get_commodity_future_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Saves a commodity future convention (creates or updates).
-     *
-     * @param commodity_future_convention The commodity future convention to save.
-     * @throws std::exception on failure.
-     */
-    void save_commodity_future_convention(
-        const domain::commodity_future_convention& commodity_future_convention);
-
-    /**
-     * @brief Saves a batch of commodity future conventions.
-     *
-     * @param commodity_future_conventions The commodity future conventions to save.
-     * @throws std::exception on failure.
-     */
-    void save_commodity_future_conventions(
-        const std::vector<domain::commodity_future_convention>& commodity_future_conventions);
-
-    /**
-     * @brief Deletes a commodity future convention by its primary key.
-     *
-     * @throws std::exception on failure.
-     */
-    void delete_commodity_future_convention(const std::string& id);
-
-    /**
-     * @brief Deletes commodity future conventions by their primary keys.
-     */
-    void delete_commodity_future_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Retrieves all historical versions of a commodity future convention.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::commodity_future_convention>
-    get_commodity_future_convention_history(const std::string& id);
 
 private:
     context ctx_;
-    repository::commodity_future_convention_repository repo_;
+    repository::convention_repository central_repo_;
+    repository::commodity_future_averaging_terms_repository averaging_terms_repo_;
+    repository::commodity_future_contract_terms_repository contract_terms_repo_;
+    repository::commodity_future_expiry_anchor_repository expiry_anchor_repo_;
+    repository::commodity_future_off_peak_index_repository off_peak_index_repo_;
+    repository::commodity_future_option_expiry_repository option_expiry_repo_;
 
     /**
-     * @brief Checks one change against the row it names, and stamps it.
+     * @brief Assembles the family item: the central row and every part live
+     * at the same instant.
+     */
+    ::ores::refdata::messaging::commodity_future_convention_item
+    assemble(const context& ctx,
+             const ::ores::refdata::messaging::commodity_future_convention_key& key,
+             const std::optional<domain::convention>& central);
+
+    /**
+     * @brief Checks one central change against the row it names, and stamps it.
      *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
+     * A single write and a batch state the same claim, so the check and the
+     * stamp are one decision made in one place.
      */
     ores::utility::domain::result
-    prepare_change(const ::ores::refdata::messaging::commodity_future_convention_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::commodity_future_convention& out);
+    prepare_convention(const ::ores::refdata::messaging::convention_change& change,
+                       const ores::utility::domain::change_intent& intent,
+                       const context& ctx,
+                       domain::convention& out);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_averaging_terms(
+        const ::ores::refdata::messaging::commodity_future_averaging_terms_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::commodity_future_averaging_terms& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_averaging_terms(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::commodity_future_averaging_terms_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_contract_terms(
+        const ::ores::refdata::messaging::commodity_future_contract_terms_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::commodity_future_contract_terms& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_contract_terms(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::commodity_future_contract_terms_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_expiry_anchor(
+        const ::ores::refdata::messaging::commodity_future_expiry_anchor_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::commodity_future_expiry_anchor& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_expiry_anchor(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::commodity_future_expiry_anchor_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_off_peak_index(
+        const ::ores::refdata::messaging::commodity_future_off_peak_index_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::commodity_future_off_peak_index& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_off_peak_index(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::commodity_future_off_peak_index_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result prepare_option_expiry(
+        const ::ores::refdata::messaging::commodity_future_option_expiry_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::commodity_future_option_expiry& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_option_expiry(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<::ores::refdata::messaging::commodity_future_option_expiry_change>&
+            requested,
+        const ores::utility::domain::change_intent& intent);
 };
 
 }

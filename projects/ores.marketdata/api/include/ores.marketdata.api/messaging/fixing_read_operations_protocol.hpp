@@ -25,10 +25,17 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_FIXING_READ_OPERATIONS_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_FIXING_READ_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.marketdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::marketdata::messaging {
@@ -200,6 +207,133 @@ struct get_fixing_window_response {
     std::vector<std::chrono::system_clock::time_point> received_at;
 };
 
+/**
+ * @brief The members of get_fixing_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fixing_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"item", &get_fixing_request::item},
+        ::ores::utility::codec::field{"provider_code", &get_fixing_request::provider_code},
+        ::ores::utility::codec::field{"party_id", &get_fixing_request::party_id},
+        ::ores::utility::codec::field{"on_or_before", &get_fixing_request::on_or_before},
+    };
 }
+
+/**
+ * @brief The members of get_fixing_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fixing_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_fixing_response::result},
+        ::ores::utility::codec::field{"provider_code", &get_fixing_response::provider_code},
+        ::ores::utility::codec::field{"vendor_scheme", &get_fixing_response::vendor_scheme},
+        ::ores::utility::codec::field{"vendor_id", &get_fixing_response::vendor_id},
+        ::ores::utility::codec::field{"fixing_date", &get_fixing_response::fixing_date},
+        ::ores::utility::codec::field{"value", &get_fixing_response::value},
+        ::ores::utility::codec::field{"source", &get_fixing_response::source},
+        ::ores::utility::codec::field{"received_at", &get_fixing_response::received_at},
+    };
+}
+
+/**
+ * @brief The members of get_fixing_window_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fixing_window_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"item", &get_fixing_window_request::item},
+        ::ores::utility::codec::field{"provider_code", &get_fixing_window_request::provider_code},
+        ::ores::utility::codec::field{"party_id", &get_fixing_window_request::party_id},
+        ::ores::utility::codec::field{"to", &get_fixing_window_request::to},
+        ::ores::utility::codec::field{"days", &get_fixing_window_request::days},
+    };
+}
+
+/**
+ * @brief The members of get_fixing_window_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fixing_window_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_fixing_window_response::result},
+        ::ores::utility::codec::field{"provider_code", &get_fixing_window_response::provider_code},
+        ::ores::utility::codec::field{"vendor_scheme", &get_fixing_window_response::vendor_scheme},
+        ::ores::utility::codec::field{"vendor_id", &get_fixing_window_response::vendor_id},
+        ::ores::utility::codec::field{"days", &get_fixing_window_response::days},
+        ::ores::utility::codec::field{"used", &get_fixing_window_response::used},
+        ::ores::utility::codec::field{"dates", &get_fixing_window_response::dates},
+        ::ores::utility::codec::field{"values", &get_fixing_window_response::values},
+        ::ores::utility::codec::field{"sources", &get_fixing_window_response::sources},
+        ::ores::utility::codec::field{"received_at", &get_fixing_window_response::received_at},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::get_fixing_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fixing_request& v);
+    static ores::marketdata::messaging::get_fixing_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_fixing_request& v);
+    static ores::marketdata::messaging::get_fixing_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::get_fixing_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fixing_response& v);
+    static ores::marketdata::messaging::get_fixing_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_fixing_response& v);
+    static ores::marketdata::messaging::get_fixing_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fixing_window_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fixing_window_request& v);
+    static ores::marketdata::messaging::get_fixing_window_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_fixing_window_request& v);
+    static ores::marketdata::messaging::get_fixing_window_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fixing_window_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fixing_window_response& v);
+    static ores::marketdata::messaging::get_fixing_window_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_fixing_window_response& v);
+    static ores::marketdata::messaging::get_fixing_window_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6C7FBF9C-21F4-44FE-8E12-5731BCE14399
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.market_series_identity
 #+description: Codegen entity model for the projection that makes a series identity joinable -- one column per identity field the codec schema declares, written from the same parse that writes the oresmd URI.

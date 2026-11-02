@@ -25,10 +25,16 @@
 #ifndef ORES_ORE_API_MESSAGING_CURRENCY_CONFIG_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_CURRENCY_CONFIG_PROTOCOL_HPP
 
+#include "ores.ore.api/export.hpp"
 #include "ores.ore.api/messaging/ore_document_protocol.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::ore::messaging {
@@ -175,6 +181,288 @@ struct import_currency_config_response {
     std::vector<currency_import_error> errors;
 };
 
+/**
+ * @brief The members of export_currency_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const export_currency_config_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"iso_codes", &export_currency_config_request::iso_codes},
+    };
 }
+
+/**
+ * @brief The members of export_currency_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const export_currency_config_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &export_currency_config_response::success},
+        ::ores::utility::codec::field{"message", &export_currency_config_response::message},
+        ::ores::utility::codec::field{"count", &export_currency_config_response::count},
+        ::ores::utility::codec::field{"files", &export_currency_config_response::files},
+    };
+}
+
+/**
+ * @brief The members of currency_import_row, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const currency_import_row&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"iso_code", &currency_import_row::iso_code},
+        ::ores::utility::codec::field{"name", &currency_import_row::name},
+        ::ores::utility::codec::field{"change", &currency_import_row::change},
+        ::ores::utility::codec::field{"what", &currency_import_row::what},
+    };
+}
+
+/**
+ * @brief The members of currency_import_issue, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const currency_import_issue&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"kind", &currency_import_issue::kind},
+        ::ores::utility::codec::field{"subject", &currency_import_issue::subject},
+        ::ores::utility::codec::field{"detail", &currency_import_issue::detail},
+    };
+}
+
+/**
+ * @brief The members of preview_currency_config_import_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_currency_config_import_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"content", &preview_currency_config_import_request::content},
+    };
+}
+
+/**
+ * @brief The members of preview_currency_config_import_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const preview_currency_config_import_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &preview_currency_config_import_response::success},
+        ::ores::utility::codec::field{"message", &preview_currency_config_import_response::message},
+        ::ores::utility::codec::field{"root_element",
+                                      &preview_currency_config_import_response::root_element},
+        ::ores::utility::codec::field{"in_file", &preview_currency_config_import_response::in_file},
+        ::ores::utility::codec::field{"held", &preview_currency_config_import_response::held},
+        ::ores::utility::codec::field{"changed", &preview_currency_config_import_response::changed},
+        ::ores::utility::codec::field{"added", &preview_currency_config_import_response::added},
+        ::ores::utility::codec::field{"removed", &preview_currency_config_import_response::removed},
+        ::ores::utility::codec::field{"rows", &preview_currency_config_import_response::rows},
+        ::ores::utility::codec::field{"issues", &preview_currency_config_import_response::issues},
+    };
+}
+
+/**
+ * @brief The members of currency_import_choice, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const currency_import_choice&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"iso_code", &currency_import_choice::iso_code},
+        ::ores::utility::codec::field{"action", &currency_import_choice::action},
+    };
+}
+
+/**
+ * @brief The members of import_currency_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const import_currency_config_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"content", &import_currency_config_request::content},
+        ::ores::utility::codec::field{"choices", &import_currency_config_request::choices},
+        ::ores::utility::codec::field{"reason_code", &import_currency_config_request::reason_code},
+        ::ores::utility::codec::field{"commentary", &import_currency_config_request::commentary},
+    };
+}
+
+/**
+ * @brief The members of currency_import_error, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const currency_import_error&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"iso_code", &currency_import_error::iso_code},
+        ::ores::utility::codec::field{"message", &currency_import_error::message},
+    };
+}
+
+/**
+ * @brief The members of import_currency_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const import_currency_config_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &import_currency_config_response::success},
+        ::ores::utility::codec::field{"message", &import_currency_config_response::message},
+        ::ores::utility::codec::field{"added", &import_currency_config_response::added},
+        ::ores::utility::codec::field{"changed", &import_currency_config_response::changed},
+        ::ores::utility::codec::field{"deleted", &import_currency_config_response::deleted},
+        ::ores::utility::codec::field{"kept", &import_currency_config_response::kept},
+        ::ores::utility::codec::field{"errors", &import_currency_config_response::errors},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::export_currency_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::export_currency_config_request& v);
+    static ores::ore::messaging::export_currency_config_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::export_currency_config_request& v);
+    static ores::ore::messaging::export_currency_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::export_currency_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::export_currency_config_response& v);
+    static ores::ore::messaging::export_currency_config_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::export_currency_config_response& v);
+    static ores::ore::messaging::export_currency_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::currency_import_row> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::currency_import_row& v);
+    static ores::ore::messaging::currency_import_row read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::currency_import_row& v);
+    static ores::ore::messaging::currency_import_row read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::currency_import_issue> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::currency_import_issue& v);
+    static ores::ore::messaging::currency_import_issue read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::currency_import_issue& v);
+    static ores::ore::messaging::currency_import_issue
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT
+    wire_traits<ores::ore::messaging::preview_currency_config_import_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::ore::messaging::preview_currency_config_import_request& v);
+    static ores::ore::messaging::preview_currency_config_import_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::preview_currency_config_import_request& v);
+    static ores::ore::messaging::preview_currency_config_import_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT
+    wire_traits<ores::ore::messaging::preview_currency_config_import_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::ore::messaging::preview_currency_config_import_response& v);
+    static ores::ore::messaging::preview_currency_config_import_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::preview_currency_config_import_response& v);
+    static ores::ore::messaging::preview_currency_config_import_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::currency_import_choice> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::currency_import_choice& v);
+    static ores::ore::messaging::currency_import_choice read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::currency_import_choice& v);
+    static ores::ore::messaging::currency_import_choice
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::import_currency_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::import_currency_config_request& v);
+    static ores::ore::messaging::import_currency_config_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::import_currency_config_request& v);
+    static ores::ore::messaging::import_currency_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::currency_import_error> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::currency_import_error& v);
+    static ores::ore::messaging::currency_import_error read_json(std::string_view text);
+    static std::string write_msgpack(const ores::ore::messaging::currency_import_error& v);
+    static ores::ore::messaging::currency_import_error
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ORE_API_EXPORT wire_traits<ores::ore::messaging::import_currency_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::ore::messaging::import_currency_config_response& v);
+    static ores::ore::messaging::import_currency_config_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::ore::messaging::import_currency_config_response& v);
+    static ores::ore::messaging::import_currency_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

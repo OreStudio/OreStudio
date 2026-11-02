@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 24031CC6-5F22-4A6F-96FD-A1E149038580
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.auth_event
 #+description: Codegen entity model for the iam auth_events hypertable, one row per authentication event.

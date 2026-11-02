@@ -71,7 +71,7 @@ function fakeServer(): JourneyServer {
         recheckBootstrap: vi.fn(async () => undefined),
         completeSystemOnboarding: vi.fn(async () => undefined),
         publicSources: vi.fn(async () => []),
-        acceptSourceTerms: vi.fn(async () => undefined),
+        acceptAllSourceTerms: vi.fn(async () => []),
         declineSourceTerms: vi.fn(async () => undefined),
         tenantSetupRun: vi.fn(async () => ({ instanceId: '', status: '', error: '' })),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
@@ -140,8 +140,8 @@ function steps(
         readonly onAdministratorEntered?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
         readonly onFinished?: () => void;
-        /** Whether every public source has been accepted or declined. */
-        readonly sourcesDecided?: boolean;
+        /** What Continue sends from the public sources, absent while one is undecided. */
+        readonly sendSources?: (() => Promise<void>) | null;
     } = {},
 ) {
     return firstRunSteps({
@@ -162,7 +162,10 @@ function steps(
         creatingPassword: overrides.creatingPassword ?? 'Issued-Password-1',
         welcome: 'Welcome body',
         publicSources: 'Public sources body',
-        sourcesDecided: overrides.sourcesDecided ?? true,
+        sendSources:
+            overrides.sendSources === null
+                ? undefined
+                : (overrides.sendSources ?? (async () => undefined)),
         administratorForm: 'Administrator body',
         administratorExists: overrides.administratorExists ?? false,
         administratorSignIn: 'Administrator sign-in body',
@@ -471,10 +474,12 @@ describe('the public sources step', () => {
         expect(steps({ choice: 'system-only' }).map((step) => step.id)).toContain('sources');
     });
 
-    it('lets the person on only once every publisher is accepted or declined', () => {
-        const step = (decided: boolean) =>
-            steps({ sourcesDecided: decided }).find((s) => s.id === 'sources');
-        expect(step(false)?.next?.enabled).toBe(false);
-        expect(step(true)?.next?.enabled).toBe(true);
+    it('lets the person on only once every publisher is decided, and sends on Continue', () => {
+        const send = vi.fn(async () => undefined);
+        const undecided = steps({ sendSources: null }).find((s) => s.id === 'sources');
+        const decided = steps({ sendSources: send }).find((s) => s.id === 'sources');
+        expect(undecided?.next?.enabled).toBe(false);
+        expect(decided?.next?.enabled).toBe(true);
+        expect(decided?.next?.run).toBe(send);
     });
 });

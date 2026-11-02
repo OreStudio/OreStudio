@@ -23,6 +23,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -117,10 +118,8 @@ TEST_CASE("a family states every heading its sample states", catalogue_tags) {
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
 
-        const auto sample = std::filesystem::path(family->sample_file);
-        const auto relative = sample.lexically_relative("external/ore");
-        REQUIRE_FALSE(relative.empty());
-        const auto headings = headings_of(ores::testing::ore_path(relative.string()));
+        const auto headings =
+            headings_of(ores::testing::project_root::resolve(family->sample_file));
         REQUIRE_FALSE(headings.empty());
 
         for (const auto& heading : headings) {
@@ -142,10 +141,7 @@ TEST_CASE("a family states each column once, and its sample exists", catalogue_t
         CHECK(std::ranges::adjacent_find(names, {}, &output_column::name) == names.end());
 
         CHECK(family.header_variants > 0);
-        const auto relative =
-            std::filesystem::path(family.sample_file).lexically_relative("external/ore");
-        REQUIRE_FALSE(relative.empty());
-        CHECK(std::filesystem::exists(ores::testing::ore_path(relative.string())));
+        CHECK(std::filesystem::exists(ores::testing::project_root::resolve(family.sample_file)));
     }
 }
 
@@ -200,11 +196,18 @@ TEST_CASE("npv states its figures as measures and its context as qualifiers", ca
 }
 
 TEST_CASE("a configuration-driven family says its measures are open", catalogue_tags) {
-    for (const auto& code : {"curves", "var", "dim_regression"}) {
+    for (const auto& code :
+         {"curves", "var", "dim_regression", "stress_scenarios", "scenariostatistics"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
         CHECK(family->measures_open);
+
+        // The run decides which figures an open family states, so no figure is
+        // one every run must state.
+        for (const auto& measure : family->measure_columns)
+            CHECK(std::ranges::find(family->required_columns, measure) ==
+                  family->required_columns.end());
     }
 
     for (const auto& code : {"npv", "exposure-trade", "flows"}) {
@@ -216,10 +219,10 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
 }
 
 TEST_CASE("every market-state family is a family of the catalogue", catalogue_tags) {
-    const std::vector<std::string> expected = {"netcube",
-                                               "rawcube",
-                                               "scenario",
-                                               "scenario_fullSurface",
+    const std::vector<std::string> expected = {"dividends",
+                                               "fixings",
+                                               "marketdata",
+                                               "scenariodump",
                                                "scenariostatistics",
                                                "stress_scenarios",
                                                "todaysmarketcalibration"};
@@ -231,4 +234,55 @@ TEST_CASE("every market-state family is a family of the catalogue", catalogue_ta
     std::ranges::sort(stated);
 
     CHECK(stated == expected);
+}
+
+TEST_CASE("a family selection stores every family it does not skip", catalogue_tags) {
+    const auto none = ores::ore::results::family_selection_of("");
+    CHECK(none.skipped.empty());
+    CHECK(none.stores("rawcube"));
+
+    const auto some = ores::ore::results::family_selection_of(" rawcube, netcube ,,rawcube");
+    CHECK(some.skipped == std::vector<std::string>{"netcube", "rawcube"});
+    CHECK_FALSE(some.stores("rawcube"));
+    CHECK_FALSE(some.stores("netcube"));
+    CHECK(some.stores("npv"));
+}
+
+TEST_CASE("a family selection refuses a family the catalogue does not name", catalogue_tags) {
+    CHECK_THROWS_AS(ores::ore::results::family_selection_of("npv,rawcubes"), std::invalid_argument);
+    CHECK_THROWS_AS(ores::ore::results::family_selection_of(std::vector<std::string>{"nope"}),
+                    std::invalid_argument);
+}
+
+TEST_CASE("a family is found by the report name the engine writes when none is configured",
+          catalogue_tags) {
+    const auto* flows = ores::ore::results::family_of_file("cashflow.csv");
+    REQUIRE(flows != nullptr);
+    CHECK(flows->code == "flows");
+
+    const auto* detail = ores::ore::results::family_of_file("saccrdetail.csv");
+    REQUIRE(detail != nullptr);
+    CHECK(detail->code == "saccr_detail");
+
+    const auto* evolution = ores::ore::results::family_of_file("dim_evolution.txt");
+    REQUIRE(evolution != nullptr);
+    CHECK(evolution->code == "dim_evolution");
+
+    const auto* regression = ores::ore::results::family_of_file("dim_regression_1.txt");
+    REQUIRE(regression != nullptr);
+    CHECK(regression->code == "dim_regression");
+}
+
+TEST_CASE("a family proven only by a sample we wrote says so", catalogue_tags) {
+    for (const auto& code :
+         {"crif", "capital_crif", "sacva_sensitivity", "jacobi", "jacobi_inverse"}) {
+        const auto* family = family_named(code);
+        REQUIRE(family != nullptr);
+        INFO("the family is " << code);
+        CHECK(family->synthetic);
+        CHECK(family->sample_file.starts_with("projects/ores.ore/data/samples/synthetic/"));
+    }
+    const auto* npv = family_named("npv");
+    REQUIRE(npv != nullptr);
+    CHECK_FALSE(npv->synthetic);
 }

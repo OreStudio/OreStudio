@@ -28,15 +28,16 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <exception>
 #include <memory>
-#include <rfl/json.hpp>
+#include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -49,6 +50,21 @@ using ores::nats::service::nats_client;
 namespace messaging = ores::assets::messaging;
 
 namespace {
+
+/**
+ * @brief The request a body states, or nothing when it states none.
+ *
+ * The request's own codec reads it, so this unit needs no shape of the types the
+ * request holds.
+ */
+template <typename T>
+std::optional<T> image_tag_read_body(std::string_view body) {
+    try {
+        return ores::utility::codec::wire_traits<T>::read_json(body);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
 
 /**
  * @brief Read one path or query parameter as the member's own type.
@@ -118,7 +134,9 @@ image_tag_forward(const http_request& req, nats_client& session, const Request& 
             co_return http_response::internal_error(std::string("Failed to decode response: ") +
                                                     decoded.error().what());
         }
-        co_return http_response::json(rfl::json::write(*decoded));
+        co_return http_response::json(
+            ores::utility::codec::wire_traits<typename Request::response_type>::write_json(
+                *decoded));
     } catch (const ores::nats::service::session_expired_error& e) {
         co_return http_response::unauthorized(e.what());
     } catch (const std::exception& e) {
@@ -180,7 +198,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_get_many(const ht
                                                                         nats_client& session) {
     using request_type = messaging::get_many_image_tags_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = image_tag_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -194,7 +212,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_add(const http_re
                                                                    nats_client& session) {
     using request_type = messaging::put_image_tag_request;
     try {
-        auto parsed = rfl::json::read<request_type>(req.body);
+        auto parsed = image_tag_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -210,7 +228,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_set(const http_re
                                                                    nats_client& session) {
     using request_type = messaging::put_image_tag_request;
     try {
-        auto parsed = rfl::json::read<request_type>(req.body);
+        auto parsed = image_tag_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -232,7 +250,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_put_many(const ht
                                                                         nats_client& session) {
     using request_type = messaging::put_many_image_tags_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = image_tag_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
@@ -275,7 +293,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_delete_many(const
                                                                            nats_client& session) {
     using request_type = messaging::delete_many_image_tags_request;
     try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
+        const auto parsed = image_tag_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }

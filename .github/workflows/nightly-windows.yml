@@ -159,7 +159,7 @@ jobs:
           echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
 
       - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v8
+        uses: ikalnytskyi/action-setup-postgres@v9
         with:
           username: postgres
           password: ${{ steps.pg_password.outputs.admin_password }}
@@ -208,7 +208,7 @@ jobs:
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.4
+        uses: lukka/get-cmake@v4.4.5
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v6

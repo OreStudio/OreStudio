@@ -1390,6 +1390,19 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.market_calibration_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'market_object_type',
+            'market_object_id',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'market_object_type_one_of',
+            'market_object_id_one_of',
+        ],
+        rows: ['values'],
+    },
     'marketdata.v1.market_data_mappings.list': {
         asOf: true,
         filter: [
@@ -1433,6 +1446,19 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['series_id', 'id_one_of', 'series_id_one_of'],
         rows: ['market_fixings'],
     },
+    'marketdata.v1.market_input_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'datum_id',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'family_one_of',
+            'datum_id_one_of',
+        ],
+        rows: ['values'],
+    },
     'marketdata.v1.market_observations.list': {
         asOf: true,
         filter: [
@@ -1459,6 +1485,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['market_observations'],
     },
+    'marketdata.v1.market_scenario_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'factor',
+            'family',
+            'scenario',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'factor_one_of',
+            'family_one_of',
+            'scenario_one_of',
+        ],
+        rows: ['values'],
+    },
     'marketdata.v1.market_series.list': {
         asOf: true,
         filter: ['provider_code', 'id_one_of', 'provider_code_one_of'],
@@ -1478,17 +1519,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
-    },
-    'marketdata.v1.market_state_payloads.list': {
-        asOf: true,
-        filter: [
-            'report_instance_id',
-            'family',
-            'id_one_of',
-            'report_instance_id_one_of',
-            'family_one_of',
-        ],
-        rows: ['payloads'],
     },
     'marketdata.v1.observation_lineages.list': {
         asOf: true,
@@ -2056,12 +2086,77 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'refdata.v1.commodity_future_conventions.list': {
+    'refdata.v1.commodity_future_averaging_terms.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['commodity_future_conventions'],
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_averaging_terms'],
     },
-    'refdata.v1.commodity_future_conventions_versions.list': {
+    'refdata.v1.commodity_future_averaging_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_averaging_terms'],
+    },
+    'refdata.v1.commodity_future_averaging_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_contract_terms.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_contract_terms'],
+    },
+    'refdata.v1.commodity_future_contract_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_contract_terms'],
+    },
+    'refdata.v1.commodity_future_contract_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_expiry_anchors'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_expiry_anchors'],
+    },
+    'refdata.v1.commodity_future_expiry_anchors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_off_peak_indexes'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_off_peak_indexes'],
+    },
+    'refdata.v1.commodity_future_off_peak_indexes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.commodity_future_option_expiries.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_option_expiries'],
+    },
+    'refdata.v1.commodity_future_option_expiries.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['commodity_future_option_expiries'],
+    },
+    'refdata.v1.commodity_future_option_expiries_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -2261,12 +2356,47 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'refdata.v1.cross_currency_basis_conventions.list': {
+    'refdata.v1.cross_currency_basis_flat_legs.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['cross_currency_basis_conventions'],
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_flat_legs'],
     },
-    'refdata.v1.cross_currency_basis_conventions_versions.list': {
+    'refdata.v1.cross_currency_basis_flat_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_flat_legs'],
+    },
+    'refdata.v1.cross_currency_basis_flat_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_spread_legs'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_spread_legs'],
+    },
+    'refdata.v1.cross_currency_basis_spread_legs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms.list': {
+        asOf: true,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_swap_terms'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms.list_by_convention_id': {
+        asOf: false,
+        filter: ['convention_id', 'id_one_of', 'convention_id_one_of'],
+        rows: ['cross_currency_basis_swap_terms'],
+    },
+    'refdata.v1.cross_currency_basis_swap_terms_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -4433,16 +4563,31 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: true,
         filter: [
             'report_instance_id',
+            'measure',
             'family',
             'subject_id',
-            'measure',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'measure_one_of',
+            'family_one_of',
+            'subject_id_one_of',
+        ],
+        rows: ['metrics'],
+    },
+    'reporting.v1.report_text_values.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'family',
+            'subject_id',
+            'name',
             'id_one_of',
             'report_instance_id_one_of',
             'family_one_of',
             'subject_id_one_of',
-            'measure_one_of',
+            'name_one_of',
         ],
-        rows: ['metrics'],
+        rows: ['values'],
     },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,

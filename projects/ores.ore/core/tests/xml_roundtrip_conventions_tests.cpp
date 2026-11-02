@@ -128,9 +128,6 @@ std::vector<family> families() {
         make_family<rd::cds_convention>("cds", "CDS", 40),
         make_family<rd::cms_spread_option_convention>("cms_spread_option", "CmsSpreadOption", 12),
         make_family<rd::commodity_forward_convention>("commodity_forward", "CommodityForward", 2),
-        make_family<rd::commodity_future_convention>("commodity_future", "CommodityFuture", 5),
-        make_family<rd::cross_currency_basis_convention>(
-            "cross_currency_basis", "CrossCurrencyBasis", 49),
         make_family<rd::deposit_convention>("deposit", "Deposit", 67),
         make_family<rd::fra_convention>("fra", "FRA", 53),
         make_family<rd::future_convention>("future", "Future", 39),
@@ -410,6 +407,225 @@ TEST_CASE("conventions_cross_currency_fix_float_round_trips",
     }
 
     CHECK(files == 18);
+}
+
+// The export writes a basis convention only whole, as it writes a fix float one.
+TEST_CASE("conventions_cross_currency_basis_without_a_part_is_refused",
+          "[ore][xml][roundtrip][conventions]") {
+    const std::string text = R"(<Conventions>
+  <CrossCurrencyBasis>
+    <Id>EUR-USD-XCCY-BASIS</Id>
+    <SettlementDays>2</SettlementDays>
+    <SettlementCalendar>TARGET,US</SettlementCalendar>
+    <RollConvention>MF</RollConvention>
+    <FlatIndex>USD-SOFR</FlatIndex>
+    <SpreadIndex>EUR-ESTER</SpreadIndex>
+  </CrossCurrencyBasis>
+</Conventions>)";
+
+    for (const std::string part : {"cross_currency_basis_swap_terms",
+                                   "cross_currency_basis_flat_leg",
+                                   "cross_currency_basis_spread_leg"}) {
+        INFO("without " << part);
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows, [&](const auto& row) { return row.family == part; });
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+    }
+}
+
+// The element is one central row and three parts. Every convention in the
+// corpus lands its central row and exactly one of each part, each leg carries
+// its own index and tenor, and the export writes the document back unchanged.
+TEST_CASE("conventions_cross_currency_basis_round_trips", "[ore][xml][roundtrip][conventions]") {
+    namespace rd = ores::refdata::domain;
+    int files = 0;
+
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
+        const auto document = load(path);
+        const auto swaps =
+            xml_roundtrip_conventions_root_of(document).children("CrossCurrencyBasis");
+        if (swaps.empty())
+            continue;
+
+        ++files;
+        INFO(path.string());
+        const auto mapped = split_conventions(document);
+        std::vector<rd::convention> centrals;
+        for (const auto& c : rows_of<rd::convention>(mapped, "convention"))
+            if (c.identity.kind_code == "CROSS_CURRENCY_BASIS")
+                centrals.push_back(c);
+        const auto terms =
+            rows_of<rd::cross_currency_basis_swap_terms>(mapped, "cross_currency_basis_swap_terms");
+        const auto flats =
+            rows_of<rd::cross_currency_basis_flat_leg>(mapped, "cross_currency_basis_flat_leg");
+        const auto spreads =
+            rows_of<rd::cross_currency_basis_spread_leg>(mapped, "cross_currency_basis_spread_leg");
+        REQUIRE(centrals.size() == swaps.size());
+        REQUIRE(terms.size() == swaps.size());
+        REQUIRE(flats.size() == swaps.size());
+        REQUIRE(spreads.size() == swaps.size());
+
+        for (std::size_t i = 0; i < swaps.size(); ++i) {
+            const auto& in = swaps[i];
+            const auto& central = centrals[i];
+            CHECK(central.payload.name == in.text("Id").value_or(std::string()));
+
+            const auto belongs = [&](const auto& part) {
+                return part.convention_id == central.identity.id;
+            };
+            CHECK(std::ranges::count_if(terms, belongs) == 1);
+            CHECK(std::ranges::count_if(flats, belongs) == 1);
+            CHECK(std::ranges::count_if(spreads, belongs) == 1);
+
+            const auto t = std::ranges::find_if(terms, belongs);
+            const auto f = std::ranges::find_if(flats, belongs);
+            const auto sp = std::ranges::find_if(spreads, belongs);
+            REQUIRE(t != terms.end());
+            REQUIRE(f != flats.end());
+            REQUIRE(sp != spreads.end());
+            CHECK(t->settlement_days == in.integer("SettlementDays").value_or(0));
+            CHECK(f->flat_index == in.text("FlatIndex").value_or(std::string()));
+            CHECK(sp->spread_index == in.text("SpreadIndex").value_or(std::string()));
+            CHECK(f->flat_tenor == in.text("FlatTenor"));
+            CHECK(sp->spread_tenor == in.text("SpreadTenor"));
+        }
+
+        const std::string exported = conventions_mapper::write(join_conventions(mapped));
+        CHECK(element_count(exported, "CrossCurrencyBasis") == static_cast<int>(swaps.size()));
+
+        const auto reparsed = conventions_mapper::read(exported, path.string());
+        CHECK(conventions_difference(document, reparsed, path.string()).empty());
+    }
+
+    CHECK(files == 49);
+}
+
+// The contract terms are required, and each other part is at most one row: a
+// join that finds no contract terms, or two of an optional part, refuses the
+// convention rather than write half of it. A part whose convention is missing
+// refuses the join rather than vanish from the export.
+TEST_CASE("conventions_commodity_future_without_its_contract_terms_is_refused",
+          "[ore][xml][roundtrip][conventions]") {
+    const std::string text = R"(<Conventions>
+  <CommodityFuture>
+    <Id>NYMEX:CL</Id>
+    <ContractFrequency>Monthly</ContractFrequency>
+    <Calendar>US-NYSE</Calendar>
+    <AnchorDay>
+      <CalendarDaysBefore>3</CalendarDaysBefore>
+    </AnchorDay>
+  </CommodityFuture>
+</Conventions>)";
+
+    {
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows, [](const auto& row) {
+            return row.family == "commodity_future_contract_terms";
+        });
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+    }
+    {
+        auto package = split_conventions(conventions_mapper::read(text));
+        const auto anchor = std::ranges::find_if(package.bundle.rows, [](const auto& row) {
+            return row.family == "commodity_future_expiry_anchor";
+        });
+        REQUIRE(anchor != package.bundle.rows.end());
+        package.bundle.rows.push_back(*anchor);
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+    }
+    {
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows, [](const auto& row) {
+            return row.family == "commodity_future_expiry_anchor";
+        });
+        CHECK_NOTHROW(join_conventions(package));
+    }
+    {
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows,
+                      [](const auto& row) { return row.family == "convention"; });
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+    }
+}
+
+// The element is one central row, its contract terms and up to four optional
+// parts. Every convention in the corpus lands its central row and its contract
+// terms, an optional part exactly when the element states that block, and the
+// export writes the document back unchanged.
+TEST_CASE("conventions_commodity_future_round_trips", "[ore][xml][roundtrip][conventions]") {
+    namespace rd = ores::refdata::domain;
+    int files = 0;
+    std::size_t anchors = 0;
+    std::size_t options = 0;
+    std::size_t off_peaks = 0;
+    std::size_t averagings = 0;
+
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
+        const auto document = load(path);
+        const auto futures =
+            xml_roundtrip_conventions_root_of(document).children("CommodityFuture");
+        if (futures.empty())
+            continue;
+
+        ++files;
+        INFO(path.string());
+        const auto mapped = split_conventions(document);
+        std::vector<rd::convention> centrals;
+        for (const auto& c : rows_of<rd::convention>(mapped, "convention"))
+            if (c.identity.kind_code == "COMMODITY_FUTURE")
+                centrals.push_back(c);
+        const auto terms =
+            rows_of<rd::commodity_future_contract_terms>(mapped, "commodity_future_contract_terms");
+        const auto anchor =
+            rows_of<rd::commodity_future_expiry_anchor>(mapped, "commodity_future_expiry_anchor");
+        const auto option =
+            rows_of<rd::commodity_future_option_expiry>(mapped, "commodity_future_option_expiry");
+        const auto off_peak =
+            rows_of<rd::commodity_future_off_peak_index>(mapped, "commodity_future_off_peak_index");
+        const auto averaging = rows_of<rd::commodity_future_averaging_terms>(
+            mapped, "commodity_future_averaging_terms");
+        REQUIRE(centrals.size() == futures.size());
+        REQUIRE(terms.size() == futures.size());
+        anchors += anchor.size();
+        options += option.size();
+        off_peaks += off_peak.size();
+        averagings += averaging.size();
+
+        for (std::size_t i = 0; i < futures.size(); ++i) {
+            const auto& in = futures[i];
+            const auto& central = centrals[i];
+            CHECK(central.payload.name == in.text("Id").value_or(std::string()));
+
+            const auto belongs = [&](const auto& part) {
+                return part.convention_id == central.identity.id;
+            };
+            CHECK(std::ranges::count_if(terms, belongs) == 1);
+            CHECK(std::ranges::count_if(anchor, belongs) == (in.has("AnchorDay") ? 1 : 0));
+            CHECK(std::ranges::count_if(off_peak, belongs) ==
+                  (in.has("OffPeakPowerIndexData") ? 1 : 0));
+            CHECK(std::ranges::count_if(averaging, belongs) == (in.has("AveragingData") ? 1 : 0));
+            CHECK(std::ranges::count_if(option, belongs) <= 1);
+
+            const auto t = std::ranges::find_if(terms, belongs);
+            REQUIRE(t != terms.end());
+            CHECK(t->calendar == in.text("Calendar").value_or(std::string()));
+            CHECK(t->index_name == in.text("IndexName"));
+        }
+
+        const std::string exported = conventions_mapper::write(join_conventions(mapped));
+        CHECK(element_count(exported, "CommodityFuture") == static_cast<int>(futures.size()));
+
+        const auto reparsed = conventions_mapper::read(exported, path.string());
+        CHECK(conventions_difference(document, reparsed, path.string()).empty());
+    }
+
+    CHECK(files == 5);
+    CHECK(anchors > 0);
+    CHECK(options > 0);
+    CHECK(off_peaks > 0);
+    CHECK(averagings > 0);
 }
 
 TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled",

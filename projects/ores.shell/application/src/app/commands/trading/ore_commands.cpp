@@ -35,15 +35,17 @@
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/struct_codec.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cli/cli.h>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -588,9 +590,12 @@ void ore_commands::process_import(std::ostream& out,
         }
         const std::string json((std::istreambuf_iterator<char>(in)),
                                std::istreambuf_iterator<char>());
-        auto parsed = rfl::json::read<ores::ore::planner::import_choices>(json);
-        if (!parsed) {
-            fail(out) << "Cannot parse choices file: " << parsed.error().what() << std::endl;
+        std::optional<ores::ore::planner::import_choices> parsed;
+        try {
+            parsed =
+                ores::utility::codec::object::read_json<ores::ore::planner::import_choices>(json);
+        } catch (const std::exception& e) {
+            fail(out) << "Cannot parse choices file: " << e.what() << std::endl;
             return;
         }
         choices = std::move(*parsed);
@@ -634,7 +639,7 @@ void ore_commands::process_import(std::ostream& out,
     ores::ore::messaging::ore_import_request req;
     req.request_id = request_id;
     req.correlation_id = request_id;
-    req.import_choices_json = rfl::json::write(choices);
+    req.import_choices_json = ores::utility::codec::object::write_json(choices);
 
     BOOST_LOG_SEV(lg(), info) << "Starting ORE import for request: " << request_id;
 

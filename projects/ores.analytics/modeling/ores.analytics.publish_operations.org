@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3B9F7C52-6D4A-4E18-A2C7-8E1D5B0F9A63
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.publish_operations
 #+description: Codegen operation model for the workflow steps that publish an analytics configuration document from a DQ dataset.

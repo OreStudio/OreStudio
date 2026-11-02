@@ -985,6 +985,7 @@ export interface ReportEdit {
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;
+    readonly skipped_families: string;
 }
 
 /**
@@ -1121,6 +1122,15 @@ function resultReasonOf(value: string | undefined): ResultReason {
     const found = RESULT_REASONS.find((candidate) => candidate === value);
     return found ?? '';
 }
+
+/** What became of one publisher in a list accept. */
+const termsOutcomeSchema = z.object({
+    code: z.string(),
+    success: z.boolean(),
+    message: z.string(),
+});
+export type TermsOutcome = z.infer<typeof termsOutcomeSchema>;
+const termsListReplySchema = z.object({ outcomes: z.array(termsOutcomeSchema) });
 
 export const api = {
     /**
@@ -2581,6 +2591,20 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ version }),
         });
+    },
+
+    /**
+     * Accepts several publishers' terms, each at the version the person read. One refusal
+     * does not stop the others, so each publisher's outcome comes back.
+     */
+    async acceptProvidersTerms(
+        providers: readonly { readonly code: string; readonly version: number }[],
+    ): Promise<readonly TermsOutcome[]> {
+        const reply = await request('/api/marketdata/public-rates/accept-terms', {
+            method: 'POST',
+            body: JSON.stringify({ providers }),
+        });
+        return termsListReplySchema.parse(reply).outcomes;
     },
 
     /** Withdraws a publisher's acceptance, so it is no longer fetched. */

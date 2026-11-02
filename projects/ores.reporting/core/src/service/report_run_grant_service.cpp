@@ -24,7 +24,6 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>

@@ -59,6 +59,7 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     r.pre_processing = v.pre_processing;
     r.prepared_input_key = v.prepared_input_key.value_or("");
     r.post_processing = v.post_processing;
+    r.skipped_families = v.skipped_families;
     r.is_official = v.is_official;
     r.regulatory_book_type = v.regulatory_book_type;
     r.cut_kind_code = v.cut_kind_code;
@@ -93,6 +94,7 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     r.prepared_input_key =
         v.prepared_input_key.empty() ? std::nullopt : std::optional(v.prepared_input_key);
     r.post_processing = v.post_processing;
+    r.skipped_families = v.skipped_families;
     r.is_official = v.is_official;
     r.regulatory_book_type = v.regulatory_book_type;
     r.cut_kind_code = v.cut_kind_code;

@@ -20,7 +20,10 @@
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "output_csv.hpp"
 #include <algorithm>
+#include <iterator>
+#include <limits>
 #include <string>
+#include <vector>
 
 namespace ores::ore::results {
 namespace {
@@ -91,14 +94,23 @@ std::vector<std::size_t> subject_order(const output_family& family) {
 
 }
 
-metric_read_outcome read_metrics(std::string_view csv, const output_family& family) {
+std::vector<std::string> read_metrics_in_blocks(std::string_view csv,
+                                                const output_family& family,
+                                                std::size_t block_size,
+                                                const metric_block_sink& sink) {
     metric_read_outcome outcome;
+    const auto hand_over = [&] {
+        if (outcome.metrics.empty())
+            return;
+        sink(outcome.metrics);
+        outcome.metrics.clear();
+    };
 
     if (csv.substr(0, 3) == "\xEF\xBB\xBF")
         csv.remove_prefix(3);
     if (csv.empty()) {
         outcome.refusals.push_back(family.code + " is empty.");
-        return outcome;
+        return std::move(outcome.refusals);
     }
 
     const auto first_break = csv.find('\n');
@@ -114,7 +126,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (std::ranges::find(headings, required) == headings.end()) {
             outcome.refusals.push_back(family.code + " states no " + required +
                                        " column; it states: " + joined(headings) + ".");
-            return outcome;
+            return std::move(outcome.refusals);
         }
     }
 
@@ -133,7 +145,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         if (!family.measures_open) {
             outcome.refusals.push_back(family.code + " states no " + heading +
                                        " column, and its measures are closed.");
-            return outcome;
+            return std::move(outcome.refusals);
         }
         measures.push_back(heading);
     }
@@ -168,6 +180,7 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
 
         metric base;
         base.source = family.code;
+        base.line = static_cast<int>(line_number);
         std::size_t subject_key = family.key_columns.size();
         for (const auto index : subject_keys) {
             if (is_null(field_at(key_at[index])))
@@ -197,11 +210,17 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
         for (const auto& [name, at] : qualifier_at)
             lift(name, field_at(at));
         // A key that is neither the subject nor the observation date states
-        // context, so it travels with the metric.
+        // context, so it travels with the metric. A scenario or a factor has a
+        // column of its own, so it fills it even when it is also the subject,
+        // as it is in a family that states no record.
+        const auto has_own_column = [](std::string_view name) {
+            return name == "Scenario" || name == "ScenarioLabel" || name == "Factor";
+        };
         for (std::size_t i = 0; i < family.key_columns.size(); ++i) {
-            if (i == subject_key || family.key_columns[i] == "Date")
+            const auto& name = family.key_columns[i];
+            if (name == "Date" || (i == subject_key && !has_own_column(name)))
                 continue;
-            lift(family.key_columns[i], field_at(key_at[i]));
+            lift(name, field_at(key_at[i]));
         }
 
         for (const auto& measure : measures) {
@@ -232,9 +251,23 @@ metric_read_outcome read_metrics(std::string_view csv, const output_family& fami
                     metric.currency = currency;
             }
             outcome.metrics.push_back(std::move(metric));
+            if (outcome.metrics.size() >= block_size)
+                hand_over();
         }
     }
 
+    hand_over();
+    return std::move(outcome.refusals);
+}
+
+metric_read_outcome read_metrics(std::string_view csv, const output_family& family) {
+    metric_read_outcome outcome;
+    outcome.refusals = read_metrics_in_blocks(
+        csv, family, std::numeric_limits<std::size_t>::max(), [&](std::vector<metric>& block) {
+            outcome.metrics.insert(outcome.metrics.end(),
+                                   std::make_move_iterator(block.begin()),
+                                   std::make_move_iterator(block.end()));
+        });
     return outcome;
 }
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C3D4E5F6-A7B8-9012-C3D4-E5F6A7B89012
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.market_fixing

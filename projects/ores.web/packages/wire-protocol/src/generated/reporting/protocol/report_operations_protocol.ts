@@ -309,6 +309,7 @@ export interface PostProcessResultsRequest {
     tenant_id: string;
     correlation_id: string;
     batch_id: string;
+    skipped_families: string;
 }
 
 export interface PostProcessResultsResult {
@@ -350,6 +351,7 @@ export interface ReportExecutionRequest {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    skipped_families: string | null;
     kind: string | null;
 }
 

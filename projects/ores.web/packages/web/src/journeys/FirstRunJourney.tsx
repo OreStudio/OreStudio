@@ -40,7 +40,7 @@
  * write it down.
  */
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
@@ -76,14 +76,16 @@ function reasonOf(error: unknown): string {
  * has to be told what they are starting. A deployment that has one, and a
  * browser that is not signed in as it, opens at the administrator: the account
  * exists, and only its owner may carry on. A browser already signed in has
- * nothing to authenticate, so the rail resumes at the starting point, which is
- * the first question that is genuinely open.
+ * nothing to authenticate, so the rail resumes at the public sources, the first
+ * step after the administrator. Their terms decide whether the installation
+ * fetches anything, so the step is never passed unseen; when every source is
+ * already decided, it continues at once.
  */
 export function startStep(signInRequired: boolean, signedIn: boolean): StepId {
     if (signInRequired) {
         return 'administrator';
     }
-    return signedIn ? 'profile' : 'welcome';
+    return signedIn ? 'sources' : 'welcome';
 }
 
 /**
@@ -319,7 +321,12 @@ export function FirstRunJourney({
      * and the position stays inside both rails.
      */
     const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
-    const [sourcesDecided, setSourcesDecided] = useState(false);
+    const [sendSources, setSendSources] = useState<() => Promise<void>>();
+    // A function given to a state setter is taken as an updater, so it is wrapped.
+    const onSourcesReady = useCallback(
+        (send: (() => Promise<void>) | undefined) => setSendSources(() => send),
+        [],
+    );
     /*
      * Where the rail stands. Nothing is stated until somebody moves: the
      * deployment decides where the journey opens, which is the step that signs
@@ -484,8 +491,8 @@ export function FirstRunJourney({
         choice,
         onChoose: setChoice,
         welcome: <WelcomeIntro />,
-        publicSources: <PublicSourcesStep server={server} onDecided={setSourcesDecided} />,
-        sourcesDecided,
+        publicSources: <PublicSourcesStep server={server} onReady={onSourcesReady} />,
+        sendSources,
         administratorForm: (
             <AdministratorForm
                 policy={policy}

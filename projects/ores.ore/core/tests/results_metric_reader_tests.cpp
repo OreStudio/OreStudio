@@ -17,8 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/results/calibration_reader.hpp"
+#include "ores.ore.core/results/cashflow_reader.hpp"
+#include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.testing/test_files.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -52,8 +56,7 @@ std::string npv_row(const std::string& npv) {
 }
 
 std::string sample_text(const std::string& sample_file) {
-    const auto relative = std::filesystem::path(sample_file).lexically_relative("external/ore");
-    return ores::testing::read_file(ores::testing::ore_path(relative.string()));
+    return ores::testing::read_file(ores::testing::project_root::resolve(sample_file));
 }
 
 }
@@ -117,6 +120,23 @@ TEST_CASE("a key that is not the subject travels with the metric", metric_tags) 
         std::ranges::any_of(first.qualifiers, [](const auto& one) { return one.first == "Time"; });
     CHECK(has_time);
     CHECK(metric_named(outcome.metrics, "EPE") != nullptr);
+}
+
+TEST_CASE("a scenario that is the row's only key still names the scenario", metric_tags) {
+    const auto* family = family_named("stress_scenarios");
+    REQUIRE(family != nullptr);
+
+    const auto outcome = read_metrics("#Date,Scenario,Numeraire,DiscountCurve/USD/0\n"
+                                      "2026-10-31,UP,1.0,1.01\n",
+                                      *family);
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.metrics.size() == 2);
+    for (const auto& one : outcome.metrics) {
+        CHECK(one.scenario == "UP");
+        CHECK(one.as_of == "2026-10-31");
+        CHECK(one.line == 2);
+    }
 }
 
 TEST_CASE("a row whose key is empty keeps its figure and its other keys", metric_tags) {
@@ -219,21 +239,14 @@ TEST_CASE("a file no family covers is refused", metric_tags) {
 }
 
 TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
-    // The three child-row families have a reader of their own, and the wide
-    // market state is stored as a payload rather than read as metrics.
-    const std::vector<std::string> other_shapes = {"flows",
-                                                   "stresstest_flows",
-                                                   "todaysmarketcalibration_cashflows",
-                                                   "stress_scenarios",
-                                                   "scenariostatistics"};
-
+    // The payments, the calibration, the market inputs and the text values
+    // have readers of their own; every other family is read as metrics.
     std::size_t read = 0;
     for (const auto& family : output_families()) {
-        if (std::ranges::find(other_shapes, family.code) != other_shapes.end())
-            continue;
-        // A family of no figures is not a metric family: the calibration
-        // report states text beside a key, and it is market state, not a result.
-        if (family.measure_columns.empty())
+        if (ores::ore::results::is_cashflow_family(family) ||
+            ores::ore::results::is_calibration_family(family) ||
+            ores::ore::results::is_market_input_family(family) ||
+            ores::ore::results::is_text_value_family(family))
             continue;
         INFO("the family is " << family.code);
 
@@ -245,4 +258,34 @@ TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
         ++read;
     }
     CHECK(read > 50);
+}
+
+TEST_CASE("a family read in blocks hands over what it reads whole, a block at a time",
+          metric_tags) {
+    const auto* family = family_named("rawcube");
+    REQUIRE(family != nullptr);
+    const auto csv = sample_text(family->sample_file);
+
+    const auto whole = read_metrics(csv, *family);
+    REQUIRE(whole.refusals.empty());
+    REQUIRE(whole.metrics.size() > 5);
+
+    std::vector<std::size_t> sizes;
+    std::vector<metric> handed;
+    const auto refusals = ores::ore::results::read_metrics_in_blocks(
+        csv, *family, 5, [&](std::vector<metric>& block) {
+            sizes.push_back(block.size());
+            handed.insert(handed.end(), block.begin(), block.end());
+        });
+
+    CHECK(refusals.empty());
+    REQUIRE(handed.size() == whole.metrics.size());
+    for (std::size_t i = 0; i + 1 < sizes.size(); ++i)
+        CHECK(sizes[i] == 5);
+    CHECK(sizes.back() <= 5);
+    for (std::size_t i = 0; i < handed.size(); ++i) {
+        CHECK(handed[i].line == whole.metrics[i].line);
+        CHECK(handed[i].measure == whole.metrics[i].measure);
+        CHECK(handed[i].value == whole.metrics[i].value);
+    }
 }

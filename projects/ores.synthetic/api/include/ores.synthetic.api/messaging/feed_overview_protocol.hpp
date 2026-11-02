@@ -25,8 +25,14 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_OVERVIEW_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FEED_OVERVIEW_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -166,6 +172,193 @@ struct list_folder_feeds_response {
     std::vector<folder_feed> feeds;
 };
 
+/**
+ * @brief The members of feed_folder, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const feed_folder&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &feed_folder::id},
+        ::ores::utility::codec::field{"parent_id", &feed_folder::parent_id},
+        ::ores::utility::codec::field{"name", &feed_folder::name},
+        ::ores::utility::codec::field{"kind", &feed_folder::kind},
+        ::ores::utility::codec::field{"provider_code", &feed_folder::provider_code},
+        ::ores::utility::codec::field{"fx_feeds", &feed_folder::fx_feeds},
+        ::ores::utility::codec::field{"ir_feeds", &feed_folder::ir_feeds},
+        ::ores::utility::codec::field{"running_feeds", &feed_folder::running_feeds},
+        ::ores::utility::codec::field{"idle_auto_feeds", &feed_folder::idle_auto_feeds},
+        ::ores::utility::codec::field{"has_children", &feed_folder::has_children},
+    };
 }
+
+/**
+ * @brief The members of list_feed_folders_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feed_folders_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"parent_id", &list_feed_folders_request::parent_id},
+    };
+}
+
+/**
+ * @brief The members of list_feed_folders_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_feed_folders_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &list_feed_folders_response::success},
+        ::ores::utility::codec::field{"message", &list_feed_folders_response::message},
+        ::ores::utility::codec::field{"folders", &list_feed_folders_response::folders},
+    };
+}
+
+/**
+ * @brief The members of folder_feed, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const folder_feed&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &folder_feed::id},
+        ::ores::utility::codec::field{"kind", &folder_feed::kind},
+        ::ores::utility::codec::field{"label", &folder_feed::label},
+        ::ores::utility::codec::field{"source_name", &folder_feed::source_name},
+        ::ores::utility::codec::field{"oresmd_uri", &folder_feed::oresmd_uri},
+        ::ores::utility::codec::field{"folder_id", &folder_feed::folder_id},
+        ::ores::utility::codec::field{"enabled", &folder_feed::enabled},
+        ::ores::utility::codec::field{"provider_code", &folder_feed::provider_code},
+        ::ores::utility::codec::field{"asset_class_code", &folder_feed::asset_class_code},
+        ::ores::utility::codec::field{"underlying", &folder_feed::underlying},
+        ::ores::utility::codec::field{"engine", &folder_feed::engine},
+        ::ores::utility::codec::field{"ticks_per_hour", &folder_feed::ticks_per_hour},
+        ::ores::utility::codec::field{"auto_start", &folder_feed::auto_start},
+    };
+}
+
+/**
+ * @brief The members of list_folder_feeds_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folder_feeds_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"folder_id", &list_folder_feeds_request::folder_id},
+        ::ores::utility::codec::field{"provider_code", &list_folder_feeds_request::provider_code},
+        ::ores::utility::codec::field{"should_run", &list_folder_feeds_request::should_run},
+        ::ores::utility::codec::field{"search", &list_folder_feeds_request::search},
+        ::ores::utility::codec::field{"state", &list_folder_feeds_request::state},
+        ::ores::utility::codec::field{"asset_class", &list_folder_feeds_request::asset_class},
+        ::ores::utility::codec::field{"offset", &list_folder_feeds_request::offset},
+        ::ores::utility::codec::field{"limit", &list_folder_feeds_request::limit},
+    };
+}
+
+/**
+ * @brief The members of list_folder_feeds_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_folder_feeds_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &list_folder_feeds_response::success},
+        ::ores::utility::codec::field{"message", &list_folder_feeds_response::message},
+        ::ores::utility::codec::field{"total", &list_folder_feeds_response::total},
+        ::ores::utility::codec::field{"feeds", &list_folder_feeds_response::feeds},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_folder> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::feed_folder& v);
+    static ores::synthetic::messaging::feed_folder read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::feed_folder& v);
+    static ores::synthetic::messaging::feed_folder read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_feed_folders_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feed_folders_request& v);
+    static ores::synthetic::messaging::list_feed_folders_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_feed_folders_request& v);
+    static ores::synthetic::messaging::list_feed_folders_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_feed_folders_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_feed_folders_response& v);
+    static ores::synthetic::messaging::list_feed_folders_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_feed_folders_response& v);
+    static ores::synthetic::messaging::list_feed_folders_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::folder_feed> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::folder_feed& v);
+    static ores::synthetic::messaging::folder_feed read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::folder_feed& v);
+    static ores::synthetic::messaging::folder_feed read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_folder_feeds_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_folder_feeds_request& v);
+    static ores::synthetic::messaging::list_folder_feeds_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_folder_feeds_request& v);
+    static ores::synthetic::messaging::list_folder_feeds_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::list_folder_feeds_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::list_folder_feeds_response& v);
+    static ores::synthetic::messaging::list_folder_feeds_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::list_folder_feeds_response& v);
+    static ores::synthetic::messaging::list_folder_feeds_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: b7ac341e-5867-4951-980b-213db6e350a6
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.convert_ir_parameters
 #+description: Codegen operation model for converting an IR feed's parameters between the simple and the advanced view.

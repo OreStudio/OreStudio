@@ -186,9 +186,10 @@ public:
     /// the next publish gets around to forgetting it.
     [[nodiscard]] std::size_t open_streams() const {
         const std::lock_guard lock(mu_);
-        return static_cast<std::size_t>(
-            std::count_if(subscriptions_.begin(), subscriptions_.end(),
-                          [](const auto& subscription) { return !subscription->closed(); }));
+        return static_cast<std::size_t>(std::count_if(
+            subscriptions_.begin(), subscriptions_.end(), [](const auto& subscription) {
+                return !subscription->closed();
+            }));
     }
 
 private:
@@ -261,8 +262,7 @@ public:
             timer->expires_after(keep_alive_);
             subscription_->set_waker([timer] { timer->cancel(); });
             boost::system::error_code ec;
-            co_await timer->async_wait(
-                boost::asio::redirect_error(boost::asio::use_awaitable, ec));
+            co_await timer->async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
             subscription_->clear_waker();
 
             if (!subscription_->closed() && subscription_->size() == 0)

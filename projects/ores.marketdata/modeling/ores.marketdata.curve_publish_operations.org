@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: ea078e64-15a8-48d1-97d4-400a5bd669ee
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.curve_publish_operations
 #+description: Codegen operation model for the approval-gated publish of a curve: the ask that waits on a decision, and the publish that applies an approved one.

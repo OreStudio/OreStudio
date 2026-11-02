@@ -25,8 +25,14 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_CONVERT_IR_PARAMETERS_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_CONVERT_IR_PARAMETERS_PROTOCOL_HPP
 
+#include "ores.synthetic.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::synthetic::messaging {
@@ -74,6 +80,79 @@ struct convert_ir_parameters_response {
     std::vector<double> parameter_values;
 };
 
+/**
+ * @brief The members of convert_ir_parameters_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_ir_parameters_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"process_type", &convert_ir_parameters_request::process_type},
+        ::ores::utility::codec::field{"to_simple", &convert_ir_parameters_request::to_simple},
+        ::ores::utility::codec::field{"parameter_names",
+                                      &convert_ir_parameters_request::parameter_names},
+        ::ores::utility::codec::field{"parameter_values",
+                                      &convert_ir_parameters_request::parameter_values},
+    };
 }
+
+/**
+ * @brief The members of convert_ir_parameters_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convert_ir_parameters_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &convert_ir_parameters_response::success},
+        ::ores::utility::codec::field{"message", &convert_ir_parameters_response::message},
+        ::ores::utility::codec::field{"has_simple_form",
+                                      &convert_ir_parameters_response::has_simple_form},
+        ::ores::utility::codec::field{"caution", &convert_ir_parameters_response::caution},
+        ::ores::utility::codec::field{"parameter_names",
+                                      &convert_ir_parameters_response::parameter_names},
+        ::ores::utility::codec::field{"parameter_values",
+                                      &convert_ir_parameters_response::parameter_values},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_ir_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::convert_ir_parameters_request& v);
+    static ores::synthetic::messaging::convert_ir_parameters_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_ir_parameters_request& v);
+    static ores::synthetic::messaging::convert_ir_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT
+    wire_traits<ores::synthetic::messaging::convert_ir_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::synthetic::messaging::convert_ir_parameters_response& v);
+    static ores::synthetic::messaging::convert_ir_parameters_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::synthetic::messaging::convert_ir_parameters_response& v);
+    static ores::synthetic::messaging::convert_ir_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

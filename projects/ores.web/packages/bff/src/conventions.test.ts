@@ -178,7 +178,14 @@ describe('the family list', () => {
             (family) => !registryEntities.has(family.entity),
         ).map((family) => family.key);
         expect(extra.sort()).toEqual(
-            ['cross-currency-fix-float', 'currency-pair', 'tenor', 'tenor-basis-swap'].sort(),
+            [
+                'commodity-future',
+                'cross-currency-basis',
+                'cross-currency-fix-float',
+                'currency-pair',
+                'tenor',
+                'tenor-basis-swap',
+            ].sort(),
         );
     });
 
@@ -581,10 +588,19 @@ describe('convention routes', () => {
                 .filter((call) => call.subject === 'refdata.v1.conventions.list')
                 .map((call) => (call.body as { filter: { kind_code: string } }).filter.kind_code)
                 .sort(),
-        ).toEqual(['CROSS_CURRENCY_FIX_FLOAT', 'TENOR_BASIS_SWAP']);
+        ).toEqual([
+            'COMMODITY_FUTURE',
+            'CROSS_CURRENCY_BASIS',
+            'CROSS_CURRENCY_FIX_FLOAT',
+            'TENOR_BASIS_SWAP',
+        ]);
         expect(
             families.find((f: { key: string }) => f.key === 'cross-currency-fix-float').count,
         ).toBe(4);
+        expect(families.find((f: { key: string }) => f.key === 'cross-currency-basis').count).toBe(
+            4,
+        );
+        expect(families.find((f: { key: string }) => f.key === 'commodity-future').count).toBe(4);
     });
 
     it('lists the rows of one family under its own subject', async () => {

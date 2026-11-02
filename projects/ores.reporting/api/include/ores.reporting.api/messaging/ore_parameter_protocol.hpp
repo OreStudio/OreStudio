@@ -26,11 +26,17 @@
 #define ORES_REPORTING_API_MESSAGING_ORE_PARAMETER_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/ore_parameter.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
@@ -311,7 +317,863 @@ inline constexpr std::string_view created = "reporting.v1.ore_parameters_events.
 inline constexpr std::string_view updated = "reporting.v1.ore_parameters_events.updated";
 inline constexpr std::string_view deleted = "reporting.v1.ore_parameters_events.deleted";
 }
+/**
+ * @brief The members of ore_parameter_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &ore_parameter_key::name},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &ore_parameter_write::id},
+        utility::codec::field{"scope", &ore_parameter_write::scope},
+        utility::codec::field{"subtype", &ore_parameter_write::subtype},
+        utility::codec::field{"name", &ore_parameter_write::name},
+        utility::codec::field{"schema_name", &ore_parameter_write::schema_name},
+        utility::codec::field{"xpath", &ore_parameter_write::xpath},
+        utility::codec::field{"position", &ore_parameter_write::position},
+        utility::codec::field{"ore_parameter_value_domain_code",
+                              &ore_parameter_write::ore_parameter_value_domain_code},
+        utility::codec::field{"is_required", &ore_parameter_write::is_required},
+        utility::codec::field{"label", &ore_parameter_write::label},
+        utility::codec::field{"help", &ore_parameter_write::help},
+        utility::codec::field{"description", &ore_parameter_write::description},
+        utility::codec::field{"default_text", &ore_parameter_write::default_text},
+        utility::codec::field{"format", &ore_parameter_write::format},
+        utility::codec::field{"introduced_in", &ore_parameter_write::introduced_in},
+        utility::codec::field{"removed_in", &ore_parameter_write::removed_in},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &ore_parameter_change::write},
+        utility::codec::field{"precondition", &ore_parameter_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &ore_parameter_removal::key},
+        utility::codec::field{"precondition", &ore_parameter_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &ore_parameter_lookup::key},
+        utility::codec::field{"ore_parameter", &ore_parameter_lookup::ore_parameter},
+    };
+}
+
+/**
+ * @brief The members of ore_parameters_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameters_filter&) {
+    return std::tuple{
+        utility::codec::field{"ore_parameter_value_domain_code",
+                              &ore_parameters_filter::ore_parameter_value_domain_code},
+        utility::codec::field{"id_one_of", &ore_parameters_filter::id_one_of},
+        utility::codec::field{"ore_parameter_value_domain_code_one_of",
+                              &ore_parameters_filter::ore_parameter_value_domain_code_one_of},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &ore_parameter_event::event_id},
+        utility::codec::field{"key", &ore_parameter_event::key},
+        utility::codec::field{"action", &ore_parameter_event::action},
+        utility::codec::field{"version", &ore_parameter_event::version},
+        utility::codec::field{"occurred_at", &ore_parameter_event::occurred_at},
+        utility::codec::field{"correlation_id", &ore_parameter_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_version_key&) {
+    return std::tuple{
+        utility::codec::field{"ore_parameter", &ore_parameter_version_key::ore_parameter},
+        utility::codec::field{"version", &ore_parameter_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of ore_parameter_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const ore_parameter_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &ore_parameter_versions_filter::version},
+        utility::codec::field{"from_version", &ore_parameter_versions_filter::from_version},
+        utility::codec::field{"to_version", &ore_parameter_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameters_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_ore_parameters_request::offset},
+        utility::codec::field{"limit", &list_ore_parameters_request::limit},
+        utility::codec::field{"order", &list_ore_parameters_request::order},
+        utility::codec::field{"filter", &list_ore_parameters_request::filter},
+        utility::codec::field{"as_of", &list_ore_parameters_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameters_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ore_parameters_response::result},
+        utility::codec::field{"parameters", &list_ore_parameters_response::parameters},
+        utility::codec::field{"total", &list_ore_parameters_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ore_parameter_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ore_parameter_response::result},
+        utility::codec::field{"ore_parameter", &get_ore_parameter_response::ore_parameter},
+    };
+}
+
+/**
+ * @brief The members of get_many_ore_parameters_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ore_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_ore_parameters_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_ore_parameters_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_ore_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_ore_parameters_response::result},
+        utility::codec::field{"entries", &get_many_ore_parameters_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_ore_parameter_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ore_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_ore_parameter_request::change},
+        utility::codec::field{"intent", &put_ore_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_ore_parameter_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_ore_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_ore_parameter_response::result},
+        utility::codec::field{"ore_parameter", &put_ore_parameter_response::ore_parameter},
+    };
+}
+
+/**
+ * @brief The members of put_many_ore_parameters_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ore_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_ore_parameters_request::changes},
+        utility::codec::field{"intent", &put_many_ore_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_ore_parameters_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_ore_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_ore_parameters_response::result},
+        utility::codec::field{"parameters", &put_many_ore_parameters_response::parameters},
+    };
+}
+
+/**
+ * @brief The members of delete_ore_parameter_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ore_parameter_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_ore_parameter_request::removal},
+        utility::codec::field{"intent", &delete_ore_parameter_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_ore_parameter_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_ore_parameter_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_ore_parameter_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ore_parameters_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ore_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_ore_parameters_request::removals},
+        utility::codec::field{"intent", &delete_many_ore_parameters_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_ore_parameters_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_ore_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_ore_parameters_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_ore_parameter_value_domain_code_ore_parameters_request, named as
+ * the wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_ore_parameter_value_domain_code_ore_parameters_request&) {
+    return std::tuple{
+        utility::codec::field{"ore_parameter_value_domain_code",
+                              &list_by_ore_parameter_value_domain_code_ore_parameters_request::
+                                  ore_parameter_value_domain_code},
+        utility::codec::field{
+            "scope", &list_by_ore_parameter_value_domain_code_ore_parameters_request::scope},
+        utility::codec::field{
+            "offset", &list_by_ore_parameter_value_domain_code_ore_parameters_request::offset},
+        utility::codec::field{
+            "limit", &list_by_ore_parameter_value_domain_code_ore_parameters_request::limit},
+        utility::codec::field{
+            "order", &list_by_ore_parameter_value_domain_code_ore_parameters_request::order},
+        utility::codec::field{
+            "filter", &list_by_ore_parameter_value_domain_code_ore_parameters_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_ore_parameter_value_domain_code_ore_parameters_response, named as
+ * the wire names them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(const list_by_ore_parameter_value_domain_code_ore_parameters_response&) {
+    return std::tuple{
+        utility::codec::field{
+            "result", &list_by_ore_parameter_value_domain_code_ore_parameters_response::result},
+        utility::codec::field{
+            "parameters",
+            &list_by_ore_parameter_value_domain_code_ore_parameters_response::parameters},
+        utility::codec::field{
+            "total", &list_by_ore_parameter_value_domain_code_ore_parameters_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_ore_parameter_versions_request::key},
+        utility::codec::field{"offset", &list_ore_parameter_versions_request::offset},
+        utility::codec::field{"limit", &list_ore_parameter_versions_request::limit},
+        utility::codec::field{"order", &list_ore_parameter_versions_request::order},
+        utility::codec::field{"filter", &list_ore_parameter_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_ore_parameter_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_ore_parameter_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_ore_parameter_versions_response::result},
+        utility::codec::field{"versions", &list_ore_parameter_versions_response::versions},
+        utility::codec::field{"total", &list_ore_parameter_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_ore_parameter_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ore_parameter_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_parameter_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ore_parameter_version_response::result},
+        utility::codec::field{"version", &get_ore_parameter_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_key& v);
+    static ores::reporting::messaging::ore_parameter_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_key& v);
+    static ores::reporting::messaging::ore_parameter_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_write& v);
+    static ores::reporting::messaging::ore_parameter_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_write& v);
+    static ores::reporting::messaging::ore_parameter_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_change& v);
+    static ores::reporting::messaging::ore_parameter_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_change& v);
+    static ores::reporting::messaging::ore_parameter_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_removal& v);
+    static ores::reporting::messaging::ore_parameter_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_removal& v);
+    static ores::reporting::messaging::ore_parameter_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_lookup& v);
+    static ores::reporting::messaging::ore_parameter_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_lookup& v);
+    static ores::reporting::messaging::ore_parameter_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameters_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameters_filter& v);
+    static ores::reporting::messaging::ore_parameters_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameters_filter& v);
+    static ores::reporting::messaging::ore_parameters_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_parameter_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_event& v);
+    static ores::reporting::messaging::ore_parameter_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_parameter_event& v);
+    static ores::reporting::messaging::ore_parameter_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::ore_parameter_version_key& v);
+    static ores::reporting::messaging::ore_parameter_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_version_key& v);
+    static ores::reporting::messaging::ore_parameter_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_parameter_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::ore_parameter_versions_filter& v);
+    static ores::reporting::messaging::ore_parameter_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_parameter_versions_filter& v);
+    static ores::reporting::messaging::ore_parameter_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::list_ore_parameters_request& v);
+    static ores::reporting::messaging::list_ore_parameters_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameters_request& v);
+    static ores::reporting::messaging::list_ore_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_ore_parameters_response& v);
+    static ores::reporting::messaging::list_ore_parameters_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameters_response& v);
+    static ores::reporting::messaging::list_ore_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::get_ore_parameter_request& v);
+    static ores::reporting::messaging::get_ore_parameter_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_request& v);
+    static ores::reporting::messaging::get_ore_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::get_ore_parameter_response& v);
+    static ores::reporting::messaging::get_ore_parameter_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_response& v);
+    static ores::reporting::messaging::get_ore_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_ore_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_ore_parameters_request& v);
+    static ores::reporting::messaging::get_many_ore_parameters_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_ore_parameters_request& v);
+    static ores::reporting::messaging::get_many_ore_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_ore_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_ore_parameters_response& v);
+    static ores::reporting::messaging::get_many_ore_parameters_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_ore_parameters_response& v);
+    static ores::reporting::messaging::get_many_ore_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_ore_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::put_ore_parameter_request& v);
+    static ores::reporting::messaging::put_ore_parameter_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_ore_parameter_request& v);
+    static ores::reporting::messaging::put_ore_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_ore_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::put_ore_parameter_response& v);
+    static ores::reporting::messaging::put_ore_parameter_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_ore_parameter_response& v);
+    static ores::reporting::messaging::put_ore_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_ore_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_ore_parameters_request& v);
+    static ores::reporting::messaging::put_many_ore_parameters_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_ore_parameters_request& v);
+    static ores::reporting::messaging::put_many_ore_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_ore_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_ore_parameters_response& v);
+    static ores::reporting::messaging::put_many_ore_parameters_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_ore_parameters_response& v);
+    static ores::reporting::messaging::put_many_ore_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_ore_parameter_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_ore_parameter_request& v);
+    static ores::reporting::messaging::delete_ore_parameter_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_ore_parameter_request& v);
+    static ores::reporting::messaging::delete_ore_parameter_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_ore_parameter_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_ore_parameter_response& v);
+    static ores::reporting::messaging::delete_ore_parameter_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_ore_parameter_response& v);
+    static ores::reporting::messaging::delete_ore_parameter_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_ore_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_ore_parameters_request& v);
+    static ores::reporting::messaging::delete_many_ore_parameters_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_ore_parameters_request& v);
+    static ores::reporting::messaging::delete_many_ore_parameters_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_ore_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_ore_parameters_response& v);
+    static ores::reporting::messaging::delete_many_ore_parameters_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_ore_parameters_response& v);
+    static ores::reporting::messaging::delete_many_ore_parameters_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_ore_parameter_value_domain_code_ore_parameters_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_ore_parameter_value_domain_code_ore_parameters_request& v);
+    static ores::reporting::messaging::
+        list_by_ore_parameter_value_domain_code_ore_parameters_request
+        read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_ore_parameter_value_domain_code_ore_parameters_request& v);
+    static ores::reporting::messaging::
+        list_by_ore_parameter_value_domain_code_ore_parameters_request
+        read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<
+    ores::reporting::messaging::list_by_ore_parameter_value_domain_code_ore_parameters_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::
+                   list_by_ore_parameter_value_domain_code_ore_parameters_response& v);
+    static ores::reporting::messaging::
+        list_by_ore_parameter_value_domain_code_ore_parameters_response
+        read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::
+                      list_by_ore_parameter_value_domain_code_ore_parameters_response& v);
+    static ores::reporting::messaging::
+        list_by_ore_parameter_value_domain_code_ore_parameters_response
+        read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_ore_parameter_versions_request& v);
+    static ores::reporting::messaging::list_ore_parameter_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameter_versions_request& v);
+    static ores::reporting::messaging::list_ore_parameter_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_ore_parameter_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_ore_parameter_versions_response& v);
+    static ores::reporting::messaging::list_ore_parameter_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_ore_parameter_versions_response& v);
+    static ores::reporting::messaging::list_ore_parameter_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_parameter_version_request& v);
+    static ores::reporting::messaging::get_ore_parameter_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_version_request& v);
+    static ores::reporting::messaging::get_ore_parameter_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_parameter_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_parameter_version_response& v);
+    static ores::reporting::messaging::get_ore_parameter_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_parameter_version_response& v);
+    static ores::reporting::messaging::get_ore_parameter_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

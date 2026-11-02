@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B1A831F5-8D53-4428-94F5-576A7E1C6CE3
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.calibration_policy
 #+description: One calibration policy per asset class: the volatility window, whether an inverse is allowed, and the fallback when no candidate has a fixing.

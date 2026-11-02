@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-shell-codecs-off-reflect-cpp
+#+pr: 4378
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.shell encodes and decodes without reflect-cpp. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,14 @@ Step 6 of 7, one component. ores.shell encodes and decodes without reflect-cpp. 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Make the entity and operation shell command templates print the reply
+  through the model's generated codec where the model opted in, and keep
+  reflect-cpp where it did not, as the http routes do.
+- Regenerate every component's shell commands.
+- Opt in the four dq models the earlier tasks missed, so their commands
+  follow: lei_entity_summary, report_definition_template, publish_bundle and
+  publish_datasets. Storage's objects model stays out: see the notes.
+- Move the hand-written inbox, ore, workflow and synthetic commands.
 
 * Measurements
 
@@ -58,9 +63,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Shell, dq and storage suites | all 16 shell suites pass (8,832 assertions in refdata alone, 3,127 cases), dq api 45 and core 118, storage api 14 and core 25 | the =ores.shell.*.tests=, =ores.dq.*.tests= and =ores.storage.*.tests= binaries | c028e23b28 plus this branch |
+| Codegen shell gate test | 3 pass | =pytest projects/ores.codegen/tests/test_shell_command_wire_codec_gate.py= | c028e23b28 plus this branch |
+| Component drift, every C++ component | no drift in any of the 19 C++ components | =check_component_drift.py= per component | c028e23b28 plus this branch |
+| Shell sources still calling reflect-cpp, outside tests | the two storage command files; =request_helpers.hpp= names it only in comments about ores.nats | =grep -rln "rfl::" projects/ores.shell= | c028e23b28 plus this branch |
 
 * Notes
+
+** Models the component tasks missed
+
+dq's =lei_entity_summary=, =report_definition_template=, =publish_bundle= and
+=publish_datasets= were never opted into the codec, so their generated commands
+kept reflect-cpp after the template change. They are opted in here.
+
+** Storage stays on the fallback
+
+Storage's =objects= model is not opted in. Its codec would make
+=ores.storage.api= a compiled library that links =ores.utility=, and the part
+is header-only on purpose: its model says a consumer linking it takes on no
+socket, no archive library and no logging. So the storage messages keep the
+reflect-cpp fallback, and =objects_operations_commands.cpp= and
+=raw_storage_commands.cpp= keep reflect-cpp. Whether storage trades that for a
+codec is the storage owner's call; the fallback capture lists it.
+
+** What keeps reflect-cpp
+
+Fourteen hand-written shell files still include the reflectors without calling
+reflect-cpp. Some calls they make still cross NATS through the reflect-cpp
+fallback of =wire_traits=, for example the synthetic market regime messages,
+whose hand-written protocol has no wire fields. The capture
+=find-the-nats-types-still-on-the-reflector-fallback= owns finding every such
+type before [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]] deletes
+the fallback, and that task drops the includes.
 
 * Test Scenarios
 
@@ -77,12 +111,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4378][#4378]] | [shell] Encode and decode without reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | static_assert a missing specialisation | shell templates | No change | An incomplete type already fails at the line. |
+| 2 | Gate test models and output path | =test_shell_command_wire_codec_gate.py= | No change | Real opted-in models by design; the renderer is stubbed. |
+| 3 | Shared helper for the reply write | shell templates | No change | The json::write dispatch capture covers it. |
+| 4 | Confirm import_choices bytes | =ore_commands.cpp= | No change | Compared with reflect-cpp in ores.ore.core since #4360. |
+| 5 | Error wording | =synthetic_commands.cpp= | No change | Prefix kept. |
+| 6 | Track left-over includes | hand-written shell files | No change | Remove reflect-cpp and the fallback capture own them. |
 
 * Result
+
+ores.shell's generated commands print their replies through each model's
+codec, and its hand-written commands read and write through the codec, apart
+from storage, whose header-only api keeps the reflect-cpp fallback. The dq
+models earlier tasks missed are opted in. What remains belongs to the
+reflector fallback that Remove reflect-cpp removes.

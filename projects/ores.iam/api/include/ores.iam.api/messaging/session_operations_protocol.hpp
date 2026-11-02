@@ -26,10 +26,17 @@
 #define ORES_IAM_API_MESSAGING_SESSION_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -93,6 +100,131 @@ struct end_session_response {
     std::string message;
 };
 
+/**
+ * @brief The members of session_view, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const session_view&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"session", &session_view::session},
+        ::ores::utility::codec::field{"party_id", &session_view::party_id},
+        ::ores::utility::codec::field{"visible_party_ids", &session_view::visible_party_ids},
+        ::ores::utility::codec::field{"username", &session_view::username},
+    };
 }
+
+/**
+ * @brief The members of get_active_sessions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_active_sessions_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_active_sessions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_active_sessions_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"sessions", &get_active_sessions_response::sessions},
+        ::ores::utility::codec::field{"success", &get_active_sessions_response::success},
+        ::ores::utility::codec::field{"message", &get_active_sessions_response::message},
+    };
+}
+
+/**
+ * @brief The members of end_session_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const end_session_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"session_id", &end_session_request::session_id},
+    };
+}
+
+/**
+ * @brief The members of end_session_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const end_session_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &end_session_response::success},
+        ::ores::utility::codec::field{"message", &end_session_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::session_view> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::session_view& v);
+    static ores::iam::messaging::session_view read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::session_view& v);
+    static ores::iam::messaging::session_view read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_active_sessions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_active_sessions_request& v);
+    static ores::iam::messaging::get_active_sessions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_active_sessions_request& v);
+    static ores::iam::messaging::get_active_sessions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_active_sessions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_active_sessions_response& v);
+    static ores::iam::messaging::get_active_sessions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_active_sessions_response& v);
+    static ores::iam::messaging::get_active_sessions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::end_session_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::end_session_request& v);
+    static ores::iam::messaging::end_session_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::end_session_request& v);
+    static ores::iam::messaging::end_session_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::end_session_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::end_session_response& v);
+    static ores::iam::messaging::end_session_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::end_session_response& v);
+    static ores::iam::messaging::end_session_response read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

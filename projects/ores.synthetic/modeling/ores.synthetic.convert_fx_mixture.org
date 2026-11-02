@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4a7963b8-b814-42b8-a93d-65226bc1b929
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.convert_fx_mixture
 #+description: Codegen operation model for converting an FX feed's mixture to another price-process engine.

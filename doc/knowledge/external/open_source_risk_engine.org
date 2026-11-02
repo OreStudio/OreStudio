@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :ore:risk:upstream:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-09-26
+#+updated: 2026-11-02
 
 The [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE) is a C++ library for pricing and
 risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]] and
@@ -68,6 +68,7 @@ interface, the v0 [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][version]] absorbs t
 
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — our analysis of ORE's model-config XML
   files and how we persist them.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — every output file ORE writes: its columns, what each figure measures and its unit.
 - [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]] — upstream repo.
 - [[https://www.opensourcerisk.org/][opensourcerisk.org]] — project home page.
 - [[https://acadia.inc/][acadia.inc]] — Acadia.

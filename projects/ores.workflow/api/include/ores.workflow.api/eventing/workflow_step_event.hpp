@@ -27,13 +27,12 @@
 
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_step_protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::eventing::domain {
@@ -54,8 +53,10 @@ struct entity_event_traits<ores::workflow::messaging::workflow_step_event> {
     from_notification(const entity_event_notification& notification) {
         ores::workflow::messaging::workflow_step_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
+        // A key this build cannot read leaves the event's own key default.
         if (const auto key =
-                rfl::json::read<ores::workflow::messaging::workflow_step_key>(notification.key))
+                ores::utility::codec::json::try_read<ores::workflow::messaging::workflow_step_key>(
+                    notification.key))
             event.key = *key;
         event.action = notification.action;
         event.version = notification.version;

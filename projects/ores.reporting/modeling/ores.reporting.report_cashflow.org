@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F6E1C24-8A57-4D0B-9B1E-6D2C4A7E9B58
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_cashflow
 #+description: Codegen entity model for the reporting =report_cashflow= table. One figure of one cashflow a run produced, with the keys that say which cashflow it belongs to.

@@ -32,6 +32,8 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,8 +41,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
+#include <span>
 #include <string_view>
 
 namespace ores::ore::service::messaging {
@@ -79,7 +80,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<prepare_ore_package_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
         ack.accept();
@@ -212,18 +213,21 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         const auto trades =
             transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
 
-        const auto rows =
-            rfl::msgpack::read<ores::trading::messaging::export_portfolio_response>(trades);
-        if (!rows) {
+        ores::trading::messaging::export_portfolio_response rows;
+        try {
+            rows = ores::utility::codec::
+                wire_traits<ores::trading::messaging::export_portfolio_response>::read_msgpack(
+                    std::as_bytes(std::span(trades)));
+        } catch (const std::exception& e) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +
-                     rows.error().what());
+                     std::string(e.what()));
             ack.accept();
             return;
         }
-        if (!rows->success) {
+        if (!rows.success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
-                     rows->message);
+                     rows.message);
             ack.accept();
             return;
         }
@@ -231,9 +235,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (!market_date) {
             std::string named;
             std::size_t shown = 0;
-            for (const auto& item : rows->items) {
+            for (const auto& item : rows.items) {
                 if (shown == 5) {
-                    named += ", and " + std::to_string(rows->items.size() - shown) + " more";
+                    named += ", and " + std::to_string(rows.items.size() - shown) + " more";
                     break;
                 }
                 if (!named.empty())
@@ -245,7 +249,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 "prepare_ore_package: the gathered market data carries no dated line, so no run "
                 "can price from it. The run asked for " +
                 (requested_date.empty() ? std::string("no particular date") : requested_date) +
-                ", the package carries " + std::to_string(rows->items.size()) +
+                ", the package carries " + std::to_string(rows.items.size()) +
                 " trade(s): " + named);
             ack.accept();
             return;
@@ -254,7 +258,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         const auto reference_curves =
             ores::ore::service::messaging::reference_curve_names_of(owners, req.definition_id);
         const auto portfolio = ores::ore::xml::exporter::export_portfolio(
-            rows->items, rows->instruments, reference_curves);
+            rows.items, rows.instruments, reference_curves);
         {
             const auto target = stage_dir / places.portfolio;
             std::filesystem::create_directories(target.parent_path());
@@ -324,7 +328,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             "Packaged {} input files, {} trades as {} portfolio bytes + {} market data bytes "
             "into {}",
             input.size(),
-            rows->items.size(),
+            rows.items.size(),
             portfolio.size(),
             market_data.size(),
             tarball_key);
@@ -332,7 +336,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();

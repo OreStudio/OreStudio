@@ -18,8 +18,11 @@
  *
  */
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
-#include "ores.marketdata.core/repository/market_state_payload_repository.hpp"
+#include "ores.marketdata.core/repository/market_calibration_value_repository.hpp"
+#include "ores.marketdata.core/repository/market_input_value_repository.hpp"
+#include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
@@ -27,6 +30,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <format>
 #include <string>
 #include <vector>
@@ -42,6 +46,7 @@ namespace {
  * named, so the reply can say what was left alone.
  */
 bool collect_output_files(const messaging::store_market_state_request& req,
+                          const ores::ore::results::family_selection& families,
                           const std::string& http_base_url,
                           std::vector<service::market_state_file>& files,
                           std::string& failure) {
@@ -63,7 +68,8 @@ bool collect_output_files(const messaging::store_market_state_request& req,
             const auto located = ores::ore::results::located_files(manifest, key);
             const auto result_id = sg(manifest.result_id);
             for (const auto& file : located) {
-                if (!ores::ore::results::is_market_state_file(file)) {
+                if (!ores::ore::results::is_market_state_file(file) ||
+                    !families.stores(file.family)) {
                     files.push_back(
                         service::market_state_file{.result_id = result_id, .name = file.name});
                     continue;
@@ -93,7 +99,9 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
         return;
     }
     const auto& ctx = *ctx_expected;
-    if (!has_permission(ctx, "marketdata::market_state_payloads:write")) {
+    if (!has_permission(ctx, "marketdata::market_scenario_values:write") ||
+        !has_permission(ctx, "marketdata::market_calibration_values:write") ||
+        !has_permission(ctx, "marketdata::market_input_values:write")) {
         error_reply(nats_, msg, ores::service::error_code::forbidden);
         return;
     }
@@ -118,8 +126,9 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
             .party_id = sg(req->party_id),
             .report_instance_id = sg(req->report_instance_id),
             .report_definition_id = sg(req->report_definition_id),
-            .as_of = std::chrono::sys_days{
-                ores::platform::time::datetime::from_iso8601_date(req->as_of)}};
+            .as_of = std::chrono::sys_days{ores::platform::time::datetime::from_iso8601_date(
+                req->as_of)},
+            .families = ores::ore::results::family_selection_of(req->skipped_families)};
     } catch (const std::exception& e) {
         refuse(std::string("The request names no readable run: ") + e.what());
         return;
@@ -127,12 +136,18 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
 
     std::vector<service::market_state_file> files;
     std::string failure;
-    if (!collect_output_files(*req, http_base_url, files, failure)) {
+    if (!collect_output_files(*req, run.families, http_base_url, files, failure)) {
         refuse(failure);
         return;
     }
     auto outcome = service::read_market_state(files, run);
     response.left_alone = outcome.left_alone;
+    response.left_alone.insert(
+        response.left_alone.end(), outcome.skipped.begin(), outcome.skipped.end());
+    for (const auto& skipped : outcome.skipped)
+        BOOST_LOG_SEV(market_state_handler_lg(), info)
+            << "store_market_state | instance=" << req->report_instance_id << " skipped " << skipped
+            << ": its definition does not store the family";
     response.refusals = outcome.refusals;
     // A run's state is stored whole or not at all, because a partial store
     // reads as the state the run priced against.
@@ -140,33 +155,41 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
         refuse("The run's market state was refused: " + outcome.refusals.front());
         return;
     }
-    if (outcome.payloads.empty()) {
+    response.families = outcome.families;
+    response.files = static_cast<int>(outcome.families.size());
+    response.rows =
+        static_cast<std::int64_t>(outcome.scenario_values.size() +
+                                  outcome.calibration_values.size() + outcome.input_values.size());
+    if (response.files == 0) {
         response.result.message = "The run wrote no market state, so there is nothing to store.";
         reply(nats_, msg, response);
         return;
     }
 
-    for (const auto& payload : outcome.payloads) {
-        response.families.push_back(payload.family);
-        response.payload_bytes += payload.payload_bytes;
-    }
-    response.payloads = static_cast<int>(outcome.payloads.size());
-
     try {
-        repository::market_state_payload_repository repo;
-        repo.insert(ctx, outcome.payloads);
+        if (!outcome.scenario_values.empty()) {
+            repository::market_scenario_value_repository repo;
+            repo.insert(ctx, outcome.scenario_values);
+        }
+        if (!outcome.calibration_values.empty()) {
+            repository::market_calibration_value_repository repo;
+            repo.insert(ctx, outcome.calibration_values);
+        }
+        if (!outcome.input_values.empty()) {
+            repository::market_input_value_repository repo;
+            repo.insert(ctx, outcome.input_values);
+        }
     } catch (const std::exception& e) {
         refuse(std::string("The run's market state was not stored: ") + e.what());
         return;
     }
 
     response.result.outcome = ores::utility::domain::outcome::ok;
-    response.result.message = std::format("Stored {} market-state payload(s) of {} byte(s).",
-                                          response.payloads,
-                                          response.payload_bytes);
+    response.result.message = std::format(
+        "Stored {} market-state value(s) from {} file(s).", response.rows, response.files);
     BOOST_LOG_SEV(market_state_handler_lg(), info)
         << "store_market_state | instance=" << req->report_instance_id
-        << " payloads=" << response.payloads << " bytes=" << response.payload_bytes;
+        << " files=" << response.files << " rows=" << response.rows;
     reply(nats_, msg, response);
 }
 

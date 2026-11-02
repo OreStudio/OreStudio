@@ -179,11 +179,11 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     }
     const auto& kind = kinds.front();
     if (kind.family_code == "consumer") {
-        response.result = answer(
-            outcome::invalid,
-            "kind_not_takeable",
-            "A " + kind.code +
-                " cut is minted by the run that consumes it, so there is no take to press.");
+        response.result =
+            answer(outcome::invalid,
+                   "kind_not_takeable",
+                   "A " + kind.code +
+                       " cut is minted by the run that consumes it, so there is no take to press.");
         return response;
     }
 
@@ -271,14 +271,14 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
         // ordinal. The occasion is the day, the kind, the party, the scope and
         // the centre: a retake of that day is the second cut of it.
         const auto day = day_of(*instant);
-        const auto same_occasion = repository::cut_repository{}.read_for_occasion_in_window(
-            ctx,
-            *party,
-            kind.code,
-            request.scope_code,
-            request.business_centre_code,
-            day.from,
-            day.to);
+        const auto same_occasion =
+            repository::cut_repository{}.read_for_occasion_in_window(ctx,
+                                                                     *party,
+                                                                     kind.code,
+                                                                     request.scope_code,
+                                                                     request.business_centre_code,
+                                                                     day.from,
+                                                                     day.to);
 
         cut_take_plan plan;
         plan.kind_code = kind.code;

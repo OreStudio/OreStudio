@@ -25,11 +25,17 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PROTOCOL_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/export.hpp"
 #include "ores.workflow.api/messaging/workflow_vocabulary.hpp"
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::workflow::messaging {
@@ -505,6 +511,531 @@ struct retry_workflow_instance_response {
     std::string step_name;
 };
 
+/**
+ * @brief The members of step_log_entry, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const step_log_entry&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"level", &step_log_entry::level},
+        ::ores::utility::codec::field{"message", &step_log_entry::message},
+        ::ores::utility::codec::field{"context", &step_log_entry::context},
+    };
 }
+
+/**
+ * @brief The members of step_completed_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const step_completed_event&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"workflow_instance_id",
+                                      &step_completed_event::workflow_instance_id},
+        ::ores::utility::codec::field{"step_id", &step_completed_event::step_id},
+        ::ores::utility::codec::field{"outcome", &step_completed_event::outcome},
+        ::ores::utility::codec::field{"result_json", &step_completed_event::result_json},
+        ::ores::utility::codec::field{"error_message", &step_completed_event::error_message},
+        ::ores::utility::codec::field{"log", &step_completed_event::log},
+    };
+}
+
+/**
+ * @brief The members of start_workflow_message, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const start_workflow_message&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"type", &start_workflow_message::type},
+        ::ores::utility::codec::field{"tenant_id", &start_workflow_message::tenant_id},
+        ::ores::utility::codec::field{"target_kind", &start_workflow_message::target_kind},
+        ::ores::utility::codec::field{"target_id", &start_workflow_message::target_id},
+        ::ores::utility::codec::field{"request_json", &start_workflow_message::request_json},
+        ::ores::utility::codec::field{"correlation_id", &start_workflow_message::correlation_id},
+        ::ores::utility::codec::field{"instance_id", &start_workflow_message::instance_id},
+    };
+}
+
+/**
+ * @brief The members of get_step_result_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_step_result_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"step_id", &get_step_result_request::step_id},
+        ::ores::utility::codec::field{"tenant_id", &get_step_result_request::tenant_id},
+    };
+}
+
+/**
+ * @brief The members of get_step_result_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_step_result_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"found", &get_step_result_response::found},
+        ::ores::utility::codec::field{"outcome", &get_step_result_response::outcome},
+        ::ores::utility::codec::field{"result_json", &get_step_result_response::result_json},
+        ::ores::utility::codec::field{"error_message", &get_step_result_response::error_message},
+        ::ores::utility::codec::field{"log", &get_step_result_response::log},
+        ::ores::utility::codec::field{"success", &get_step_result_response::success},
+        ::ores::utility::codec::field{"message", &get_step_result_response::message},
+    };
+}
+
+/**
+ * @brief The members of workflow_instance_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_instance_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &workflow_instance_summary::id},
+        ::ores::utility::codec::field{"type", &workflow_instance_summary::type},
+        ::ores::utility::codec::field{"status", &workflow_instance_summary::status},
+        ::ores::utility::codec::field{"step_count", &workflow_instance_summary::step_count},
+        ::ores::utility::codec::field{"correlation_id", &workflow_instance_summary::correlation_id},
+        ::ores::utility::codec::field{"created_by", &workflow_instance_summary::created_by},
+        ::ores::utility::codec::field{"created_at", &workflow_instance_summary::created_at},
+        ::ores::utility::codec::field{"completed_at", &workflow_instance_summary::completed_at},
+        ::ores::utility::codec::field{"last_event_at", &workflow_instance_summary::last_event_at},
+        ::ores::utility::codec::field{"error", &workflow_instance_summary::error},
+        ::ores::utility::codec::field{"target_kind", &workflow_instance_summary::target_kind},
+        ::ores::utility::codec::field{"target_id", &workflow_instance_summary::target_id},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_instance_summaries_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_summaries_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"limit", &list_workflow_instance_summaries_request::limit},
+        ::ores::utility::codec::field{"status_filter",
+                                      &list_workflow_instance_summaries_request::status_filter},
+        ::ores::utility::codec::field{"type_filter",
+                                      &list_workflow_instance_summaries_request::type_filter},
+        ::ores::utility::codec::field{
+            "target_kind_filter", &list_workflow_instance_summaries_request::target_kind_filter},
+        ::ores::utility::codec::field{"target_id_filter",
+                                      &list_workflow_instance_summaries_request::target_id_filter},
+        ::ores::utility::codec::field{"target_ids_filter",
+                                      &list_workflow_instance_summaries_request::target_ids_filter},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_instance_summaries_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_summaries_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success",
+                                      &list_workflow_instance_summaries_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &list_workflow_instance_summaries_response::message},
+        ::ores::utility::codec::field{"instances",
+                                      &list_workflow_instance_summaries_response::instances},
+    };
+}
+
+/**
+ * @brief The members of workflow_step_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_step_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &workflow_step_summary::id},
+        ::ores::utility::codec::field{"name", &workflow_step_summary::name},
+        ::ores::utility::codec::field{"label", &workflow_step_summary::label},
+        ::ores::utility::codec::field{"description", &workflow_step_summary::description},
+        ::ores::utility::codec::field{"status", &workflow_step_summary::status},
+        ::ores::utility::codec::field{"step_index", &workflow_step_summary::step_index},
+        ::ores::utility::codec::field{"created_at", &workflow_step_summary::created_at},
+        ::ores::utility::codec::field{"started_at", &workflow_step_summary::started_at},
+        ::ores::utility::codec::field{"completed_at", &workflow_step_summary::completed_at},
+        ::ores::utility::codec::field{"error", &workflow_step_summary::error},
+        ::ores::utility::codec::field{"log", &workflow_step_summary::log},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_steps_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_steps_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"workflow_instance_id",
+                                      &get_workflow_steps_request::workflow_instance_id},
+    };
+}
+
+/**
+ * @brief The members of get_workflow_steps_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_workflow_steps_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_workflow_steps_response::success},
+        ::ores::utility::codec::field{"message", &get_workflow_steps_response::message},
+        ::ores::utility::codec::field{"status", &get_workflow_steps_response::status},
+        ::ores::utility::codec::field{"error", &get_workflow_steps_response::error},
+        ::ores::utility::codec::field{"step_count", &get_workflow_steps_response::step_count},
+        ::ores::utility::codec::field{"steps", &get_workflow_steps_response::steps},
+    };
+}
+
+/**
+ * @brief The members of workflow_step_definition_summary, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_step_definition_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"step_index", &workflow_step_definition_summary::step_index},
+        ::ores::utility::codec::field{"name", &workflow_step_definition_summary::name},
+        ::ores::utility::codec::field{"description",
+                                      &workflow_step_definition_summary::description},
+        ::ores::utility::codec::field{"command_subject",
+                                      &workflow_step_definition_summary::command_subject},
+        ::ores::utility::codec::field{"has_compensation",
+                                      &workflow_step_definition_summary::has_compensation},
+    };
+}
+
+/**
+ * @brief The members of workflow_definition_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const workflow_definition_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"type_name", &workflow_definition_summary::type_name},
+        ::ores::utility::codec::field{"description", &workflow_definition_summary::description},
+        ::ores::utility::codec::field{"step_count", &workflow_definition_summary::step_count},
+        ::ores::utility::codec::field{"steps", &workflow_definition_summary::steps},
+    };
+}
+
+/**
+ * @brief The members of list_workflow_definitions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_definitions_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of list_workflow_definitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_workflow_definitions_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &list_workflow_definitions_response::success},
+        ::ores::utility::codec::field{"message", &list_workflow_definitions_response::message},
+        ::ores::utility::codec::field{"definitions",
+                                      &list_workflow_definitions_response::definitions},
+    };
+}
+
+/**
+ * @brief The members of retry_workflow_instance_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const retry_workflow_instance_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"workflow_instance_id",
+                                      &retry_workflow_instance_request::workflow_instance_id},
+        ::ores::utility::codec::field{"step_name", &retry_workflow_instance_request::step_name},
+    };
+}
+
+/**
+ * @brief The members of retry_workflow_instance_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const retry_workflow_instance_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &retry_workflow_instance_response::success},
+        ::ores::utility::codec::field{"message", &retry_workflow_instance_response::message},
+        ::ores::utility::codec::field{"workflow_instance_id",
+                                      &retry_workflow_instance_response::workflow_instance_id},
+        ::ores::utility::codec::field{"step_index", &retry_workflow_instance_response::step_index},
+        ::ores::utility::codec::field{"step_name", &retry_workflow_instance_response::step_name},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::step_log_entry> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::step_log_entry& v);
+    static ores::workflow::messaging::step_log_entry read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::step_log_entry& v);
+    static ores::workflow::messaging::step_log_entry read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::step_completed_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::step_completed_event& v);
+    static ores::workflow::messaging::step_completed_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::step_completed_event& v);
+    static ores::workflow::messaging::step_completed_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::start_workflow_message> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::start_workflow_message& v);
+    static ores::workflow::messaging::start_workflow_message read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::start_workflow_message& v);
+    static ores::workflow::messaging::start_workflow_message
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::get_step_result_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::get_step_result_request& v);
+    static ores::workflow::messaging::get_step_result_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::get_step_result_request& v);
+    static ores::workflow::messaging::get_step_result_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::get_step_result_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::get_step_result_response& v);
+    static ores::workflow::messaging::get_step_result_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::get_step_result_response& v);
+    static ores::workflow::messaging::get_step_result_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::workflow_instance_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::workflow_instance_summary& v);
+    static ores::workflow::messaging::workflow_instance_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::workflow_instance_summary& v);
+    static ores::workflow::messaging::workflow_instance_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_instance_summaries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_instance_summaries_request& v);
+    static ores::workflow::messaging::list_workflow_instance_summaries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_instance_summaries_request& v);
+    static ores::workflow::messaging::list_workflow_instance_summaries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_instance_summaries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_instance_summaries_response& v);
+    static ores::workflow::messaging::list_workflow_instance_summaries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_instance_summaries_response& v);
+    static ores::workflow::messaging::list_workflow_instance_summaries_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::workflow_step_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::workflow_step_summary& v);
+    static ores::workflow::messaging::workflow_step_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::workflow::messaging::workflow_step_summary& v);
+    static ores::workflow::messaging::workflow_step_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT wire_traits<ores::workflow::messaging::get_workflow_steps_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::get_workflow_steps_request& v);
+    static ores::workflow::messaging::get_workflow_steps_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_workflow_steps_request& v);
+    static ores::workflow::messaging::get_workflow_steps_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::get_workflow_steps_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::get_workflow_steps_response& v);
+    static ores::workflow::messaging::get_workflow_steps_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::get_workflow_steps_response& v);
+    static ores::workflow::messaging::get_workflow_steps_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_step_definition_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::workflow_step_definition_summary& v);
+    static ores::workflow::messaging::workflow_step_definition_summary
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_step_definition_summary& v);
+    static ores::workflow::messaging::workflow_step_definition_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::workflow_definition_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::workflow::messaging::workflow_definition_summary& v);
+    static ores::workflow::messaging::workflow_definition_summary read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::workflow_definition_summary& v);
+    static ores::workflow::messaging::workflow_definition_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_definitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_definitions_request& v);
+    static ores::workflow::messaging::list_workflow_definitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_definitions_request& v);
+    static ores::workflow::messaging::list_workflow_definitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::list_workflow_definitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::list_workflow_definitions_response& v);
+    static ores::workflow::messaging::list_workflow_definitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::list_workflow_definitions_response& v);
+    static ores::workflow::messaging::list_workflow_definitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::retry_workflow_instance_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::retry_workflow_instance_request& v);
+    static ores::workflow::messaging::retry_workflow_instance_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::retry_workflow_instance_request& v);
+    static ores::workflow::messaging::retry_workflow_instance_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_WORKFLOW_API_EXPORT
+    wire_traits<ores::workflow::messaging::retry_workflow_instance_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::workflow::messaging::retry_workflow_instance_response& v);
+    static ores::workflow::messaging::retry_workflow_instance_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::workflow::messaging::retry_workflow_instance_response& v);
+    static ores::workflow::messaging::retry_workflow_instance_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

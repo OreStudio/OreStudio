@@ -1,0 +1,3 @@
+#TradeID,PortfolioID,ProductClass,RiskType,Qualifier,Bucket,Label1,Label2,AmountCurrency,Amount,AmountUSD,IMModel,TradeType,end_date,Label3,CreditQuality,LongShortInd,CoveredBondInd,TrancheThickness,BB_RW,collect_regulations,post_regulations
+SWAP_USD_10Y,PF_RATES,RatesFX,Risk_IRCurve,USD,1,10y,OIS,USD,-1250.500000,-1250.500000,SIMM,Swap,2036-05-05,,,,,,,SEC,SEC
+FXFWD_EURUSD,PF_FX,RatesFX,Risk_FX,EUR,,,,USD,830.250000,830.250000,SIMM,FxForward,2026-11-05,,,,,,,SEC,SEC

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0CD68B09-6EBC-4180-A298-0CC386590F31
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.synthetic.trade_generation_config
 #+description: Codegen entity model for the synthetic trade_generation_config table; a named, party-scoped recipe for generating a synthetic trade population.

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: beeec4a7-537c-4d14-afd2-446012b81eed
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.operations
 #+description: Codegen operation model for the reporting component's domain operations: messages that are not entity verbs and so do not belong in the common resource grammar.
@@ -899,6 +900,14 @@ Step 6: load the rows the run's node marshalled into the result table.
 :cpp_type: std::string
 :END:
 
+*** skipped_families
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The output families the run does not store as rows, separated by commas, as
+the run request carries them. Empty stores every family.
+
 ** post_process_results_result
 
 *** success
@@ -1064,6 +1073,16 @@ Storage key of the prepared input archive. Empty unless pre_processing is
 
 Whether the run ingests the engine's results or records only that they were
 produced. Copied from the definition.
+
+*** skipped_families
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The output families the run does not store as rows, as the definition names
+them. Copied from the definition when the run starts, so a run stores what its
+definition said then. Absent stores every family, so a run started before the
+setting existed stores everything.
 
 *** kind
 :PROPERTIES:

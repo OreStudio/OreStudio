@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:pipeline:
 #+created: 2026-09-27
-#+updated: 2026-09-28
+#+updated: 2026-11-02
 
 * Summary
 
@@ -35,9 +35,9 @@ mechanism is described in
 |-------+----------------+----------+----------+---------------|
 | Pre-processing | produce the engine's input | the definition's configuration | one input artifact in object storage | yes |
 | Submission | turn that artifact into work | the artifact's location | a batch and its workunits | no |
-| Execution | run the engine | the engine package and the input | the output archive | no |
+| Execution | run the engine | the engine package and the input | each output file and a manifest, and the output archive | no |
 | Retrieval | bring the result back | the result identifier | the output location, recorded on the run | no |
-| Post-processing | record what the engine produced | the output archive | rows in the result store | yes |
+| Post-processing | record what the engine produced | each result's manifest and the files it names | rows in the result and market state stores | yes |
 | Finalisation | close the run | the outcomes above | the instance in a terminal state | no |
 
 The four non-substitutable phases are the reason the two substitutable ones can
@@ -117,9 +117,10 @@ dispatch. Its contract is specified in
 
 Execution happens on a worker node and is not a step any ORE Studio service
 performs. The node downloads the engine package and the input, runs the engine,
-archives the output directory, and uploads it. The run's only involvement is to
-have made the work available and to wait, which is why execution is the phase
-most likely to outlast everything around it.
+uploads each output file as its own object with a manifest that names them, and
+uploads the output directory as one archive, the run's audit copy. The run's only
+involvement is to have made the work available and to wait, which is why
+execution is the phase most likely to outlast everything around it.
 
 ** Retrieval
 
@@ -130,7 +131,8 @@ post-processing substitute meaningful: the output is genuinely optional.
 
 ** Post-processing
 
-Post-processing reads the output archive and records what it contains. Its
+Post-processing reads the files each result's manifest names and records what
+they contain. Its
 design is specified in
 [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]]. It is the
 only phase whose work is proportional to the size of the result rather than to

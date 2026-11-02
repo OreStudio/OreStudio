@@ -25,6 +25,7 @@
 #include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include <cstddef>
 #include <map>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -38,9 +39,10 @@
  * writes it back. The declarations take records and strings alone and name no
  * family type, so the code that walks all the families reflects none of them.
  *
- * The tenor basis swap is one document element held by three families, and the
- * FX conventions are a projection that no family holds, so both have a unit of
- * their own that is not part of the table.
+ * The tenor basis swap, the two cross-currency swaps and the commodity future
+ * are each one document element held by a central row and its parts, and the FX conventions are a
+ * projection that no family holds, so each has a unit of its own that is not
+ * part of the table.
  */
 namespace ores::ore::domain::conventions_family {
 
@@ -77,14 +79,6 @@ void join_cms_spread_option(const package_row& row, xml::record_writer& root);
 void pack_commodity_forward(const xml::record_reader& root,
                             refdata::messaging::conventions_bundle& bundle);
 void join_commodity_forward(const package_row& row, xml::record_writer& root);
-
-void pack_commodity_future(const xml::record_reader& root,
-                           refdata::messaging::conventions_bundle& bundle);
-void join_commodity_future(const package_row& row, xml::record_writer& root);
-
-void pack_cross_currency_basis(const xml::record_reader& root,
-                               refdata::messaging::conventions_bundle& bundle);
-void join_cross_currency_basis(const package_row& row, xml::record_writer& root);
 
 void pack_deposit(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
 void join_deposit(const package_row& row, xml::record_writer& root);
@@ -163,12 +157,54 @@ inline constexpr std::string_view cross_currency_fix_float_families[] = {
     "cross_currency_fix_float_float_leg",
     "cross_currency_fix_float_swap_terms"};
 
-constexpr bool is_cross_currency_fix_float_family(std::string_view family) {
-    for (const auto f : cross_currency_fix_float_families)
-        if (f == family)
-            return true;
-    return false;
-}
+/// The four families a cross-currency basis element is: the central convention
+/// row, one part per leg and the swap terms both legs share.
+void pack_cross_currency_basis(const xml::record_reader& root,
+                               refdata::messaging::conventions_bundle& bundle);
+
+/// Writes the elements of the rows that belong to the four basis families.
+void join_cross_currency_basis(const std::vector<const package_row*>& rows,
+                               xml::record_writer& root);
+
+/// The facts of each cross-currency basis swap the rows hold, keyed as the
+/// fix-float swap's are.
+std::map<std::string, std::string>
+cross_currency_basis_facts(const refdata::messaging::conventions_bundle& bundle);
+
+/// The kind of the central convention row of a cross-currency basis swap.
+inline constexpr std::string_view cross_currency_basis_kind = "CROSS_CURRENCY_BASIS";
+
+/// The families that are one document element, the cross-currency basis.
+inline constexpr std::string_view cross_currency_basis_families[] = {
+    "convention",
+    "cross_currency_basis_flat_leg",
+    "cross_currency_basis_spread_leg",
+    "cross_currency_basis_swap_terms"};
+
+/// The six families a commodity future element is: the central convention row,
+/// the contract terms every convention fills, and four optional parts.
+void pack_commodity_future(const xml::record_reader& root,
+                           refdata::messaging::conventions_bundle& bundle);
+
+/// Writes the elements of the rows that belong to the six commodity future
+/// families.
+void join_commodity_future(const std::vector<const package_row*>& rows, xml::record_writer& root);
+
+/// The facts of each commodity future the rows hold, keyed as the fix-float
+/// swap's are.
+std::map<std::string, std::string>
+commodity_future_facts(const refdata::messaging::conventions_bundle& bundle);
+
+/// The kind of the central convention row of a commodity future.
+inline constexpr std::string_view commodity_future_kind = "COMMODITY_FUTURE";
+
+/// The families that are one document element, the commodity future.
+inline constexpr std::string_view commodity_future_families[] = {"convention",
+                                                                 "commodity_future_averaging_terms",
+                                                                 "commodity_future_contract_terms",
+                                                                 "commodity_future_expiry_anchor",
+                                                                 "commodity_future_off_peak_index",
+                                                                 "commodity_future_option_expiry"};
 
 /// Writes the elements of the rows that belong to the three tenor families.
 void join_tenor_basis_swap(const std::vector<const package_row*>& rows, xml::record_writer& root);
@@ -180,9 +216,39 @@ inline constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 inline constexpr std::string_view tenor_basis_swap_families[] = {
     "convention", "tenor_basis_swap_long_short", "tenor_basis_swap_pay_receive"};
 
-constexpr bool is_tenor_basis_swap_family(std::string_view family) {
-    for (const auto f : tenor_basis_swap_families)
+/**
+ * @brief How one joined kind packs and joins: a document element held by a
+ * central convention row and its parts.
+ *
+ * The central family is in every joined kind's list, so its rows go to each
+ * kind's join, and each join keeps the central rows of its own kind.
+ */
+struct joined_kind {
+    std::span<const std::string_view> families;
+    void (*pack)(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
+    void (*join)(const std::vector<const package_row*>& rows, xml::record_writer& root);
+};
+
+inline constexpr joined_kind joined_kinds[] = {
+    {tenor_basis_swap_families, &pack_tenor_basis_swap, &join_tenor_basis_swap},
+    {cross_currency_fix_float_families,
+     &pack_cross_currency_fix_float,
+     &join_cross_currency_fix_float},
+    {cross_currency_basis_families, &pack_cross_currency_basis, &join_cross_currency_basis},
+    {commodity_future_families, &pack_commodity_future, &join_commodity_future},
+};
+
+constexpr bool is_in(const joined_kind& kind, std::string_view family) {
+    for (const auto f : kind.families)
         if (f == family)
+            return true;
+    return false;
+}
+
+/// Whether a family belongs to a joined kind rather than to the table.
+constexpr bool is_joined_family(std::string_view family) {
+    for (const auto& kind : joined_kinds)
+        if (is_in(kind, family))
             return true;
     return false;
 }

@@ -69,6 +69,26 @@
 -- sections it references)
 \ir ./refdata_curve_quotes_notify_trigger_drop.sql
 \ir ./refdata_curve_quotes_drop.sql
+\ir ./refdata_curve_segment_conventions_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_conventions_drop.sql
+\ir ./refdata_curve_segment_pillar_rules_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_pillar_rules_drop.sql
+\ir ./refdata_curve_segment_projections_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_projections_drop.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_drop.sql
+\ir ./refdata_curve_segment_cross_currency_terms_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_cross_currency_terms_drop.sql
+\ir ./refdata_curve_segment_references_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_references_drop.sql
+\ir ./refdata_curve_segment_weighted_averages_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_weighted_averages_drop.sql
+\ir ./refdata_curve_segment_discount_ratios_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_discount_ratios_drop.sql
+\ir ./refdata_curve_segment_extrapolations_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_extrapolations_drop.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_drop.sql
 \ir ./refdata_curve_segment_curves_notify_trigger_drop.sql
 \ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
@@ -163,6 +183,7 @@
 \ir ./refdata_curve_configuration_sections_drop.sql
 \ir ./refdata_curve_configurations_notify_trigger_drop.sql
 \ir ./refdata_curve_configurations_drop.sql
+\ir ./refdata_curve_segment_parts_validate_fn_drop.sql
 \ir ./refdata_conventions_validate_fn_drop.sql
 \ir ./refdata_calendar_names_validate_fn_drop.sql
 \ir ./refdata_calendar_names_notify_trigger_drop.sql

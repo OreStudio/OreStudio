@@ -386,6 +386,7 @@
 \ir ./refdata_calendar_names_notify_trigger_create.sql
 \ir ./refdata_calendar_names_validate_fn_create.sql
 \ir ./refdata_conventions_validate_fn_create.sql
+\ir ./refdata_curve_segment_parts_validate_fn_create.sql
 \ir ./refdata_curve_configurations_create.sql
 \ir ./refdata_curve_configurations_notify_trigger_create.sql
 \ir ./refdata_curve_configuration_sections_create.sql
@@ -480,6 +481,26 @@
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql
 \ir ./refdata_curve_segment_curves_notify_trigger_create.sql
+\ir ./refdata_curve_segment_conventions_create.sql
+\ir ./refdata_curve_segment_conventions_notify_trigger_create.sql
+\ir ./refdata_curve_segment_pillar_rules_create.sql
+\ir ./refdata_curve_segment_pillar_rules_notify_trigger_create.sql
+\ir ./refdata_curve_segment_projections_create.sql
+\ir ./refdata_curve_segment_projections_notify_trigger_create.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_create.sql
+\ir ./refdata_curve_segment_tenor_basis_curves_notify_trigger_create.sql
+\ir ./refdata_curve_segment_cross_currency_terms_create.sql
+\ir ./refdata_curve_segment_cross_currency_terms_notify_trigger_create.sql
+\ir ./refdata_curve_segment_references_create.sql
+\ir ./refdata_curve_segment_references_notify_trigger_create.sql
+\ir ./refdata_curve_segment_weighted_averages_create.sql
+\ir ./refdata_curve_segment_weighted_averages_notify_trigger_create.sql
+\ir ./refdata_curve_segment_discount_ratios_create.sql
+\ir ./refdata_curve_segment_discount_ratios_notify_trigger_create.sql
+\ir ./refdata_curve_segment_extrapolations_create.sql
+\ir ./refdata_curve_segment_extrapolations_notify_trigger_create.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_create.sql
+\ir ./refdata_curve_segment_ibor_fallbacks_notify_trigger_create.sql
 \ir ./refdata_curve_quotes_create.sql
 \ir ./refdata_curve_quotes_notify_trigger_create.sql
 

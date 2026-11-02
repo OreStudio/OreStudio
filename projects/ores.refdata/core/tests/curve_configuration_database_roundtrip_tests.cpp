@@ -32,6 +32,7 @@
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
+#include "ores.refdata.core/repository/curve_segment_convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
@@ -273,12 +274,14 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused",
     write_conventions(h.context());
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
-    REQUIRE(!mapped.segments.empty());
-    mapped.segments.front().conventions = "NO-SUCH-CONVENTION";
+    REQUIRE(!mapped.segment_conventions.empty());
+    mapped.segment_conventions.front().conventions = "NO-SUCH-CONVENTION";
 
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
-    CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
+    curve_segment_repository().write(h.context(), mapped.segments);
+    CHECK_THROWS(
+        curve_segment_convention_repository().write(h.context(), mapped.segment_conventions.front()));
 }
 
 TEST_CASE("a yield curve naming a day counter ORE does not spell is refused",

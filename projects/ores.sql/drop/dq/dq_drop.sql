@@ -262,6 +262,16 @@
 \ir ./dq_bond_future_volatility_configs_artefact_drop.sql
 \ir ./dq_curve_bootstrap_configs_artefact_drop.sql
 \ir ./dq_curve_segments_artefact_drop.sql
+\ir ./dq_curve_segment_conventions_artefact_drop.sql
+\ir ./dq_curve_segment_pillar_rules_artefact_drop.sql
+\ir ./dq_curve_segment_projections_artefact_drop.sql
+\ir ./dq_curve_segment_tenor_basis_curves_artefact_drop.sql
+\ir ./dq_curve_segment_cross_currency_terms_artefact_drop.sql
+\ir ./dq_curve_segment_references_artefact_drop.sql
+\ir ./dq_curve_segment_weighted_averages_artefact_drop.sql
+\ir ./dq_curve_segment_discount_ratios_artefact_drop.sql
+\ir ./dq_curve_segment_extrapolations_artefact_drop.sql
+\ir ./dq_curve_segment_ibor_fallbacks_artefact_drop.sql
 \ir ./dq_curve_segment_curves_artefact_drop.sql
 \ir ./dq_curve_quotes_artefact_drop.sql
 \ir ./dq_todays_market_configs_artefact_drop.sql

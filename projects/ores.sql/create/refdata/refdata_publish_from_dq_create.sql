@@ -6528,6 +6528,11 @@ begin
               'curve_parametric_smile_parameters', 'equity_volatility_configs',
               'commodity_volatility_configs', 'bond_future_volatility_configs',
               'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
+              'curve_segment_conventions', 'curve_segment_pillar_rules',
+              'curve_segment_projections', 'curve_segment_tenor_basis_curves',
+              'curve_segment_cross_currency_terms', 'curve_segment_references',
+              'curve_segment_weighted_averages', 'curve_segment_discount_ratios',
+              'curve_segment_extrapolations', 'curve_segment_ibor_fallbacks',
               'curve_quotes']);
 
     -- The curves the publish just stored, read from the live tables so the ids

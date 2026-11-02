@@ -198,8 +198,17 @@
 #include "ores.refdata.core/messaging/commodity_curve_config_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_forward_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_forward_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/commodity_future_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_averaging_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_averaging_terms_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_contract_terms_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_contract_terms_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_future_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_expiry_anchor_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_expiry_anchor_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_off_peak_index_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_off_peak_index_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_option_expiry_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_option_expiry_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_price_segment_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_price_segment_registrar.hpp"
@@ -560,6 +569,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_commodity_curve_config_handlers(nats, ctx, verifier));
     append(register_commodity_forward_convention_handlers(nats, ctx, verifier));
     append(register_commodity_future_convention_handlers(nats, ctx, verifier));
+    append(register_commodity_future_averaging_terms_handlers(nats, ctx, verifier));
+    append(register_commodity_future_contract_terms_handlers(nats, ctx, verifier));
+    append(register_commodity_future_expiry_anchor_handlers(nats, ctx, verifier));
+    append(register_commodity_future_off_peak_index_handlers(nats, ctx, verifier));
+    append(register_commodity_future_option_expiry_handlers(nats, ctx, verifier));
     append(register_commodity_price_segment_handlers(nats, ctx, verifier));
     append(register_commodity_volatility_config_handlers(nats, ctx, verifier));
     append(register_cross_currency_basis_convention_handlers(nats, ctx, verifier));
@@ -807,7 +821,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_commodity_history_provider(hist_registry);
         register_commodity_curve_config_history_provider(hist_registry);
         register_commodity_forward_convention_history_provider(hist_registry);
-        register_commodity_future_convention_history_provider(hist_registry);
+        register_commodity_future_averaging_terms_history_provider(hist_registry);
+        register_commodity_future_contract_terms_history_provider(hist_registry);
+        register_commodity_future_expiry_anchor_history_provider(hist_registry);
+        register_commodity_future_off_peak_index_history_provider(hist_registry);
+        register_commodity_future_option_expiry_history_provider(hist_registry);
         register_commodity_price_segment_history_provider(hist_registry);
         register_commodity_volatility_config_history_provider(hist_registry);
         register_convention_history_provider(hist_registry);

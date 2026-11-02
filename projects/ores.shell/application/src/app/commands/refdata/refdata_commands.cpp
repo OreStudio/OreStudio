@@ -34,7 +34,11 @@
 #include "ores.shell/app/commands/refdata/commodity_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_forward_convention_commands.hpp"
-#include "ores.shell/app/commands/refdata/commodity_future_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_averaging_terms_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_contract_terms_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_expiry_anchor_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_off_peak_index_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_option_expiry_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_price_segment_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
@@ -235,7 +239,11 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     commodity_commands::register_commands(root_menu, session);
     commodity_curve_config_commands::register_commands(root_menu, session);
     commodity_forward_convention_commands::register_commands(root_menu, session);
-    commodity_future_convention_commands::register_commands(root_menu, session);
+    commodity_future_averaging_terms_commands::register_commands(root_menu, session);
+    commodity_future_contract_terms_commands::register_commands(root_menu, session);
+    commodity_future_expiry_anchor_commands::register_commands(root_menu, session);
+    commodity_future_off_peak_index_commands::register_commands(root_menu, session);
+    commodity_future_option_expiry_commands::register_commands(root_menu, session);
     commodity_price_segment_commands::register_commands(root_menu, session);
     commodity_volatility_config_commands::register_commands(root_menu, session);
     contact_type_commands::register_commands(root_menu, session);

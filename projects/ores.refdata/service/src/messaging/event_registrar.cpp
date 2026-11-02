@@ -69,7 +69,11 @@
 #include "ores.refdata.service/messaging/commodity_curve_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_forward_convention_event_registrar.hpp"
-#include "ores.refdata.service/messaging/commodity_future_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_future_averaging_terms_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_future_contract_terms_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_future_expiry_anchor_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_future_off_peak_index_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_future_option_expiry_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
@@ -325,7 +329,15 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_commodity_forward_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(
-        register_commodity_future_convention_event_mapping(event_source, event_bus, nats));
+        register_commodity_future_averaging_terms_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_future_contract_terms_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_future_expiry_anchor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_future_off_peak_index_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_future_option_expiry_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_commodity_price_segment_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_commodity_volatility_config_event_mapping(event_source, event_bus, nats));

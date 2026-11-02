@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/commodity_future_averaging_terms/commodity_future_averaging_terms.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+commodity_future_averaging_terms versions 00000000-0000-0000-0000-000000000000 --limit 1

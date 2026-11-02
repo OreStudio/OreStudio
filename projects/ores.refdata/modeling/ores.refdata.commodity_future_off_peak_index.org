@@ -1,0 +1,225 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 37C4070A-A8FC-48BA-B0D4-B83E6FEABCBF
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
+:END:
+#+title: ores.refdata.commodity_future_off_peak_index
+#+description: Codegen entity model for the refdata =commodity_future_off_peak_index= part: the peak and off-peak indices a power future's price is made of.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: commodity_future_off_peak_index
+#+entity_plural: commodity_future_off_peak_indexes
+#+entity_title: Commodity Future Off Peak Index
+#+convention_family: commodity_future_off_peak_index
+#+convention_write: by_id
+#+brief: The peak and off-peak indices a power future's price is made of.
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The peak and off-peak indices a power future's price is made of, as ORE's
+=OffPeakPowerIndexData=: the off-peak index, the peak index, the hours of the
+day that count as off-peak, and the calendar the peak hours are read on. It is a
+part because its fields hold one invariant: ORE requires all four together, so
+the part makes each column required. Only a power future states it, so a
+convention fills this part at most once.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** off_peak_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the off-peak hours price.
+
+#+begin_src cpp :name generator
+std::string("PJM-WH-OFFPEAK")
+#+end_src
+
+** peak_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the peak hours price.
+
+#+begin_src cpp :name generator
+std::string("PJM-WH-PEAK")
+#+end_src
+
+** off_peak_hours
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    double
+:nullable:    false
+:END:
+
+Hours of the day that count as off-peak.
+
+#+begin_src cpp :name generator
+8.0
+#+end_src
+
+** peak_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the peak hours are read on.
+
+#+begin_src cpp :name generator
+std::string("US-NERC")
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made when the publish inserts it.
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** off_peak_index
+:PROPERTIES:
+:type: text
+:nullable: false
+:END:
+
+** peak_index
+:PROPERTIES:
+:type: text
+:nullable: false
+:END:
+
+** off_peak_hours
+:PROPERTIES:
+:type: double precision
+:nullable: false
+:END:
+
+** peak_calendar
+:PROPERTIES:
+:type: text
+:nullable: false
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_future_off_peak_indexes_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_future_off_peak_index
+:entity_plural_short:   commodity_future_off_peak_indexes
+:entity_singular_words: commodity future off peak index
+:entity_plural_words:   commodity future off peak indexes
+:END:
+
+* See also
+
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part hangs off.
+- [[id:5B1B2D2B-6B2A-4C6B-9C25-9E1D1F4A7C31][ores.refdata.commodity_future_convention]] — the family this part belongs to.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — the task that introduced it.

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8
+:END:
+#+title: State each family part's cardinality and refuse a family write that breaks it
+#+description: A family model's Parts table names its parts but not how many rows each takes, so the generated family put accepts a commodity future with no contract terms or a cross currency swap with no leg, which the ORE export then refuses.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:conventions:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A family model's Parts table gains a cardinality column: =one= for a part
+every convention fills, =optional= for a part it fills at most once, and a
+group for parts that are alternatives, as the tenor basis swap's are. The
+generated family put refuses a write whose parts break it, with a validation
+verdict that names the part.
+
+* Why
+
+The unique index on =(tenant_id, convention_id)= stops two rows of one part,
+but nothing stops a missing required part. The family put accepts a commodity
+future with no contract terms, or a cross currency swap with no leg. The ORE
+export then refuses that convention, and the failure surfaces far from the
+write that caused it. Each composite kind states its rule only in its ORE
+mapper today: =reverse_commodity_future=, =reverse_cross_currency_basis= and
+=reverse_cross_currency_fix_float= throw when a part is missing.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.commodity_future_convention.org=,
+  the Parts table.
+- The generated =commodity_future_convention_service.cpp=, whose put checks
+  no part count.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — where the gap was found.
+
+* See also
+
+-

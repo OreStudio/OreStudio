@@ -50,10 +50,6 @@ std::vector<ores::nats::service::subscription> register_commodity_future_convent
     auto h = std::make_shared<commodity_future_convention_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_commodity_future_conventions_request::nats_subject,
-        commodity_future_convention_queue_group,
-        [h](ores::nats::message msg) { h->list_commodity_future_conventions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
         get_commodity_future_convention_request::nats_subject,
         commodity_future_convention_queue_group,
         [h](ores::nats::message msg) { h->get_commodity_future_convention(std::move(msg)); }));
@@ -73,28 +69,6 @@ std::vector<ores::nats::service::subscription> register_commodity_future_convent
                                             h->put_many_commodity_future_conventions(
                                                 std::move(msg));
                                         }));
-    subs.push_back(nats.queue_subscribe(
-        delete_commodity_future_convention_request::nats_subject,
-        commodity_future_convention_queue_group,
-        [h](ores::nats::message msg) { h->delete_commodity_future_convention(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_many_commodity_future_conventions_request::nats_subject,
-                             commodity_future_convention_queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->delete_many_commodity_future_conventions(std::move(msg));
-                             }));
-    subs.push_back(
-        nats.queue_subscribe(list_commodity_future_convention_versions_request::nats_subject,
-                             commodity_future_convention_queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->list_commodity_future_convention_versions(std::move(msg));
-                             }));
-    subs.push_back(
-        nats.queue_subscribe(get_commodity_future_convention_version_request::nats_subject,
-                             commodity_future_convention_queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->get_commodity_future_convention_version(std::move(msg));
-                             }));
     return subs;
 }
 

@@ -176,6 +176,10 @@ std::string conventions_difference(const conventions& original,
         conventions_family::cross_currency_basis_facts(mapped_export.bundle))
         return path + ": the export reads back as a different cross-currency basis swap";
 
+    if (conventions_family::commodity_future_facts(mapped_document.bundle) !=
+        conventions_family::commodity_future_facts(mapped_export.bundle))
+        return path + ": the export reads back as a different commodity future";
+
     return {};
 }
 

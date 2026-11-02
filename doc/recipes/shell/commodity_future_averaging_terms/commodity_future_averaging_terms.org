@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 9BA1EDEF-6090-52FB-9715-76BFE51C791B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_future_averaging_terms commands from the shell?
+#+description: Every command the commodity_future_averaging_terms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_future_averaging_terms:
+
+This file documents the commodity_future_averaging_terms resource at the shell, one section per command. Every command is a subcommand of =commodity_future_averaging_terms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 774922BF-3B92-5F23-944F-036E1ED82903
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.list=.
+
+#+name: commodity_future_averaging_terms-list
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-list.ores :exports none
+commodity_future_averaging_terms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4BDF9127-C2D5-514F-834E-BF7635D9D36A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.get=.
+
+#+name: commodity_future_averaging_terms-get
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-get.ores :exports none
+commodity_future_averaging_terms get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 33A828A7-FBDC-574B-B128-39AE2056C4F3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.get_many=.
+
+#+name: commodity_future_averaging_terms-get-many
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-get-many.ores :exports none
+commodity_future_averaging_terms get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1D934343-A3A3-53D0-9005-5EB3039A448C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms add <convention_id> <averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> <averaging_future_month_offset> <averaging_daily_expiry_offset> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.put=.
+
+#+name: commodity_future_averaging_terms-add
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-add.ores :exports none
+commodity_future_averaging_terms add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 73BC5F96-86ED-5CE2-B3CF-F328CBBEAE9C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms set <id> <convention_id> <averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> <averaging_future_month_offset> <averaging_daily_expiry_offset> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.put=.
+
+#+name: commodity_future_averaging_terms-set
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-set.ores :exports none
+commodity_future_averaging_terms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: F7C07D86-B27D-552D-BFFB-A7173ECB91FC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms put-many --count <n> <id> <convention_id> <averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> <averaging_future_month_offset> <averaging_daily_expiry_offset> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.put_many=.
+
+#+name: commodity_future_averaging_terms-put-many
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-put-many.ores :exports none
+commodity_future_averaging_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E6EC698B-0A67-5CFD-A5D4-EF4B50AD357D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.delete=.
+
+#+name: commodity_future_averaging_terms-delete
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-delete.ores :exports none
+commodity_future_averaging_terms delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 686C9BE8-085E-5F51-BA0E-3EA73FCEDEA2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.delete_many=.
+
+#+name: commodity_future_averaging_terms-delete-many
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-delete-many.ores :exports none
+commodity_future_averaging_terms delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: 46095C7E-001A-54D0-81DA-AB8D995F08E0
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms.list_by_convention_id=.
+
+#+name: commodity_future_averaging_terms-by-convention-id
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-by-convention-id.ores :exports none
+commodity_future_averaging_terms by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F9B52AF6-1F91-50FA-8E7C-E33A0F39E06E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms_versions.list=.
+
+#+name: commodity_future_averaging_terms-versions
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-versions.ores :exports none
+commodity_future_averaging_terms versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1675AB8B-D981-5DA0-97E6-2DB3C6528196
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_averaging_terms version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_averaging_terms_versions.get=.
+
+#+name: commodity_future_averaging_terms-version
+#+begin_src ores-shell :tangle commodity_future_averaging_terms-version.ores :exports none
+commodity_future_averaging_terms version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

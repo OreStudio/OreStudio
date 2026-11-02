@@ -23,4 +23,5 @@ out-of-scope reasons, which cite the version they hold for.
 | synthetic/sacva_sensitivity.csv | =CapitalReportWriter::writeSaCvaSensiReport=, OREAnalytics/orea/app/reportwriters/capitalreportwriter.cpp |
 | synthetic/jacobi.csv | =writeParConversionMatrix=, OREAnalytics/orea/engine/parsensitivityanalysis.cpp |
 | synthetic/jacobi_inverse.csv | =ParSensitivityConverter::writeConversionMatrix=, OREAnalytics/orea/engine/parsensitivityanalysis.cpp |
+| synthetic/calibration.csv | =ReportWriter::writeXmlReport=, OREAnalytics/orea/app/reportwriter.cpp, called by the calibration analytic with the heading CrossAssetModel |
 | captured/pricingstats.csv | =ReportWriter::writePricingStats=, written by a Group Consolidated Exposure run |

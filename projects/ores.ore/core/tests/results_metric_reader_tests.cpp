@@ -21,6 +21,7 @@
 #include "ores.ore.core/results/cashflow_reader.hpp"
 #include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
+#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.testing/test_files.hpp"
 #include <algorithm>
@@ -238,13 +239,14 @@ TEST_CASE("a file no family covers is refused", metric_tags) {
 }
 
 TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
-    // The payments, the calibration and the market inputs have readers of
-    // their own; every other family is read as metrics.
+    // The payments, the calibration, the market inputs and the text values
+    // have readers of their own; every other family is read as metrics.
     std::size_t read = 0;
     for (const auto& family : output_families()) {
         if (ores::ore::results::is_cashflow_family(family) ||
             ores::ore::results::is_calibration_family(family) ||
-            ores::ore::results::is_market_input_family(family))
+            ores::ore::results::is_market_input_family(family) ||
+            ores::ore::results::is_text_value_family(family))
             continue;
         INFO("the family is " << family.code);
 

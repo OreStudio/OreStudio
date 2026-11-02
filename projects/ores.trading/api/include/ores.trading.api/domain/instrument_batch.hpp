@@ -289,7 +289,7 @@ struct instrument_batch {
     /**
      * @brief The bond_trs rows, keyed by trade id.
      */
-    std::vector<bond_trs> bond_trs;
+    std::vector<ores::trading::domain::bond_trs> bond_trs;
     /**
      * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
      */

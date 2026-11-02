@@ -15,9 +15,11 @@
 The product types seed: one =insert ... values= row per product type the
 catalogue declares, in catalogue order, plus one row per (product type, market)
 pair its =markets= column states. A market with a trailing =!= is the home
-market. The script is idempotent, as the hand-written one was. =name_sql= and
-=description_sql= are the text folded onto one line with its quotes doubled, so
-an apostrophe cannot break the literal.
+market. The script is idempotent, as the hand-written one was. =name_sql=,
+=description_sql=, =source_sql= and =source_ref_sql= are the text folded onto one
+line with its quotes doubled, so an apostrophe cannot break the literal. Every
+row states a description and the source it was written from, because a product
+type a reader cannot be told about is not worth seeding.
 
 * Template
 
@@ -41,7 +43,7 @@ an apostrophe cannot break the literal.
 \echo '--- Product Types ---'
 
 insert into ores_trading_product_types_tbl (
-    code, tenant_id, version, name, description,
+    code, tenant_id, version, name, description, source, source_ref,
     product_family_code, construction,
     has_options, has_extension, instrument_table, display_order,
     modified_by, change_reason_code, change_commentary
@@ -49,6 +51,7 @@ insert into ores_trading_product_types_tbl (
 {{#trade_type_catalogue}}
 {{#rows}}
     ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{name_sql}}', '{{description_sql}}',
+     '{{source_sql}}', '{{source_ref_sql}}',
      {{family_literal}}, '{{construction}}',
      {{has_options}}, {{has_extension}}, {{instrument_literal}}, {{display_order}},
      'ores_trading_service', 'system.initial_load', 'Seed product types'){{comma}}

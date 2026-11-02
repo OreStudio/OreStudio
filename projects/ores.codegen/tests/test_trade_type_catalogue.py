@@ -64,7 +64,28 @@ The row.
 """
 
 
-def _catalogue(rows: str) -> str:
+def _codes_of(rows: str) -> list[str]:
+    """The code column of a * Trade types table body."""
+    codes = []
+    for line in rows.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if not cells or not cells[0] or cells[0] == "code":
+            continue
+        if set(cells[0]) <= set("-+"):
+            continue
+        codes.append(cells[0])
+    return codes
+
+
+def _described(codes) -> str:
+    """One * Descriptions row per code, stating something a reader can use."""
+    return "\n".join(
+        f"| {code} | A widget traded on a test. | ORE User Guide | widget.tex |"
+        for code in codes)
+
+
+def _catalogue(rows: str, descriptions: str | None = None) -> str:
+    described = _described(_codes_of(rows)) if descriptions is None else descriptions
     return f"""\
 :PROPERTIES:
 :ID: 00000000-0000-0000-0000-0000000000E2
@@ -78,15 +99,21 @@ def _catalogue(rows: str) -> str:
 | code | name | family | construction | markets | has_options | has_extension | instrument |
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 {rows}
+
+* Descriptions
+
+| code | description | source | source_ref |
+|------+-------------+--------+------------|
+{described}
 """
 
 
-def _write_catalogue(tmp_path, rows):
+def _write_catalogue(tmp_path, rows, descriptions=None):
     modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
     modeling.mkdir(parents=True)
     (modeling / "ores.testcomp.widget.org").write_text(ENTITY, encoding="utf-8")
     path = modeling / "ores.testcomp.trade_type_catalogue.org"
-    path.write_text(_catalogue(rows), encoding="utf-8")
+    path.write_text(_catalogue(rows, descriptions), encoding="utf-8")
     return path
 
 
@@ -169,3 +196,52 @@ def test_every_routed_model_names_the_catalogue():
         if "trade_type_code" not in text:
             continue
         assert ":routed_by:     ores.trading.trade_type_catalogue" in text, model.name
+
+
+def test_the_catalogue_refuses_a_code_it_does_not_describe(tmp_path):
+    path = _write_catalogue(tmp_path, "\n".join([
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        "| FxForward | y | forward | native | fx! | false | false | widget |",
+    ]), descriptions="| Swap | A widget traded on a test. | ORE User Guide | widget.tex |")
+
+    with pytest.raises(ValueError, match="no description for product type\\(s\\): FxForward"):
+        load_org_trade_type_catalogue_model(path)
+
+
+@pytest.mark.parametrize("description,message", [
+    ("| Swap |  | ORE User Guide | widget.tex |", "states no description"),
+    ("| Swap | A widget. |  | widget.tex |", "states no source"),
+    ("| Swap | A widget. | ORE User Guide |  |", "states no source_ref"),
+])
+def test_the_catalogue_refuses_a_description_that_states_nothing(
+        tmp_path, description, message):
+    path = _write_catalogue(
+        tmp_path,
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        descriptions=description)
+
+    with pytest.raises(ValueError, match=message):
+        load_org_trade_type_catalogue_model(path)
+
+
+def test_the_catalogue_refuses_a_description_of_a_code_it_does_not_state(tmp_path):
+    path = _write_catalogue(
+        tmp_path,
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        descriptions="\n".join([
+            "| Swap | A widget. | ORE User Guide | widget.tex |",
+            "| Gadget | A gadget. | ORE User Guide | gadget.tex |",
+        ]))
+
+    with pytest.raises(ValueError, match="does not state: Gadget"):
+        load_org_trade_type_catalogue_model(path)
+
+
+def test_every_product_type_is_described_and_sourced():
+    catalogue = load_org_trade_type_catalogue_model(CATALOGUE)["trade_type_catalogue"]
+
+    undescribed = [
+        row["code"] for row in catalogue["rows"]
+        if not row["description_sql"] or not row["source_sql"] or not row["source_ref_sql"]
+    ]
+    assert undescribed == []

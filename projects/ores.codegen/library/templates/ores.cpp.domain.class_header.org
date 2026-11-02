@@ -32,9 +32,9 @@ The full template source. Edit here and re-tangle with
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
-{{#has_rfl_skip_columns}}
+{{#has_no_wire_columns}}
 #include "ores.utility/rfl/skip_comparison.hpp"
-{{/has_rfl_skip_columns}}
+{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -128,7 +128,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#rfl_skip}}rfl::Skip<{{{cpp_type}}}>{{/rfl_skip}}{{^rfl_skip}}{{{cpp_type}}}{{/rfl_skip}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/sql_only}}
 {{/is_identity_group_column}}
@@ -239,9 +239,9 @@ economic_fields_of(std::type_identity<{{entity_singular}}>) {
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
-{{#has_rfl_skip_columns}}
+{{#has_no_wire_columns}}
 #include "ores.utility/rfl/skip_comparison.hpp"
-{{/has_rfl_skip_columns}}
+{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -297,7 +297,7 @@ struct {{name_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#rfl_skip}}rfl::Skip<{{{cpp_type}}}>{{/rfl_skip}}{{^rfl_skip}}{{{cpp_type}}}{{/rfl_skip}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 
 {{/columns}}
     /**

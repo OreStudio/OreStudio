@@ -60,6 +60,9 @@ struct sample_probe_every_member {
     std::optional<std::vector<boost::uuids::uuid>> ids;
     std::optional<std::optional<std::string>> maybe;
     sample_probe_leaf single;
+    boost::asio::ip::address host;
+    ores::utility::serialization::error_code code = ores::utility::serialization::error_code::none;
+    std::int16_t signed_small = 0;
 
     friend bool operator==(const sample_probe_every_member&, const sample_probe_every_member&) = default;
 };
@@ -85,6 +88,9 @@ struct sample_probe_every_member {
         utility::codec::field{"ids", &sample_probe_every_member::ids},
         utility::codec::field{"maybe", &sample_probe_every_member::maybe},
         utility::codec::field{"single", &sample_probe_every_member::single},
+        utility::codec::field{"host", &sample_probe_every_member::host},
+        utility::codec::field{"code", &sample_probe_every_member::code},
+        utility::codec::field{"signed_small", &sample_probe_every_member::signed_small},
     };
 }
 
@@ -98,6 +104,18 @@ using ores::utility::codec::sample;
 using ores::utility::codec_sample_probe::sample_probe_colour;
 using ores::utility::codec_sample_probe::sample_probe_every_member;
 using ores::utility::codec_sample_probe::sample_probe_leaf;
+
+// The sampler's leaf specialisations win over its wire_fields branch. The codec
+// tries wire_fields first, so the two agree only while no leaf states one.
+static_assert(!ores::utility::codec::states_wire_form<std::string>);
+static_assert(!ores::utility::codec::states_wire_form<std::filesystem::path>);
+static_assert(!ores::utility::codec::states_wire_form<boost::uuids::uuid>);
+static_assert(!ores::utility::codec::states_wire_form<ores::utility::uuid::tenant_id>);
+static_assert(!ores::utility::codec::states_wire_form<ores::utility::decimal::decimal>);
+static_assert(!ores::utility::codec::states_wire_form<std::chrono::year_month_day>);
+static_assert(!ores::utility::codec::states_wire_form<std::chrono::system_clock::time_point>);
+static_assert(!ores::utility::codec::states_wire_form<boost::asio::ip::address>);
+static_assert(!ores::utility::codec::states_wire_form<ores::utility::serialization::error_code>);
 
 std::span<const std::byte> sample_bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
@@ -127,6 +145,9 @@ TEST_CASE("a sampled struct sets every member away from its default", sample_tag
     CHECK(v.ids != d.ids);
     CHECK(v.maybe != d.maybe);
     CHECK(v.single != d.single);
+    CHECK(v.host != d.host);
+    CHECK(v.code != d.code);
+    CHECK(v.signed_small != d.signed_small);
 }
 
 TEST_CASE("a member whose default is the first sample takes the second", sample_tags) {
@@ -141,11 +162,29 @@ TEST_CASE("a vector sample holds two different elements", sample_tags) {
     CHECK(v[0] != v[1]);
 }
 
-TEST_CASE("every sample survives JSON and MessagePack exactly", sample_tags) {
-    using namespace ores::utility::codec;
-    const auto v = sample<sample_probe_every_member>(0);
+TEST_CASE("the second sample differs from the first in every member", sample_tags) {
+    const auto a = sample<sample_probe_every_member>(0);
+    const auto b = sample<sample_probe_every_member>(1);
+    CHECK(a.text != b.text);
+    CHECK(a.small != b.small);
+    CHECK(a.ratio != b.ratio);
+    CHECK(a.amount != b.amount);
+    CHECK(a.at != b.at);
+    CHECK(a.leaves != b.leaves);
+    CHECK(a.single != b.single);
+    CHECK(a.host != b.host);
+    CHECK(a.code != b.code);
+    CHECK(b.small < 0);
+    CHECK(b.signed_small < 0);
+}
 
-    CHECK(object::read_json<sample_probe_every_member>(object::write_json(v)) == v);
-    const auto packed = object::write_msgpack(v);
-    CHECK(object::read_msgpack<sample_probe_every_member>(sample_bytes_of(packed)) == v);
+TEST_CASE("both samples survive JSON and MessagePack exactly", sample_tags) {
+    using namespace ores::utility::codec;
+    for (const std::size_t which : {0u, 1u}) {
+        CAPTURE(which);
+        const auto v = sample<sample_probe_every_member>(which);
+        CHECK(object::read_json<sample_probe_every_member>(object::write_json(v)) == v);
+        const auto packed = object::write_msgpack(v);
+        CHECK(object::read_msgpack<sample_probe_every_member>(sample_bytes_of(packed)) == v);
+    }
 }

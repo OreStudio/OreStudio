@@ -70,8 +70,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Members in the generated protocol headers | 36,524 | =evidence/survey_protocol_member_types.py= | f9ee9f6f5d |
 | Member type rows in the survey, all covered by the sampler | 40 | =evidence/survey_protocol_member_types.py= | f9ee9f6f5d |
-| Sampler tests | 4 cases, 26 assertions, all pass | =ores.utility.tests "[codec][sample]"= | f9ee9f6f5d plus this branch |
-| Whole utility suite | 193 cases, 888 assertions, all pass | =ores.utility.tests= | f9ee9f6f5d plus this branch |
+| Sampler tests | 5 cases, 42 assertions, all pass | =ores.utility.tests "[codec][sample]"= | f9ee9f6f5d plus this branch |
+| Whole utility suite | 194 cases, 905 assertions, all pass | =ores.utility.tests= | f9ee9f6f5d plus this branch |
 
 * Notes
 
@@ -108,7 +108,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Leaf specialisations win over wire_fields; the codec tries wire_fields first | sample.hpp | Fixed | The two agree because no leaf states wire_fields. The tests now static_assert this for every leaf. |
+| 2 | Signed integers never negative | sample.hpp | Fixed | A signed type's second sample is the minimum plus one. |
+| 3 | is_integral admits the character types | sample.hpp | Fixed | They now fail the static_assert. |
+| 4 | magic_enum sees only -128 to 128 | sample.hpp | Fixed | Stated in the header comment. |
+| 5 | The comment overstates the second sample | sample.hpp | Fixed | The comment now says what each sample guarantees. |
+| 6 | sample_unlike needs equality | sample.hpp | Fixed | Constrained on std::equality_comparable. |
+| 7 | Throwing in make | sample.hpp | No change | A rejected literal is a defect in the sampler, so a throw is right. |
+| 8 | Only sample 0 roundtrips | codec_sample_tests.cpp | Fixed | Both samples roundtrip, and a new case checks the second differs from the first. |
+| 9 | ip::address and error_code not in the probe | codec_sample_tests.cpp | Fixed | Added, with a signed 16-bit member. |
 
 * Result
 

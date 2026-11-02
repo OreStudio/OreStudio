@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-how-a-report-run-is-processed
+#+pr: 4383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -32,11 +32,11 @@ format, and why the shapes are what they are.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The flow is documented: the phases and what each step hands on are on the pipeline page, and post-processing has its own page stating the routing, the readers, the two stores, the refusals, the node's part and the cost. |
-| Waiting on   | The three tasks that change the cost shape, whose outcome the page states as in flight. |
-| Next         | Replace the "what changes" section with what happens, once those three land. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -48,8 +48,8 @@ format, and why the shapes are what they are.
   no family covers.
 - It states the ownership rule: the format belongs to ores.ore, the table to the
   component that stores it, and no screen learns a family.
-- It states the cost shape: one object per file, blocks of rows, and the market
-  state in the object store.
+- It states the cost shape: one object per file, blocks of rows in one
+  transaction, and the market state as rows, with the measured cost.
 - The existing pipeline page points at it, and the ORE output processing page
   links to it.
 
@@ -93,12 +93,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4383][#4383]] | [doc] State how a report run's output becomes rows, and close the story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: spelling and doc validation | | Clean | |
+| 2 | Say how long a skipped family's file stays | report_post_processing.org | Accepted | It can be read while storage keeps the run's objects. |
+| 3 | A hard-coded count of tables | report_post_processing.org | Accepted | Dozens, not sixty. |
+| 4 | Name the timeout setting a long load needs | report_post_processing.org | Declined | Where the deployment sets it is not traced here; the risk is recorded on the blocks task. |
+| 5 | Link the capture that blocks the end-to-end run | story.org | Accepted | Linked from the story's result. |
 
 * Result
+
+[[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] states the flow as
+built, now that the tasks that changed the cost shape have landed: each result's
+manifest, routing by family, the families a definition skips, one file fetched at
+a time against its digest, rows written a block at a time in one transaction, the
+six stores and their shared key, the readers, what a refusal rolls back, what the
+node leaves behind and the measured cost. The market state is rows, not objects,
+by the story's decision, and the acceptance says so. The diagram is redrawn, the
+pipeline page no longer calls the output an archive, and the pipeline, output
+processing and output formats pages link to it.

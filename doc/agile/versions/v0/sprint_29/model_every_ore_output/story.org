@@ -21,11 +21,11 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Every output family is documented, generated from the catalogue. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Document how a report run is processed, then close the story. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-02                               |
 
 * Acceptance
@@ -37,7 +37,7 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 - Every output family is parsed into rows in a table; no family is stored only as a blob.
 - A report definition states which families its runs store as rows, and a new definition stores every family.
 - A test reads every checked-in expected output and lands it in the model, or states why the file is out of scope.
-- A run's outputs load in bulk, in one transaction for each family of each run.
+- A run's outputs load in blocks, in one transaction for each run, so a refusal leaves nothing behind.
 - One knowledge page states every family's file, key and columns with their types and units, generated from the catalogue so the page and the readers cannot drift.
 
 * Tasks
@@ -56,11 +56,28 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 | [[id:C6E58C64-D5A7-4077-9553-9D72D3AB8DDE][Fan a run's output out at the node]] | DONE | 2026-11-01 | 2026-11-01 | The node uploads each output file the engine wrote as its own compressed object, with a manifest, so reporting and marketdata each fetch the few files they model. Today both download the whole output archive and unpack it, twice per run, which does not hold at grid volumes. |
 | [[id:2B253ED2-E629-4A58-82BC-EEDEE3F0077F][Store a run's figures in blocks]] | DONE | 2026-11-02 | 2026-11-02 | The post-processor reads a family whole and inserts it in one statement, so a large run holds every figure in memory before the first row is written. Read a block of rows, write it, read the next, so memory per run is bounded whatever the family states. |
 | [[id:1D326204-29A2-4467-8DC7-779BD0C3CFAB][Keep the market state in the object store]] | ABANDONED | | | A cube is tens to hundreds of megabytes. Held as base64 text in a row it adds a third on top of gzip and puts the payload in the database, which is the wrong place for grid throughput. The row keeps the index and a storage key; the compressed file lives in the object store and is fetched only when a reader needs the values. |
-| [[id:DA5EBB3A-E221-4DC0-BFA1-6B2CDEF15DBB][Document how a report run is processed]] | BACKLOG | | | One page states the flow of a run end to end and what post-processing does with its output: the phases the workflow invokes, what each hands the next, how the archive becomes rows in the two stores, which component owns which format, and why the shapes are what they are. The existing pipeline page predates the implementation and says only that post-processing records rows. |
+| [[id:DA5EBB3A-E221-4DC0-BFA1-6B2CDEF15DBB][Document how a report run is processed]] | DONE | 2026-11-02 | 2026-11-02 | One page states the flow of a run end to end and what post-processing does with its output: the phases the workflow invokes, what each hands the next, how the archive becomes rows in the two stores, which component owns which format, and why the shapes are what they are. The existing pipeline page predates the implementation and says only that post-processing records rows. |
 | [[id:9CC7AFA7-3755-40D1-AC2C-A2F2E9D3ED5B][Land the market inputs in the market data store]] | DONE | 2026-11-02 | 2026-11-02 | A run states the market it read in marketdata.csv, fixings.csv and dividends.csv, and the catalogue names none of them, so no reader serves them and the store keeps nothing. Catalogue the three from the writers, read them with the declaration-driven reader, and land them in the shapes ores.marketdata already holds: market observations for the quotes and market fixings for the fixings and dividends. Also decide whether todaysmarketcalibration_cashflows is a run result or market state, and record the decision in the story. |
 | [[id:40A46EF1-C11A-4652-A490-4B0D454E24FB][Parse the market state into timeseries tables]] | DONE | 2026-11-01 | 2026-11-02 | Every market-state file a run writes is parsed into rows in a hypertable, so a user can query what the computation did. The NPV cubes are values of trades, so they are run results and go to ores.reporting. The simulated factor values, the stress shifts and the calibrated market go to ores.marketdata. The payload table and its index are removed, and scenario.csv moves to the run results, because it holds sensitivity figures. |
 | [[id:E10EB70F-4B61-43AA-97A4-440991BB8FD5][Choose per report definition what a run stores]] | DONE | 2026-11-02 | 2026-11-02 | A report definition states which output families its runs store as rows. The default stores every family, so we can see that the parsers work. When we trust them, a definition can turn off the large intermediate families, such as the NPV cubes and the scenario dumps. The raw files stay in the object store, so a run that did not store a family can be parsed later. |
 | [[id:008C03B9-11AB-4B9E-814E-08C3995054F4][Store the text-valued outputs]] | DONE | 2026-11-02 | 2026-11-02 | Four outputs state text rather than figures: additional_results, marketObjects, riskFactors and the calibrated model's XML. Each gets a row shape so no output is left unread. |
+
+* Result
+
+Every output ORE writes is catalogued, read into rows and stored by the component
+that owns it. The catalogue names 81 families, each proven by a sample ORE ships,
+a run here wrote, or a fixture written from its writer, and the generator refuses a
+seed output that is neither a family nor excused with its reason. Run results land
+in reporting's metric, cashflow and text value tables; the scenarios, calibration
+and market inputs a run used land in marketdata's tables; every row is keyed by
+the result, file and line that state it. A report definition chooses the families
+its runs skip, storing every family by default. A run's rows load a block at a
+time in one transaction, which cut peak memory on a 500000-row cube from 1992 MiB
+to 202 MiB. ORE output formats documents every family, generated from the
+catalogue, and Report post-processing states the flow as built. A defect found on
+the way is captured, [[id:0393A6B0-A31E-4375-9BE4-8B7CFC4B0208][Every report run fails on an orphan commodity future part]]:
+since the conventions split, no report run reaches post-processing. The block load's wall clock is set by the per-row
+insert trigger, a limit recorded on its task.
 
 * Decisions
 

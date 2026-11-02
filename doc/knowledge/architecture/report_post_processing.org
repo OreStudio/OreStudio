@@ -11,56 +11,71 @@
 
 * Summary
 
-Post-processing reads what the engine wrote and stores what it says. The output is
-a set of delimited files, one per analytic: net present values, cashflows, curve
-points, the market state the run read. The files are of three kinds, and each kind
-goes to the store that owns it.
+Post-processing reads what the engine wrote and stores what it says. The engine
+writes one delimited file for each report it produces, and ORE Studio models
+every one: the figures a run computed, the payments it projected, the values it
+states as text, and the market it read. Each kind of file goes to the store that
+owns it, and every row it stores is keyed by where the engine stated it.
 
-It is the phase whose cost is proportional to the size of the result, and the one
-where throughput is decided. Like pre-processing it has a documented substitute: a
-run configured to ignore results records where the output is and stops.
+It is the phase whose cost is proportional to the size of the result. It reads one
+file at a time and writes in blocks, inside one transaction, so its memory is
+bounded whatever a run states and a refusal leaves nothing behind. Like
+pre-processing it has a documented substitute: a run configured to ignore results
+records where the output is and stops.
 
-The formats are stated in
-[[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]], and the phases
-in [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]].
+The formats are listed, family by family, in
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]]; how they are read
+is in [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]]; and the
+phases are in [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]].
 
 * Detail
 
 ** What the step is handed
 
-The run's compute results: one per workunit, each naming where its output archive
-is. It also holds the run's own token, which is the authority to read them. It is
-handed locations, never contents.
+The run's compute results, one for each workunit. Each result names a manifest,
+which lists every file the engine wrote with its size, its digest and where it is.
+The step also holds the run's own token, which is the authority to read them, and
+the families the run's definition said not to store. It is handed locations,
+never contents.
 
 ** What it does
 
 | Step | Reads | Produces |
 |------+-------+----------|
-| Fetch | object storage, by each result's output location | the output archives |
-| Unpack | each archive | the files the engine wrote |
+| Locate | each result's manifest | the files the result wrote, by name |
 | Route | each file's name, through the catalogue | the family, and its shape |
-| Read | each file, through the reader its shape names | the run's figures |
-| Load | the figures, one bulk statement for each family, in one transaction | rows in the store |
-| Hand over | the archive locations and the run's token | the market state in the market data store |
+| Skip | the families the definition does not store | the files left in storage, named in the log |
+| Fetch | each file the run stores, one at a time, checked against its digest | the file's text |
+| Read | the file, through the reader its shape names | its rows, a block at a time |
+| Load | each block, as it is read, in one transaction for the whole run | rows in the result store |
+| Hand over | the manifests, the run's token and the skipped families | the market state in the market data store |
+| Commit | the transaction, once every file read whole | the run's rows, visible at once |
 | Record | the counts | the run's result summary |
 
-Nothing in reporting parses an ORE file: the readers belong to =ores.ore= and
-reporting calls them.
+Nothing in reporting or the market data store parses an ORE file: the readers
+belong to =ores.ore=, and the components call them.
 
 ** How a file is routed
 
-The catalogue says which family a file name belongs to, and the family's columns
-say which shape its row is. One rule decides, and it is stated once in =ores.ore=:
+The catalogue says which family a file name belongs to, under its own name or the
+name the engine uses when the run's configuration names none, and the family says
+which shape its row is. One rule decides, stated once in =ores.ore=:
 
 | The row is | The family is | The store is |
 |------------+---------------+--------------|
 | keys, qualifiers and figures | a metric family | =ores_reporting_report_metrics_tbl= |
 | a payment with a leg and a number | a cashflow family | =ores_reporting_report_cashflows_tbl= |
-| the scenarios or the calibration of the market the run built | a market state | the market data store |
+| a name and a text, not a figure | a text-valued family | =ores_reporting_report_text_values_tbl= |
+| the scenarios the run generated | a market state | =ores_marketdata_market_scenario_values_tbl= |
+| the calibration of the market the run built | a market state | =ores_marketdata_market_calibration_values_tbl= |
+| the quotes, fixings and dividends the run read | a market state | =ores_marketdata_market_input_values_tbl= |
 | anything else | no family | left alone, and named in the log |
 
 A file no family covers is counted and logged rather than refused: a run may write
-a file this version does not model, and the archive still holds it.
+a file this version does not model, and the run's archive still holds it. Every
+output the engine's configuration can name is either a family or is stated, with
+its reason, on the formats page; the catalogue generator refuses one that is
+neither.
 
 ** The readers
 
@@ -73,45 +88,64 @@ for each family:
   a family that gains a column for each curve costs nothing.
 - =read_cashflows= reads a family whose row is a payment. The stressed families
   state each figure three times; the reader turns =Amount_Base=, =Amount_Scen= and
-  =Amount_Diff= into one figure named =Amount= with the part beside it, so a
-  comparison needs no knowledge of the suffix.
+  =Amount_Diff= into one figure named =Amount= with the part beside it.
+- =read_text_values= reads the families that state a name and a text: the extra
+  results a pricer reports, the lists of a portfolio's details, and the calibrated
+  model as one XML document.
 - =read_calibration= reads the calibration of the market the run built, one value
-  for each line. A value is a number as often as it is text, and the line says
-  which, so the text is kept and the number beside it when there is one.
+  for each line, keeping the text and the number beside it when there is one.
+- =read_market_inputs= reads the quotes, fixings and dividends the run loaded.
+
+The metric and cashflow readers hand their rows over a block at a time, because
+those are the families a large run makes large: a cube states a row for every
+netting set, date and sample.
 
 ** The stores
 
-=reporting= writes the run's figures.
+=reporting= writes the run's results.
 
-- A metric row is the run, the party, the family, the subject, the observation
-  date, the measure, the currency, the scenario, the risk factor, every other
-  qualifier as one JSON object, and the figure. It is a hypertable on the
-  observation date, and the family is a column rather than a table: sixty tables
-  would be forty identical shapes and a union for every cross-family read.
+- A metric row is the run, the result, the file, the line, the family, the
+  subject, the observation date, the measure, the currency, the scenario, the risk
+  factor, every other qualifier as one JSON object, and the figure. It is a
+  hypertable on the observation date, and the family is a column rather than a
+  table: dozens of tables would be dozens of identical shapes and a union for every
+  cross-family read. The cubes and the sensitivity scenarios are here too: they
+  state a trade's or a netting set's value, which is a result.
 - A cashflow row is the payment's trade or market object, its scenario, its leg,
   its number, its pay date, its flow type and its currency, one figure named by
-  its heading, and the part of a stressed comparison it states. A payment is not a
-  metric: its meaning is the relation between its keys, and those keys have no
-  place in a metric row.
+  its heading, and the part of a stressed comparison it states.
+- A text value row is a name and its text, about a trade when the file names one,
+  with the number beside it when the engine stated a double.
 
-Both are written once per run and never edited; a correction is a new run.
+The market data store writes the market the run saw, with the same readers.
 
-The market data store writes the state, with the same readers.
+- A scenario value is one risk factor's value under one scenario at one date.
+- A calibration value is one line of the calibration file.
+- A market input is one quote, fixing or dividend the run read. It is not written
+  as an observation: the observations a run reads come from this store, and the
+  run's copy written back would duplicate them and replace their provenance.
 
-- A scenario value is one risk factor's value under one scenario at one date. The
-  scenario files state a column for each factor, so =read_metrics= reads them and
-  each figure becomes one row of =ores_marketdata_market_scenario_values_tbl=.
-- A calibration value is one line of the calibration file, in
-  =ores_marketdata_market_calibration_values_tbl=.
+Every row is keyed by where the engine stated it: the compute result, the file,
+the line and the heading. A sensitivity, a cube or a scenario file states many
+rows with the same subject, date and heading, so nothing else tells them apart.
+Every row is written once per run and never edited; a correction is a new run.
 
-Every row of the run's figures and of its state is keyed by where the engine
-stated it: the compute result, the file, the line and the heading. A sensitivity
-or a scenario file states many rows with the same subject, date and heading, so
-nothing else tells them apart.
+** Choosing what a run stores
+
+A report definition names the families its runs skip. The list is empty by
+default, so a new definition stores every family, and a family the catalogue
+gains later is stored without anyone editing a definition. The list is copied into
+the run when it starts, so a run stores what its definition said then. A skipped
+family's file is not fetched and stays in storage, so a run that did not store a
+family can be read later, while storage keeps the run's objects.
 
 ** Why the store is shaped this way
 
-- *One table for the metric families, not one for each.* The columns of fifty
+- *Every output is rows, none is a blob.* What a run computed, and the market it
+  computed it in, is queryable. Keeping a file whole in a row was considered for
+  the market state and rejected: it cannot be queried, and it hides the run's
+  intermediate state from the person trying to understand the run.
+- *One table for each shape, not one for each family.* The columns of the metric
   families fall into three jobs, and once the roles are known the shapes are one
   shape.
 - *A separate table for the payments.* A cashflow's keys are what make it a
@@ -119,38 +153,43 @@ nothing else tells them apart.
 - *The engine's headings are stored, not translated.* A family's measure is the
   engine's own word, so nothing in the store has to be listed when ORE adds a
   column.
-- *Loaded in bulk, in one transaction.* A partial load reads as a complete one, so
-  a refusal leaves nothing behind.
 
 ** What a screen reads
 
-A screen does not read a family. =ores.reporting.run_result= is a read model: a view
-over the metric table that names each engine heading once — =NPV= is =npv= — and
-reads the counterparty out of the qualifiers. The screen's shape therefore does not
-change when a run states a new family, and no screen states a rollup twice.
+A screen does not read a family. =ores.reporting.run_result= is a read model: a
+view over the metric table that names each engine heading once — =NPV= is =npv= —
+and reads the counterparty out of the qualifiers. The screen's shape therefore
+does not change when a run states a new family, and no screen states a rollup
+twice.
 
 ** What a refusal does
 
 A refusal stops the run and records the reason on the instance. The step refuses
 when a family's row cannot be read whole, when a figure is not a number, when a date
-cannot be read, and when a market-state file states no heading. It does not refuse a
-file no family covers, and it does not treat the engine's null string as a zero: a
-figure that was not stated is not stored at all.
+cannot be read, when a file's bytes do not match the digest its manifest states,
+and when the run's output states nothing to store. Because the whole run is one
+transaction, a refusal in the last file rolls back every block the earlier files
+wrote. It does not refuse a file no family covers, and it does not treat the
+engine's null string as a zero: a figure that was not stated is not stored at
+all.
 
 ** What the node leaves behind
 
-The compute wrapper runs the engine with the output directory on local disk and
-uploads that directory as one archive, which is the run's audit blob: whatever the
-engine wrote is in it, modelled or not. The node projects nothing. It knows which
-files it wrote but not what they mean, and everything a reader would call judgement
-— which run this is, which party owns it, what date it priced at, whether the rows
-load at all — belongs to the component that holds the run.
+The compute wrapper runs the engine with the output directory on local disk, then
+uploads it twice over. It packs the directory into one archive, which retrieval
+copies under the run as its audit copy: whatever the engine wrote is in it,
+modelled or not. And it uploads each file as its own compressed object, with a
+manifest that names them, their sizes and their digests, so each component
+fetches only the files it models, one at a time.
 
-The node's reach is unchanged: the job directory, object storage over HTTP with the
-token of the claim it was given, and =compute.v1.ops= to take work and say what
-happened. It holds no user's authority and reaches no database.
+The node projects nothing. It knows which files it wrote but not what they mean,
+and everything a reader would call judgement — which run this is, which party
+owns it, what date it priced at, whether the rows load at all — belongs to the
+component that holds the run. Its reach is unchanged: the job directory, object
+storage over HTTP with the token of the claim it was given, and =compute.v1.ops=
+to take work and say what happened.
 
-#+caption: Post-processing: the node leaves its output behind, reporting reads the archives through the readers the catalogue declares and writes the figures, and hands the archives to the market data store, which keeps the state. A screen reads the view over the metric table.
+#+caption: Post-processing: the node leaves each file and a manifest behind; reporting reads the result files through the catalogue's readers and writes them in blocks; the market data store reads the market-state files from the same manifests. A screen reads the view over the metric table.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/report_post_processing_interaction.png]]
 
@@ -176,28 +215,28 @@ contents. Three conditions hold, as for pre-processing:
   results were never ingested must not be mistaken for one whose results are
   queryable.
 
-** What this costs, and what changes
+** What it costs
 
-A grid finishes many runs at once, so the cost of one run matters, and three
-changes are in flight because of it.
+A grid finishes many runs at once, so the cost of one run matters.
 
-- *The archive is fetched and unpacked twice for each run* — once by reporting for
-  the figures, once by the market data store for the state. The fix is to fan the
-  output out at the node, one object for each file, so each component fetches only
-  what it models. See
-  [[id:C6E58C64-D5A7-4077-9553-9D72D3AB8DDE][Fan a run's output out at the node]].
-- *A family is read whole and written in one statement*, so peak memory grows with
-  the family's size. The fix is blocks of rows, with the same one-transaction
-  guarantee. See
-  [[id:2B253ED2-E629-4A58-82BC-EEDEE3F0077F][Store a run's figures in blocks]].
-- *The market state is held as base64 text in a row*, a third larger than the
-  compressed file and in the database, which is the wrong place for it. The fix is
-  the object store, with the index and the key in the row. See
-  [[id:1D326204-29A2-4467-8DC7-779BD0C3CFAB][Keep the market state in the object
-  store]].
+- *Each component fetches only its own files, once.* The output is one object for
+  each file, so reporting and the market data store each fetch what they model,
+  and a family a definition skips is not fetched at all.
+- *Memory is bounded by a block, not by a family.* A block is 10000 rows, written
+  as one pipeline with one round trip. Measured on a 500000-row raw cube, peak
+  memory was 1992 MiB when the family was read whole and 202 MiB in blocks; the
+  bound is one file's text and one block of rows.
+- *The insert is the limit.* The same cube took about 205 s either way, because
+  each row runs the bitemporal insert trigger, which looks for a current row of
+  the same key to close. That trigger, not the round trips, sets the rate of about
+  2500 rows a second.
+- *A large run holds one transaction for the whole load.* That is the price of a
+  refusal leaving nothing behind; a database statement or idle timeout must allow
+  it.
 
 * See also
 
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] — every family, its columns, what its figures measure and their units.
 - [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]] — the formats, the null string and the corpus.
 - [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] — the story these decisions were taken in.

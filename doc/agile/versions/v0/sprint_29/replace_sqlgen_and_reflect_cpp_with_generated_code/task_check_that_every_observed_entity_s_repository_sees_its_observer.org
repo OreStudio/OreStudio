@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/check-that-every-observed-entity-s-repository-sees-its-observer
-#+pr:
+#+pr: 4379
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4379][#4379]] | [codegen] Refuse an observed entity whose repository does not see its observer |
 
 * Review
 

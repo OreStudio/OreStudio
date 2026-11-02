@@ -117,7 +117,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | static_assert a missing specialisation | shell templates | No change | An incomplete type already fails at the line. |
+| 2 | Gate test models and output path | =test_shell_command_wire_codec_gate.py= | No change | Real opted-in models by design; the renderer is stubbed. |
+| 3 | Shared helper for the reply write | shell templates | No change | The json::write dispatch capture covers it. |
+| 4 | Confirm import_choices bytes | =ore_commands.cpp= | No change | Compared with reflect-cpp in ores.ore.core since #4360. |
+| 5 | Error wording | =synthetic_commands.cpp= | No change | Prefix kept. |
+| 6 | Track left-over includes | hand-written shell files | No change | Remove reflect-cpp and the fallback capture own them. |
 
 * Result
 

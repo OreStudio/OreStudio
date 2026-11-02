@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: FEAC29A9-87A8-4B71-8C70-F3EAD9A157E5
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.commodity_curve_cross_currency
+#+description: Codegen entity model for the refdata =commodity_curve_cross_currency= table. One part of a commodity curve: the base price curve and the two yield curves a cross currency commodity curve is built from.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The base price curve and the two yield curves a cross currency commodity curve is built from.
+#+entity_singular: commodity_curve_cross_currency
+#+entity_plural: commodity_curve_cross_currencies
+#+entity_title: Commodity Curve Cross Currency
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+How a cross currency commodity curve is built from a price curve in another
+currency, as ORE's =BasePriceCurve=, =BaseYieldCurve= and =YieldCurve=. Only
+that construction reads them, and ORE requires all three for it.
+
+A commodity curve holds at most one row of this part, so the generated table
+adds the unique index on the live rows of =(tenant_id, curve_definition_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The curve entry this part belongs to, as the commodity curve row is keyed.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_price_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The commodity curve a curve built from a base and a yield curve starts from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_yield_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The yield curve of the base curve's currency.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** yield_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The yield curve of the curve's own currency.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+The parent's construction must be one that has this part. The function is
+written by the section generator from the projection's readers.
+
+| column              | validation_function                                     |
+|---------------------+---------------------------------------------------------|
+| curve_definition_id | ores_refdata_validate_commodity_curve_cross_currency_fn |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_curve_cross_currencies_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency
+:entity_plural_short:   cross_currencies
+:entity_singular_words: commodity curve cross currency
+:entity_plural_words:   commodity curve cross currencies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:2052FD37-EB0C-4A10-A2CF-8CE8BFC14678][ores.refdata.commodity_curve_config]] — the commodity curve this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] — the task that split it.

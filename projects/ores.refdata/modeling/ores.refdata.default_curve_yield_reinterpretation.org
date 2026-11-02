@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: E392A81F-F676-4499-9D75-0E7A62A4116D
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.default_curve_yield_reinterpretation
+#+description: Codegen entity model for the refdata =default_curve_yield_reinterpretation= table. One part of a default curve configuration: the yield curve a yield curve default curve reinterprets as survival probabilities.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The yield curve a yield curve default curve reinterprets as survival probabilities.
+#+entity_singular: default_curve_yield_reinterpretation
+#+entity_plural: default_curve_yield_reinterpretations
+#+entity_title: Default Curve Yield Reinterpretation
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The yield curve a default curve of type =YieldCurve= reads as survival
+probabilities, as ORE's =ReinterpretedYieldCurve=. Only that construction reads
+it, and ORE requires it there.
+
+A default curve configuration holds at most one row of this part, so the generated table
+adds the unique index on the live rows of =(tenant_id, default_curve_configuration_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** default_curve_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The default curve configuration this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** reinterpreted_yield_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The yield curve a configuration reads as a default curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** default_curve_configuration_id
+:PROPERTIES:
+:table:         ores_refdata_default_curve_configurations_tbl
+:target_column: id
+:parent_entity: default_curve_configuration
+:nullable:      false
+:error_message: Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+The parent's construction must be one that has this part. The function is
+written by the section generator from the projection's readers.
+
+| column                         | validation_function                                           |
+|--------------------------------+---------------------------------------------------------------|
+| default_curve_configuration_id | ores_refdata_validate_default_curve_yield_reinterpretation_fn |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_default_curve_yield_reinterpretations_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: yield_reinterpretation
+:entity_plural_short:   yield_reinterpretations
+:entity_singular_words: default curve yield reinterpretation
+:entity_plural_words:   default curve yield reinterpretations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:2197187C-7D71-43FF-A862-CBED7E0C654C][ores.refdata.default_curve_configuration]] — the default curve configuration this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] — the task that split it.

@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 0000FDFF-A474-4685-BDB1-367DE5874645
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.default_curve_market_terms
+#+description: Codegen entity model for the refdata =default_curve_market_terms= table. One part of a default curve configuration: the discount curve, conventions and quotes a market-implied default curve is built from.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The discount curve, conventions and quotes a market-implied default curve is built from.
+#+entity_singular: default_curve_market_terms
+#+entity_plural: default_curve_market_terms
+#+entity_title: Default Curve Market Terms
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+What a default curve built from market quotes states about those quotes, as
+ORE's =DiscountCurve=, =Conventions= and =Quotes=. The CDS spread, hazard rate,
+price, conventional spread and null constructions read them. A transition matrix
+reads only its =Quotes=, but every transition matrix in the ORE examples also
+states a discount curve and conventions, so the part holds them for that type
+too and the document round trips as written.
+
+A default curve configuration holds at most one row of this part, so the generated table
+adds the unique index on the live rows of =(tenant_id, default_curve_configuration_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** default_curve_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The default curve configuration this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** discount_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve the configuration discounts on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the configuration's instruments are priced with, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_quotes
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration writes a =Quotes= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* Foreign keys
+
+** default_curve_configuration_id
+:PROPERTIES:
+:table:         ores_refdata_default_curve_configurations_tbl
+:target_column: id
+:parent_entity: default_curve_configuration
+:nullable:      false
+:error_message: Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+The parent's construction must be one that has this part. The function is
+written by the section generator from the projection's readers.
+
+| column                         | validation_function                                 |
+|--------------------------------+-----------------------------------------------------|
+| default_curve_configuration_id | ores_refdata_validate_default_curve_market_terms_fn |
+| conventions                    | ores_refdata_validate_convention_id_fn              |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_default_curve_market_terms_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_terms
+:entity_plural_short:   market_terms
+:entity_singular_words: default curve market terms
+:entity_plural_words:   default curve market terms
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:2197187C-7D71-43FF-A862-CBED7E0C654C][ores.refdata.default_curve_configuration]] — the default curve configuration this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] — the task that split it.

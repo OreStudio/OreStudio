@@ -10,7 +10,7 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-02
 
 Declares a type's four wire functions — =to_json=, =from_json=, =to_msgpack=,
 =from_msgpack= — and the =ores::utility::codec::wire_traits= specialisation that
@@ -21,6 +21,12 @@ trait for the type, because a template argument the compiler cannot see here is
 resolved against the primary template there, and two translations of one type
 disagreeing about its encoding is the one thing the seam exists to prevent. So
 the specialisation is stated in a header, and this is it.
+
+A junction side that sets =:enrich_code:= carries the joined row's code in a
+member the table has no column for, filled by the repository's enrichment
+query and declared after the audit members. That member is on the wire too, so
+the junction's field list ends with one entry per enriched side, named as the
+repository names it.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -186,6 +192,10 @@ namespace ores::{{component}}::domain {
     utility::codec::field{"change_reason_code", &{{name_singular}}::change_reason_code},
     utility::codec::field{"change_commentary", &{{name_singular}}::change_commentary},
     utility::codec::field{"recorded_at", &{{name_singular}}::recorded_at},
+{{#left.enrich_code}}    utility::codec::field{"{{left.column_short}}_code", &{{name_singular}}::{{left.column_short}}_code},
+{{/left.enrich_code}}
+{{#right.enrich_code}}    utility::codec::field{"{{right.column_short}}_code", &{{name_singular}}::{{right.column_short}}_code},
+{{/right.enrich_code}}
     };
 }
 

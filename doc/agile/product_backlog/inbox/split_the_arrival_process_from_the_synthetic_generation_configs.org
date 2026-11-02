@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 3CEB5251-D5AE-4DA6-88CF-8A6CC429F1CC
+:END:
+#+title: Split the arrival process from the synthetic generation configs
+#+description: fx_spot_generation_config (20 members) and ir_curve_generation_config (21) both carry arrival_mode with branching_ratio, decay and sensitivity beside it. Read from outside the component, those three are the parameters of one arrival mode, a discriminator followed by its columns, and the same block in two types. A reading from the split-the-wide-types re-inventory for the synthetic owner to confirm or argue down.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:data-oriented-design:modeling:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=fx_spot_generation_config= (20 members) and =ir_curve_generation_config= (21)
+both carry =arrival_mode= with =branching_ratio=, =decay= and =sensitivity=
+beside it. Read from outside the component, the three are the parameters of
+one arrival mode: a discriminator followed by its columns, and the same block
+in two types.
+
+* Why
+
+The re-inventory of the "Split the types that carry too many columns" story
+lists both types over the twenty-member threshold. A verdict outside refdata is
+a reading, so the synthetic owner confirms it or argues it down. If the reading
+holds, the arrival process is one part that both configurations share, keyed by
+the configuration.
+
+* References
+
+- [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+-

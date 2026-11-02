@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct ore_file_category_key {
     std::string code;
+
+    friend bool operator==(const ore_file_category_key&, const ore_file_category_key&) = default;
 };
 
 struct ore_file_category_write {
@@ -51,25 +53,40 @@ struct ore_file_category_write {
     std::string origin;
     std::string description;
     int display_order;
+
+    friend bool operator==(const ore_file_category_write&,
+                           const ore_file_category_write&) = default;
 };
 
 struct ore_file_category_change {
     ore_file_category_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ore_file_category_change&,
+                           const ore_file_category_change&) = default;
 };
 
 struct ore_file_category_removal {
     ore_file_category_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ore_file_category_removal&,
+                           const ore_file_category_removal&) = default;
 };
 
 struct ore_file_category_lookup {
     ore_file_category_key key;
     std::optional<ores::reporting::domain::ore_file_category> ore_file_category;
+
+    friend bool operator==(const ore_file_category_lookup&,
+                           const ore_file_category_lookup&) = default;
 };
 
 struct ore_file_categories_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const ore_file_categories_filter&,
+                           const ore_file_categories_filter&) = default;
 };
 
 struct ore_file_category_event {
@@ -79,17 +96,26 @@ struct ore_file_category_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ore_file_category_event&,
+                           const ore_file_category_event&) = default;
 };
 
 struct ore_file_category_version_key {
     ore_file_category_key ore_file_category;
     std::uint32_t version;
+
+    friend bool operator==(const ore_file_category_version_key&,
+                           const ore_file_category_version_key&) = default;
 };
 
 struct ore_file_category_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ore_file_category_versions_filter&,
+                           const ore_file_category_versions_filter&) = default;
 };
 
 struct list_ore_file_categories_request {
@@ -107,12 +133,18 @@ struct list_ore_file_categories_request {
     ores::utility::domain::order order;
     std::optional<ore_file_categories_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ore_file_categories_request&,
+                           const list_ore_file_categories_request&) = default;
 };
 
 struct list_ore_file_categories_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_category> categories;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_file_categories_response&,
+                           const list_ore_file_categories_response&) = default;
 };
 
 struct get_ore_file_category_request {
@@ -126,11 +158,17 @@ struct get_ore_file_category_request {
      */
     static constexpr bool requires_session = true;
     ore_file_category_key key;
+
+    friend bool operator==(const get_ore_file_category_request&,
+                           const get_ore_file_category_request&) = default;
 };
 
 struct get_ore_file_category_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_file_category> ore_file_category;
+
+    friend bool operator==(const get_ore_file_category_response&,
+                           const get_ore_file_category_response&) = default;
 };
 
 struct get_many_ore_file_categories_request {
@@ -144,11 +182,17 @@ struct get_many_ore_file_categories_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ore_file_category_key> keys;
+
+    friend bool operator==(const get_many_ore_file_categories_request&,
+                           const get_many_ore_file_categories_request&) = default;
 };
 
 struct get_many_ore_file_categories_response {
     ores::utility::domain::result result;
     std::vector<ore_file_category_lookup> entries;
+
+    friend bool operator==(const get_many_ore_file_categories_response&,
+                           const get_many_ore_file_categories_response&) = default;
 };
 
 struct put_ore_file_category_request {
@@ -163,11 +207,17 @@ struct put_ore_file_category_request {
     static constexpr bool requires_session = true;
     ore_file_category_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ore_file_category_request&,
+                           const put_ore_file_category_request&) = default;
 };
 
 struct put_ore_file_category_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_file_category> ore_file_category;
+
+    friend bool operator==(const put_ore_file_category_response&,
+                           const put_ore_file_category_response&) = default;
 };
 
 struct put_many_ore_file_categories_request {
@@ -182,11 +232,17 @@ struct put_many_ore_file_categories_request {
     static constexpr bool requires_session = true;
     std::vector<ore_file_category_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ore_file_categories_request&,
+                           const put_many_ore_file_categories_request&) = default;
 };
 
 struct put_many_ore_file_categories_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_category> categories;
+
+    friend bool operator==(const put_many_ore_file_categories_response&,
+                           const put_many_ore_file_categories_response&) = default;
 };
 
 struct delete_ore_file_category_request {
@@ -201,10 +257,16 @@ struct delete_ore_file_category_request {
     static constexpr bool requires_session = true;
     ore_file_category_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ore_file_category_request&,
+                           const delete_ore_file_category_request&) = default;
 };
 
 struct delete_ore_file_category_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ore_file_category_response&,
+                           const delete_ore_file_category_response&) = default;
 };
 
 struct delete_many_ore_file_categories_request {
@@ -219,10 +281,16 @@ struct delete_many_ore_file_categories_request {
     static constexpr bool requires_session = true;
     std::vector<ore_file_category_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ore_file_categories_request&,
+                           const delete_many_ore_file_categories_request&) = default;
 };
 
 struct delete_many_ore_file_categories_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ore_file_categories_response&,
+                           const delete_many_ore_file_categories_response&) = default;
 };
 
 struct list_ore_file_category_versions_request {
@@ -241,12 +309,18 @@ struct list_ore_file_category_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ore_file_category_versions_filter> filter;
+
+    friend bool operator==(const list_ore_file_category_versions_request&,
+                           const list_ore_file_category_versions_request&) = default;
 };
 
 struct list_ore_file_category_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_category> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_file_category_versions_response&,
+                           const list_ore_file_category_versions_response&) = default;
 };
 
 struct get_ore_file_category_version_request {
@@ -261,11 +335,17 @@ struct get_ore_file_category_version_request {
      */
     static constexpr bool requires_session = true;
     ore_file_category_version_key key;
+
+    friend bool operator==(const get_ore_file_category_version_request&,
+                           const get_ore_file_category_version_request&) = default;
 };
 
 struct get_ore_file_category_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_file_category> version;
+
+    friend bool operator==(const get_ore_file_category_version_response&,
+                           const get_ore_file_category_version_response&) = default;
 };
 
 /**

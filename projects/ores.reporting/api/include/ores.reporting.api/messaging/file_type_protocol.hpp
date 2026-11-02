@@ -316,12 +316,18 @@ struct list_by_ore_file_code_file_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<file_types_filter> filter;
+
+    friend bool operator==(const list_by_ore_file_code_file_types_request&,
+                           const list_by_ore_file_code_file_types_request&) = default;
 };
 
 struct list_by_ore_file_code_file_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::file_type> types;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_ore_file_code_file_types_response&,
+                           const list_by_ore_file_code_file_types_response&) = default;
 };
 
 struct list_by_analytic_type_code_file_types_request {

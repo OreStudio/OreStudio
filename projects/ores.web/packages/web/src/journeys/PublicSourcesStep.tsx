@@ -65,7 +65,8 @@ export function sourceChanges(
     drafted: Readonly<Record<string, SourceDecision>>,
 ): SourceChanges | undefined {
     if (way === undefined) {
-        return undefined;
+        // A publisher already decided needs no choice of way, so a resumed run can go on.
+        return everyDecided(providers, drafted) ? { accept: [], decline: [] } : undefined;
     }
     const decisions = providers.map((p) => ({
         provider: p,

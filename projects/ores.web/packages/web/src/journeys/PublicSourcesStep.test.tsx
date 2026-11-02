@@ -69,6 +69,11 @@ describe('what Continue sends from the public sources', () => {
         expect(sourceChanges(sources, undefined, {})).toBeUndefined();
     });
 
+    it('lets a resumed run go on at once when every publisher is already accepted', () => {
+        const accepted = sources.map((p) => ({ ...p, terms_accepted: true }));
+        expect(sourceChanges(accepted, undefined, {})).toEqual({ accept: [], decline: [] });
+    });
+
     it('accepts, at the version shown, every publisher not yet accepted when all are accepted', () => {
         expect(sourceChanges(sources, 'all', { boc: 'declined' })).toEqual({
             accept: [

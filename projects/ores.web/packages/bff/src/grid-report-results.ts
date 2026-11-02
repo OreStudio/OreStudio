@@ -666,7 +666,7 @@ function figureOf(row: AggregateRow): number {
  * post-processor existed has no rows, and answers the reason the screen states
  * rather than reading the archive it left behind.
  */
-async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
+export async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
     const reply = await session.client.callAuthenticated(
         runResultSubjects.list_run_results_request,
         {
@@ -696,13 +696,13 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
         },
         z.looseObject({
             result: resultSchema,
-            rows: z.array(row).default([]),
+            results: z.array(row).default([]),
         }),
     );
     if (reply.result.outcome !== 'ok') {
         throw refusal(reply.result);
     }
-    if (reply.rows.length === 0) {
+    if (reply.results.length === 0) {
         return {
             rows: [],
             reason: 'no-rows',
@@ -717,7 +717,7 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
     const figureText = (value: unknown): string =>
         typeof value === 'number' ? String(value) : text(value);
     const measures = new Map<string, Record<string, string>>();
-    for (const entry of reply.rows) {
+    for (const entry of reply.results) {
         const tradeId = text(entry['subject_id']);
         const measure = text(entry['measure']);
         if (tradeId === '' || !KNOWN_MEASURES.has(measure)) {

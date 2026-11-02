@@ -60,6 +60,10 @@ A person can follow a report run from trigger to stored rows and confirm each fa
    - A run with no results says so, and points at the Errors tab.
 4. Grant select on views to the service roles. The results view was never
    granted, so every results read failed with "The results could not be read."
+5. Read the run's figures from the key the service replies with. Commit
+   804a0dad50 moved the read to =reporting.v1.run_results.list= but kept the
+   old reply key =rows=. The reply names them =results=, so every run showed no
+   results while its figures were stored. Run 9f2a5329 has 36 rows in the view.
 
 * Measurements
 

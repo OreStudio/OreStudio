@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 4F62706B-0238-4979-90E6-8DAD0BE30827
+:END:
+#+title: Read the cut's approval columns and the report instance's copy of the cut
+#+description: The re-inventory found two reporting types over twenty members. cut (26) carries requires_authorisation with approval_request_id, approved_by, approved_at, refused_at and refusal_comment beside it, a flag followed by its block, while cut_approval_detail is already a part. report_instance (21) carries cut_label, cut_kind_code and cut_timepoint beside cut_id, a copy of the cut it names. Readings from outside the component for the reporting owner to confirm or argue down.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:data-oriented-design:modeling:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=cut= (26 members) carries =requires_authorisation= with
+=approval_request_id=, =approved_by=, =approved_at=, =refused_at= and
+=refusal_comment= beside it: a flag followed by its block, while
+=cut_approval_detail= is already a part of the cut. =report_instance= (21)
+carries =cut_label=, =cut_kind_code= and =cut_timepoint= beside =cut_id=: a copy
+of the cut that the instance names by key.
+
+* Why
+
+The re-inventory of the "Split the types that carry too many columns" story
+lists both types over the twenty-member threshold. A verdict outside refdata is
+a reading, so the reporting owner confirms it or argues it down. The copy can be
+deliberate, for example a record of the cut as it was when the run started. If
+so, the model says so and the reading is closed.
+
+* References
+
+- [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+-

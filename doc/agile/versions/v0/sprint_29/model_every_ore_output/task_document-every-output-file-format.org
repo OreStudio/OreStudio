@@ -65,7 +65,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the page | 81, each with a meaning and units; 19 outputs stated not read with a reason | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 8319d663a5 |
+| Families on the page | 81, each with a meaning and units; 15 outputs stated not read with a reason | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 8319d663a5 |
 
 * Notes
 

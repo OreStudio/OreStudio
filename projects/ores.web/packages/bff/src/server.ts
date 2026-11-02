@@ -3046,7 +3046,12 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const browserDirectory = browserBundleDirectory();
     const browserBundle = existsSync(browserDirectory) ? browserDirectory : undefined;
     if (browserBundle !== undefined) {
-        void server.register(fastifyStatic, { root: browserBundle });
+        void server.register(fastifyStatic, {
+            root: browserBundle,
+            setHeaders: (reply, path) => {
+                reply.header('cache-control', bundleCacheControl(path));
+            },
+        });
         server.log.info({ directory: browserBundle }, 'serving the browser bundle');
     } else {
         server.log.info(
@@ -3099,6 +3104,18 @@ function readPem(value: string, label: string): string {
  */
 export function browserBundleDirectory(): string {
     return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'web', 'dist');
+}
+
+/**
+ * How long a browser may keep a file of the bundle.
+ *
+ * A file under assets/ carries its content's hash in its name, so a new build
+ * names new files and the old ones may be kept for good. The entry point names
+ * those files, so it is never kept: a browser that kept it would run the build
+ * it first loaded, even after a reload.
+ */
+export function bundleCacheControl(path: string): string {
+    return /[\\/]assets[\\/]/.test(path) ? 'public, max-age=31536000, immutable' : 'no-store';
 }
 
 /** Whether a request belongs to the API rather than the interface's own routes. */

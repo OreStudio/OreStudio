@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/check-that-every-observed-entity-s-repository-sees-its-observer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ from forgetting it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -45,9 +45,14 @@ from forgetting it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Treat the specialisations as the record of which entities are observed: a
+  component observes an entity by specialising =entity_write_observer= for its
+  entity type, in a header of its own.
+- Have codegen read those specialisations from the component's headers and,
+  when it prepares an entity's or a junction's model, refuse a model whose
+  observed entity's repository does not include the header, naming the model
+  and the include it needs.
+- The drift gate runs codegen over every model, so the refusal reaches CI.
 
 * Measurements
 
@@ -61,9 +66,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Observer check tests | 4 pass | =pytest projects/ores.codegen/tests/test_write_observer_visible.py= | 0ff9919605 plus this branch |
+| Codegen suite | 1814 pass | =pytest projects/ores.codegen/tests= | 0ff9919605 plus this branch |
+| Trading drift, which runs the check on every trading model | no drift | =check_component_drift.py --component trading-cpp= | 0ff9919605 plus this branch |
 
 * Notes
+
+** Where the check lives
+
+The acceptance allows the refusal in codegen or in the build. Codegen is the
+earlier place and the one that can name the model: the build sees only a
+repository translation unit, and the unity batching that hid the bug also
+decides what a build-time check would see. The check reads every header under
+the component's include trees once per component and caches the result.
+
+Only ores.trading observes writes today, through
+=trade_write_observation.hpp=; every observed trading model includes it.
 
 * Test Scenarios
 
@@ -89,3 +107,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Codegen refuses an observed entity's model whose repository does not include
+the observer, and names the model and the include. A test drops the include
+from a real observed model and sees the refusal, and every observed trading
+model passes.

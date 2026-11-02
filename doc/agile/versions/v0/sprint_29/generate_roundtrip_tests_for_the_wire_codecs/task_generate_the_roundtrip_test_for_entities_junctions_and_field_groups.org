@@ -124,7 +124,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | wire_left_out counts entities and field groups differently | core.py | Fixed | A comment states why: a group's fields are all struct members; an entity column may be sql_only or in the identity group. |
+| 2 | Junctions hard-code 0 | core.py | Fixed | A comment states why: the junction codec names every column, with no no_wire filter, so 0 is correct by construction. |
+| 3 | Three near-duplicate template sections | roundtrip_tests.org | No change | Each section reads its own model's variable names, as the codec templates do. |
+| 4 | Coverage rests on sample 0 | sample.hpp | No change | The sampler engages optionals, fills vectors with two different elements and recurses into nested types; codec_sample_tests.cpp checks each. |
+| 5 | Link the ninja capture from the story | story.org | No change | The capture is about the build tool, not this story. |
+| 6 | Build time of 562 new files | tests | No change | The test targets build as unity units, so the files compile in a few large units. |
 
 * Result
 

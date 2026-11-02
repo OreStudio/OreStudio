@@ -6843,6 +6843,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        # The junction codec names every column, so its shape leaves none out.
         junction['wire_left_out'] = 0
         _require_visible_write_observer(model_path, junction.get('name_singular'))
         for _message in junction['messages']:
@@ -7051,6 +7052,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fg['component_dir'] = f"ores.{component}"
         fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
         fg['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        # Every field of a group is a struct member, unlike an entity column,
+        # which may be sql_only or sit inside the identity group.
         fg['wire_left_out'] = sum(1 for f in fg.get('fields') or [] if f.get('no_wire'))
         # A group's members may be entities, whose shapes are in their codec
         # headers, so the group's roundtrip test includes them.

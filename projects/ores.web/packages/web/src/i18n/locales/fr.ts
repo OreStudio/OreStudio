@@ -7466,10 +7466,24 @@ const fr: SourceCatalogue = {
                 noFamily: 'Non modélisé',
                 directions: { input: 'Entrée', output: 'Sortie' },
                 kinds: { archive: 'Archive', file: 'Fichier' },
-                filter: {
-                    all: 'Tous ({count})',
-                    input: 'Entrées ({count})',
-                    output: 'Sorties ({count})',
+                views: { overview: 'Aperçu', list: 'Liste' },
+                byScope: "Les problèmes de l'exécution par portée",
+                byScopeCaption: "Chaque problème enregistré, compté par la partie de l'exécution à laquelle il appartient.",
+                unscoped: 'Portée non indiquée',
+                otherScopes: 'Autres portées',
+                errorsCount: 'Erreurs',
+                warningsCount: 'Avertissements',
+                total: 'Total',
+                openScope: 'Ouvrir les problèmes {scope} dans la liste',
+                scopeShown: 'Seuls les problèmes {scope} sont affichés.',
+                everyScope: 'Afficher toutes les portées',
+                tree: 'Où sont les fichiers',
+                nodes: {
+                    run: 'Cette exécution',
+                    batch: 'Lot {ref}',
+                    job: 'Travail {ref}',
+                    input: "Paquet d'entrée",
+                    output: 'Sortie, résultat {ref}',
                 },
             },
             errors: {
@@ -7488,14 +7502,9 @@ const fr: SourceCatalogue = {
         },
         results: {
             unreadRows: "{count} lignes n'ont pas pu être lues et ne sont pas affichées.",
-            otherScopes: 'Autres portées',
             shareTitle: "Part de chaque livre dans l'exécution",
             shareCaption:
                 'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',
-            problemsTitle: "Les problèmes de l'exécution par portée",
-            problemsCaption:
-                'Un tout en quelques parts se lit en anneau. Chaque problème enregistré est compté ici, quelle que soit sa portée.',
-            unscoped: 'Portée non indiquée',
             was: 'Exécution précédente',
             compareTo: 'Comparer à',
             noComparison: 'Aucune comparaison',

@@ -106,7 +106,8 @@ export type ReportRunErrorView = z.infer<typeof reportRunErrorViewSchema>;
  * among its outputs. `family` is the output family the catalogue names, empty
  * when no family covers the file. `bytes` and `sha256` are what the record
  * states, null when it states nothing. `job` is the workunit the file belongs
- * to, null for a file of the whole run.
+ * to, null for a file of the whole run. `node` is the place in the run's file
+ * tree the file hangs under.
  */
 export const reportRunFileViewSchema = z.object({
     id: z.string(),
@@ -117,5 +118,30 @@ export const reportRunFileViewSchema = z.object({
     bytes: z.number().nullable(),
     sha256: z.string().nullable(),
     job: z.string().nullable(),
+    node: z.string(),
 });
 export type ReportRunFileView = z.infer<typeof reportRunFileViewSchema>;
+
+/**
+ * One place in the tree of a run's files: the run, its batch, each job of the
+ * batch, and the input package and the output each job has.
+ *
+ * `kind` says which; `ref` is the id of the record the node stands for, the
+ * run, the batch, the workunit or the result; `count` is the number of files
+ * under the node, its descendants included. The root is the run, with id ''.
+ */
+export const reportRunFileNodeViewSchema = z.object({
+    id: z.string(),
+    parent: z.string(),
+    kind: z.enum(['run', 'batch', 'job', 'input', 'output']),
+    ref: z.string(),
+    count: z.number(),
+});
+export type ReportRunFileNodeView = z.infer<typeof reportRunFileNodeViewSchema>;
+
+/** The files of a run, and the tree they hang in. */
+export const reportRunFilesViewSchema = z.object({
+    tree: z.array(reportRunFileNodeViewSchema),
+    files: z.array(reportRunFileViewSchema),
+});
+export type ReportRunFilesView = z.infer<typeof reportRunFilesViewSchema>;

@@ -38,8 +38,11 @@ import { z } from 'zod';
 import {
     readResult,
     readWorkunitsOfBatch,
+    reportRunFileNodeViewSchema,
     reportRunFileViewSchema,
+    type ReportRunFileNodeView,
     type ReportRunFileView,
+    type ReportRunFilesView,
 } from '@ores/wire-protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { dispositionFor, downloadName, fetchStored } from './grid-downloads.js';
@@ -155,6 +158,7 @@ async function inputsOf(
             bytes,
             sha256: null,
             job: workunitId,
+            node: `input:${workunitId}`,
         }),
         source: { from: 'object', uri, gzip: false },
     });
@@ -179,6 +183,7 @@ async function inputsOf(
                 bytes: entry.size,
                 sha256: null,
                 job: workunitId,
+                node: `input:${workunitId}`,
             }),
             source: { from: 'entry', uri, entry: entry.name } as const,
         })),
@@ -203,6 +208,7 @@ async function outputsOf(
             bytes: null,
             sha256: null,
             job: workunitId,
+            node: `output:${resultId}`,
         }),
         source: { from: 'object', uri, gzip: false },
     };
@@ -226,56 +232,110 @@ async function outputsOf(
                 bytes: file.bytes,
                 sha256: file.sha256 === '' ? null : file.sha256,
                 job: workunitId,
+                node: `output:${resultId}`,
             }),
             source: { from: 'object', uri: file.key, gzip: true } as const,
         })),
     ];
 }
 
+/** The files of a run, with the tree they hang in. */
+interface RunFiles {
+    readonly tree: readonly ReportRunFileNodeView[];
+    readonly files: readonly RunFile[];
+}
+
+type TreeNode = Omit<ReportRunFileNodeView, 'count'>;
+
+/** The tree with each node's count of the files under it, its descendants included. */
+function counted(
+    nodes: readonly TreeNode[],
+    files: readonly RunFile[],
+): readonly ReportRunFileNodeView[] {
+    const parentOf = new Map(nodes.map((node) => [node.id, node.parent]));
+    const counts = new Map<string, number>();
+    for (const file of files) {
+        let at: string | undefined = file.view.node;
+        while (at !== undefined) {
+            counts.set(at, (counts.get(at) ?? 0) + 1);
+            at = at === '' ? undefined : parentOf.get(at);
+        }
+    }
+    return nodes.map((node) =>
+        reportRunFileNodeViewSchema.parse({ ...node, count: counts.get(node.id) ?? 0 }),
+    );
+}
+
 /**
- * Every file of one run, inputs first. A run the session cannot read is not
- * found; a run with no batch yet has no files; a package or manifest that
- * cannot be read leaves its archive listed without the files inside it.
+ * Every file of one run, inputs first, and the tree they hang in: the run, its
+ * batch, each job of the batch, and each job's input package and output. A run
+ * the session cannot read is not found; a run with no batch yet has no files; a
+ * package or manifest that cannot be read leaves its archive listed without the
+ * files inside it.
  */
 async function filesOfRun(
     session: LiveSession,
     runId: string,
     log: FastifyBaseLogger,
-): Promise<readonly RunFile[]> {
+): Promise<RunFiles> {
     const run = await readRun(session, runId);
     if (run === null) {
         throw notFound('No report run has this id.');
     }
+    const root: TreeNode = { id: '', parent: '', kind: 'run', ref: runId };
     const batchId = await readBatchId(session, runId, log);
     if (batchId === null) {
-        return [];
+        return { tree: counted([root], []), files: [] };
     }
+    const batchNode = `batch:${batchId}`;
     const { workunits } = await readWorkunitsOfBatch(session.client, batchId, {
         offset: 0,
         limit: WORKUNIT_LIMIT,
     });
     const groups = await Promise.all(
         workunits.map(async (workunit) => {
-            const inputs =
-                workunit.input_uri === ''
-                    ? []
-                    : await inputsOf(session, workunit.id, workunit.input_uri, log);
+            const jobNode = `job:${workunit.id}`;
+            const nodes: TreeNode[] = [
+                { id: jobNode, parent: batchNode, kind: 'job', ref: workunit.id },
+            ];
+            let inputs: readonly RunFile[] = [];
+            if (workunit.input_uri !== '') {
+                nodes.push({
+                    id: `input:${workunit.id}`,
+                    parent: jobNode,
+                    kind: 'input',
+                    ref: workunit.id,
+                });
+                inputs = await inputsOf(session, workunit.id, workunit.input_uri, log);
+            }
             const resultId = workunit.canonical_result_id;
             if (resultId === '' || resultId === NIL_UUID) {
-                return { inputs, outputs: [] };
+                return { nodes, inputs, outputs: [] };
             }
             const result = await readResult(session.client, resultId);
             if (result === null || result.output_uri === '') {
-                return { inputs, outputs: [] };
+                return { nodes, inputs, outputs: [] };
             }
+            nodes.push({
+                id: `output:${resultId}`,
+                parent: jobNode,
+                kind: 'output',
+                ref: resultId,
+            });
             const outputs = await outputsOf(session, workunit.id, resultId, result.output_uri, log);
-            return { inputs, outputs };
+            return { nodes, inputs, outputs };
         }),
     );
-    return [
+    const files = [
         ...groups.flatMap((group) => group.inputs),
         ...groups.flatMap((group) => group.outputs),
     ];
+    const nodes: TreeNode[] = [
+        root,
+        { id: batchNode, parent: '', kind: 'batch', ref: batchId },
+        ...groups.flatMap((group) => group.nodes),
+    ];
+    return { tree: counted(nodes, files), files };
 }
 
 function paramsOf<Shape extends z.ZodType>(schema: Shape, request: FastifyRequest): z.infer<Shape> {
@@ -290,19 +350,17 @@ export function registerReportRunFileRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    server.get(
-        '/api/reporting/runs/:id/files',
-        async (request): Promise<readonly ReportRunFileView[]> => {
-            const session = requireSession(request);
-            const { id } = paramsOf(runParamsSchema, request);
-            return (await filesOfRun(session, id, request.log)).map((file) => file.view);
-        },
-    );
+    server.get('/api/reporting/runs/:id/files', async (request): Promise<ReportRunFilesView> => {
+        const session = requireSession(request);
+        const { id } = paramsOf(runParamsSchema, request);
+        const { tree, files } = await filesOfRun(session, id, request.log);
+        return { tree: [...tree], files: files.map((file) => file.view) };
+    });
 
     server.get('/api/reporting/runs/:id/files/:file', async (request, reply) => {
         const session = requireSession(request);
         const { id, file } = paramsOf(fileParamsSchema, request);
-        const found = (await filesOfRun(session, id, request.log)).find(
+        const found = (await filesOfRun(session, id, request.log)).files.find(
             (candidate) => candidate.view.id === file,
         );
         if (found === undefined) {

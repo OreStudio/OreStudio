@@ -114,7 +114,7 @@ import {
     appVersionPageViewSchema,
     reportRunDetailViewSchema,
     reportRunErrorViewSchema,
-    reportRunFileViewSchema,
+    reportRunFilesViewSchema,
     reportRunRowViewSchema,
     batchPageSchema,
     batchViewSchema,
@@ -153,7 +153,7 @@ import {
     type AppVersionPageView,
     type ReportRunDetailView,
     type ReportRunErrorView,
-    type ReportRunFileView,
+    type ReportRunFilesView,
     type ReportRunRowView,
     type BatchPage,
     type BatchView,
@@ -3778,11 +3778,10 @@ export const api = {
     },
 
     /** Every file a report run read and wrote, inputs first. */
-    async reportRunFiles(id: string): Promise<readonly ReportRunFileView[]> {
-        const reply = (await request(`/api/reporting/runs/${encodeURIComponent(id)}/files`, {
-            method: 'GET',
-        })) as readonly unknown[];
-        return reply.map((one) => reportRunFileViewSchema.parse(one));
+    async reportRunFiles(id: string): Promise<ReportRunFilesView> {
+        return reportRunFilesViewSchema.parse(
+            await request(`/api/reporting/runs/${encodeURIComponent(id)}/files`, { method: 'GET' }),
+        );
     },
 
     /** Where one file of a run is downloaded from, by its id in the run's list. */

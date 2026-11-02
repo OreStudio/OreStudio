@@ -278,19 +278,18 @@ describe('GET /api/reporting/runs/:id/files', () => {
         const response = await get(`/api/reporting/runs/${RUN}/files`);
 
         expect(response.statusCode).toBe(200);
-        const files =
-            response.json<
-                {
-                    id: string;
-                    direction: string;
-                    kind: string;
-                    name: string;
-                    family: string;
-                    bytes: number | null;
-                    sha256: string | null;
-                    job: string | null;
-                }[]
-            >();
+        const { files } = response.json<{
+            files: {
+                direction: string;
+                kind: string;
+                name: string;
+                family: string;
+                bytes: number | null;
+                sha256: string | null;
+                job: string | null;
+                node: string;
+            }[];
+        }>();
         expect(files.map((file) => [file.direction, file.kind, file.name])).toEqual([
             ['input', 'archive', 'ore_package.tar.gz'],
             ['input', 'file', 'Input/ore.xml'],
@@ -303,6 +302,40 @@ describe('GET /api/reporting/runs/:id/files', () => {
         expect(files[1]).toMatchObject({ bytes: 6, sha256: null });
         expect(files[4]).toMatchObject({ family: 'npv', bytes: 20, sha256: 'ab12' });
         expect(files[5]).toMatchObject({ family: '' });
+        expect(files.map((file) => file.node)).toEqual([
+            ...Array<string>(3).fill(`input:${WORKUNIT}`),
+            ...Array<string>(3).fill(`output:${RESULT}`),
+        ]);
+    });
+
+    it('hangs the files in a tree of the run, its batch, the job and its input and output', async () => {
+        const response = await get(`/api/reporting/runs/${RUN}/files`);
+
+        expect(response.json<{ tree: unknown[] }>().tree).toEqual([
+            { id: '', parent: '', kind: 'run', ref: RUN, count: 6 },
+            { id: `batch:${BATCH}`, parent: '', kind: 'batch', ref: BATCH, count: 6 },
+            {
+                id: `job:${WORKUNIT}`,
+                parent: `batch:${BATCH}`,
+                kind: 'job',
+                ref: WORKUNIT,
+                count: 6,
+            },
+            {
+                id: `input:${WORKUNIT}`,
+                parent: `job:${WORKUNIT}`,
+                kind: 'input',
+                ref: WORKUNIT,
+                count: 3,
+            },
+            {
+                id: `output:${RESULT}`,
+                parent: `job:${WORKUNIT}`,
+                kind: 'output',
+                ref: RESULT,
+                count: 3,
+            },
+        ]);
     });
 
     it('answers 404 when the session sees no such run', async () => {
@@ -320,7 +353,10 @@ describe('GET /api/reporting/runs/:id/files', () => {
             'compute.v1.batches.list': { result: OK, batches: [], total: 0 },
         });
 
-        expect(response.json()).toEqual([]);
+        expect(response.json()).toEqual({
+            tree: [{ id: '', parent: '', kind: 'run', ref: RUN, count: 0 }],
+            files: [],
+        });
     });
 });
 

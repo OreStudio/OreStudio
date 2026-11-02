@@ -20,35 +20,51 @@
  */
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import type { ReportRunFileView } from '@ores/wire-protocol/browser';
+import type { ReportRunFileNodeView, ReportRunFileView } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { ReadFailure } from '../operations/GridJobs.js';
-import { localSource, RecordTable } from '../refdata/RecordList.js';
+import { localSource, RecordTable, type ListColumn } from '../refdata/RecordList.js';
+import type { Translator } from '../i18n/translate.js';
+import { TreeRail } from '../ui/TreeRail.js';
 import { gridJobPath } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
-import { CountFilter, formatBytes } from './shared.js';
+import { formatBytes } from './shared.js';
 
-const DIRECTIONS = ['all', 'input', 'output'] as const;
-type DirectionChoice = (typeof DIRECTIONS)[number];
+/** The node ids under a node, the node itself included. */
+function subtreeOf(tree: readonly ReportRunFileNodeView[], root: string): ReadonlySet<string> {
+    const within = new Set([root]);
+    let grew = true;
+    while (grew) {
+        grew = false;
+        for (const node of tree) {
+            if (node.id !== '' && within.has(node.parent) && !within.has(node.id)) {
+                within.add(node.id);
+                grew = true;
+            }
+        }
+    }
+    return within;
+}
 
 /**
- * Every file a run read and wrote, inputs first, each downloadable as the
- * engine read or wrote it. The server builds the list from compute's records,
- * so the screen names a file only by its id in that list.
+ * Every file a run read and wrote, in the tree they hang in: the run, its
+ * batch, each job, and each job's input package and output. Choosing a node
+ * narrows the table to the files under it. The server builds the tree from
+ * compute's records, so the screen names a file only by its id in the list.
  */
 export function RunFilesTable({ runId }: { readonly runId: string }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.run.files';
+    const [search, setSearch] = useSearchParams();
+    const chosen = search.get('node') ?? '';
     const files = useQuery({
         queryKey: ['reporting-run-files', runId],
         queryFn: () => api.reportRunFiles(runId),
         meta: { quiet: true },
     });
-    const [direction, setDirection] = useState<DirectionChoice>('all');
 
     if (files.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -56,103 +72,124 @@ export function RunFilesTable({ runId }: { readonly runId: string }): ReactNode 
     if (files.isError) {
         return <ReadFailure error={files.error} onRetry={() => void files.refetch()} />;
     }
-    const rows = files.data;
+    const { tree, files: rows } = files.data;
     if (rows.length === 0) {
         return <Notice tone="info">{t(`${field}.none`)}</Notice>;
     }
-    const countOf = (choice: DirectionChoice): number =>
-        choice === 'all' ? rows.length : rows.filter((row) => row.direction === choice).length;
-    const shown = direction === 'all' ? rows : rows.filter((row) => row.direction === direction);
+    const choose = (node: string): void => {
+        const params = new URLSearchParams(search);
+        if (node === '') {
+            params.delete('node');
+        } else {
+            params.set('node', node);
+        }
+        setSearch(params, { replace: true });
+    };
+    const within = subtreeOf(tree, chosen);
+    const shown = rows.filter((row) => within.has(row.node));
+    const rail = tree.map((node) => ({
+        ...node,
+        label: t(`${field}.nodes.${node.kind}`, { ref: node.ref.slice(0, 8) }),
+    }));
 
     return (
-        <section className="space-y-3">
-            <CountFilter
-                choices={DIRECTIONS}
-                chosen={direction}
-                countOf={countOf}
-                labelOf={(choice, count) => t(`${field}.filter.${choice}`, { count })}
-                onChoose={setDirection}
-            />
-            <RecordTable<ReportRunFileView>
-                source={localSource<ReportRunFileView>({
-                    key: `run-files-${runId}`,
-                    rows: shown,
-                    revision: `${direction}:${shown.length}`,
-                    searchOf: (row) => `${row.name} ${row.family}`,
-                })}
-                plural={t(`${field}.plural`)}
-                keyOf={(row) => row.id}
-                columns={[
-                    {
-                        id: 'direction',
-                        header: t(`${field}.direction`),
-                        cell: (row) => (
-                            <Tag tone={row.direction === 'input' ? 'accent' : 'up'}>
-                                {t(`${field}.directions.${row.direction}`)}
-                            </Tag>
-                        ),
-                    },
-                    {
-                        id: 'name',
-                        header: t(`${field}.name`),
-                        mono: true,
-                        cell: (row) => (
-                            <a
-                                href={api.reportRunFileUrl(runId, row.id)}
-                                download
-                                className="text-accent hover:text-accent-bright"
-                            >
-                                {row.name}
-                            </a>
-                        ),
-                    },
-                    {
-                        id: 'kind',
-                        header: t(`${field}.kind`),
-                        cell: (row) => t(`${field}.kinds.${row.kind}`),
-                    },
-                    {
-                        id: 'family',
-                        header: t(`${field}.family`),
-                        cell: (row) =>
-                            row.direction === 'input' || row.kind === 'archive'
-                                ? '—'
-                                : row.family || t(`${field}.noFamily`),
-                    },
-                    {
-                        id: 'size',
-                        header: t(`${field}.size`),
-                        cell: (row) => (row.bytes === null ? '—' : formatBytes(row.bytes)),
-                    },
-                    {
-                        id: 'digest',
-                        header: t(`${field}.digest`),
-                        mono: true,
-                        cell: (row) =>
-                            row.sha256 === null ? (
-                                '—'
-                            ) : (
-                                <span title={row.sha256}>{row.sha256.slice(0, 12)}</span>
-                            ),
-                    },
-                    {
-                        id: 'job',
-                        header: t(`${field}.job`),
-                        mono: true,
-                        cell: (row) =>
-                            row.job === null ? (
-                                '—'
-                            ) : (
-                                <Link
-                                    to={gridJobPath(row.job)}
-                                    className="text-accent hover:text-accent-bright"
-                                >
-                                    {row.job.slice(0, 8)}
-                                </Link>
-                            ),
-                    },
-                ]}
-            />
-        </section>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+            <aside className="shrink-0 rounded-card border border-line bg-surface p-3 lg:w-72">
+                <h2 className="text-sm font-semibold">{t(`${field}.tree`)}</h2>
+                <TreeRail
+                    label={t(`${field}.tree`)}
+                    nodes={rail}
+                    selected={chosen}
+                    onSelect={choose}
+                />
+            </aside>
+            <div className="min-w-0 flex-1">
+                <RecordTable<ReportRunFileView>
+                    source={localSource<ReportRunFileView>({
+                        key: `run-files-${runId}`,
+                        rows: shown,
+                        revision: `${chosen}:${shown.length}`,
+                        searchOf: (row) => `${row.name} ${row.family}`,
+                    })}
+                    plural={t(`${field}.plural`)}
+                    keyOf={(row) => row.id}
+                    columns={columnsOf(t, runId)}
+                />
+            </div>
+        </div>
     );
+}
+
+function columnsOf(t: Translator['t'], runId: string): readonly ListColumn<ReportRunFileView>[] {
+    const field = 'reporting.run.files';
+    return [
+        {
+            id: 'direction',
+            header: t(`${field}.direction`),
+            cell: (row) => (
+                <Tag tone={row.direction === 'input' ? 'accent' : 'up'}>
+                    {t(`${field}.directions.${row.direction}`)}
+                </Tag>
+            ),
+        },
+        {
+            id: 'name',
+            header: t(`${field}.name`),
+            mono: true,
+            cell: (row) => (
+                <a
+                    href={api.reportRunFileUrl(runId, row.id)}
+                    download
+                    className="text-accent hover:text-accent-bright"
+                >
+                    {row.name}
+                </a>
+            ),
+        },
+        {
+            id: 'kind',
+            header: t(`${field}.kind`),
+            cell: (row) => t(`${field}.kinds.${row.kind}`),
+        },
+        {
+            id: 'family',
+            header: t(`${field}.family`),
+            cell: (row) =>
+                row.direction === 'input' || row.kind === 'archive'
+                    ? '—'
+                    : row.family || t(`${field}.noFamily`),
+        },
+        {
+            id: 'size',
+            header: t(`${field}.size`),
+            cell: (row) => (row.bytes === null ? '—' : formatBytes(row.bytes)),
+        },
+        {
+            id: 'digest',
+            header: t(`${field}.digest`),
+            mono: true,
+            cell: (row) =>
+                row.sha256 === null ? (
+                    '—'
+                ) : (
+                    <span title={row.sha256}>{row.sha256.slice(0, 12)}</span>
+                ),
+        },
+        {
+            id: 'job',
+            header: t(`${field}.job`),
+            mono: true,
+            cell: (row) =>
+                row.job === null ? (
+                    '—'
+                ) : (
+                    <Link
+                        to={gridJobPath(row.job)}
+                        className="text-accent hover:text-accent-bright"
+                    >
+                        {row.job.slice(0, 8)}
+                    </Link>
+                ),
+        },
+    ];
 }

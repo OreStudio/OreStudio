@@ -281,13 +281,17 @@ export type {
 export {
     reportRunDetailViewSchema,
     reportRunErrorViewSchema,
+    reportRunFileNodeViewSchema,
     reportRunFileViewSchema,
+    reportRunFilesViewSchema,
     reportRunRowViewSchema,
 } from './report-runs.js';
 export type {
     ReportRunDetailView,
     ReportRunErrorView,
+    ReportRunFileNodeView,
     ReportRunFileView,
+    ReportRunFilesView,
     ReportRunRowView,
 } from './report-runs.js';
 

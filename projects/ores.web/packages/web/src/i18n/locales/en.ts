@@ -7354,10 +7354,24 @@ export const en: SourceCatalogue = {
                 noFamily: 'Not modelled',
                 directions: { input: 'Input', output: 'Output' },
                 kinds: { archive: 'Archive', file: 'File' },
-                filter: {
-                    all: 'All ({count})',
-                    input: 'Inputs ({count})',
-                    output: 'Outputs ({count})',
+                views: { overview: 'Overview', list: 'List' },
+                byScope: "The run's problems by scope",
+                byScopeCaption: 'Every problem the run recorded, counted by the part of the run it belongs to.',
+                unscoped: 'No scope stated',
+                otherScopes: 'Other scopes',
+                errorsCount: 'Errors',
+                warningsCount: 'Warnings',
+                total: 'Total',
+                openScope: 'Open the {scope} problems in the list',
+                scopeShown: 'Showing the {scope} problems only.',
+                everyScope: 'Show every scope',
+                tree: 'Where the files are',
+                nodes: {
+                    run: 'This run',
+                    batch: 'Batch {ref}',
+                    job: 'Job {ref}',
+                    input: 'Input package',
+                    output: 'Output, result {ref}',
                 },
             },
             errors: {
@@ -7376,14 +7390,9 @@ export const en: SourceCatalogue = {
         },
         results: {
             unreadRows: '{count} rows could not be read and are not shown.',
-            otherScopes: 'Other scopes',
             shareTitle: "Each book's share of the run",
             shareCaption:
                 'One whole in a few parts is a donut. The figures are stated beside it, because a ring says the shape and not the value.',
-            problemsTitle: "The run's problems by scope",
-            problemsCaption:
-                'One whole in a few parts is a donut. Every problem the run recorded is counted here, whatever its scope.',
-            unscoped: 'No scope stated',
             was: 'Earlier run',
             compareTo: 'Compare to',
             noComparison: 'No comparison',

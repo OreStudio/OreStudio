@@ -19,7 +19,7 @@
  *
  */
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -32,9 +32,11 @@ import {
 } from '../api/client.js';
 import type { ReportRunErrorView } from '@ores/wire-protocol/browser';
 import { ReadFailure } from '../operations/GridJobs.js';
+import { localSource, RecordTable, type ListColumn } from '../refdata/RecordList.js';
+import { Tag } from '../ui/Primitives.js';
 import { useRunErrors } from './RunErrorsTable.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
+import { Donut, bookSharesOf } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
 import { asFigure, toAggregateRows, toTradeRows } from './resultsModel.js';
 
@@ -95,7 +97,7 @@ export function RunResultsPanel({
         }
         return byTrade;
     }, [errors.data]);
-    const [selected, setSelected] = useState('');
+    const selected = search.get('trade') ?? '';
 
     const candidates = (otherRuns.data ?? [])
         .filter((entry) => entry.state_name === 'completed' && entry.id !== runId)
@@ -116,21 +118,26 @@ export function RunResultsPanel({
         params.delete('counterparty');
         setSearch(params, { replace: true });
     };
-    const chooseFilter = (key: string): void => {
+    /** The address with some parameters set, and the ones named null removed. */
+    const addressWith = (changes: Readonly<Record<string, string | null>>): string => {
         const params = new URLSearchParams(search);
-        params.set('by', 'trade');
-        params.delete('book');
-        params.delete('counterparty');
-        params.delete('nobook');
-        if (level === 'book' && key === '') {
-            params.set('nobook', '1');
-        } else if (level === 'book') {
-            params.set('book', key);
-        } else if (level === 'counterparty') {
-            params.set('counterparty', key);
+        for (const [name, value] of Object.entries(changes)) {
+            if (value === null) {
+                params.delete(name);
+            } else {
+                params.set(name, value);
+            }
         }
-        setSearch(params, { replace: true });
+        return `?${params.toString()}`;
     };
+    const tradesOf = (key: string): string =>
+        addressWith({
+            by: 'trade',
+            trade: null,
+            book: level === 'book' && key !== '' ? key : null,
+            nobook: level === 'book' && key === '' ? '1' : null,
+            counterparty: level === 'counterparty' ? key : null,
+        });
     const clearFilter = (): void => {
         const params = new URLSearchParams(search);
         params.delete('book');
@@ -168,11 +175,6 @@ export function RunResultsPanel({
             is_removed: row.is_removed,
             totals: row.totals,
         })),
-    );
-    const problems: readonly Share[] = problemsOf(
-        errors.data ?? [],
-        t(`${field}.unscoped`),
-        t(`${field}.otherScopes`),
     );
     const filterName = noBook
         ? t(`${field}.unbooked`)
@@ -229,14 +231,6 @@ export function RunResultsPanel({
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && (
                 <ReadFailure error={results.error} onRetry={() => void results.refetch()} />
-            )}
-            {results.isSuccess && !errors.isPending && problems.length > 0 && (
-                <Donut
-                    title={t(`${field}.problemsTitle`)}
-                    caption={t(`${field}.problemsCaption`)}
-                    parts={problems}
-                    format={(value) => String(value)}
-                />
             )}
             {results.isSuccess && (
                 <>
@@ -347,16 +341,19 @@ export function RunResultsPanel({
                             )}
                             {level === 'trade' ? (
                                 <TradeTable
+                                    runId={runId}
                                     rows={filtered}
                                     errorsOf={errorsOf}
-                                    selected={selected}
-                                    onSelect={(id) => setSelected(selected === id ? '' : id)}
+                                    openOf={(id) =>
+                                        addressWith({ trade: selected === id ? null : id })
+                                    }
                                 />
                             ) : (
                                 <AggregateTable
+                                    runId={runId}
                                     level={level}
                                     rows={aggregates}
-                                    onTrades={chooseFilter}
+                                    tradesOf={tradesOf}
                                     compared={baseline !== ''}
                                 />
                             )}
@@ -381,250 +378,229 @@ export function RunResultsPanel({
     );
 }
 
+/** Amounts in several currencies, one after another. */
+function Amounts({
+    amounts,
+    signed = false,
+}: {
+    readonly amounts: readonly Money[];
+    readonly signed?: boolean;
+}): ReactNode {
+    return amounts.map((money) => (
+        <span
+            key={money.currency}
+            className={`mr-2 ${signed && money.total.startsWith('-') ? 'text-down' : ''}`}
+        >
+            {asFigure(money.total)}
+            {money.currency === '' ? '' : ` ${money.currency}`}
+        </span>
+    ));
+}
+
+/** The trades of a run, one row each; a row opens the trade's figures and errors below. */
 function TradeTable({
+    runId,
     rows,
     errorsOf,
-    selected,
-    onSelect,
+    openOf,
 }: {
+    readonly runId: string;
     readonly rows: readonly RunResultRow[];
     readonly errorsOf: ReadonlyMap<string, readonly ReportRunErrorView[]>;
-    readonly selected: string;
-    readonly onSelect: (id: string) => void;
+    readonly openOf: (tradeId: string) => string;
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.results';
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="text-xs text-ink-faint">
-                        <th className="px-2 py-1 font-normal">{t(`${field}.tradeId`)}</th>
-                        <th className="px-2 py-1 font-normal">{t(`${field}.tradeType`)}</th>
-                        <th className="px-2 py-1 text-right font-normal">{t(`${field}.npv`)}</th>
-                        <th className="px-2 py-1 text-right font-normal">
-                            {t(`${field}.npvBase`)}
-                        </th>
-                        <th className="px-2 py-1 text-right font-normal">
-                            {t(`${field}.notional`)}
-                        </th>
-                        <th className="px-2 py-1 font-normal">{t(`${field}.book`)}</th>
-                        <th className="px-2 py-1 font-normal">{t(`${field}.counterparty`)}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row) => {
-                        const tradeErrors = errorsOf.get(row.trade_id) ?? [];
-                        const chosen = selected === row.trade_id;
-                        return (
-                            <tr
-                                key={row.trade_id}
-                                onClick={() => onSelect(row.trade_id)}
-                                className={`cursor-pointer border-t border-line-subtle hover:bg-surface-raised ${
-                                    chosen ? 'bg-surface-raised' : ''
-                                }`}
+        <RecordTable<RunResultRow>
+            source={localSource<RunResultRow>({
+                key: `run-trades-${runId}`,
+                rows,
+                revision: String(rows.length),
+                searchOf: (row) => `${row.trade_id} ${row.book_name} ${row.counterparty_name}`,
+            })}
+            plural={t(`${field}.trades`)}
+            keyOf={(row) => row.trade_id}
+            pathOf={(row) => openOf(row.trade_id)}
+            columns={[
+                {
+                    id: 'trade',
+                    header: t(`${field}.tradeId`),
+                    mono: true,
+                    cell: (row) => (
+                        <span className="flex items-center gap-2">
+                            <Link
+                                to={tradePath(row.trade_id)}
+                                className="text-accent hover:text-accent-bright"
                             >
-                                <td className="px-2 py-1 font-mono text-xs">
-                                    <Link
-                                        to={tradePath(row.trade_id)}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {row.trade_id}
-                                    </Link>
-                                    {tradeErrors.length > 0 && (
-                                        <span className="ml-2 rounded border border-line px-1 text-xs text-down">
-                                            {t(`${field}.error`)}
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="px-2 py-1 uppercase">{row.trade_type}</td>
-                                <td className="px-2 py-1 text-right font-mono">
-                                    {asFigure(row.npv)}
-                                </td>
-                                <td className="px-2 py-1 text-right font-mono">
-                                    {asFigure(row.npv_base)}
-                                </td>
-                                <td className="px-2 py-1 text-right font-mono">
-                                    {asFigure(row.notional)}
-                                </td>
-                                <td className="px-2 py-1">
-                                    {row.book_id === '' ? (
-                                        <span className="text-ink-muted">
-                                            {t(`${field}.unbooked`)}
-                                        </span>
-                                    ) : (
-                                        <Link
-                                            to={bookPath(row.book_id)}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {row.book_name === '' ? row.book_id : row.book_name}
-                                        </Link>
-                                    )}
-                                </td>
-                                <td className="px-2 py-1 uppercase">
-                                    {row.counterparty === '' ? (
-                                        '—'
-                                    ) : (
-                                        <Link
-                                            to={counterpartyPath(row.counterparty)}
-                                            className="text-accent hover:text-accent-bright"
-                                        >
-                                            {row.counterparty_name}
-                                        </Link>
-                                    )}
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+                                {row.trade_id}
+                            </Link>
+                            {(errorsOf.get(row.trade_id)?.length ?? 0) > 0 && (
+                                <Tag tone="down">{t(`${field}.error`)}</Tag>
+                            )}
+                        </span>
+                    ),
+                },
+                {
+                    id: 'type',
+                    header: t(`${field}.tradeType`),
+                    cell: (row) => row.trade_type || '—',
+                },
+                {
+                    id: 'npv',
+                    header: t(`${field}.npv`),
+                    numeric: true,
+                    cell: (row) => asFigure(row.npv),
+                },
+                {
+                    id: 'npvBase',
+                    header: t(`${field}.npvBase`),
+                    numeric: true,
+                    cell: (row) => asFigure(row.npv_base),
+                },
+                {
+                    id: 'notional',
+                    header: t(`${field}.notional`),
+                    numeric: true,
+                    cell: (row) => asFigure(row.notional),
+                },
+                {
+                    id: 'book',
+                    header: t(`${field}.book`),
+                    cell: (row) =>
+                        row.book_id === '' ? (
+                            <span className="text-ink-muted">{t(`${field}.unbooked`)}</span>
+                        ) : (
+                            <Link
+                                to={bookPath(row.book_id)}
+                                className="text-accent hover:text-accent-bright"
+                            >
+                                {row.book_name === '' ? row.book_id : row.book_name}
+                            </Link>
+                        ),
+                },
+                {
+                    id: 'counterparty',
+                    header: t(`${field}.counterparty`),
+                    cell: (row) =>
+                        row.counterparty === '' ? (
+                            '—'
+                        ) : (
+                            <Link
+                                to={counterpartyPath(row.counterparty)}
+                                className="text-accent hover:text-accent-bright"
+                            >
+                                {row.counterparty_name || row.counterparty}
+                            </Link>
+                        ),
+                },
+            ]}
+        />
     );
 }
 
+/**
+ * The run rolled up by book or counterparty, with the groups above their
+ * members. A member's row opens its trades; a group has no row of its own.
+ */
 function AggregateTable({
+    runId,
     level,
     rows,
-    onTrades,
+    tradesOf,
     compared,
 }: {
+    readonly runId: string;
     readonly level: Exclude<ResultLevel, 'trade'>;
     readonly rows: readonly AggregateRow[];
-    readonly onTrades: (key: string) => void;
+    readonly tradesOf: (key: string) => string;
     readonly compared: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.results';
+    const nameOf = (row: AggregateRow): ReactNode => {
+        if (row.key === '') {
+            return t(`${field}.${level === 'book' ? 'unbooked' : 'unassigned'}`);
+        }
+        const name = row.name === '' ? row.key : row.name;
+        if (row.is_group) {
+            return name;
+        }
+        return (
+            <Link
+                to={level === 'book' ? bookPath(row.key) : counterpartyPath(row.key)}
+                className="text-accent hover:text-accent-bright"
+            >
+                {name}
+            </Link>
+        );
+    };
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="text-xs text-ink-faint">
-                        <th className="px-2 py-1 font-normal">{t(`${field}.${level}`)}</th>
-                        <th className="px-2 py-1 text-right font-normal">{t(`${field}.trades`)}</th>
-                        <th className="px-2 py-1 text-right font-normal">{t(`${field}.npv`)}</th>
-                        <th className="px-2 py-1 text-right font-normal">
-                            {t(`${field}.notional`)}
-                        </th>
-                        {compared && (
-                            <>
-                                <th className="px-2 py-1 text-right font-normal">
-                                    {t(`${field}.change`)}
-                                </th>
-                                <th className="px-2 py-1 text-right font-normal">
-                                    {t(`${field}.changePct`)}
-                                </th>
-                            </>
-                        )}
-                        <th className="px-2 py-1 font-normal">{t(`${field}.actions`)}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row) => (
-                        <tr
-                            key={`${row.is_group ? 'group' : 'row'}-${row.key}`}
-                            className={`border-t border-line-subtle ${
-                                row.is_group ? 'font-medium' : ''
-                            }`}
+        <RecordTable<AggregateRow>
+            source={localSource<AggregateRow>({
+                key: `run-${level}s-${runId}`,
+                rows,
+                revision: `${compared ? 'compared' : 'alone'}:${rows.length}`,
+                searchOf: (row) => row.name,
+            })}
+            plural={t(`${field}.${level}`)}
+            keyOf={(row) => `${row.is_group ? 'group' : 'row'}-${row.key}`}
+            pathOf={(row) => (row.is_group ? undefined : tradesOf(row.key))}
+            columns={[
+                {
+                    id: 'name',
+                    header: t(`${field}.${level}`),
+                    cell: (row) => (
+                        <span
+                            className={`flex items-center gap-2 ${row.is_group ? 'font-medium' : ''}`}
+                            style={{ paddingLeft: `${row.depth * 16}px` }}
                         >
-                            <td
-                                className="px-2 py-1 uppercase"
-                                style={{ paddingLeft: `${8 + row.depth * 16}px` }}
-                            >
-                                {row.is_removed && (
-                                    <span className="mr-2 rounded border border-line px-1 text-xs text-ink-muted">
-                                        {t(`${field}.gone`)}
-                                    </span>
-                                )}
-                                {row.key === '' ? (
-                                    level === 'book' ? (
-                                        t(`${field}.unbooked`)
-                                    ) : (
-                                        t(`${field}.unassigned`)
-                                    )
-                                ) : level === 'book' && row.is_group ? (
-                                    row.name === '' ? (
-                                        row.key
-                                    ) : (
-                                        row.name
-                                    )
-                                ) : level === 'book' ? (
-                                    <Link
-                                        to={bookPath(row.key)}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {row.name === '' ? row.key : row.name}
-                                    </Link>
-                                ) : (
-                                    <Link
-                                        to={counterpartyPath(row.key)}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {row.name === '' ? row.key : row.name}
-                                    </Link>
-                                )}
-                            </td>
-                            <td className="px-2 py-1 text-right font-mono">{row.trades}</td>
-                            <td className="px-2 py-1 text-right font-mono">
-                                {row.totals.map((total) => (
-                                    <span key={total.currency} className="mr-2">
-                                        {asFigure(total.total)}
-                                        {total.currency === '' ? '' : ` ${total.currency}`}
-                                    </span>
-                                ))}
-                            </td>
-                            <td className="px-2 py-1 text-right font-mono">
-                                {row.notional.map((total) => (
-                                    <span key={total.currency} className="mr-2">
-                                        {asFigure(total.total)}
-                                        {total.currency === '' ? '' : ` ${total.currency}`}
-                                    </span>
-                                ))}
-                            </td>
-                            {compared && (
-                                <>
-                                    <td className="px-2 py-1 text-right font-mono">
-                                        {row.change.map((money) => (
-                                            <span
-                                                key={money.currency}
-                                                className={`mr-2 ${
-                                                    money.total.startsWith('-') ? 'text-down' : ''
-                                                }`}
-                                            >
-                                                {asFigure(money.total)}
-                                                {money.currency === '' ? '' : ` ${money.currency}`}
-                                            </span>
-                                        ))}
-                                    </td>
-                                    <td className="px-2 py-1 text-right font-mono text-ink-muted">
-                                        {row.change_pct.map((money) => (
-                                            <span key={money.currency} className="mr-2">
-                                                {money.total === ''
-                                                    ? '—'
-                                                    : `${asFigure(money.total)}%`}
-                                            </span>
-                                        ))}
-                                    </td>
-                                </>
-                            )}
-                            <td className="px-2 py-1">
-                                {row.is_group ? (
-                                    ''
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => onTrades(row.key)}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {t(`${field}.showTrades`)}
-                                    </button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                            {row.is_removed && <Tag tone="muted">{t(`${field}.gone`)}</Tag>}
+                            {nameOf(row)}
+                        </span>
+                    ),
+                },
+                {
+                    id: 'trades',
+                    header: t(`${field}.trades`),
+                    numeric: true,
+                    cell: (row) => row.trades,
+                },
+                {
+                    id: 'npv',
+                    header: t(`${field}.npv`),
+                    numeric: true,
+                    cell: (row) => <Amounts amounts={row.totals} />,
+                },
+                {
+                    id: 'notional',
+                    header: t(`${field}.notional`),
+                    numeric: true,
+                    cell: (row) => <Amounts amounts={row.notional} />,
+                },
+                ...(compared
+                    ? ([
+                          {
+                              id: 'change',
+                              header: t(`${field}.change`),
+                              numeric: true,
+                              cell: (row) => <Amounts amounts={row.change} signed />,
+                          },
+                          {
+                              id: 'changePct',
+                              header: t(`${field}.changePct`),
+                              numeric: true,
+                              cell: (row) =>
+                                  row.change_pct.map((money) => (
+                                      <span key={money.currency} className="mr-2 text-ink-muted">
+                                          {money.total === '' ? '—' : `${asFigure(money.total)}%`}
+                                      </span>
+                                  )),
+                          },
+                      ] satisfies ListColumn<AggregateRow>[])
+                    : []),
+            ]}
+        />
     );
 }
 
@@ -707,7 +683,9 @@ function TradeResult({
                                     {error.severity}
                                 </span>
                                 {error.message}
-                                {error.cause === null || error.cause === '' ? '' : ` (${error.cause})`}
+                                {error.cause === null || error.cause === ''
+                                    ? ''
+                                    : ` (${error.cause})`}
                             </li>
                         ))}
                     </ul>

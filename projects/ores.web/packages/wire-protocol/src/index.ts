@@ -711,13 +711,17 @@ export type { Timeline, TimelineEvent, TimelineField, TimelineGap } from './time
 export {
     reportRunDetailViewSchema,
     reportRunErrorViewSchema,
+    reportRunFileNodeViewSchema,
     reportRunFileViewSchema,
+    reportRunFilesViewSchema,
     reportRunRowViewSchema,
 } from './report-runs.js';
 export type {
     ReportRunDetailView,
     ReportRunErrorView,
+    ReportRunFileNodeView,
     ReportRunFileView,
+    ReportRunFilesView,
     ReportRunRowView,
 } from './report-runs.js';
 export { reportHealthWordSchema } from './reporting.js';

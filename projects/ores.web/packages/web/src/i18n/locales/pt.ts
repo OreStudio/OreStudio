@@ -7407,10 +7407,24 @@ const pt: SourceCatalogue = {
                 noFamily: 'Não modelado',
                 directions: { input: 'Entrada', output: 'Saída' },
                 kinds: { archive: 'Arquivo', file: 'Ficheiro' },
-                filter: {
-                    all: 'Todos ({count})',
-                    input: 'Entradas ({count})',
-                    output: 'Saídas ({count})',
+                views: { overview: 'Visão geral', list: 'Lista' },
+                byScope: 'Os problemas da execução por âmbito',
+                byScopeCaption: 'Cada problema registado, contado pela parte da execução a que pertence.',
+                unscoped: 'Âmbito não indicado',
+                otherScopes: 'Outros âmbitos',
+                errorsCount: 'Erros',
+                warningsCount: 'Avisos',
+                total: 'Total',
+                openScope: 'Abrir os problemas {scope} na lista',
+                scopeShown: 'Só são mostrados os problemas {scope}.',
+                everyScope: 'Mostrar todos os âmbitos',
+                tree: 'Onde estão os ficheiros',
+                nodes: {
+                    run: 'Esta execução',
+                    batch: 'Lote {ref}',
+                    job: 'Trabalho {ref}',
+                    input: 'Pacote de entrada',
+                    output: 'Saída, resultado {ref}',
                 },
             },
             errors: {
@@ -7429,14 +7443,9 @@ const pt: SourceCatalogue = {
         },
         results: {
             unreadRows: '{count} linhas não puderam ser lidas e não são mostradas.',
-            otherScopes: 'Outros âmbitos',
             shareTitle: 'Peso de cada livro na execução',
             shareCaption:
                 'Um todo em poucas partes lê-se em anel. Os números ficam ao lado, porque um anel diz a forma e não o valor.',
-            problemsTitle: 'Os problemas da execução por âmbito',
-            problemsCaption:
-                'Um todo em poucas partes lê-se em anel. Cada problema registado é contado aqui, seja qual for o âmbito.',
-            unscoped: 'Âmbito não indicado',
             was: 'Execução anterior',
             compareTo: 'Comparar com',
             noComparison: 'Sem comparação',

@@ -32,7 +32,7 @@ import { PATHS, gridBatchPath, reportPath, reportRunPath } from '../shell/paths.
 import { Detail, Notice } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { formatDate, formatDateTime } from '../ui/Time.js';
-import { RunErrorsTable } from './RunErrorsTable.js';
+import { RunErrors } from './RunErrorsTable.js';
 import { RunFilesTable } from './RunFilesTable.js';
 import { RunResultsPanel } from './RunResultsPanel.js';
 import { HealthTag, formatDuration } from './shared.js';
@@ -96,7 +96,7 @@ export function ReportRunPage(): ReactNode {
                             pricedAt={run.data.priced_at?.slice(0, 10) ?? ''}
                         />
                     )}
-                    {tab === 'errors' && <RunErrorsTable runId={id} />}
+                    {tab === 'errors' && <RunErrors runId={id} />}
                     {tab === 'downloads' && <RunFilesTable runId={run.data.id} />}
                 </>
             )}
@@ -136,20 +136,21 @@ function RunDetails({ run }: { readonly run: ReportRunDetailView }): ReactNode {
                         </Link>
                     }
                 />
-                <Detail
-                    label={t(`${FIELD}.party`)}
-                    value={run.party_name ?? run.party_id}
-                />
+                <Detail label={t(`${FIELD}.party`)} value={run.party_name ?? run.party_id} />
                 <Detail label={t(`${FIELD}.kind`)} value={run.kind} />
                 <Detail label={t(`${FIELD}.state`)} value={run.state_name || none} />
                 <Detail
                     label={t(`${FIELD}.started`)}
-                    value={run.started_at === null ? none : formatDateTime(run.started_at, language)}
+                    value={
+                        run.started_at === null ? none : formatDateTime(run.started_at, language)
+                    }
                 />
                 <Detail
                     label={t(`${FIELD}.completed`)}
                     value={
-                        run.completed_at === null ? none : formatDateTime(run.completed_at, language)
+                        run.completed_at === null
+                            ? none
+                            : formatDateTime(run.completed_at, language)
                     }
                 />
                 <Detail

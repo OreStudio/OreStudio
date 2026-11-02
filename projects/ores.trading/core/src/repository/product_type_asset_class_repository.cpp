@@ -26,6 +26,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/product_type_asset_class.hpp"
 #include "ores.trading.api/domain/product_type_asset_class_json_io.hpp" // IWYU pragma: keep.
@@ -136,8 +137,10 @@ void product_type_asset_class_repository::write(
 std::vector<domain::product_type_asset_class> product_type_asset_class_repository::read_latest() {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<product_type_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("product_type_code"_c, "asset_class_code"_c);
 
     return query_builder::execute_read_query<product_type_asset_class_entity,
@@ -155,8 +158,10 @@ product_type_asset_class_repository::read_latest(std::uint32_t offset, std::uint
                                << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<product_type_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("product_type_code"_c, "asset_class_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -179,9 +184,11 @@ product_type_asset_class_repository::read_latest(const std::string& product_type
     const auto product_type_code_str = product_type_code;
     const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "product_type_code"_c == product_type_code &&
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "product_type_code"_c == product_type_code &&
                              "asset_class_code"_c == asset_class_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<product_type_asset_class_entity,
@@ -198,8 +205,10 @@ std::uint32_t product_type_asset_class_repository::get_total_product_type_asset_
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<product_type_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<product_type_asset_class_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
@@ -215,10 +224,11 @@ product_type_asset_class_repository::read_latest_by_product_type(
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "product_type_code"_c == product_type_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "product_type_code"_c == product_type_code && "valid_to"_c == max) |
         query_builder::order_by("asset_class_code"_c);
 
     auto rows = query_builder::execute_read_query<product_type_asset_class_entity,
@@ -240,10 +250,11 @@ product_type_asset_class_repository::read_latest_by_asset_class(
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "asset_class_code"_c == asset_class_code && "valid_to"_c == max) |
         query_builder::order_by("product_type_code"_c);
 
     auto rows = query_builder::execute_read_query<product_type_asset_class_entity,
@@ -265,10 +276,11 @@ product_type_asset_class_repository::read_latest_by_product_type(
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "product_type_code"_c == product_type_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "product_type_code"_c == product_type_code && "valid_to"_c == max) |
         query_builder::order_by("asset_class_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -292,10 +304,11 @@ product_type_asset_class_repository::get_total_product_type_asset_class_count_by
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "product_type_code"_c == product_type_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "product_type_code"_c == product_type_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
@@ -312,10 +325,11 @@ product_type_asset_class_repository::get_total_product_type_asset_class_count_by
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "asset_class_code"_c == asset_class_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
@@ -331,10 +345,11 @@ product_type_asset_class_repository::read_all_by_product_type(
         << "Reading every version of the product type markets. Product Type: " << product_type_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<product_type_asset_class_entity>> |
-        query_builder::where("tenant_id"_c == tid && "product_type_code"_c == product_type_code) |
-        query_builder::order_by("asset_class_code"_c, "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<product_type_asset_class_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "product_type_code"_c == product_type_code) |
+                       query_builder::order_by("asset_class_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<product_type_asset_class_entity,
                                              product_type_asset_class_history_row>(

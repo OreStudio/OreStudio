@@ -283,48 +283,12 @@ begin
     raise notice 'Copied % party ID schemes', v_copied_count;
 
     /*
-     * The trading code lists a booked trade is read against: the type it is,
-     * the scheme its identifier is stated in, the kinds of link two trades can
+     * The trading code lists a booked trade is read against: the scheme its
+     * identifier is stated in, the kinds of link two trades can
      * have, the activities that move it, and the structures it can be a leg of.
      * Without them a tenant answers an empty list to every picker while the
      * writes still accept the codes.
      */
-    -- Trade types
-    insert into ores_trading_product_types_tbl (
-        code, name, description, product_family_code, construction,
-        has_options, has_extension, instrument_table, display_order,
-        tenant_id, version, modified_by, performed_by,
-        change_reason_code, change_commentary
-    )
-    select
-        code, name, description, product_family_code, construction,
-        has_options, has_extension, instrument_table, display_order,
-        v_tenant_id, 0, v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_product_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % product types', v_copied_count;
-
-    /*
-     * The markets move with the type, so a tenant that books one reads the
-     * same set the system tenant states.
-     */
-    insert into ores_trading_product_type_asset_classes_tbl (
-        product_type_code, asset_class_code, is_home,
-        tenant_id, version, modified_by, performed_by,
-        change_reason_code, change_commentary
-    )
-    select
-        product_type_code, asset_class_code, is_home,
-        v_tenant_id, 0, v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_product_type_asset_classes_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
     -- Trade ID types
     insert into ores_trading_trade_id_types_tbl (
         code, description, tenant_id, version,

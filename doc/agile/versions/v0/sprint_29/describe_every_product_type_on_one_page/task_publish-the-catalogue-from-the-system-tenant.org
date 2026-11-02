@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-the-catalogue-from-the-system-tenant
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ One row per product type exists in the database, and every tenant reads it. A te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,23 @@ One row per product type exists in the database, and every tenant reads it. A te
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The catalogue is already seeded into the system tenant, and the trade check
+already reads those rows by naming the system tenant. What is missing is the
+read and the copy.
+
+- Give the three tables the own-or-system-tenant policy, so a session reads its
+  own rows and the system tenant's and writes stay its own. This is the shape the
+  meta model calls =:rls_own_or_system_tenant_rows:=, not the system-tenant
+  widening, which is for a session that must see every tenant.
+- Mark the three entities =:system_tenant_visible:= in their repository drawer.
+  Without it the generated read filters on the session's tenant alone and a
+  tenant reads nothing, because the policy admits rows the query has already
+  excluded.
+- Stop the provisioner copying the catalogue into each tenant.
+- Delete the copies an existing database holds, in a script that runs with the
+  seed and does nothing on a second run.
+- Prove it: a session of a provisioned tenant reads the catalogue, and the
+  database holds no copy.
 
 * Measurements
 
@@ -59,9 +73,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types in the database | 121, all in the system tenant | =compass sql= over =ores_trading_product_types_tbl= where =tenant_id <> system= | ba9b3f2844 |
+| Rows a tenant holds | 0 for all three tables | the same query over the markets and family tables | ba9b3f2844 |
+| Types the Acme tenant reads | 121 | =set_config('app.current_tenant_id', acme)= then count | ba9b3f2844 |
+| Families the Acme tenant reads | 8 | the same session | ba9b3f2844 |
+| pgTAP suites | 77 pass, including the new visibility suite | =compass check --only pgtap= | ba9b3f2844 |
 
 * Notes
+
+** 2026-11-02 — the catalogue is one copy
+
+The provisioner's copy was a bridge. The previous task replaced the trade type
+table, and the tables were tenant-isolated, so a tenant that booked a trade saw
+no product types unless the catalogue was copied to it. That copy is gone, and
+the isolation it made necessary with it.
+
+The two halves have to move together. The policy on its own is not enough,
+because the generated read names the session's tenant: a tenant would ask for
+its own rows, the policy would not matter, and it would read nothing. The
+repository flag on its own is not enough either, because the policy would refuse
+the rows the query asked for. Both are stated, and the suite proves the read.
+
+Provisioning a tenant end to end runs and generates its trades, so the trade
+check reads the one catalogue while the writes land in the tenant.
 
 * Test Scenarios
 

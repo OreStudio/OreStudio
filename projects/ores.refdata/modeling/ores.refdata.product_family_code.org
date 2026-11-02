@@ -97,6 +97,7 @@ faker::number::integer(1, 100)
 :PROPERTIES:
 :tablename: ores_refdata_product_family_codes_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -131,6 +132,7 @@ drop function if exists ores_refdata_validate_product_family_code_fn;
 :entity_plural_short:   families
 :entity_singular_words: product family
 :entity_plural_words:   product families
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

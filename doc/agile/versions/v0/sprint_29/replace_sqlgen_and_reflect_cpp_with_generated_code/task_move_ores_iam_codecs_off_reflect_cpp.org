@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-iam-codecs-off-reflect-cpp
-#+pr:
+#+pr: 4368
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4368][#4368]] | [iam] Encode and decode without reflect-cpp |
 
 * Review
 

@@ -45,6 +45,8 @@ import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import file_type_descriptions as texts  # noqa: E402
+import ore_file_descriptions  # noqa: E402
+import ore_files  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 EXAMPLES = os.path.join(ROOT, "external", "ore", "examples")
@@ -52,6 +54,10 @@ XSD_DIR = os.path.join(ROOT, "external", "ore", "xsd")
 GUIDE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "file_type_guide.json")
 SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                     "reporting_file_types_populate.sql")
+CATEGORY_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
+                             "reporting_ore_file_categories_populate.sql")
+ORE_FILE_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
+                             "reporting_ore_files_populate.sql")
 
 FILE_VALUE = re.compile(r"\.(xml|csv|txt|json|dat|gz)$")
 DATED = re.compile(r"\d{8}")
@@ -387,10 +393,162 @@ def link_producers(rows):
             r["produced_by_file_type_code"] = writers[0]["code"]
 
 
-COLUMNS = ("code", "analytic_type_code", "ore_parameter", "direction", "kind", "format",
-           "xsd_file", "configuration_type_code", "name_pattern", "sample_count",
+COLUMNS = ("code", "analytic_type_code", "ore_parameter", "direction", "kind",
+           "ore_file_code", "configuration_type_code", "name_pattern", "sample_count",
            "sample_total", "description", "display_order", "is_default",
            "produced_by_file_type_code")
+
+
+def link_ore_files(rows):
+    """Give each file type the ORE file its name is.
+
+    A name with a key between double braces stands for any value of the key, so the key
+    is matched as text. Exactly one ORE file must match. Where the samples state an XSD
+    for the file, it must be the XSD the ORE file states, so the hand-written list and the
+    samples cannot drift apart.
+    """
+    problems = []
+    for r in rows:
+        name = re.sub(r"\{\{([A-Z0-9_]+)\}\}", r"\1", r["name_pattern"])
+        hits = [f for f in ore_files.FILES if re.fullmatch(f["filename_regex"], name)]
+        if len(hits) != 1:
+            problems.append(f"{r['code']} names {r['name_pattern']}, which matches "
+                            f"{[f['code'] for f in hits] or 'no ORE file'}")
+            continue
+        found = hits[0]
+        r["ore_file_code"] = found["code"]
+        if r["xsd_file"] is not None and r["xsd_file"] != found["xsd_file"]:
+            problems.append(f"{r['code']}: the samples give {r['name_pattern']} the XSD "
+                            f"{r['xsd_file']}, the ORE file {found['code']} states "
+                            f"{found['xsd_file']}")
+    return problems
+
+
+def check_ore_files():
+    """The ORE files and categories are whole: every one described, every name unique."""
+    problems = []
+    categories = {c[0] for c in ore_files.CATEGORIES}
+    codes = [f["code"] for f in ore_files.FILES]
+    for code in sorted({c for c in codes if codes.count(c) > 1}):
+        problems.append(f"the ORE file {code} is listed twice")
+    for f in ore_files.FILES:
+        if f["category_code"] not in categories:
+            problems.append(f"{f['code']} names the category {f['category_code']}, which "
+                            "is not listed")
+        if f["code"] not in ore_file_descriptions.FILES:
+            problems.append(f"the ORE file {f['code']} has no description")
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", f["typical_filename"]):
+            problems.append(f"{f['code']}: {f['typical_filename']} is not a name a file can "
+                            "have; give an example, and the pattern as a variant")
+        if not re.fullmatch(f["filename_regex"], f["typical_filename"]):
+            problems.append(f"{f['code']}: {f['typical_filename']} does not match its own "
+                            "regex")
+        others = [g["code"] for g in ore_files.FILES
+                  if g is not f and re.fullmatch(g["filename_regex"], f["typical_filename"])]
+        if others:
+            problems.append(f"{f['typical_filename']} matches {f['code']} and {others}")
+    for code in sorted(categories - set(ore_file_descriptions.CATEGORIES)):
+        problems.append(f"the category {code} has no description")
+    for code in sorted(set(ore_file_descriptions.FILES) - set(codes)):
+        problems.append(f"{code} is described but is not an ORE file")
+    return problems
+
+
+def render_lookup(title, description, table, noun, columns, rows):
+    """An idempotent seed of a lookup the system tenant owns, keyed by code."""
+    def value(v):
+        if v is None:
+            return "null"
+        if isinstance(v, bool):
+            return "true" if v else "false"
+        return str(v) if isinstance(v, int) else sql_text(v)
+
+    values = ",\n".join("        (" + ", ".join(value(r[c]) for c in columns) + ")"
+                         for r in rows)
+    names = ", ".join(columns)
+    inserted = ", ".join("r." + c for c in columns)
+    return f"""/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+
+/**
+ * {title} Population Script
+ *
+ * GENERATED FILE - DO NOT EDIT. Regenerate with
+ * projects/ores.sql/utility/generate_file_types_populate.py.
+ *
+ * {description} This script is idempotent.
+ */
+
+\\echo '--- {title} ---'
+
+do $$
+declare
+    v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
+    r record;
+begin
+    for r in
+        select * from (values
+{values}
+        ) as t ({names})
+    loop
+        if not exists (
+            select 1 from {table}
+            where tenant_id = v_sys_tenant and code = r.code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            insert into {table} (
+                {names},
+                tenant_id, version, modified_by, change_reason_code, change_commentary
+            ) values (
+                {inserted},
+                v_sys_tenant, 0, current_user, 'system.initial_load', 'Seed {noun}: ' || r.code
+            );
+        end if;
+    end loop;
+end $$;
+"""
+
+
+def render_categories():
+    rows = [{"code": code, "name": name, "origin": origin,
+             "description": ore_file_descriptions.CATEGORIES[code], "display_order": i + 1}
+            for i, (code, name, origin) in enumerate(ore_files.CATEGORIES)]
+    return render_lookup(
+        "ORE File Categories",
+        f"Seeds the {len(rows)} groups the files of an ORE run fall in, from\n"
+        " * projects/ores.sql/utility/ore_files.py.",
+        "ores_reporting_ore_file_categories_tbl", "ORE file category",
+        ("code", "name", "origin", "description", "display_order"), rows)
+
+
+def render_ore_files():
+    columns = ("code", "name", "category_code", "configuration_type_code", "guide_section",
+               "origin", "format", "xsd_file", "typical_filename", "filename_regex",
+               "description", "display_order")
+    rows = [dict(f, description=ore_file_descriptions.FILES[f["code"]], display_order=i + 1)
+            for i, f in enumerate(ore_files.FILES)]
+    return render_lookup(
+        "ORE Files",
+        f"Seeds the {len(rows)} files of an ORE run, as the ORE user guide identifies them,\n"
+        " * from projects/ores.sql/utility/ore_files.py and ore_file_descriptions.py.",
+        "ores_reporting_ore_files_tbl", "ORE file", columns, rows)
 
 
 def render(documents, rows):
@@ -475,7 +633,7 @@ end $$;
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true",
-                        help="fail if the committed seed differs from the guide and the samples")
+                        help="fail if the committed seeds differ from the guide and the samples")
     args = parser.parse_args()
     documents, rows, missing = build_rows()
     if missing:
@@ -484,23 +642,32 @@ def main():
         for code in missing:
             print(f"  {code}", file=sys.stderr)
         return 1
-    content = render(documents, rows)
+    problems = check_ore_files() + link_ore_files(rows)
+    if problems:
+        print("The ORE files and the file types disagree:", file=sys.stderr)
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
+        return 1
+    seeds = ((CATEGORY_SEED, render_categories()), (ORE_FILE_SEED, render_ore_files()),
+             (SEED, render(documents, rows)))
     if args.check:
-        current = open(SEED).read() if os.path.exists(SEED) else ""
-        if current != content:
-            print(f"{SEED} no longer matches the guide and the ORE samples; regenerate it.",
-                  file=sys.stderr)
+        stale = [path for path, content in seeds
+                 if not os.path.exists(path) or open(path).read() != content]
+        for path in stale:
+            print(f"{path} no longer matches its sources; regenerate it.", file=sys.stderr)
+        if stale:
             return 1
-        print(f"{len(rows)} file types match the guide and the {documents} ORE samples.")
+        print(f"{len(rows)} file types and {len(ore_files.FILES)} ORE files match the guide "
+              f"and the {documents} ORE samples.")
         return 0
-    with open(SEED, "w") as f:
-        f.write(content)
+    for path, content in seeds:
+        with open(path, "w") as f:
+            f.write(content)
     counts = collections.Counter(r["kind"] for r in rows)
-    formats = collections.Counter(r["format"] for r in rows)
-    print(f"Wrote {SEED}: {len(rows)} file types, {dict(counts)}, formats {dict(formats)}, "
+    print(f"Wrote {SEED}: {len(rows)} file types, {dict(counts)}, "
           f"{sum(1 for r in rows if r['is_default'])} defaults, "
-          f"{sum(1 for r in rows if r['produced_by_file_type_code'])} linked to a writer, "
-          f"{sum(1 for r in rows if r['xsd_file'])} with an XSD")
+          f"{sum(1 for r in rows if r['produced_by_file_type_code'])} linked to a writer; "
+          f"{len(ore_files.FILES)} ORE files in {len(ore_files.CATEGORIES)} categories")
     return 0
 
 

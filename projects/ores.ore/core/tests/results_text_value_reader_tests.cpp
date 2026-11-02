@@ -41,7 +41,7 @@ std::string text_sample_of(const std::string& code) {
 }
 
 TEST_CASE("an additional result keeps its trade, its name, its type and its value", text_tags) {
-    const auto* family = family_named("additional_results");
+    const auto* family = family_named("additional_results_report");
     REQUIRE(family != nullptr);
     CHECK(is_text_value_family(*family));
 
@@ -65,7 +65,7 @@ TEST_CASE("an additional result keeps its trade, its name, its type and its valu
 TEST_CASE("a list of portfolio details names each entry by its heading or its type", text_tags) {
     const auto objects =
         read_text_values("#MarketObjectType,MarketObjectName\n\"DiscountCurve\",\"EUR|GBP|USD\"\n",
-                         *family_named("marketObjects"));
+                         *family_named("market_objects"));
     REQUIRE(objects.refusals.empty());
     REQUIRE(objects.rows.size() == 1);
     CHECK(objects.rows[0].name == "DiscountCurve");
@@ -83,7 +83,7 @@ TEST_CASE("a list of portfolio details names each entry by its heading or its ty
 
 TEST_CASE("the calibrated model is one value, the whole document", text_tags) {
     const auto outcome =
-        read_text_values(text_sample_of("calibration"), *family_named("calibration"));
+        read_text_values(text_sample_of("calibration_report"), *family_named("calibration_report"));
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.rows.size() == 1);
@@ -97,7 +97,7 @@ TEST_CASE("a model that spans lines and holds commas and quotes is one value", t
     const std::string xml = "<CrossAssetModel>\n  <DomesticCcy>EUR</DomesticCcy>\n"
                             "  <Note text=\"a, b\">c,d</Note>\n</CrossAssetModel>";
     const auto outcome =
-        read_text_values("#CrossAssetModel\n" + xml + "\n", *family_named("calibration"));
+        read_text_values("#CrossAssetModel\n" + xml + "\n", *family_named("calibration_report"));
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.rows.size() == 1);
@@ -105,7 +105,8 @@ TEST_CASE("a model that spans lines and holds commas and quotes is one value", t
 }
 
 TEST_CASE("a calibration with no model under its heading is refused", text_tags) {
-    const auto outcome = read_text_values("#CrossAssetModel\n\n", *family_named("calibration"));
+    const auto outcome =
+        read_text_values("#CrossAssetModel\n\n", *family_named("calibration_report"));
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.rows.empty());
 }
@@ -113,18 +114,18 @@ TEST_CASE("a calibration with no model under its heading is refused", text_tags)
 TEST_CASE("a double that is not a figure is refused by line", text_tags) {
     const auto outcome =
         read_text_values("#TradeId,ResultId,ResultType,ResultValue\nT1,npv,double,x\n",
-                         *family_named("additional_results"));
+                         *family_named("additional_results_report"));
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
 }
 
 TEST_CASE("every text-valued family's sample reads whole", text_tags) {
-    for (const auto* code : {"additional_results",
-                             "marketObjects",
-                             "riskFactors",
+    for (const auto* code : {"additional_results_report",
+                             "market_objects",
+                             "risk_factors",
                              "underlying_indices",
                              "swap_indices",
-                             "calibration"}) {
+                             "calibration_report"}) {
         INFO("the family is " << code);
         const auto outcome = read_text_values(text_sample_of(code), *family_named(code));
         CHECK(outcome.refusals.empty());

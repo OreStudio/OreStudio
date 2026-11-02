@@ -41,9 +41,8 @@ std::vector<ores::diff::domain::field_value> render_file_type_fields(const domai
         {.name = "Analytic Type Code", .value = v.analytic_type_code.value_or(std::string{})});
     fields.push_back({.name = "Ore Parameter", .value = v.ore_parameter});
     fields.push_back({.name = "Direction", .value = v.direction});
-    fields.push_back({.name = "Format", .value = v.format});
-    fields.push_back({.name = "Xsd File", .value = v.xsd_file.value_or(std::string{})});
     fields.push_back({.name = "Kind", .value = v.kind});
+    fields.push_back({.name = "Ore File Code", .value = v.ore_file_code});
     fields.push_back({.name = "Configuration Type Code",
                       .value = v.configuration_type_code.value_or(std::string{})});
     fields.push_back({.name = "Name Pattern", .value = v.name_pattern});

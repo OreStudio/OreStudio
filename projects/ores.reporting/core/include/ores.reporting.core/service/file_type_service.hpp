@@ -89,6 +89,9 @@ public:
     delete_file_type(const ::ores::reporting::messaging::delete_file_type_request& request);
     ::ores::reporting::messaging::delete_many_file_types_response delete_many_file_types(
         const ::ores::reporting::messaging::delete_many_file_types_request& request);
+    ::ores::reporting::messaging::list_by_ore_file_code_file_types_response
+    list_by_ore_file_code_file_types(
+        const ::ores::reporting::messaging::list_by_ore_file_code_file_types_request& request);
     ::ores::reporting::messaging::list_by_analytic_type_code_file_types_response
     list_by_analytic_type_code_file_types(
         const ::ores::reporting::messaging::list_by_analytic_type_code_file_types_request& request);
@@ -121,6 +124,27 @@ public:
      * @return Total number of active file types.
      */
     std::uint32_t count_types();
+
+
+    /**
+     * @brief Lists file types filtered by ore_file_code, with pagination.
+     *
+     * @param ore_file_code The ore_file_code to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching file types for the requested page.
+     */
+    std::vector<domain::file_type> list_types_by_ore_file_code(const std::string& ore_file_code,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active file types filtered by ore_file_code.
+     *
+     * @param ore_file_code The ore_file_code to filter by.
+     * @return Total number of matching file types.
+     */
+    std::uint32_t count_types_by_ore_file_code(const std::string& ore_file_code);
 
 
     /**

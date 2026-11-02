@@ -47,9 +47,8 @@ create table if not exists "ores_reporting_file_types_tbl" (
     "analytic_type_code" text null,
     "ore_parameter" text not null,
     "direction" text not null,
-    "format" text not null,
-    "xsd_file" text null,
     "kind" text not null,
+    "ore_file_code" text not null,
     "configuration_type_code" text null,
     "name_pattern" text not null,
     "is_default" boolean not null default false,
@@ -75,8 +74,6 @@ create table if not exists "ores_reporting_file_types_tbl" (
     check ("ore_parameter" <> ''),
     check ("direction" in ('input', 'output')),
     check (("direction" = 'output') = ("kind" = 'output_file')),
-    check ("format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json')),
-    check ("xsd_file" is null or "format" = 'xml'),
     check ("kind" in ('input_document', 'data_file', 'output_file', 'intermediate_file')),
     check ("name_pattern" ~ '^[A-Za-z0-9_.-]*(\{\{[A-Z][A-Z0-9_]*\}\}[A-Za-z0-9_.-]*)*$'),
     check ("sample_count" >= 0 and "sample_count" <= "sample_total")
@@ -117,6 +114,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate ore_file_code (soft FK to ores_reporting_ore_files_tbl)
+    if not exists (
+        select 1 from ores_reporting_ore_files_tbl
+        where tenant_id = NEW.tenant_id
+          and code = NEW.ore_file_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid ore_file_code: %. No active ORE file found with this code.', NEW.ore_file_code
+            using errcode = '23503';
+    end if;
 
     -- Validate analytic_type_code (optional soft FK to ores_reporting_analytic_types_tbl)
     if NEW.analytic_type_code is not null then

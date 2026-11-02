@@ -46,9 +46,8 @@ domain::file_type file_type_mapper::map(const file_type_entity& v) {
     r.analytic_type_code = v.analytic_type_code;
     r.ore_parameter = v.ore_parameter;
     r.direction = v.direction;
-    r.format = v.format;
-    r.xsd_file = v.xsd_file;
     r.kind = v.kind;
+    r.ore_file_code = v.ore_file_code;
     r.configuration_type_code = v.configuration_type_code;
     r.name_pattern = v.name_pattern;
     r.is_default = v.is_default;
@@ -77,9 +76,8 @@ file_type_entity file_type_mapper::map(const domain::file_type& v) {
     r.analytic_type_code = v.analytic_type_code;
     r.ore_parameter = v.ore_parameter;
     r.direction = v.direction;
-    r.format = v.format;
-    r.xsd_file = v.xsd_file;
     r.kind = v.kind;
+    r.ore_file_code = v.ore_file_code;
     r.configuration_type_code = v.configuration_type_code;
     r.name_pattern = v.name_pattern;
     r.is_default = v.is_default;

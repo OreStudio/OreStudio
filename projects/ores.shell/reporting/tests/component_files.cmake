@@ -42,6 +42,8 @@ set(files
     "engine_settings_group_setting_commands_tests.cpp"
     "file_type_commands_tests.cpp"
     "main.cpp"
+    "ore_file_category_commands_tests.cpp"
+    "ore_file_commands_tests.cpp"
     "ore_parameter_commands_tests.cpp"
     "ore_parameter_setting_value_set_commands_tests.cpp"
     "ore_parameter_value_domain_commands_tests.cpp"

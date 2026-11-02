@@ -48,6 +48,9 @@ DATA = os.path.join(ROOT, "projects", "ores.ore", "core", "src", "results",
 DATA_HPP = os.path.join(ROOT, "projects", "ores.ore", "core", "include", "ores.ore.core",
                         "results", "output_catalogue_data.hpp")
 
+sys.path.insert(0, os.path.join(ROOT, "projects", "ores.sql", "utility"))
+from ore_files import FILES as ORE_FILES  # noqa: E402
+
 # Files the engine names by a convention of its own, with the analytic that
 # writes them. A family whose name a seed parameter states takes its analytic
 # from the seed instead.
@@ -135,7 +138,13 @@ ALIASES = {
     "saccr_detail": ["saccrdetail.csv"],
     "dim_evolution": ["dim_evolution.txt"],
     "dim_regression": ["dim_regression*.txt"],
+    "stresstest": ["stress.csv"],
 }
+
+# The samples written under another report's name. The stress analytic writes
+# its report as stress.csv when the run names it so, as the intraday power
+# example does; it is the stress test report, not a family of its own.
+SAME_REPORT = {"stress": "stresstest"}
 
 # The output files the seed names that are not read into rows, and why. The
 # generator refuses a seed output that is neither a family nor stated here. The
@@ -220,20 +229,40 @@ DECIMAL = re.compile(r"^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$")
 
 
 def family_of(file_name):
-    """The family a sample file name belongs to, and the pattern it matches."""
+    """The stem a sample file name belongs to, and the pattern it matches.
+
+    The stem names the samples of one file while they are read; the family a
+    catalogue row states is the ORE file that pattern is, from ore_file_of.
+    """
     stem = file_name[:-4] if file_name.endswith(".csv") else file_name
     for prefix, family in PREFIXES:
         if stem.startswith(prefix):
             return family, prefix + "*.csv"
     stem = re.sub(r"_\d+$", "", stem)
+    if stem in SAME_REPORT:
+        return SAME_REPORT[stem], SAME_REPORT[stem] + ".csv"
     return stem, stem + ".csv"
+
+
+def ore_file_of(pattern):
+    """The code of the ORE file a family's pattern is: the family's key.
+
+    The ORE files are the reporting seed's, so the families and the files a run's
+    page shows are named alike. A * in a pattern stands for a key.
+    """
+    name = pattern.replace("*", "KEY")
+    hits = [f["code"] for f in ORE_FILES if re.fullmatch(f["filename_regex"], name)]
+    if len(hits) != 1:
+        raise SystemExit(f"the family pattern {pattern} matches {hits or 'no ORE file'}; "
+                         "state it in projects/ores.sql/utility/ore_files.py")
+    return hits[0]
 
 
 def seed_outputs():
     """The output parameters the seed states, by the file pattern they name."""
     pattern = re.compile(
         r"\(\s*'([^']+)',\s*'([^']*)',\s*'([^']*)',\s*'output',\s*'[^']*',\s*'[^']*',"
-        r"\s*(?:null|'[^']*'),\s*(?:null|'[^']*'),\s*'([^']*)',\s*(\d+),\s*(\d+),")
+        r"\s*(?:null|'[^']*'),\s*'([^']*)',\s*(\d+),\s*(\d+),")
     text = open(SEED, encoding="utf-8").read()
     out = {}
     for code, analytic, parameter, name, samples, total in pattern.findall(text):
@@ -375,7 +404,7 @@ def rows(families, seed):
         analytic = ",".join(sorted({m[1] for m in matches})) if matches \
             else CONVENTION.get(family, "")
         out.append({
-            "family": family,
+            "family": ore_file_of(entry["pattern"]),
             "pattern": entry["pattern"],
             "parameter": parameter,
             "analytic": analytic,

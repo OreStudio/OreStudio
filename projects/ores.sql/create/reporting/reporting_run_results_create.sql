@@ -63,5 +63,5 @@ select m.tenant_id,
        m.value as figure,
        m.source
   from ores_reporting_report_metrics_tbl m
- where m.family = 'npv'
+ where m.family = 'npv_report'
    and m.valid_to = ores_utility_infinity_timestamp_fn();

@@ -41,9 +41,9 @@ struct input_columns {
 };
 
 constexpr std::array<input_columns, 3> columns_of_families = {{
-    {"marketdata", "datumDate", "datumId", "datumValue", ""},
-    {"fixings", "fixingDate", "fixingId", "fixingValue", ""},
-    {"dividends", "dividendExDate", "equityId", "dividendRate", "dividendPaymentDate"},
+    {"market_data_report", "datumDate", "datumId", "datumValue", ""},
+    {"fixings_report", "fixingDate", "fixingId", "fixingValue", ""},
+    {"dividends_report", "dividendExDate", "equityId", "dividendRate", "dividendPaymentDate"},
 }};
 
 const input_columns* columns_of(const output_family& family) {

@@ -287,15 +287,15 @@ domain::{{entity_singular}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/render_is_optional_string}}
 {{^render_is_optional_string}}
-{{#no_wire}}
+{{#rfl_skip}}
     {{! An rfl::Skip domain member carries the value but declares no member functions, so read through get(). }}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.get().empty()
                      ? std::nullopt
                      : std::optional(v.{{{group_prefix}}}{{name}}.get());
-{{/no_wire}}
-{{^no_wire}}
+{{/rfl_skip}}
+{{^rfl_skip}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.empty() ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
-{{/no_wire}}
+{{/rfl_skip}}
 {{/render_is_optional_string}}
 {{/store_transform}}
 {{/is_nullable_string}}
@@ -334,12 +334,12 @@ domain::{{entity_singular}}
     r.{{name}} = {{{store_transform}}}(v.{{{group_prefix}}}{{name}});
 {{/store_transform}}
 {{^store_transform}}
-{{#no_wire}}
+{{#rfl_skip}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.value();
-{{/no_wire}}
-{{^no_wire}}
+{{/rfl_skip}}
+{{^rfl_skip}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
-{{/no_wire}}
+{{/rfl_skip}}
 {{/store_transform}}
 {{/is_simple}}
 {{/sql_only}}

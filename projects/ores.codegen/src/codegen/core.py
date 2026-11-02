@@ -4369,6 +4369,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_no_wire_columns'] = any(
                 c.get('no_wire') for c in domain_entity['columns']
             )
+            # A model with its own codec leaves a wire-hidden column out of
+            # the field list, so the member keeps its plain type. Only a model
+            # still on the reflector needs rfl::Skip to hide it.
+            reflector_hides = not _has_wire_codec(model_path)
+            for c in domain_entity['columns']:
+                c['rfl_skip'] = bool(c.get('no_wire')) and reflector_hides
+            domain_entity['has_rfl_skip_columns'] = any(
+                c.get('rfl_skip') for c in domain_entity['columns']
+            )
             # The mapper's own include gate: read and write both convert
             # through boost::asio::ip, which the mapper template includes
             # under this flag rather than relying on a transitive include

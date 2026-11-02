@@ -47,33 +47,11 @@ render_default_curve_configuration_fields(const domain::default_curve_configurat
         {.name = "Priority", .value = v.priority ? std::to_string(*v.priority) : std::string{}});
     fields.push_back(
         {.name = "Default Curve Type", .value = v.default_curve_type.value_or(std::string{})});
-    fields.push_back({.name = "Discount Curve", .value = v.discount_curve.value_or(std::string{})});
     fields.push_back({.name = "Day Counter", .value = v.day_counter.value_or(std::string{})});
     fields.push_back({.name = "Recovery Rate", .value = v.recovery_rate.value_or(std::string{})});
-    fields.push_back({.name = "Start Date", .value = v.start_date.value_or(std::string{})});
-    fields.push_back({.name = "Has Quotes", .value = v.has_quotes ? "true" : "false"});
-    fields.push_back(
-        {.name = "Benchmark Curve", .value = v.benchmark_curve.value_or(std::string{})});
-    fields.push_back({.name = "Reinterpreted Yield Curve",
-                      .value = v.reinterpreted_yield_curve.value_or(std::string{})});
-    fields.push_back({.name = "Source Curve", .value = v.source_curve.value_or(std::string{})});
-    fields.push_back({.name = "Pillars", .value = v.pillars.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Spot Lag", .value = v.spot_lag ? std::to_string(*v.spot_lag) : std::string{}});
-    fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
-    fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
     fields.push_back({.name = "Extrapolation", .value = v.extrapolation.value_or(std::string{})});
-    fields.push_back({.name = "Running Spread",
-                      .value = v.running_spread ? v.running_spread->to_string() : std::string{}});
-    fields.push_back({.name = "Index Term", .value = v.index_term.value_or(std::string{})});
-    fields.push_back({.name = "Imply Default From Market",
-                      .value = v.imply_default_from_market.value_or(std::string{})});
     fields.push_back(
         {.name = "Allow Negative Rates", .value = v.allow_negative_rates.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Price Is Upfront", .value = v.price_is_upfront.value_or(std::string{})});
-    fields.push_back({.name = "Initial State", .value = v.initial_state.value_or(std::string{})});
-    fields.push_back({.name = "States", .value = v.states.value_or(std::string{})});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-default_curve_configurations add <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary>
+default_curve_configurations add <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.default_curve_configurations.put=.
 
 #+name: default_curve_configurations-add
 #+begin_src ores-shell :tangle default_curve_configurations-add.ores :exports none
-default_curve_configurations add 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+default_curve_configurations add 00000000-0000-0000-0000-000000000000 false - - - - - - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-default_curve_configurations set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary> [--version <n>]
+default_curve_configurations set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.default_curve_configurations.put=.
 
 #+name: default_curve_configurations-set
 #+begin_src ores-shell :tangle default_curve_configurations-set.ores :exports none
-default_curve_configurations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+default_curve_configurations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-default_curve_configurations put-many --count <n> <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary>
+default_curve_configurations put-many --count <n> <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <day_counter> <recovery_rate> <extrapolation> <allow_negative_rates> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.default_curve_configurations.put_many=.
 
 #+name: default_curve_configurations-put-many
 #+begin_src ores-shell :tangle default_curve_configurations-put-many.ores :exports none
-default_curve_configurations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+default_curve_configurations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

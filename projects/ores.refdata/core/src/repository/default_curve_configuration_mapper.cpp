@@ -28,12 +28,10 @@
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/default_curve_configuration_entity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -54,26 +52,10 @@ default_curve_configuration_mapper::map(const default_curve_configuration_entity
     r.is_inline = v.is_inline;
     r.priority = v.priority;
     r.default_curve_type = v.default_curve_type;
-    r.discount_curve = v.discount_curve;
     r.day_counter = v.day_counter;
     r.recovery_rate = v.recovery_rate;
-    r.start_date = v.start_date;
-    r.has_quotes = v.has_quotes;
-    r.benchmark_curve = v.benchmark_curve;
-    r.reinterpreted_yield_curve = v.reinterpreted_yield_curve;
-    r.source_curve = v.source_curve;
-    r.pillars = v.pillars;
-    r.spot_lag = v.spot_lag;
-    r.calendar = v.calendar;
-    r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread = v.running_spread;
-    r.index_term = v.index_term;
-    r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;
-    r.price_is_upfront = v.price_is_upfront;
-    r.initial_state = v.initial_state;
-    r.states = v.states;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -98,26 +80,10 @@ default_curve_configuration_mapper::map(const domain::default_curve_configuratio
     r.is_inline = v.is_inline;
     r.priority = v.priority;
     r.default_curve_type = v.default_curve_type;
-    r.discount_curve = v.discount_curve;
     r.day_counter = v.day_counter;
     r.recovery_rate = v.recovery_rate;
-    r.start_date = v.start_date;
-    r.has_quotes = v.has_quotes;
-    r.benchmark_curve = v.benchmark_curve;
-    r.reinterpreted_yield_curve = v.reinterpreted_yield_curve;
-    r.source_curve = v.source_curve;
-    r.pillars = v.pillars;
-    r.spot_lag = v.spot_lag;
-    r.calendar = v.calendar;
-    r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread = v.running_spread;
-    r.index_term = v.index_term;
-    r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;
-    r.price_is_upfront = v.price_is_upfront;
-    r.initial_state = v.initial_state;
-    r.states = v.states;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

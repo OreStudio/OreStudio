@@ -25,7 +25,6 @@
 #ifndef ORES_REFDATA_API_DOMAIN_DEFAULT_CURVE_CONFIGURATION_HPP
 #define ORES_REFDATA_API_DOMAIN_DEFAULT_CURVE_CONFIGURATION_HPP
 
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -46,10 +45,18 @@ namespace ores::refdata::domain {
  * inline curve is one row with is_inline set; each listed configuration is one
  * row with its priority.
  *
+ * The row holds what every type reads: its type, day counter, recovery rate,
+ * extrapolation and whether it allows negative rates. Each type's settings are a
+ * part of the configuration, keyed by its id and present only for the types that
+ * read them: default_curve_market_terms and default_curve_cds_terms for the
+ * CDS spread, hazard rate, price, conventional spread and null types,
+ * default_curve_benchmark, default_curve_transition_matrix and
+ * default_curve_yield_reinterpretation for theirs.
+ *
  * The quotes a configuration is built from are rows of curve_quote, and its
  * BootstrapConfig a row of curve_bootstrap_config, both naming this row.
  * Pillars and States are comma separated lists in ORE's own text, held as
- * written. The schema also allows SourceCurves and SwitchDates lists, which
+ * written in their parts. The schema also allows SourceCurves and SwitchDates lists, which
  * no corpus document writes; the mapper refuses an entry that has them rather
  * than lose them.
  */
@@ -98,11 +105,6 @@ struct default_curve_configuration final {
     std::optional<std::string> default_curve_type;
 
     /**
-     * @brief The curve the configuration discounts on.
-     */
-    std::optional<std::string> discount_curve;
-
-    /**
      * @brief The day counter the curve is built on, as the document spells it.
      */
     std::optional<std::string> day_counter;
@@ -113,91 +115,15 @@ struct default_curve_configuration final {
     std::optional<std::string> recovery_rate;
 
     /**
-     * @brief The date the curve starts from.
-     */
-    std::optional<std::string> start_date;
-
-    /**
-     * @brief Whether the configuration writes a Quotes element.
-     */
-    bool has_quotes = false;
-
-    /**
-     * @brief The curve a benchmark default curve is implied from.
-     */
-    std::optional<std::string> benchmark_curve;
-
-    /**
-     * @brief The yield curve a configuration reads as a default curve.
-     */
-    std::optional<std::string> reinterpreted_yield_curve;
-
-    /**
-     * @brief The curve a configuration is derived from.
-     */
-    std::optional<std::string> source_curve;
-
-    /**
-     * @brief The pillars of a curve derived from another, as ORE's comma separated text.
-     */
-    std::optional<std::string> pillars;
-
-    /**
-     * @brief The spot lag in days.
-     */
-    std::optional<int> spot_lag;
-
-    /**
-     * @brief The configuration's calendar, as the document spells it.
-     */
-    std::optional<std::string> calendar;
-
-    /**
-     * @brief The convention the configuration's instruments are priced with, by its id.
-     */
-    std::optional<std::string> conventions;
-
-    /**
      * @brief Whether the curve extrapolates, as the ORE boolean the document wrote.
      */
     std::optional<std::string> extrapolation;
-
-    /**
-     * @brief The running spread of an upfront quoted curve.
-     */
-    std::optional<ores::utility::decimal::decimal> running_spread;
-
-    /**
-     * @brief The term of the credit index the curve is built from.
-     */
-    std::optional<std::string> index_term;
-
-    /**
-     * @brief Whether a missing default is implied from the market, as the ORE boolean the document
-     * wrote.
-     */
-    std::optional<std::string> imply_default_from_market;
 
     /**
      * @brief Whether the bootstrap allows negative hazard rates, as the ORE boolean the document
      * wrote.
      */
     std::optional<std::string> allow_negative_rates;
-
-    /**
-     * @brief Whether price quotes are upfront amounts, as the ORE boolean the document wrote.
-     */
-    std::optional<std::string> price_is_upfront;
-
-    /**
-     * @brief The initial rating state of a transition matrix curve.
-     */
-    std::optional<std::string> initial_state;
-
-    /**
-     * @brief The rating states of a transition matrix curve, as ORE's comma separated text.
-     */
-    std::optional<std::string> states;
 
     /**
      * @brief The configuration's place in its list, which the export restores.

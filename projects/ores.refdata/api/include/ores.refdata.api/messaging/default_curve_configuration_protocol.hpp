@@ -54,26 +54,10 @@ struct default_curve_configuration_write {
     bool is_inline;
     std::optional<int> priority;
     std::optional<std::string> default_curve_type;
-    std::optional<std::string> discount_curve;
     std::optional<std::string> day_counter;
     std::optional<std::string> recovery_rate;
-    std::optional<std::string> start_date;
-    bool has_quotes;
-    std::optional<std::string> benchmark_curve;
-    std::optional<std::string> reinterpreted_yield_curve;
-    std::optional<std::string> source_curve;
-    std::optional<std::string> pillars;
-    std::optional<int> spot_lag;
-    std::optional<std::string> calendar;
-    std::optional<std::string> conventions;
     std::optional<std::string> extrapolation;
-    std::optional<ores::utility::decimal::decimal> running_spread;
-    std::optional<std::string> index_term;
-    std::optional<std::string> imply_default_from_market;
     std::optional<std::string> allow_negative_rates;
-    std::optional<std::string> price_is_upfront;
-    std::optional<std::string> initial_state;
-    std::optional<std::string> states;
     int position;
 
     friend bool operator==(const default_curve_configuration_write&,
@@ -421,31 +405,11 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"priority", &default_curve_configuration_write::priority},
         utility::codec::field{"default_curve_type",
                               &default_curve_configuration_write::default_curve_type},
-        utility::codec::field{"discount_curve", &default_curve_configuration_write::discount_curve},
         utility::codec::field{"day_counter", &default_curve_configuration_write::day_counter},
         utility::codec::field{"recovery_rate", &default_curve_configuration_write::recovery_rate},
-        utility::codec::field{"start_date", &default_curve_configuration_write::start_date},
-        utility::codec::field{"has_quotes", &default_curve_configuration_write::has_quotes},
-        utility::codec::field{"benchmark_curve",
-                              &default_curve_configuration_write::benchmark_curve},
-        utility::codec::field{"reinterpreted_yield_curve",
-                              &default_curve_configuration_write::reinterpreted_yield_curve},
-        utility::codec::field{"source_curve", &default_curve_configuration_write::source_curve},
-        utility::codec::field{"pillars", &default_curve_configuration_write::pillars},
-        utility::codec::field{"spot_lag", &default_curve_configuration_write::spot_lag},
-        utility::codec::field{"calendar", &default_curve_configuration_write::calendar},
-        utility::codec::field{"conventions", &default_curve_configuration_write::conventions},
         utility::codec::field{"extrapolation", &default_curve_configuration_write::extrapolation},
-        utility::codec::field{"running_spread", &default_curve_configuration_write::running_spread},
-        utility::codec::field{"index_term", &default_curve_configuration_write::index_term},
-        utility::codec::field{"imply_default_from_market",
-                              &default_curve_configuration_write::imply_default_from_market},
         utility::codec::field{"allow_negative_rates",
                               &default_curve_configuration_write::allow_negative_rates},
-        utility::codec::field{"price_is_upfront",
-                              &default_curve_configuration_write::price_is_upfront},
-        utility::codec::field{"initial_state", &default_curve_configuration_write::initial_state},
-        utility::codec::field{"states", &default_curve_configuration_write::states},
         utility::codec::field{"position", &default_curve_configuration_write::position},
     };
 }

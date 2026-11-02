@@ -52,26 +52,7 @@ struct commodity_curve_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string currency;
-    std::optional<std::string> base_price_curve;
-    std::optional<std::string> base_yield_curve;
-    std::optional<std::string> yield_curve;
-    std::optional<std::string> spot_quote;
-    bool has_quotes;
-    std::optional<std::string> day_counter;
-    std::optional<std::string> interpolation_method;
-    std::optional<std::string> conventions;
     std::optional<std::string> extrapolation;
-    bool has_basis_configuration;
-    std::optional<std::string> basis_base_price_curve;
-    std::optional<std::string> basis_base_price_conventions;
-    std::optional<std::string> basis_conventions;
-    std::optional<std::string> basis_day_counter;
-    std::optional<std::string> basis_interpolation_method;
-    std::optional<std::string> basis_add_basis;
-    std::optional<int> basis_month_offset;
-    std::optional<std::string> basis_average_base;
-    std::optional<std::string> basis_price_as_historical_fixing;
-    bool has_price_segments;
 
     friend bool operator==(const commodity_curve_config_write&,
                            const commodity_curve_config_write&) = default;
@@ -409,37 +390,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_configs_
         utility::codec::field{"curve_definition_id",
                               &commodity_curve_config_write::curve_definition_id},
         utility::codec::field{"currency", &commodity_curve_config_write::currency},
-        utility::codec::field{"base_price_curve", &commodity_curve_config_write::base_price_curve},
-        utility::codec::field{"base_yield_curve", &commodity_curve_config_write::base_yield_curve},
-        utility::codec::field{"yield_curve", &commodity_curve_config_write::yield_curve},
-        utility::codec::field{"spot_quote", &commodity_curve_config_write::spot_quote},
-        utility::codec::field{"has_quotes", &commodity_curve_config_write::has_quotes},
-        utility::codec::field{"day_counter", &commodity_curve_config_write::day_counter},
-        utility::codec::field{"interpolation_method",
-                              &commodity_curve_config_write::interpolation_method},
-        utility::codec::field{"conventions", &commodity_curve_config_write::conventions},
         utility::codec::field{"extrapolation", &commodity_curve_config_write::extrapolation},
-        utility::codec::field{"has_basis_configuration",
-                              &commodity_curve_config_write::has_basis_configuration},
-        utility::codec::field{"basis_base_price_curve",
-                              &commodity_curve_config_write::basis_base_price_curve},
-        utility::codec::field{"basis_base_price_conventions",
-                              &commodity_curve_config_write::basis_base_price_conventions},
-        utility::codec::field{"basis_conventions",
-                              &commodity_curve_config_write::basis_conventions},
-        utility::codec::field{"basis_day_counter",
-                              &commodity_curve_config_write::basis_day_counter},
-        utility::codec::field{"basis_interpolation_method",
-                              &commodity_curve_config_write::basis_interpolation_method},
-        utility::codec::field{"basis_add_basis", &commodity_curve_config_write::basis_add_basis},
-        utility::codec::field{"basis_month_offset",
-                              &commodity_curve_config_write::basis_month_offset},
-        utility::codec::field{"basis_average_base",
-                              &commodity_curve_config_write::basis_average_base},
-        utility::codec::field{"basis_price_as_historical_fixing",
-                              &commodity_curve_config_write::basis_price_as_historical_fixing},
-        utility::codec::field{"has_price_segments",
-                              &commodity_curve_config_write::has_price_segments},
     };
 }
 

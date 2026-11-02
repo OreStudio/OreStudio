@@ -43,41 +43,7 @@ render_commodity_curve_config_fields(const domain::commodity_curve_config& v) {
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Currency", .value = v.currency});
-    fields.push_back(
-        {.name = "Base Price Curve", .value = v.base_price_curve.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Base Yield Curve", .value = v.base_yield_curve.value_or(std::string{})});
-    fields.push_back({.name = "Yield Curve", .value = v.yield_curve.value_or(std::string{})});
-    fields.push_back({.name = "Spot Quote", .value = v.spot_quote.value_or(std::string{})});
-    fields.push_back({.name = "Has Quotes", .value = v.has_quotes ? "true" : "false"});
-    fields.push_back({.name = "Day Counter", .value = v.day_counter.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Interpolation Method", .value = v.interpolation_method.value_or(std::string{})});
-    fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
     fields.push_back({.name = "Extrapolation", .value = v.extrapolation.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Has Basis Configuration", .value = v.has_basis_configuration ? "true" : "false"});
-    fields.push_back({.name = "Basis Base Price Curve",
-                      .value = v.basis_base_price_curve.value_or(std::string{})});
-    fields.push_back({.name = "Basis Base Price Conventions",
-                      .value = v.basis_base_price_conventions.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Basis Conventions", .value = v.basis_conventions.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Basis Day Counter", .value = v.basis_day_counter.value_or(std::string{})});
-    fields.push_back({.name = "Basis Interpolation Method",
-                      .value = v.basis_interpolation_method.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Basis Add Basis", .value = v.basis_add_basis.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Basis Month Offset",
-         .value = v.basis_month_offset ? std::to_string(*v.basis_month_offset) : std::string{}});
-    fields.push_back(
-        {.name = "Basis Average Base", .value = v.basis_average_base.value_or(std::string{})});
-    fields.push_back({.name = "Basis Price As Historical Fixing",
-                      .value = v.basis_price_as_historical_fixing.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Has Price Segments", .value = v.has_price_segments ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

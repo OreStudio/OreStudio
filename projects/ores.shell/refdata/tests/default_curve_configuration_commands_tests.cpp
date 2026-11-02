@@ -163,7 +163,7 @@ TEST_CASE("default_curve_configuration_commands_process_add_requires_a_session",
 
     command_feedback::reset();
     default_curve_configuration_commands::process_add(
-        out, session, default_curve_configuration_tokens(26));
+        out, session, default_curve_configuration_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -199,7 +199,7 @@ TEST_CASE("default_curve_configuration_commands_process_set_requires_a_session",
 
     command_feedback::reset();
     default_curve_configuration_commands::process_set(
-        out, session, default_curve_configuration_tokens(26));
+        out, session, default_curve_configuration_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -236,7 +236,7 @@ TEST_CASE("default_curve_configuration_commands_process_put_many_requires_a_sess
 
     command_feedback::reset();
     default_curve_configuration_commands::process_put_many(
-        out, session, default_curve_configuration_tokens(26));
+        out, session, default_curve_configuration_tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

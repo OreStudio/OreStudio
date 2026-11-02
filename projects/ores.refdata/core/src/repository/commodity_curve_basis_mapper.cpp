@@ -1,0 +1,111 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.refdata.core/repository/commodity_curve_basis_mapper.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/commodity_curve_basis_entity.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <vector>
+
+namespace ores::refdata::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::commodity_curve_basis
+commodity_curve_basis_mapper::map(const commodity_curve_basis_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::commodity_curve_basis r;
+    r.version = v.version;
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
+    r.basis_base_price_curve = v.basis_base_price_curve;
+    r.basis_base_price_conventions = v.basis_base_price_conventions;
+    r.basis_conventions = v.basis_conventions;
+    r.basis_day_counter = v.basis_day_counter;
+    r.basis_interpolation_method = v.basis_interpolation_method;
+    r.basis_add_basis = v.basis_add_basis;
+    r.basis_month_offset = v.basis_month_offset;
+    r.basis_average_base = v.basis_average_base;
+    r.basis_price_as_historical_fixing = v.basis_price_as_historical_fixing;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = v.valid_from;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+commodity_curve_basis_entity
+commodity_curve_basis_mapper::map(const domain::commodity_curve_basis& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    commodity_curve_basis_entity r;
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.version = v.version;
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
+    r.basis_base_price_curve = v.basis_base_price_curve;
+    r.basis_base_price_conventions = v.basis_base_price_conventions;
+    r.basis_conventions = v.basis_conventions;
+    r.basis_day_counter = v.basis_day_counter;
+    r.basis_interpolation_method = v.basis_interpolation_method;
+    r.basis_add_basis = v.basis_add_basis;
+    r.basis_month_offset = v.basis_month_offset;
+    r.basis_average_base = v.basis_average_base;
+    r.basis_price_as_historical_fixing = v.basis_price_as_historical_fixing;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::commodity_curve_basis>
+commodity_curve_basis_mapper::map(const std::vector<commodity_curve_basis_entity>& v) {
+    return map_vector<commodity_curve_basis_entity, domain::commodity_curve_basis>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
+}
+
+std::vector<commodity_curve_basis_entity>
+commodity_curve_basis_mapper::map(const std::vector<domain::commodity_curve_basis>& v) {
+    return map_vector<domain::commodity_curve_basis, commodity_curve_basis_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
+}
+
+}

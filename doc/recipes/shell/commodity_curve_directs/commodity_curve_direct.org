@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3F39021F-FD4D-5069-AF06-376D4FCE8732
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_curve_directs commands from the shell?
+#+description: Every command the commodity_curve_directs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_curve_directs:
+
+This file documents the commodity_curve_directs resource at the shell, one section per command. Every command is a subcommand of =commodity_curve_directs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A8DAB19E-6A07-5B4F-B1F5-46AE315500EF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.list=.
+
+#+name: commodity_curve_directs-list
+#+begin_src ores-shell :tangle commodity_curve_directs-list.ores :exports none
+commodity_curve_directs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3364665D-6734-544D-9BD8-E3C1C2AF657B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.get=.
+
+#+name: commodity_curve_directs-get
+#+begin_src ores-shell :tangle commodity_curve_directs-get.ores :exports none
+commodity_curve_directs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 6A97F1CC-7760-5BBE-A669-2796FF770CB3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.get_many=.
+
+#+name: commodity_curve_directs-get-many
+#+begin_src ores-shell :tangle commodity_curve_directs-get-many.ores :exports none
+commodity_curve_directs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 07915E2F-B556-5959-AB32-0767AB1ECA67
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs add <curve_definition_id> <spot_quote> <conventions> <has_quotes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.put=.
+
+#+name: commodity_curve_directs-add
+#+begin_src ores-shell :tangle commodity_curve_directs-add.ores :exports none
+commodity_curve_directs add 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FA1B59E9-1B60-5FDB-A5EF-5C327AD07B75
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs set <id> <curve_definition_id> <spot_quote> <conventions> <has_quotes> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.put=.
+
+#+name: commodity_curve_directs-set
+#+begin_src ores-shell :tangle commodity_curve_directs-set.ores :exports none
+commodity_curve_directs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2B8B901E-E219-5ECC-B904-DA24275BEA9E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs put-many --count <n> <id> <curve_definition_id> <spot_quote> <conventions> <has_quotes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.put_many=.
+
+#+name: commodity_curve_directs-put-many
+#+begin_src ores-shell :tangle commodity_curve_directs-put-many.ores :exports none
+commodity_curve_directs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7484E0EF-2BBF-53BC-80B7-5A06530A95AF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.delete=.
+
+#+name: commodity_curve_directs-delete
+#+begin_src ores-shell :tangle commodity_curve_directs-delete.ores :exports none
+commodity_curve_directs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CF6D4552-F054-51E1-9C0C-A40BA7A4B592
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs.delete_many=.
+
+#+name: commodity_curve_directs-delete-many
+#+begin_src ores-shell :tangle commodity_curve_directs-delete-many.ores :exports none
+commodity_curve_directs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 03ED5F7E-08E1-5CED-AE37-2E002B4329D4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs_versions.list=.
+
+#+name: commodity_curve_directs-versions
+#+begin_src ores-shell :tangle commodity_curve_directs-versions.ores :exports none
+commodity_curve_directs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DBA5C8B8-6938-5D88-BAC6-CC7DC6336AF0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_curve_directs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_curve_directs_versions.get=.
+
+#+name: commodity_curve_directs-version
+#+begin_src ores-shell :tangle commodity_curve_directs-version.ores :exports none
+commodity_curve_directs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

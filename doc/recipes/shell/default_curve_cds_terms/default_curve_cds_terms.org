@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 1378FB25-6A5F-510E-952C-37C110D1A8A1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_cds_terms commands from the shell?
+#+description: Every command the default_curve_cds_terms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_cds_terms:
+
+This file documents the default_curve_cds_terms resource at the shell, one section per command. Every command is a subcommand of =default_curve_cds_terms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 47901D8F-2A21-548F-8F55-2FA6D2B6BC02
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.list=.
+
+#+name: default_curve_cds_terms-list
+#+begin_src ores-shell :tangle default_curve_cds_terms-list.ores :exports none
+default_curve_cds_terms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E8AD9AE4-6205-5536-9DFE-5B57719F3ADE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.get=.
+
+#+name: default_curve_cds_terms-get
+#+begin_src ores-shell :tangle default_curve_cds_terms-get.ores :exports none
+default_curve_cds_terms get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D385672A-8AEC-58F5-BE03-51C0BEDE3E12
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.get_many=.
+
+#+name: default_curve_cds_terms-get-many
+#+begin_src ores-shell :tangle default_curve_cds_terms-get-many.ores :exports none
+default_curve_cds_terms get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E35F45E1-8FF0-53C9-8D11-12785A94873E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms add <default_curve_configuration_id> <start_date> <running_spread> <index_term> <imply_default_from_market> <price_is_upfront> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.put=.
+
+#+name: default_curve_cds_terms-add
+#+begin_src ores-shell :tangle default_curve_cds_terms-add.ores :exports none
+default_curve_cds_terms add 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4D630C56-6F71-5E45-88C9-0C9996048F90
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms set <id> <default_curve_configuration_id> <start_date> <running_spread> <index_term> <imply_default_from_market> <price_is_upfront> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.put=.
+
+#+name: default_curve_cds_terms-set
+#+begin_src ores-shell :tangle default_curve_cds_terms-set.ores :exports none
+default_curve_cds_terms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0E4D46E8-D00F-5510-925A-D3698A8B3741
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms put-many --count <n> <id> <default_curve_configuration_id> <start_date> <running_spread> <index_term> <imply_default_from_market> <price_is_upfront> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.put_many=.
+
+#+name: default_curve_cds_terms-put-many
+#+begin_src ores-shell :tangle default_curve_cds_terms-put-many.ores :exports none
+default_curve_cds_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AE148E49-579E-50D8-ADD7-D59F9CCFAFD9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.delete=.
+
+#+name: default_curve_cds_terms-delete
+#+begin_src ores-shell :tangle default_curve_cds_terms-delete.ores :exports none
+default_curve_cds_terms delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9034578D-004A-5361-B0A7-768D3E08DB4D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms.delete_many=.
+
+#+name: default_curve_cds_terms-delete-many
+#+begin_src ores-shell :tangle default_curve_cds_terms-delete-many.ores :exports none
+default_curve_cds_terms delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6EB883C5-B0F9-55EA-8B2D-4FFF8C1AE8CD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms_versions.list=.
+
+#+name: default_curve_cds_terms-versions
+#+begin_src ores-shell :tangle default_curve_cds_terms-versions.ores :exports none
+default_curve_cds_terms versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 68DCABC9-2E34-55E7-95DB-D5A257C88C3E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_cds_terms version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_cds_terms_versions.get=.
+
+#+name: default_curve_cds_terms-version
+#+begin_src ores-shell :tangle default_curve_cds_terms-version.ores :exports none
+default_curve_cds_terms version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

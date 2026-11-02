@@ -69,6 +69,8 @@ def test_an_opted_in_route_names_no_reflector():
         assert "<rfl/" not in text, model
         assert "rfl/reflectors" not in text, model
         assert "write_json(*decoded)" in text, model
+        assert "_read_body<request_type>(req.body)" in text, model
+        assert "rfl::json::read" not in text, model
 
 
 def test_a_route_that_did_not_opt_in_keeps_the_reflector():

@@ -71,12 +71,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| ore core suite | 472 cases pass | =ores.ore.core.tests= | ad016996dc |
-| reporting api, core suites | 69 and 246 cases pass | =ores.reporting.api.tests=, =ores.reporting.core.tests= | ad016996dc |
-| marketdata core suite | 363 cases pass | =ores.marketdata.core.tests= | ad016996dc |
-| shell reporting suite | 698 cases pass | =ores.shell.reporting.tests= | ad016996dc |
-| web reporting tests | bff 43, web 98, i18n 3 pass | =npx vitest run= in bff and web | ad016996dc |
-| Group Consolidated Exposure run, saccr skipped | completed; 36 npv.csv metrics, 0 saccr rows; log names saccr.csv as skipped | instance 7ebc44ac, SQL and the journal | ad016996dc |
+| ore core suite | 472 cases pass | =ores.ore.core.tests= | ac78b6c25e |
+| reporting api, core suites | 72 and 246 cases pass | =ores.reporting.api.tests=, =ores.reporting.core.tests= | ac78b6c25e |
+| marketdata core suite | 363 cases pass | =ores.marketdata.core.tests= | ac78b6c25e |
+| shell reporting suite | 698 cases pass | =ores.shell.reporting.tests= | ac78b6c25e |
+| web reporting tests | bff 43, web 98, i18n 3 pass | =npx vitest run= in bff and web | ac78b6c25e |
+| Group Consolidated Exposure run, saccr skipped | completed; 36 npv.csv metrics, 0 saccr rows; log names saccr.csv as skipped | instances 7ebc44ac and, after the rebase, 5819d452; SQL and the journal | ac78b6c25e |
 
 * Notes
 

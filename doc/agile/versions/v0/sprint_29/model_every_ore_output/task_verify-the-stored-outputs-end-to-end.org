@@ -8,7 +8,7 @@
 #+filetags: :reporting:ore:marketdata:test:model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/verify-the-stored-outputs-end-to-end
-#+pr:
+#+pr: 4400
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -165,7 +165,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4400][#4400]] | [reporting] Show a run's errors, files and their ORE file entities |
 
 * Review
 

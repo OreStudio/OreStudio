@@ -105,6 +105,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | A quoted field holding a newline would break the line count | market_input_reader.cpp | Declined | ORE does not quote newlines in these files, and every reader splits the same way. |
+| 3 | A missing heading gives an unclear refusal | market_input_reader.cpp | Dismissed | The catalogue requires the date, id and value headings of all three families, so the required-column check names the missing heading first. |
+| 4 | Test a dividend with a payment date | market_state_reader.cpp | Dismissed | service_market_state_reader_tests.cpp checks the dividend's payment date of 2026-04-01. |
+| 5 | Run compass check | PR | Declined | The operator asked for a full build, database recreate and tests instead. |
 |   |                 |      |          |       |
 
 * Result

@@ -156,8 +156,8 @@ void process_delete(std::ostream& out, nats_client& session, const std::vector<s
     try {
         result = ores::utility::codec::wire_traits<
             ores::storage::messaging::delete_objects_response>::read_json(body);
-    } catch (const std::exception&) {
-        fail(out) << "Cannot read the server's answer: " << body << std::endl;
+    } catch (const std::exception& e) {
+        fail(out) << "Cannot read the server's answer (" << e.what() << "): " << body << std::endl;
         return;
     }
 
@@ -201,8 +201,8 @@ void process_list(std::ostream& out, nats_client& session, const std::vector<std
     try {
         listing = ores::utility::codec::wire_traits<
             ores::storage::messaging::list_objects_response>::read_json(body);
-    } catch (const std::exception&) {
-        fail(out) << "Cannot read the server's answer: " << body << std::endl;
+    } catch (const std::exception& e) {
+        fail(out) << "Cannot read the server's answer (" << e.what() << "): " << body << std::endl;
         return;
     }
 

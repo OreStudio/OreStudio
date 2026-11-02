@@ -25,13 +25,13 @@
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cli/cli.h>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <optional>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <string>
 #include <utility>
 #include <vector>
@@ -152,8 +152,11 @@ void process_delete(std::ostream& out, nats_client& session, const std::vector<s
         return;
     }
 
-    const auto result = rfl::json::read<ores::storage::messaging::delete_objects_response>(body);
-    if (!result) {
+    std::optional<ores::storage::messaging::delete_objects_response> result;
+    try {
+        result = ores::utility::codec::wire_traits<
+            ores::storage::messaging::delete_objects_response>::read_json(body);
+    } catch (const std::exception&) {
         fail(out) << "Cannot read the server's answer: " << body << std::endl;
         return;
     }
@@ -194,8 +197,11 @@ void process_list(std::ostream& out, nats_client& session, const std::vector<std
         return;
     }
 
-    const auto listing = rfl::json::read<ores::storage::messaging::list_objects_response>(body);
-    if (!listing) {
+    std::optional<ores::storage::messaging::list_objects_response> listing;
+    try {
+        listing = ores::utility::codec::wire_traits<
+            ores::storage::messaging::list_objects_response>::read_json(body);
+    } catch (const std::exception&) {
         fail(out) << "Cannot read the server's answer: " << body << std::endl;
         return;
     }

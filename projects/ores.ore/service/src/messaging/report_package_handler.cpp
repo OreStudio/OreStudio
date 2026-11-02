@@ -32,7 +32,7 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/codec/msgpack_codec.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,6 +41,7 @@
 #include <format>
 #include <fstream>
 #include <rfl/json.hpp>
+#include <span>
 #include <string_view>
 
 namespace ores::ore::service::messaging {
@@ -214,9 +215,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         ores::trading::messaging::export_portfolio_response rows;
         try {
-            rows = ores::utility::codec::msgpack::read<
-                ores::trading::messaging::export_portfolio_response>(
-                std::string_view(trades.data(), trades.size()));
+            rows = ores::utility::codec::
+                wire_traits<ores::trading::messaging::export_portfolio_response>::read_msgpack(
+                    std::as_bytes(std::span(trades)));
         } catch (const std::exception& e) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +

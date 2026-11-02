@@ -89,7 +89,7 @@ def test_the_repair_stops_a_bad_record_forcing_full_builds(tmp_path):
 
     repair = deps_log_repair_command(tmp_path, _ninja_version)
     if repair is None:
-        pytest.skip("this ninja does not need the repair")
+        pytest.skip(f"ninja {_ninja_version(NINJA)} does not need the repair")
     subprocess.run(repair, capture_output=True, check=True)
 
     first = _ninja(tmp_path)

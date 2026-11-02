@@ -7436,8 +7436,9 @@ def deps_log_repair_command(build_dir, ninja_version):
     the log (ninja#2703), so every later load stops at that record and drops
     what the last build recorded after it: each build is then a full one. A
     recompact rewrites the log from the records that load, so the bad record
-    goes. The fix is on ninja's master but in no release up to 1.13.2, so
-    every 1.13 recompacts; 1.12 and 1.14 onwards do not need it.
+    goes. Ninja 1.12 removes the bad record itself. The fix is on ninja's
+    master but in no release up to 1.13.2, so every 1.13 recompacts, and a
+    later release is expected to have the fix.
     """
     program = _cmake_cache_value(build_dir, "CMAKE_MAKE_PROGRAM")
     if not program or not (Path(build_dir) / ".ninja_deps").is_file():
@@ -7452,8 +7453,8 @@ def _ninja_version(program):
     """The (major, minor, patch) of a ninja binary, or None if not ninja."""
     try:
         out = subprocess.run([program, "--version"], capture_output=True,
-                             text=True, check=False).stdout.strip()
-    except OSError:
+                             text=True, check=False, timeout=10).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
         return None
     match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)\S*", out)
     return tuple(int(g) for g in match.groups()) if match else None
@@ -7686,6 +7687,12 @@ def cmd_build(argv):
                 continue
             rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
                   else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
+            # A stale build.ninja fails the recompact, and only cmake --build
+            # regenerates it, so the build must still run.
+            if rc != 0 and cmd is repair:
+                print(f"⚠️  The deps log repair failed with exit code {rc}; "
+                      "building without it.", file=sys.stderr)
+                continue
             if rc != 0:
                 print(f"❌ Command failed with exit code {rc}: {' '.join(cmd)}",
                       file=sys.stderr)

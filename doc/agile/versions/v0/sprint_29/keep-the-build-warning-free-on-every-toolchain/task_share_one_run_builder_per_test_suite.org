@@ -8,7 +8,7 @@
 #+filetags: :keep-the-build-warning-free-on-every-toolchain:sprint_29:v0:
 #+owner: marco
 #+branch: fix/share-one-run-builder-per-test-suite
-#+pr:
+#+pr: 4389
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4389][#4389]] | [reporting,marketdata] Share one run builder per test suite |
 
 * Review
 

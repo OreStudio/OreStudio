@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <code> <name> <category_code> <configuration_type_code> <guide_section> <origin>
-     * <format> <xsd_file> <typical_filename> <filename_regex> <description> <display_order>
-     * <reason> <commentary>
+     * <format> <schema_ore_file_code> <typical_filename> <filename_regex> <description>
+     * <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <code> <name> <category_code> <configuration_type_code> <guide_section> <origin>
-     * <format> <xsd_file> <typical_filename> <filename_regex> <description> <display_order>
-     * <reason> <commentary> [--version <n>]
+     * <format> <schema_ore_file_code> <typical_filename> <filename_regex> <description>
+     * <display_order> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,7 +106,7 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <name> <category_code> <configuration_type_code>
-     * <guide_section> <origin> <format> <xsd_file> <typical_filename> <filename_regex>
+     * <guide_section> <origin> <format> <schema_ore_file_code> <typical_filename> <filename_regex>
      * <description> <display_order> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
@@ -142,6 +142,14 @@ public:
     static void process_by_configuration_type_code(std::ostream& out,
                                                    ores::nats::service::nats_client& session,
                                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief by-schema-ore-file-code <schema_ore_file_code> [--offset <n>] [--limit <n>] [--order
+     * <field>] [--desc]
+     */
+    static void process_by_schema_ore_file_code(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
 
     /**
      * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

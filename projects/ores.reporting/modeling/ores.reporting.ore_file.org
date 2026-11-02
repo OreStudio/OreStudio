@@ -127,23 +127,25 @@ std::string("supplied")
 :END:
 
 The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a
-binary file, json, json_gz for a compressed json, or tar_gz for a compressed
-archive of other files. An xml file is validated against the XSD in xsd_file.
+binary file, json, json_gz for a compressed json, tar_gz for a compressed
+archive of other files, or xsd for an XML schema. An xml file is validated
+against the schema schema_ore_file_code names.
 
 #+begin_src cpp :name generator
 std::string("csv")
 #+end_src
 
-** xsd_file
+** schema_ore_file_code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-For an xml file, the XSD of ORE that declares its root element, for example
-nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or
-an xml file that ORE publishes no schema for.
+For an xml file, the ORE file of the XSD that declares its root element, for
+example conventions_schema for the conventions. The schema is itself an ORE file,
+so its contents can be read for each engine version. Nothing for a file that is
+not xml, or an xml file that ORE publishes no schema for.
 
 ** typical_filename
 :PROPERTIES:
@@ -210,8 +212,8 @@ checks the template emits on its own.
 |------------|
 | "name" <> '' |
 | "origin" in ('supplied', 'produced', 'packaged') |
-| "format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz') |
-| "xsd_file" is null or "format" = 'xml' |
+| "format" in ('xml', 'xsd', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz') |
+| "schema_ore_file_code" is null or "format" = 'xml' |
 | "typical_filename" ~ '^[A-Za-z0-9_.-]+$' |
 | "filename_regex" ~ '^\^.*\$$' |
 | "typical_filename" ~ "filename_regex" |
@@ -235,6 +237,16 @@ checks the template emits on its own.
 :parent_entity: configuration_type
 :nullable:      true
 :error_message: Invalid configuration_type_code: %. No active configuration type found with this code.
+:list_by:       true
+:END:
+
+** schema_ore_file_code
+:PROPERTIES:
+:table:         ores_reporting_ore_files_tbl
+:target_column: code
+:parent_entity: ore_file
+:nullable:      true
+:error_message: Invalid schema_ore_file_code: %. No active ORE file found with this code.
 :list_by:       true
 :END:
 
@@ -313,7 +325,7 @@ checks the template emits on its own.
 | guide_section    | Guide Section | line_edit |        |             | e.g. sec:market_data |
 | origin           | Origin        | line_edit |        | true        | supplied or produced |
 | format           | Format        | line_edit |        | true        | e.g. csv |
-| xsd_file         | XSD           | line_edit |        |             | e.g. conventions.xsd |
+| schema_ore_file_code | Schema    | line_edit |        |             | e.g. conventions_schema |
 | typical_filename | File Name     | line_edit |        | true        | e.g. cube.csv.gz |
 | filename_regex   | Name Pattern  | line_edit |        | true        | e.g. ^cube\.csv\.gz$ |
 | description      | Description   | line_edit |        | true        | Enter description |

@@ -26,6 +26,12 @@ reporting seed, and kept here so that every seed that names a file shares them.
 """
 
 CATEGORIES = {
+    "schemas":
+        "The XML schemas ORE ships with the engine. Each declares the elements, the order "
+        "and the allowed values of one kind of XML document, so a document can be checked "
+        "before a run rather than failing during it. A schema belongs to one engine version: "
+        "the schema of the version that runs a document is the one that says whether the "
+        "engine will read it. Some schemas include others and are complete only with them.",
     "master_input":
         "The master input of a run. It is the one file the ORE engine is started with, and "
         "every other file a run reads is named in it. A person opens it to see which analytics "
@@ -1209,4 +1215,159 @@ FILES.update({
         "files. Each file gives its name, the output it belongs to, its size as ORE wrote "
         "it and as uploaded compressed, its SHA-256 digest, and the storage key it was "
         "uploaded under. ORE Studio checks each file it reads against its digest.",
+})
+
+FILES.update({
+    # The schemas.
+    "master_input_schema":
+        "The schema of the master input, ore.xsd. It declares the ORE root element and its "
+        "three blocks: Setup with the as-of date, the paths and the names of the other "
+        "files; Markets with the market configuration used for each purpose; and Analytics "
+        "with each analytic, its active flag and its parameters as name and value pairs.\n\n"
+        "Because the analytics take their parameters as names and values, the schema checks "
+        "the shape of ore.xml but not the meaning of each parameter. ORE ships it with the "
+        "engine.",
+    "todays_market_schema":
+        "The schema of today's market, todaysmarket.xsd. It declares the TodaysMarket root "
+        "and the blocks a market configuration is made of: discounting and index curves, "
+        "yield curves, FX spots and volatilities, swaption and cap/floor volatilities, "
+        "default and inflation curves, equity curves and the rest, and the named "
+        "configurations that gather them.\n\n"
+        "A document that passes it may still name a curve the curve configuration does not "
+        "define; the schema checks the structure, the run checks the references. ORE ships "
+        "it with the engine.",
+    "pricing_engines_schema":
+        "The schema of the pricing engine configuration, pricingengines.xsd. It declares the "
+        "PricingEngines root and, for each product, the model and the engine with their "
+        "parameters as names and values. It validates the main pricing engine file and its "
+        "variants for American Monte Carlo alike.\n\n"
+        "As with the master input, the parameters are names and values, so the schema checks "
+        "the shape and not whether an engine accepts a parameter. ORE ships it with the "
+        "engine.",
+    "simulation_schema":
+        "The schema of the simulation configuration, simulation.xsd. It declares the "
+        "Simulation root with its Parameters block, the time grid, the samples and the "
+        "random sequence; its CrossAssetModel block, the model of each risk factor with its "
+        "volatility, reversion and calibration instruments; and its Market block, the "
+        "simulated market objects with their tenors and strikes.\n\n"
+        "It also validates the market-only documents of the same shape that the sensitivity, "
+        "stress and CRIF analytics are given. It is one of the larger schemas, at about "
+        "74 KB. ORE ships it with the engine.",
+    "sensitivity_schema":
+        "The schema of the sensitivity analysis configuration, sensitivity.xsd. It declares "
+        "the SensitivityAnalysis root and a block for each group of risk factors: discount "
+        "and index curves, FX spots and volatilities, swaption, cap/floor, equity and credit "
+        "volatilities, default curves and the rest, each with its shift type, shift size, "
+        "tenors and strikes; the cross gamma pairs; and the par conversion instruments.\n\n"
+        "ORE ships it with the engine.",
+    "stress_test_schema":
+        "The schema of the stress scenario configuration, stress.xsd. It declares the "
+        "StressTesting root and the named scenarios, each listing the market components it "
+        "shifts in the same terms as a sensitivity configuration, with the absolute, "
+        "relative and equal-to shift types and the choice of zero or par rates.\n\n"
+        "ORE ships it with the engine.",
+    "calendar_adjustment_schema":
+        "The schema of the calendar adjustments, calendaradjustment.xsd. It declares the "
+        "CalendarAdjustments root and, for each calendar, the holidays to add, the business "
+        "days to add and the base calendar a new calendar is built from. It is one of the "
+        "smallest schemas. ORE ships it with the engine.",
+    "curve_configuration_schema":
+        "The schema of the curve configuration, curveconfig.xsd. It declares the "
+        "CurveConfiguration root and every kind of term structure ORE builds: yield, default, "
+        "inflation and equity curves, the volatility structures of swaptions, caps and "
+        "floors, FX, CDS and equities, security spreads and recovery rates, base correlations "
+        "and the rest, each with its segments, quotes, conventions and interpolation.\n\n"
+        "It is one of the largest schemas, at about 76 KB, and it includes the ORE types "
+        "schema; it validates only together with it. ORE ships it with the engine.",
+    "reference_data_schema":
+        "The schema of the reference data, referencedata.xsd. It declares the ReferenceData "
+        "root and the kinds of static data a trade may refer to by id: bond data with its "
+        "legs, credit and equity indices with their constituents, FX indices and the "
+        "weights of an index at its last rebalancing.\n\n"
+        "The trade data schema includes it, because a trade may carry its reference data "
+        "inline. ORE ships it with the engine.",
+    "ibor_fallback_schema":
+        "The schema of the IBOR fallback configuration, iborfallbackconfig.xsd. It declares "
+        "the IborFallbackConfig root and the rules that replace an IBOR by a risk-free rate. "
+        "It is one of the smallest schemas. ORE ships it with the engine.",
+    "simm_calibration_schema":
+        "The schema of the SIMM calibration, simmcalibration.xsd. It declares the "
+        "SIMMCalibrationData root and, for a SIMM version, the risk weights, correlations "
+        "and concentration thresholds of each risk class, bucket and tenor. It is about "
+        "28 KB. ORE ships it with the engine.",
+    "conventions_schema":
+        "The schema of the market conventions, conventions.xsd. It declares the Conventions "
+        "root and every kind of convention ORE knows: zero, deposit, FRA, future, OIS, swap, "
+        "average OIS, tenor basis swap, FX, cross currency basis, CDS, inflation, commodity "
+        "and the rest, each with its day counters, calendars, lags and index names.\n\n"
+        "It is about 34 KB and includes the intraday power load data schema; it validates "
+        "only together with it. ORE ships it with the engine.",
+    "currency_configuration_schema":
+        "The schema of the currency configuration, currencyconfig.xsd. It declares the "
+        "CurrencyConfig root and, for each currency, its ISO code and number, its minor "
+        "units, its rounding and its symbol. It is one of the smallest schemas. ORE ships it "
+        "with the engine.",
+    "credit_simulation_schema":
+        "The schema of the credit simulation configuration, creditsimulation.xsd. It "
+        "declares the CreditSimulation root, with the credit migration model, the rating "
+        "states and the transition matrices. The trade data schema includes it. ORE ships it "
+        "with the engine.",
+    "script_library_schema":
+        "The schema of the script library, scriptlibrary.xsd. It declares the ScriptLibrary "
+        "root and its scripts, each with a name and the payoff code a scripted trade runs. "
+        "ORE ships it with the engine.",
+    "netting_set_definitions_schema":
+        "The schema of the netting set definitions, nettingsetdefinitions.xsd. It declares "
+        "the NettingSetDefinitions root and, for each netting set, whether it has a credit "
+        "support annex and its terms: the thresholds and minimum transfer amounts of both "
+        "parties, the independent amount, the margining and posting frequencies, the margin "
+        "period of risk, the collateral currency and the eligible collateral.\n\n"
+        "ORE ships it with the engine.",
+    "counterparty_information_schema":
+        "The schema of the counterparty information, counterparty.xsd. It declares the "
+        "CounterpartyInformation root with its Counterparties, each with its id, whether it "
+        "is a clearing counterparty, its credit quality, its BA-CVA and SA-CCR risk weights "
+        "and its SA-CVA risk bucket, and its Correlations. ORE ships it with the engine.",
+    "collateral_balances_schema":
+        "The schema of the collateral balances, collateralbalance.xsd. It declares the "
+        "CollateralBalances root and, for each netting set, the variation margin, initial "
+        "margin and independent amount held or posted, with their currency. It is the "
+        "smallest schema. ORE ships it with the engine.",
+    "trade_data_schema":
+        "The schema of the portfolio, input.xsd. It declares the Portfolio root and the Trade "
+        "element: its id, its trade type, its envelope with the counterparty, the netting set "
+        "and the additional fields, and the data of every trade type ORE prices.\n\n"
+        "The schema is small itself, because the data of the trade types is declared in "
+        "other schemas it includes: 22 of them, among them the instruments, the ORE types, "
+        "the reference data, the simulation, the credit simulation and the curve "
+        "configuration schemas. It validates only together with all of them, so it is "
+        "downloaded with every schema it includes. ORE ships it with the engine.",
+    "historical_return_schema":
+        "The schema of the historical return configuration, historicalreturnconfig.xsd. It "
+        "declares the ReturnConfiguration root, which says how each kind of risk factor turns "
+        "two historical values into a return, absolute or relative, for the historical "
+        "simulation analytics. It includes the ORE types schema. ORE ships it with the engine.",
+    "basel_traffic_light_schema":
+        "The schema of the Basel traffic light configuration, baselTrafficLightconfig.xsd. It "
+        "declares the BaselTrafficLightConfig root, the thresholds that place the back test "
+        "of a value at risk model in the green, amber or red zone. ORE ships it with the "
+        "engine.",
+    "instruments_schema":
+        "The schema of the instrument data of trades, instruments.xsd. It declares the data "
+        "every trade type is built from: the legs and their cashflows, fixed and floating "
+        "rates, schedules, exercise dates and schedules, and the data of each product. No "
+        "document has it as its root: the trade data schema includes it.\n\n"
+        "It is by far the largest schema, at about 250 KB, and it includes the ORE types and "
+        "the intraday power load data schemas. ORE ships it with the engine.",
+    "ore_types_schema":
+        "The types the other ORE schemas share, ore_types.xsd: the enumerations and simple "
+        "types for currencies, calendars, day counters, business day conventions, periods, "
+        "indices and the rest, and the derived schedules. No document has it as its root; the "
+        "trade data, curve configuration, instruments and historical return schemas include "
+        "it. It is about 41 KB. ORE ships it with the engine.",
+    "intraday_power_load_data_schema":
+        "The schema of the intraday power load data, intradaypowerloaddata.xsd: the load "
+        "profiles that intraday power conventions and trades use. No document has it as its "
+        "root; the conventions and instruments schemas include it. ORE ships it with the "
+        "engine.",
 })

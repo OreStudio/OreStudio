@@ -97,6 +97,12 @@ ore_file_filter_condition(const std::optional<messaging::ore_files_filter>& filt
                             "configuration_type_code",
                             query_builder::filter_value(**filter->configuration_type_code)) :
                         query_builder::is_null("configuration_type_code"));
+    if (filter->schema_ore_file_code)
+        r.push_back(
+            *filter->schema_ore_file_code ?
+                query_builder::equals("schema_ore_file_code",
+                                      query_builder::filter_value(**filter->schema_ore_file_code)) :
+                query_builder::is_null("schema_ore_file_code"));
     if (filter->code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
@@ -114,6 +120,12 @@ ore_file_filter_condition(const std::optional<messaging::ore_files_filter>& filt
         for (const auto& v : *filter->configuration_type_code_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("configuration_type_code", std::move(values)));
+    }
+    if (filter->schema_ore_file_code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->schema_ore_file_code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("schema_ore_file_code", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }
@@ -355,6 +367,57 @@ std::uint32_t ore_file_repository::get_total_file_count_by_configuration_type_co
         ore_file_filter_condition(filter),
         lg(),
         "Counting ORE files by configuration_type_code");
+}
+
+
+std::vector<domain::ore_file> ore_file_repository::read_latest_by_schema_ore_file_code(
+    context ctx,
+    const std::string& schema_ore_file_code,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::ore_files_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE files. schema_ore_file_code: "
+                               << schema_ore_file_code << " offset: " << offset
+                               << " limit: " << limit;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<ore_file_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "schema_ore_file_code"_c == schema_ore_file_code &&
+                                            "valid_to"_c == max) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
+
+    return query_builder::execute_ordered_read_query<ore_file_entity, domain::ore_file>(
+        ctx,
+        query,
+        ore_file_list_order(order, {"code"}, false),
+        ore_file_filter_condition(filter),
+        [](const auto& entities) { return ore_file_mapper::map(entities); },
+        lg(),
+        "Reading latest ORE files by schema_ore_file_code.");
+}
+
+std::uint32_t ore_file_repository::get_total_file_count_by_schema_ore_file_code(
+    context ctx,
+    const std::string& schema_ore_file_code,
+    const std::optional<messaging::ore_files_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE files count. schema_ore_file_code: "
+                               << schema_ore_file_code;
+    static constexpr auto max = db_timestamp::max();
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<ore_file_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "schema_ore_file_code"_c == schema_ore_file_code &&
+                                            "valid_to"_c == max);
+
+    return query_builder::execute_count_query<ore_file_entity>(
+        ctx,
+        query,
+        ore_file_filter_condition(filter),
+        lg(),
+        "Counting ORE files by schema_ore_file_code");
 }
 
 

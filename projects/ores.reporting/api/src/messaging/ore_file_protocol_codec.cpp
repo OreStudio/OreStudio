@@ -176,47 +176,47 @@ wire_traits<ores::reporting::messaging::ore_file_event>::read_msgpack(
     return object::read_msgpack<ores::reporting::messaging::ore_file_event>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::ore_file_version_key>::write_json(
-    const ores::reporting::messaging::ore_file_version_key& v) {
+std::string wire_traits<ores::reporting::messaging::ore_files_version_key>::write_json(
+    const ores::reporting::messaging::ore_files_version_key& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::ore_file_version_key
-wire_traits<ores::reporting::messaging::ore_file_version_key>::read_json(std::string_view text) {
-    return object::read_json<ores::reporting::messaging::ore_file_version_key>(text);
+ores::reporting::messaging::ore_files_version_key
+wire_traits<ores::reporting::messaging::ore_files_version_key>::read_json(std::string_view text) {
+    return object::read_json<ores::reporting::messaging::ore_files_version_key>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::ore_file_version_key>::write_msgpack(
-    const ores::reporting::messaging::ore_file_version_key& v) {
+std::string wire_traits<ores::reporting::messaging::ore_files_version_key>::write_msgpack(
+    const ores::reporting::messaging::ore_files_version_key& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::ore_file_version_key
-wire_traits<ores::reporting::messaging::ore_file_version_key>::read_msgpack(
+ores::reporting::messaging::ore_files_version_key
+wire_traits<ores::reporting::messaging::ore_files_version_key>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::ore_file_version_key>(data);
+    return object::read_msgpack<ores::reporting::messaging::ore_files_version_key>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::ore_file_versions_filter>::write_json(
-    const ores::reporting::messaging::ore_file_versions_filter& v) {
+std::string wire_traits<ores::reporting::messaging::ore_files_versions_filter>::write_json(
+    const ores::reporting::messaging::ore_files_versions_filter& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::ore_file_versions_filter
-wire_traits<ores::reporting::messaging::ore_file_versions_filter>::read_json(
+ores::reporting::messaging::ore_files_versions_filter
+wire_traits<ores::reporting::messaging::ore_files_versions_filter>::read_json(
     std::string_view text) {
-    return object::read_json<ores::reporting::messaging::ore_file_versions_filter>(text);
+    return object::read_json<ores::reporting::messaging::ore_files_versions_filter>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::ore_file_versions_filter>::write_msgpack(
-    const ores::reporting::messaging::ore_file_versions_filter& v) {
+std::string wire_traits<ores::reporting::messaging::ore_files_versions_filter>::write_msgpack(
+    const ores::reporting::messaging::ore_files_versions_filter& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::ore_file_versions_filter
-wire_traits<ores::reporting::messaging::ore_file_versions_filter>::read_msgpack(
+ores::reporting::messaging::ore_files_versions_filter
+wire_traits<ores::reporting::messaging::ore_files_versions_filter>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::ore_file_versions_filter>(data);
+    return object::read_msgpack<ores::reporting::messaging::ore_files_versions_filter>(data);
 }
 
 std::string wire_traits<ores::reporting::messaging::list_ore_files_request>::write_json(
@@ -628,92 +628,148 @@ wire_traits<ores::reporting::messaging::list_by_configuration_type_code_ore_file
         ores::reporting::messaging::list_by_configuration_type_code_ore_files_response>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::list_ore_file_versions_request>::write_json(
-    const ores::reporting::messaging::list_ore_file_versions_request& v) {
+std::string
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>::write_json(
+    const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::list_ore_file_versions_request
-wire_traits<ores::reporting::messaging::list_ore_file_versions_request>::read_json(
+ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>::read_json(
     std::string_view text) {
-    return object::read_json<ores::reporting::messaging::list_ore_file_versions_request>(text);
+    return object::read_json<
+        ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::list_ore_file_versions_request>::write_msgpack(
-    const ores::reporting::messaging::list_ore_file_versions_request& v) {
+std::string
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>::
+    write_msgpack(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::list_ore_file_versions_request
-wire_traits<ores::reporting::messaging::list_ore_file_versions_request>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::list_ore_file_versions_request>(data);
+ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>::
+    read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::list_ore_file_versions_response>::write_json(
-    const ores::reporting::messaging::list_ore_file_versions_response& v) {
+std::string
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>::
+    write_json(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::list_ore_file_versions_response
-wire_traits<ores::reporting::messaging::list_ore_file_versions_response>::read_json(
+ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>::read_json(
     std::string_view text) {
-    return object::read_json<ores::reporting::messaging::list_ore_file_versions_response>(text);
+    return object::read_json<
+        ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::list_ore_file_versions_response>::write_msgpack(
-    const ores::reporting::messaging::list_ore_file_versions_response& v) {
+std::string
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>::
+    write_msgpack(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::list_ore_file_versions_response
-wire_traits<ores::reporting::messaging::list_ore_file_versions_response>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::list_ore_file_versions_response>(data);
+ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response
+wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>::
+    read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::get_ore_file_version_request>::write_json(
-    const ores::reporting::messaging::get_ore_file_version_request& v) {
+std::string wire_traits<ores::reporting::messaging::list_ore_files_versions_request>::write_json(
+    const ores::reporting::messaging::list_ore_files_versions_request& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::get_ore_file_version_request
-wire_traits<ores::reporting::messaging::get_ore_file_version_request>::read_json(
+ores::reporting::messaging::list_ore_files_versions_request
+wire_traits<ores::reporting::messaging::list_ore_files_versions_request>::read_json(
     std::string_view text) {
-    return object::read_json<ores::reporting::messaging::get_ore_file_version_request>(text);
+    return object::read_json<ores::reporting::messaging::list_ore_files_versions_request>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::get_ore_file_version_request>::write_msgpack(
-    const ores::reporting::messaging::get_ore_file_version_request& v) {
+std::string wire_traits<ores::reporting::messaging::list_ore_files_versions_request>::write_msgpack(
+    const ores::reporting::messaging::list_ore_files_versions_request& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::get_ore_file_version_request
-wire_traits<ores::reporting::messaging::get_ore_file_version_request>::read_msgpack(
+ores::reporting::messaging::list_ore_files_versions_request
+wire_traits<ores::reporting::messaging::list_ore_files_versions_request>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::get_ore_file_version_request>(data);
+    return object::read_msgpack<ores::reporting::messaging::list_ore_files_versions_request>(data);
 }
 
-std::string wire_traits<ores::reporting::messaging::get_ore_file_version_response>::write_json(
-    const ores::reporting::messaging::get_ore_file_version_response& v) {
+std::string wire_traits<ores::reporting::messaging::list_ore_files_versions_response>::write_json(
+    const ores::reporting::messaging::list_ore_files_versions_response& v) {
     return object::write_json(v);
 }
 
-ores::reporting::messaging::get_ore_file_version_response
-wire_traits<ores::reporting::messaging::get_ore_file_version_response>::read_json(
+ores::reporting::messaging::list_ore_files_versions_response
+wire_traits<ores::reporting::messaging::list_ore_files_versions_response>::read_json(
     std::string_view text) {
-    return object::read_json<ores::reporting::messaging::get_ore_file_version_response>(text);
+    return object::read_json<ores::reporting::messaging::list_ore_files_versions_response>(text);
 }
 
-std::string wire_traits<ores::reporting::messaging::get_ore_file_version_response>::write_msgpack(
-    const ores::reporting::messaging::get_ore_file_version_response& v) {
+std::string
+wire_traits<ores::reporting::messaging::list_ore_files_versions_response>::write_msgpack(
+    const ores::reporting::messaging::list_ore_files_versions_response& v) {
     return object::write_msgpack(v);
 }
 
-ores::reporting::messaging::get_ore_file_version_response
-wire_traits<ores::reporting::messaging::get_ore_file_version_response>::read_msgpack(
+ores::reporting::messaging::list_ore_files_versions_response
+wire_traits<ores::reporting::messaging::list_ore_files_versions_response>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::reporting::messaging::get_ore_file_version_response>(data);
+    return object::read_msgpack<ores::reporting::messaging::list_ore_files_versions_response>(data);
+}
+
+std::string wire_traits<ores::reporting::messaging::get_ore_files_version_request>::write_json(
+    const ores::reporting::messaging::get_ore_files_version_request& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::get_ore_files_version_request
+wire_traits<ores::reporting::messaging::get_ore_files_version_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::get_ore_files_version_request>(text);
+}
+
+std::string wire_traits<ores::reporting::messaging::get_ore_files_version_request>::write_msgpack(
+    const ores::reporting::messaging::get_ore_files_version_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::get_ore_files_version_request
+wire_traits<ores::reporting::messaging::get_ore_files_version_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::reporting::messaging::get_ore_files_version_request>(data);
+}
+
+std::string wire_traits<ores::reporting::messaging::get_ore_files_version_response>::write_json(
+    const ores::reporting::messaging::get_ore_files_version_response& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::get_ore_files_version_response
+wire_traits<ores::reporting::messaging::get_ore_files_version_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::get_ore_files_version_response>(text);
+}
+
+std::string wire_traits<ores::reporting::messaging::get_ore_files_version_response>::write_msgpack(
+    const ores::reporting::messaging::get_ore_files_version_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::get_ore_files_version_response
+wire_traits<ores::reporting::messaging::get_ore_files_version_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::reporting::messaging::get_ore_files_version_response>(data);
 }
 
 }

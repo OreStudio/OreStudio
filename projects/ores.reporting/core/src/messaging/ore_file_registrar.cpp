@@ -86,14 +86,20 @@ register_ore_file_handlers(ores::nats::service::client& nats,
                              [h](ores::nats::message msg) {
                                  h->list_by_configuration_type_code_ore_files(std::move(msg));
                              }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_schema_ore_file_code_ore_files_request::nats_subject,
+                             ore_file_queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_schema_ore_file_code_ore_files(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
-        list_ore_file_versions_request::nats_subject,
+        list_ore_files_versions_request::nats_subject,
         ore_file_queue_group,
-        [h](ores::nats::message msg) { h->list_ore_file_versions(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->list_ore_files_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_ore_file_version_request::nats_subject,
+        get_ore_files_version_request::nats_subject,
         ore_file_queue_group,
-        [h](ores::nats::message msg) { h->get_ore_file_version(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->get_ore_files_version(std::move(msg)); }));
     return subs;
 }
 

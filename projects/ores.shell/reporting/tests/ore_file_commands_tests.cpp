@@ -82,12 +82,13 @@ TEST_CASE("ore_file_commands_registers_every_derived_verb", "[commands]") {
              std::string{"ore_files delete-many"},
              std::string{"ore_files by-category-code"},
              std::string{"ore_files by-configuration-type-code"},
+             std::string{"ore_files by-schema-ore-file-code"},
              std::string{"ore_files versions"},
              std::string{"ore_files version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 13 command(s).";
 }
 
 TEST_CASE("ore_file_commands_process_list_requires_a_session", "[commands]") {
@@ -340,6 +341,41 @@ TEST_CASE("ore_file_commands_process_by_configuration_type_code_reports_the_expe
 
     command_feedback::reset();
     ore_file_commands::process_by_configuration_type_code(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("ore_file_commands_process_by_schema_ore_file_code_requires_a_session", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    ore_file_commands::process_by_schema_ore_file_code(out, session, ore_file_tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("ore_file_commands_process_by_schema_ore_file_code_reports_the_expected_count",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    ore_file_log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    ore_file_commands::process_by_schema_ore_file_code(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

@@ -25,6 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import type {
     OreFileParameterView,
     OreFileView,
+    ReportRunFileInfoView,
     ReportRunFileView,
 } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
@@ -80,7 +81,13 @@ export function RunFilePage(): ReactNode {
             {info.isSuccess && (
                 <>
                     <OreFileCard oreFile={info.data.ore_file} />
-                    <FileFacts runId={id} file={info.data.file} oreFile={info.data.ore_file} />
+                    <FileFacts
+                        runId={id}
+                        file={info.data.file}
+                        oreFile={info.data.ore_file}
+                        schema={info.data.schema}
+                        engineVersion={info.data.engine_version}
+                    />
                     {info.data.ore_file !== null && (
                         <Parameters
                             oreFile={info.data.ore_file.code}
@@ -122,10 +129,14 @@ function FileFacts({
     runId,
     file,
     oreFile,
+    schema,
+    engineVersion,
 }: {
     readonly runId: string;
     readonly file: ReportRunFileView;
     readonly oreFile: OreFileView | null;
+    readonly schema: ReportRunFileInfoView['schema'];
+    readonly engineVersion: string | null;
 }): ReactNode {
     const { t } = useTranslation();
     const none = '—';
@@ -183,6 +194,7 @@ function FileFacts({
                         )
                     }
                 />
+                <Detail label={t(`${FIELD}.engineVersion`)} value={engineVersion ?? none} />
                 {oreFile !== null && (
                     <>
                         <Detail
@@ -190,14 +202,8 @@ function FileFacts({
                             value={t(`${FIELD}.formats.${oreFile.format}`)}
                         />
                         <Detail
-                            label={t(`${FIELD}.xsd`)}
-                            value={
-                                oreFile.xsd_file === null ? (
-                                    none
-                                ) : (
-                                    <span className="font-mono">{oreFile.xsd_file}</span>
-                                )
-                            }
+                            label={t(`${FIELD}.schema`)}
+                            value={<SchemaLink schema={schema} engineVersion={engineVersion} />}
                         />
                         <Detail
                             label={t(`${FIELD}.typicalName`)}
@@ -227,6 +233,46 @@ function FileFacts({
                 )}
             </dl>
         </section>
+    );
+}
+
+/**
+ * The schema an xml file validates against, downloadable for the engine version
+ * that ran the job with every schema it includes. A version with no stored copy
+ * says so rather than offering the schema of another version.
+ */
+function SchemaLink({
+    schema,
+    engineVersion,
+}: {
+    readonly schema: ReportRunFileInfoView['schema'];
+    readonly engineVersion: string | null;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (schema === null) {
+        return '—';
+    }
+    if (!schema.stored || engineVersion === null) {
+        return (
+            <span>
+                {schema.name}{' '}
+                <span className="text-ink-faint">
+                    {t(`${FIELD}.schemaNotStored`, { version: engineVersion ?? '—' })}
+                </span>
+            </span>
+        );
+    }
+    return (
+        <span className="flex flex-wrap items-center gap-2">
+            {schema.name}
+            <a
+                href={api.oreSchemaUrl(schema.code, engineVersion)}
+                download
+                className="text-accent hover:text-accent-bright"
+            >
+                {t(`${FIELD}.downloadSchema`)}
+            </a>
+        </span>
     );
 }
 

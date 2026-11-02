@@ -36,7 +36,9 @@ import { gunzipSync } from 'node:zlib';
 import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
+    readAppVersion,
     readResult,
+    readWorkunit,
     readWorkunitsOfBatch,
     oreFileViewSchema,
     reportRunFileInfoViewSchema,
@@ -56,6 +58,9 @@ import { subjects as fileTypeSubjects } from '@ores/wire-protocol/generated/repo
 import type { ListByOreFileCodeFileTypesResponse } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { readAll, text } from './refdata-calls.js';
+import { zipOf, type ZipEntry } from './zip.js';
+import { subjects as versionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_version_protocol';
+import type { ListOreFileVersionsResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_version_protocol';
 import { dispositionFor, downloadName, fetchStored } from './grid-downloads.js';
 import { readBatchId, readRun } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
@@ -65,6 +70,10 @@ const runParamsSchema = z.object({
 });
 
 const fileParamsSchema = runParamsSchema.extend({ file: z.string().min(1).max(1024) });
+
+const schemaParamsSchema = z.object({ code: z.string().regex(/^[a-z][a-z0-9_]*$/) });
+
+const schemaQuerySchema = z.object({ version: z.string().regex(/^[0-9]+(\.[0-9]+)*$/) });
 
 const nullableText = (value: unknown): string | null => {
     const stated = text(value);
@@ -333,7 +342,7 @@ async function readCatalogue(session: LiveSession, log: FastifyBaseLogger): Prom
                     guide_section: nullableText(file['guide_section']),
                     origin: text(file['origin']),
                     format: text(file['format']),
-                    xsd_file: nullableText(file['xsd_file']),
+                    schema_ore_file_code: nullableText(file['schema_ore_file_code']),
                     typical_filename: text(file['typical_filename']),
                     filename_regex: text(file['filename_regex']),
                     description: text(file['description']),
@@ -363,6 +372,96 @@ function identified(name: string, catalogue: Catalogue) {
     return file === null
         ? UNIDENTIFIED
         : { ore_file_code: file.code, ore_file_name: file.name, category_code: file.category_code };
+}
+
+/** The ORE engine version a job ran on, from the app version the workunit names. */
+async function engineVersionOf(
+    session: LiveSession,
+    workunitId: string | null,
+    log: FastifyBaseLogger,
+): Promise<string | null> {
+    if (workunitId === null) {
+        return null;
+    }
+    try {
+        const workunit = await readWorkunit(session.client, workunitId);
+        if (workunit === null || workunit.app_version_id === '') {
+            return null;
+        }
+        const version = await readAppVersion(session.client, workunit.app_version_id);
+        return version === null || version.engine_version === '' ? null : version.engine_version;
+    } catch (error) {
+        log.warn({ err: error }, 'The engine version of a job could not be read');
+        return null;
+    }
+}
+
+/** The stored contents of every schema of one engine version, by the schema's file name. */
+async function readSchemaContents(
+    session: LiveSession,
+    engineVersion: string,
+): Promise<ReadonlyMap<string, Buffer>> {
+    const [versions, files] = await Promise.all([
+        readAll<ListOreFileVersionsResponse>(
+            session,
+            versionSubjects.list_ore_file_versions_request,
+            'versions',
+            {
+                filter: { engine_version: engineVersion },
+                as_of: null,
+            },
+        ),
+        readAll<ListOreFilesResponse>(session, oreFileSubjects.list_ore_files_request, 'files', {
+            filter: { category_code: 'schemas' },
+            as_of: null,
+        }),
+    ]);
+    const nameOf = new Map(
+        files.map((file) => [text(file['code']), text(file['typical_filename'])]),
+    );
+    const contents = new Map<string, Buffer>();
+    for (const version of versions) {
+        const name = nameOf.get(text(version['ore_file_code']));
+        if (name !== undefined) {
+            contents.set(name, Buffer.from(text(version['content']), 'utf8'));
+        }
+    }
+    return contents;
+}
+
+const INCLUDE = /<xs:include\s+schemaLocation="([^"]+)"/g;
+
+/**
+ * A schema and every schema it includes, at once or through another, as the
+ * engine version ships them. A schema is complete only with its includes, so a
+ * download that left one out could not validate a document. An include the
+ * version does not store is named rather than left out.
+ */
+export function schemaWithIncludes(
+    root: string,
+    contents: ReadonlyMap<string, Buffer>,
+): { readonly files: readonly ZipEntry[]; readonly missing: readonly string[] } {
+    const files: ZipEntry[] = [];
+    const missing: string[] = [];
+    const seen = new Set<string>();
+    const queue = [root];
+    while (queue.length > 0) {
+        const name = queue.shift() as string;
+        if (seen.has(name)) {
+            continue;
+        }
+        seen.add(name);
+        const content = contents.get(name);
+        if (content === undefined) {
+            missing.push(name);
+            continue;
+        }
+        files.push({ name, content });
+        for (const match of content.toString('utf8').matchAll(INCLUDE)) {
+            queue.push(match[1] as string);
+        }
+    }
+    return { files, missing };
 }
 
 /**
@@ -471,7 +570,8 @@ export function registerReportRunFileRoutes(
             if (found === undefined) {
                 throw notFound('This run has no such file.');
             }
-            const oreFile = oreFileOf(found.view.name, await readCatalogue(session, request.log));
+            const catalogue = await readCatalogue(session, request.log);
+            const oreFile = oreFileOf(found.view.name, catalogue);
             const parameters =
                 oreFile === null
                     ? []
@@ -481,7 +581,26 @@ export function registerReportRunFileRoutes(
                           'types',
                           { ore_file_code: oreFile.code, scope: 'direct', filter: null },
                       );
+            const engineVersion = await engineVersionOf(session, found.view.job, request.log);
+            const schemaFile =
+                oreFile?.schema_ore_file_code === null || oreFile === null
+                    ? undefined
+                    : catalogue.files.find((one) => one.code === oreFile.schema_ore_file_code);
+            const schema =
+                schemaFile === undefined
+                    ? null
+                    : {
+                          code: schemaFile.code,
+                          name: schemaFile.name,
+                          stored:
+                              engineVersion !== null &&
+                              (await readSchemaContents(session, engineVersion)).has(
+                                  schemaFile.typical_filename,
+                              ),
+                      };
             return reportRunFileInfoViewSchema.parse({
+                engine_version: engineVersion,
+                schema,
                 file: found.view,
                 ore_file: oreFile,
                 parameters: parameters.map((type) => ({
@@ -497,6 +616,40 @@ export function registerReportRunFileRoutes(
             });
         },
     );
+
+    server.get('/api/reporting/ore-files/:code/schema', async (request, reply) => {
+        const session = requireSession(request);
+        const params = schemaParamsSchema.safeParse(request.params);
+        const query = schemaQuerySchema.safeParse(request.query);
+        if (!params.success || !query.success) {
+            throw invalidRequest('The address names no schema and engine version.');
+        }
+        const { code } = params.data;
+        const { version } = query.data;
+        const schema = (await readCatalogue(session, request.log)).files.find(
+            (file) => file.code === code && file.format === 'xsd',
+        );
+        if (schema === undefined) {
+            throw notFound('No ORE file is a schema with this code.');
+        }
+        const { files, missing } = schemaWithIncludes(
+            schema.typical_filename,
+            await readSchemaContents(session, version),
+        );
+        if (files.length === 0) {
+            throw notFound(`ORE ${version} has no stored copy of ${schema.typical_filename}.`);
+        }
+        if (missing.length > 0) {
+            throw notFound(
+                `ORE ${version} has no stored copy of ${missing.join(', ')}, which ${schema.typical_filename} includes.`,
+            );
+        }
+        return reply
+            .header('Content-Type', 'application/zip')
+            .header('Content-Disposition', dispositionFor(`${code}-${version}.zip`))
+            .header('Cache-Control', 'private, no-store')
+            .send(zipOf(files));
+    });
 
     server.get('/api/reporting/runs/:id/files/:file', async (request, reply) => {
         const session = requireSession(request);

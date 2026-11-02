@@ -58,7 +58,7 @@ struct ore_file_entity {
     std::optional<std::string> guide_section;
     std::string origin;
     std::string format;
-    std::optional<std::string> xsd_file;
+    std::optional<std::string> schema_ore_file_code;
     std::string typical_filename;
     std::string filename_regex;
     std::string description;
@@ -84,7 +84,7 @@ struct ore_file_entity {
                query_builder::bind("guide_section", &e::guide_section) |
                query_builder::bind("origin", &e::origin) |
                query_builder::bind("format", &e::format) |
-               query_builder::bind("xsd_file", &e::xsd_file) |
+               query_builder::bind("schema_ore_file_code", &e::schema_ore_file_code) |
                query_builder::bind("typical_filename", &e::typical_filename) |
                query_builder::bind("filename_regex", &e::filename_regex) |
                query_builder::bind("description", &e::description) |

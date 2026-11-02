@@ -56,7 +56,7 @@ namespace ores::reporting::domain {
         utility::codec::field{"guide_section", &ore_file::guide_section},
         utility::codec::field{"origin", &ore_file::origin},
         utility::codec::field{"format", &ore_file::format},
-        utility::codec::field{"xsd_file", &ore_file::xsd_file},
+        utility::codec::field{"schema_ore_file_code", &ore_file::schema_ore_file_code},
         utility::codec::field{"typical_filename", &ore_file::typical_filename},
         utility::codec::field{"filename_regex", &ore_file::filename_regex},
         utility::codec::field{"description", &ore_file::description},

@@ -48,6 +48,7 @@ PACKAGED = "packaged"
 # The packaging group is ORE Studio's own: the archives a run travels in.
 CATEGORIES = [
     ("master_input", "Master Input", SUPPLIED),
+    ("schemas", "Schemas", SUPPLIED),
     ("configuration", "Configuration", SUPPLIED),
     ("trade_data", "Trade Data", SUPPLIED),
     ("market_data", "Market Data", SUPPLIED),
@@ -77,11 +78,47 @@ def entry(code, name, category, origin, fmt, typical, *variants, section=None, x
                    else "(" + "|".join(alternatives) + ")") + "$"
     return {"code": code, "name": name, "category_code": category,
             "configuration_type_code": configuration_type, "guide_section": section,
-            "origin": origin, "format": fmt, "xsd_file": xsd, "typical_filename": typical,
+            "origin": origin, "format": fmt, "xsd": xsd, "typical_filename": typical,
             "filename_regex": regex}
 
 
 S, P, K = SUPPLIED, PRODUCED, PACKAGED
+
+# The XML schemas ORE ships, each an ORE file of its own: a document names its
+# schema by the schema's code, and the schema's contents are stored for each
+# engine version. The code is the code of the document the schema declares,
+# with _schema; the three that declare no document of their own are named after
+# what they hold.
+SCHEMAS = [
+    ("master_input_schema", "Analytics Schema", "ore.xsd"),
+    ("todays_market_schema", "Market Schema", "todaysmarket.xsd"),
+    ("pricing_engines_schema", "Pricing Engines Schema", "pricingengines.xsd"),
+    ("simulation_schema", "Simulation Schema", "simulation.xsd"),
+    ("sensitivity_schema", "Sensitivity Analysis Schema", "sensitivity.xsd"),
+    ("stress_test_schema", "Stress Scenario Analysis Schema", "stress.xsd"),
+    ("calendar_adjustment_schema", "Calendar Adjustment Schema", "calendaradjustment.xsd"),
+    ("curve_configuration_schema", "Curves Schema", "curveconfig.xsd"),
+    ("reference_data_schema", "Reference Data Schema", "referencedata.xsd"),
+    ("ibor_fallback_schema", "Ibor Fallback Config Schema", "iborfallbackconfig.xsd"),
+    ("simm_calibration_schema", "SIMM Calibration Schema", "simmcalibration.xsd"),
+    ("conventions_schema", "Conventions Schema", "conventions.xsd"),
+    ("currency_configuration_schema", "Currencies Schema", "currencyconfig.xsd"),
+    ("credit_simulation_schema", "Credit Simulation Schema", "creditsimulation.xsd"),
+    ("script_library_schema", "Script Library Schema", "scriptlibrary.xsd"),
+    ("netting_set_definitions_schema", "Netting Set Definitions Schema",
+     "nettingsetdefinitions.xsd"),
+    ("counterparty_information_schema", "Counterparty Information Schema", "counterparty.xsd"),
+    ("collateral_balances_schema", "Collateral Balances Schema", "collateralbalance.xsd"),
+    ("trade_data_schema", "Trade Data Schema", "input.xsd"),
+    ("historical_return_schema", "Historical Return Configuration Schema",
+     "historicalreturnconfig.xsd"),
+    ("basel_traffic_light_schema", "Basel Traffic Light Schema", "baselTrafficLightconfig.xsd"),
+    ("instruments_schema", "Instruments Schema", "instruments.xsd"),
+    ("ore_types_schema", "ORE Types Schema", "ore_types.xsd"),
+    ("intraday_power_load_data_schema", "Intraday Power Load Data Schema",
+     "intradaypowerloaddata.xsd"),
+]
+SCHEMA_OF = {file_name: code for code, _, file_name in SCHEMAS}
 
 # The archive the compute node uploads is named by the id of its result.
 RESULT_ARCHIVE = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.tar\\.gz"
@@ -325,3 +362,10 @@ FILES = [
     entry("output_manifest", "Output Manifest", "packaging", K, "json_gz",
           "manifest.json.gz"),
 ]
+
+FILES = [entry(code, name, "schemas", S, "xsd", file_name)
+         for code, name, file_name in SCHEMAS] + FILES
+
+for _file in FILES:
+    _xsd = _file.pop("xsd")
+    _file["schema_ore_file_code"] = None if _xsd is None else SCHEMA_OF[_xsd]

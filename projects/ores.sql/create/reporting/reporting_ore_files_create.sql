@@ -54,7 +54,7 @@ create table if not exists "ores_reporting_ore_files_tbl" (
     "guide_section" text null,
     "origin" text not null,
     "format" text not null,
-    "xsd_file" text null,
+    "schema_ore_file_code" text null,
     "typical_filename" text not null,
     "filename_regex" text not null,
     "description" text not null,
@@ -75,8 +75,8 @@ create table if not exists "ores_reporting_ore_files_tbl" (
     check ("code" <> ''),
     check ("name" <> ''),
     check ("origin" in ('supplied', 'produced', 'packaged')),
-    check ("format" in ('xml', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz')),
-    check ("xsd_file" is null or "format" = 'xml'),
+    check ("format" in ('xml', 'xsd', 'csv', 'csv_gz', 'txt', 'dat', 'json', 'json_gz', 'tar_gz')),
+    check ("schema_ore_file_code" is null or "format" = 'xml'),
     check ("typical_filename" ~ '^[A-Za-z0-9_.-]+$'),
     check ("filename_regex" ~ '^\^.*\$$'),
     check ("typical_filename" ~ "filename_regex")
@@ -123,6 +123,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid configuration_type_code: %. No active configuration type found with this code.', NEW.configuration_type_code
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate schema_ore_file_code (optional soft FK to ores_reporting_ore_files_tbl)
+    if NEW.schema_ore_file_code is not null then
+        if not exists (
+            select 1 from ores_reporting_ore_files_tbl
+            where tenant_id = NEW.tenant_id
+              and code = NEW.schema_ore_file_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid schema_ore_file_code: %. No active ORE file found with this code.', NEW.schema_ore_file_code
                 using errcode = '23503';
         end if;
     end if;

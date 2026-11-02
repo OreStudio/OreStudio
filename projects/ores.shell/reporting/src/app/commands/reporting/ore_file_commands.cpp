@@ -140,8 +140,8 @@ void ore_file_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <code> <name> <category_code> <configuration_type_code> <guide_section> <origin> "
-        "<format> <xsd_file> <typical_filename> <filename_regex> <description> <display_order> "
-        "<reason> <commentary>");
+        "<format> <schema_ore_file_code> <typical_filename> <filename_regex> <description> "
+        "<display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -149,8 +149,8 @@ void ore_file_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <code> <name> <category_code> <configuration_type_code> <guide_section> <origin> "
-        "<format> <xsd_file> <typical_filename> <filename_regex> <description> <display_order> "
-        "<reason> <commentary> [--version <n>]");
+        "<format> <schema_ore_file_code> <typical_filename> <filename_regex> <description> "
+        "<display_order> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,8 +158,8 @@ void ore_file_commands::register_commands(cli::Menu& root_menu, nats_client& ses
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <code> <name> <category_code> <configuration_type_code> "
-        "<guide_section> <origin> <format> <xsd_file> <typical_filename> <filename_regex> "
-        "<description> <display_order> <reason> <commentary>");
+        "<guide_section> <origin> <format> <schema_ore_file_code> <typical_filename> "
+        "<filename_regex> <description> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -189,6 +189,14 @@ void ore_file_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "by-configuration-type-code <configuration_type_code> [--offset <n>] [--limit <n>] "
         "[--order <field>] [--desc]");
+
+    menu->Insert(
+        "by-schema-ore-file-code",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_schema_ore_file_code(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-schema-ore-file-code <schema_ore_file_code> [--offset <n>] [--limit <n>] [--order "
+        "<field>] [--desc]");
 
     menu->Insert(
         "versions",
@@ -391,7 +399,9 @@ void ore_file_commands::process_add(std::ostream& out,
             req.change.write.guide_section, parsed->positionals[next++], "guide_section");
         ore_file_read_token(req.change.write.origin, parsed->positionals[next++], "origin");
         ore_file_read_token(req.change.write.format, parsed->positionals[next++], "format");
-        ore_file_read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
+        ore_file_read_token(req.change.write.schema_ore_file_code,
+                            parsed->positionals[next++],
+                            "schema_ore_file_code");
         ore_file_read_token(
             req.change.write.typical_filename, parsed->positionals[next++], "typical_filename");
         ore_file_read_token(
@@ -460,7 +470,9 @@ void ore_file_commands::process_set(std::ostream& out,
             req.change.write.guide_section, parsed->positionals[next++], "guide_section");
         ore_file_read_token(req.change.write.origin, parsed->positionals[next++], "origin");
         ore_file_read_token(req.change.write.format, parsed->positionals[next++], "format");
-        ore_file_read_token(req.change.write.xsd_file, parsed->positionals[next++], "xsd_file");
+        ore_file_read_token(req.change.write.schema_ore_file_code,
+                            parsed->positionals[next++],
+                            "schema_ore_file_code");
         ore_file_read_token(
             req.change.write.typical_filename, parsed->positionals[next++], "typical_filename");
         ore_file_read_token(
@@ -543,7 +555,9 @@ void ore_file_commands::process_put_many(std::ostream& out,
                 change.write.guide_section, parsed->positionals[next++], "guide_section");
             ore_file_read_token(change.write.origin, parsed->positionals[next++], "origin");
             ore_file_read_token(change.write.format, parsed->positionals[next++], "format");
-            ore_file_read_token(change.write.xsd_file, parsed->positionals[next++], "xsd_file");
+            ore_file_read_token(change.write.schema_ore_file_code,
+                                parsed->positionals[next++],
+                                "schema_ore_file_code");
             ore_file_read_token(
                 change.write.typical_filename, parsed->positionals[next++], "typical_filename");
             ore_file_read_token(
@@ -793,12 +807,69 @@ void ore_file_commands::process_by_configuration_type_code(std::ostream& out,
         << std::endl;
 }
 
+void ore_file_commands::process_by_schema_ore_file_code(std::ostream& out,
+                                                        nats_client& session,
+                                                        const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-schema-ore-file-code request.";
+
+    using request_type = messaging::list_by_schema_ore_file_code_ore_files_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-schema-ore-file-code." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.schema_ore_file_code = ores::shell::app::from_token<std::optional<std::string>>(
+            parsed->positionals[next++], "schema_ore_file_code");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        ore_file_apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_by_schema_ore_file_code_ore_files_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
 void ore_file_commands::process_versions(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
 
-    using request_type = messaging::list_ore_file_versions_request;
+    using request_type = messaging::list_ore_files_versions_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run versions." << std::endl;
@@ -834,7 +905,7 @@ void ore_file_commands::process_versions(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::list_ore_file_versions_response>(
+    auto result = do_auth_request<messaging::list_ore_files_versions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
@@ -849,7 +920,7 @@ void ore_file_commands::process_version(std::ostream& out,
                                         const std::vector<std::string>& args) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
 
-    using request_type = messaging::get_ore_file_version_request;
+    using request_type = messaging::get_ore_files_version_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
             fail(out) << "You must be logged in to run version." << std::endl;
@@ -883,7 +954,7 @@ void ore_file_commands::process_version(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::get_ore_file_version_response>(
+    auto result = do_auth_request<messaging::get_ore_files_version_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

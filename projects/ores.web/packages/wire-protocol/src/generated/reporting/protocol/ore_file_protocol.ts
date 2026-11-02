@@ -41,7 +41,7 @@ export interface OreFileWrite {
     guide_section: string | null;
     origin: string;
     format: string;
-    xsd_file: string | null;
+    schema_ore_file_code: string | null;
     typical_filename: string;
     filename_regex: string;
     description: string;
@@ -66,9 +66,11 @@ export interface OreFileLookup {
 export interface OreFilesFilter {
     category_code: string | null;
     configuration_type_code: string | null | null;
+    schema_ore_file_code: string | null | null;
     code_one_of: string[] | null;
     category_code_one_of: string[] | null;
     configuration_type_code_one_of: string[] | null;
+    schema_ore_file_code_one_of: string[] | null;
 }
 
 export interface OreFileEvent {
@@ -80,12 +82,12 @@ export interface OreFileEvent {
     correlation_id: string | null;
 }
 
-export interface OreFileVersionKey {
+export interface OreFilesVersionKey {
     ore_file: OreFileKey;
     version: number;
 }
 
-export interface OreFileVersionsFilter {
+export interface OreFilesVersionsFilter {
     version: number | null;
     from_version: number | null;
     to_version: number | null;
@@ -191,25 +193,40 @@ export interface ListByConfigurationTypeCodeOreFilesResponse {
     total: number;
 }
 
-export interface ListOreFileVersionsRequest {
+export interface ListBySchemaOreFileCodeOreFilesRequest {
+    schema_ore_file_code: string | null;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: OreFilesFilter | null;
+}
+
+export interface ListBySchemaOreFileCodeOreFilesResponse {
+    result: Result;
+    files: OreFile[];
+    total: number;
+}
+
+export interface ListOreFilesVersionsRequest {
     key: OreFileKey;
     offset: number;
     limit: number;
     order: Order;
-    filter: OreFileVersionsFilter | null;
+    filter: OreFilesVersionsFilter | null;
 }
 
-export interface ListOreFileVersionsResponse {
+export interface ListOreFilesVersionsResponse {
     result: Result;
     versions: OreFile[];
     total: number;
 }
 
-export interface GetOreFileVersionRequest {
-    key: OreFileVersionKey;
+export interface GetOreFilesVersionRequest {
+    key: OreFilesVersionKey;
 }
 
-export interface GetOreFileVersionResponse {
+export interface GetOreFilesVersionResponse {
     result: Result;
     version: OreFile | null;
 }
@@ -225,8 +242,10 @@ export const subjects = {
     list_by_category_code_ore_files_request: 'reporting.v1.ore_files.list_by_category_code',
     list_by_configuration_type_code_ore_files_request:
         'reporting.v1.ore_files.list_by_configuration_type_code',
-    list_ore_file_versions_request: 'reporting.v1.ore_files_versions.list',
-    get_ore_file_version_request: 'reporting.v1.ore_files_versions.get',
+    list_by_schema_ore_file_code_ore_files_request:
+        'reporting.v1.ore_files.list_by_schema_ore_file_code',
+    list_ore_files_versions_request: 'reporting.v1.ore_files_versions.list',
+    get_ore_files_version_request: 'reporting.v1.ore_files_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -243,8 +262,9 @@ export const requiresSession = {
     delete_many_ore_files_request: true,
     list_by_category_code_ore_files_request: true,
     list_by_configuration_type_code_ore_files_request: true,
-    list_ore_file_versions_request: true,
-    get_ore_file_version_request: true,
+    list_by_schema_ore_file_code_ore_files_request: true,
+    list_ore_files_versions_request: true,
+    get_ore_files_version_request: true,
 } as const;
 
 /**

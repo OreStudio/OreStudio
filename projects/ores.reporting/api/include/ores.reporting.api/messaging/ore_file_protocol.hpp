@@ -53,7 +53,7 @@ struct ore_file_write {
     std::optional<std::string> guide_section;
     std::string origin;
     std::string format;
-    std::optional<std::string> xsd_file;
+    std::optional<std::string> schema_ore_file_code;
     std::string typical_filename;
     std::string filename_regex;
     std::string description;
@@ -78,9 +78,11 @@ struct ore_file_lookup {
 struct ore_files_filter {
     std::optional<std::string> category_code;
     std::optional<std::optional<std::string>> configuration_type_code;
+    std::optional<std::optional<std::string>> schema_ore_file_code;
     std::optional<std::vector<std::string>> code_one_of;
     std::optional<std::vector<std::string>> category_code_one_of;
     std::optional<std::vector<std::string>> configuration_type_code_one_of;
+    std::optional<std::vector<std::string>> schema_ore_file_code_one_of;
 };
 
 struct ore_file_event {
@@ -92,12 +94,12 @@ struct ore_file_event {
     std::optional<std::string> correlation_id;
 };
 
-struct ore_file_version_key {
+struct ore_files_version_key {
     ore_file_key ore_file;
     std::uint32_t version;
 };
 
-struct ore_file_versions_filter {
+struct ore_files_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
@@ -285,8 +287,33 @@ struct list_by_configuration_type_code_ore_files_response {
     std::uint64_t total;
 };
 
-struct list_ore_file_versions_request {
-    using response_type = struct list_ore_file_versions_response;
+struct list_by_schema_ore_file_code_ore_files_request {
+    using response_type = struct list_by_schema_ore_file_code_ore_files_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ore_files.list_by_schema_ore_file_code";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<std::string> schema_ore_file_code;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<ore_files_filter> filter;
+};
+
+struct list_by_schema_ore_file_code_ore_files_response {
+    ores::utility::domain::result result;
+    std::vector<ores::reporting::domain::ore_file> files;
+    std::uint64_t total;
+};
+
+struct list_ore_files_versions_request {
+    using response_type = struct list_ore_files_versions_response;
     static constexpr std::string_view nats_subject = "reporting.v1.ore_files_versions.list";
     /**
      * @brief Whether the caller must have established a session first.
@@ -299,17 +326,17 @@ struct list_ore_file_versions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
-    std::optional<ore_file_versions_filter> filter;
+    std::optional<ore_files_versions_filter> filter;
 };
 
-struct list_ore_file_versions_response {
+struct list_ore_files_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file> versions;
     std::uint64_t total;
 };
 
-struct get_ore_file_version_request {
-    using response_type = struct get_ore_file_version_response;
+struct get_ore_files_version_request {
+    using response_type = struct get_ore_files_version_response;
     static constexpr std::string_view nats_subject = "reporting.v1.ore_files_versions.get";
     /**
      * @brief Whether the caller must have established a session first.
@@ -318,10 +345,10 @@ struct get_ore_file_version_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    ore_file_version_key key;
+    ore_files_version_key key;
 };
 
-struct get_ore_file_version_response {
+struct get_ore_files_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_file> version;
 };
@@ -370,7 +397,7 @@ inline constexpr std::string_view deleted = "reporting.v1.ore_files_events.delet
         utility::codec::field{"guide_section", &ore_file_write::guide_section},
         utility::codec::field{"origin", &ore_file_write::origin},
         utility::codec::field{"format", &ore_file_write::format},
-        utility::codec::field{"xsd_file", &ore_file_write::xsd_file},
+        utility::codec::field{"schema_ore_file_code", &ore_file_write::schema_ore_file_code},
         utility::codec::field{"typical_filename", &ore_file_write::typical_filename},
         utility::codec::field{"filename_regex", &ore_file_write::filename_regex},
         utility::codec::field{"description", &ore_file_write::description},
@@ -436,10 +463,13 @@ inline constexpr std::string_view deleted = "reporting.v1.ore_files_events.delet
         utility::codec::field{"category_code", &ore_files_filter::category_code},
         utility::codec::field{"configuration_type_code",
                               &ore_files_filter::configuration_type_code},
+        utility::codec::field{"schema_ore_file_code", &ore_files_filter::schema_ore_file_code},
         utility::codec::field{"code_one_of", &ore_files_filter::code_one_of},
         utility::codec::field{"category_code_one_of", &ore_files_filter::category_code_one_of},
         utility::codec::field{"configuration_type_code_one_of",
                               &ore_files_filter::configuration_type_code_one_of},
+        utility::codec::field{"schema_ore_file_code_one_of",
+                              &ore_files_filter::schema_ore_file_code_one_of},
     };
 }
 
@@ -463,33 +493,33 @@ inline constexpr std::string_view deleted = "reporting.v1.ore_files_events.delet
 }
 
 /**
- * @brief The members of ore_file_version_key, named as the wire names them and in the order
+ * @brief The members of ore_files_version_key, named as the wire names them and in the order
  * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_file_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(const ore_files_version_key&) {
     return std::tuple{
-        utility::codec::field{"ore_file", &ore_file_version_key::ore_file},
-        utility::codec::field{"version", &ore_file_version_key::version},
+        utility::codec::field{"ore_file", &ore_files_version_key::ore_file},
+        utility::codec::field{"version", &ore_files_version_key::version},
     };
 }
 
 /**
- * @brief The members of ore_file_versions_filter, named as the wire names them and in the order
+ * @brief The members of ore_files_versions_filter, named as the wire names them and in the order
  * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const ore_file_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(const ore_files_versions_filter&) {
     return std::tuple{
-        utility::codec::field{"version", &ore_file_versions_filter::version},
-        utility::codec::field{"from_version", &ore_file_versions_filter::from_version},
-        utility::codec::field{"to_version", &ore_file_versions_filter::to_version},
+        utility::codec::field{"version", &ore_files_versions_filter::version},
+        utility::codec::field{"from_version", &ore_files_versions_filter::from_version},
+        utility::codec::field{"to_version", &ore_files_versions_filter::to_version},
     };
 }
 
@@ -779,65 +809,102 @@ wire_fields(const list_by_configuration_type_code_ore_files_response&) {
 }
 
 /**
- * @brief The members of list_ore_file_versions_request, named as the wire names them and in the
+ * @brief The members of list_by_schema_ore_file_code_ore_files_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_schema_ore_file_code_ore_files_request&) {
+    return std::tuple{
+        utility::codec::field{
+            "schema_ore_file_code",
+            &list_by_schema_ore_file_code_ore_files_request::schema_ore_file_code},
+        utility::codec::field{"scope", &list_by_schema_ore_file_code_ore_files_request::scope},
+        utility::codec::field{"offset", &list_by_schema_ore_file_code_ore_files_request::offset},
+        utility::codec::field{"limit", &list_by_schema_ore_file_code_ore_files_request::limit},
+        utility::codec::field{"order", &list_by_schema_ore_file_code_ore_files_request::order},
+        utility::codec::field{"filter", &list_by_schema_ore_file_code_ore_files_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_schema_ore_file_code_ore_files_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_schema_ore_file_code_ore_files_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_schema_ore_file_code_ore_files_response::result},
+        utility::codec::field{"files", &list_by_schema_ore_file_code_ore_files_response::files},
+        utility::codec::field{"total", &list_by_schema_ore_file_code_ore_files_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_ore_files_versions_request, named as the wire names them and in the
  * order the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ore_file_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(const list_ore_files_versions_request&) {
     return std::tuple{
-        utility::codec::field{"key", &list_ore_file_versions_request::key},
-        utility::codec::field{"offset", &list_ore_file_versions_request::offset},
-        utility::codec::field{"limit", &list_ore_file_versions_request::limit},
-        utility::codec::field{"order", &list_ore_file_versions_request::order},
-        utility::codec::field{"filter", &list_ore_file_versions_request::filter},
+        utility::codec::field{"key", &list_ore_files_versions_request::key},
+        utility::codec::field{"offset", &list_ore_files_versions_request::offset},
+        utility::codec::field{"limit", &list_ore_files_versions_request::limit},
+        utility::codec::field{"order", &list_ore_files_versions_request::order},
+        utility::codec::field{"filter", &list_ore_files_versions_request::filter},
     };
 }
 
 /**
- * @brief The members of list_ore_file_versions_response, named as the wire names them and in the
+ * @brief The members of list_ore_files_versions_response, named as the wire names them and in the
  * order the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_ore_file_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(const list_ore_files_versions_response&) {
     return std::tuple{
-        utility::codec::field{"result", &list_ore_file_versions_response::result},
-        utility::codec::field{"versions", &list_ore_file_versions_response::versions},
-        utility::codec::field{"total", &list_ore_file_versions_response::total},
+        utility::codec::field{"result", &list_ore_files_versions_response::result},
+        utility::codec::field{"versions", &list_ore_files_versions_response::versions},
+        utility::codec::field{"total", &list_ore_files_versions_response::total},
     };
 }
 
 /**
- * @brief The members of get_ore_file_version_request, named as the wire names them and in the order
- * the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(const get_ore_file_version_request&) {
-    return std::tuple{
-        utility::codec::field{"key", &get_ore_file_version_request::key},
-    };
-}
-
-/**
- * @brief The members of get_ore_file_version_response, named as the wire names them and in the
+ * @brief The members of get_ore_files_version_request, named as the wire names them and in the
  * order the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_ore_file_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(const get_ore_files_version_request&) {
     return std::tuple{
-        utility::codec::field{"result", &get_ore_file_version_response::result},
-        utility::codec::field{"version", &get_ore_file_version_response::version},
+        utility::codec::field{"key", &get_ore_files_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_ore_files_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_ore_files_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_ore_files_version_response::result},
+        utility::codec::field{"version", &get_ore_files_version_response::version},
     };
 }
 
@@ -913,23 +980,25 @@ struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_fil
     static ores::reporting::messaging::ore_file_event read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_file_version_key> {
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_files_version_key> {
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::reporting::messaging::ore_file_version_key& v);
-    static ores::reporting::messaging::ore_file_version_key read_json(std::string_view text);
-    static std::string write_msgpack(const ores::reporting::messaging::ore_file_version_key& v);
-    static ores::reporting::messaging::ore_file_version_key
+    static std::string write_json(const ores::reporting::messaging::ore_files_version_key& v);
+    static ores::reporting::messaging::ore_files_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::ore_files_version_key& v);
+    static ores::reporting::messaging::ore_files_version_key
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::ore_file_versions_filter> {
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::ore_files_versions_filter> {
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::reporting::messaging::ore_file_versions_filter& v);
-    static ores::reporting::messaging::ore_file_versions_filter read_json(std::string_view text);
-    static std::string write_msgpack(const ores::reporting::messaging::ore_file_versions_filter& v);
-    static ores::reporting::messaging::ore_file_versions_filter
+    static std::string write_json(const ores::reporting::messaging::ore_files_versions_filter& v);
+    static ores::reporting::messaging::ore_files_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::ore_files_versions_filter& v);
+    static ores::reporting::messaging::ore_files_versions_filter
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
@@ -1146,58 +1215,86 @@ struct ORES_REPORTING_API_EXPORT
 };
 template <>
 struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::list_ore_file_versions_request> {
+    wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request> {
     static constexpr bool is_generated = true;
 
     static std::string
-    write_json(const ores::reporting::messaging::list_ore_file_versions_request& v);
-    static ores::reporting::messaging::list_ore_file_versions_request
+    write_json(const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request& v);
+    static ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request
     read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::reporting::messaging::list_ore_file_versions_request& v);
-    static ores::reporting::messaging::list_ore_file_versions_request
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request& v);
+    static ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::list_ore_file_versions_response> {
+    wire_traits<ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response> {
     static constexpr bool is_generated = true;
 
-    static std::string
-    write_json(const ores::reporting::messaging::list_ore_file_versions_response& v);
-    static ores::reporting::messaging::list_ore_file_versions_response
+    static std::string write_json(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response& v);
+    static ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response
     read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::reporting::messaging::list_ore_file_versions_response& v);
-    static ores::reporting::messaging::list_ore_file_versions_response
+    static std::string write_msgpack(
+        const ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response& v);
+    static ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::get_ore_file_version_request> {
+    wire_traits<ores::reporting::messaging::list_ore_files_versions_request> {
     static constexpr bool is_generated = true;
 
     static std::string
-    write_json(const ores::reporting::messaging::get_ore_file_version_request& v);
-    static ores::reporting::messaging::get_ore_file_version_request
+    write_json(const ores::reporting::messaging::list_ore_files_versions_request& v);
+    static ores::reporting::messaging::list_ore_files_versions_request
     read_json(std::string_view text);
     static std::string
-    write_msgpack(const ores::reporting::messaging::get_ore_file_version_request& v);
-    static ores::reporting::messaging::get_ore_file_version_request
+    write_msgpack(const ores::reporting::messaging::list_ore_files_versions_request& v);
+    static ores::reporting::messaging::list_ore_files_versions_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::get_ore_file_version_response> {
+    wire_traits<ores::reporting::messaging::list_ore_files_versions_response> {
     static constexpr bool is_generated = true;
 
     static std::string
-    write_json(const ores::reporting::messaging::get_ore_file_version_response& v);
-    static ores::reporting::messaging::get_ore_file_version_response
+    write_json(const ores::reporting::messaging::list_ore_files_versions_response& v);
+    static ores::reporting::messaging::list_ore_files_versions_response
     read_json(std::string_view text);
     static std::string
-    write_msgpack(const ores::reporting::messaging::get_ore_file_version_response& v);
-    static ores::reporting::messaging::get_ore_file_version_response
+    write_msgpack(const ores::reporting::messaging::list_ore_files_versions_response& v);
+    static ores::reporting::messaging::list_ore_files_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_files_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_files_version_request& v);
+    static ores::reporting::messaging::get_ore_files_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_files_version_request& v);
+    static ores::reporting::messaging::get_ore_files_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_ore_files_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_ore_files_version_response& v);
+    static ores::reporting::messaging::get_ore_files_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_ore_files_version_response& v);
+    static ores::reporting::messaging::get_ore_files_version_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

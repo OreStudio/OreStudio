@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: B9B96BE3-0AA0-51A9-B012-95B65073FDF5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the ore_file_versions commands from the shell?
+#+description: Every command the ore_file_versions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ore_file_versions:
+
+This file documents the ore_file_versions resource at the shell, one section per command. Every command is a subcommand of =ore_file_versions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0DD4A278-4190-5B6B-9526-24C76BDEC860
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.list=.
+
+#+name: ore_file_versions-list
+#+begin_src ores-shell :tangle ore_file_versions-list.ores :exports none
+ore_file_versions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B44E2439-3675-5A21-B5A2-EBFEA53C045F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions get <id>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.get=.
+
+#+name: ore_file_versions-get
+#+begin_src ores-shell :tangle ore_file_versions-get.ores :exports none
+ore_file_versions get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3279C821-63C5-5A9B-AB80-A6D3C157A10C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.get_many=.
+
+#+name: ore_file_versions-get-many
+#+begin_src ores-shell :tangle ore_file_versions-get-many.ores :exports none
+ore_file_versions get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 87CD5F1A-CE28-50B3-B00C-C64966D4796A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions add <ore_file_code> <engine_version> <content> <sha256> <bytes> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.put=.
+
+#+name: ore_file_versions-add
+#+begin_src ores-shell :tangle ore_file_versions-add.ores :exports none
+ore_file_versions add __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 993D700E-4DF0-53AB-ADB8-C5DBFB6366F5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions set <id> <ore_file_code> <engine_version> <content> <sha256> <bytes> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.put=.
+
+#+name: ore_file_versions-set
+#+begin_src ores-shell :tangle ore_file_versions-set.ores :exports none
+ore_file_versions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 91B7E350-5691-588B-AD06-ADB6DFF302FC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions put-many --count <n> <id> <ore_file_code> <engine_version> <content> <sha256> <bytes> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.put_many=.
+
+#+name: ore_file_versions-put-many
+#+begin_src ores-shell :tangle ore_file_versions-put-many.ores :exports none
+ore_file_versions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4B3B9260-BDD6-5B96-8183-BED600C5AF33
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.delete=.
+
+#+name: ore_file_versions-delete
+#+begin_src ores-shell :tangle ore_file_versions-delete.ores :exports none
+ore_file_versions delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 62B2EFE0-553D-51C5-A3DB-6BADDE152E7D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.delete_many=.
+
+#+name: ore_file_versions-delete-many
+#+begin_src ores-shell :tangle ore_file_versions-delete-many.ores :exports none
+ore_file_versions delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-ore-file-code=
+:PROPERTIES:
+:ID: 3579ADE7-5C9F-5A56-9F29-C8A4187EF932
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions by-ore-file-code <ore_file_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions.list_by_ore_file_code=.
+
+#+name: ore_file_versions-by-ore-file-code
+#+begin_src ores-shell :tangle ore_file_versions-by-ore-file-code.ores :exports none
+ore_file_versions by-ore-file-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 868D55F1-1D99-54E0-B0FF-7CBFB94D2502
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions_versions.list=.
+
+#+name: ore_file_versions-versions
+#+begin_src ores-shell :tangle ore_file_versions-versions.ores :exports none
+ore_file_versions versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 39FE0D7C-13B4-5FFC-AA41-818606F26603
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_file_versions version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.ore_file_versions_versions.get=.
+
+#+name: ore_file_versions-version
+#+begin_src ores-shell :tangle ore_file_versions-version.ores :exports none
+ore_file_versions version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

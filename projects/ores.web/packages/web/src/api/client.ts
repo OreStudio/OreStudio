@@ -3796,6 +3796,11 @@ export const api = {
         );
     },
 
+    /** Where an ORE schema is downloaded from, with its includes, at one engine version. */
+    oreSchemaUrl(code: string, engineVersion: string): string {
+        return `/api/reporting/ore-files/${encodeURIComponent(code)}/schema?version=${encodeURIComponent(engineVersion)}`;
+    },
+
     /** Where one file of a run is downloaded from, by its id in the run's list. */
     reportRunFileUrl(runId: string, fileId: string): string {
         return `/api/reporting/runs/${encodeURIComponent(runId)}/files/${encodeURIComponent(fileId)}`;

@@ -27,7 +27,9 @@
  * - Every file belongs to a category and comes from where its category says
  * - A file is recognised by a regular expression anchored at both ends that its
  *   typical name matches, and no typical name matches a second file
- * - Only an xml file has an XSD, and a configuration document names its type
+ * - Only an xml file names a schema, which is an ORE file of its own, and a configuration
+ *   document names its type
+ * - Every schema has its contents at the vendored engine version, with their size and digest
  * - A file of an unknown category, origin or format is refused
  *
  * The seed itself is compared with ore_files.py by
@@ -38,7 +40,7 @@
 
 begin;
 
-select plan(12);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -52,9 +54,9 @@ select * from ores_reporting_ore_file_categories_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();
 
-select is((select count(*) from t_categories), 13::bigint, 'the seed holds thirteen categories');
+select is((select count(*) from t_categories), 14::bigint, 'the seed holds fourteen categories');
 
-select is((select count(*) from t_files), 124::bigint, 'the seed holds every ORE file');
+select is((select count(*) from t_files), 148::bigint, 'the seed holds every ORE file');
 
 select is(
     (select count(*) from t_files f
@@ -96,9 +98,37 @@ select is(
     'no typical name is recognised as a second file');
 
 select is(
-    (select count(*) from t_files where format <> 'xml' and xsd_file is not null),
+    (select count(*) from t_files where format <> 'xml' and schema_ore_file_code is not null),
     0::bigint,
-    'only an xml file has an XSD');
+    'only an xml file names a schema');
+
+select results_eq(
+    $$select f.code, s.code, s.format, s.typical_filename
+        from t_files f join t_files s on s.code = f.schema_ore_file_code
+       where f.code in ('conventions', 'trade_data') order by f.code$$,
+    $$values ('conventions'::text, 'conventions_schema'::text, 'xsd'::text, 'conventions.xsd'::text),
+             ('trade_data', 'trade_data_schema', 'xsd', 'input.xsd')$$,
+    'an xml file names its schema, which is an ORE file of its own');
+
+select is(
+    (select count(*) from ores_reporting_ore_file_versions_tbl v
+      where v.valid_to = ores_utility_infinity_timestamp_fn() and v.engine_version = '1.8.17.0'),
+    (select count(*) from t_files where category_code = 'schemas'),
+    'every schema has its contents at the engine version vendored');
+
+select is(
+    (select count(*) from ores_reporting_ore_file_versions_tbl v
+      where v.valid_to = ores_utility_infinity_timestamp_fn()
+        and (v.bytes <> octet_length(v.content) or v.sha256 <> encode(sha256(convert_to(v.content, 'UTF8')), 'hex'))),
+    0::bigint,
+    'the size and the digest of every stored content are the content's own');
+
+select ok(
+    (select content like '%<xs:include schemaLocation="instruments.xsd"/>%'
+       from ores_reporting_ore_file_versions_tbl
+      where ore_file_code = 'trade_data_schema' and engine_version = '1.8.17.0'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'the trade data schema states the schemas it includes');
 
 select is(
     (select count(*) from t_files
@@ -110,7 +140,7 @@ select is(
 create or replace function pg_temp.add_file(p_category text, p_format text) returns void as $$
     insert into ores_reporting_ore_files_tbl (
         code, tenant_id, version, name, category_code, configuration_type_code, guide_section,
-        origin, format, xsd_file, typical_filename, filename_regex, description, display_order,
+        origin, format, schema_ore_file_code, typical_filename, filename_regex, description, display_order,
         modified_by, performed_by, change_reason_code, change_commentary)
     values ('test_file', ores_utility_system_tenant_id_fn(), 0, 'Test File', p_category, null,
             null, 'produced', p_format, null, 'test.csv', '^test\.csv$', 'A test file.', 999,

@@ -25,7 +25,7 @@ import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { tarEntries } from './report-run-files.js';
+import { schemaWithIncludes, tarEntries } from './report-run-files.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -68,6 +68,9 @@ const BATCH = '55555555-5555-4555-8555-555555555555';
 const WORKUNIT = '33333333-3333-4333-8333-333333333333';
 const RESULT = '44444444-4444-4444-8444-444444444444';
 const OK = { outcome: 'ok', code: '', message: '', fields: [] };
+const APP_VERSION = '66666666-6666-4666-8666-666666666666';
+const ORE_XSD = '<xs:schema><xs:include schemaLocation="ore_types.xsd"/></xs:schema>';
+const TYPES_XSD = '<xs:schema><xs:simpleType name="currencyCode"/></xs:schema>';
 const INPUT = `/api/v1/storage/ores/ore/packages/${RUN}/ore_package.tar.gz`;
 const OUTPUT = `/api/v1/storage/ores/compute/output/${RESULT}.tar.gz`;
 const MANIFEST = `/api/v1/storage/ores/compute/output/${RESULT}/manifest.json.gz`;
@@ -126,7 +129,13 @@ const STORED: Readonly<Record<string, Buffer>> = {
     [`/api/v1/storage/ores/${NPV_KEY}`]: gzipSync(NPV),
 };
 
-const oreFile = (code: string, name: string, category: string, regex: string) => ({
+const oreFile = (
+    code: string,
+    name: string,
+    category: string,
+    regex: string,
+    extra: Record<string, unknown> = {},
+) => ({
     tenant_id: TENANT,
     code,
     name,
@@ -135,12 +144,13 @@ const oreFile = (code: string, name: string, category: string, regex: string) =>
     guide_section: null,
     origin: category === 'master_input' ? 'supplied' : 'produced',
     format: 'csv',
-    xsd_file: null,
+    schema_ore_file_code: null,
     typical_filename: name,
     filename_regex: regex,
     description: `What ${name} holds.`,
     display_order: 1,
     recorded_at: '2026-11-02 00:00:00.000000Z',
+    ...extra,
 });
 
 const ANSWERS: Readonly<Record<string, unknown>> = {
@@ -182,10 +192,21 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
     'reporting.v1.ore_files.list': {
         result: OK,
         files: [
-            oreFile('master_input', 'Analytics', 'master_input', '^ore\\.xml$'),
+            oreFile('master_input', 'Analytics', 'master_input', '^ore\\.xml$', {
+                format: 'xml',
+                schema_ore_file_code: 'master_input_schema',
+            }),
+            oreFile('master_input_schema', 'Analytics Schema', 'schemas', '^ore\\.xsd$', {
+                format: 'xsd',
+                typical_filename: 'ore.xsd',
+            }),
+            oreFile('ore_types_schema', 'ORE Types Schema', 'schemas', '^ore_types\\.xsd$', {
+                format: 'xsd',
+                typical_filename: 'ore_types.xsd',
+            }),
             oreFile('npv_report', 'NPV Report', 'valuation_report', '^npv\\.csv$'),
         ],
-        total: 2,
+        total: 4,
     },
     'reporting.v1.ore_file_categories.list': {
         result: OK,
@@ -226,6 +247,52 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
             },
         ],
         total: 1,
+    },
+    'compute.v1.workunits.get': {
+        result: OK,
+        workunit: {
+            tenant_id: TENANT,
+            id: WORKUNIT,
+            batch_id: BATCH,
+            app_version_id: APP_VERSION,
+            input_uri: INPUT,
+            canonical_result_id: RESULT,
+            recorded_at: '2026-10-23 07:00:01.000000Z',
+        },
+    },
+    'compute.v1.app_versions.get': {
+        result: OK,
+        app_version: {
+            tenant_id: TENANT,
+            id: APP_VERSION,
+            app_id: APP_VERSION,
+            engine_version: '1.8.17.0',
+            recorded_at: '2026-10-23 07:00:01.000000Z',
+        },
+    },
+    'reporting.v1.ore_file_versions.list': {
+        result: OK,
+        versions: [
+            {
+                tenant_id: TENANT,
+                id: RUN,
+                ore_file_code: 'master_input_schema',
+                engine_version: '1.8.17.0',
+                content: ORE_XSD,
+                sha256: 'a'.repeat(64),
+                bytes: ORE_XSD.length,
+            },
+            {
+                tenant_id: TENANT,
+                id: BATCH,
+                ore_file_code: 'ore_types_schema',
+                engine_version: '1.8.17.0',
+                content: TYPES_XSD,
+                sha256: 'a'.repeat(64),
+                bytes: TYPES_XSD.length,
+            },
+        ],
+        total: 2,
     },
     'compute.v1.results.get': {
         result: OK,
@@ -510,5 +577,86 @@ describe('GET /api/reporting/runs/:id/files/:file', () => {
         const response = await get(`/api/reporting/runs/${RUN}/files/${id}`);
 
         expect(response.statusCode).toBe(404);
+    });
+});
+
+describe('the schema of an xml file', () => {
+    it('names the schema of the file and says it is stored for the engine that ran the job', async () => {
+        const id = encodeURIComponent(`input:${WORKUNIT}:Input/ore.xml`);
+        const response = await get(`/api/reporting/runs/${RUN}/files/${id}/info`);
+
+        expect(response.json()).toMatchObject({
+            engine_version: '1.8.17.0',
+            schema: { code: 'master_input_schema', name: 'Analytics Schema', stored: true },
+        });
+    });
+
+    it('serves the schema with every schema it includes, as one zip', async () => {
+        const response = await get(
+            '/api/reporting/ore-files/master_input_schema/schema?version=1.8.17.0',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('application/zip');
+        expect(response.headers['content-disposition']).toContain(
+            'master_input_schema-1.8.17.0.zip',
+        );
+        const body = response.rawPayload;
+        expect(body.readUInt32LE(0)).toBe(0x04034b50);
+        expect(body.includes(Buffer.from('ore.xsd'))).toBe(true);
+        expect(body.includes(Buffer.from('ore_types.xsd'))).toBe(true);
+    });
+
+    it('names an include the engine version does not store rather than serve half a schema', async () => {
+        const response = await get(
+            '/api/reporting/ore-files/master_input_schema/schema?version=1.8.17.0',
+            {
+                ...ANSWERS,
+                'reporting.v1.ore_file_versions.list': {
+                    result: OK,
+                    versions: [
+                        {
+                            tenant_id: TENANT,
+                            id: RUN,
+                            ore_file_code: 'master_input_schema',
+                            engine_version: '1.8.17.0',
+                            content: ORE_XSD,
+                            sha256: 'a'.repeat(64),
+                            bytes: ORE_XSD.length,
+                        },
+                    ],
+                    total: 1,
+                },
+            },
+        );
+
+        expect(response.statusCode).toBe(404);
+        expect(response.json<{ message: string }>().message).toContain('ore_types.xsd');
+    });
+
+    it('refuses a code that is not a schema', async () => {
+        const response = await get('/api/reporting/ore-files/master_input/schema?version=1.8.17.0');
+
+        expect(response.statusCode).toBe(404);
+    });
+});
+
+describe('schemaWithIncludes', () => {
+    it('follows includes through other schemas and reads each schema once', () => {
+        const contents = new Map([
+            [
+                'a.xsd',
+                Buffer.from(
+                    '<xs:include schemaLocation="b.xsd"/><xs:include schemaLocation="c.xsd"/>',
+                ),
+            ],
+            ['b.xsd', Buffer.from('<xs:include schemaLocation="c.xsd"/>')],
+            ['c.xsd', Buffer.from('<xs:include schemaLocation="a.xsd"/>')],
+        ]);
+
+        const { files, missing } = schemaWithIncludes('a.xsd', contents);
+
+        expect(files.map((file) => file.name)).toEqual(['a.xsd', 'b.xsd', 'c.xsd']);
+        expect(missing).toEqual([]);
     });
 });

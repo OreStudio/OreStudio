@@ -92,6 +92,8 @@
 
 \ir ./reporting_file_types_notify_trigger_drop.sql
 \ir ./reporting_file_types_drop.sql
+\ir ./reporting_ore_file_versions_notify_trigger_drop.sql
+\ir ./reporting_ore_file_versions_drop.sql
 \ir ./reporting_ore_files_notify_trigger_drop.sql
 \ir ./reporting_ore_files_drop.sql
 \ir ./reporting_ore_file_categories_notify_trigger_drop.sql

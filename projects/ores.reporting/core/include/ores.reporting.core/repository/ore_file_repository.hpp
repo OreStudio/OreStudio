@@ -173,6 +173,31 @@ public:
 
 
     /**
+     * @brief Reads latest ORE files filtered by schema_ore_file_code, with pagination.
+     * @param ctx Repository context with database connection
+     * @param schema_ore_file_code The schema_ore_file_code to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::ore_file> read_latest_by_schema_ore_file_code(
+        context ctx,
+        const std::string& schema_ore_file_code,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::ore_files_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active ORE files filtered by schema_ore_file_code.
+     */
+    std::uint32_t get_total_file_count_by_schema_ore_file_code(
+        context ctx,
+        const std::string& schema_ore_file_code,
+        const std::optional<messaging::ore_files_filter>& filter = std::nullopt);
+
+
+    /**
      * @brief Whether a list of ORE files can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.

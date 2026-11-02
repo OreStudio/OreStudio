@@ -106,17 +106,19 @@ struct ore_file final {
 
     /**
      * @brief The format of the file: xml, csv, csv_gz for a compressed csv, txt, dat for a binary
-     * file, json, json_gz for a compressed json, or tar_gz for a compressed archive of other files.
-     * An xml file is validated against the XSD in xsd_file.
+     * file, json, json_gz for a compressed json, tar_gz for a compressed archive of other files, or
+     * xsd for an XML schema. An xml file is validated against the schema schema_ore_file_code
+     * names.
      */
     std::string format;
 
     /**
-     * @brief For an xml file, the XSD of ORE that declares its root element, for example
-     * nettingsetdefinitions.xsd for netting.xml. Nothing for a file that is not xml, or an xml file
-     * that ORE publishes no schema for.
+     * @brief For an xml file, the ORE file of the XSD that declares its root element, for example
+     * conventions_schema for the conventions. The schema is itself an ORE file, so its contents can
+     * be read for each engine version. Nothing for a file that is not xml, or an xml file that ORE
+     * publishes no schema for.
      */
-    std::optional<std::string> xsd_file;
+    std::optional<std::string> schema_ore_file_code;
 
     /**
      * @brief The name ORE gives the file when nothing names it otherwise, and the name ORE Studio

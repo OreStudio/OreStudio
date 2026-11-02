@@ -103,7 +103,7 @@ domain::ore_file ore_file_to_domain(const messaging::ore_file_write& write) {
     v.guide_section = write.guide_section;
     v.origin = write.origin;
     v.format = write.format;
-    v.xsd_file = write.xsd_file;
+    v.schema_ore_file_code = write.schema_ore_file_code;
     v.typical_filename = write.typical_filename;
     v.filename_regex = write.filename_regex;
     v.description = write.description;
@@ -139,6 +139,12 @@ ore_file_service::list_ore_files(const messaging::list_ore_files_request& reques
         request.filter->configuration_type_code_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->schema_ore_file_code_one_of &&
+        request.filter->schema_ore_file_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -186,6 +192,12 @@ ore_file_service::list_by_category_code_ore_files(
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->schema_ore_file_code_one_of &&
+        request.filter->schema_ore_file_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.scope == ores::utility::domain::scope::subtree) {
         response.result = refuse(outcome_code::scope_not_supported, {.entity = "ORE files"});
         return response;
@@ -225,6 +237,12 @@ ore_file_service::list_by_configuration_type_code_ore_files(
                                  {.field = "configuration_type_code_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->schema_ore_file_code_one_of &&
+        request.filter->schema_ore_file_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.scope == ores::utility::domain::scope::subtree) {
         response.result = refuse(outcome_code::scope_not_supported, {.entity = "ORE files"});
         return response;
@@ -241,6 +259,59 @@ ore_file_service::list_by_configuration_type_code_ore_files(
         ctx_, relation, request.offset, request.limit, request.order, request.filter);
     response.total =
         repo_.get_total_file_count_by_configuration_type_code(ctx_, relation, request.filter);
+    return response;
+}
+
+messaging::list_by_schema_ore_file_code_ore_files_response
+ore_file_service::list_by_schema_ore_file_code_ore_files(
+    const messaging::list_by_schema_ore_file_code_ore_files_request& request) {
+    messaging::list_by_schema_ore_file_code_ore_files_response response;
+    if (!request.order.field.empty() &&
+        !repository::ore_file_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "ORE files", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->code_one_of &&
+        request.filter->code_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->category_code_one_of &&
+        request.filter->category_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "category_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->configuration_type_code_one_of &&
+        request.filter->configuration_type_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "configuration_type_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->schema_ore_file_code_one_of &&
+        request.filter->schema_ore_file_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "schema_ore_file_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "ORE files"});
+        return response;
+    }
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
+    if (!request.schema_ore_file_code) {
+        response.result = refuse(outcome_code::relation_required,
+                                 {.entity = "ORE files", .field = "schema_ore_file_code"});
+        return response;
+    }
+    const auto relation = *request.schema_ore_file_code;
+    response.files = repo_.read_latest_by_schema_ore_file_code(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_file_count_by_schema_ore_file_code(ctx_, relation, request.filter);
     return response;
 }
 
@@ -388,9 +459,9 @@ ore_file_service::delete_many_ore_files(const messaging::delete_many_ore_files_r
     return response;
 }
 
-messaging::list_ore_file_versions_response
-ore_file_service::list_ore_file_versions(const messaging::list_ore_file_versions_request& request) {
-    messaging::list_ore_file_versions_response response;
+messaging::list_ore_files_versions_response ore_file_service::list_ore_files_versions(
+    const messaging::list_ore_files_versions_request& request) {
+    messaging::list_ore_files_versions_response response;
     if (!request.order.field.empty() || request.order.descending) {
         response.result = refuse(outcome_code::order_not_supported,
                                  {.entity = "ORE files", .field = request.order.field});
@@ -412,9 +483,9 @@ ore_file_service::list_ore_file_versions(const messaging::list_ore_file_versions
     return response;
 }
 
-messaging::get_ore_file_version_response
-ore_file_service::get_ore_file_version(const messaging::get_ore_file_version_request& request) {
-    messaging::get_ore_file_version_response response;
+messaging::get_ore_files_version_response
+ore_file_service::get_ore_files_version(const messaging::get_ore_files_version_request& request) {
+    messaging::get_ore_files_version_response response;
     auto found = repo_.read_at_version(ctx_, request.key.ore_file.code, request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_file"});
@@ -510,6 +581,21 @@ std::uint32_t ore_file_service::count_files_by_configuration_type_code(
     BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count by configuration_type_code: "
                                << configuration_type_code;
     return repo_.get_total_file_count_by_configuration_type_code(ctx_, configuration_type_code);
+}
+
+
+std::vector<domain::ore_file> ore_file_service::list_files_by_schema_ore_file_code(
+    const std::string& schema_ore_file_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing ORE files by schema_ore_file_code: "
+                               << schema_ore_file_code;
+    return repo_.read_latest_by_schema_ore_file_code(ctx_, schema_ore_file_code, offset, limit);
+}
+
+std::uint32_t
+ore_file_service::count_files_by_schema_ore_file_code(const std::string& schema_ore_file_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count by schema_ore_file_code: "
+                               << schema_ore_file_code;
+    return repo_.get_total_file_count_by_schema_ore_file_code(ctx_, schema_ore_file_code);
 }
 
 

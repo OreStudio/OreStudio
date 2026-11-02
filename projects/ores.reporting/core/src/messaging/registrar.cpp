@@ -78,6 +78,8 @@
 #include "ores.reporting.core/messaging/ore_file_category_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_file_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_file_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_file_version_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_file_version_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_setting_value_set_history_provider_registrar.hpp"
@@ -726,6 +728,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(std::move(sub));
     for (auto& sub : register_ore_file_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_file_version_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
 
     // ----------------------------------------------------------------
     // Configurations (generated CRUD handlers). A report page reads the
@@ -825,6 +829,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_file_type_history_provider(hist_registry);
         register_ore_file_category_history_provider(hist_registry);
         register_ore_file_history_provider(hist_registry);
+        register_ore_file_version_history_provider(hist_registry);
         register_ore_parameter_history_provider(hist_registry);
         register_ore_parameter_setting_value_set_history_provider(hist_registry);
         register_ore_parameter_value_domain_history_provider(hist_registry);

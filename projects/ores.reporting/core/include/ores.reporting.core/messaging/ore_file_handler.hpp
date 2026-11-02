@@ -509,7 +509,7 @@ public:
     }
 
     /**
-     * @brief Serves reporting.v1.ore_files_versions.list.
+     * @brief Serves reporting.v1.ore_files.list_by_schema_ore_file_code.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -517,7 +517,7 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void list_ore_file_versions(ores::nats::message msg) {
+    void list_by_schema_ore_file_code_ore_files(ores::nats::message msg) {
         BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -531,7 +531,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<list_ore_file_versions_request>(msg);
+        auto req = decode<list_by_schema_ore_file_code_ore_files_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ore_file_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
@@ -541,7 +541,7 @@ public:
             req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         service::ore_file_service svc(sys_ctx);
         try {
-            auto response = svc.list_ore_file_versions(*req);
+            auto response = svc.list_by_schema_ore_file_code_ore_files(*req);
             BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
@@ -549,7 +549,56 @@ public:
             // exception here is the store failing, which is a different
             // thing and is reported as such.
             BOOST_LOG_SEV(ore_file_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            list_ore_file_versions_response failure;
+            list_by_schema_ore_file_code_ore_files_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves reporting.v1.ore_files_versions.list.
+     *
+     * The adapter decides nothing: it proves the request, checks the
+     * permission a write needs, decodes the canonical request, calls the
+     * service and replies with the response the service filled. The outcome
+     * a caller reads -- missing, conflicting, denied -- is the service's
+     * answer, so the two cannot disagree about what happened.
+     */
+    void list_ore_files_versions(ores::nats::message msg) {
+        BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            ore_file_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::ore_files:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<list_ore_files_versions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(ore_file_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::ore_file_service svc(sys_ctx);
+        try {
+            auto response = svc.list_ore_files_versions(*req);
+            BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(ore_file_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            list_ore_files_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();
@@ -566,7 +615,7 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void get_ore_file_version(ores::nats::message msg) {
+    void get_ore_files_version(ores::nats::message msg) {
         BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -580,7 +629,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        auto req = decode<get_ore_file_version_request>(msg);
+        auto req = decode<get_ore_files_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ore_file_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
@@ -590,7 +639,7 @@ public:
             req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         service::ore_file_service svc(sys_ctx);
         try {
-            auto response = svc.get_ore_file_version(*req);
+            auto response = svc.get_ore_files_version(*req);
             BOOST_LOG_SEV(ore_file_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
@@ -598,7 +647,7 @@ public:
             // exception here is the store failing, which is a different
             // thing and is reported as such.
             BOOST_LOG_SEV(ore_file_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            get_ore_file_version_response failure;
+            get_ore_files_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

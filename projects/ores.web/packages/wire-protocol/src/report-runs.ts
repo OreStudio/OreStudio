@@ -162,7 +162,7 @@ export const oreFileViewSchema = z.object({
     guide_section: z.string().nullable(),
     origin: z.string(),
     format: z.string(),
-    xsd_file: z.string().nullable(),
+    schema_ore_file_code: z.string().nullable(),
     typical_filename: z.string(),
     filename_regex: z.string(),
     description: z.string(),
@@ -185,11 +185,22 @@ export type OreFileParameterView = z.infer<typeof oreFileParameterViewSchema>;
 /**
  * One file of a run with everything a person needs to understand it: the file
  * as the run holds it, the ORE file it is, and the parameters that can name it.
- * `ore_file` is null for a name no ORE file recognises.
+ * `ore_file` is null for a name no ORE file recognises. `engine_version` is the
+ * ORE version of the job the file belongs to, null when no job or version is
+ * known. `schema` is the ORE file of the XSD an xml file validates against, with
+ * whether its contents are stored for that engine version.
  */
 export const reportRunFileInfoViewSchema = z.object({
     file: reportRunFileViewSchema,
     ore_file: oreFileViewSchema.nullable(),
     parameters: z.array(oreFileParameterViewSchema),
+    engine_version: z.string().nullable(),
+    schema: z
+        .object({
+            code: z.string(),
+            name: z.string(),
+            stored: z.boolean(),
+        })
+        .nullable(),
 });
 export type ReportRunFileInfoView = z.infer<typeof reportRunFileInfoViewSchema>;

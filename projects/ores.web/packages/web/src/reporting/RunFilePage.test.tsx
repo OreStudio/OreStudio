@@ -84,12 +84,14 @@ describe('the page of a run file', () => {
                 guide_section: null,
                 origin: 'produced',
                 format: 'csv',
-                xsd_file: null,
+                schema_ore_file_code: null,
                 typical_filename: 'npv.csv',
                 filename_regex: '^npv\\.csv$',
                 description: 'The NPV report. It holds the value of each trade.',
             },
             parameters: [],
+            engine_version: '1.8.17.0',
+            schema: null,
         });
 
         expect(html).toContain('NPV Report');
@@ -110,5 +112,52 @@ describe('the page of a run file', () => {
 
         expect(html).toContain('No ORE file in the catalogue recognises this name');
         expect(html).not.toContain('Valuation Reports');
+    });
+
+    it('offers the schema of an xml file for the engine version that ran it', () => {
+        const xml = {
+            ...file,
+            name: 'Input/conventions.xml',
+            direction: 'input',
+            ore_file_code: 'conventions',
+        };
+        const base = {
+            file: xml,
+            ore_file: null,
+            parameters: [],
+            engine_version: '1.8.17.0',
+        } as const;
+        const stored = render({ ...base, ore_file: null, schema: null });
+        expect(stored).not.toContain('Download the schema');
+
+        const info = (isStored: boolean): ReportRunFileInfoView => ({
+            ...base,
+            ore_file: {
+                code: 'conventions',
+                name: 'Conventions',
+                category_code: 'configuration',
+                category_name: 'Configuration',
+                category_description: 'The configuration documents of a run.',
+                configuration_type_code: 'conventions',
+                guide_section: null,
+                origin: 'supplied',
+                format: 'xml',
+                schema_ore_file_code: 'conventions_schema',
+                typical_filename: 'conventions.xml',
+                filename_regex: '^conventions\\.xml$',
+                description: 'The market conventions.',
+            },
+            schema: { code: 'conventions_schema', name: 'Conventions Schema', stored: isStored },
+        });
+
+        const offered = render(info(true));
+        expect(offered).toContain('Conventions Schema');
+        expect(offered).toContain(
+            '/api/reporting/ore-files/conventions_schema/schema?version=1.8.17.0',
+        );
+
+        const missing = render(info(false));
+        expect(missing).toContain('not stored for ORE 1.8.17.0');
+        expect(missing).not.toContain('/api/reporting/ore-files/');
     });
 });

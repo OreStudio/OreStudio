@@ -96,10 +96,14 @@ public:
     list_by_configuration_type_code_ore_files(
         const ::ores::reporting::messaging::list_by_configuration_type_code_ore_files_request&
             request);
-    ::ores::reporting::messaging::list_ore_file_versions_response list_ore_file_versions(
-        const ::ores::reporting::messaging::list_ore_file_versions_request& request);
-    ::ores::reporting::messaging::get_ore_file_version_response
-    get_ore_file_version(const ::ores::reporting::messaging::get_ore_file_version_request& request);
+    ::ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_response
+    list_by_schema_ore_file_code_ore_files(
+        const ::ores::reporting::messaging::list_by_schema_ore_file_code_ore_files_request&
+            request);
+    ::ores::reporting::messaging::list_ore_files_versions_response list_ore_files_versions(
+        const ::ores::reporting::messaging::list_ore_files_versions_request& request);
+    ::ores::reporting::messaging::get_ore_files_version_response get_ore_files_version(
+        const ::ores::reporting::messaging::get_ore_files_version_request& request);
     /**@}*/
 
     /**
@@ -159,6 +163,26 @@ public:
      */
     std::uint32_t
     count_files_by_configuration_type_code(const std::string& configuration_type_code);
+
+
+    /**
+     * @brief Lists ORE files filtered by schema_ore_file_code, with pagination.
+     *
+     * @param schema_ore_file_code The schema_ore_file_code to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching ORE files for the requested page.
+     */
+    std::vector<domain::ore_file> list_files_by_schema_ore_file_code(
+        const std::string& schema_ore_file_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active ORE files filtered by schema_ore_file_code.
+     *
+     * @param schema_ore_file_code The schema_ore_file_code to filter by.
+     * @return Total number of matching ORE files.
+     */
+    std::uint32_t count_files_by_schema_ore_file_code(const std::string& schema_ore_file_code);
 
 
     /**

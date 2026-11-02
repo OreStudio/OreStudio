@@ -49,7 +49,7 @@ domain::ore_file ore_file_mapper::map(const ore_file_entity& v) {
     r.guide_section = v.guide_section;
     r.origin = v.origin;
     r.format = v.format;
-    r.xsd_file = v.xsd_file;
+    r.schema_ore_file_code = v.schema_ore_file_code;
     r.typical_filename = v.typical_filename;
     r.filename_regex = v.filename_regex;
     r.description = v.description;
@@ -77,7 +77,7 @@ ore_file_entity ore_file_mapper::map(const domain::ore_file& v) {
     r.guide_section = v.guide_section;
     r.origin = v.origin;
     r.format = v.format;
-    r.xsd_file = v.xsd_file;
+    r.schema_ore_file_code = v.schema_ore_file_code;
     r.typical_filename = v.typical_filename;
     r.filename_regex = v.filename_regex;
     r.description = v.description;

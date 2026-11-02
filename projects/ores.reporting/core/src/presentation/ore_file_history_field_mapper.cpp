@@ -44,7 +44,8 @@ std::vector<ores::diff::domain::field_value> render_ore_file_fields(const domain
     fields.push_back({.name = "Guide Section", .value = v.guide_section.value_or(std::string{})});
     fields.push_back({.name = "Origin", .value = v.origin});
     fields.push_back({.name = "Format", .value = v.format});
-    fields.push_back({.name = "Xsd File", .value = v.xsd_file.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Schema Ore File Code", .value = v.schema_ore_file_code.value_or(std::string{})});
     fields.push_back({.name = "Typical Filename", .value = v.typical_filename});
     fields.push_back({.name = "Filename Regex", .value = v.filename_regex});
     fields.push_back({.name = "Description", .value = v.description});

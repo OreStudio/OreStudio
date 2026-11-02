@@ -47,6 +47,7 @@ set(files
     "main.cpp"
     "ore_file_category_eventing_integration_tests.cpp"
     "ore_file_eventing_integration_tests.cpp"
+    "ore_file_version_eventing_integration_tests.cpp"
     "ore_parameter_eventing_integration_tests.cpp"
     "ore_parameter_setting_value_set_eventing_integration_tests.cpp"
     "ore_parameter_value_domain_eventing_integration_tests.cpp"

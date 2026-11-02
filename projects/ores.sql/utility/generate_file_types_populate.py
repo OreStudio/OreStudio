@@ -41,6 +41,7 @@ import json
 import os
 import re
 import sys
+import uuid
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -58,6 +59,9 @@ CATEGORY_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reportin
                              "reporting_ore_file_categories_populate.sql")
 ORE_FILE_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                              "reporting_ore_files_populate.sql")
+VERSION_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
+                            "reporting_ore_file_versions_populate.sql")
+SCHEMA_DIR = os.path.join(ROOT, "external", "ore", "xsd")
 
 FILE_VALUE = re.compile(r"\.(xml|csv|txt|json|dat|gz)$")
 DATED = re.compile(r"\d{8}")
@@ -417,10 +421,11 @@ def link_ore_files(rows):
             continue
         found = hits[0]
         r["ore_file_code"] = found["code"]
-        if r["xsd_file"] is not None and r["xsd_file"] != found["xsd_file"]:
+        stated = {code: name for name, code in ore_files.SCHEMA_OF.items()}.get(
+            found["schema_ore_file_code"])
+        if r["xsd_file"] is not None and r["xsd_file"] != stated:
             problems.append(f"{r['code']}: the samples give {r['name_pattern']} the XSD "
-                            f"{r['xsd_file']}, the ORE file {found['code']} states "
-                            f"{found['xsd_file']}")
+                            f"{r['xsd_file']}, the ORE file {found['code']} states {stated}")
     return problems
 
 
@@ -544,7 +549,7 @@ def render_categories():
 
 def render_ore_files():
     columns = ("code", "name", "category_code", "configuration_type_code", "guide_section",
-               "origin", "format", "xsd_file", "typical_filename", "filename_regex",
+               "origin", "format", "schema_ore_file_code", "typical_filename", "filename_regex",
                "description", "display_order")
     rows = [dict(f, description=ore_file_descriptions.FILES[f["code"]], display_order=i + 1)
             for i, f in enumerate(ore_files.FILES)]
@@ -634,6 +639,118 @@ end $$;
 """
 
 
+def vendored_schemas():
+    """The schemas ORE ships, as vendored in external/ore/xsd, with the engine version
+    their manifest states. The directory is checked against the manifest's digest of
+    every file in it, so a schema edited by hand cannot reach the seed."""
+    import hashlib
+    manifest = json.load(open(os.path.join(SCHEMA_DIR, "manifest.json")))
+    # The vendoring script orders the paths with sort, which follows the locale, so
+    # the paths are ordered here by the same sort rather than by their bytes.
+    import subprocess
+    skip = {"manifest.json", "README.md", "methodology.txt"}
+    names = [n for n in os.listdir(SCHEMA_DIR)
+             if n not in skip and os.path.isfile(os.path.join(SCHEMA_DIR, n))]
+    ordered = subprocess.run(["sort", "-z"], input="\0".join(names) + "\0", text=True,
+                             capture_output=True, check=True).stdout.split("\0")
+    lines = "".join(
+        f"{hashlib.sha256(open(os.path.join(SCHEMA_DIR, n), 'rb').read()).hexdigest()}  {n}\n"
+        for n in ordered if n)
+    tree = hashlib.sha256(lines.encode()).hexdigest()
+    if tree != manifest["tree_sha256"]:
+        raise SystemExit(f"{SCHEMA_DIR} no longer matches its manifest: the tree digest is "
+                         f"{tree}, the manifest states {manifest['tree_sha256']}")
+    version = manifest["engine_version"]
+    rows = []
+    for code, _, file_name in ore_files.SCHEMAS:
+        content = open(os.path.join(SCHEMA_DIR, file_name), encoding="utf-8").read()
+        raw = content.encode("utf-8")
+        rows.append({"id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"ores:ore_file:{code}@{version}")),
+                     "ore_file_code": code, "engine_version": version, "content": content,
+                     "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
+    return version, rows
+
+
+def render_versions():
+    version, rows = vendored_schemas()
+    columns = ("id", "ore_file_code", "engine_version", "content", "sha256", "bytes")
+
+    def value(c, v):
+        if c == "id":
+            return f"'{v}'::uuid"
+        if c == "content":
+            tag = "$xsd$"
+            assert tag not in v
+            return tag + v + tag
+        return str(v) if isinstance(v, int) else sql_text(v)
+
+    values = ",\n".join("        (" + ", ".join(value(c, r[c]) for c in columns) + ")"
+                         for r in rows)
+    names = ", ".join(columns)
+    inserted = ", ".join("r." + c for c in columns)
+    return f"""/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+
+/**
+ * ORE File Versions Population Script
+ *
+ * GENERATED FILE - DO NOT EDIT. Regenerate with
+ * projects/ores.sql/utility/generate_file_types_populate.py.
+ *
+ * Seeds the contents of the {len(rows)} XML schemas ORE {version} ships, from
+ * external/ore/xsd, checked against the digest its manifest states. A later engine
+ * version adds rows beside these. This script is idempotent.
+ */
+
+\\echo '--- ORE File Versions ---'
+
+do $$
+declare
+    v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
+    r record;
+begin
+    for r in
+        select * from (values
+{values}
+        ) as t ({names})
+    loop
+        if not exists (
+            select 1 from ores_reporting_ore_file_versions_tbl
+            where tenant_id = v_sys_tenant and ore_file_code = r.ore_file_code
+              and engine_version = r.engine_version
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            insert into ores_reporting_ore_file_versions_tbl (
+                {names},
+                tenant_id, version, modified_by, change_reason_code, change_commentary
+            ) values (
+                {inserted},
+                v_sys_tenant, 0, current_user, 'system.initial_load',
+                'Seed ORE file version: ' || r.ore_file_code || '@' || r.engine_version
+            );
+        end if;
+    end loop;
+end $$;
+"""
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true",
@@ -653,7 +770,7 @@ def main():
             print(f"  {problem}", file=sys.stderr)
         return 1
     seeds = ((CATEGORY_SEED, render_categories()), (ORE_FILE_SEED, render_ore_files()),
-             (SEED, render(documents, rows)))
+             (VERSION_SEED, render_versions()), (SEED, render(documents, rows)))
     if args.check:
         stale = [path for path, content in seeds
                  if not os.path.exists(path) or open(path).read() != content]

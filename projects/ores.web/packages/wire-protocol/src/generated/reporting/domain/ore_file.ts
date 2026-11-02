@@ -40,7 +40,7 @@ export interface OreFile {
     guide_section: string | null;
     origin: string;
     format: string;
-    xsd_file: string | null;
+    schema_ore_file_code: string | null;
     typical_filename: string;
     filename_regex: string;
     description: string;

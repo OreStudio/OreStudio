@@ -467,6 +467,44 @@ TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtri
     }
 }
 
+TEST_CASE("a_discount_ratio_segment_missing_a_curve_is_refused",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    // The reader checks a document against the schema, which requires each of
+    // the three curves and its currency, so the part never holds an empty one.
+
+    const auto document = [](const std::string& curves) {
+        return curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-RATIO</CurveId>
+      <CurveDescription>A discount ratio</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-RATIO</DiscountCurve>
+      <Segments>
+        <DiscountRatio>
+          <Type>Discount Ratio</Type>
+)" + curves + R"(
+        </DiscountRatio>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+    };
+    const std::string base = R"(<BaseCurve currency="EUR">EUR-EONIA</BaseCurve>)";
+    const std::string numerator = R"(<NumeratorCurve currency="USD">USD-SOFR</NumeratorCurve>)";
+    const std::string denominator =
+        R"(<DenominatorCurve currency="USD">USD-FedFunds</DenominatorCurve>)";
+
+    CHECK_NOTHROW(curve_configuration_projection::map(document(base + numerator + denominator)));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(base + denominator)),
+                      Catch::Matchers::ContainsSubstring("'NumeratorCurve' is missing"));
+    CHECK_THROWS_WITH(curve_configuration_projection::map(document(
+                          base + numerator + "<DenominatorCurve>USD-FedFunds</DenominatorCurve>")),
+                      Catch::Matchers::ContainsSubstring("'currency' is missing"));
+}
+
 TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 

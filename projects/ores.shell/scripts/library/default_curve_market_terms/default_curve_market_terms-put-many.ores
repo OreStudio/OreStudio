@@ -1,0 +1,6 @@
+# =put-many=
+#
+# GENERATED from doc/recipes/shell/default_curve_market_terms/default_curve_market_terms.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+default_curve_market_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script

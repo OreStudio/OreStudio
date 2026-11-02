@@ -69,7 +69,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Scheduler suites | 3 of 3 pass | =compass test run --preset linux-clang-release-ninja -- -R scheduler= | 48fb608cf4 plus this branch |
 | Utility suites | 1 of 1 pass | =compass test run --preset linux-clang-release-ninja -- -R utility= | 48fb608cf4 plus this branch |
-| Payload codec tests | 4 cases, 29 assertions pass | =ores.scheduler.core.tests "[service][codec]"= | 48fb608cf4 plus this branch |
+| Payload codec tests | 5 cases, 33 assertions pass | =ores.scheduler.core.tests "[service][codec]"= | 48fb608cf4 plus this branch |
 | Component drift (scheduler), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component scheduler-cpp=, and the check scripts | 48fb608cf4 plus this branch |
 | reflect-cpp left in scheduler sources, outside tests | 1 include and 1 =rfl::Reflector= in =cron_expression.hpp=; 1 =ores.rfl.pch= link | =grep -rn rfl projects/ores.scheduler= | 48fb608cf4 plus this branch |
 
@@ -109,7 +109,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Optional payload is never empty | =nats_publish_action_handler.cpp= | Accepted | Held as a plain value. |
+| 2 | Stray blank lines | both action handlers | Accepted | Removed. |
+| 3 | Trigger body field-order contract | =action_payloads.hpp= | Accepted, changed | The comment called the codec positional; both codecs read by name. It now states that the body must name every member the receiver requires. |
+| 4 | Error text tail differs from reflect-cpp's | handler tests | No change | Both refusal tests check only that the error is not empty. |
+| 5 | No MessagePack test of a reply with extra members | =service_action_payloads_tests.cpp= | Accepted | New case decodes a wider reply through the MessagePack carrier; 5 cases, 33 assertions pass. |
+| 6 | Tests include reflect-cpp as oracle | tests | No change | Remove reflect-cpp owns it. |
 
 * Result
 

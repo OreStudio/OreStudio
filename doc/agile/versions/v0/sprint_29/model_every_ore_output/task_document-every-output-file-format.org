@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-every-output-file-format
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ A person can read what any ORE output file holds without opening the engine's so
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started, and last in the story by design. |
-| Waiting on   | The catalogue, the readers and the two stores. |
-| Next         | Write the page once the readers exist, so the prose describes behaviour that is settled. |
-| Last touched | 2026-10-30                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
 
 * Acceptance
 
@@ -43,9 +43,15 @@ A person can read what any ORE output file holds without opening the engine's so
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The catalogue generator writes the page, so the column tables cannot drift from
+the readers. What the catalogue cannot know, what a figure means and its unit,
+lives in =output_family_docs.py= beside it, one entry for each family; the
+generator refuses a family without one. Units that the writers set were checked
+in the vendored source: the pricing and run timings are microseconds, nanosecond
+clocks divided by 1000. The page is one knowledge doc with a Summary, the rules
+for reading a family, the outputs not read into rows with their reasons, and a
+section for each family. =--check= covers the page, and the local gate runs it
+when the generator, the descriptions, the samples or the page change.
 
 * Measurements
 
@@ -59,7 +65,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families on the page | 81, each with a meaning and units; 19 outputs stated not read with a reason | =python3 projects/ores.ore/scripts/generate_output_catalogue.py --check= | 8319d663a5 |
 
 * Notes
 
@@ -87,3 +93,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]] states every output file
+ORE writes, generated from the catalogue: for each of the 81 families its file and
+other names, parameter, analytics, key, every column with its kind and role, what
+its figures measure and their unit, and its sample, marked when synthetic. The
+outputs not read into rows are listed with their reasons. The generator refuses a
+family it cannot describe and fails its check when the page drifts; the ORE
+knowledge page, the output processing page, the external index and the
+read-what-a-run-produced journey link to it.

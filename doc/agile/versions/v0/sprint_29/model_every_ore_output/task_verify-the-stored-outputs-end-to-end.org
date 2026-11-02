@@ -183,6 +183,7 @@ via its "Verifies task" field.
 | 14 | A bad file name in the address was reported as an id that is not a uuid | bff/src/report-run-files.ts | Accepted | The message names both the run and the file. |
 | 15 | The file page and each download read every package of the run again | bff/src/report-run-files.ts | Declined | A run has a few packages; a cache is not needed yet. |
 | 16 | The ER diagram still showed format and xsd_file on file types | ores.sql/modeling/ores_schema.reporting.puml | Accepted | Regenerated from the SQL; it shows the three new tables. |
+| 17 | The canonical store SQL test failed on main: the element map seed named commodity curve columns that moved to the curve entry parts | populate/reporting/reporting_ore_element_map_columns_populate.sql | Accepted | Regenerated with generate_ore_element_map.py; its --check now passes. |
 
 * Result
 

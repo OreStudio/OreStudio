@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: BBCF1C8D-663D-501B-A7DF-2D2F9B123F4E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_future_off_peak_indexes commands from the shell?
+#+description: Every command the commodity_future_off_peak_indexes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_future_off_peak_indexes:
+
+This file documents the commodity_future_off_peak_indexes resource at the shell, one section per command. Every command is a subcommand of =commodity_future_off_peak_indexes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EBA8E777-0EDB-5999-9518-37C406446F1C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.list=.
+
+#+name: commodity_future_off_peak_indexes-list
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-list.ores :exports none
+commodity_future_off_peak_indexes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C317CFD6-6A67-52D8-BFC0-D2CDE668F090
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.get=.
+
+#+name: commodity_future_off_peak_indexes-get
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-get.ores :exports none
+commodity_future_off_peak_indexes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BA4AEF7A-2B59-5EAD-8ADF-01C12BB8CCC8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.get_many=.
+
+#+name: commodity_future_off_peak_indexes-get-many
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-get-many.ores :exports none
+commodity_future_off_peak_indexes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3BF5FBB5-28D7-5357-AE1E-3487068A5A39
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes add <convention_id> <off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.put=.
+
+#+name: commodity_future_off_peak_indexes-add
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-add.ores :exports none
+commodity_future_off_peak_indexes add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 563E059A-9766-5755-8C20-37A84380AB33
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes set <id> <convention_id> <off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.put=.
+
+#+name: commodity_future_off_peak_indexes-set
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-set.ores :exports none
+commodity_future_off_peak_indexes set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9AACE9B0-409A-5FCE-BD52-DEA545FFACBE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes put-many --count <n> <id> <convention_id> <off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.put_many=.
+
+#+name: commodity_future_off_peak_indexes-put-many
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-put-many.ores :exports none
+commodity_future_off_peak_indexes put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D4268BE7-C8AB-5FB9-8F3C-026919171DB4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.delete=.
+
+#+name: commodity_future_off_peak_indexes-delete
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-delete.ores :exports none
+commodity_future_off_peak_indexes delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 898DD854-F307-5760-815D-29BA812D34D7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.delete_many=.
+
+#+name: commodity_future_off_peak_indexes-delete-many
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-delete-many.ores :exports none
+commodity_future_off_peak_indexes delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-convention-id=
+:PROPERTIES:
+:ID: 179435D4-D612-5F99-8AA6-772DE8B3D275
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes by-convention-id <convention_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes.list_by_convention_id=.
+
+#+name: commodity_future_off_peak_indexes-by-convention-id
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-by-convention-id.ores :exports none
+commodity_future_off_peak_indexes by-convention-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 90B92099-4720-5876-91FE-86969BF2D7F1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes_versions.list=.
+
+#+name: commodity_future_off_peak_indexes-versions
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-versions.ores :exports none
+commodity_future_off_peak_indexes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 02CB791D-363C-57D7-9BD6-ED1E78434E5F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_future_off_peak_indexes version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_future_off_peak_indexes_versions.get=.
+
+#+name: commodity_future_off_peak_indexes-version
+#+begin_src ores-shell :tangle commodity_future_off_peak_indexes-version.ores :exports none
+commodity_future_off_peak_indexes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

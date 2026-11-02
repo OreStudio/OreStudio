@@ -1020,10 +1020,6 @@ tangled into the runnable script library
 
 - [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]
 
-* Commodity Future Conventions
-
-- [[id:8C685BAC-85D1-548F-B146-098C60CA78BF][How do I run the commodity_future_conventions commands from the shell?]]
-
 * Bond Yield Conventions
 
 - [[id:B973BF1A-336E-5EE6-B8CF-6010AF70C38D][How do I run the bond_yield_conventions commands from the shell?]]
@@ -1971,3 +1967,23 @@ tangled into the runnable script library
 * Cross Currency Basis Swap Terms
 
 - [[id:474B4731-0A7B-5F13-85DE-92495F5A8BB8][How do I run the cross_currency_basis_swap_terms commands from the shell?]]
+
+* Commodity Future Averaging Terms
+
+- [[id:9BA1EDEF-6090-52FB-9715-76BFE51C791B][How do I run the commodity_future_averaging_terms commands from the shell?]]
+
+* Commodity Future Contract Terms
+
+- [[id:2FC439A0-5094-5D78-8048-642BBE40522C][How do I run the commodity_future_contract_terms commands from the shell?]]
+
+* Commodity Future Expiry Anchors
+
+- [[id:53445627-803F-5C71-8ADF-406AAD309BD7][How do I run the commodity_future_expiry_anchors commands from the shell?]]
+
+* Commodity Future Off Peak Indexes
+
+- [[id:BBCF1C8D-663D-501B-A7DF-2D2F9B123F4E][How do I run the commodity_future_off_peak_indexes commands from the shell?]]
+
+* Commodity Future Option Expiries
+
+- [[id:3A3EB896-C432-570A-8BF1-F3A9B1F9FF57][How do I run the commodity_future_option_expiries commands from the shell?]]

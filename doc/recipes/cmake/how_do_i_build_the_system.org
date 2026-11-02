@@ -29,7 +29,12 @@ How do I build ORE Studio?
 ./compass.sh build site                     # friendly alias (deploy_site)
 ./compass.sh build --preset linux-clang-release-make   # preset override
 ./compass.sh build -j 4 --dry-run           # jobs override / print-only
+./compass.sh build -k                       # keep going past a failed target
 #+end_src
+
+=-k= (=--keep-going=) passes the native tool's own option after cmake's =--=:
+=-k 0= for ninja and =-k= for make. One build then reports every failing
+target, not only the first one.
 
 Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
 =org-roam-db-sync= → =org_roam_db_sync=; any raw cmake target is also

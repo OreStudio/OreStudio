@@ -101,7 +101,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The assets match runs on the absolute path | bff/src/server.ts | Accept | 8d00eb1e27: matched relative to the bundle root, tested with an assets folder above it |
+| 2 | vendorOf on a name outside the convention | calibration.ts | Accept | 9e0405894b: a vendor only from a three-part name; synthetic.<pair> showed its pair as the vendor |
+| 3 | The party names' query key is shared by both modes | subscriptions.ts | Decline | Sign-out and a session ending remove every query, so no names carry over; the web tests have no DOM for a renderHook test |
+| 4 | "Continues at once" is not shown to hold | PublicSourcesStep.tsx | Accept | 0ea414a5fa: it did not hold; Continue now goes on when every source is decided, with a test |
+| 5 | onReady must not loop renders | FirstRunJourney.tsx | No change | The effect watches the changes' content and onSourcesReady is stable |
 
 * Result
 

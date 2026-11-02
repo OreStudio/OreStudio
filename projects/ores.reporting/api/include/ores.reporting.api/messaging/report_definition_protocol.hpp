@@ -335,6 +335,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_definitions_eve
         utility::codec::field{"pre_processing", &report_definition_write::pre_processing},
         utility::codec::field{"prepared_input_key", &report_definition_write::prepared_input_key},
         utility::codec::field{"post_processing", &report_definition_write::post_processing},
+        utility::codec::field{"skipped_families", &report_definition_write::skipped_families},
         utility::codec::field{"is_official", &report_definition_write::is_official},
         utility::codec::field{"regulatory_book_type",
                               &report_definition_write::regulatory_book_type},

@@ -62,6 +62,7 @@ namespace ores::reporting::domain {
         utility::codec::field{"pre_processing", &report_definition::pre_processing},
         utility::codec::field{"prepared_input_key", &report_definition::prepared_input_key},
         utility::codec::field{"post_processing", &report_definition::post_processing},
+        utility::codec::field{"skipped_families", &report_definition::skipped_families},
         utility::codec::field{"is_official", &report_definition::is_official},
         utility::codec::field{"regulatory_book_type", &report_definition::regulatory_book_type},
         utility::codec::field{"cut_kind_code", &report_definition::cut_kind_code},

@@ -1237,6 +1237,8 @@ wire_fields(const publish_ore_parameter_value_domains_from_dq_request&) {
         ::ores::utility::codec::field{"correlation_id",
                                       &post_process_results_request::correlation_id},
         ::ores::utility::codec::field{"batch_id", &post_process_results_request::batch_id},
+        ::ores::utility::codec::field{"skipped_families",
+                                      &post_process_results_request::skipped_families},
     };
 }
 
@@ -1343,6 +1345,8 @@ wire_fields(const publish_ore_parameter_value_domains_from_dq_request&) {
                                       &report_execution_request::prepared_input_key},
         ::ores::utility::codec::field{"post_processing",
                                       &report_execution_request::post_processing},
+        ::ores::utility::codec::field{"skipped_families",
+                                      &report_execution_request::skipped_families},
         ::ores::utility::codec::field{"kind", &report_execution_request::kind},
     };
 }

@@ -57,6 +57,9 @@ inline auto& provider_terms_handler_lg() {
  */
 class provider_terms_handler {
 public:
+    // A list accept writes one version a provider; the BFF caps its body the same way.
+    static constexpr std::size_t max_providers_per_accept = 100;
+
     provider_terms_handler(ores::nats::service::client& nats,
                            ores::database::context ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier)
@@ -105,7 +108,7 @@ public:
             return;
         }
         auto req = ores::service::messaging::decode<accept_many_provider_terms_request>(msg);
-        if (!req) {
+        if (!req || req->providers.size() > max_providers_per_accept) {
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }

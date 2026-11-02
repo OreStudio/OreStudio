@@ -371,6 +371,44 @@ TEST_CASE("a_token_without_the_accept_permission_cannot_accept_a_list",
     CHECK(f.latest().terms_accepted_digest.empty());
 }
 
+TEST_CASE("a_list_accept_at_a_version_read_before_the_terms_changed_is_refused",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    REQUIRE(decode_terms_reply(f.accept(0, {terms_accept_permission})).success);
+    const auto read = f.latest();
+    auto changed = read;
+    changed.terms_url = "https://terms.example/changed/" + f.code;
+    ores::marketdata::repository::provider_repository{}.write(f.db.context(), changed);
+    const auto after_change = f.latest();
+    REQUIRE(after_change.version > read.version);
+
+    const auto reply = f.accept_many({{.provider_code = f.code, .provider_version = read.version}},
+                                     {terms_accept_permission});
+
+    const auto response =
+        ores::nats::default_wire_codec().decode<accept_many_provider_terms_response>(reply.data);
+    REQUIRE(response);
+    REQUIRE(response->outcomes.size() == 1);
+    CHECK_FALSE(response->outcomes[0].success);
+    CHECK(response->outcomes[0].message.find("Read them again") != std::string::npos);
+    CHECK(f.latest().version == after_change.version);
+}
+
+TEST_CASE("a_list_accept_of_more_than_one_hundred_providers_is_refused",
+          "[provider_terms_handler][integration]") {
+    terms_fixture f;
+    f.seed(true);
+    const std::vector<provider_terms_test::provider_terms_choice> many(
+        101, {.provider_code = f.code, .provider_version = 0});
+
+    const auto reply = f.accept_many(many, {terms_accept_permission});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "bad_request");
+    CHECK(f.latest().terms_accepted_digest.empty());
+}
+
 TEST_CASE("accepting_terms_already_accepted_succeeds_and_writes_nothing",
           "[provider_terms_handler][integration]") {
     terms_fixture f;

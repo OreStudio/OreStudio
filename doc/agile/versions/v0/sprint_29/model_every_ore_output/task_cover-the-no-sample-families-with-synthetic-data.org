@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/cover-the-no-sample-families-with-synthetic-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,24 +26,49 @@ Every output the seed names is read, from a checked-in sample or from a syntheti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
 
 * Acceptance
 
-- Each of the 38 outputs has a fixture whose columns come from the writer that produces it.
+- Every output the seed names is a family with a sample, real or synthetic, or is stated out of scope with a reason, and the generator refuses one that is neither.
+- A synthetic fixture's columns come from the writer that produces it at ORE v1.8.17.0, and each fixture names its writer.
 - The catalogue marks a family whose only fixture is synthetic, so a reader can tell a sample ORE shipped from one we wrote.
 - The corpus gate reads a synthetic fixture exactly as it reads a sample, and fails when a family has neither.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The seed names 44 output files; 27 had no family. The writers at ORE v1.8.17.0
+(3d75a6908, the version the project vendors) sort them:
+
+- *Real samples outside the suites.* =runtimes= and =scenariodump= are in the
+  notebook examples, =timeaveragedexposure= in the legacy ones, and
+  =pricingstats= is captured from a run here. Each source is read for the named
+  families only, because the notebooks and legacy examples repeat the suites.
+- *Synthetic.* =crif=, =capital_crif=, =sacva_sensitivity=, =jacobi= and
+  =jacobi_inverse= have a writer and no sample; each fixture states its writer's
+  columns in order, with two rows, and the catalogue marks it synthetic.
+- *Other names.* A report the run configuration does not name is written under
+  the engine's report name: =cashflow.csv= is flows and =saccrdetail.csv= is
+  saccr_detail, which a run here wrote and the catalogue missed. The seed names
+  the initial margin files =.txt=. A family now carries alias patterns.
+- *Stems.* =pca.csv= and =meanReversion.csv= are written per currency, as the pca
+  and mean-reversion families already match.
+- *No writer.* crossgamma, productclass_mapping, creditcurves, parsensi, the
+  aggregation scenario dump and the xvaSensitivity jacobi names are parameters no
+  code reads at v1.8.17.0.
+- *Not a report.* The =.dat= files are binary data the engine reads back; the
+  =.csv.gz= cubes are compressed copies of what rawcube and netcube state as text.
+- *Text-valued.* additional_results, marketObjects, riskFactors and the calibrated
+  model's XML have no figure, so no reader here holds them. They are a new task,
+  Store the text-valued outputs.
+
+The generator states each out-of-scope file with its reason and refuses a seed
+output that is neither a family nor stated, so the list cannot drift.
 
 * Measurements
 
@@ -57,7 +82,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogue families | 72, 5 synthetic; every seed output covered or excused | =python3 projects/ores.ore/scripts/generate_output_catalogue.py= | af7009a36c |
+| ore core suite | 480 cases pass | =ores.ore.core.tests= | af7009a36c |
+| marketdata, reporting core suites | 365 and 246 cases pass | =ores.marketdata.core.tests=, =ores.reporting.core.tests= | af7009a36c |
+| Group Consolidated Exposure run | completed; npv 36, pricingstats 219 and runtimes 45 figures, saccr 2, 2 quotes; cashflow.csv, saccrdetail.csv and capital_crif.csv read with headings only | instance fd8bccd5, SQL | af7009a36c |
 
 * Notes
 
@@ -85,3 +113,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every output the seed names is a family with a sample or is stated out of scope
+with its reason, and the generator refuses one that is neither. The catalogue
+gained nine families: four from real samples outside the suites (runtimes,
+scenariodump, timeaveragedexposure, and pricingstats captured from a run here)
+and five from fixtures written from their writers at ORE v1.8.17.0, marked
+synthetic. A family now carries the other names it is written under, which fixed
+a gap a run here showed: =cashflow.csv= and =saccrdetail.csv= were left unread. A
+run now stores its pricing statistics and run times too. The four text-valued
+outputs moved to a new task, Store the text-valued outputs.

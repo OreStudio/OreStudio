@@ -109,9 +109,7 @@ TEST_CASE("the checked-in calibration sample reads whole, one row for each line"
           calibration_tags) {
     const auto* family = family_named("todaysmarketcalibration");
     REQUIRE(family != nullptr);
-    const auto relative =
-        std::filesystem::path(family->sample_file).lexically_relative("external/ore");
-    const auto csv = ores::testing::read_file(ores::testing::ore_path(relative.string()));
+    const auto csv = ores::testing::read_file(ores::testing::project_root::resolve(family->sample_file));
 
     const auto outcome = read_calibration(csv, *family);
 

@@ -118,9 +118,20 @@ struct output_family {
      */
     int header_variants = 0;
     /**
-     * @brief A checked-in sample file that exercises the family.
+     * @brief A checked-in sample file that exercises the family, by its path in the repository.
      */
     std::string sample_file;
+    /**
+     * @brief The other names the family is written under.
+     *
+     * A report the run configuration does not name is written under the engine's
+     * own report name, so a family is found by any of its names.
+     */
+    std::vector<std::string> alias_patterns;
+    /**
+     * @brief Whether the family's only sample is one we wrote from its writer's columns.
+     */
+    bool synthetic = false;
     /**
      * @brief Every column the family states, in the order the samples state them.
      */

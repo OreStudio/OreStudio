@@ -35,9 +35,7 @@ using ores::ore::results::read_market_inputs;
 std::string sample_of(const std::string& code) {
     const auto* family = family_named(code);
     REQUIRE(family != nullptr);
-    const auto relative =
-        std::filesystem::path(family->sample_file).lexically_relative("external/ore");
-    return ores::testing::read_file(ores::testing::ore_path(relative.string()));
+    return ores::testing::read_file(ores::testing::project_root::resolve(family->sample_file));
 }
 
 }

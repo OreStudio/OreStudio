@@ -521,6 +521,21 @@ describe('the ORE file of each run file', () => {
         });
     });
 
+    it('leaves out an ORE file whose expression does not compile, and still names the others', async () => {
+        const catalogue = ANSWERS['reporting.v1.ore_files.list'] as { files: unknown[] };
+        const response = await get(`/api/reporting/runs/${RUN}/files`, {
+            ...ANSWERS,
+            'reporting.v1.ore_files.list': {
+                ...catalogue,
+                files: [oreFile('broken', 'Broken', 'valuation_report', '(['), ...catalogue.files],
+            },
+        });
+        const files = response.json<{ files: { name: string; ore_file_code: string | null }[] }>()
+            .files;
+
+        expect(files.find((file) => file.name === 'npv.csv')?.ore_file_code).toBe('npv_report');
+    });
+
     it('states the ORE file, its category and the parameters that name it', async () => {
         const id = encodeURIComponent(`output:${RESULT}:npv.csv`);
         const response = await get(`/api/reporting/runs/${RUN}/files/${id}/info`);

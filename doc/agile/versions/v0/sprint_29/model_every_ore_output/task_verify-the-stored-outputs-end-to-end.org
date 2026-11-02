@@ -188,6 +188,15 @@ via its "Verifies task" field.
 | 15 | The file page and each download read every package of the run again | bff/src/report-run-files.ts | Declined | A run has a few packages; a cache is not needed yet. |
 | 16 | The ER diagram still showed format and xsd_file on file types | ores.sql/modeling/ores_schema.reporting.puml | Accepted | Regenerated from the SQL; it shows the three new tables. |
 | 17 | The canonical store SQL test failed on main: the element map seed named commodity curve columns that moved to the curve entry parts | populate/reporting/reporting_ore_element_map_columns_populate.sql | Accepted | Regenerated with generate_ore_element_map.py; its --check now passes. |
+| 18 | PR 4400: one bad filename regex emptied the whole catalogue | bff/src/report-run-files.ts | Accepted | Each regex compiles on its own; a bad row is logged and left out; a test covers it. |
+| 19 | PR 4400: identification depends on catalogue order | bff/src/report-run-files.ts | Declined | The seed generator and reporting_ore_files_test.sql already check that no typical name matches a second file. |
+| 20 | PR 4400: no size limit on decompression | bff/src/report-run-files.ts | Accepted | Every gunzip stops at 1 GiB; a download over it is refused with a message. |
+| 21 | PR 4400: test the zip with an independent reader | bff/src/zip.test.ts | Accepted | A test tests and extracts the zip with the unzip tool, skipped where unzip is missing. |
+| 22 | PR 4400: zip-slip through an include path | bff/src/report-run-files.ts | Declined | Entry names are stored typical filenames, checked as [A-Za-z0-9_.-]+; an include path is never a key of the contents, so it is reported missing. |
+| 23 | PR 4400: redundant null check on the schema code | bff/src/report-run-files.ts | Accepted | Tests the ORE file first, then its schema code. |
+| 24 | PR 4400: the xsd glob in local_checks.py may not expand | build/scripts/local_checks.py | Declined | The checker matches paths with fnmatch, so the glob works. |
+| 25 | PR 4400: track the cause of the CSA and conventions flakes | product_backlog/inbox | Accepted | Raised as an inbox capture. |
+| 26 | PR 4400: run compass check before merge | — | Declined | The operator asked not to run it. |
 
 * Result
 

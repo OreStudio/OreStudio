@@ -19,6 +19,10 @@
  *
  */
 
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { crc32, inflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { zipOf } from './zip.js';
@@ -71,6 +75,24 @@ describe('zipOf', () => {
         expect(files.get('input.xsd')?.equals(schema)).toBe(true);
         expect(files.get('ore_types.xsd')?.equals(types)).toBe(true);
     });
+
+    it.skipIf(spawnSync('unzip', ['-v']).status !== 0)(
+        'writes an archive that the unzip tool tests clean and extracts byte for byte',
+        () => {
+            const types = Buffer.from('<xs:schema>'.padEnd(5000, 'x') + '</xs:schema>');
+            const directory = mkdtempSync(join(tmpdir(), 'zip-test-'));
+            try {
+                const archive = join(directory, 'schema.zip');
+                writeFileSync(archive, zipOf([{ name: 'ore_types.xsd', content: types }]));
+
+                expect(spawnSync('unzip', ['-tq', archive]).status).toBe(0);
+                expect(spawnSync('unzip', ['-q', archive, '-d', directory]).status).toBe(0);
+                expect(readFileSync(join(directory, 'ore_types.xsd')).equals(types)).toBe(true);
+            } finally {
+                rmSync(directory, { recursive: true, force: true });
+            }
+        },
+    );
 
     it('writes an archive of no files that a reader opens empty', () => {
         expect(unzip(zipOf([])).size).toBe(0);

@@ -56,7 +56,7 @@ import { subjects as oreFileSubjects } from '@ores/wire-protocol/generated/repor
 import type { ListOreFilesResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_protocol';
 import { subjects as fileTypeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
 import type { ListByOreFileCodeFileTypesResponse } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
-import { invalidRequest, notFound } from './errors.js';
+import { invalidRequest, notFound, unexpectedReply } from './errors.js';
 import { readAll, text } from './refdata-calls.js';
 import { zipOf, type ZipEntry } from './zip.js';
 import { subjects as versionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_version_protocol';
@@ -195,7 +195,7 @@ async function inputsOf(
     let entries: readonly TarEntry[];
     try {
         packed = await fetchStored(session, uri);
-        entries = tarEntries(gunzipSync(packed));
+        entries = tarEntries(unpacked(packed));
     } catch (error) {
         log.warn({ err: error }, 'The input package of a report run could not be listed');
         return [archive(null)];
@@ -246,7 +246,7 @@ async function outputsOf(
     let manifest: z.infer<typeof manifestSchema>;
     try {
         const packed = await fetchStored(session, manifestKeyOf(resultId));
-        manifest = manifestSchema.parse(JSON.parse(gunzipSync(packed).toString('utf8')));
+        manifest = manifestSchema.parse(JSON.parse(unpacked(packed).toString('utf8')));
     } catch (error) {
         log.warn({ err: error }, 'The output manifest of a report run could not be read');
         return [archive];
@@ -330,7 +330,7 @@ async function readCatalogue(session: LiveSession, log: FastifyBaseLogger): Prom
             categories.map((category) => [text(category['code']), category]),
         );
         return {
-            files: files.map((file) => {
+            files: files.flatMap((file) => {
                 const category = categoryOf.get(text(file['category_code']));
                 const view = oreFileViewSchema.parse({
                     code: text(file['code']),
@@ -347,12 +347,29 @@ async function readCatalogue(session: LiveSession, log: FastifyBaseLogger): Prom
                     filename_regex: text(file['filename_regex']),
                     description: text(file['description']),
                 });
-                return { ...view, pattern: new RegExp(view.filename_regex) };
+                const pattern = patternOf(view, log);
+                return pattern === null ? [] : [{ ...view, pattern }];
             }),
         };
     } catch (error) {
         log.warn({ err: error }, 'The ORE file catalogue could not be read');
         return { files: [] };
+    }
+}
+
+/**
+ * The expression an ORE file's names match. A row whose expression does not
+ * compile is left out, so it cannot leave every other file unidentified.
+ */
+function patternOf(file: OreFileView, log: FastifyBaseLogger): RegExp | null {
+    try {
+        return new RegExp(file.filename_regex);
+    } catch (error) {
+        log.warn(
+            { err: error, code: file.code },
+            'An ORE file names an expression that does not compile',
+        );
+        return null;
     }
 }
 
@@ -540,10 +557,36 @@ async function filesOfRun(
     return { tree: counted(nodes, files), files };
 }
 
+/**
+ * The most bytes the web server unpacks from one stored file. The whole file is
+ * held in memory, so a larger one is refused rather than allowed to exhaust the
+ * process.
+ */
+const MAX_UNPACKED_BYTES = 1024 * 1024 * 1024;
+
+function unpacked(packed: Buffer): Buffer {
+    return gunzipSync(packed, { maxOutputLength: MAX_UNPACKED_BYTES });
+}
+
+function unpackedForDownload(packed: Buffer): Buffer {
+    try {
+        return unpacked(packed);
+    } catch (error) {
+        if (error instanceof RangeError) {
+            throw unexpectedReply(
+                'The file unpacks to more than the web server holds in memory; download the archive that holds it instead.',
+            );
+        }
+        throw error;
+    }
+}
+
 function paramsOf<Shape extends z.ZodType>(schema: Shape, request: FastifyRequest): z.infer<Shape> {
     const parsed = schema.safeParse(request.params);
     if (!parsed.success) {
-        throw invalidRequest('The address names a run that is not a uuid or a file name that is not valid.');
+        throw invalidRequest(
+            'The address names a run that is not a uuid or a file name that is not valid.',
+        );
     }
     return parsed.data;
 }
@@ -583,7 +626,7 @@ export function registerReportRunFileRoutes(
                       );
             const engineVersion = await engineVersionOf(session, found.view.job, request.log);
             const schemaFile =
-                oreFile?.schema_ore_file_code === null || oreFile === null
+                oreFile === null || oreFile.schema_ore_file_code === null
                     ? undefined
                     : catalogue.files.find((one) => one.code === oreFile.schema_ore_file_code);
             const schema =
@@ -664,14 +707,14 @@ export function registerReportRunFileRoutes(
         const stored = await fetchStored(session, source.uri);
         let body: Buffer;
         if (source.from === 'entry') {
-            const unpacked = gunzipSync(stored);
-            const entry = tarEntries(unpacked).find((candidate) => candidate.name === source.entry);
+            const archive = unpackedForDownload(stored);
+            const entry = tarEntries(archive).find((candidate) => candidate.name === source.entry);
             if (entry === undefined) {
                 throw notFound('The input package no longer holds this file.');
             }
-            body = unpacked.subarray(entry.offset, entry.offset + entry.size);
+            body = archive.subarray(entry.offset, entry.offset + entry.size);
         } else {
-            body = source.gzip ? gunzipSync(stored) : stored;
+            body = source.gzip ? unpackedForDownload(stored) : stored;
         }
         const name = downloadName(view.name);
         return reply

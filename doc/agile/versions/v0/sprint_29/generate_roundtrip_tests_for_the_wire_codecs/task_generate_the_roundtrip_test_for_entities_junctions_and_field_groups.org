@@ -8,7 +8,7 @@
 #+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-the-roundtrip-test-for-entities-junctions-and-field-groups
-#+pr:
+#+pr: 4397
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4397][#4397]] | [codegen] Generate the roundtrip test for entities, junctions and field groups |
 
 * Review
 

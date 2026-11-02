@@ -27,6 +27,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <chrono>
 #include <format>
+#include <iterator>
+#include <limits>
 #include <optional>
 
 namespace ores::reporting::results {
@@ -76,128 +78,165 @@ std::string qualifiers_json(const std::vector<std::pair<std::string, std::string
 
 }
 
-run_output_outcome read_run_outputs(const std::vector<output_file>& files, const run_stamp& run) {
-    run_output_outcome outcome;
-
-    for (const auto& file : files) {
-        const auto* family = ores::ore::results::family_of_file(file.name);
-        if (family == nullptr) {
-            outcome.files_not_modelled.push_back(file.name);
-            continue;
-        }
-        if (!run.families.stores(family->code)) {
-            outcome.files_skipped.push_back(file.name);
-            continue;
-        }
-
-        if (ores::ore::results::is_cashflow_family(*family)) {
-            auto read = ores::ore::results::read_cashflows(file.body, *family);
-            for (const auto& refusal : read.refusals)
-                outcome.refusals.push_back(file.name + ": " + refusal);
-            for (auto& row : read.rows) {
-                std::chrono::system_clock::time_point as_of;
-                if (!instant_of(row.as_of, run.priced_at, as_of)) {
-                    outcome.refusals.push_back(
-                        std::format("{}: the cashflow {} of trade {} states the observation '{}', "
-                                    "which is not a date.",
-                                    file.name,
-                                    row.cashflow_no,
-                                    row.subject,
-                                    row.as_of));
-                    continue;
-                }
-                std::chrono::system_clock::time_point pay_date;
-                std::optional<std::chrono::system_clock::time_point> pay;
-                if (instant_of(row.pay_date, run.priced_at, pay_date) && !row.pay_date.empty())
-                    pay = pay_date;
-
-                outcome.cashflows.push_back(
-                    domain::report_cashflow{.id = boost::uuids::random_generator()(),
-                                            .party_id = run.party_id,
-                                            .report_instance_id = run.report_instance_id,
-                                            .family = family->code,
-                                            .subject_type = row.subject_type,
-                                            .subject_id = row.subject,
-                                            .scenario = row.scenario,
-                                            .cashflow_no = row.cashflow_no,
-                                            .leg_no = row.leg_no,
-                                            .as_of = as_of,
-                                            .measure = row.measure,
-                                            .part = row.part,
-                                            .report_definition_id = run.report_definition_id,
-                                            .pay_date = pay,
-                                            .flow_type = row.flow_type,
-                                            .currency = row.currency,
-                                            .qualifiers = qualifiers_json(row.qualifiers),
-                                            .value = row.value,
-                                            .source = family->code});
-            }
-            outcome.files_read.push_back(file.name);
-            continue;
-        }
-
-        if (ores::ore::results::is_text_value_family(*family)) {
-            auto read = ores::ore::results::read_text_values(file.body, *family);
-            for (const auto& refusal : read.refusals)
-                outcome.refusals.push_back(file.name + ": " + refusal);
-            for (auto& row : read.rows)
-                outcome.text_values.push_back(
-                    domain::report_text_value{.id = boost::uuids::random_generator()(),
-                                              .party_id = run.party_id,
-                                              .report_instance_id = run.report_instance_id,
-                                              .result_id = run.result_id,
-                                              .source = file.name,
-                                              .line = row.line,
-                                              .as_of = run.priced_at,
-                                              .report_definition_id = run.report_definition_id,
-                                              .family = family->code,
-                                              .subject_type = std::move(row.subject_type),
-                                              .subject_id = std::move(row.subject),
-                                              .name = std::move(row.name),
-                                              .value_type = std::move(row.value_type),
-                                              .value = std::move(row.value),
-                                              .figure = row.figure});
-            outcome.files_read.push_back(file.name);
-            continue;
-        }
-
-        auto read = ores::ore::results::read_metrics(file.body, *family);
-        for (const auto& refusal : read.refusals)
-            outcome.refusals.push_back(file.name + ": " + refusal);
-        for (auto& one : read.metrics) {
-            std::chrono::system_clock::time_point as_of;
-            if (!instant_of(one.as_of, run.priced_at, as_of)) {
-                outcome.refusals.push_back(
-                    std::format("{}: the metric {} of {} states the observation '{}', which is not "
-                                "a date.",
-                                file.name,
-                                one.measure,
-                                one.subject,
-                                one.as_of));
-                continue;
-            }
-            outcome.metrics.push_back(
-                domain::report_metric{.id = boost::uuids::random_generator()(),
-                                      .party_id = run.party_id,
-                                      .report_instance_id = run.report_instance_id,
-                                      .result_id = run.result_id,
-                                      .as_of = as_of,
-                                      .measure = one.measure,
-                                      .source = file.name,
-                                      .line = one.line,
-                                      .report_definition_id = run.report_definition_id,
-                                      .family = family->code,
-                                      .subject_type = one.subject_type,
-                                      .subject_id = one.subject,
-                                      .currency = one.currency,
-                                      .scenario = one.scenario,
-                                      .factor = one.factor,
-                                      .qualifiers = qualifiers_json(one.qualifiers),
-                                      .value = one.value});
-        }
-        outcome.files_read.push_back(file.name);
+void read_run_output(const output_file& file,
+                     const run_stamp& run,
+                     std::size_t block_size,
+                     const run_output_sinks& sinks,
+                     run_output_outcome& outcome) {
+    const auto* family = ores::ore::results::family_of_file(file.name);
+    if (family == nullptr) {
+        outcome.files_not_modelled.push_back(file.name);
+        return;
+    }
+    if (!run.families.stores(family->code)) {
+        outcome.files_skipped.push_back(file.name);
+        return;
     }
 
+    if (ores::ore::results::is_cashflow_family(*family)) {
+        std::vector<domain::report_cashflow> block;
+        const auto refusals = ores::ore::results::read_cashflows_in_blocks(
+            file.body, *family, block_size, [&](std::vector<ores::ore::results::cashflow_row>& rows) {
+                block.clear();
+                block.reserve(rows.size());
+                for (auto& row : rows) {
+                    std::chrono::system_clock::time_point as_of;
+                    if (!instant_of(row.as_of, run.priced_at, as_of)) {
+                        outcome.refusals.push_back(std::format(
+                            "{}: the cashflow {} of trade {} states the observation '{}', "
+                            "which is not a date.",
+                            file.name,
+                            row.cashflow_no,
+                            row.subject,
+                            row.as_of));
+                        continue;
+                    }
+                    std::chrono::system_clock::time_point pay_date;
+                    std::optional<std::chrono::system_clock::time_point> pay;
+                    if (instant_of(row.pay_date, run.priced_at, pay_date) && !row.pay_date.empty())
+                        pay = pay_date;
+
+                    block.push_back(
+                        domain::report_cashflow{.id = boost::uuids::random_generator()(),
+                                                .party_id = run.party_id,
+                                                .report_instance_id = run.report_instance_id,
+                                                .family = family->code,
+                                                .subject_type = std::move(row.subject_type),
+                                                .subject_id = std::move(row.subject),
+                                                .scenario = std::move(row.scenario),
+                                                .cashflow_no = std::move(row.cashflow_no),
+                                                .leg_no = std::move(row.leg_no),
+                                                .as_of = as_of,
+                                                .measure = std::move(row.measure),
+                                                .part = std::move(row.part),
+                                                .report_definition_id = run.report_definition_id,
+                                                .pay_date = pay,
+                                                .flow_type = std::move(row.flow_type),
+                                                .currency = std::move(row.currency),
+                                                .qualifiers = qualifiers_json(row.qualifiers),
+                                                .value = row.value,
+                                                .source = family->code});
+                }
+                if (!block.empty())
+                    sinks.cashflows(block);
+            });
+        for (const auto& refusal : refusals)
+            outcome.refusals.push_back(file.name + ": " + refusal);
+        outcome.files_read.push_back(file.name);
+        return;
+    }
+
+    if (ores::ore::results::is_text_value_family(*family)) {
+        auto read = ores::ore::results::read_text_values(file.body, *family);
+        for (const auto& refusal : read.refusals)
+            outcome.refusals.push_back(file.name + ": " + refusal);
+        std::vector<domain::report_text_value> block;
+        for (auto& row : read.rows) {
+            block.push_back(domain::report_text_value{.id = boost::uuids::random_generator()(),
+                                                      .party_id = run.party_id,
+                                                      .report_instance_id = run.report_instance_id,
+                                                      .result_id = run.result_id,
+                                                      .source = file.name,
+                                                      .line = row.line,
+                                                      .as_of = run.priced_at,
+                                                      .report_definition_id =
+                                                          run.report_definition_id,
+                                                      .family = family->code,
+                                                      .subject_type = std::move(row.subject_type),
+                                                      .subject_id = std::move(row.subject),
+                                                      .name = std::move(row.name),
+                                                      .value_type = std::move(row.value_type),
+                                                      .value = std::move(row.value),
+                                                      .figure = row.figure});
+            if (block.size() >= block_size) {
+                sinks.text_values(block);
+                block.clear();
+            }
+        }
+        if (!block.empty())
+            sinks.text_values(block);
+        outcome.files_read.push_back(file.name);
+        return;
+    }
+
+    std::vector<domain::report_metric> block;
+    const auto refusals = ores::ore::results::read_metrics_in_blocks(
+        file.body, *family, block_size, [&](std::vector<ores::ore::results::metric>& metrics) {
+            block.clear();
+            block.reserve(metrics.size());
+            for (auto& one : metrics) {
+                std::chrono::system_clock::time_point as_of;
+                if (!instant_of(one.as_of, run.priced_at, as_of)) {
+                    outcome.refusals.push_back(
+                        std::format("{}: the metric {} of {} states the observation '{}', which "
+                                    "is not a date.",
+                                    file.name,
+                                    one.measure,
+                                    one.subject,
+                                    one.as_of));
+                    continue;
+                }
+                block.push_back(
+                    domain::report_metric{.id = boost::uuids::random_generator()(),
+                                          .party_id = run.party_id,
+                                          .report_instance_id = run.report_instance_id,
+                                          .result_id = run.result_id,
+                                          .as_of = as_of,
+                                          .measure = std::move(one.measure),
+                                          .source = file.name,
+                                          .line = one.line,
+                                          .report_definition_id = run.report_definition_id,
+                                          .family = family->code,
+                                          .subject_type = std::move(one.subject_type),
+                                          .subject_id = std::move(one.subject),
+                                          .currency = std::move(one.currency),
+                                          .scenario = std::move(one.scenario),
+                                          .factor = std::move(one.factor),
+                                          .qualifiers = qualifiers_json(one.qualifiers),
+                                          .value = one.value});
+            }
+            if (!block.empty())
+                sinks.metrics(block);
+        });
+    for (const auto& refusal : refusals)
+        outcome.refusals.push_back(file.name + ": " + refusal);
+    outcome.files_read.push_back(file.name);
+}
+
+run_output_outcome read_run_outputs(const std::vector<output_file>& files, const run_stamp& run) {
+    run_output_outcome outcome;
+    const auto append = [](auto& into) {
+        return [&into](auto& block) {
+            into.insert(into.end(),
+                        std::make_move_iterator(block.begin()),
+                        std::make_move_iterator(block.end()));
+        };
+    };
+    const run_output_sinks sinks{.metrics = append(outcome.metrics),
+                                 .cashflows = append(outcome.cashflows),
+                                 .text_values = append(outcome.text_values)};
+    for (const auto& file : files)
+        read_run_output(file, run, std::numeric_limits<std::size_t>::max(), sinks, outcome);
     return outcome;
 }
 

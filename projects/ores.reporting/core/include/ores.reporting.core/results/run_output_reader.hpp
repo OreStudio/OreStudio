@@ -27,6 +27,8 @@
 #include "ores.reporting.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -117,6 +119,43 @@ struct run_output_outcome {
      */
     std::vector<std::string> files_skipped;
 };
+
+/**
+ * @brief Where the rows a run's output states go, a block at a time.
+ *
+ * Each sink takes what it keeps from the block; the block is cleared after.
+ */
+struct run_output_sinks {
+    /**
+     * @brief Takes a block of metrics.
+     */
+    std::function<void(std::vector<domain::report_metric>&)> metrics;
+    /**
+     * @brief Takes a block of cashflow figures.
+     */
+    std::function<void(std::vector<domain::report_cashflow>&)> cashflows;
+    /**
+     * @brief Takes a block of text values.
+     */
+    std::function<void(std::vector<domain::report_text_value>&)> text_values;
+};
+
+/**
+ * @brief Reads one file of a run's output, handing its rows to the sinks a
+ * block at a time.
+ *
+ * The rows of a file are never all held at once: a block of at most
+ * @p block_size rows is built, handed over and cleared. What the read refused,
+ * and which files it read, skipped or could not place, is recorded on
+ * @p outcome; its row lists are left as they are. The caller writes the blocks
+ * in one transaction and rolls it back when the outcome holds a refusal, so a
+ * refused run leaves nothing behind.
+ */
+ORES_REPORTING_CORE_EXPORT void read_run_output(const output_file& file,
+                                                const run_stamp& run,
+                                                std::size_t block_size,
+                                                const run_output_sinks& sinks,
+                                                run_output_outcome& outcome);
 
 /**
  * @brief Reads every file of a run's output, one family at a time.

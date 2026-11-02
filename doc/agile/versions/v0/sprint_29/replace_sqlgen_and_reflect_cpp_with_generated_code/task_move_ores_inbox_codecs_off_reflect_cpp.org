@@ -61,10 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Inbox and reporting suites | inbox api 3 cases, core 73 and shell inbox 322 pass; inbox service has no cases; reporting core passes all but the 2 cases that need main's =result_id= column, which this environment's database lacks | the =ores.inbox.*.tests=, =ores.shell.inbox.tests= and =ores.reporting.core.tests= binaries | 2e42042c72 plus this branch |
-| Codec cases | 3 cases, 276 assertions pass | =ores.inbox.api.tests "[codec]"= | 2e42042c72 plus this branch |
-| Component drift (inbox), format, CMake lists, unique type names | all clean | =check_component_drift.py --component inbox-cpp=, and the check scripts | 2e42042c72 plus this branch |
-| reflect-cpp left in inbox and reporting sources, outside tests | none | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.inbox projects/ores.reporting= | 2e42042c72 plus this branch |
+| Inbox and reporting suites | inbox api 3 cases, core 73 and shell inbox 322 pass; inbox service has no cases; reporting api 72 cases pass; after the rebase on e500de53df, reporting core fails 40 assertions, all on columns main added that this environment's database lacks: 38 on =skipped_families= (#4371) and 2 on =result_id= (#4364) | the =ores.inbox.*.tests=, =ores.shell.inbox.tests= and =ores.reporting.core.tests= binaries | e500de53df plus this branch |
+| Codec cases | 3 cases, 276 assertions pass | =ores.inbox.api.tests "[codec]"= | e500de53df plus this branch |
+| Component drift (inbox), format, CMake lists, unique type names | all clean | =check_component_drift.py --component inbox-cpp=, and the check scripts | e500de53df plus this branch |
+| reflect-cpp left in inbox and reporting sources, outside tests | none | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.inbox projects/ores.reporting= | e500de53df plus this branch |
 
 * Notes
 

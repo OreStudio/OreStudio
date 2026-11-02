@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9C3C257D-A4F5-48C4-9117-F8F3FEAE4C97
+:END:
+#+title: Let ores::utility::codec::json::write, read and try_read (an…
+#+description: Let ores::utility::codec::json::write, read and try_read (and the msgpack pair) call a type's generated wire_traits when it has one. Today they instantiate the struct encoder in the caller's unit, which needs the wire_fields of every nested type, so a handler that writes a message holding another component's types fails to compile unless it includes their codec headers. It has happened twice in the reflect-cpp move: ore's package handler reading trading's export_portfolio_response, and iam's account party and account handlers writing their responses. Each was worked around by calling wire_traits of T::write_json directly. The fix must split the codec into a direct core and a dispatching front, because the generated definitions call object::read_json, which calls json::read, so a dispatch in json::read alone would recurse. Detect a generated codec through the forward declaration (a requires on wire_traits of T::is_generated) so json_codec.hpp does not pull in reflect-cpp, and add a test that a message with nested generated types writes through json::write in a unit that includes only its protocol header.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

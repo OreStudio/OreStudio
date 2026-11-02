@@ -26,11 +26,17 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -182,7 +188,413 @@ inline constexpr std::string_view created = "iam.v1.accounts_events.created";
 inline constexpr std::string_view updated = "iam.v1.accounts_events.updated";
 inline constexpr std::string_view deleted = "iam.v1.accounts_events.deleted";
 }
+/**
+ * @brief The members of account_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_key&) {
+    return std::tuple{
+        utility::codec::field{"username", &account_key::username},
+    };
+}
+
+/**
+ * @brief The members of account_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &account_lookup::key},
+        utility::codec::field{"account", &account_lookup::account},
+    };
+}
+
+/**
+ * @brief The members of accounts_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const accounts_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &accounts_filter::id_one_of},
+        utility::codec::field{"search", &accounts_filter::search},
+    };
+}
+
+/**
+ * @brief The members of account_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &account_event::event_id},
+        utility::codec::field{"key", &account_event::key},
+        utility::codec::field{"action", &account_event::action},
+        utility::codec::field{"version", &account_event::version},
+        utility::codec::field{"occurred_at", &account_event::occurred_at},
+        utility::codec::field{"correlation_id", &account_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of account_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_version_key&) {
+    return std::tuple{
+        utility::codec::field{"account", &account_version_key::account},
+        utility::codec::field{"version", &account_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of account_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const account_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &account_versions_filter::version},
+        utility::codec::field{"from_version", &account_versions_filter::from_version},
+        utility::codec::field{"to_version", &account_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_accounts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_accounts_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_accounts_request::offset},
+        utility::codec::field{"limit", &list_accounts_request::limit},
+        utility::codec::field{"order", &list_accounts_request::order},
+        utility::codec::field{"filter", &list_accounts_request::filter},
+        utility::codec::field{"as_of", &list_accounts_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_accounts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_accounts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_accounts_response::result},
+        utility::codec::field{"accounts", &list_accounts_response::accounts},
+        utility::codec::field{"total", &list_accounts_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_response::result},
+        utility::codec::field{"account", &get_account_response::account},
+    };
+}
+
+/**
+ * @brief The members of get_many_accounts_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_accounts_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_accounts_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_accounts_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_accounts_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_accounts_response::result},
+        utility::codec::field{"entries", &get_many_accounts_response::entries},
+    };
+}
+
+/**
+ * @brief The members of list_account_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_account_versions_request::key},
+        utility::codec::field{"offset", &list_account_versions_request::offset},
+        utility::codec::field{"limit", &list_account_versions_request::limit},
+        utility::codec::field{"order", &list_account_versions_request::order},
+        utility::codec::field{"filter", &list_account_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_account_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_account_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_account_versions_response::result},
+        utility::codec::field{"versions", &list_account_versions_response::versions},
+        utility::codec::field{"total", &list_account_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_account_version_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_account_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_account_version_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_account_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_account_version_response::result},
+        utility::codec::field{"version", &get_account_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_key& v);
+    static ores::iam::messaging::account_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_key& v);
+    static ores::iam::messaging::account_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_lookup& v);
+    static ores::iam::messaging::account_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_lookup& v);
+    static ores::iam::messaging::account_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::accounts_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::accounts_filter& v);
+    static ores::iam::messaging::accounts_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::accounts_filter& v);
+    static ores::iam::messaging::accounts_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_event& v);
+    static ores::iam::messaging::account_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_event& v);
+    static ores::iam::messaging::account_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_version_key& v);
+    static ores::iam::messaging::account_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_version_key& v);
+    static ores::iam::messaging::account_version_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::account_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::account_versions_filter& v);
+    static ores::iam::messaging::account_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::account_versions_filter& v);
+    static ores::iam::messaging::account_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_accounts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_accounts_request& v);
+    static ores::iam::messaging::list_accounts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_accounts_request& v);
+    static ores::iam::messaging::list_accounts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_accounts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_accounts_response& v);
+    static ores::iam::messaging::list_accounts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_accounts_response& v);
+    static ores::iam::messaging::list_accounts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_request& v);
+    static ores::iam::messaging::get_account_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_request& v);
+    static ores::iam::messaging::get_account_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_response& v);
+    static ores::iam::messaging::get_account_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_response& v);
+    static ores::iam::messaging::get_account_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_accounts_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_accounts_request& v);
+    static ores::iam::messaging::get_many_accounts_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_accounts_request& v);
+    static ores::iam::messaging::get_many_accounts_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_accounts_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_accounts_response& v);
+    static ores::iam::messaging::get_many_accounts_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_accounts_response& v);
+    static ores::iam::messaging::get_many_accounts_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_versions_request& v);
+    static ores::iam::messaging::list_account_versions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_account_versions_request& v);
+    static ores::iam::messaging::list_account_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_account_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_account_versions_response& v);
+    static ores::iam::messaging::list_account_versions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_account_versions_response& v);
+    static ores::iam::messaging::list_account_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_version_request& v);
+    static ores::iam::messaging::get_account_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_version_request& v);
+    static ores::iam::messaging::get_account_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_account_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_account_version_response& v);
+    static ores::iam::messaging::get_account_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_account_version_response& v);
+    static ores::iam::messaging::get_account_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

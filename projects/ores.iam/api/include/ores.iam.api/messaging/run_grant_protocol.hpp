@@ -26,11 +26,17 @@
 #define ORES_IAM_API_MESSAGING_RUN_GRANT_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/run_grant.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -207,7 +213,484 @@ inline constexpr std::string_view created = "iam.v1.run_grants_events.created";
 inline constexpr std::string_view updated = "iam.v1.run_grants_events.updated";
 inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
 }
+/**
+ * @brief The members of run_grant_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grant_key&) {
+    return std::tuple{
+        utility::codec::field{"resource", &run_grant_key::resource},
+    };
+}
+
+/**
+ * @brief The members of run_grant_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grant_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &run_grant_lookup::key},
+        utility::codec::field{"run_grant", &run_grant_lookup::run_grant},
+    };
+}
+
+/**
+ * @brief The members of run_grants_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grants_filter&) {
+    return std::tuple{
+        utility::codec::field{"grantor_account_id", &run_grants_filter::grantor_account_id},
+        utility::codec::field{"id_one_of", &run_grants_filter::id_one_of},
+        utility::codec::field{"grantor_account_id_one_of",
+                              &run_grants_filter::grantor_account_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of run_grant_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grant_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &run_grant_event::event_id},
+        utility::codec::field{"key", &run_grant_event::key},
+        utility::codec::field{"action", &run_grant_event::action},
+        utility::codec::field{"version", &run_grant_event::version},
+        utility::codec::field{"occurred_at", &run_grant_event::occurred_at},
+        utility::codec::field{"correlation_id", &run_grant_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of run_grant_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grant_version_key&) {
+    return std::tuple{
+        utility::codec::field{"run_grant", &run_grant_version_key::run_grant},
+        utility::codec::field{"version", &run_grant_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of run_grant_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const run_grant_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &run_grant_versions_filter::version},
+        utility::codec::field{"from_version", &run_grant_versions_filter::from_version},
+        utility::codec::field{"to_version", &run_grant_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_run_grants_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_run_grants_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_run_grants_request::offset},
+        utility::codec::field{"limit", &list_run_grants_request::limit},
+        utility::codec::field{"order", &list_run_grants_request::order},
+        utility::codec::field{"filter", &list_run_grants_request::filter},
+        utility::codec::field{"as_of", &list_run_grants_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_run_grants_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_run_grants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_run_grants_response::result},
+        utility::codec::field{"grants", &list_run_grants_response::grants},
+        utility::codec::field{"total", &list_run_grants_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_run_grant_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_run_grant_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_run_grant_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_run_grant_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_run_grant_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_run_grant_response::result},
+        utility::codec::field{"run_grant", &get_run_grant_response::run_grant},
+    };
+}
+
+/**
+ * @brief The members of get_many_run_grants_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_run_grants_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_run_grants_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_run_grants_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_run_grants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_run_grants_response::result},
+        utility::codec::field{"entries", &get_many_run_grants_response::entries},
+    };
+}
+
+/**
+ * @brief The members of list_by_grantor_account_id_run_grants_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_grantor_account_id_run_grants_request&) {
+    return std::tuple{
+        utility::codec::field{"grantor_account_id",
+                              &list_by_grantor_account_id_run_grants_request::grantor_account_id},
+        utility::codec::field{"scope", &list_by_grantor_account_id_run_grants_request::scope},
+        utility::codec::field{"offset", &list_by_grantor_account_id_run_grants_request::offset},
+        utility::codec::field{"limit", &list_by_grantor_account_id_run_grants_request::limit},
+        utility::codec::field{"order", &list_by_grantor_account_id_run_grants_request::order},
+        utility::codec::field{"filter", &list_by_grantor_account_id_run_grants_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_grantor_account_id_run_grants_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_grantor_account_id_run_grants_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_grantor_account_id_run_grants_response::result},
+        utility::codec::field{"grants", &list_by_grantor_account_id_run_grants_response::grants},
+        utility::codec::field{"total", &list_by_grantor_account_id_run_grants_response::total},
+    };
+}
+
+/**
+ * @brief The members of list_run_grant_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_run_grant_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_run_grant_versions_request::key},
+        utility::codec::field{"offset", &list_run_grant_versions_request::offset},
+        utility::codec::field{"limit", &list_run_grant_versions_request::limit},
+        utility::codec::field{"order", &list_run_grant_versions_request::order},
+        utility::codec::field{"filter", &list_run_grant_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_run_grant_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_run_grant_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_run_grant_versions_response::result},
+        utility::codec::field{"versions", &list_run_grant_versions_response::versions},
+        utility::codec::field{"total", &list_run_grant_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_run_grant_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_run_grant_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_run_grant_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_run_grant_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_run_grant_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_run_grant_version_response::result},
+        utility::codec::field{"version", &get_run_grant_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grant_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grant_key& v);
+    static ores::iam::messaging::run_grant_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grant_key& v);
+    static ores::iam::messaging::run_grant_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grant_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grant_lookup& v);
+    static ores::iam::messaging::run_grant_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grant_lookup& v);
+    static ores::iam::messaging::run_grant_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grants_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grants_filter& v);
+    static ores::iam::messaging::run_grants_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grants_filter& v);
+    static ores::iam::messaging::run_grants_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grant_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grant_event& v);
+    static ores::iam::messaging::run_grant_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grant_event& v);
+    static ores::iam::messaging::run_grant_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grant_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grant_version_key& v);
+    static ores::iam::messaging::run_grant_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grant_version_key& v);
+    static ores::iam::messaging::run_grant_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::run_grant_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::run_grant_versions_filter& v);
+    static ores::iam::messaging::run_grant_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::run_grant_versions_filter& v);
+    static ores::iam::messaging::run_grant_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_run_grants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_run_grants_request& v);
+    static ores::iam::messaging::list_run_grants_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_run_grants_request& v);
+    static ores::iam::messaging::list_run_grants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_run_grants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_run_grants_response& v);
+    static ores::iam::messaging::list_run_grants_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_run_grants_response& v);
+    static ores::iam::messaging::list_run_grants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_run_grant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_run_grant_request& v);
+    static ores::iam::messaging::get_run_grant_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_run_grant_request& v);
+    static ores::iam::messaging::get_run_grant_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_run_grant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_run_grant_response& v);
+    static ores::iam::messaging::get_run_grant_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_run_grant_response& v);
+    static ores::iam::messaging::get_run_grant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_run_grants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_run_grants_request& v);
+    static ores::iam::messaging::get_many_run_grants_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_run_grants_request& v);
+    static ores::iam::messaging::get_many_run_grants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_run_grants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_run_grants_response& v);
+    static ores::iam::messaging::get_many_run_grants_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_run_grants_response& v);
+    static ores::iam::messaging::get_many_run_grants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_by_grantor_account_id_run_grants_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_by_grantor_account_id_run_grants_request& v);
+    static ores::iam::messaging::list_by_grantor_account_id_run_grants_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_by_grantor_account_id_run_grants_request& v);
+    static ores::iam::messaging::list_by_grantor_account_id_run_grants_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT
+    wire_traits<ores::iam::messaging::list_by_grantor_account_id_run_grants_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::iam::messaging::list_by_grantor_account_id_run_grants_response& v);
+    static ores::iam::messaging::list_by_grantor_account_id_run_grants_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_by_grantor_account_id_run_grants_response& v);
+    static ores::iam::messaging::list_by_grantor_account_id_run_grants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_run_grant_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_run_grant_versions_request& v);
+    static ores::iam::messaging::list_run_grant_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_run_grant_versions_request& v);
+    static ores::iam::messaging::list_run_grant_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_run_grant_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_run_grant_versions_response& v);
+    static ores::iam::messaging::list_run_grant_versions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_run_grant_versions_response& v);
+    static ores::iam::messaging::list_run_grant_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_run_grant_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_run_grant_version_request& v);
+    static ores::iam::messaging::get_run_grant_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_run_grant_version_request& v);
+    static ores::iam::messaging::get_run_grant_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_run_grant_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_run_grant_version_response& v);
+    static ores::iam::messaging::get_run_grant_version_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_run_grant_version_response& v);
+    static ores::iam::messaging::get_run_grant_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

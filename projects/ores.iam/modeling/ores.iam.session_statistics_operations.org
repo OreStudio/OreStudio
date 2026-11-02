@@ -2,6 +2,7 @@
 :ores.cpp.shell-command.enabled: true
 :ores.cpp.http-route.enabled: true
 :ID: 5E7C2A94-1B6D-4E83-9F20-3A8D6C1E7B45
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.session_statistics_operations
 #+description: Codegen operation model for the session statistics read.

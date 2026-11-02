@@ -45,8 +45,8 @@ target_link_libraries(${lib_target_name}
         OpenSSL::Crypto
         Boost::json
         ores.logging.lib
-    PRIVATE
         ores.utility.lib
+    PRIVATE
         ores.platform.lib
         Boost::boost
         jwt-cpp::jwt-cpp)

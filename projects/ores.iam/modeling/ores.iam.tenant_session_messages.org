@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 11C20FB1-E766-4D17-AC4C-A687A04F55C1
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.tenant_session_messages
 #+description: Codegen operation model for entering and leaving a tenant as a system administrator, rendered to C++ and TypeScript from one source.

@@ -2,6 +2,7 @@
 :ores.cpp.shell-command.enabled: true
 :ores.cpp.http-route.enabled: true
 :ID: 81D4D50F-A8D4-47F8-9500-89F6AC460469
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.iam.account

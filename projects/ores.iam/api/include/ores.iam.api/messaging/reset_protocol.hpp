@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_RESET_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_RESET_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::iam::messaging {
 
@@ -74,6 +81,102 @@ struct reset_system_result {
     std::string message;
 };
 
+/**
+ * @brief The members of reset_tenant_command, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const reset_tenant_command&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_code", &reset_tenant_command::tenant_code},
+    };
 }
+
+/**
+ * @brief The members of reset_tenant_result, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const reset_tenant_result&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &reset_tenant_result::success},
+        ::ores::utility::codec::field{"message", &reset_tenant_result::message},
+    };
+}
+
+/**
+ * @brief The members of reset_system_command, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const reset_system_command&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of reset_system_result, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const reset_system_result&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &reset_system_result::success},
+        ::ores::utility::codec::field{"message", &reset_system_result::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::reset_tenant_command> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::reset_tenant_command& v);
+    static ores::iam::messaging::reset_tenant_command read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::reset_tenant_command& v);
+    static ores::iam::messaging::reset_tenant_command read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::reset_tenant_result> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::reset_tenant_result& v);
+    static ores::iam::messaging::reset_tenant_result read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::reset_tenant_result& v);
+    static ores::iam::messaging::reset_tenant_result read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::reset_system_command> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::reset_system_command& v);
+    static ores::iam::messaging::reset_system_command read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::reset_system_command& v);
+    static ores::iam::messaging::reset_system_command read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::reset_system_result> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::reset_system_result& v);
+    static ores::iam::messaging::reset_system_result read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::reset_system_result& v);
+    static ores::iam::messaging::reset_system_result read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

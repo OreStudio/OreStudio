@@ -25,7 +25,14 @@
 #ifndef ORES_IAM_API_MESSAGING_LOGIN_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_LOGIN_PROTOCOL_HPP
 
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -255,6 +262,300 @@ struct service_login_response {
     int access_lifetime_s = 1800;
 };
 
+/**
+ * @brief The members of party_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const party_summary&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &party_summary::id},
+        ::ores::utility::codec::field{"name", &party_summary::name},
+        ::ores::utility::codec::field{"party_category", &party_summary::party_category},
+        ::ores::utility::codec::field{"business_center_code", &party_summary::business_center_code},
+    };
 }
+
+/**
+ * @brief The members of database_info, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const database_info&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"fingerprint", &database_info::fingerprint},
+        ::ores::utility::codec::field{"environment", &database_info::environment},
+        ::ores::utility::codec::field{"commit", &database_info::commit},
+        ::ores::utility::codec::field{"created", &database_info::created},
+    };
+}
+
+/**
+ * @brief The members of login_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const login_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"principal", &login_request::principal},
+        ::ores::utility::codec::field{"password", &login_request::password},
+    };
+}
+
+/**
+ * @brief The members of login_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const login_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &login_response::success},
+        ::ores::utility::codec::field{"account_id", &login_response::account_id},
+        ::ores::utility::codec::field{"tenant_id", &login_response::tenant_id},
+        ::ores::utility::codec::field{"tenant_name", &login_response::tenant_name},
+        ::ores::utility::codec::field{"version", &login_response::version},
+        ::ores::utility::codec::field{"database", &login_response::database},
+        ::ores::utility::codec::field{"username", &login_response::username},
+        ::ores::utility::codec::field{"email", &login_response::email},
+        ::ores::utility::codec::field{"password_reset_required",
+                                      &login_response::password_reset_required},
+        ::ores::utility::codec::field{"tenant_bootstrap_mode",
+                                      &login_response::tenant_bootstrap_mode},
+        ::ores::utility::codec::field{"tenant_bootstrapping",
+                                      &login_response::tenant_bootstrapping},
+        ::ores::utility::codec::field{"party_setup_required",
+                                      &login_response::party_setup_required},
+        ::ores::utility::codec::field{"party_setup_warning", &login_response::party_setup_warning},
+        ::ores::utility::codec::field{"token", &login_response::token},
+        ::ores::utility::codec::field{"error_message", &login_response::error_message},
+        ::ores::utility::codec::field{"error_code", &login_response::error_code},
+        ::ores::utility::codec::field{"message", &login_response::message},
+        ::ores::utility::codec::field{"selected_party_id", &login_response::selected_party_id},
+        ::ores::utility::codec::field{"available_parties", &login_response::available_parties},
+        ::ores::utility::codec::field{"default_party_id", &login_response::default_party_id},
+        ::ores::utility::codec::field{"access_lifetime_s", &login_response::access_lifetime_s},
+        ::ores::utility::codec::field{"session_id", &login_response::session_id},
+    };
+}
+
+/**
+ * @brief The members of logout_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const logout_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of logout_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const logout_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &logout_response::success},
+        ::ores::utility::codec::field{"message", &logout_response::message},
+    };
+}
+
+/**
+ * @brief The members of public_key_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const public_key_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of refresh_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const refresh_request&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of refresh_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const refresh_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &refresh_response::success},
+        ::ores::utility::codec::field{"token", &refresh_response::token},
+        ::ores::utility::codec::field{"message", &refresh_response::message},
+        ::ores::utility::codec::field{"access_lifetime_s", &refresh_response::access_lifetime_s},
+    };
+}
+
+/**
+ * @brief The members of service_login_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const service_login_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"username", &service_login_request::username},
+        ::ores::utility::codec::field{"password", &service_login_request::password},
+    };
+}
+
+/**
+ * @brief The members of service_login_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const service_login_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &service_login_response::success},
+        ::ores::utility::codec::field{"token", &service_login_response::token},
+        ::ores::utility::codec::field{"message", &service_login_response::message},
+        ::ores::utility::codec::field{"access_lifetime_s",
+                                      &service_login_response::access_lifetime_s},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::party_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::party_summary& v);
+    static ores::iam::messaging::party_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::party_summary& v);
+    static ores::iam::messaging::party_summary read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::database_info> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::database_info& v);
+    static ores::iam::messaging::database_info read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::database_info& v);
+    static ores::iam::messaging::database_info read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::login_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::login_request& v);
+    static ores::iam::messaging::login_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::login_request& v);
+    static ores::iam::messaging::login_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::login_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::login_response& v);
+    static ores::iam::messaging::login_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::login_response& v);
+    static ores::iam::messaging::login_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::logout_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::logout_request& v);
+    static ores::iam::messaging::logout_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::logout_request& v);
+    static ores::iam::messaging::logout_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::logout_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::logout_response& v);
+    static ores::iam::messaging::logout_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::logout_response& v);
+    static ores::iam::messaging::logout_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::public_key_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::public_key_request& v);
+    static ores::iam::messaging::public_key_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::public_key_request& v);
+    static ores::iam::messaging::public_key_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::refresh_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::refresh_request& v);
+    static ores::iam::messaging::refresh_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::refresh_request& v);
+    static ores::iam::messaging::refresh_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::refresh_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::refresh_response& v);
+    static ores::iam::messaging::refresh_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::refresh_response& v);
+    static ores::iam::messaging::refresh_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::service_login_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::service_login_request& v);
+    static ores::iam::messaging::service_login_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::service_login_request& v);
+    static ores::iam::messaging::service_login_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::service_login_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::service_login_response& v);
+    static ores::iam::messaging::service_login_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::service_login_response& v);
+    static ores::iam::messaging::service_login_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

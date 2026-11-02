@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F3789B6F-042A-4F44-BCFC-E3BB2CA0E274
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.iam.run_grant
 #+description: Codegen entity model for the IAM run_grant table: a person's consent that runs of one resource act in one tenant and one party with one role.

@@ -26,11 +26,17 @@
 #define ORES_IAM_API_MESSAGING_PERMISSION_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -219,7 +225,534 @@ inline constexpr std::string_view created = "iam.v1.permissions_events.created";
 inline constexpr std::string_view updated = "iam.v1.permissions_events.updated";
 inline constexpr std::string_view deleted = "iam.v1.permissions_events.deleted";
 }
+/**
+ * @brief The members of permission_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &permission_key::code},
+    };
+}
+
+/**
+ * @brief The members of permission_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &permission_write::id},
+        utility::codec::field{"code", &permission_write::code},
+        utility::codec::field{"description", &permission_write::description},
+    };
+}
+
+/**
+ * @brief The members of permission_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &permission_change::write},
+        utility::codec::field{"precondition", &permission_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of permission_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &permission_removal::key},
+        utility::codec::field{"precondition", &permission_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of permission_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &permission_lookup::key},
+        utility::codec::field{"permission", &permission_lookup::permission},
+    };
+}
+
+/**
+ * @brief The members of permissions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permissions_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &permissions_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of permission_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const permission_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &permission_event::event_id},
+        utility::codec::field{"key", &permission_event::key},
+        utility::codec::field{"action", &permission_event::action},
+        utility::codec::field{"version", &permission_event::version},
+        utility::codec::field{"occurred_at", &permission_event::occurred_at},
+        utility::codec::field{"correlation_id", &permission_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_permissions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_permissions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_permissions_request::offset},
+        utility::codec::field{"limit", &list_permissions_request::limit},
+        utility::codec::field{"order", &list_permissions_request::order},
+        utility::codec::field{"filter", &list_permissions_request::filter},
+        utility::codec::field{"as_of", &list_permissions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_permissions_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_permissions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_permissions_response::result},
+        utility::codec::field{"permissions", &list_permissions_response::permissions},
+        utility::codec::field{"total", &list_permissions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_permission_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_permission_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_permission_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_permission_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_permission_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_permission_response::result},
+        utility::codec::field{"permission", &get_permission_response::permission},
+    };
+}
+
+/**
+ * @brief The members of get_many_permissions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_permissions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_permissions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_permissions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_permissions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_permissions_response::result},
+        utility::codec::field{"entries", &get_many_permissions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_permission_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_permission_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_permission_request::change},
+        utility::codec::field{"intent", &put_permission_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_permission_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_permission_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_permission_response::result},
+        utility::codec::field{"permission", &put_permission_response::permission},
+    };
+}
+
+/**
+ * @brief The members of put_many_permissions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_permissions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_permissions_request::changes},
+        utility::codec::field{"intent", &put_many_permissions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_permissions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_permissions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_permissions_response::result},
+        utility::codec::field{"permissions", &put_many_permissions_response::permissions},
+    };
+}
+
+/**
+ * @brief The members of delete_permission_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_permission_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_permission_request::removal},
+        utility::codec::field{"intent", &delete_permission_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_permission_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_permission_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_permission_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_permissions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_permissions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_permissions_request::removals},
+        utility::codec::field{"intent", &delete_many_permissions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_permissions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_permissions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_permissions_response::result},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_key& v);
+    static ores::iam::messaging::permission_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_key& v);
+    static ores::iam::messaging::permission_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_write& v);
+    static ores::iam::messaging::permission_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_write& v);
+    static ores::iam::messaging::permission_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_change& v);
+    static ores::iam::messaging::permission_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_change& v);
+    static ores::iam::messaging::permission_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_removal& v);
+    static ores::iam::messaging::permission_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_removal& v);
+    static ores::iam::messaging::permission_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_lookup& v);
+    static ores::iam::messaging::permission_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_lookup& v);
+    static ores::iam::messaging::permission_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permissions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permissions_filter& v);
+    static ores::iam::messaging::permissions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permissions_filter& v);
+    static ores::iam::messaging::permissions_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::permission_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::permission_event& v);
+    static ores::iam::messaging::permission_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::permission_event& v);
+    static ores::iam::messaging::permission_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_permissions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_permissions_request& v);
+    static ores::iam::messaging::list_permissions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_permissions_request& v);
+    static ores::iam::messaging::list_permissions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_permissions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_permissions_response& v);
+    static ores::iam::messaging::list_permissions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_permissions_response& v);
+    static ores::iam::messaging::list_permissions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_permission_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_permission_request& v);
+    static ores::iam::messaging::get_permission_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_permission_request& v);
+    static ores::iam::messaging::get_permission_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_permission_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_permission_response& v);
+    static ores::iam::messaging::get_permission_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_permission_response& v);
+    static ores::iam::messaging::get_permission_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_permissions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_permissions_request& v);
+    static ores::iam::messaging::get_many_permissions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_permissions_request& v);
+    static ores::iam::messaging::get_many_permissions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::get_many_permissions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::get_many_permissions_response& v);
+    static ores::iam::messaging::get_many_permissions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::get_many_permissions_response& v);
+    static ores::iam::messaging::get_many_permissions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_permission_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_permission_request& v);
+    static ores::iam::messaging::put_permission_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_permission_request& v);
+    static ores::iam::messaging::put_permission_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_permission_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_permission_response& v);
+    static ores::iam::messaging::put_permission_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_permission_response& v);
+    static ores::iam::messaging::put_permission_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_permissions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_many_permissions_request& v);
+    static ores::iam::messaging::put_many_permissions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_many_permissions_request& v);
+    static ores::iam::messaging::put_many_permissions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::put_many_permissions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::put_many_permissions_response& v);
+    static ores::iam::messaging::put_many_permissions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::put_many_permissions_response& v);
+    static ores::iam::messaging::put_many_permissions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_permission_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_permission_request& v);
+    static ores::iam::messaging::delete_permission_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_permission_request& v);
+    static ores::iam::messaging::delete_permission_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_permission_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_permission_response& v);
+    static ores::iam::messaging::delete_permission_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::delete_permission_response& v);
+    static ores::iam::messaging::delete_permission_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_many_permissions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_many_permissions_request& v);
+    static ores::iam::messaging::delete_many_permissions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::delete_many_permissions_request& v);
+    static ores::iam::messaging::delete_many_permissions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::delete_many_permissions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::delete_many_permissions_response& v);
+    static ores::iam::messaging::delete_many_permissions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::delete_many_permissions_response& v);
+    static ores::iam::messaging::delete_many_permissions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

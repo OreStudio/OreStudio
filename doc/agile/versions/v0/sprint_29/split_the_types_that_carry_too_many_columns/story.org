@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :data-oriented-design:modeling:refdata:sprint_29:v0:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-02
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,7 +25,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Refdata splits and the re-inventory done; two refdata splits left. |
+| Now           | Refdata splits and the re-inventory done. Open: the swaption and inflation split, the trading task and the market data task. |
 | Waiting on    | Nothing.                               |
 | Next          | Split the swaption smile and the inflation seasonality. |
 | Last touched  | 2026-11-02                             |

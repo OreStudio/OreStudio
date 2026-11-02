@@ -84,6 +84,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Should the builders live in ores.testing | run_stamp_fixture.hpp, market_state_run_fixture.hpp | Declined | The types live in reporting.core and marketdata.core, which ores.testing does not link; each builder is used only by its own component's tests, so its fixture sits beside them. |
 | 2 | The benchmark's file-level date constant collided with the reader test's | benchmark_run_output_load_tests.cpp | Accepted | The benchmark asserts nothing about the date, so it passes the date at its two calls rather than naming a second file-level constant. |
+| 3 | PR #4389 review: double blank lines where the old helpers were | four test files | Accepted | Collapsed. |
+| 4 | PR #4389 review: one file-local priced_at in the benchmark instead of two date literals | benchmark_run_output_load_tests.cpp | Declined | The unity build merges the anonymous namespaces of the target's sources, so a second file-level priced_at collides with the reader test's; that collision is what row 2 removed. |
+| 5 | PR #4389 review: the fixture usings sit outside their using blocks | four test files | Accepted | Each sits last in its file's block. |
+| 6 | PR #4389 review: an unrelated reformat in the benchmark | benchmark_run_output_load_tests.cpp | Declined | clang-format wrote it, and the format check requires a changed file to be formatted whole. |
 
 * Result
 

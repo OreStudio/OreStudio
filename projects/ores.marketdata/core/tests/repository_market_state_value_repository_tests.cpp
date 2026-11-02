@@ -37,8 +37,8 @@ using ores::marketdata::repository::market_calibration_value_repository;
 using ores::marketdata::repository::market_input_value_repository;
 using ores::marketdata::repository::market_scenario_value_repository;
 using ores::marketdata::service::market_state_file;
-using ores::marketdata::tests::a_market_state_run;
 using ores::marketdata::service::read_market_state;
+using ores::marketdata::tests::a_market_state_run;
 using ores::testing::database_helper;
 
 const auto as_of = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};

@@ -31,9 +31,6 @@
 
 namespace {
 
-using ores::reporting::tests::a_run_stamp;
-
-
 const std::string benchmark_tags("[.][benchmark][run_output_load]");
 
 using ores::reporting::repository::report_metric_repository;
@@ -42,6 +39,7 @@ using ores::reporting::results::read_run_output;
 using ores::reporting::results::read_run_outputs;
 using ores::reporting::results::run_output_outcome;
 using ores::reporting::results::run_output_sinks;
+using ores::reporting::tests::a_run_stamp;
 
 std::size_t rows_wanted() {
     const auto* text = std::getenv("ORES_BENCH_ROWS");
@@ -69,7 +67,6 @@ long peak_mib() {
     getrusage(RUSAGE_SELF, &usage);
     return usage.ru_maxrss / 1024;
 }
-
 
 }
 

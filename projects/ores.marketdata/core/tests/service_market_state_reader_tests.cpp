@@ -28,15 +28,13 @@
 
 namespace {
 
-using ores::marketdata::tests::a_market_state_run;
-
 const std::string market_state_tags("[marketdata][market_state_reader]");
 
 using ores::marketdata::service::market_state_file;
 using ores::marketdata::service::read_market_state;
+using ores::marketdata::tests::a_market_state_run;
 
 const auto priced_at = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
-
 
 std::string two_date_scenario_file() {
     return "#Date,Scenario,Numeraire,DiscountCurve/USD/0,DiscountCurve/USD/1\n"

@@ -29,15 +29,13 @@
 
 namespace {
 
-using ores::reporting::tests::a_run_stamp;
-
 const std::string run_tags("[results][run_output_reader]");
 
 using ores::reporting::results::output_file;
 using ores::reporting::results::read_run_outputs;
+using ores::reporting::tests::a_run_stamp;
 
 const auto priced_at = std::chrono::sys_days{std::chrono::year{2026} / 10 / 31};
-
 
 // The npv family's required columns, with the figures a run states.
 std::string npv_file() {

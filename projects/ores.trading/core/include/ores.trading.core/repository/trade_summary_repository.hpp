@@ -187,6 +187,10 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<std::pair<std::string, std::uint64_t>>
+    count_blotter_rail(context ctx,
+                       const std::string& dimension,
+                       const std::optional<messaging::trade_summaries_filter>& filter);
 
 private:
     /**

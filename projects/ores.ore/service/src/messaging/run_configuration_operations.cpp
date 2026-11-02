@@ -107,7 +107,6 @@ typename Req::response_type run_configuration_operations_call(nats_client& owner
     return *resp;
 }
 
-
 const std::vector<rfl::Generic>* array_of(const rfl::Generic& value) {
     return std::get_if<std::vector<rfl::Generic>>(&value.get());
 }
@@ -118,7 +117,6 @@ const std::vector<rfl::Generic>* first_array_of(const rfl::Generic::Object& obje
             return array;
     return nullptr;
 }
-
 
 // Sends a request the registry names at runtime and returns the decoded
 // response. The families differ only in their subject and their value type, so
@@ -224,7 +222,6 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
     // FX conventions have no store, as they have none on the write path.
     return package;
 }
-
 
 boost::uuids::uuid parse_id(const std::string& text) {
     return boost::uuids::string_generator()(text);

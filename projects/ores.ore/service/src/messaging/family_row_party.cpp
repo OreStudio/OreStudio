@@ -43,8 +43,8 @@ std::string text_of(const rfl::Generic* value) {
 }
 
 std::string party_of_family_row(const rfl::Generic& row) {
-    if (const auto* own = member_named(row, "party_id"); own != nullptr)
-        return text_of(own);
+    if (auto own = text_of(member_named(row, "party_id")); !own.empty())
+        return own;
     if (const auto* identity = member_named(row, "identity"); identity != nullptr)
         return text_of(member_named(*identity, "party_id"));
     return {};

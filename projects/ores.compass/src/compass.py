@@ -7407,6 +7407,28 @@ def _acquire_build_lock():
         time.sleep(BUILD_LOCK_POLL_INTERVAL)
 
 
+def keep_going_args(build_dir, preset):
+    """The native build tool's keep-going option, after cmake's `--`.
+
+    cmake --build has no keep-going option of its own, and the two generators
+    the presets use spell it differently: ninja takes a failure count, make a
+    bare flag. The build directory's cache names its generator. Before the
+    first configure there is no cache, so the preset name decides.
+    """
+    cache = Path(build_dir) / "CMakeCache.txt"
+    generator = ""
+    if cache.is_file():
+        for line in cache.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("CMAKE_GENERATOR:"):
+                generator = line.split("=", 1)[1].strip()
+                break
+    if not generator:
+        generator = "Ninja" if "ninja" in preset else "Unix Makefiles"
+    if generator == "Ninja":
+        return ["--", "-k", "0"]
+    return ["--", "-k"]
+
+
 def cmd_build(argv):
     """compass build — Build pillar: cmake builds via the prevailing preset.
 
@@ -7451,6 +7473,9 @@ def cmd_build(argv):
     ap.add_argument("-j", "--jobs", type=int, default=None,
                     help="Parallel build jobs (default: whichever build-lock "
                          f"slot is acquired -- {slot_desc}); ignored with --direct")
+    ap.add_argument("-k", "--keep-going", action="store_true",
+                    help="Keep building past a failed target, so one run "
+                         "reports every failure; ignored with --direct")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the command(s) without running them")
     ap.add_argument("--direct", action="store_true",
@@ -7570,6 +7595,8 @@ def cmd_build(argv):
         lock.announce()
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     build_cmd += ["-j", str(jobs)]
+    if args.keep_going:
+        build_cmd += keep_going_args(build_dir, preset)
     import compass_claude
     if not args.dry_run and slot_name is not None and compass_claude._has_user_systemd():
         # WS-7 change 2: the actual `cmake --build` step (not the

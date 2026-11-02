@@ -34,7 +34,9 @@ import {
     runCounts,
     runOf,
     toneOf,
+    vendorOf,
     visibleFeeds,
+    windowReturns,
 } from './calibration.js';
 import { CalibrationFeedPage, CalibrationPage, CalibrationPolicyPage } from './CalibrationPages.js';
 
@@ -212,6 +214,17 @@ describe('the calibration list', () => {
         expect(html).toContain('GBP/USD');
         expect(html).not.toContain('AUD/USD');
     });
+
+    it('keeps the feeds and a calibration run on separate tabs', () => {
+        const feeds = render('/market-data/calibration/fx', calibration());
+        expect(feeds).toContain('role="tablist"');
+        expect(feeds).toContain('Calibration run');
+        expect(feeds).toContain('EUR/USD');
+
+        const run = render('/market-data/calibration/fx?tab=run', calibration());
+        expect(run).toContain('No calibration has run on this screen yet.');
+        expect(run).not.toContain('EUR/USD');
+    });
 });
 
 describe('a feed calibration record', () => {
@@ -331,5 +344,33 @@ describe('the calibrations in a feed history', () => {
             { at: at2, actor: 'ann', reasonCode: 'common.rectification', commentary: 'edit' },
         ]);
         expect(entries.map((e) => e.commentary)).toEqual(['second', 'first']);
+    });
+});
+
+describe('the returns behind a feed start', () => {
+    const rows = [
+        { date: '2026-01-03', value: '1.21' },
+        { date: '2026-01-01', value: '1.00' },
+        { date: '2026-01-02', value: '1.10' },
+    ];
+
+    it('takes the daily log returns of the window, oldest first', () => {
+        const returns = windowReturns(rows, 2, false);
+        expect(returns).toHaveLength(2);
+        expect(returns[0]).toBeCloseTo(Math.log(1.1));
+        expect(returns[1]).toBeCloseTo(Math.log(1.1));
+    });
+
+    it('keeps only the window and turns the sign for a pair read as 1/x', () => {
+        const returns = windowReturns(rows, 1, true);
+        expect(returns).toHaveLength(1);
+        expect(returns[0]).toBeCloseTo(-Math.log(1.1));
+    });
+});
+
+describe('the vendor of a synthetic feed', () => {
+    it('is the part of the source name after the synthetic mark', () => {
+        expect(vendorOf('synthetic.bloomberg.audusd')).toBe('bloomberg');
+        expect(vendorOf('synthetic')).toBe('');
     });
 });

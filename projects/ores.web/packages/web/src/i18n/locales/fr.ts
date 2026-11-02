@@ -4921,6 +4921,37 @@ const fr: SourceCatalogue = {
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
             systemOnly:
                 'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
+            tabs: 'Vues de la calibration',
+            tab: {
+                feeds: 'Flux',
+                run: 'Calibration en cours',
+            },
+            measures: {
+                information: 'information',
+                sub: '{provider} · {pair} · {window} jours',
+                volatility: 'Volatilité réalisée',
+                hourly: 'quotidienne · {hourly} horaire',
+                drift: 'Dérive annualisée',
+                range: 'Plage quotidienne',
+                samples: 'Échantillons',
+                samplesSub: 'sur {window} jours · âgé de {age} jour(s)',
+                returns: 'Rendements logarithmiques quotidiens sur la fenêtre',
+                usedToday: 'utilisé aujourd’hui',
+                future: 'entrée future',
+                sets: 'La volatilité fixe l’échelle du mélange',
+                tilt: 'La dérive pourrait incliner la moyenne du processus',
+                jumps: 'Sauts au-delà de trois écarts : {count}',
+                dispersion: 'Dispersion entre fournisseurs : {list}',
+                noDispersion:
+                    'Dispersion entre fournisseurs : aucun second fournisseur accepté pour cette paire',
+                freshness:
+                    'La fraîcheur et la couverture pourraient élargir la fenêtre ou écarter une source',
+                note: 'Les mesures décrivent les fixings ; seule la volatilité réalisée change la calibration aujourd’hui. Les autres sont enregistrées pour une politique future qui en tirera parti.',
+            },
+            vendor: {
+                label: 'Fournisseur',
+                all: 'Tous les fournisseurs',
+            },
             calibrateAll: 'Tout calibrer',
             calibrating: 'Calibrage…',
             assetClass: "Classe d'actifs",
@@ -4978,6 +5009,7 @@ const fr: SourceCatalogue = {
                 not_reached: 'non atteint',
             },
             run: {
+                none: 'Aucune calibration n’a encore été lancée sur cet écran. Appuyez sur Tout calibrer pour calibrer chaque flux et la suivre ici.',
                 title: 'Exécution de la calibration',
                 progress: '{finished} sur {total} flux',
                 waiting: 'En attente',

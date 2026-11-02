@@ -53,7 +53,8 @@ import { useTabs } from '../../ui/Tabs.js';
 import { useFeedStory } from '../synthetic/FeedHistory.js';
 import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useFeedParts } from '../synthetic/FeedScreens.js';
-import { FeedStartMeasures } from '../synthetic/feedStart.js';
+import { percent } from '../synthetic/feedStart.js';
+import { Sparkline } from '../../ui/Sparkline.js';
 import { FX_FEED_KIND, fxFeedPath } from '../synthetic/fxFeeds.js';
 import { formatDateTime } from '../../ui/Time.js';
 import { CalibrationRun, useCalibrationRun } from './CalibrationRun.js';
@@ -65,7 +66,10 @@ import {
     moveProvider,
     outcomeOf,
     overrides,
+    vendorOf,
+    vendorsOf,
     visibleFeeds,
+    windowReturns,
     type FeedOutcome,
 } from './calibration.js';
 
@@ -186,11 +190,19 @@ export function CalibrationPage(): ReactNode {
     const assetClass = useAssetClass();
     const [search, setSearch] = useSearchParams();
     const filter = filterOf(search.get('filter'));
+    const vendor = search.get('vendor') ?? '';
     const calibration = useCalibration(assetClass);
     const client = useQueryClient();
     const run = useCalibrationRun(assetClass, () => {
         void client.invalidateQueries({ queryKey: ['calibration', assetClass] });
         void client.invalidateQueries({ queryKey: ['history'] });
+    });
+    // The feeds as they stand and a run's answers are separate tabs, so a run's rows
+    // never sit among the states the feeds had before it.
+    const { tab, bar } = useTabs({
+        label: t('marketdata.calibration.tabs'),
+        tabs: PAGE_TABS,
+        titleOf: (id) => t(`marketdata.calibration.tab.${id}`),
     });
     const title = t('marketdata.calibration.title');
     const trail = <AreaTrail area="marketdata" screen={title} />;
@@ -207,7 +219,21 @@ export function CalibrationPage(): ReactNode {
             </div>
         );
     }
-    const shown = visibleFeeds(data.feeds, filter);
+    const shown = visibleFeeds(data.feeds, filter).filter(
+        (feed) => vendor === '' || vendorOf(feed.source_name) === vendor,
+    );
+    // The status and the vendor are separate filters, so a change to one keeps the other.
+    const filterBy = (next: { readonly filter?: string; readonly vendor?: string }) => {
+        const nextFilter = next.filter ?? filter;
+        const nextVendor = next.vendor ?? vendor;
+        setSearch(
+            {
+                ...(nextFilter !== 'all' && { filter: nextFilter }),
+                ...(nextVendor !== '' && { vendor: nextVendor }),
+            },
+            { replace: true },
+        );
+    };
     return (
         <div className="space-y-6">
             <div>
@@ -233,7 +259,10 @@ export function CalibrationPage(): ReactNode {
                             </Field>
                             <Button
                                 variant="primary"
-                                onClick={() => void run.start(data.feeds)}
+                                onClick={() => {
+                                    setSearch({ tab: 'run' }, { replace: true });
+                                    void run.start(data.feeds);
+                                }}
                                 disabled={run.active || data.feeds.length === 0}
                                 pending={run.active}
                             >
@@ -246,101 +275,137 @@ export function CalibrationPage(): ReactNode {
                 />
                 <PolicyLine calibration={data} />
             </div>
-            {run.steps !== undefined && (
-                <CalibrationRun
-                    assetClass={assetClass}
-                    steps={run.steps}
-                    active={run.active}
-                    onClose={run.close}
-                />
-            )}
-            <Coverage calibration={data} />
-            <div
-                role="radiogroup"
-                aria-label={t('marketdata.calibration.filter.label')}
-                className="flex gap-1.5"
-            >
-                {FILTERS.map((f) => (
-                    <button
-                        key={f}
-                        type="button"
-                        role="radio"
-                        aria-checked={f === filter}
-                        onClick={() =>
-                            setSearch(f === 'all' ? {} : { filter: f }, { replace: true })
-                        }
-                        className={
-                            f === filter
-                                ? 'rounded-chip border border-accent bg-accent-dim px-2 py-0.5 text-xs text-accent'
-                                : 'rounded-chip border border-line px-2 py-0.5 text-xs text-ink-muted hover:text-ink'
-                        }
-                    >
-                        {t(`marketdata.calibration.filter.${f}`)}
-                    </button>
+            {bar}
+            {tab === 'run' &&
+                (run.steps === undefined ? (
+                    <p className="text-sm text-ink-muted">{t('marketdata.calibration.run.none')}</p>
+                ) : (
+                    <CalibrationRun
+                        assetClass={assetClass}
+                        steps={run.steps}
+                        active={run.active}
+                        onClose={() => {
+                            run.close();
+                            setSearch({}, { replace: true });
+                        }}
+                    />
                 ))}
-            </div>
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-ink-faint">
-                    <tr>
-                        <th className="py-2">{t('marketdata.calibration.columns.feed')}</th>
-                        <th className="py-2">{t('marketdata.calibration.columns.start')}</th>
-                        <th className="py-2">{t('marketdata.calibration.columns.source')}</th>
-                        <th className="py-2">{t('marketdata.calibration.columns.state')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {shown.length === 0 ? (
-                        <tr>
-                            <td colSpan={4} className="py-3 text-ink-muted">
-                                {t('marketdata.calibration.empty')}
-                            </td>
-                        </tr>
-                    ) : (
-                        shown.map((feed) => (
-                            <tr key={feed.config_id} className="border-t border-line-subtle">
-                                <td className="py-2">
-                                    <Link
-                                        className="font-medium text-ink hover:text-accent"
-                                        to={calibrationFeedPath(assetClass, feed.config_id)}
-                                    >
-                                        {`${feed.base_currency_code}/${feed.quote_currency_code}`}
-                                    </Link>
-                                    <div className="font-mono text-xs text-ink-faint">
-                                        {feed.source_name}
-                                    </div>
-                                </td>
-                                <td className="py-2 tabular-nums">
-                                    {feed.start.from_fixing ? feed.start.value : '—'}
-                                </td>
-                                <td className="py-2">
-                                    {feed.start.from_fixing ? (
-                                        <Link
-                                            className="text-accent hover:underline"
-                                            to={`${PATHS.fixingSeries}?uri=${encodeURIComponent(feed.start.item)}`}
-                                            title={feed.start.item}
-                                        >
-                                            {`${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`}
-                                        </Link>
-                                    ) : (
-                                        '—'
-                                    )}
-                                </td>
-                                <td className="space-x-1 py-2">
-                                    <OutcomeTag outcome={outcomeOf(feed)} />
-                                    {overrides(feed) && (
-                                        <Tag tone="muted">
-                                            {t('marketdata.calibration.overrides')}
-                                        </Tag>
-                                    )}
-                                </td>
+            {tab === 'feeds' && (
+                <>
+                    <Coverage calibration={data} />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div
+                            role="radiogroup"
+                            aria-label={t('marketdata.calibration.filter.label')}
+                            className="flex gap-1.5"
+                        >
+                            {FILTERS.map((f) => (
+                                <button
+                                    key={f}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={f === filter}
+                                    onClick={() => filterBy({ filter: f })}
+                                    className={
+                                        f === filter
+                                            ? 'rounded-chip border border-accent bg-accent-dim px-2 py-0.5 text-xs text-accent'
+                                            : 'rounded-chip border border-line px-2 py-0.5 text-xs text-ink-muted hover:text-ink'
+                                    }
+                                >
+                                    {t(`marketdata.calibration.filter.${f}`)}
+                                </button>
+                            ))}
+                        </div>
+                        <label className="flex items-center gap-2 text-xs text-ink-muted">
+                            {t('marketdata.calibration.vendor.label')}
+                            <Select
+                                value={vendor}
+                                onChange={(event) => filterBy({ vendor: event.target.value })}
+                            >
+                                <option value="">{t('marketdata.calibration.vendor.all')}</option>
+                                {vendorsOf(data.feeds).map((v) => (
+                                    <option key={v} value={v}>
+                                        {v}
+                                    </option>
+                                ))}
+                            </Select>
+                        </label>
+                    </div>
+                    <table className="w-full text-sm">
+                        <thead className="text-left text-xs text-ink-faint">
+                            <tr>
+                                <th className="py-2">{t('marketdata.calibration.columns.feed')}</th>
+                                <th className="py-2">
+                                    {t('marketdata.calibration.columns.start')}
+                                </th>
+                                <th className="py-2">
+                                    {t('marketdata.calibration.columns.source')}
+                                </th>
+                                <th className="py-2">
+                                    {t('marketdata.calibration.columns.state')}
+                                </th>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            {shown.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="py-3 text-ink-muted">
+                                        {t('marketdata.calibration.empty')}
+                                    </td>
+                                </tr>
+                            ) : (
+                                shown.map((feed) => (
+                                    <tr
+                                        key={feed.config_id}
+                                        className="border-t border-line-subtle"
+                                    >
+                                        <td className="py-2">
+                                            <Link
+                                                className="font-medium text-ink hover:text-accent"
+                                                to={calibrationFeedPath(assetClass, feed.config_id)}
+                                            >
+                                                {`${feed.base_currency_code}/${feed.quote_currency_code}`}
+                                            </Link>
+                                            <div className="font-mono text-xs text-ink-faint">
+                                                {feed.source_name}
+                                            </div>
+                                        </td>
+                                        <td className="py-2 tabular-nums">
+                                            {feed.start.from_fixing ? feed.start.value : '—'}
+                                        </td>
+                                        <td className="py-2">
+                                            {feed.start.from_fixing ? (
+                                                <Link
+                                                    className="text-accent hover:underline"
+                                                    to={`${PATHS.fixingSeries}?uri=${encodeURIComponent(feed.start.item)}`}
+                                                    title={feed.start.item}
+                                                >
+                                                    {`${feed.start.provider_code} · ${feed.start.fixing_date ?? ''}`}
+                                                </Link>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </td>
+                                        <td className="space-x-1 py-2">
+                                            <OutcomeTag outcome={outcomeOf(feed)} />
+                                            {overrides(feed) && (
+                                                <Tag tone="muted">
+                                                    {t('marketdata.calibration.overrides')}
+                                                </Tag>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </>
+            )}
         </div>
     );
 }
+
+const PAGE_TABS = ['feeds', 'run'] as const;
 
 const CANDIDATE_TONE = { chosen: 'up', skipped: 'warn', not_reached: 'muted' } as const;
 
@@ -423,6 +488,139 @@ function Card({
             </header>
             {children}
         </section>
+    );
+}
+
+/** One figure of the measures: a small caption, the value, and a line beneath it. */
+function MeasureTile({
+    label,
+    value,
+    sub,
+}: {
+    readonly label: string;
+    readonly value: string;
+    readonly sub?: string;
+}): ReactNode {
+    return (
+        <div className="rounded-chip border border-line-subtle bg-surface-base px-2.5 py-2">
+            <span className="block font-mono text-[0.65rem] font-semibold uppercase tracking-wide text-ink-faint">
+                {label}
+            </span>
+            <span className="font-mono font-semibold tabular-nums">{value}</span>
+            {sub !== undefined && <span className="block text-xs text-ink-faint">{sub}</span>}
+        </div>
+    );
+}
+
+/** A measure, and whether the calibration uses it today or records it for a later policy. */
+function MeasureLine({ text, used }: { readonly text: string; readonly used: boolean }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <li className="flex items-center justify-between gap-3 border-b border-line-subtle py-1.5 last:border-b-0">
+            <span>{text}</span>
+            <Tag tone={used ? 'up' : 'muted'} small>
+                {used
+                    ? t('marketdata.calibration.measures.usedToday')
+                    : t('marketdata.calibration.measures.future')}
+            </Tag>
+        </li>
+    );
+}
+
+/**
+ * The measures behind a feed's start: the figures the fixings give, the daily returns they
+ * come from, and which of them changes the calibration today.
+ */
+function CalibrationMeasures({ feed }: { readonly feed: CalibratedFeed }): ReactNode {
+    const { t } = useTranslation();
+    const start = feed.start;
+    const series = useQuery({
+        queryKey: ['fixing-series', start.item],
+        queryFn: () => api.fixingSeries(start.item),
+    });
+    const returns = windowReturns(
+        series.data?.values?.rows ?? [],
+        start.window_days,
+        start.inverted,
+    );
+    const na = '—';
+    const dispersion = start.dispersion ?? [];
+    return (
+        <div className="space-y-3 text-sm">
+            <p className="text-xs text-ink-faint">
+                {t('marketdata.calibration.measures.sub', {
+                    provider: start.provider_code.toUpperCase(),
+                    pair: `${feed.base_currency_code}/${feed.quote_currency_code}`,
+                    window: String(start.window_days),
+                })}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+                <MeasureTile
+                    label={t('marketdata.calibration.measures.volatility')}
+                    value={start.daily_spread != null ? percent(start.daily_spread) : na}
+                    {...(start.hourly_spread != null && {
+                        sub: t('marketdata.calibration.measures.hourly', {
+                            hourly: percent(start.hourly_spread),
+                        }),
+                    })}
+                />
+                <MeasureTile
+                    label={t('marketdata.calibration.measures.drift')}
+                    value={start.annual_drift != null ? percent(start.annual_drift) : na}
+                />
+                <MeasureTile
+                    label={t('marketdata.calibration.measures.range')}
+                    value={
+                        start.min_return != null && start.max_return != null
+                            ? `${percent(start.min_return)} … ${percent(start.max_return)}`
+                            : na
+                    }
+                />
+                <MeasureTile
+                    label={t('marketdata.calibration.measures.samples')}
+                    value={String(start.used)}
+                    sub={t('marketdata.calibration.measures.samplesSub', {
+                        window: String(start.window_days),
+                        age: start.age_days != null ? String(start.age_days) : na,
+                    })}
+                />
+            </div>
+            {returns.length > 1 && (
+                <figure aria-label={t('marketdata.calibration.measures.returns')}>
+                    <Sparkline points={returns} />
+                    <figcaption className="text-xs text-ink-faint">
+                        {t('marketdata.calibration.measures.returns')}
+                    </figcaption>
+                </figure>
+            )}
+            <ul>
+                <MeasureLine text={t('marketdata.calibration.measures.sets')} used />
+                <MeasureLine text={t('marketdata.calibration.measures.tilt')} used={false} />
+                <MeasureLine
+                    text={t('marketdata.calibration.measures.jumps', {
+                        count: start.jumps != null ? String(start.jumps) : na,
+                    })}
+                    used={false}
+                />
+                <MeasureLine
+                    text={
+                        dispersion.length === 0
+                            ? t('marketdata.calibration.measures.noDispersion')
+                            : t('marketdata.calibration.measures.dispersion', {
+                                  list: dispersion
+                                      .map(
+                                          (d) =>
+                                              `${d.provider_code.toUpperCase()} ${d.basis_points.toFixed(1)} bp`,
+                                      )
+                                      .join(', '),
+                              })
+                    }
+                    used={false}
+                />
+                <MeasureLine text={t('marketdata.calibration.measures.freshness')} used={false} />
+            </ul>
+            <p className="text-xs text-ink-muted">{t('marketdata.calibration.measures.note')}</p>
+        </div>
     );
 }
 
@@ -923,9 +1121,16 @@ export function CalibrationFeedPage(): ReactNode {
                         <Card title={t('marketdata.calibration.feed.trail')}>
                             <Trail feed={feed} />
                         </Card>
-                        <Card title={t('marketdata.calibration.feed.measures')}>
+                        <Card
+                            title={t('marketdata.calibration.feed.measures')}
+                            aside={
+                                <Tag tone="muted" small>
+                                    {t('marketdata.calibration.measures.information')}
+                                </Tag>
+                            }
+                        >
                             {feed.start.from_fixing ? (
-                                <FeedStartMeasures start={feed.start} />
+                                <CalibrationMeasures feed={feed} />
                             ) : (
                                 <p className="text-sm text-ink-muted">
                                     {t('marketdata.calibration.feed.noMeasures')}

@@ -4883,6 +4883,37 @@ const pt: SourceCatalogue = {
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
             systemOnly:
                 'A calibração é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
+            tabs: 'Vistas da calibração',
+            tab: {
+                feeds: 'Fluxos',
+                run: 'Calibração em curso',
+            },
+            measures: {
+                information: 'informação',
+                sub: '{provider} · {pair} · {window} dias',
+                volatility: 'Volatilidade realizada',
+                hourly: 'diária · {hourly} horária',
+                drift: 'Tendência anualizada',
+                range: 'Intervalo diário',
+                samples: 'Amostras',
+                samplesSub: 'de {window} dias · com {age} dia(s)',
+                returns: 'Retornos logarítmicos diários na janela',
+                usedToday: 'usado hoje',
+                future: 'entrada futura',
+                sets: 'A volatilidade define a escala da mistura',
+                tilt: 'A tendência poderia inclinar a média do processo',
+                jumps: 'Saltos acima de três desvios: {count}',
+                dispersion: 'Dispersão entre fornecedores: {list}',
+                noDispersion:
+                    'Dispersão entre fornecedores: nenhum segundo fornecedor aceite para este par',
+                freshness:
+                    'A frescura e a cobertura poderiam alargar a janela ou excluir uma fonte',
+                note: 'As medidas descrevem os fixings; só a volatilidade realizada altera a calibração hoje. As restantes ficam registadas para uma política futura que aprenda com elas.',
+            },
+            vendor: {
+                label: 'Fornecedor',
+                all: 'Todos os fornecedores',
+            },
             calibrateAll: 'Calibrar tudo',
             calibrating: 'A calibrar…',
             assetClass: 'Classe de ativos',
@@ -4939,6 +4970,7 @@ const pt: SourceCatalogue = {
                 not_reached: 'não alcançado',
             },
             run: {
+                none: 'Ainda não correu nenhuma calibração neste ecrã. Prima Calibrar tudo para calibrar cada fluxo e acompanhá-la aqui.',
                 title: 'Execução da calibração',
                 progress: '{finished} de {total} fluxos',
                 waiting: 'À espera',

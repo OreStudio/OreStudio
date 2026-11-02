@@ -64,7 +64,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Ore suites | api, core and service pass; the pattern ran 98 suites and 97 passed, and ores.refdata.core.tests failed because the environment's database lacks a table added at 4358fa8164 | =compass test run --preset linux-clang-release-ninja -- -R ore= | 30202911ed plus this branch |
+| Ore suites | core 468 cases and service 6 cases pass; api has no cases | the three =ores.ore.*.tests= binaries, run directly | e1fb9922e0 plus this branch |
+| Wider suites | 97 of 98 pass; ores.refdata.core.tests fails because the environment's database lacks a table added at 4358fa8164, and this branch changes no refdata or SQL file | =compass test run --preset linux-clang-release-ninja -- -R ore=, which matches every =core= suite | 30202911ed plus this branch |
 | Ore byte tests against reflect-cpp | 6 cases, 276 assertions pass | =ores.ore.core.tests "[codec]"= | 30202911ed plus this branch |
 | Component drift (ore), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component ore=, and the check scripts | 30202911ed plus this branch |
 | reflect-cpp left in ore sources, outside tests | 6 files | =grep -rn -E "rfl::\|<rfl\|reflectors" projects/ores.ore= | 30202911ed plus this branch |

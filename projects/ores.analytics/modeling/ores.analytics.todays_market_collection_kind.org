@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6DA71D24-A2E8-446F-B30C-C8DBB1C6E660
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.todays_market_collection_kind
 #+description: Codegen entity model for the analytics =todays_market_collection_kind= table. The collection kinds of an ORE today's market document.

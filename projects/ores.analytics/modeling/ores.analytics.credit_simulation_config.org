@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9F2C7A31-5D48-4B96-A1E7-0C3B6E8D2451
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.credit_simulation_config
 #+description: Codegen entity model for the analytics =credit_simulation_config= table. The ORE credit simulation document root, its risk block and the entities that migrate.

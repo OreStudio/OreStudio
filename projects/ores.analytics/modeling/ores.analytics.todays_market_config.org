@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5A389C83-D6AE-49CA-8055-EA2E5ECAA5F6
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.analytics.todays_market_config

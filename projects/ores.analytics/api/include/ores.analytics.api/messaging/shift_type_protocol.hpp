@@ -26,11 +26,17 @@
 #define ORES_ANALYTICS_API_MESSAGING_SHIFT_TYPE_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/shift_type.hpp"
+#include "ores.analytics.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::analytics::messaging {
@@ -270,7 +276,739 @@ inline constexpr std::string_view created = "analytics.v1.shift_types_events.cre
 inline constexpr std::string_view updated = "analytics.v1.shift_types_events.updated";
 inline constexpr std::string_view deleted = "analytics.v1.shift_types_events.deleted";
 }
+/**
+ * @brief The members of shift_type_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &shift_type_key::code},
+    };
+}
+
+/**
+ * @brief The members of shift_type_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &shift_type_write::code},
+        utility::codec::field{"description", &shift_type_write::description},
+    };
+}
+
+/**
+ * @brief The members of shift_type_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &shift_type_change::write},
+        utility::codec::field{"precondition", &shift_type_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of shift_type_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &shift_type_removal::key},
+        utility::codec::field{"precondition", &shift_type_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of shift_type_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &shift_type_lookup::key},
+        utility::codec::field{"shift_type", &shift_type_lookup::shift_type},
+    };
+}
+
+/**
+ * @brief The members of shift_types_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_types_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &shift_types_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of shift_type_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &shift_type_event::event_id},
+        utility::codec::field{"key", &shift_type_event::key},
+        utility::codec::field{"action", &shift_type_event::action},
+        utility::codec::field{"version", &shift_type_event::version},
+        utility::codec::field{"occurred_at", &shift_type_event::occurred_at},
+        utility::codec::field{"correlation_id", &shift_type_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of shift_type_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_version_key&) {
+    return std::tuple{
+        utility::codec::field{"shift_type", &shift_type_version_key::shift_type},
+        utility::codec::field{"version", &shift_type_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of shift_type_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const shift_type_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &shift_type_versions_filter::version},
+        utility::codec::field{"from_version", &shift_type_versions_filter::from_version},
+        utility::codec::field{"to_version", &shift_type_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_shift_types_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_shift_types_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_shift_types_request::offset},
+        utility::codec::field{"limit", &list_shift_types_request::limit},
+        utility::codec::field{"order", &list_shift_types_request::order},
+        utility::codec::field{"filter", &list_shift_types_request::filter},
+        utility::codec::field{"as_of", &list_shift_types_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_shift_types_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_shift_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_shift_types_response::result},
+        utility::codec::field{"shift_types", &list_shift_types_response::shift_types},
+        utility::codec::field{"total", &list_shift_types_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_shift_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_shift_type_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_shift_type_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_shift_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_shift_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_shift_type_response::result},
+        utility::codec::field{"shift_type", &get_shift_type_response::shift_type},
+    };
+}
+
+/**
+ * @brief The members of get_many_shift_types_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_shift_types_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_shift_types_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_shift_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_shift_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_shift_types_response::result},
+        utility::codec::field{"entries", &get_many_shift_types_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_shift_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_shift_type_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_shift_type_request::change},
+        utility::codec::field{"intent", &put_shift_type_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_shift_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_shift_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_shift_type_response::result},
+        utility::codec::field{"shift_type", &put_shift_type_response::shift_type},
+    };
+}
+
+/**
+ * @brief The members of put_many_shift_types_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_shift_types_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_shift_types_request::changes},
+        utility::codec::field{"intent", &put_many_shift_types_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_shift_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_shift_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_shift_types_response::result},
+        utility::codec::field{"shift_types", &put_many_shift_types_response::shift_types},
+    };
+}
+
+/**
+ * @brief The members of delete_shift_type_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_shift_type_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_shift_type_request::removal},
+        utility::codec::field{"intent", &delete_shift_type_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_shift_type_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_shift_type_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_shift_type_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_shift_types_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_shift_types_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_shift_types_request::removals},
+        utility::codec::field{"intent", &delete_many_shift_types_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_shift_types_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_shift_types_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_shift_types_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_shift_type_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_shift_type_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_shift_type_versions_request::key},
+        utility::codec::field{"offset", &list_shift_type_versions_request::offset},
+        utility::codec::field{"limit", &list_shift_type_versions_request::limit},
+        utility::codec::field{"order", &list_shift_type_versions_request::order},
+        utility::codec::field{"filter", &list_shift_type_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_shift_type_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_shift_type_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_shift_type_versions_response::result},
+        utility::codec::field{"versions", &list_shift_type_versions_response::versions},
+        utility::codec::field{"total", &list_shift_type_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_shift_type_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_shift_type_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_shift_type_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_shift_type_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_shift_type_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_shift_type_version_response::result},
+        utility::codec::field{"version", &get_shift_type_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_key& v);
+    static ores::analytics::messaging::shift_type_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_key& v);
+    static ores::analytics::messaging::shift_type_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_write& v);
+    static ores::analytics::messaging::shift_type_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_write& v);
+    static ores::analytics::messaging::shift_type_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_change& v);
+    static ores::analytics::messaging::shift_type_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_change& v);
+    static ores::analytics::messaging::shift_type_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_removal& v);
+    static ores::analytics::messaging::shift_type_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_removal& v);
+    static ores::analytics::messaging::shift_type_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_lookup& v);
+    static ores::analytics::messaging::shift_type_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_lookup& v);
+    static ores::analytics::messaging::shift_type_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_types_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_types_filter& v);
+    static ores::analytics::messaging::shift_types_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_types_filter& v);
+    static ores::analytics::messaging::shift_types_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_event& v);
+    static ores::analytics::messaging::shift_type_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_event& v);
+    static ores::analytics::messaging::shift_type_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::shift_type_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_version_key& v);
+    static ores::analytics::messaging::shift_type_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::shift_type_version_key& v);
+    static ores::analytics::messaging::shift_type_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::shift_type_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::shift_type_versions_filter& v);
+    static ores::analytics::messaging::shift_type_versions_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::shift_type_versions_filter& v);
+    static ores::analytics::messaging::shift_type_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::list_shift_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::list_shift_types_request& v);
+    static ores::analytics::messaging::list_shift_types_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::list_shift_types_request& v);
+    static ores::analytics::messaging::list_shift_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_shift_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::list_shift_types_response& v);
+    static ores::analytics::messaging::list_shift_types_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_shift_types_response& v);
+    static ores::analytics::messaging::list_shift_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::get_shift_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::get_shift_type_request& v);
+    static ores::analytics::messaging::get_shift_type_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::get_shift_type_request& v);
+    static ores::analytics::messaging::get_shift_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::get_shift_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::get_shift_type_response& v);
+    static ores::analytics::messaging::get_shift_type_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::get_shift_type_response& v);
+    static ores::analytics::messaging::get_shift_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_shift_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_shift_types_request& v);
+    static ores::analytics::messaging::get_many_shift_types_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_shift_types_request& v);
+    static ores::analytics::messaging::get_many_shift_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_many_shift_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_many_shift_types_response& v);
+    static ores::analytics::messaging::get_many_shift_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_many_shift_types_response& v);
+    static ores::analytics::messaging::get_many_shift_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::put_shift_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::put_shift_type_request& v);
+    static ores::analytics::messaging::put_shift_type_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::put_shift_type_request& v);
+    static ores::analytics::messaging::put_shift_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT wire_traits<ores::analytics::messaging::put_shift_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::put_shift_type_response& v);
+    static ores::analytics::messaging::put_shift_type_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::analytics::messaging::put_shift_type_response& v);
+    static ores::analytics::messaging::put_shift_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_shift_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_shift_types_request& v);
+    static ores::analytics::messaging::put_many_shift_types_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_shift_types_request& v);
+    static ores::analytics::messaging::put_many_shift_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::put_many_shift_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::put_many_shift_types_response& v);
+    static ores::analytics::messaging::put_many_shift_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::put_many_shift_types_response& v);
+    static ores::analytics::messaging::put_many_shift_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_shift_type_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::delete_shift_type_request& v);
+    static ores::analytics::messaging::delete_shift_type_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_shift_type_request& v);
+    static ores::analytics::messaging::delete_shift_type_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_shift_type_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::analytics::messaging::delete_shift_type_response& v);
+    static ores::analytics::messaging::delete_shift_type_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_shift_type_response& v);
+    static ores::analytics::messaging::delete_shift_type_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_shift_types_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_shift_types_request& v);
+    static ores::analytics::messaging::delete_many_shift_types_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_shift_types_request& v);
+    static ores::analytics::messaging::delete_many_shift_types_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::delete_many_shift_types_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::delete_many_shift_types_response& v);
+    static ores::analytics::messaging::delete_many_shift_types_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::delete_many_shift_types_response& v);
+    static ores::analytics::messaging::delete_many_shift_types_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_shift_type_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_shift_type_versions_request& v);
+    static ores::analytics::messaging::list_shift_type_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_shift_type_versions_request& v);
+    static ores::analytics::messaging::list_shift_type_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::list_shift_type_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::list_shift_type_versions_response& v);
+    static ores::analytics::messaging::list_shift_type_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::list_shift_type_versions_response& v);
+    static ores::analytics::messaging::list_shift_type_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_shift_type_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_shift_type_version_request& v);
+    static ores::analytics::messaging::get_shift_type_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_shift_type_version_request& v);
+    static ores::analytics::messaging::get_shift_type_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_ANALYTICS_API_EXPORT
+    wire_traits<ores::analytics::messaging::get_shift_type_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::analytics::messaging::get_shift_type_version_response& v);
+    static ores::analytics::messaging::get_shift_type_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::analytics::messaging::get_shift_type_version_response& v);
+    static ores::analytics::messaging::get_shift_type_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

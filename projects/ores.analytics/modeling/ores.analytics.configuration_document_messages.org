@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 17EFB01A-199E-4A3F-B14D-07B923F0E867
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.analytics.configuration_document_messages
 #+description: Codegen operation model for the configuration documents analytics owns: save, get and delete pricing engines and today's market documents.

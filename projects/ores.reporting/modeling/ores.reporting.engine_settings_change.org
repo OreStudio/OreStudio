@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E22F6CCB-FD4D-475F-861D-FD0AB746E76D
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_change
 #+description: Codegen entity model for the reporting engine_settings_change table: one proposed setting value held until its approval request is decided.

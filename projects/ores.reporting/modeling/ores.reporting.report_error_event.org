@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: 080B3871-8BAA-4AAA-A98F-3E79F4B83BAA
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_error_event
 #+description: Codegen entity model for the reporting =report_error_event= table. The errors a report run produced, each one carrying what it is about so a screen can place it.

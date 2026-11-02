@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_wire_bytes_tests.cpp"
     "domain_concurrency_policy_tests.cpp"
     "domain_file_type_lookup_tests.cpp"
     "domain_report_definition_template_tests.cpp"

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B88F964B-0525-4475-94DE-7F94EDC40F71
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_type_configuration_type
 #+description: Codegen junction model for the reporting =report_type_configuration_type= table. The configuration types a run of a report type requires.

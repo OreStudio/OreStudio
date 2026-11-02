@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.shell-command.enabled: true
 :ID: beeec4a7-537c-4d14-afd2-446012b81eed
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.operations
 #+description: Codegen operation model for the reporting component's domain operations: messages that are not entity verbs and so do not belong in the common resource grammar.

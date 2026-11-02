@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F90ED5C2-46F7-4FFE-A38B-40F40A604623
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.run_document_messages
 #+description: Codegen operation model for a report definition's run document and its configuration bindings: save, bind, get and delete.

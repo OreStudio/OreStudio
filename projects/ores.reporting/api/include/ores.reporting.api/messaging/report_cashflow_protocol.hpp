@@ -26,11 +26,17 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_CASHFLOW_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/report_cashflow.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
@@ -247,7 +253,620 @@ inline constexpr std::string_view created = "reporting.v1.report_cashflows_event
 inline constexpr std::string_view updated = "reporting.v1.report_cashflows_events.updated";
 inline constexpr std::string_view deleted = "reporting.v1.report_cashflows_events.deleted";
 }
+/**
+ * @brief The members of report_cashflow_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &report_cashflow_key::id},
+    };
+}
+
+/**
+ * @brief The members of report_cashflow_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &report_cashflow_write::id},
+        utility::codec::field{"party_id", &report_cashflow_write::party_id},
+        utility::codec::field{"report_instance_id", &report_cashflow_write::report_instance_id},
+        utility::codec::field{"family", &report_cashflow_write::family},
+        utility::codec::field{"subject_type", &report_cashflow_write::subject_type},
+        utility::codec::field{"subject_id", &report_cashflow_write::subject_id},
+        utility::codec::field{"scenario", &report_cashflow_write::scenario},
+        utility::codec::field{"cashflow_no", &report_cashflow_write::cashflow_no},
+        utility::codec::field{"leg_no", &report_cashflow_write::leg_no},
+        utility::codec::field{"as_of", &report_cashflow_write::as_of},
+        utility::codec::field{"measure", &report_cashflow_write::measure},
+        utility::codec::field{"part", &report_cashflow_write::part},
+        utility::codec::field{"report_definition_id", &report_cashflow_write::report_definition_id},
+        utility::codec::field{"pay_date", &report_cashflow_write::pay_date},
+        utility::codec::field{"flow_type", &report_cashflow_write::flow_type},
+        utility::codec::field{"currency", &report_cashflow_write::currency},
+        utility::codec::field{"qualifiers", &report_cashflow_write::qualifiers},
+        utility::codec::field{"value", &report_cashflow_write::value},
+        utility::codec::field{"source", &report_cashflow_write::source},
+    };
+}
+
+/**
+ * @brief The members of report_cashflow_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &report_cashflow_change::write},
+        utility::codec::field{"precondition", &report_cashflow_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_cashflow_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_cashflow_removal::key},
+        utility::codec::field{"precondition", &report_cashflow_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_cashflow_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_cashflow_lookup::key},
+        utility::codec::field{"report_cashflow", &report_cashflow_lookup::report_cashflow},
+    };
+}
+
+/**
+ * @brief The members of report_cashflows_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflows_filter&) {
+    return std::tuple{
+        utility::codec::field{"report_instance_id", &report_cashflows_filter::report_instance_id},
+        utility::codec::field{"family", &report_cashflows_filter::family},
+        utility::codec::field{"subject_id", &report_cashflows_filter::subject_id},
+        utility::codec::field{"measure", &report_cashflows_filter::measure},
+        utility::codec::field{"part", &report_cashflows_filter::part},
+        utility::codec::field{"flow_type", &report_cashflows_filter::flow_type},
+        utility::codec::field{"id_one_of", &report_cashflows_filter::id_one_of},
+        utility::codec::field{"report_instance_id_one_of",
+                              &report_cashflows_filter::report_instance_id_one_of},
+        utility::codec::field{"family_one_of", &report_cashflows_filter::family_one_of},
+        utility::codec::field{"subject_id_one_of", &report_cashflows_filter::subject_id_one_of},
+        utility::codec::field{"measure_one_of", &report_cashflows_filter::measure_one_of},
+        utility::codec::field{"part_one_of", &report_cashflows_filter::part_one_of},
+        utility::codec::field{"flow_type_one_of", &report_cashflows_filter::flow_type_one_of},
+    };
+}
+
+/**
+ * @brief The members of report_cashflow_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_cashflow_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &report_cashflow_event::event_id},
+        utility::codec::field{"key", &report_cashflow_event::key},
+        utility::codec::field{"action", &report_cashflow_event::action},
+        utility::codec::field{"version", &report_cashflow_event::version},
+        utility::codec::field{"occurred_at", &report_cashflow_event::occurred_at},
+        utility::codec::field{"correlation_id", &report_cashflow_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_report_cashflows_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_cashflows_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_report_cashflows_request::offset},
+        utility::codec::field{"limit", &list_report_cashflows_request::limit},
+        utility::codec::field{"order", &list_report_cashflows_request::order},
+        utility::codec::field{"filter", &list_report_cashflows_request::filter},
+        utility::codec::field{"as_of", &list_report_cashflows_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_report_cashflows_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_cashflows_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_report_cashflows_response::result},
+        utility::codec::field{"cashflows", &list_report_cashflows_response::cashflows},
+        utility::codec::field{"total", &list_report_cashflows_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_report_cashflow_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_cashflow_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_report_cashflow_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_report_cashflow_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_cashflow_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_report_cashflow_response::result},
+        utility::codec::field{"report_cashflow", &get_report_cashflow_response::report_cashflow},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_cashflows_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_cashflows_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_report_cashflows_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_cashflows_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_cashflows_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_report_cashflows_response::result},
+        utility::codec::field{"entries", &get_many_report_cashflows_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_report_cashflow_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_cashflow_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_report_cashflow_request::change},
+        utility::codec::field{"intent", &put_report_cashflow_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_report_cashflow_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_cashflow_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_report_cashflow_response::result},
+        utility::codec::field{"report_cashflow", &put_report_cashflow_response::report_cashflow},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_cashflows_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_cashflows_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_report_cashflows_request::changes},
+        utility::codec::field{"intent", &put_many_report_cashflows_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_cashflows_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_cashflows_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_report_cashflows_response::result},
+        utility::codec::field{"cashflows", &put_many_report_cashflows_response::cashflows},
+    };
+}
+
+/**
+ * @brief The members of delete_report_cashflow_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_cashflow_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_report_cashflow_request::removal},
+        utility::codec::field{"intent", &delete_report_cashflow_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_report_cashflow_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_cashflow_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_report_cashflow_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_cashflows_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_cashflows_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_report_cashflows_request::removals},
+        utility::codec::field{"intent", &delete_many_report_cashflows_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_cashflows_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_cashflows_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_report_cashflows_response::result},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_key& v);
+    static ores::reporting::messaging::report_cashflow_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_key& v);
+    static ores::reporting::messaging::report_cashflow_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_write& v);
+    static ores::reporting::messaging::report_cashflow_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_write& v);
+    static ores::reporting::messaging::report_cashflow_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_change& v);
+    static ores::reporting::messaging::report_cashflow_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_change& v);
+    static ores::reporting::messaging::report_cashflow_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_removal& v);
+    static ores::reporting::messaging::report_cashflow_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_removal& v);
+    static ores::reporting::messaging::report_cashflow_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_lookup& v);
+    static ores::reporting::messaging::report_cashflow_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_lookup& v);
+    static ores::reporting::messaging::report_cashflow_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflows_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflows_filter& v);
+    static ores::reporting::messaging::report_cashflows_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflows_filter& v);
+    static ores::reporting::messaging::report_cashflows_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_cashflow_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_cashflow_event& v);
+    static ores::reporting::messaging::report_cashflow_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_cashflow_event& v);
+    static ores::reporting::messaging::report_cashflow_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_cashflows_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_cashflows_request& v);
+    static ores::reporting::messaging::list_report_cashflows_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_cashflows_request& v);
+    static ores::reporting::messaging::list_report_cashflows_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_cashflows_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_cashflows_response& v);
+    static ores::reporting::messaging::list_report_cashflows_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_cashflows_response& v);
+    static ores::reporting::messaging::list_report_cashflows_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_cashflow_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::get_report_cashflow_request& v);
+    static ores::reporting::messaging::get_report_cashflow_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_cashflow_request& v);
+    static ores::reporting::messaging::get_report_cashflow_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_cashflow_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_cashflow_response& v);
+    static ores::reporting::messaging::get_report_cashflow_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_cashflow_response& v);
+    static ores::reporting::messaging::get_report_cashflow_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_cashflows_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_cashflows_request& v);
+    static ores::reporting::messaging::get_many_report_cashflows_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_cashflows_request& v);
+    static ores::reporting::messaging::get_many_report_cashflows_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_cashflows_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_cashflows_response& v);
+    static ores::reporting::messaging::get_many_report_cashflows_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_cashflows_response& v);
+    static ores::reporting::messaging::get_many_report_cashflows_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_cashflow_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::put_report_cashflow_request& v);
+    static ores::reporting::messaging::put_report_cashflow_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_cashflow_request& v);
+    static ores::reporting::messaging::put_report_cashflow_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_cashflow_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_report_cashflow_response& v);
+    static ores::reporting::messaging::put_report_cashflow_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_cashflow_response& v);
+    static ores::reporting::messaging::put_report_cashflow_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_cashflows_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_cashflows_request& v);
+    static ores::reporting::messaging::put_many_report_cashflows_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_cashflows_request& v);
+    static ores::reporting::messaging::put_many_report_cashflows_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_cashflows_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_cashflows_response& v);
+    static ores::reporting::messaging::put_many_report_cashflows_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_cashflows_response& v);
+    static ores::reporting::messaging::put_many_report_cashflows_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_cashflow_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_cashflow_request& v);
+    static ores::reporting::messaging::delete_report_cashflow_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_cashflow_request& v);
+    static ores::reporting::messaging::delete_report_cashflow_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_cashflow_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_cashflow_response& v);
+    static ores::reporting::messaging::delete_report_cashflow_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_cashflow_response& v);
+    static ores::reporting::messaging::delete_report_cashflow_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_cashflows_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_cashflows_request& v);
+    static ores::reporting::messaging::delete_many_report_cashflows_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_cashflows_request& v);
+    static ores::reporting::messaging::delete_many_report_cashflows_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_cashflows_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_cashflows_response& v);
+    static ores::reporting::messaging::delete_many_report_cashflows_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_cashflows_response& v);
+    static ores::reporting::messaging::delete_many_report_cashflows_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3D678112-589B-4DBA-A386-8E57B3BD945C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter_value_set
 #+description: Codegen entity model for the reporting =ore_parameter_value_set= table. The allowed values of a parameter, and where they come from.

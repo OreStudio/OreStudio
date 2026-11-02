@@ -32,6 +32,7 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,7 +40,6 @@
 #include <chrono>
 #include <format>
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::compute::messaging {
 
@@ -69,7 +69,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<submit_compute_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<submit_compute_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode submit_compute_request");
         ack.accept();

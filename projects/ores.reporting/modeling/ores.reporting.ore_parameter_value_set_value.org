@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 04A75464-2671-40A8-8ECA-866B547C390A
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter_value_set_value
 #+description: Codegen entity model for the reporting =ore_parameter_value_set_value= table. One value an enumerated parameter set offers.

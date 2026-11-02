@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2E7A4C18-9F63-4D05-B8A2-6C1E3D7F9042
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.configuration_type
 #+description: Codegen entity model for the reporting =configuration_type= table. The kinds of configuration a report can bind.

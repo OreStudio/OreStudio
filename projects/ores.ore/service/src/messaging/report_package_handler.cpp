@@ -32,6 +32,7 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -40,7 +41,6 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <rfl/json.hpp>
 #include <span>
 #include <string_view>
 
@@ -80,7 +80,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<prepare_ore_package_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
         ack.accept();
@@ -336,7 +336,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();

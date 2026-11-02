@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5B7C1E42-9D3A-4F86-B1E5-7C29A4D6F013
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.ore_element_map_column
 #+description: Codegen entity model for the reporting =ore_element_map_column= table. The projection column that carries an ORE leaf, named beside the element map row that states which value set governs the leaf.

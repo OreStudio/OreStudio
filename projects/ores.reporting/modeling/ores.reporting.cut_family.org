@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5C31A0D7-6E42-4B18-9F0A-2D7E4C81B3A6
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut_family
 #+description: Codegen entity model for the reporting =cut_family= table. The family a cut kind belongs to: the body rule and the source of the instant that every kind inside it shares.

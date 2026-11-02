@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7D40B2E9-3A15-4C86-8E57-91B6C2D4093F
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.cut_resolution_rule
 #+description: Codegen entity model for the reporting =cut_resolution_rule= table. The closed set of rules by which a report's cut selection resolves to one concrete cut.

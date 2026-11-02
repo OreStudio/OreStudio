@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 47E6903C-DFA7-4D2F-B044-C1C74428F719
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_trigger_event
 #+description: Codegen entity model for the reporting =report_trigger_event= table, one row per report trigger, on demand or scheduled.

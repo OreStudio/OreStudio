@@ -26,11 +26,17 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_ERROR_SCOPE_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/report_error_scope.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::messaging {
@@ -274,7 +280,785 @@ inline constexpr std::string_view created = "reporting.v1.report_error_scopes_ev
 inline constexpr std::string_view updated = "reporting.v1.report_error_scopes_events.updated";
 inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_events.deleted";
 }
+/**
+ * @brief The members of report_error_scope_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &report_error_scope_key::code},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &report_error_scope_write::code},
+        utility::codec::field{"name", &report_error_scope_write::name},
+        utility::codec::field{"description", &report_error_scope_write::description},
+        utility::codec::field{"display_order", &report_error_scope_write::display_order},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &report_error_scope_change::write},
+        utility::codec::field{"precondition", &report_error_scope_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_error_scope_removal::key},
+        utility::codec::field{"precondition", &report_error_scope_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &report_error_scope_lookup::key},
+        utility::codec::field{"report_error_scope", &report_error_scope_lookup::report_error_scope},
+    };
+}
+
+/**
+ * @brief The members of report_error_scopes_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scopes_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &report_error_scopes_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &report_error_scope_event::event_id},
+        utility::codec::field{"key", &report_error_scope_event::key},
+        utility::codec::field{"action", &report_error_scope_event::action},
+        utility::codec::field{"version", &report_error_scope_event::version},
+        utility::codec::field{"occurred_at", &report_error_scope_event::occurred_at},
+        utility::codec::field{"correlation_id", &report_error_scope_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_version_key&) {
+    return std::tuple{
+        utility::codec::field{"report_error_scope",
+                              &report_error_scope_version_key::report_error_scope},
+        utility::codec::field{"version", &report_error_scope_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of report_error_scope_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const report_error_scope_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &report_error_scope_versions_filter::version},
+        utility::codec::field{"from_version", &report_error_scope_versions_filter::from_version},
+        utility::codec::field{"to_version", &report_error_scope_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_report_error_scopes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_error_scopes_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_report_error_scopes_request::offset},
+        utility::codec::field{"limit", &list_report_error_scopes_request::limit},
+        utility::codec::field{"order", &list_report_error_scopes_request::order},
+        utility::codec::field{"filter", &list_report_error_scopes_request::filter},
+        utility::codec::field{"as_of", &list_report_error_scopes_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_report_error_scopes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_error_scopes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_report_error_scopes_response::result},
+        utility::codec::field{"scopes", &list_report_error_scopes_response::scopes},
+        utility::codec::field{"total", &list_report_error_scopes_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_report_error_scope_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_report_error_scope_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_report_error_scope_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_report_error_scope_response::result},
+        utility::codec::field{"report_error_scope",
+                              &get_report_error_scope_response::report_error_scope},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_error_scopes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_error_scopes_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_report_error_scopes_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_report_error_scopes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_report_error_scopes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_report_error_scopes_response::result},
+        utility::codec::field{"entries", &get_many_report_error_scopes_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_report_error_scope_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_error_scope_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_report_error_scope_request::change},
+        utility::codec::field{"intent", &put_report_error_scope_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_report_error_scope_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_report_error_scope_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_report_error_scope_response::result},
+        utility::codec::field{"report_error_scope",
+                              &put_report_error_scope_response::report_error_scope},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_error_scopes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_error_scopes_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_report_error_scopes_request::changes},
+        utility::codec::field{"intent", &put_many_report_error_scopes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_report_error_scopes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_report_error_scopes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_report_error_scopes_response::result},
+        utility::codec::field{"scopes", &put_many_report_error_scopes_response::scopes},
+    };
+}
+
+/**
+ * @brief The members of delete_report_error_scope_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_error_scope_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_report_error_scope_request::removal},
+        utility::codec::field{"intent", &delete_report_error_scope_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_report_error_scope_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_report_error_scope_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_report_error_scope_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_error_scopes_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_error_scopes_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_report_error_scopes_request::removals},
+        utility::codec::field{"intent", &delete_many_report_error_scopes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_report_error_scopes_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_report_error_scopes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_report_error_scopes_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_report_error_scope_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_error_scope_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_report_error_scope_versions_request::key},
+        utility::codec::field{"offset", &list_report_error_scope_versions_request::offset},
+        utility::codec::field{"limit", &list_report_error_scope_versions_request::limit},
+        utility::codec::field{"order", &list_report_error_scope_versions_request::order},
+        utility::codec::field{"filter", &list_report_error_scope_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_report_error_scope_versions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_report_error_scope_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_report_error_scope_versions_response::result},
+        utility::codec::field{"versions", &list_report_error_scope_versions_response::versions},
+        utility::codec::field{"total", &list_report_error_scope_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_report_error_scope_version_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_report_error_scope_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_report_error_scope_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_report_error_scope_version_response::result},
+        utility::codec::field{"version", &get_report_error_scope_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_error_scope_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_key& v);
+    static ores::reporting::messaging::report_error_scope_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_error_scope_key& v);
+    static ores::reporting::messaging::report_error_scope_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_error_scope_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_write& v);
+    static ores::reporting::messaging::report_error_scope_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_error_scope_write& v);
+    static ores::reporting::messaging::report_error_scope_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scope_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_change& v);
+    static ores::reporting::messaging::report_error_scope_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scope_change& v);
+    static ores::reporting::messaging::report_error_scope_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scope_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_removal& v);
+    static ores::reporting::messaging::report_error_scope_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scope_removal& v);
+    static ores::reporting::messaging::report_error_scope_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scope_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_lookup& v);
+    static ores::reporting::messaging::report_error_scope_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scope_lookup& v);
+    static ores::reporting::messaging::report_error_scope_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scopes_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scopes_filter& v);
+    static ores::reporting::messaging::report_error_scopes_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scopes_filter& v);
+    static ores::reporting::messaging::report_error_scopes_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_error_scope_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_scope_event& v);
+    static ores::reporting::messaging::report_error_scope_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_error_scope_event& v);
+    static ores::reporting::messaging::report_error_scope_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scope_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_error_scope_version_key& v);
+    static ores::reporting::messaging::report_error_scope_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scope_version_key& v);
+    static ores::reporting::messaging::report_error_scope_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::report_error_scope_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::report_error_scope_versions_filter& v);
+    static ores::reporting::messaging::report_error_scope_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::report_error_scope_versions_filter& v);
+    static ores::reporting::messaging::report_error_scope_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_error_scopes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_error_scopes_request& v);
+    static ores::reporting::messaging::list_report_error_scopes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_error_scopes_request& v);
+    static ores::reporting::messaging::list_report_error_scopes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_error_scopes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_error_scopes_response& v);
+    static ores::reporting::messaging::list_report_error_scopes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_error_scopes_response& v);
+    static ores::reporting::messaging::list_report_error_scopes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_error_scope_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_error_scope_request& v);
+    static ores::reporting::messaging::get_report_error_scope_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_error_scope_request& v);
+    static ores::reporting::messaging::get_report_error_scope_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_error_scope_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_error_scope_response& v);
+    static ores::reporting::messaging::get_report_error_scope_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_error_scope_response& v);
+    static ores::reporting::messaging::get_report_error_scope_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_error_scopes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::get_many_report_error_scopes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::get_many_report_error_scopes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_many_report_error_scopes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::get_many_report_error_scopes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::get_many_report_error_scopes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_error_scope_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_report_error_scope_request& v);
+    static ores::reporting::messaging::put_report_error_scope_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_error_scope_request& v);
+    static ores::reporting::messaging::put_report_error_scope_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_report_error_scope_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_report_error_scope_response& v);
+    static ores::reporting::messaging::put_report_error_scope_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_report_error_scope_response& v);
+    static ores::reporting::messaging::put_report_error_scope_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_error_scopes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::put_many_report_error_scopes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::put_many_report_error_scopes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::put_many_report_error_scopes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::put_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::put_many_report_error_scopes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::put_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::put_many_report_error_scopes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_error_scope_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_error_scope_request& v);
+    static ores::reporting::messaging::delete_report_error_scope_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_error_scope_request& v);
+    static ores::reporting::messaging::delete_report_error_scope_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_report_error_scope_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_report_error_scope_response& v);
+    static ores::reporting::messaging::delete_report_error_scope_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_report_error_scope_response& v);
+    static ores::reporting::messaging::delete_report_error_scope_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_error_scopes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::delete_many_report_error_scopes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_error_scopes_request& v);
+    static ores::reporting::messaging::delete_many_report_error_scopes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::delete_many_report_error_scopes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::delete_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::delete_many_report_error_scopes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::delete_many_report_error_scopes_response& v);
+    static ores::reporting::messaging::delete_many_report_error_scopes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_error_scope_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_error_scope_versions_request& v);
+    static ores::reporting::messaging::list_report_error_scope_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_error_scope_versions_request& v);
+    static ores::reporting::messaging::list_report_error_scope_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::list_report_error_scope_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::list_report_error_scope_versions_response& v);
+    static ores::reporting::messaging::list_report_error_scope_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::list_report_error_scope_versions_response& v);
+    static ores::reporting::messaging::list_report_error_scope_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_error_scope_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_error_scope_version_request& v);
+    static ores::reporting::messaging::get_report_error_scope_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_error_scope_version_request& v);
+    static ores::reporting::messaging::get_report_error_scope_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::get_report_error_scope_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::get_report_error_scope_version_response& v);
+    static ores::reporting::messaging::get_report_error_scope_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::get_report_error_scope_version_response& v);
+    static ores::reporting::messaging::get_report_error_scope_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 15b838bb-9106-47fc-82b1-2df0ec300ec4
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_group_setting
 #+description: Codegen entity model for the reporting =engine_settings_group_setting= table. One setting of one group of engine settings: the column its value travels under and the ORE parameter that documents it.

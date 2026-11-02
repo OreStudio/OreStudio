@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 38297094-48D8-4A7F-A7F0-E5DAD71AFB72
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_fixings

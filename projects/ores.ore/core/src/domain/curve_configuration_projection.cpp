@@ -25,7 +25,11 @@
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/domain/commodity_curve_config.hpp"
+#include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
+#include "ores.refdata.api/domain/commodity_curve_direct.hpp"
+#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
@@ -40,15 +44,6 @@
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
-#include "ores.refdata.api/domain/default_curve_market_terms.hpp"
-#include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
-#include "ores.refdata.api/domain/default_curve_benchmark.hpp"
-#include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
-#include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
-#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
-#include "ores.refdata.api/domain/commodity_curve_direct.hpp"
-#include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
-#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/domain/curve_segment_convention.hpp"
 #include "ores.refdata.api/domain/curve_segment_cross_currency_terms.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
@@ -61,8 +56,13 @@
 #include "ores.refdata.api/domain/curve_segment_tenor_basis_curves.hpp"
 #include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/default_curve_benchmark.hpp"
+#include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/default_curve_market_terms.hpp"
+#include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
+#include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
@@ -395,7 +395,8 @@ struct document_part<refdata::domain::curve_segment_projection> {
 template <>
 struct document_part<refdata::domain::curve_segment_tenor_basis_curves> {
     static constexpr auto vector = &curve_configuration_document::segment_tenor_basis_curves;
-    static constexpr auto key = &refdata::domain::curve_segment_tenor_basis_curves::curve_segment_id;
+    static constexpr auto key =
+        &refdata::domain::curve_segment_tenor_basis_curves::curve_segment_id;
     static constexpr std::string_view owner = "segment";
     static constexpr std::string_view name = "tenor basis curves";
 };
@@ -403,7 +404,8 @@ struct document_part<refdata::domain::curve_segment_tenor_basis_curves> {
 template <>
 struct document_part<refdata::domain::curve_segment_cross_currency_terms> {
     static constexpr auto vector = &curve_configuration_document::segment_cross_currency_terms;
-    static constexpr auto key = &refdata::domain::curve_segment_cross_currency_terms::curve_segment_id;
+    static constexpr auto key =
+        &refdata::domain::curve_segment_cross_currency_terms::curve_segment_id;
     static constexpr std::string_view owner = "segment";
     static constexpr std::string_view name = "cross currency terms";
 };
@@ -451,7 +453,8 @@ struct document_part<refdata::domain::curve_segment_ibor_fallback> {
 template <>
 struct document_part<refdata::domain::default_curve_market_terms> {
     static constexpr auto vector = &curve_configuration_document::default_curve_market_terms;
-    static constexpr auto key = &refdata::domain::default_curve_market_terms::default_curve_configuration_id;
+    static constexpr auto key =
+        &refdata::domain::default_curve_market_terms::default_curve_configuration_id;
     static constexpr std::string_view owner = "default curve configuration";
     static constexpr std::string_view name = "market terms";
 };
@@ -459,7 +462,8 @@ struct document_part<refdata::domain::default_curve_market_terms> {
 template <>
 struct document_part<refdata::domain::default_curve_cds_terms> {
     static constexpr auto vector = &curve_configuration_document::default_curve_cds_terms;
-    static constexpr auto key = &refdata::domain::default_curve_cds_terms::default_curve_configuration_id;
+    static constexpr auto key =
+        &refdata::domain::default_curve_cds_terms::default_curve_configuration_id;
     static constexpr std::string_view owner = "default curve configuration";
     static constexpr std::string_view name = "CDS terms";
 };
@@ -467,7 +471,8 @@ struct document_part<refdata::domain::default_curve_cds_terms> {
 template <>
 struct document_part<refdata::domain::default_curve_benchmark> {
     static constexpr auto vector = &curve_configuration_document::default_curve_benchmarks;
-    static constexpr auto key = &refdata::domain::default_curve_benchmark::default_curve_configuration_id;
+    static constexpr auto key =
+        &refdata::domain::default_curve_benchmark::default_curve_configuration_id;
     static constexpr std::string_view owner = "default curve configuration";
     static constexpr std::string_view name = "benchmark";
 };
@@ -475,15 +480,18 @@ struct document_part<refdata::domain::default_curve_benchmark> {
 template <>
 struct document_part<refdata::domain::default_curve_transition_matrix> {
     static constexpr auto vector = &curve_configuration_document::default_curve_transition_matrices;
-    static constexpr auto key = &refdata::domain::default_curve_transition_matrix::default_curve_configuration_id;
+    static constexpr auto key =
+        &refdata::domain::default_curve_transition_matrix::default_curve_configuration_id;
     static constexpr std::string_view owner = "default curve configuration";
     static constexpr std::string_view name = "transition matrix";
 };
 
 template <>
 struct document_part<refdata::domain::default_curve_yield_reinterpretation> {
-    static constexpr auto vector = &curve_configuration_document::default_curve_yield_reinterpretations;
-    static constexpr auto key = &refdata::domain::default_curve_yield_reinterpretation::default_curve_configuration_id;
+    static constexpr auto vector =
+        &curve_configuration_document::default_curve_yield_reinterpretations;
+    static constexpr auto key =
+        &refdata::domain::default_curve_yield_reinterpretation::default_curve_configuration_id;
     static constexpr std::string_view owner = "default curve configuration";
     static constexpr std::string_view name = "yield reinterpretation";
 };
@@ -491,7 +499,8 @@ struct document_part<refdata::domain::default_curve_yield_reinterpretation> {
 template <>
 struct document_part<refdata::domain::commodity_curve_interpolation> {
     static constexpr auto vector = &curve_configuration_document::commodity_curve_interpolations;
-    static constexpr auto key = &refdata::domain::commodity_curve_interpolation::curve_definition_id;
+    static constexpr auto key =
+        &refdata::domain::commodity_curve_interpolation::curve_definition_id;
     static constexpr std::string_view owner = "commodity curve";
     static constexpr std::string_view name = "interpolation";
 };
@@ -507,7 +516,8 @@ struct document_part<refdata::domain::commodity_curve_direct> {
 template <>
 struct document_part<refdata::domain::commodity_curve_cross_currency> {
     static constexpr auto vector = &curve_configuration_document::commodity_curve_cross_currencies;
-    static constexpr auto key = &refdata::domain::commodity_curve_cross_currency::curve_definition_id;
+    static constexpr auto key =
+        &refdata::domain::commodity_curve_cross_currency::curve_definition_id;
     static constexpr std::string_view owner = "commodity curve";
     static constexpr std::string_view name = "cross currency curves";
 };
@@ -1092,29 +1102,51 @@ void import_default_curve_yield_reinterpretation(import_context& ctx,
         ctx.keep(id, std::move(p));
 }
 
-// The parts each default curve type fills, as ORE's reader dispatches on the
-// type. The section generator reads these branches to write the database's
-// check. A transition matrix fills the market terms too: ORE reads only its
-// quotes, but every corpus transition matrix also states a discount curve and
-// conventions, and the document round trips as written.
+// The parts a default curve configuration of one type may hold, each named for
+// its entity without the default_curve_ prefix.
+struct default_curve_parts {
+    bool market_terms = false;
+    bool cds_terms = false;
+    bool benchmark = false;
+    bool transition_matrix = false;
+    bool yield_reinterpretation = false;
+};
+
+// The parts each default curve type has, as ORE's reader dispatches on the
+// type. The import fills only these and the export writes only these, and the
+// section generator reads these branches to write the database's check. A
+// transition matrix has the market terms too: ORE reads only its quotes, but
+// every corpus transition matrix also states a discount curve and conventions,
+// and the document round trips as written.
+default_curve_parts parts_of_default_curve_type(const std::string& type) {
+    if (type == "SpreadCDS" || type == "HazardRate" || type == "Price" || type == "ConvSpreadCDS" ||
+        type == "Null") {
+        return {.market_terms = true, .cds_terms = true};
+    } else if (type == "TransitionMatrix") {
+        return {.market_terms = true, .transition_matrix = true};
+    } else if (type == "Benchmark") {
+        return {.benchmark = true};
+    } else if (type == "YieldCurve") {
+        return {.yield_reinterpretation = true};
+    }
+    throw refusal("default curve type '" + type + "' is not modelled yet");
+}
+
 void import_default_curve_parts(import_context& ctx,
                                 const boost::uuids::uuid& id,
                                 const std::string& type,
                                 const record_reader& v) {
-    if (type == "SpreadCDS" || type == "HazardRate" || type == "Price" ||
-        type == "ConvSpreadCDS" || type == "Null") {
+    const auto has = parts_of_default_curve_type(type);
+    if (has.market_terms)
         import_default_curve_market_terms(ctx, id, v);
+    if (has.cds_terms)
         import_default_curve_cds_terms(ctx, id, v);
-    } else if (type == "TransitionMatrix") {
-        import_default_curve_market_terms(ctx, id, v);
-        import_default_curve_transition_matrix(ctx, id, v);
-    } else if (type == "Benchmark") {
+    if (has.benchmark)
         import_default_curve_benchmark(ctx, id, v);
-    } else if (type == "YieldCurve") {
+    if (has.transition_matrix)
+        import_default_curve_transition_matrix(ctx, id, v);
+    if (has.yield_reinterpretation)
         import_default_curve_yield_reinterpretation(ctx, id, v);
-    } else {
-        throw refusal("default curve type '" + type + "' is not modelled yet");
-    }
 }
 
 void import_configuration_lists(ores::refdata::messaging::curve_configuration_document& out,
@@ -2767,24 +2799,24 @@ private:
 };
 
 using document_part_index = part_index<refdata::domain::curve_segment_convention,
-                                      refdata::domain::curve_segment_pillar_rule,
-                                      refdata::domain::curve_segment_projection,
-                                      refdata::domain::curve_segment_tenor_basis_curves,
-                                      refdata::domain::curve_segment_cross_currency_terms,
-                                      refdata::domain::curve_segment_reference,
-                                      refdata::domain::curve_segment_weighted_average,
-                                      refdata::domain::curve_segment_discount_ratio,
-                                      refdata::domain::curve_segment_extrapolation,
-                                      refdata::domain::curve_segment_ibor_fallback,
-                                      refdata::domain::default_curve_market_terms,
-                                      refdata::domain::default_curve_cds_terms,
-                                      refdata::domain::default_curve_benchmark,
-                                      refdata::domain::default_curve_transition_matrix,
-                                      refdata::domain::default_curve_yield_reinterpretation,
-                                      refdata::domain::commodity_curve_interpolation,
-                                      refdata::domain::commodity_curve_direct,
-                                      refdata::domain::commodity_curve_cross_currency,
-                                      refdata::domain::commodity_curve_basis>;
+                                       refdata::domain::curve_segment_pillar_rule,
+                                       refdata::domain::curve_segment_projection,
+                                       refdata::domain::curve_segment_tenor_basis_curves,
+                                       refdata::domain::curve_segment_cross_currency_terms,
+                                       refdata::domain::curve_segment_reference,
+                                       refdata::domain::curve_segment_weighted_average,
+                                       refdata::domain::curve_segment_discount_ratio,
+                                       refdata::domain::curve_segment_extrapolation,
+                                       refdata::domain::curve_segment_ibor_fallback,
+                                       refdata::domain::default_curve_market_terms,
+                                       refdata::domain::default_curve_cds_terms,
+                                       refdata::domain::default_curve_benchmark,
+                                       refdata::domain::default_curve_transition_matrix,
+                                       refdata::domain::default_curve_yield_reinterpretation,
+                                       refdata::domain::commodity_curve_interpolation,
+                                       refdata::domain::commodity_curve_direct,
+                                       refdata::domain::commodity_curve_cross_currency,
+                                       refdata::domain::commodity_curve_basis>;
 
 void restore_convention(record_writer r,
                         const refdata::domain::curve_segment& s,
@@ -3097,15 +3129,19 @@ void export_inflation_curve(
 }
 
 // A configuration's settings: the ones every type writes on the row, and each
-// part its type writes. The writer orders the elements as the schema does.
+// part its type has. A part of another type stays in the index, and the export
+// refuses it. The writer orders the elements as the schema does.
 void export_configuration_settings(record_writer r,
                                    const refdata::domain::default_curve_configuration& c,
                                    const export_context& ctx,
                                    document_part_index& parts) {
+    using namespace refdata::domain;
+    const auto has = parts_of_default_curve_type(c.default_curve_type.value_or(""));
     r.set_optional_text("RecoveryRate", c.recovery_rate);
     r.set_optional_spelling("Extrapolation", c.extrapolation, "ORE boolean");
     r.set_optional_spelling("AllowNegativeRates", c.allow_negative_rates, "ORE boolean");
-    if (const auto* p = parts.take<refdata::domain::default_curve_market_terms>(c.id); p) {
+    if (const auto* p = has.market_terms ? parts.take<default_curve_market_terms>(c.id) : nullptr;
+        p) {
         r.set_optional_text("DiscountCurve", p->discount_curve);
         r.set_optional_text("Conventions", p->conventions);
         if (p->has_quotes) {
@@ -3119,7 +3155,7 @@ void export_configuration_settings(record_writer r,
                 }
         }
     }
-    if (const auto* p = parts.take<refdata::domain::default_curve_cds_terms>(c.id); p) {
+    if (const auto* p = has.cds_terms ? parts.take<default_curve_cds_terms>(c.id) : nullptr; p) {
         r.set_optional_text("StartDate", p->start_date);
         r.set_optional_decimal("RunningSpread", p->running_spread);
         r.set_optional_text("IndexTerm", p->index_term);
@@ -3127,18 +3163,22 @@ void export_configuration_settings(record_writer r,
             "ImplyDefaultFromMarket", p->imply_default_from_market, "ORE boolean");
         r.set_optional_spelling("PriceIsUpfront", p->price_is_upfront, "ORE boolean");
     }
-    if (const auto* p = parts.take<refdata::domain::default_curve_benchmark>(c.id); p) {
+    if (const auto* p = has.benchmark ? parts.take<default_curve_benchmark>(c.id) : nullptr; p) {
         r.set_optional_text("BenchmarkCurve", p->benchmark_curve);
         r.set_optional_text("SourceCurve", p->source_curve);
         r.set_optional_text("Pillars", p->pillars);
         r.set_optional_integer("SpotLag", p->spot_lag);
         r.set_optional_text("Calendar", p->calendar);
     }
-    if (const auto* p = parts.take<refdata::domain::default_curve_transition_matrix>(c.id); p) {
+    if (const auto* p =
+            has.transition_matrix ? parts.take<default_curve_transition_matrix>(c.id) : nullptr;
+        p) {
         r.set_optional_text("InitialState", p->initial_state);
         r.set_optional_text("States", p->states);
     }
-    if (const auto* p = parts.take<refdata::domain::default_curve_yield_reinterpretation>(c.id);
+    if (const auto* p = has.yield_reinterpretation ?
+                            parts.take<default_curve_yield_reinterpretation>(c.id) :
+                            nullptr;
         p)
         r.set_optional_text("ReinterpretedYieldCurve", p->reinterpreted_yield_curve);
     const auto b = ctx.configuration_bootstraps.find(c.id);
@@ -3227,9 +3267,8 @@ void export_commodity_curve(
             r.set_optional_spelling(
                 "InterpolationMethod", p->interpolation_method, "interpolation method");
         }
-        if (const auto* p = piecewise
-                                ? nullptr
-                                : parts.take<refdata::domain::commodity_curve_direct>(d.id);
+        if (const auto* p =
+                piecewise ? nullptr : parts.take<refdata::domain::commodity_curve_direct>(d.id);
             p) {
             r.set_optional_text("SpotQuote", p->spot_quote);
             if (p->has_quotes)

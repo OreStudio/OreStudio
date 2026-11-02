@@ -184,6 +184,28 @@ TEST_CASE("a family the definition skips stores no rows and is named", run_tags)
     CHECK(outcome.files_read == std::vector<std::string>{"flows.csv"});
 }
 
+TEST_CASE("a portfolio detail is a text value, about its run and its line", run_tags) {
+    const auto run = the_run();
+    const auto outcome = read_run_outputs(
+        {output_file{.name = "marketObjects.csv",
+                     .body = "#MarketObjectType,MarketObjectName\n"
+                             "\"DiscountCurve\",\"EUR|GBP|USD\"\n"
+                             "\"YieldCurve\",\"EUR-EURIBOR-6M\"\n"}},
+        run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.metrics.empty());
+    REQUIRE(outcome.text_values.size() == 2);
+    const auto& curve = outcome.text_values[1];
+    CHECK(curve.family == "marketObjects");
+    CHECK(curve.name == "YieldCurve");
+    CHECK(curve.value == "EUR-EURIBOR-6M");
+    CHECK(curve.source == "marketObjects.csv");
+    CHECK(curve.line == 3);
+    CHECK(curve.result_id == run.result_id);
+    CHECK(curve.as_of == priced_at);
+}
+
 TEST_CASE("a file no family states is counted rather than refused", run_tags) {
     const auto outcome = read_run_outputs(
         {output_file{.name = "something-else.csv", .body = "a,b\n1,2\n"}}, the_run());

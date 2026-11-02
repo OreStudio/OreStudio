@@ -33,6 +33,7 @@
 #include "ores.reporting.core/repository/report_cashflow_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
+#include "ores.reporting.core/repository/report_text_value_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/results/canonical_log_reader.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
@@ -992,7 +993,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), info)
                 << "Read " << read.files_read.size() << " output file(s) of " << "result "
                 << result_id << ": " << read.metrics.size() << " metric(s), "
-                << read.cashflows.size() << " cashflow figure(s)";
+                << read.cashflows.size() << " cashflow figure(s), " << read.text_values.size()
+                << " text value(s)";
             for (const auto& skipped : read.files_skipped)
                 BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
                                           << ": its definition does not store the family";
@@ -1002,9 +1004,12 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             output.cashflows.insert(output.cashflows.end(),
                                     std::make_move_iterator(read.cashflows.begin()),
                                     std::make_move_iterator(read.cashflows.end()));
+            output.text_values.insert(output.text_values.end(),
+                                      std::make_move_iterator(read.text_values.begin()),
+                                      std::make_move_iterator(read.text_values.end()));
         }
 
-        if (output.metrics.empty() && output.cashflows.empty()) {
+        if (output.metrics.empty() && output.cashflows.empty() && output.text_values.empty()) {
             refuse("The run's output states no figure, so there is nothing to load.");
             return;
         }
@@ -1033,10 +1038,19 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 repo.insert(tenant_ctx, rows);
             }
         };
+        const auto load_text_values = [&] {
+            if (output.text_values.empty())
+                return;
+            BOOST_LOG_SEV(lg(), info) << "Loading " << output.text_values.size() << " text value(s)";
+            repository::report_text_value_repository repo;
+            repo.insert(tenant_ctx, output.text_values);
+        };
         load_metrics();
         load_cashflows();
+        load_text_values();
 
-        const auto loaded = output.metrics.size() + output.cashflows.size();
+        const auto loaded =
+            output.metrics.size() + output.cashflows.size() + output.text_values.size();
 
         // The market state the run priced against belongs to the market data
         // store, and it is far too large to travel in a message: the manifests
@@ -1077,9 +1091,11 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         post_process_results_result result;
         result.success = true;
         result.rows_loaded = static_cast<int>(loaded);
-        result.message = std::format("Loaded {} metrics and {} cashflow figures for run {}.{}",
+        result.message = std::format(
+            "Loaded {} metrics, {} cashflow figures and {} text values for run {}.{}",
                                      output.metrics.size(),
                                      output.cashflows.size(),
+                                     output.text_values.size(),
                                      req.report_instance_id,
                                      market_state_note);
 

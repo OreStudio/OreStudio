@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 46
+Tables: 47
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1475,6 +1475,43 @@ package "reporting" #E0F7FA {
     run. A figure the engine stated as its null string is not here at all, because
     there is nothing to store. The subject_id is the engine's own identifier, such
     as a trade id or a netting set id, so it is text and not a uuid.
+    end note
+
+    entity ores_reporting_report_text_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
+        * family : text
+        * subject_type : text
+        * subject_id : text <<FK>>
+        * name : text
+        * value_type : text
+        * value : text
+          figure : double
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_text_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Text Value Table
+    One value a run stated as text rather than as a figure. Some outputs say what a
+    run was about rather than what it computed: the pricing engine and model a trade
+    used, the market objects and risk factors a portfolio depends on, the indices and
+    counterparties it names, and the calibrated model. Each value is a name and its
+    text, about a trade when the file names one, with the number beside it when the
+    engine stated the value as a double.
+    The row is written once, with the run, and never edited; a correction is a new
+    run.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {

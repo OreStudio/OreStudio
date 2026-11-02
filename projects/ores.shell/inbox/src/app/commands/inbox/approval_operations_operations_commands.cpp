@@ -29,16 +29,15 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -210,7 +209,9 @@ void approval_operations_operations_commands::process_raise_approval(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_withdraw_approval(
@@ -268,7 +269,9 @@ void approval_operations_operations_commands::process_withdraw_approval(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_decide_approval(
@@ -333,7 +336,9 @@ void approval_operations_operations_commands::process_decide_approval(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_list_approval_queue(
@@ -392,7 +397,9 @@ void approval_operations_operations_commands::process_list_approval_queue(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_list_my_approval_requests(
@@ -451,7 +458,9 @@ void approval_operations_operations_commands::process_list_my_approval_requests(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_get_approval(
@@ -503,7 +512,9 @@ void approval_operations_operations_commands::process_get_approval(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_expire_overdue_approvals(
@@ -553,7 +564,9 @@ void approval_operations_operations_commands::process_expire_overdue_approvals(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_remind_expiring_approvals(
@@ -603,7 +616,9 @@ void approval_operations_operations_commands::process_remind_expiring_approvals(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_retry_stalled_applies(
@@ -653,7 +668,9 @@ void approval_operations_operations_commands::process_retry_stalled_applies(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_get_approval_history(
@@ -705,7 +722,9 @@ void approval_operations_operations_commands::process_get_approval_history(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void approval_operations_operations_commands::process_get_approval_parts(
@@ -757,7 +776,9 @@ void approval_operations_operations_commands::process_get_approval_parts(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

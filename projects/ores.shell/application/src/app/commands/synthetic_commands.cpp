@@ -44,6 +44,7 @@
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -53,12 +54,13 @@
 #include <cctype>
 #include <chrono>
 #include <cli/cli.h>
+#include <exception>
 #include <format>
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <set>
 #include <string_view>
 #include <utility>
@@ -69,6 +71,14 @@ using namespace logging;
 using ores::nats::service::nats_client;
 
 namespace {
+
+/**
+ * @brief A request's body as JSON, written by the request's own codec.
+ */
+template <typename T>
+std::string synthetic_commands_wire_json(const T& v) {
+    return ores::utility::codec::wire_traits<T>::write_json(v);
+}
 
 namespace synthetic_ms = ores::synthetic::messaging;
 
@@ -701,10 +711,11 @@ uint_flag(std::ostream& out, const parsed_args& parsed, const std::string& name)
  */
 template <typename Request>
 bool send_row(std::ostream& out, nats_client& session, const synthetic_commands::setup_row& row) {
-    auto body = rfl::json::read<Request>(row.body);
-    if (!body) {
-        fail(out) << "Cannot decode the planned " << row.label << ": " << body.error().what()
-                  << std::endl;
+    std::optional<Request> body;
+    try {
+        body = ores::utility::codec::wire_traits<Request>::read_json(row.body);
+    } catch (const std::exception& e) {
+        fail(out) << "Cannot decode the planned " << row.label << ": " << e.what() << std::endl;
         return false;
     }
     auto result =
@@ -791,7 +802,7 @@ std::string folder_body(const std::string& id,
     req.intent = {.reason_code =
                       std::string(dq::domain::change_reason_constants::codes::new_record),
                   .commentary = "synthetic setup folder " + name};
-    return rfl::json::write(req);
+    return synthetic_commands_wire_json(req);
 }
 
 } // namespace
@@ -1807,7 +1818,7 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     std::vector<setup_row> rows;
     rows.push_back({.label = "fx_spot_generation_config " + source_name,
                     .subject = std::string(config_req.nats_subject),
-                    .body = rfl::json::write(config_req)});
+                    .body = synthetic_commands_wire_json(config_req)});
 
     int index = 0;
     for (const auto& component : components) {
@@ -1825,7 +1836,7 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
         gmm_req.intent = setup_intent(gmm.description);
         rows.push_back({.label = "gmm_component " + std::to_string(index),
                         .subject = std::string(gmm_req.nats_subject),
-                        .body = rfl::json::write(gmm_req)});
+                        .body = synthetic_commands_wire_json(gmm_req)});
         ++index;
     }
     return rows;
@@ -1879,7 +1890,7 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     std::vector<setup_row> rows;
     rows.push_back({.label = "ir_curve_generation_config " + source_name,
                     .subject = std::string(config_req.nats_subject),
-                    .body = rfl::json::write(config_req)});
+                    .body = synthetic_commands_wire_json(config_req)});
 
     int index = 0;
     for (const auto& key : curve_keys) {
@@ -1899,7 +1910,7 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
         entry_req.intent = setup_intent(source_name);
         rows.push_back({.label = "ir_curve_template_entry " + key,
                         .subject = std::string(entry_req.nats_subject),
-                        .body = rfl::json::write(entry_req)});
+                        .body = synthetic_commands_wire_json(entry_req)});
         ++index;
     }
 
@@ -1928,7 +1939,7 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
         value_req.intent = setup_intent(source_name);
         rows.push_back({.label = "process_parameter_value " + parameter.parameter_name,
                         .subject = std::string(value_req.nats_subject),
-                        .body = rfl::json::write(value_req)});
+                        .body = synthetic_commands_wire_json(value_req)});
     }
     return rows;
 }
@@ -2110,7 +2121,7 @@ void synthetic_commands::process_setup(std::ostream& out,
     std::vector<setup_row> rows;
     rows.push_back({.label = "market_data_generation_config " + name,
                     .subject = std::string(container_req.nats_subject),
-                    .body = rfl::json::write(container_req)});
+                    .body = synthetic_commands_wire_json(container_req)});
     rows.push_back(
         {.label = "folder " + name,
          .subject = std::string(synthetic_ms::put_folder_request::nats_subject),

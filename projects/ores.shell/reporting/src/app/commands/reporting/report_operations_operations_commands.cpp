@@ -29,16 +29,15 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -333,7 +332,9 @@ void report_operations_operations_commands::process_trigger_report_instance(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_get_run_health(
@@ -386,7 +387,9 @@ void report_operations_operations_commands::process_get_run_health(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_record_run_pricing(
@@ -441,7 +444,9 @@ void report_operations_operations_commands::process_record_run_pricing(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_schedule_report_definitions(
@@ -493,7 +498,9 @@ void report_operations_operations_commands::process_schedule_report_definitions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_unschedule_report_definitions(
@@ -546,7 +553,9 @@ void report_operations_operations_commands::process_unschedule_report_definition
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_gather_trades(
@@ -601,7 +610,9 @@ void report_operations_operations_commands::process_gather_trades(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_gather_market_data(
@@ -656,7 +667,9 @@ void report_operations_operations_commands::process_gather_market_data(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_assemble_bundle(
@@ -729,7 +742,9 @@ void report_operations_operations_commands::process_assemble_bundle(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_prepare_ore_package(
@@ -790,7 +805,9 @@ void report_operations_operations_commands::process_prepare_ore_package(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_submit_compute(
@@ -847,7 +864,9 @@ void report_operations_operations_commands::process_submit_compute(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_collect_compute_results(
@@ -902,7 +921,9 @@ void report_operations_operations_commands::process_collect_compute_results(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_post_process_results(
@@ -958,7 +979,9 @@ void report_operations_operations_commands::process_post_process_results(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_finalise_report(
@@ -1012,7 +1035,9 @@ void report_operations_operations_commands::process_finalise_report(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_fail_report(
@@ -1067,7 +1092,9 @@ void report_operations_operations_commands::process_fail_report(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_resolve_prepared_input(
@@ -1122,7 +1149,9 @@ void report_operations_operations_commands::process_resolve_prepared_input(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_ignore_compute_results(
@@ -1177,7 +1206,9 @@ void report_operations_operations_commands::process_ignore_compute_results(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_get_next_fire(
@@ -1229,7 +1260,9 @@ void report_operations_operations_commands::process_get_next_fire(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_resolve_cut(
@@ -1318,7 +1351,9 @@ void report_operations_operations_commands::process_resolve_cut(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_list_cut_rows(
@@ -1393,7 +1428,9 @@ void report_operations_operations_commands::process_list_cut_rows(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_get_cut_record(
@@ -1446,7 +1483,9 @@ void report_operations_operations_commands::process_get_cut_record(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void report_operations_operations_commands::process_take_cut(std::ostream& out,
@@ -1517,7 +1556,9 @@ void report_operations_operations_commands::process_take_cut(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

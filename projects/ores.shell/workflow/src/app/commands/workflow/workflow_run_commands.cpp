@@ -27,6 +27,9 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -39,9 +42,9 @@
 #include <optional>
 #include <ostream>
 #include <ranges>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
+#include <tuple>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -61,6 +64,13 @@ struct step_result_handoff {
     std::optional<std::string> child_instance_id;
     std::optional<std::string> tenant_id;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const step_result_handoff&) {
+    return std::tuple{
+        ores::utility::codec::field{"child_instance_id", &step_result_handoff::child_instance_id},
+        ores::utility::codec::field{"tenant_id", &step_result_handoff::tenant_id}};
+}
+static_assert(ores::utility::codec::names_every_member<step_result_handoff>());
 
 /// How long a start waits for the engine to create its instance before
 /// reporting that the request was refused.
@@ -417,7 +427,8 @@ std::expected<workflow_run_commands::handoff, std::string> workflow_run_commands
     // A step's result is the step's own JSON, so a result that is not an object
     // naming a child names no handoff. Only a result the read did not produce
     // leaves the question open, and that was answered above.
-    const auto decoded = rfl::json::read<step_result_handoff>(reply.result_json);
+    const auto decoded =
+        ores::utility::codec::json::try_read<step_result_handoff>(reply.result_json);
     if (!decoded)
         return handoff{};
     return handoff{.instance_id = decoded->child_instance_id.value_or(""),

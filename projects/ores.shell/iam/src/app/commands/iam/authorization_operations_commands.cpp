@@ -29,16 +29,15 @@
 #include "ores.shell/app/command_token.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cli/cli.h>
 #include <cstddef>
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -250,7 +249,9 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_assign_role_by_name(
@@ -303,7 +304,9 @@ void authorization_operations_commands::process_assign_role_by_name(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_revoke_role(std::ostream& out,
@@ -357,7 +360,9 @@ void authorization_operations_commands::process_revoke_role(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_revoke_role_by_name(
@@ -410,7 +415,9 @@ void authorization_operations_commands::process_revoke_role_by_name(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_get_account_roles(
@@ -462,7 +469,9 @@ void authorization_operations_commands::process_get_account_roles(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_get_my_roles(std::ostream& out,
@@ -513,7 +522,9 @@ void authorization_operations_commands::process_get_my_roles(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_list_account_permissions(
@@ -576,7 +587,9 @@ void authorization_operations_commands::process_list_account_permissions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_list_my_permissions(
@@ -638,7 +651,9 @@ void authorization_operations_commands::process_list_my_permissions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_list_role_permissions_page(
@@ -709,7 +724,9 @@ void authorization_operations_commands::process_list_role_permissions_page(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_list_roles_page(
@@ -780,7 +797,9 @@ void authorization_operations_commands::process_list_roles_page(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_list_role_holders(
@@ -841,7 +860,9 @@ void authorization_operations_commands::process_list_role_holders(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_get_role_permissions(
@@ -893,7 +914,9 @@ void authorization_operations_commands::process_get_role_permissions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_put_role_permissions(
@@ -948,7 +971,9 @@ void authorization_operations_commands::process_put_role_permissions(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 void authorization_operations_commands::process_suggest_role_commands(
@@ -1002,7 +1027,9 @@ void authorization_operations_commands::process_suggest_role_commands(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
 }
 
 }

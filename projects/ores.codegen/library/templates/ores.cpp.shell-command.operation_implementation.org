@@ -53,7 +53,12 @@ The full template source. Edit here and re-tangle with
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
+{{^has_generated_wire_codec}}
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+{{/has_generated_wire_codec}}
 #include <cli/cli.h>
 {{#shell_has_request_timeout}}
 #include <chrono>
@@ -62,10 +67,13 @@ The full template source. Edit here and re-tangle with
 #include <functional>
 #include <optional>
 #include <ostream>
+{{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+{{/has_generated_wire_codec}}
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::shell::app::commands {
@@ -246,7 +254,14 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
     }
 {{/adopts_token_field}}
 
+{{#has_generated_wire_codec}}
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
     out << rfl::json::write(*result) << std::endl;
+{{/has_generated_wire_codec}}
 }
 {{/shell_commands}}
 

@@ -21,6 +21,7 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
@@ -65,6 +66,10 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 namespace {
+
+// The rows of a run are written this many at a time: a block is one insert
+// statement, and the most rows a reader holds at once.
+constexpr std::size_t load_block_size = 10000;
 
 inline auto& nats_call_lg() {
     static auto instance =
@@ -943,7 +948,32 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             return;
         }
 
-        results::run_output_outcome output;
+        // The run's rows are written in one transaction, a block at a time, as
+        // each file is read: a file's rows are never all held at once, and a
+        // refusal anywhere rolls back every block already written, so a partial
+        // load is never seen.
+        ores::database::repository::unit_of_work uow(tenant_ctx);
+        const auto& load_ctx = uow.ctx();
+        std::size_t metrics_loaded = 0;
+        std::size_t cashflows_loaded = 0;
+        std::size_t text_values_loaded = 0;
+        const results::run_output_sinks sinks{
+            .metrics =
+                [&](std::vector<domain::report_metric>& block) {
+                    repository::report_metric_repository{}.insert(load_ctx, block);
+                    metrics_loaded += block.size();
+                },
+            .cashflows =
+                [&](std::vector<domain::report_cashflow>& block) {
+                    repository::report_cashflow_repository{}.insert(load_ctx, block);
+                    cashflows_loaded += block.size();
+                },
+            .text_values =
+                [&](std::vector<domain::report_text_value>& block) {
+                    repository::report_text_value_repository{}.insert(load_ctx, block);
+                    text_values_loaded += block.size();
+                }};
+
         std::vector<std::string> manifest_uris;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
         const std::string bucket(ores::compute::net::compute_storage::bucket);
@@ -953,7 +983,13 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             manifest_uris.push_back(
                 ores::storage::net::storage_paths::make_object_path(bucket, manifest_key));
 
-            std::vector<results::output_file> files;
+            const results::run_stamp run{.party_id = instance->party_id,
+                                         .report_instance_id = sg(req.report_instance_id),
+                                         .report_definition_id = instance->definition_id,
+                                         .result_id = sg(result_id),
+                                         .priced_at = as_of,
+                                         .families = families};
+            results::run_output_outcome read;
             try {
                 const auto text = transfer.download_blob(bucket, manifest_key);
                 const auto manifest = ores::ore::results::manifest_from_json(
@@ -963,95 +999,42 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 for (const auto& file : ores::ore::results::located_files(manifest, manifest_key)) {
                     if (!ores::ore::results::is_result_file(file))
                         continue;
-                    if (!families.stores(file.family)) {
-                        files.push_back(results::output_file{.name = file.name});
-                        continue;
+                    results::output_file one{.name = file.name};
+                    if (families.stores(file.family)) {
+                        const auto body = transfer.download_blob(bucket, file.key);
+                        one.body.assign(body.begin(), body.end());
+                        ores::ore::results::verify_body(file, one.body);
                     }
-                    const auto body = transfer.download_blob(bucket, file.key);
-                    std::string text_body(body.begin(), body.end());
-                    ores::ore::results::verify_body(file, text_body);
-                    files.push_back(
-                        results::output_file{.name = file.name, .body = std::move(text_body)});
+                    results::read_run_output(one, run, load_block_size, sinks, read);
+                    if (!read.refusals.empty())
+                        break;
                 }
-            } catch (const std::exception& read) {
+            } catch (const std::exception& failure) {
                 refuse(std::format(
-                    "The output of result {} was not read: {}", result_id, read.what()));
+                    "The output of result {} was not read: {}", result_id, failure.what()));
                 return;
             }
-
-            const results::run_stamp run{.party_id = instance->party_id,
-                                         .report_instance_id = sg(req.report_instance_id),
-                                         .report_definition_id = instance->definition_id,
-                                         .result_id = sg(result_id),
-                                         .priced_at = as_of,
-                                         .families = families};
-            auto read = results::read_run_outputs(files, run);
             if (!read.refusals.empty()) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
                 return;
             }
-            BOOST_LOG_SEV(lg(), info)
-                << "Read " << read.files_read.size() << " output file(s) of " << "result "
-                << result_id << ": " << read.metrics.size() << " metric(s), "
-                << read.cashflows.size() << " cashflow figure(s), " << read.text_values.size()
-                << " text value(s)";
+            BOOST_LOG_SEV(lg(), info) << "Read " << read.files_read.size()
+                                      << " output file(s) of result " << result_id;
             for (const auto& skipped : read.files_skipped)
                 BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
                                           << ": its definition does not store the family";
-            output.metrics.insert(output.metrics.end(),
-                                  std::make_move_iterator(read.metrics.begin()),
-                                  std::make_move_iterator(read.metrics.end()));
-            output.cashflows.insert(output.cashflows.end(),
-                                    std::make_move_iterator(read.cashflows.begin()),
-                                    std::make_move_iterator(read.cashflows.end()));
-            output.text_values.insert(output.text_values.end(),
-                                      std::make_move_iterator(read.text_values.begin()),
-                                      std::make_move_iterator(read.text_values.end()));
         }
 
-        if (output.metrics.empty() && output.cashflows.empty() && output.text_values.empty()) {
+        const auto loaded = metrics_loaded + cashflows_loaded + text_values_loaded;
+        if (loaded == 0) {
             refuse("The run's output states no figure, so there is nothing to load.");
             return;
         }
-
-        // One write for each family, because that is the shape of the tables and
-        // because a statement per row would cost a round trip per figure.
-        const auto load_metrics = [&] {
-            std::map<std::string, std::vector<domain::report_metric>> by_family;
-            for (auto& metric : output.metrics)
-                by_family[metric.family].push_back(std::move(metric));
-            repository::report_metric_repository repo;
-            for (auto& [family, rows] : by_family) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Loading " << rows.size() << " " << family << " metric(s)";
-                repo.insert(tenant_ctx, rows);
-            }
-        };
-        const auto load_cashflows = [&] {
-            std::map<std::string, std::vector<domain::report_cashflow>> by_family;
-            for (auto& cashflow : output.cashflows)
-                by_family[cashflow.family].push_back(std::move(cashflow));
-            repository::report_cashflow_repository repo;
-            for (auto& [family, rows] : by_family) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Loading " << rows.size() << " " << family << " cashflow figure(s)";
-                repo.insert(tenant_ctx, rows);
-            }
-        };
-        const auto load_text_values = [&] {
-            if (output.text_values.empty())
-                return;
-            BOOST_LOG_SEV(lg(), info)
-                << "Loading " << output.text_values.size() << " text value(s)";
-            repository::report_text_value_repository repo;
-            repo.insert(tenant_ctx, output.text_values);
-        };
-        load_metrics();
-        load_cashflows();
-        load_text_values();
-
-        const auto loaded =
-            output.metrics.size() + output.cashflows.size() + output.text_values.size();
+        uow.commit();
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << metrics_loaded << " metric(s), "
+                                  << cashflows_loaded << " cashflow figure(s) and "
+                                  << text_values_loaded << " text value(s) in blocks of "
+                                  << load_block_size;
 
         // The market state the run priced against belongs to the market data
         // store, and it is far too large to travel in a message: the manifests
@@ -1094,9 +1077,9 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         result.rows_loaded = static_cast<int>(loaded);
         result.message =
             std::format("Loaded {} metrics, {} cashflow figures and {} text values for run {}.{}",
-                        output.metrics.size(),
-                        output.cashflows.size(),
-                        output.text_values.size(),
+                        metrics_loaded,
+                        cashflows_loaded,
+                        text_values_loaded,
                         req.report_instance_id,
                         market_state_note);
 

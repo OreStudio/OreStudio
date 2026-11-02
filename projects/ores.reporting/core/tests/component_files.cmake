@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "analytic_type_eventing_integration_tests.cpp"
+    "benchmark_run_output_load_tests.cpp"
     "concurrency_policy_eventing_integration_tests.cpp"
     "configuration_analytic_parameter_eventing_integration_tests.cpp"
     "configuration_eventing_integration_tests.cpp"

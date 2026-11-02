@@ -96,6 +96,7 @@ false
 :PROPERTIES:
 :tablename: ores_trading_product_type_asset_classes_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Indexes
@@ -119,6 +120,7 @@ false
 :name_singular_words: product type market
 :name_words:          product type markets
 :order_column:        asset_class_code
+:system_tenant_visible: true
 :END:
 
 * C++

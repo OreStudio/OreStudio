@@ -206,6 +206,7 @@ std::string("00000000-0000-0000-0000-000000000000")
 :PROPERTIES:
 :tablename: ores_trading_product_types_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -244,6 +245,7 @@ drop function if exists ores_trading_validate_product_type_fn;
 :entity_plural_short:   types
 :entity_singular_words: product type
 :entity_plural_words:   product types
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

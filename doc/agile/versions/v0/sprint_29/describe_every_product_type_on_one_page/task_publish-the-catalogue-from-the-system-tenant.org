@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/publish-the-catalogue-from-the-system-tenant
+#+pr: 4399
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -26,11 +26,11 @@ One row per product type exists in the database, and every tenant reads it. A te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -43,9 +43,23 @@ One row per product type exists in the database, and every tenant reads it. A te
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The catalogue is already seeded into the system tenant, and the trade check
+already reads those rows by naming the system tenant. What is missing is the
+read and the copy.
+
+- Give the three tables the own-or-system-tenant policy, so a session reads its
+  own rows and the system tenant's and writes stay its own. This is the shape the
+  meta model calls =:rls_own_or_system_tenant_rows:=, not the system-tenant
+  widening, which is for a session that must see every tenant.
+- Mark the three entities =:system_tenant_visible:= in their repository drawer.
+  Without it the generated read filters on the session's tenant alone and a
+  tenant reads nothing, because the policy admits rows the query has already
+  excluded.
+- Stop the provisioner copying the catalogue into each tenant.
+- Delete the copies an existing database holds, in a script that runs with the
+  seed and does nothing on a second run.
+- Prove it: a session of a provisioned tenant reads the catalogue, and the
+  database holds no copy.
 
 * Measurements
 
@@ -59,9 +73,53 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types in the database | 121, all in the system tenant | =compass sql= over =ores_trading_product_types_tbl= where =tenant_id <> system= | ba9b3f2844 |
+| Rows a tenant holds | 0 for all three tables | the same query over the markets and family tables | ba9b3f2844 |
+| Types the Acme tenant reads | 121 | =set_config('app.current_tenant_id', acme)= then count | ba9b3f2844 |
+| Families the Acme tenant reads | 8 | the same session | ba9b3f2844 |
+| pgTAP suites | 77 pass, including the new visibility suite | =compass check --only pgtap= | ba9b3f2844 |
 
 * Notes
+
+** 2026-11-02 — the catalogue is one copy
+
+The provisioner's copy was a bridge. The previous task replaced the trade type
+table, and the tables were tenant-isolated, so a tenant that booked a trade saw
+no product types unless the catalogue was copied to it. That copy is gone, and
+the isolation it made necessary with it.
+
+The two halves have to move together. The policy on its own is not enough,
+because the generated read names the session's tenant: a tenant would ask for
+its own rows, the policy would not matter, and it would read nothing. The
+repository flag on its own is not enough either, because the policy would refuse
+the rows the query asked for. Both are stated, and the suite proves the read.
+
+Provisioning a tenant end to end runs and generates its trades, so the trade
+check reads the one catalogue while the writes land in the tenant.
+
+** 2026-11-02 — the review found the cleanup did nothing
+
+The cleanup script deleted no rows. Each of the three tables carries an
+=on delete ... do instead= rule that turns a delete into an update of
+=valid_to=, so the delete closed nothing, and the guard the generator now adds
+to that rule compares against a session tenant the populate scripts never set.
+The copies stayed, and the suite passed because it ran on a database recreated
+from scratch, where no copy had been made. The script now disables the rule
+around the delete, the way the tenant purger removes a tenant's rows, and it was
+run against a database that did hold copies: 5 product type rows and 4 family
+rows deleted, none left, and a second run deleting none.
+
+The write-half test asserted the text of the policy rather than its behaviour.
+It now updates a shared row from a tenant session and expects the refusal, and
+deletes one and expects the system row to stay open, which also covers the rule
+guard. The counts a tenant reads are compared against what the system session
+read in the same run, so the suite does not break when the catalogue grows.
+
+A tenant cannot override a catalogue row: it reads the system's, and a save
+would be a write of a row it does not own. The catalogue is read-only to a
+tenant, and a screen that offers an edit for a shared row is offering a write the
+database refuses. That is stated here rather than left to be discovered, and the
+screens that draw it are a later task.
 
 * Test Scenarios
 
@@ -78,12 +136,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4399][#4399]] | [sql] Publish the product type catalogue from the system tenant |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The cleanup deletes nothing: the delete rule turns a delete into an update, and the guard compares against an unset session tenant | =trading_product_type_copies_cleanup.sql= | Fixed | The rule is disabled around the delete, as =ores_iam_purge_tenant_fn= does. Verified on a database holding copies: 5 and 4 rows deleted, a second run deleting none. |
+| 2 | The write-half test asserts the policy text, not its behaviour; the counts are literals | =trading_product_type_catalogue_visibility_test.sql= | Fixed | A tenant session now updates a shared row and expects the refusal, deletes one and expects it open, and compares its counts against the system session's. |
+| 3 | =static const std::string sys= is repeated in every read of each repository | =product_type_repository.cpp= (+2) | Declined | It is generated from the shared repository template. Hoisting it belongs to a codegen task and would rewrite every system-tenant-visible repository, which is not this task's subject. |
+| 4 | A tenant sees the system row, so a save would be refused; say so | task, notes | Recorded | The catalogue is read-only to a tenant; the note states it and the screens come later. |
+| 5 | The provisioner comment still opens a block that now covers fewer tables | =iam_tenant_provisioner_create.sql= | Fixed | The comment names the catalogue as the exception. |
 
 * Result
+
+One catalogue exists, and every tenant reads it.
+
+=ores_trading_product_types_tbl=, =ores_trading_product_type_asset_classes_tbl=
+and =ores_refdata_product_family_codes_tbl= carry the own-or-system-tenant
+policy: a session reads its own rows and the system tenant's, and writes stay
+its own. The generated repositories read both, which is the half that makes the
+policy reachable. The delete rules state the own-tenant limit themselves,
+because a rule runs with the owner's rights and row-level security does not bind
+it.
+
+The provisioner no longer copies the catalogue into a tenant. A script that runs
+with the seed deletes the copies an existing database holds; it disables the
+soft-delete rule around the delete, because the rule would only have closed the
+rows, and a closed copy is still a copy the next session reads.
+
+Gates at =7eb7691dd5=: 47 local checks, 98 C++ suites, and 77 pgTAP suites on a
+database recreated from the commit. Provisioning a tenant from scratch reads the
+one catalogue: afterwards the database holds 121 product types with no copy under
+any tenant, no market copy and no family copy, and the tenant session reads 121
+types and 8 families.
+
+A tenant cannot override a catalogue row. It reads the system's, and a save would
+be a write of a row it does not own, so the catalogue is read-only to a tenant.
+The screens that draw it come later, and they must not offer the edit.

@@ -155,10 +155,16 @@ do instead
   where tenant_id = old.tenant_id
   and product_type_code = old.product_type_code
   and asset_class_code = old.asset_class_code
+  -- A tenant reads the shared rows of the system tenant, so old can be one.
+  -- The rule runs with the owner's rights, which row-level security does not
+  -- bind, so the rule states the own-tenant limit itself.
+  and tenant_id = ores_iam_current_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Product Type Asset Class
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table "ores_trading_product_type_asset_classes_tbl" enable row level security;
 
@@ -169,6 +175,7 @@ create policy product_type_asset_classes_tbl_tenant_isolation_policy
 on "ores_trading_product_type_asset_classes_tbl"
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

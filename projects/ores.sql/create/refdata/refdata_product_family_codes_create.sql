@@ -150,6 +150,11 @@ on delete to "ores_refdata_product_family_codes_tbl" do instead (
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
+      -- A tenant reads the shared rows of the system tenant, so OLD can be one.
+      -- The rule runs with the owner's rights, which row-level security does
+      -- not bind, so the rule states the own-tenant limit that the delete
+      -- policy cannot enforce here.
+      and tenant_id = ores_iam_current_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 
@@ -199,6 +204,8 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Product Family Code
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_refdata_product_family_codes_tbl enable row level security;
 
@@ -209,6 +216,7 @@ create policy product_family_codes_tbl_tenant_isolation_policy
 on ores_refdata_product_family_codes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

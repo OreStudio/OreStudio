@@ -65,11 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Reporting suites | api 72 cases, core 243, service 10 and shell reporting 698 pass | the =ores.reporting.*.tests= and =ores.shell.reporting.tests= binaries | b1dcb41541 plus this branch |
-| Codec cases | 3 cases, 568 assertions pass | =ores.reporting.api.tests "[codec]"= | b1dcb41541 plus this branch |
-| Ore and compute suites after their moves | ore core 468, ore service 6 and compute core 81 cases pass | =ores.ore.core.tests=, =ores.ore.service.tests=, =ores.compute.core.tests= | b1dcb41541 plus this branch |
-| Component drift (reporting), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component reporting=, and the check scripts | b1dcb41541 plus this branch |
-| reflect-cpp left in reporting sources, outside tests | 1 file | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.reporting= | b1dcb41541 plus this branch |
+| Reporting suites | api 72 cases, service 10 and shell reporting 698 pass; core passes every case except 2 in =repository_run_result_repository_tests.cpp=, which need the =result_id= column main added to the report metrics table in #4364 and this environment's database predates | the =ores.reporting.*.tests= and =ores.shell.reporting.tests= binaries | 3c4c74f9a8 plus this branch |
+| Codec cases | 3 cases, 568 assertions pass | =ores.reporting.api.tests "[codec]"= | 3c4c74f9a8 plus this branch |
+| Ore and compute suites after their moves | ore core 470, ore service 6 and compute core 81 cases pass | =ores.ore.core.tests=, =ores.ore.service.tests=, =ores.compute.core.tests= | 3c4c74f9a8 plus this branch |
+| Component drift (reporting), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component reporting=, and the check scripts | 3c4c74f9a8 plus this branch |
+| reflect-cpp left in reporting sources, outside tests | 1 file | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.reporting= | 3c4c74f9a8 plus this branch |
 
 * Notes
 

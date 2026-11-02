@@ -20,6 +20,7 @@
 #ifndef ORES_REPORTING_CORE_RESULTS_RUN_OUTPUT_READER_HPP
 #define ORES_REPORTING_CORE_RESULTS_RUN_OUTPUT_READER_HPP
 
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.reporting.api/domain/report_cashflow.hpp"
 #include "ores.reporting.api/domain/report_metric.hpp"
 #include "ores.reporting.core/export.hpp"
@@ -54,6 +55,10 @@ struct run_stamp {
      * @brief The date the run priced at, used where the file states no date.
      */
     std::chrono::system_clock::time_point priced_at;
+    /**
+     * @brief The families the run stores as rows, as its definition chose them.
+     */
+    ores::ore::results::family_selection families;
 };
 
 /**
@@ -102,6 +107,10 @@ struct run_output_outcome {
      * @brief The files no family covers, so nothing was read from them.
      */
     std::vector<std::string> files_not_modelled;
+    /**
+     * @brief The files whose family the run's definition skips, so nothing was read from them.
+     */
+    std::vector<std::string> files_skipped;
 };
 
 /**

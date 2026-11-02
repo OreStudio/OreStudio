@@ -142,4 +142,3 @@ via its "Verifies task" field.
 | 8 | Add a fixture-driven store_market_state test with a calibration | market_state_handler.cpp | Declined | The handler needs NATS and object storage; the repository test stores a non-empty calibration through the reader against the real table. |
 |   |                 |      |          |       |
 
-* Result

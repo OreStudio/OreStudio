@@ -1117,6 +1117,7 @@ export interface StoreMarketStateRequest {
     as_of: string;
     storage_token: string;
     manifest_uris: string[];
+    skipped_families: string[];
 }
 
 export interface StoreMarketStateResponse {

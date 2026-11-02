@@ -46,6 +46,7 @@ export interface ReportDefinition {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    skipped_families: string;
     is_official: boolean;
     regulatory_book_type: string | null;
     cut_kind_code: string | null;

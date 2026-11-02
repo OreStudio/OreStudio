@@ -148,6 +148,42 @@ const output_family* family_named(std::string_view code) {
     return it == families.end() ? nullptr : &*it;
 }
 
+bool family_selection::stores(std::string_view code) const {
+    return !std::ranges::binary_search(skipped, code);
+}
+
+family_selection family_selection_of(const std::vector<std::string>& codes) {
+    family_selection selection;
+    for (const auto& code : codes) {
+        const auto first = code.find_first_not_of(" \t");
+        if (first == std::string::npos)
+            continue;
+        const auto last = code.find_last_not_of(" \t");
+        auto trimmed = code.substr(first, last - first + 1);
+        if (family_named(trimmed) == nullptr)
+            throw std::invalid_argument("No output family is named '" + trimmed + "'.");
+        selection.skipped.push_back(std::move(trimmed));
+    }
+    std::ranges::sort(selection.skipped);
+    const auto [from, to] = std::ranges::unique(selection.skipped);
+    selection.skipped.erase(from, to);
+    return selection;
+}
+
+family_selection family_selection_of(std::string_view list) {
+    std::vector<std::string> codes;
+    std::size_t start = 0;
+    while (start <= list.size()) {
+        const auto comma = list.find(',', start);
+        const auto end = comma == std::string_view::npos ? list.size() : comma;
+        codes.emplace_back(list.substr(start, end - start));
+        if (comma == std::string_view::npos)
+            break;
+        start = comma + 1;
+    }
+    return family_selection_of(codes);
+}
+
 const output_family* family_of_file(std::string_view file_name) {
     const auto& families = output_families();
     const auto it = std::ranges::find_if(families, [file_name](const output_family& family) {

@@ -21,6 +21,7 @@
 #include "ores.marketdata.core/repository/market_calibration_value_repository.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
@@ -44,6 +45,7 @@ namespace {
  * named, so the reply can say what was left alone.
  */
 bool collect_output_files(const messaging::store_market_state_request& req,
+                          const ores::ore::results::family_selection& families,
                           const std::string& http_base_url,
                           std::vector<service::market_state_file>& files,
                           std::string& failure) {
@@ -65,7 +67,8 @@ bool collect_output_files(const messaging::store_market_state_request& req,
             const auto located = ores::ore::results::located_files(manifest, key);
             const auto result_id = sg(manifest.result_id);
             for (const auto& file : located) {
-                if (!ores::ore::results::is_market_state_file(file)) {
+                if (!ores::ore::results::is_market_state_file(file) ||
+                    !families.stores(file.family)) {
                     files.push_back(
                         service::market_state_file{.result_id = result_id, .name = file.name});
                     continue;
@@ -122,7 +125,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
             .report_instance_id = sg(req->report_instance_id),
             .report_definition_id = sg(req->report_definition_id),
             .as_of = std::chrono::sys_days{
-                ores::platform::time::datetime::from_iso8601_date(req->as_of)}};
+                ores::platform::time::datetime::from_iso8601_date(req->as_of)},
+            .families = ores::ore::results::family_selection_of(req->skipped_families)};
     } catch (const std::exception& e) {
         refuse(std::string("The request names no readable run: ") + e.what());
         return;
@@ -130,12 +134,18 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
 
     std::vector<service::market_state_file> files;
     std::string failure;
-    if (!collect_output_files(*req, http_base_url, files, failure)) {
+    if (!collect_output_files(*req, run.families, http_base_url, files, failure)) {
         refuse(failure);
         return;
     }
     auto outcome = service::read_market_state(files, run);
     response.left_alone = outcome.left_alone;
+    response.left_alone.insert(
+        response.left_alone.end(), outcome.skipped.begin(), outcome.skipped.end());
+    for (const auto& skipped : outcome.skipped)
+        BOOST_LOG_SEV(market_state_handler_lg(), info)
+            << "store_market_state | instance=" << req->report_instance_id << " skipped "
+            << skipped << ": its definition does not store the family";
     response.refusals = outcome.refusals;
     // A run's state is stored whole or not at all, because a partial store
     // reads as the state the run priced against.

@@ -162,6 +162,7 @@ export const reportDefinitionViewSchema = z.object({
     pre_processing: z.string(),
     prepared_input_key: z.string(),
     post_processing: z.string(),
+    skipped_families: z.string(),
     version: z.int().nonnegative(),
     modified_by: z.string(),
     performed_by: z.string(),

@@ -1198,6 +1198,7 @@ package "reporting" #E0F7FA {
         * pre_processing : text
           prepared_input_key : text
         * post_processing : text
+        * skipped_families : text
         * is_official : boolean
           regulatory_book_type : text <<FK>>
           cut_kind_code : text <<FK>>

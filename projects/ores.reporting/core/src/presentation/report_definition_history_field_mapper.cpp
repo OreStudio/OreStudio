@@ -57,6 +57,7 @@ render_report_definition_fields(const domain::report_definition& v) {
     fields.push_back({.name = "Pre Processing", .value = v.pre_processing});
     fields.push_back({.name = "Prepared Input Key", .value = v.prepared_input_key});
     fields.push_back({.name = "Post Processing", .value = v.post_processing});
+    fields.push_back({.name = "Skipped Families", .value = v.skipped_families});
     fields.push_back({.name = "Is Official", .value = v.is_official ? "true" : "false"});
     fields.push_back(
         {.name = "Regulatory Book Type", .value = v.regulatory_book_type.value_or(std::string{})});

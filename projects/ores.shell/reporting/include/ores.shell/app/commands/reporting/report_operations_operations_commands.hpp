@@ -147,6 +147,7 @@ public:
 
     /**
      * @brief post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+     * <skipped_families>
      */
     static void process_post_process_results(std::ostream& out,
                                              ores::nats::service::nats_client& session,

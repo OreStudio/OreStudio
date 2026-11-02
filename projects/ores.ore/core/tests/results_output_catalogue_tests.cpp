@@ -23,6 +23,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -233,4 +234,22 @@ TEST_CASE("every market-state family is a family of the catalogue", catalogue_ta
     std::ranges::sort(stated);
 
     CHECK(stated == expected);
+}
+
+TEST_CASE("a family selection stores every family it does not skip", catalogue_tags) {
+    const auto none = ores::ore::results::family_selection_of("");
+    CHECK(none.skipped.empty());
+    CHECK(none.stores("rawcube"));
+
+    const auto some = ores::ore::results::family_selection_of(" rawcube, netcube ,,rawcube");
+    CHECK(some.skipped == std::vector<std::string>{"netcube", "rawcube"});
+    CHECK_FALSE(some.stores("rawcube"));
+    CHECK_FALSE(some.stores("netcube"));
+    CHECK(some.stores("npv"));
+}
+
+TEST_CASE("a family selection refuses a family the catalogue does not name", catalogue_tags) {
+    CHECK_THROWS_AS(ores::ore::results::family_selection_of("npv,rawcubes"), std::invalid_argument);
+    CHECK_THROWS_AS(ores::ore::results::family_selection_of(std::vector<std::string>{"nope"}),
+                    std::invalid_argument);
 }

@@ -159,6 +159,46 @@ struct output_family {
 [[nodiscard]] ORES_ORE_CORE_EXPORT bool is_market_state(const output_family& family);
 
 /**
+ * @brief Which output families a run stores as rows.
+ *
+ * A report definition names the families its runs skip, and every other family
+ * is stored, so a new definition and a family the catalogue gains later are
+ * stored by default. Skipping a family stores no rows for it; the engine's file
+ * stays in the object store.
+ */
+struct family_selection {
+    /**
+     * @brief The families a run does not store, each one the catalogue names, sorted.
+     */
+    std::vector<std::string> skipped;
+
+    /**
+     * @brief Whether a run stores the family.
+     */
+    [[nodiscard]] ORES_ORE_CORE_EXPORT bool stores(std::string_view code) const;
+};
+
+/**
+ * @brief Reads the families a definition skips, as a comma-separated list.
+ *
+ * Spaces around a code and empty entries are ignored, so an empty list stores
+ * every family.
+ *
+ * @throws std::invalid_argument when a code is not one the catalogue names,
+ * naming the code, because a misspelled family would otherwise be stored
+ * silently.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT family_selection family_selection_of(std::string_view list);
+
+/**
+ * @brief Reads the families a run skips, one code for each element.
+ *
+ * @throws std::invalid_argument as the list form does.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT family_selection
+family_selection_of(const std::vector<std::string>& codes);
+
+/**
  * @brief The column a family states under a heading, or null when it states none.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT const output_column* column_named(const output_family& family,

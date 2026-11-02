@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/choose-per-report-definition-what-a-run-stores
+#+pr: 4371
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -26,11 +26,11 @@ The user decides, for each report definition, how much of a run's output becomes
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -43,9 +43,21 @@ The user decides, for each report definition, how much of a run's output becomes
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The definition names the families its runs *skip*, not the ones they store, so
+an empty list stores everything and a family the catalogue gains later is stored
+without anyone editing a definition.
+
+1. A =family_selection= in the =ores.ore= catalogue: the skipped codes, parsed
+   once from a comma-separated list, refusing a code the catalogue does not name.
+2. =skipped_families= on =report_definition=, text, default empty.
+3. The trigger refuses an unknown code, as it refuses an unknown
+   post-processing, and copies the list into the run's request, so a run stores
+   what its definition said when it started.
+4. Post-processing passes the selection to the reporting reader and to
+   =store_market_state=; each skips the family, does not fetch its file, and
+   names it in the log.
+5. The web report page shows and edits the list; the shell command gains the
+   argument through the codegen.
 
 * Measurements
 
@@ -59,7 +71,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ore core suite | 472 cases pass | =ores.ore.core.tests= | ac78b6c25e |
+| reporting api, core suites | 72 and 246 cases pass | =ores.reporting.api.tests=, =ores.reporting.core.tests= | ac78b6c25e |
+| marketdata core suite | 363 cases pass | =ores.marketdata.core.tests= | ac78b6c25e |
+| shell reporting suite | 698 cases pass | =ores.shell.reporting.tests= | ac78b6c25e |
+| web reporting tests | bff 43, web 98, i18n 3 pass | =npx vitest run= in bff and web | ac78b6c25e |
+| Group Consolidated Exposure run, saccr skipped | completed; 36 npv.csv metrics, 0 saccr rows; log names saccr.csv as skipped | instances 7ebc44ac and, after the rebase, 5819d452; SQL and the journal | ac78b6c25e |
 
 * Notes
 
@@ -78,12 +95,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4371][#4371]] | [ore,reporting,marketdata,web] Let a report definition choose which output families a run stores |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | No migration for the new column | reporting_report_definitions_create.sql | Dismissed | The schema is created from the create scripts and the database recreated; there is no migration path in this project. |
+| 3 | A picker built from the catalogue in the web form | ReportPage.tsx | Declined | The server refuses an unknown code at trigger with a message naming it; a picker is a separate UI change. |
+| 4 | A test that the trigger refuses a definition with a bad code | report_instance_trigger_handler.hpp | Declined | No trigger handler test exists to extend and one needs the messaging harness; family_selection_of's refusal is tested. |
+| 5 | left_alone holds both unmodelled and skipped files | market_state_handler.cpp | Declined | No client reads the two apart; the handler logs each skipped file by name. |
+| 6 | A handler-level test of the marketdata skip | market_state_handler.cpp | Declined | It needs NATS and object storage; the reader test proves the skip. |
+| 7 | Run compass check | PR | Declined | The operator asked for a full build, database recreate and tests instead. |
 |   |                 |      |          |       |
 
 * Result
+
+A report definition now names the output families its runs skip, in
+=skipped_families=, empty by default, so a new definition stores every family and
+a family the catalogue gains later is stored without an edit. The trigger
+refuses a family the catalogue does not name and copies the list into the run, so
+a run stores what its definition said when it started. Post-processing and the
+market state store skip those families, do not fetch their files, and log each
+one; the files stay in the object store. The web report page and the shell
+command show and edit the list. A run of Group Consolidated Exposure that skips
+=saccr= stored its 36 npv figures and no saccr rows. Every acceptance bullet is
+met.

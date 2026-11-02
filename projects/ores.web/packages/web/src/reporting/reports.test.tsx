@@ -136,6 +136,7 @@ const DETAIL: ReportDetail = {
         pre_processing: 'none',
         prepared_input_key: 'acme/audit',
         post_processing: 'none',
+        skipped_families: '',
         version: 3,
         modified_by: 'priya',
         performed_by: 'priya',

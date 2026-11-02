@@ -7556,6 +7556,7 @@ const pt: SourceCatalogue = {
             prepared_input_key: 'Entrada preparada',
             pre_processing: 'Pré-processamento',
             post_processing: 'Pós-processamento',
+            skipped_families: 'Famílias não guardadas',
             is_official: 'Oficial',
             regulatory_book_type: 'Tipo de livro',
         },
@@ -7585,6 +7586,8 @@ const pt: SourceCatalogue = {
                     'Cada execução salta essa construção e lê um arquivo de entrada preparado, indicado em Entrada preparada.',
                 other: 'Como uma execução obtém a entrada do motor.',
             },
+            skippedFamilies:
+                'As famílias de saída que uma execução não guarda como linhas, tal como o catálogo as nomeia, separadas por vírgulas, por exemplo rawcube, netcube. Vazio guarda todas as famílias. Os ficheiros do motor ficam guardados em qualquer caso.',
             preparedInputKey:
                 'O arquivo guardado de onde uma execução lê a sua entrada quando o pré-processamento é Substituir. Fica vazio enquanto as execuções constroem a sua própria entrada.',
             postProcessing: {

@@ -143,8 +143,8 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "add <name> <party_id> <description> <report_type> <fsm_state_id> <schedule_expression> "
         "<concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing> "
-        "<prepared_input_key> <post_processing> <is_official> <regulatory_book_type> "
-        "<cut_kind_code> <cut_id> <reason> <commentary>");
+        "<prepared_input_key> <post_processing> <skipped_families> <is_official> "
+        "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +153,7 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "set <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
         "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
-        "<pre_processing> <prepared_input_key> <post_processing> <is_official> "
+        "<pre_processing> <prepared_input_key> <post_processing> <skipped_families> <is_official> "
         "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -163,7 +163,7 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
         },
         "put-many --count <n> <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
         "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
-        "<pre_processing> <prepared_input_key> <post_processing> <is_official> "
+        "<pre_processing> <prepared_input_key> <post_processing> <skipped_families> <is_official> "
         "<regulatory_book_type> <cut_kind_code> <cut_id> <reason> <commentary>");
 
     menu->Insert(
@@ -359,8 +359,8 @@ void report_definition_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -389,6 +389,8 @@ void report_definition_commands::process_add(std::ostream& out,
             req.change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");
         report_definition_read_token(
             req.change.write.post_processing, parsed->positionals[next++], "post_processing");
+        report_definition_read_token(
+            req.change.write.skipped_families, parsed->positionals[next++], "skipped_families");
         report_definition_read_token(
             req.change.write.is_official, parsed->positionals[next++], "is_official");
         report_definition_read_token(req.change.write.regulatory_book_type,
@@ -440,8 +442,8 @@ void report_definition_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -470,6 +472,8 @@ void report_definition_commands::process_set(std::ostream& out,
             req.change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");
         report_definition_read_token(
             req.change.write.post_processing, parsed->positionals[next++], "post_processing");
+        report_definition_read_token(
+            req.change.write.skipped_families, parsed->positionals[next++], "skipped_families");
         report_definition_read_token(
             req.change.write.is_official, parsed->positionals[next++], "is_official");
         report_definition_read_token(req.change.write.regulatory_book_type,
@@ -533,8 +537,8 @@ void report_definition_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 18 + 2) {
+            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -565,6 +569,8 @@ void report_definition_commands::process_put_many(std::ostream& out,
                 change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");
             report_definition_read_token(
                 change.write.post_processing, parsed->positionals[next++], "post_processing");
+            report_definition_read_token(
+                change.write.skipped_families, parsed->positionals[next++], "skipped_families");
             report_definition_read_token(
                 change.write.is_official, parsed->positionals[next++], "is_official");
             report_definition_read_token(change.write.regulatory_book_type,

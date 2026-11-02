@@ -7503,6 +7503,7 @@ export const en: SourceCatalogue = {
             prepared_input_key: 'Prepared input',
             pre_processing: 'Pre-processing',
             post_processing: 'Post-processing',
+            skipped_families: 'Families not stored',
             is_official: 'Official',
             regulatory_book_type: 'Book type',
         },
@@ -7532,6 +7533,8 @@ export const en: SourceCatalogue = {
                     'Each run skips that build and reads a prepared input archive, named under Prepared input.',
                 other: 'How a run gets the engine’s input.',
             },
+            skippedFamilies:
+                'The output families a run does not store as rows, as the catalogue names them, separated by commas, such as rawcube, netcube. Empty stores every family. The engine files stay in storage either way.',
             preparedInputKey:
                 'The stored archive a run reads its input from when pre-processing is Substitute. It stays empty while runs build their own input.',
             postProcessing: {

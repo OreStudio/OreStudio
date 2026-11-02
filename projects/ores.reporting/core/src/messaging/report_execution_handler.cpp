@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -54,6 +55,7 @@
 #include <format>
 #include <fstream>
 #include <map>
+#include <stdexcept>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -930,6 +932,16 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         // leaves the rest where they are.
         const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
 
+        // The definition chose the families the run stores. A skipped family's
+        // files stay in the object store and are not fetched.
+        ores::ore::results::family_selection families;
+        try {
+            families = ores::ore::results::family_selection_of(req.skipped_families);
+        } catch (const std::invalid_argument& e) {
+            refuse(std::string("The run skips a family that does not exist: ") + e.what());
+            return;
+        }
+
         results::run_output_outcome output;
         std::vector<std::string> manifest_uris;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
@@ -950,6 +962,10 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 for (const auto& file : ores::ore::results::located_files(manifest, manifest_key)) {
                     if (!ores::ore::results::is_result_file(file))
                         continue;
+                    if (!families.stores(file.family)) {
+                        files.push_back(results::output_file{.name = file.name});
+                        continue;
+                    }
                     const auto body = transfer.download_blob(bucket, file.key);
                     std::string text_body(body.begin(), body.end());
                     ores::ore::results::verify_body(file, text_body);
@@ -966,7 +982,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                          .report_instance_id = sg(req.report_instance_id),
                                          .report_definition_id = instance->definition_id,
                                          .result_id = sg(result_id),
-                                         .priced_at = as_of};
+                                         .priced_at = as_of,
+                                         .families = families};
             auto read = results::read_run_outputs(files, run);
             if (!read.refusals.empty()) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
@@ -976,6 +993,9 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 << "Read " << read.files_read.size() << " output file(s) of " << "result "
                 << result_id << ": " << read.metrics.size() << " metric(s), "
                 << read.cashflows.size() << " cashflow figure(s)";
+            for (const auto& skipped : read.files_skipped)
+                BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
+                                          << ": its definition does not store the family";
             output.metrics.insert(output.metrics.end(),
                                   std::make_move_iterator(read.metrics.begin()),
                                   std::make_move_iterator(read.metrics.end()));
@@ -1032,6 +1052,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             state.as_of = std::format("{:%F}", std::chrono::floor<std::chrono::days>(as_of));
             state.storage_token = run_token_value;
             state.manifest_uris = manifest_uris;
+            state.skipped_families = families.skipped;
 
             std::string state_error;
             auto owner = svc_nats_.with_delegation(run_token_value);

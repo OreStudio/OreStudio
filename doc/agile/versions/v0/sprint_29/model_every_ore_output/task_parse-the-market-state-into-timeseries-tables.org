@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/parse-the-market-state-into-timeseries-tables
-#+pr:
+#+pr: 4364
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4364][#4364]] | [ore,marketdata,reporting] Parse the market state into timeseries tables |
 
 * Review
 

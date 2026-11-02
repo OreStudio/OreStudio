@@ -445,8 +445,22 @@ render_trade_summary_filter(const std::optional<messaging::trade_summaries_filte
     if (!filter)
         return out;
 
+    /*
+     * The clause states its placeholder as =?= and it is numbered here, so a
+     * field added in the middle moves every later placeholder with it. The
+     * helper binds by number, so a statement that mixed the two spellings would
+     * put the values against the wrong columns.
+     */
     const auto add = [&out](const std::string& clause, std::optional<std::string> value) {
-        out.sql += out.sql.empty() ? clause : " and " + clause;
+        std::string numbered;
+        numbered.reserve(clause.size() + 4);
+        for (const char c : clause) {
+            if (c == '?')
+                numbered += "$" + std::to_string(out.params.size() + 1);
+            else
+                numbered += c;
+        }
+        out.sql += out.sql.empty() ? numbered : " and " + numbered;
         out.params.push_back(std::move(value));
     };
     const auto quoted = [](const std::string& v) {
@@ -565,9 +579,10 @@ std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::cou
     const std::optional<messaging::trade_summaries_filter>& filter) {
     const auto rendered = render_trade_summary_filter(filter);
     const auto tenant = ctx.tenant_id().to_string();
+    const auto tenant_placeholder = "$" + std::to_string(rendered.params.size() + 1) + "::uuid";
     const std::string where = rendered.sql.empty() ?
-                                  "t.tenant_id = ?::uuid" :
-                                  "(" + rendered.sql + ") and t.tenant_id = ?::uuid";
+                                  "t.tenant_id = " + tenant_placeholder :
+                                  "(" + rendered.sql + ") and t.tenant_id = " + tenant_placeholder;
 
     auto params = rendered.params;
     params.push_back(tenant);

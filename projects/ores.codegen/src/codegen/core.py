@@ -6806,6 +6806,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                                        _HTTP_RECIPE_TEMPLATE)):
             _shape = junction_entity_shape(junction)
             _shape['messages'] = junction['messages']
+            # The route and shell units encode through the junction's own
+            # codec where it has one, as an entity's do.
+            _shape['has_generated_wire_codec'] = junction['has_generated_wire_codec']
             _shape['write_fields'] = write_record_for(_shape)
             _shape['operations'] = _ops
             for _verb, _verb_ops in operations_by_verb(_ops).items():

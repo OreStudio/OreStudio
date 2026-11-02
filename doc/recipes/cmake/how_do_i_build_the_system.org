@@ -34,7 +34,8 @@ How do I build ORE Studio?
 
 =-k= (=--keep-going=) passes the native tool's own option after cmake's =--=:
 =-k 0= for ninja and =-k= for make. One build then reports every failing
-target, not only the first one.
+target, not only the first one. =-k N= stops ninja after N failures, as ninja's
+own =-k= does; make takes no count.
 
 Friendly aliases: =site= → =deploy_site=, =manual= → =deploy_manual=,
 =org-roam-db-sync= → =org_roam_db_sync=; any raw cmake target is also

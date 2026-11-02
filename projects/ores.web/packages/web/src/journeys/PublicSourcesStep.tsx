@@ -18,7 +18,7 @@
  *
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import type { PublicRatesProvider, TermsOutcome } from '../api/client.js';
+import type { PublicRatesProvider } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Notice, Tag } from '../ui/Primitives.js';
 import type { JourneyServer } from './server.js';
@@ -26,67 +26,102 @@ import type { JourneyServer } from './server.js';
 /** What the administrator decided for one publisher in this run. */
 export type SourceDecision = 'accepted' | 'declined';
 
+/** How the administrator decides: every publisher at once, or each in turn. */
+export type SourcesWay = 'all' | 'each';
+
 /**
- * The decision a publisher stands at: the one made in this run, else accepted
+ * The decision a publisher stands at: the one drafted in this run, else accepted
  * when its terms already are, else none.
  */
 export function decisionOf(
     provider: PublicRatesProvider,
-    made: Readonly<Record<string, SourceDecision>>,
+    drafted: Readonly<Record<string, SourceDecision>>,
 ): SourceDecision | undefined {
-    return made[provider.code] ?? (provider.terms_accepted ? 'accepted' : undefined);
+    return drafted[provider.code] ?? (provider.terms_accepted ? 'accepted' : undefined);
 }
-
-/** How the administrator decides: every publisher at once, or each in turn. */
-type SourcesWay = 'all' | 'each';
 
 /** Every publisher that states terms has a decision. */
 export function everyDecided(
     providers: readonly PublicRatesProvider[],
-    made: Readonly<Record<string, SourceDecision>>,
+    drafted: Readonly<Record<string, SourceDecision>>,
 ): boolean {
-    return providers.every((p) => p.terms_url === '' || decisionOf(p, made) !== undefined);
+    return providers.every((p) => p.terms_url === '' || decisionOf(p, drafted) !== undefined);
+}
+
+/** The requests Continue sends: the publishers to accept and the ones to withdraw. */
+export interface SourceChanges {
+    readonly accept: readonly { readonly code: string; readonly version: number }[];
+    readonly decline: readonly string[];
 }
 
 /**
- * The decisions after a list accept: each publisher the service recorded is accepted, and
- * a refused one keeps the decision it had, so the person sees which still need them.
+ * What the drafted way and decisions ask of the server, or nothing while a
+ * publisher is still undecided. Only a change is sent: a publisher already
+ * accepted is not accepted again, and one never accepted needs no withdrawal.
  */
-export function madeAfterAccepting(
-    made: Readonly<Record<string, SourceDecision>>,
-    outcomes: readonly TermsOutcome[],
-): Readonly<Record<string, SourceDecision>> {
-    const next: Record<string, SourceDecision> = { ...made };
-    for (const outcome of outcomes) {
-        if (outcome.success) {
-            next[outcome.code] = 'accepted';
+export function sourceChanges(
+    providers: readonly PublicRatesProvider[],
+    way: SourcesWay | undefined,
+    drafted: Readonly<Record<string, SourceDecision>>,
+): SourceChanges | undefined {
+    if (way === undefined) {
+        return undefined;
+    }
+    const decisions = providers.map((p) => ({
+        provider: p,
+        decision: way === 'all' ? ('accepted' as const) : decisionOf(p, drafted),
+    }));
+    if (decisions.some((d) => d.decision === undefined)) {
+        return undefined;
+    }
+    return {
+        accept: decisions
+            .filter((d) => d.decision === 'accepted' && !d.provider.terms_accepted)
+            .map((d) => ({ code: d.provider.code, version: d.provider.version })),
+        decline: decisions
+            .filter((d) => d.decision === 'declined' && d.provider.terms_accepted)
+            .map((d) => d.provider.code),
+    };
+}
+
+type SourcesServer = Pick<
+    JourneyServer,
+    'publicSources' | 'acceptAllSourceTerms' | 'declineSourceTerms'
+>;
+
+/** Sends the changes; a publisher the server refuses fails the whole step with its reason. */
+async function sendChanges(server: SourcesServer, changes: SourceChanges): Promise<void> {
+    if (changes.accept.length > 0) {
+        const outcomes = await server.acceptAllSourceTerms(changes.accept);
+        const refused = outcomes.filter((o) => !o.success);
+        if (refused.length > 0) {
+            throw new Error(refused.map((o) => o.message).join(' '));
         }
     }
-    return next;
+    for (const code of changes.decline) {
+        await server.declineSourceTerms(code);
+    }
 }
 
 /**
- * The public sources step of the first run. The administrator reads each
- * publisher's terms and accepts or declines it before any of its quotes are
- * fetched. An acceptance is recorded by the server against the terms it holds;
- * a decline withdraws any acceptance, so the publisher is not fetched.
+ * The public sources step of the first run. The administrator accepts every
+ * publisher's terms at once, or decides each one, and nothing reaches the
+ * server until Continue. An acceptance is recorded by the server against the
+ * terms it holds; a decline withdraws any acceptance, so the publisher is not
+ * fetched.
  */
 export function PublicSourcesStep({
     server,
-    onDecided,
+    onReady,
 }: {
-    readonly server: Pick<
-        JourneyServer,
-        'publicSources' | 'acceptSourceTerms' | 'acceptAllSourceTerms' | 'declineSourceTerms'
-    >;
-    /** Tells the journey whether every publisher has a decision. */
-    readonly onDecided: (all: boolean) => void;
+    readonly server: SourcesServer;
+    /** Hands the journey what Continue sends, or nothing while a publisher is undecided. */
+    readonly onReady: (send: (() => Promise<void>) | undefined) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const [providers, setProviders] = useState<readonly PublicRatesProvider[]>();
     const [failure, setFailure] = useState<string>();
-    const [pending, setPending] = useState(false);
-    const [made, setMade] = useState<Readonly<Record<string, SourceDecision>>>({});
+    const [drafted, setDrafted] = useState<Readonly<Record<string, SourceDecision>>>({});
     const [way, setWay] = useState<SourcesWay>();
     useEffect(() => {
         let live = true;
@@ -99,51 +134,16 @@ export function PublicSourcesStep({
             live = false;
         };
     }, [server]);
-    const decide = async (provider: PublicRatesProvider, decision: SourceDecision) => {
-        setPending(true);
-        setFailure(undefined);
-        try {
-            if (decision === 'accepted') {
-                await server.acceptSourceTerms(provider.code, provider.version);
-            } else {
-                await server.declineSourceTerms(provider.code);
-            }
-            setMade((before) => ({ ...before, [provider.code]: decision }));
-        } catch (error) {
-            setFailure(error instanceof Error ? error.message : String(error));
-        } finally {
-            setPending(false);
-        }
-    };
-    // Accepts every publisher not yet accepted, at the version shown, in one request.
-    const acceptAll = async () => {
-        setPending(true);
-        setFailure(undefined);
-        try {
-            const open = list.filter((p) => decisionOf(p, made) !== 'accepted');
-            const outcomes = await server.acceptAllSourceTerms(
-                open.map((p) => ({ code: p.code, version: p.version })),
-            );
-            setMade((before) => madeAfterAccepting(before, outcomes));
-            const refused = outcomes.filter((o) => !o.success);
-            if (refused.length > 0) {
-                setFailure(refused.map((o) => o.message).join(' '));
-            }
-        } catch (error) {
-            setFailure(error instanceof Error ? error.message : String(error));
-        } finally {
-            setPending(false);
-        }
-    };
-    const chooseWay = (next: SourcesWay) => {
-        setWay(next);
-        if (next === 'all') {
-            void acceptAll();
-        }
-    };
     const list = (providers ?? []).filter((p) => p.terms_url !== '');
-    const all = providers !== undefined && everyDecided(list, made);
-    useEffect(() => onDecided(all), [all, onDecided]);
+    const changes = providers === undefined ? undefined : sourceChanges(list, way, drafted);
+    // The changes are a fresh object each render, so their content is what is watched.
+    const changesKey = JSON.stringify(changes ?? null);
+    useEffect(
+        () => onReady(changes === undefined ? undefined : () => sendChanges(server, changes)),
+        [changesKey, server, onReady],
+    );
+    const draft = (provider: PublicRatesProvider, decision: SourceDecision) =>
+        setDrafted((before) => ({ ...before, [provider.code]: decision }));
 
     if (providers === undefined && failure !== undefined) {
         return <Notice tone="error">{failure}</Notice>;
@@ -160,8 +160,7 @@ export function PublicSourcesStep({
                 type="radio"
                 name="public-sources-way"
                 checked={way === id}
-                disabled={pending}
-                onChange={() => chooseWay(id)}
+                onChange={() => setWay(id)}
             />
             {label}
         </label>
@@ -175,7 +174,7 @@ export function PublicSourcesStep({
             </fieldset>
             <ul className="space-y-2">
                 {list.map((p) => {
-                    const decision = decisionOf(p, made);
+                    const decision = way === 'all' ? 'accepted' : decisionOf(p, drafted);
                     return (
                         <li key={p.code}>
                             <details
@@ -241,14 +240,17 @@ export function PublicSourcesStep({
                                                         ? 'primary'
                                                         : 'secondary'
                                                 }
-                                                disabled={pending}
-                                                onClick={() => void decide(p, 'accepted')}
+                                                onClick={() => draft(p, 'accepted')}
                                             >
                                                 {t('journey.sources.accept')}
                                             </Button>
                                             <Button
-                                                disabled={pending}
-                                                onClick={() => void decide(p, 'declined')}
+                                                variant={
+                                                    decision === 'declined'
+                                                        ? 'primary'
+                                                        : 'secondary'
+                                                }
+                                                onClick={() => draft(p, 'declined')}
                                             >
                                                 {t('journey.sources.decline')}
                                             </Button>

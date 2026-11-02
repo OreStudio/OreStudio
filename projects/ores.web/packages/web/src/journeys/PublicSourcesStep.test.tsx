@@ -21,12 +21,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { PublicRatesProvider } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import {
-    decisionOf,
-    everyDecided,
-    madeAfterAccepting,
-    PublicSourcesStep,
-} from './PublicSourcesStep.js';
+import { decisionOf, everyDecided, PublicSourcesStep, sourceChanges } from './PublicSourcesStep.js';
 
 function publisher(code: string, over: Partial<PublicRatesProvider> = {}): PublicRatesProvider {
     return {
@@ -63,14 +58,40 @@ describe('a public source decision', () => {
     });
 });
 
-describe('accepting every public source at once', () => {
-    it('marks each publisher the service recorded and leaves a refused one as it was', () => {
-        const made = madeAfterAccepting({ boc: 'declined', tcmb: 'declined' }, [
-            { code: 'ecb', success: true, message: "Accepted the terms of 'ecb'." },
-            { code: 'boc', success: true, message: "Accepted the terms of 'boc'." },
-            { code: 'imf', success: false, message: 'Read them again.' },
-        ]);
-        expect(made).toEqual({ ecb: 'accepted', boc: 'accepted', tcmb: 'declined' });
+describe('what Continue sends from the public sources', () => {
+    const sources = [
+        publisher('ecb', { version: 3 }),
+        publisher('imf', { version: 2, terms_accepted: true }),
+        publisher('boc', { version: 5 }),
+    ];
+
+    it('sends nothing until a way is chosen', () => {
+        expect(sourceChanges(sources, undefined, {})).toBeUndefined();
+    });
+
+    it('accepts, at the version shown, every publisher not yet accepted when all are accepted', () => {
+        expect(sourceChanges(sources, 'all', { boc: 'declined' })).toEqual({
+            accept: [
+                { code: 'ecb', version: 3 },
+                { code: 'boc', version: 5 },
+            ],
+            decline: [],
+        });
+    });
+
+    it('sends nothing to accept when every publisher is already accepted', () => {
+        const accepted = sources.map((p) => ({ ...p, terms_accepted: true }));
+        expect(sourceChanges(accepted, 'all', {})).toEqual({ accept: [], decline: [] });
+    });
+
+    it('waits for every publisher when each is decided in turn', () => {
+        expect(sourceChanges(sources, 'each', { ecb: 'accepted' })).toBeUndefined();
+    });
+
+    it('withdraws only an acceptance that exists when each is decided in turn', () => {
+        expect(
+            sourceChanges(sources, 'each', { ecb: 'declined', imf: 'declined', boc: 'accepted' }),
+        ).toEqual({ accept: [{ code: 'boc', version: 5 }], decline: ['imf'] });
     });
 });
 
@@ -81,11 +102,10 @@ describe('the public sources step', () => {
                 <PublicSourcesStep
                     server={{
                         publicSources: vi.fn(async () => [publisher('ecb')]),
-                        acceptSourceTerms: vi.fn(async () => undefined),
                         acceptAllSourceTerms: vi.fn(async () => []),
                         declineSourceTerms: vi.fn(async () => undefined),
                     }}
-                    onDecided={vi.fn()}
+                    onReady={vi.fn()}
                 />
             </TranslationProvider>,
         );

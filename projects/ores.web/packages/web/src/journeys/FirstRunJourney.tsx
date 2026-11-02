@@ -40,7 +40,7 @@
  * write it down.
  */
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
@@ -321,7 +321,12 @@ export function FirstRunJourney({
      * and the position stays inside both rails.
      */
     const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
-    const [sourcesDecided, setSourcesDecided] = useState(false);
+    const [sendSources, setSendSources] = useState<() => Promise<void>>();
+    // A function given to a state setter is taken as an updater, so it is wrapped.
+    const onSourcesReady = useCallback(
+        (send: (() => Promise<void>) | undefined) => setSendSources(() => send),
+        [],
+    );
     /*
      * Where the rail stands. Nothing is stated until somebody moves: the
      * deployment decides where the journey opens, which is the step that signs
@@ -486,8 +491,8 @@ export function FirstRunJourney({
         choice,
         onChoose: setChoice,
         welcome: <WelcomeIntro />,
-        publicSources: <PublicSourcesStep server={server} onDecided={setSourcesDecided} />,
-        sourcesDecided,
+        publicSources: <PublicSourcesStep server={server} onReady={onSourcesReady} />,
+        sendSources,
         administratorForm: (
             <AdministratorForm
                 policy={policy}

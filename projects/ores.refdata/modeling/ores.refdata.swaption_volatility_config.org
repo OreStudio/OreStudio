@@ -13,17 +13,19 @@
 #+entity_plural: swaption_volatility_configs
 #+entity_title: Swaption Volatility Config
 #+created: 2026-10-03
-#+updated: 2026-10-03
+#+updated: 2026-11-02
 
 The settings of one =SwaptionVolatility= entry of a =curveconfig.xml=, one row
 per =curve_definition= in the =SwaptionVolatilities= section: the surface's
-dimension and volatility type, the option and swap tenors of its ATM matrix and
-smile, and the swap indices it is built on. Its =Report= is a row of
+dimension and volatility type, the option and swap tenors of its ATM matrix,
+and the swap indices it is built on. Its =Report= is a row of
 =curve_report_configuration= and its =ParametricSmileConfiguration= a row of
 =curve_parametric_smile=.
 
 A =ProxyConfig= builds the surface from another one; it is one per entry, so
 it is a row of =swaption_proxy_config= and the entry holds none of its fields.
+The smile grid of a =Smile= surface is a row of =swaption_volatility_smile= in
+the same way, so an ATM entry carries no smile columns.
 
 * Flags
 :PROPERTIES:
@@ -256,45 +258,6 @@ std::nullopt
 :END:
 
 The swap index of the other swap tenors.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** smile_option_tenors
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The option tenors of the smile, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** smile_swap_tenors
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The swap tenors of the smile, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** smile_spreads
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The strike spreads of the smile, as ORE's comma separated text.
 
 #+begin_src cpp :name generator
 std::nullopt

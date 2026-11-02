@@ -1887,6 +1887,71 @@ def _facet_enabled(model_path, facet, addresses):
                for address in addresses)
 
 
+_OBSERVER_SPECIALISATION = re.compile(
+    r"entity_write_observer<\s*(?:::)?ores::\w+::repository::(\w+)_entity\s*>")
+
+
+@functools.lru_cache(maxsize=None)
+def _write_observers(component_root):
+    """Each observed entity of a component, with the header that observes it.
+
+    A component observes an entity's writes by specialising
+    entity_write_observer for its entity type, and the specialisation only acts
+    where the repository sees it. The specialisations are the record of which
+    entities are observed, so they are read from the headers that state them.
+    Two headers observing one entity is refused, because only one of them can
+    be the one a repository sees.
+    """
+    root = Path(component_root)
+    observed = {}
+    for header in sorted(root.glob("**/include/**/*.hpp")):
+        text = header.read_text(encoding="utf-8", errors="ignore")
+        if "entity_write_observer<" not in text:
+            continue
+        parts = header.relative_to(root).parts
+        include = "/".join(parts[parts.index("include") + 1:])
+        for entity in _OBSERVER_SPECIALISATION.findall(text):
+            if entity in observed and observed[entity] != include:
+                raise ValueError(
+                    f"the entity {entity} is observed in both {observed[entity]} and "
+                    f"{include}; a repository can see only one of them.")
+            observed[entity] = include
+    return observed
+
+
+def _unseen_write_observer(model_text, entity, observers):
+    """The observer header an observed entity's model does not include, or None."""
+    header = observers.get(entity)
+    if header is None:
+        return None
+    return None if f'#include "{header}"' in model_text else header
+
+
+def _require_visible_write_observer(model_path, entity):
+    """Refuse a model whose observed entity's repository would not see its observer.
+
+    Without the include, the repository writes through the primary template and
+    observes nothing, and whether it sees the specialisation depends on which
+    unity batch it lands in. That failed silently once, for 32 repositories.
+    """
+    if not model_path or not entity:
+        return
+    # A component's models live in its modeling directory, beside the include
+    # trees the observers are declared in. A model elsewhere is a fixture with
+    # no component around it, so there is nothing to scan.
+    modeling = Path(model_path).resolve().parent
+    if modeling.name != "modeling":
+        return
+    header = _unseen_write_observer(
+        Path(model_path).read_text(encoding="utf-8"), entity,
+        _write_observers(str(modeling.parent)))
+    if header is not None:
+        raise ValueError(
+            f"{Path(model_path).name}: the entity {entity} is observed in {header}, "
+            f"but the model's repository does not include it, so its writes would "
+            f"go unobserved. Add an impl_includes block naming "
+            f'#include "{header}".')
+
 def _protocol_enabled(model_path):
     """Whether a model generates its protocol header, after its own overrides."""
     if not model_path:
@@ -6441,6 +6506,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['message_codec_includes'] = _message_codec_includes(
             domain_entity, model_path)
         domain_entity['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        _require_visible_write_observer(model_path, domain_entity.get('entity_singular'))
         # The wire-shape function below iterates a message's fields, and a
         # field states its own name, which shadows the message's. The message
         # states its name a second time so the field loop can still reach it.
@@ -6767,6 +6833,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        _require_visible_write_observer(model_path, junction.get('name_singular'))
         for _message in junction['messages']:
             _message['struct_name'] = _message['name']
         # The record a caller sends, on the shape rather than on the junction

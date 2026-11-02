@@ -22,6 +22,7 @@
  * Template: cpp_protocol_codec.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition_codec.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"

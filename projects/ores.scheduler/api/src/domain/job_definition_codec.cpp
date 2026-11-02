@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.scheduler.api/domain/job_definition_codec.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
 namespace ores::utility::codec {

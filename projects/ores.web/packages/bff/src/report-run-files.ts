@@ -543,7 +543,7 @@ async function filesOfRun(
 function paramsOf<Shape extends z.ZodType>(schema: Shape, request: FastifyRequest): z.infer<Shape> {
     const parsed = schema.safeParse(request.params);
     if (!parsed.success) {
-        throw invalidRequest('The address names an id that is not a uuid.');
+        throw invalidRequest('The address names a run that is not a uuid or a file name that is not valid.');
     }
     return parsed.data;
 }

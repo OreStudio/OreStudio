@@ -118,7 +118,8 @@ TEST_CASE("a family states every heading its sample states", catalogue_tags) {
         REQUIRE(family != nullptr);
         INFO("the family is " << code);
 
-        const auto headings = headings_of(ores::testing::project_root::resolve(family->sample_file));
+        const auto headings =
+            headings_of(ores::testing::project_root::resolve(family->sample_file));
         REQUIRE_FALSE(headings.empty());
 
         for (const auto& heading : headings) {
@@ -273,7 +274,8 @@ TEST_CASE("a family is found by the report name the engine writes when none is c
 }
 
 TEST_CASE("a family proven only by a sample we wrote says so", catalogue_tags) {
-    for (const auto& code : {"crif", "capital_crif", "sacva_sensitivity", "jacobi", "jacobi_inverse"}) {
+    for (const auto& code :
+         {"crif", "capital_crif", "sacva_sensitivity", "jacobi", "jacobi_inverse"}) {
         const auto* family = family_named(code);
         REQUIRE(family != nullptr);
         INFO("the family is " << code);

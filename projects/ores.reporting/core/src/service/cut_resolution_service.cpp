@@ -105,12 +105,12 @@ domain::cut cut_resolution_service::mint(const cut_take_plan& plan, const domain
     // another row already holds.
     const auto day = day_of(plan.timepoint);
     const auto same_occasion = cuts_repo.read_for_occasion_in_window(ctx_,
-                                                                    plan.party_id,
-                                                                    plan.kind_code,
-                                                                    plan.scope_code,
-                                                                    plan.business_centre_code,
-                                                                    day.from,
-                                                                    day.to);
+                                                                     plan.party_id,
+                                                                     plan.kind_code,
+                                                                     plan.scope_code,
+                                                                     plan.business_centre_code,
+                                                                     day.from,
+                                                                     day.to);
 
     boost::uuids::random_generator rg;
     const auto cut = plan_take(plan, kind, rg(), next_take_ordinal(same_occasion));

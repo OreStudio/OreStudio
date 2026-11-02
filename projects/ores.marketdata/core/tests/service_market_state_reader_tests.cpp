@@ -200,10 +200,10 @@ TEST_CASE("a market-state file with no heading stops the run's state", market_st
 }
 
 TEST_CASE("a scenario line whose date is not a date stops the run's state", market_state_tags) {
-    const auto outcome = read_market_state(
-        {market_state_file{.name = "stress_scenarios.csv",
-                           .body = "#Date,Scenario,Numeraire\nsoon,BASE,1.0\n"}},
-        the_run());
+    const auto outcome =
+        read_market_state({market_state_file{.name = "stress_scenarios.csv",
+                                             .body = "#Date,Scenario,Numeraire\nsoon,BASE,1.0\n"}},
+                          the_run());
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
@@ -211,12 +211,11 @@ TEST_CASE("a scenario line whose date is not a date stops the run's state", mark
 
 TEST_CASE("a scenario file refused part way leaves no rows and names no family",
           market_state_tags) {
-    const auto outcome = read_market_state(
-        {market_state_file{.name = "stress_scenarios.csv",
-                           .body = "#Date,Scenario,Numeraire\n"
-                                   "2026-10-31,BASE,1.0\n"
-                                   "soon,UP,1.0\n"}},
-        the_run());
+    const auto outcome = read_market_state({market_state_file{.name = "stress_scenarios.csv",
+                                                              .body = "#Date,Scenario,Numeraire\n"
+                                                                      "2026-10-31,BASE,1.0\n"
+                                                                      "soon,UP,1.0\n"}},
+                                           the_run());
 
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 3") != std::string::npos);

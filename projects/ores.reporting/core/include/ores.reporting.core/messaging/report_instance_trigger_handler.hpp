@@ -29,8 +29,8 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
@@ -242,8 +242,10 @@ private:
         } catch (const std::invalid_argument& e) {
             response.result.outcome = ores::utility::domain::outcome::invalid;
             response.result.code = "unknown_skipped_family";
-            response.result.message = std::format(
-                "Report definition {} skips a family that does not exist: {}", definition_id, e.what());
+            response.result.message =
+                std::format("Report definition {} skips a family that does not exist: {}",
+                            definition_id,
+                            e.what());
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }

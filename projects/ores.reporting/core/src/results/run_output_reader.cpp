@@ -96,7 +96,10 @@ void read_run_output(const output_file& file,
     if (ores::ore::results::is_cashflow_family(*family)) {
         std::vector<domain::report_cashflow> block;
         const auto refusals = ores::ore::results::read_cashflows_in_blocks(
-            file.body, *family, block_size, [&](std::vector<ores::ore::results::cashflow_row>& rows) {
+            file.body,
+            *family,
+            block_size,
+            [&](std::vector<ores::ore::results::cashflow_row>& rows) {
                 block.clear();
                 block.reserve(rows.size());
                 for (auto& row : rows) {
@@ -152,22 +155,22 @@ void read_run_output(const output_file& file,
             outcome.refusals.push_back(file.name + ": " + refusal);
         std::vector<domain::report_text_value> block;
         for (auto& row : read.rows) {
-            block.push_back(domain::report_text_value{.id = boost::uuids::random_generator()(),
-                                                      .party_id = run.party_id,
-                                                      .report_instance_id = run.report_instance_id,
-                                                      .result_id = run.result_id,
-                                                      .source = file.name,
-                                                      .line = row.line,
-                                                      .as_of = run.priced_at,
-                                                      .report_definition_id =
-                                                          run.report_definition_id,
-                                                      .family = family->code,
-                                                      .subject_type = std::move(row.subject_type),
-                                                      .subject_id = std::move(row.subject),
-                                                      .name = std::move(row.name),
-                                                      .value_type = std::move(row.value_type),
-                                                      .value = std::move(row.value),
-                                                      .figure = row.figure});
+            block.push_back(
+                domain::report_text_value{.id = boost::uuids::random_generator()(),
+                                          .party_id = run.party_id,
+                                          .report_instance_id = run.report_instance_id,
+                                          .result_id = run.result_id,
+                                          .source = file.name,
+                                          .line = row.line,
+                                          .as_of = run.priced_at,
+                                          .report_definition_id = run.report_definition_id,
+                                          .family = family->code,
+                                          .subject_type = std::move(row.subject_type),
+                                          .subject_id = std::move(row.subject),
+                                          .name = std::move(row.name),
+                                          .value_type = std::move(row.value_type),
+                                          .value = std::move(row.value),
+                                          .figure = row.figure});
             if (block.size() >= block_size) {
                 sinks.text_values(block);
                 block.clear();

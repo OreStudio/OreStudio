@@ -21,8 +21,8 @@
 #include "ores.ore.core/results/cashflow_reader.hpp"
 #include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
-#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.testing/test_files.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>

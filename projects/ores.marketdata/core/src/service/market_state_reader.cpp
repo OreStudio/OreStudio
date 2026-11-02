@@ -106,26 +106,26 @@ bool read_calibrations(const market_state_file& file,
         return false;
 
     for (auto& row : read.rows) {
-        outcome.calibration_values.push_back(
-            domain::market_calibration_value{.id = boost::uuids::random_generator()(),
-                                             .party_id = run.party_id,
-                                             .report_instance_id = run.report_instance_id,
-                                             .result_id = file.result_id,
-                                             .source = file.name,
-                                             .line = row.line,
-                                             // The calibration states no date: it is the
-                                             // market the run built for its priced date.
-                                             .as_of = run.as_of,
-                                             .report_definition_id = run.report_definition_id,
-                                             .market_object_type = std::move(row.market_object_type),
-                                             .market_object_id = std::move(row.market_object_id),
-                                             .result_name = std::move(row.result_name),
-                                             .result_key_1 = std::move(row.result_key_1),
-                                             .result_key_2 = std::move(row.result_key_2),
-                                             .result_key_3 = std::move(row.result_key_3),
-                                             .result_type = std::move(row.result_type),
-                                             .value = std::move(row.value),
-                                             .figure = row.figure});
+        outcome.calibration_values.push_back(domain::market_calibration_value{
+            .id = boost::uuids::random_generator()(),
+            .party_id = run.party_id,
+            .report_instance_id = run.report_instance_id,
+            .result_id = file.result_id,
+            .source = file.name,
+            .line = row.line,
+            // The calibration states no date: it is the
+            // market the run built for its priced date.
+            .as_of = run.as_of,
+            .report_definition_id = run.report_definition_id,
+            .market_object_type = std::move(row.market_object_type),
+            .market_object_id = std::move(row.market_object_id),
+            .result_name = std::move(row.result_name),
+            .result_key_1 = std::move(row.result_key_1),
+            .result_key_2 = std::move(row.result_key_2),
+            .result_key_3 = std::move(row.result_key_3),
+            .result_type = std::move(row.result_type),
+            .value = std::move(row.value),
+            .figure = row.figure});
     }
     return true;
 }
@@ -148,8 +148,8 @@ bool read_inputs(const market_state_file& file,
         if (!row.payment_date.empty())
             payment = instant_of(row.payment_date, run.as_of);
         if (!as_of || (!row.payment_date.empty() && !payment)) {
-            outcome.refusals.push_back(std::format(
-                "{}: line {} states a date that is not a date.", file.name, row.line));
+            outcome.refusals.push_back(
+                std::format("{}: line {} states a date that is not a date.", file.name, row.line));
             return false;
         }
         values.push_back(

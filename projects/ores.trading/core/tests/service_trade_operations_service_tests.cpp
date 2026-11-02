@@ -728,8 +728,8 @@ TEST_CASE("a_completion_takes_a_live_leg_as_it_stands_and_executes_the_drafts", 
                 .result.outcome == outcome::ok);
     REQUIRE(requests_for(f.ctx, legs[0]).size() == 1);
 
-    const auto response = trade_operations_service(f.ctx, every_book_open)
-                              .complete_structure(completion(f, legs));
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).complete_structure(completion(f, legs));
     REQUIRE(response.result.outcome == outcome::ok);
 
     for (const auto& id : legs) {

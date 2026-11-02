@@ -66,9 +66,9 @@ bool is_cashflow_family(const output_family& family) {
 }
 
 std::vector<std::string> read_cashflows_in_blocks(std::string_view csv,
-                                                 const output_family& family,
-                                                 std::size_t block_size,
-                                                 const cashflow_block_sink& sink) {
+                                                  const output_family& family,
+                                                  std::size_t block_size,
+                                                  const cashflow_block_sink& sink) {
     cashflow_read_outcome outcome;
     const auto hand_over = [&] {
         if (outcome.rows.empty())
@@ -223,12 +223,15 @@ std::vector<std::string> read_cashflows_in_blocks(std::string_view csv,
 
 cashflow_read_outcome read_cashflows(std::string_view csv, const output_family& family) {
     cashflow_read_outcome outcome;
-    outcome.refusals = read_cashflows_in_blocks(
-        csv, family, std::numeric_limits<std::size_t>::max(), [&](std::vector<cashflow_row>& block) {
-            outcome.rows.insert(outcome.rows.end(),
-                                std::make_move_iterator(block.begin()),
-                                std::make_move_iterator(block.end()));
-        });
+    outcome.refusals =
+        read_cashflows_in_blocks(csv,
+                                 family,
+                                 std::numeric_limits<std::size_t>::max(),
+                                 [&](std::vector<cashflow_row>& block) {
+                                     outcome.rows.insert(outcome.rows.end(),
+                                                         std::make_move_iterator(block.begin()),
+                                                         std::make_move_iterator(block.end()));
+                                 });
     return outcome;
 }
 

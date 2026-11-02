@@ -200,7 +200,8 @@ struct compute_storage {
      * @param result_id  Result UUID as string.
      */
     static std::string output_manifest_key(std::string_view result_id) {
-        return ores::storage::api::object_keys::make(service, "output", result_id, "manifest.json.gz");
+        return ores::storage::api::object_keys::make(
+            service, "output", result_id, "manifest.json.gz");
     }
 
     /**

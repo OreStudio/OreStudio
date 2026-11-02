@@ -160,7 +160,8 @@ TEST_CASE("each file of a run is read by its family, and both shapes land apart"
 TEST_CASE("two rows that state the same heading for the same trade stay apart", run_tags) {
     const auto body = npv_file() + "Swap_20y,Swap,2036-10-31,2.0,99.0,USD,90.0,EUR,1000.0,USD,"
                                    "900.0,CPTY_A,CPTY_A\n";
-    const auto outcome = read_run_outputs({output_file{.name = "npv.csv", .body = body}}, the_run());
+    const auto outcome =
+        read_run_outputs({output_file{.name = "npv.csv", .body = body}}, the_run());
 
     REQUIRE(outcome.refusals.empty());
     std::vector<int> lines;
@@ -186,12 +187,12 @@ TEST_CASE("a family the definition skips stores no rows and is named", run_tags)
 
 TEST_CASE("a portfolio detail is a text value, about its run and its line", run_tags) {
     const auto run = the_run();
-    const auto outcome = read_run_outputs(
-        {output_file{.name = "marketObjects.csv",
-                     .body = "#MarketObjectType,MarketObjectName\n"
-                             "\"DiscountCurve\",\"EUR|GBP|USD\"\n"
-                             "\"YieldCurve\",\"EUR-EURIBOR-6M\"\n"}},
-        run);
+    const auto outcome =
+        read_run_outputs({output_file{.name = "marketObjects.csv",
+                                      .body = "#MarketObjectType,MarketObjectName\n"
+                                              "\"DiscountCurve\",\"EUR|GBP|USD\"\n"
+                                              "\"YieldCurve\",\"EUR-EURIBOR-6M\"\n"}},
+                         run);
 
     REQUIRE(outcome.refusals.empty());
     CHECK(outcome.metrics.empty());

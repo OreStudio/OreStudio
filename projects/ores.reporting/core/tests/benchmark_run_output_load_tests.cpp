@@ -85,8 +85,8 @@ TEST_CASE("load a large cube whole: read every row, then insert", benchmark_tags
     const auto before = peak_mib();
 
     const auto start = std::chrono::steady_clock::now();
-    auto outcome = read_run_outputs({output_file{.name = "rawcube.csv", .body = std::move(body)}},
-                                    the_run());
+    auto outcome =
+        read_run_outputs({output_file{.name = "rawcube.csv", .body = std::move(body)}}, the_run());
     REQUIRE(outcome.refusals.empty());
     report_metric_repository{}.insert(h.context(), outcome.metrics);
     const auto seconds =
@@ -115,10 +115,12 @@ TEST_CASE("load a large cube in blocks: read a block, insert it, read the next",
                 ++blocks;
             },
         .cashflows = [](auto&) {},
-        .text_values = [](auto&) {}};
+        .text_values =
+            [](auto&) {
+            }};
     run_output_outcome outcome;
-    read_run_output(output_file{.name = "rawcube.csv", .body = body}, the_run(), 10000, sinks,
-                    outcome);
+    read_run_output(
+        output_file{.name = "rawcube.csv", .body = body}, the_run(), 10000, sinks, outcome);
     REQUIRE(outcome.refusals.empty());
     uow.commit();
     const auto seconds =

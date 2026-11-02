@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
+#include "ores.ore.core/results/text_value_reader.hpp"
 #include "ores.testing/test_files.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -82,7 +82,8 @@ TEST_CASE("a list of portfolio details names each entry by its heading or its ty
 }
 
 TEST_CASE("the calibrated model is one value, the whole document", text_tags) {
-    const auto outcome = read_text_values(text_sample_of("calibration"), *family_named("calibration"));
+    const auto outcome =
+        read_text_values(text_sample_of("calibration"), *family_named("calibration"));
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.rows.size() == 1);
@@ -110,15 +111,20 @@ TEST_CASE("a calibration with no model under its heading is refused", text_tags)
 }
 
 TEST_CASE("a double that is not a figure is refused by line", text_tags) {
-    const auto outcome = read_text_values("#TradeId,ResultId,ResultType,ResultValue\nT1,npv,double,x\n",
-                                          *family_named("additional_results"));
+    const auto outcome =
+        read_text_values("#TradeId,ResultId,ResultType,ResultValue\nT1,npv,double,x\n",
+                         *family_named("additional_results"));
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals.front().find("line 2") != std::string::npos);
 }
 
 TEST_CASE("every text-valued family's sample reads whole", text_tags) {
-    for (const auto* code : {"additional_results", "marketObjects", "riskFactors",
-                             "underlying_indices", "swap_indices", "calibration"}) {
+    for (const auto* code : {"additional_results",
+                             "marketObjects",
+                             "riskFactors",
+                             "underlying_indices",
+                             "swap_indices",
+                             "calibration"}) {
         INFO("the family is " << code);
         const auto outcome = read_text_values(text_sample_of(code), *family_named(code));
         CHECK(outcome.refusals.empty());

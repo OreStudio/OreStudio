@@ -159,7 +159,7 @@ jobs:
           echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
 
       - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v8
+        uses: ikalnytskyi/action-setup-postgres@v9
         with:
           username: postgres
           password: ${{ steps.pg_password.outputs.admin_password }}

@@ -222,7 +222,7 @@ jobs:
           ./build/scripts/setup_postgres_extensions.sh --pg-version 18
 
       - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v8
+        uses: ikalnytskyi/action-setup-postgres@v9
         with:
           username: postgres
           password: ${{ steps.pg_password.outputs.admin_password }}

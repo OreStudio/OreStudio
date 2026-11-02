@@ -28,6 +28,7 @@ Two things the corpus does not say and this file does:
 """
 
 import argparse
+import fnmatch
 import csv
 import io
 import os
@@ -104,16 +105,61 @@ NUMERIC_QUALIFIERS = {
 
 # The families whose figures are the risk factors the run simulated. Their
 # columns come from the configuration even where the corpus holds one sample.
-RISK_FACTOR_FAMILIES = {"scenariostatistics", "stress_scenarios"}
+RISK_FACTOR_FAMILIES = {"scenariostatistics", "stress_scenarios", "scenariodump"}
 
 # The families the suite corpus holds no sample of, read from the notebook
 # examples instead. Only these are read from there, because the notebooks also
 # hold copies of families the suites already state.
-NOTEBOOK_FAMILIES = {"marketdata", "fixings", "dividends"}
+NOTEBOOK_FAMILIES = {"marketdata", "fixings", "dividends", "runtimes", "scenariodump"}
 NOTEBOOKS = os.path.join("ORE-Python", "Notebooks")
+
+# The families only the legacy examples hold a sample of. Only these are read
+# from there, because the legacy examples repeat the suites with older headers.
+LEGACY_FAMILIES = {"timeaveragedexposure"}
+LEGACY = "Legacy"
+
+# The samples ORE did not ship: files a run here wrote, and files we wrote from
+# the writer's columns. A family whose only sample is synthetic is marked so.
+SAMPLES = os.path.join(ROOT, "projects", "ores.ore", "data", "samples")
+
+# The other names a family is written under. A report the run configuration
+# does not name is written under the engine's own report name, and the seed
+# names the initial margin files with a .txt extension.
+ALIASES = {
+    "flows": ["cashflow.csv"],
+    "saccr_detail": ["saccrdetail.csv"],
+    "dim_evolution": ["dim_evolution.txt"],
+    "dim_regression": ["dim_regression*.txt"],
+}
+
+# The output files the seed names that are not read into rows, and why. The
+# generator refuses a seed output that is neither a family nor stated here.
+OUT_OF_SCOPE = {
+    "amcBuffer.dat": "binary path data the AMC engine reads back, not a report",
+    "scenariodata.dat": "binary scenario data the engine reads back, not a report",
+    "cube.csv.gz": "a compressed copy of the NPV cube; rawcube states it as text",
+    "cptyCube.csv.gz": "a compressed counterparty cube the engine reads back",
+    "nettingSetCube.csv.gz": "a compressed copy of the netting set cube; netcube states it as text",
+    "scenariodata.csv.gz": "a compressed copy of the aggregation scenario data the engine reads back",
+    "crossgamma.csv": "no writer reads sensitivity.crossGammaOutputFile at v1.8.17.0",
+    "productclass_mapping.csv": "no writer reads sensitivity.productClassMappingOutputFile at v1.8.17.0",
+    "creditcurves.csv": "no writer reads creditcurves.outputFileName at v1.8.17.0",
+    "parsensi.csv": "no writer reads sensitivity.parRateSensitivityOutputFile at v1.8.17.0",
+    "scenariodata.csv": "no writer reads simulation.aggregationScenarioDataDump at v1.8.17.0",
+    "xva_sensitivity_jacobi.csv": "the xvaSensitivity analytic writes its jacobi to jacobi.csv at v1.8.17.0",
+    "xva_sensitivity_jacobi_inverse.csv": "the xvaSensitivity analytic writes its jacobi to jacobi_inverse.csv at v1.8.17.0",
+    "pca.csv": "a stem: the analytic writes pca_<currency>.csv, the pca family",
+    "meanReversion.csv": "a stem: the analytic writes meanReversion_<currency>.csv, the mean-reversion family",
+    "additional_results.csv": "text-valued; read into rows by Store the text-valued outputs",
+    "marketObjects.csv": "a list with no figures; read into rows by Store the text-valued outputs",
+    "riskFactors.csv": "a list with no figures; read into rows by Store the text-valued outputs",
+    "calibration.csv": "one XML document of the calibrated model; read by Store the text-valued outputs",
+}
 
 # The kinds a sample cannot show, because every sample of the column is empty.
 KIND_OVERRIDES = {
+    ("crif", "Bucket"): "text",
+    ("capital_crif", "Bucket"): "text",
     ("dividends", "dividendExDate"): "date",
     ("dividends", "dividendRate"): "decimal",
     ("dividends", "dividendPaymentDate"): "date",
@@ -136,6 +182,9 @@ FAMILY_KEYS = {
     "marketdata": ["datumDate", "datumId"],
     "fixings": ["fixingDate", "fixingId"],
     "dividends": ["dividendExDate", "equityId"],
+    "jacobi": ["ParFactor", "RawFactor"],
+    "jacobi_inverse": ["RawFactor(z)", "ParFactor(c)"],
+    "runtimes": ["Key"],
 }
 
 # A family whose name a parameter states is the family of that name.
@@ -219,17 +268,24 @@ def read_family(path):
 
 
 def expected_dirs():
-    """Each suite's expected output, then each notebook's."""
+    """Each suite's expected output, the notebooks', the legacy examples', then ours.
+
+    Each source states the families it may contribute, None for any, and whether
+    its files are synthetic.
+    """
     for suite in sorted(os.listdir(EXAMPLES)):
-        yield os.path.join(EXAMPLES, suite, "ExpectedOutput"), None
-    notebooks = os.path.join(EXAMPLES, NOTEBOOKS)
-    for notebook in sorted(os.listdir(notebooks)):
-        yield os.path.join(notebooks, notebook, "ExpectedOutput"), NOTEBOOK_FAMILIES
+        yield os.path.join(EXAMPLES, suite, "ExpectedOutput"), None, False
+    for folder, only in ((NOTEBOOKS, NOTEBOOK_FAMILIES), (LEGACY, LEGACY_FAMILIES)):
+        parent = os.path.join(EXAMPLES, folder)
+        for example in sorted(os.listdir(parent)):
+            yield os.path.join(parent, example, "ExpectedOutput"), only, False
+    yield os.path.join(SAMPLES, "captured"), None, False
+    yield os.path.join(SAMPLES, "synthetic"), None, True
 
 
 def collect():
     families = {}
-    for expected, only in expected_dirs():
+    for expected, only, synthetic in expected_dirs():
         if not os.path.isdir(expected):
             continue
         for dirpath, dirs, files in os.walk(expected):
@@ -241,9 +297,14 @@ def collect():
                 family, pattern = family_of(name)
                 if only is not None and family not in only:
                     continue
+                # Our samples are read last, so a family already seen has one ORE
+                # shipped, and is not proven from ours.
+                if expected.startswith(SAMPLES) and family in families:
+                    continue
                 entry = families.setdefault(family, {
                     "family": family, "pattern": pattern, "headers": [],
-                    "values": {}, "sample": os.path.relpath(path, ROOT)})
+                    "values": {}, "sample": os.path.relpath(path, ROOT),
+                    "synthetic": synthetic})
                 headers, values = read_family(path)
                 if headers not in entry["headers"]:
                     entry["headers"].append(headers)
@@ -315,6 +376,8 @@ def rows(families, seed):
             "open": "1" if is_open else "0",
             "variants": len(headers),
             "sample": entry["sample"],
+            "aliases": ",".join(ALIASES.get(family, [])),
+            "synthetic": "1" if entry["synthetic"] else "0",
             "columns": named,
         })
     return out
@@ -385,7 +448,9 @@ def render(catalogue):
     lines.append(" * Every output file ORE writes, as its samples state it. One line for each")
     lines.append(" * family, its fields separated by a tab: family, file pattern, the parameter")
     lines.append(" * that names it, the analytics that write it, its key columns, how many header")
-    lines.append(" * variants the samples show, a sample file, then each column with its kind.")
+    lines.append(" * variants the samples show, a sample file, the other names the family is")
+    lines.append(" * written under, whether its only sample is synthetic, then each column with")
+    lines.append(" * its kind.")
     lines.append(" */")
     lines.append("")
     lines.append('#include "ores.ore.core/results/output_catalogue_data.hpp"')
@@ -399,7 +464,8 @@ def render(catalogue):
         lines.append("\t".join([row["family"], row["pattern"], row["parameter"],
                                 row["analytic"], row["keys"], row["required"],
                                 row["qualifiers"], row["measures"], row["open"],
-                                str(row["variants"]), row["sample"], cols]))
+                                str(row["variants"]), row["sample"], row["aliases"],
+                                row["synthetic"], cols]))
     lines.append(')CAT"');
     lines.append("};")
     lines.append("")
@@ -429,7 +495,18 @@ def main(argv):
     args = ap.parse_args(argv)
 
     families = collect()
-    catalogue = rows(families, seed_outputs())
+    seed = seed_outputs()
+    catalogue = rows(families, seed)
+
+    patterns = [r["pattern"] for r in catalogue]
+    patterns += [a for r in catalogue for a in r["aliases"].split(",") if a]
+    uncovered = sorted(name for name in seed
+                       if not any(fnmatch.fnmatch(name, p) for p in patterns)
+                       and name not in OUT_OF_SCOPE)
+    if uncovered:
+        print("the seed names outputs no family reads and no reason excuses: " +
+              ", ".join(uncovered), file=sys.stderr)
+        return 1
     text = render(catalogue)
 
     text = formatted(text, DATA)

@@ -68,9 +68,9 @@ output_column_kind kind_named(std::string_view kind) {
 
 output_family parse(std::string_view line) {
     const auto fields = split(line, '\t');
-    if (fields.size() != 12)
+    if (fields.size() != 14)
         throw std::invalid_argument("a catalogue line states " + std::to_string(fields.size()) +
-                                    " fields, not twelve: '" + std::string(line) + "'.");
+                                    " fields, not fourteen: '" + std::string(line) + "'.");
 
     output_family family;
     family.code = fields[0];
@@ -84,8 +84,10 @@ output_family parse(std::string_view line) {
     family.measures_open = fields[8] == "1";
     family.header_variants = std::stoi(fields[9]);
     family.sample_file = fields[10];
+    family.alias_patterns = split_list(fields[11]);
+    family.synthetic = fields[12] == "1";
 
-    for (const auto& text : split(fields[11], ',')) {
+    for (const auto& text : split(fields[13], ',')) {
         if (text.empty())
             continue;
         const auto colon = text.rfind(':');
@@ -133,6 +135,7 @@ bool is_market_state(const output_family& family) {
     // results and belong to the run's result tables.
     static const std::vector<std::string> codes = {"stress_scenarios",
                                                    "scenariostatistics",
+                                                   "scenariodump",
                                                    "todaysmarketcalibration",
                                                    "marketdata",
                                                    "fixings",
@@ -191,7 +194,10 @@ family_selection family_selection_of(std::string_view list) {
 const output_family* family_of_file(std::string_view file_name) {
     const auto& families = output_families();
     const auto it = std::ranges::find_if(families, [file_name](const output_family& family) {
-        return pattern_matches(family.file_pattern, file_name);
+        return pattern_matches(family.file_pattern, file_name) ||
+               std::ranges::any_of(family.alias_patterns, [file_name](const std::string& alias) {
+                   return pattern_matches(alias, file_name);
+               });
     });
     return it == families.end() ? nullptr : &*it;
 }

@@ -55,8 +55,7 @@ std::string npv_row(const std::string& npv) {
 }
 
 std::string sample_text(const std::string& sample_file) {
-    const auto relative = std::filesystem::path(sample_file).lexically_relative("external/ore");
-    return ores::testing::read_file(ores::testing::ore_path(relative.string()));
+    return ores::testing::read_file(ores::testing::project_root::resolve(sample_file));
 }
 
 }

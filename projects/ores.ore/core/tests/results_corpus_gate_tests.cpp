@@ -105,7 +105,7 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
         }
     }
 
-    CHECK(metrics == 56);
+    CHECK(metrics == 65);
     CHECK(cashflows == 3);
     CHECK(calibrations == 1);
     CHECK(market_inputs == 3);
@@ -143,9 +143,7 @@ TEST_CASE("the checked-in corpus reads whole with the reader each family states"
 TEST_CASE("every family's own sample reads whole with the reader it states", gate_tags) {
     for (const auto& family : output_families()) {
         INFO("the family is " << family.code << ", its sample " << family.sample_file);
-        const auto relative =
-            std::filesystem::path(family.sample_file).lexically_relative("external/ore");
-        const auto path = ores::testing::ore_path(relative.string());
+        const auto path = ores::testing::project_root::resolve(family.sample_file);
         REQUIRE(std::filesystem::exists(path));
         CHECK(reads_whole(family, ores::testing::read_file(path)));
     }

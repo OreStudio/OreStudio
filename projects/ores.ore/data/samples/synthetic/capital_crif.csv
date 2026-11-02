@@ -1,0 +1,3 @@
+#TradeID,PortfolioID,CounterpartyName,CounterpartyID,NettingSetNumber,RiskType,HedgingSet,Qualifier,Bucket,Label1,Label2,AmountCurrency,Amount,AmountUSD,ValuationDate,EndDate,Label3,Regulation,Model,TradeType
+SWAP_USD_10Y,PF_RATES,Bank A,CPTY_A,NS_A,Risk_IRCurve,USD,USD,1,10y,OIS,USD,1500000.000000,1500000.000000,2026-05-05,2036-05-05,,BASEL,SA-CCR,Swap
+FXFWD_EURUSD,PF_FX,Bank A,CPTY_A,NS_A,Risk_FX,EURUSD,EUR,,,,USD,250000.000000,250000.000000,2026-05-05,2026-11-05,,BASEL,SA-CCR,FxForward

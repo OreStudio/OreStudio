@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/accept-all-public-terms-at-setup
-#+pr:
+#+pr: 4358
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4358][#4358]] | [marketdata] Accept all public terms at setup |
 
 * Review
 

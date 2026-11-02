@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-ore-curve-entries-by-construction
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Each curve entry holds one construction. The basis curve that exists only when t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -97,6 +97,75 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What each construction reads
+
+ORE's own readers are the authority, because the schema states every setting
+as optional for every type: =DefaultCurveConfig::Config::fromXML= and
+=CommodityCurveConfig::fromXML= at tag 1.8.17.0 dispatch on the construction
+and read only that construction's fields.
+
+A default curve configuration's =Type= selects its construction. Every type
+reads =DayCounter=, =Extrapolation=, =AllowNegativeRates= and =RecoveryRate=:
+
+| Type                                              | Fields it reads                                                                                                  |
+|---------------------------------------------------+------------------------------------------------------------------------------------------------------------------|
+| SpreadCDS, HazardRate, Price, ConvSpreadCDS, Null | DiscountCurve, Conventions, Quotes, StartDate, RunningSpread, IndexTerm, ImplyDefaultFromMarket, PriceIsUpfront |
+| Benchmark                                         | BenchmarkCurve, SourceCurve, Pillars, SpotLag, Calendar                                                          |
+| TransitionMatrix                                  | InitialState, States, Quotes                                                                                     |
+| YieldCurve                                        | ReinterpretedYieldCurve                                                                                          |
+| MultiSection                                      | SourceCurves, SwitchDates, which the projection refuses today                                                    |
+
+A commodity curve's construction is the element it states. Every construction
+reads =Currency= and =Extrapolation=:
+
+| Construction  | Selected by                       | Fields it reads                                        |
+|---------------+-----------------------------------+--------------------------------------------------------|
+| Basis         | =BasisConfiguration=              | the block's nine fields and its quotes                 |
+| CrossCurrency | a top-level =BasePriceCurve=      | BasePriceCurve, BaseYieldCurve, YieldCurve             |
+| Piecewise     | =PriceSegments=                   | DayCounter, InterpolationMethod, the price segments    |
+| Direct        | none of the above                 | DayCounter, InterpolationMethod, SpotQuote, Quotes, Conventions |
+
+** What the corpus states
+
+Every =curveconfig*.xml= under =external/ore= (89 files) was read for a field
+its construction does not read. The commodity curves (34 Direct, 1 Basis, 1
+Piecewise) state none. The default curves (189 SpreadCDS, 102 HazardRate, 21
+Null, 15 Benchmark, 14 TransitionMatrix, 1 YieldCurve) state one pair: all 14
+TransitionMatrix configurations state =DiscountCurve= and =Conventions=, which
+ORE's reader ignores for that type. The round trip must stay byte identical, so
+that pair stays storable for a transition matrix; this is the one recorded
+denormalisation.
+
+** The parts
+
+The default curve configuration keeps its identity, its place and the settings
+every type reads: =is_inline=, =priority=, =default_curve_type=, =day_counter=,
+=extrapolation=, =allow_negative_rates=, =recovery_rate=, =position=. Its parts
+are keyed by =default_curve_configuration_id=, at most one of each:
+
+| Part                                  | Columns                                                                       | Types                                                         |
+|---------------------------------------+-------------------------------------------------------------------------------+---------------------------------------------------------------|
+| default_curve_market_terms            | discount_curve, conventions, has_quotes                                       | the CDS family and Null; TransitionMatrix, the denormalisation |
+| default_curve_cds_terms               | start_date, running_spread, index_term, imply_default_from_market, price_is_upfront | SpreadCDS, HazardRate, Price, ConvSpreadCDS, Null        |
+| default_curve_benchmark               | benchmark_curve, source_curve, pillars, spot_lag, calendar                    | Benchmark                                                     |
+| default_curve_transition_matrix       | initial_state, states                                                         | TransitionMatrix                                              |
+| default_curve_yield_reinterpretation  | reinterpreted_yield_curve                                                     | YieldCurve                                                    |
+
+The commodity curve keeps =currency= and =extrapolation=. Its parts are keyed
+by =curve_definition_id=, as the entry's own row is, at most one of each:
+
+| Part                          | Columns                                                         | Constructions     |
+|-------------------------------+-----------------------------------------------------------------+-------------------|
+| commodity_curve_interpolation | day_counter, interpolation_method                               | Direct, Piecewise |
+| commodity_curve_direct        | spot_quote, conventions, has_quotes                             | Direct            |
+| commodity_curve_cross_currency | base_price_curve, base_yield_curve, yield_curve                | CrossCurrency     |
+| commodity_curve_basis         | the nine basis columns                                          | Basis             |
+
+=has_basis_configuration= and =has_price_segments= go: the basis part's
+presence states the Basis construction, and the price segment rows, already a
+child entity, state the Piecewise one. An empty =PriceSegments= element would
+give ORE a piecewise curve with no segments, and the corpus states none.
 
 * Test Scenarios
 

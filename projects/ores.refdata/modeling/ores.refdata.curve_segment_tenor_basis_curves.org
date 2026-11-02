@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 79326A6B-F60C-4F0E-AAA6-2B86BEB65B7A
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.curve_segment_tenor_basis_curves
+#+description: Codegen entity model for the refdata =curve_segment_tenor_basis_curves= table. One part of a curve segment: the projection curves of a tenor basis segment's two legs.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The projection curves of a tenor basis segment's two legs.
+#+entity_singular: curve_segment_tenor_basis_curves
+#+entity_plural: curve_segment_tenor_basis_curves
+#+entity_title: Curve Segment Tenor Basis Curves
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+The projection curves of a tenor basis segment's legs, as ORE's
+=ProjectionCurvePay=, =ProjectionCurveReceive=, =ProjectionCurveLong= and
+=ProjectionCurveShort=. They hold one invariant: each names the curve one leg
+of the basis swap projects on. Only a tenor basis segment states them, and each
+is optional, so a segment has this part only when its document names one.
+
+A segment holds at most one row of this part, so the generated table adds the
+unique index on the live rows of =(tenant_id, curve_segment_id)=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_segment_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:unique:   true
+:END:
+
+The segment this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** projection_curve_pay
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's pay leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_receive
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's receive leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_long
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's longer tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's shorter tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_segment_id
+:PROPERTIES:
+:table:         ores_refdata_curve_segments_tbl
+:target_column: id
+:parent_entity: curve_segment
+:nullable:      false
+:error_message: Invalid curve_segment_id: %. No active curve segment found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_segment_tenor_basis_curves_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: segment_tenor_basis_curves
+:entity_plural_short:   segment_tenor_basis_curves
+:entity_singular_words: curve segment tenor basis curves
+:entity_plural_words:   curve segment tenor basis curves
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:24bda9d8-1cac-45f8-8d53-af43767ee229][ores.refdata.curve_segment]] — the segment this part belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:98901652-FEC5-4197-BE47-99F0C8453072][Split the curve segment by element]] — the task that split it.

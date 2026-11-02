@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-683 tables in 21 groups.
+691 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -109,7 +109,11 @@ entity "refdata" as refdata {
   ores_refdata_commodities_tbl
   ores_refdata_commodity_curve_configs_tbl
   ores_refdata_commodity_forward_conventions_tbl
-  ores_refdata_commodity_future_conventions_tbl
+  ores_refdata_commodity_future_averaging_terms_tbl
+  ores_refdata_commodity_future_contract_terms_tbl
+  ores_refdata_commodity_future_expiry_anchors_tbl
+  ores_refdata_commodity_future_off_peak_indexes_tbl
+  ores_refdata_commodity_future_option_expiries_tbl
   ores_refdata_commodity_price_segments_tbl
   ores_refdata_commodity_volatility_configs_tbl
   ores_refdata_contact_types_tbl
@@ -262,7 +266,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-187 tables — ores_schema.refdata.puml
+191 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -297,7 +301,11 @@ entity "dq_staging" as dq_staging {
   ores_dq_coding_schemes_artefact_tbl
   ores_dq_commodities_artefact_tbl
   ores_dq_commodity_forward_conventions_artefact_tbl
-  ores_dq_commodity_future_conventions_artefact_tbl
+  ores_dq_commodity_future_averaging_terms_artefact_tbl
+  ores_dq_commodity_future_contract_terms_artefact_tbl
+  ores_dq_commodity_future_expiry_anchors_artefact_tbl
+  ores_dq_commodity_future_off_peak_indexes_artefact_tbl
+  ores_dq_commodity_future_option_expiries_artefact_tbl
   ores_dq_commodity_volatility_configs_artefact_tbl
   ores_dq_configuration_analytic_parameters_artefact_tbl
   ores_dq_configuration_analytics_artefact_tbl
@@ -418,7 +426,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-149 tables — ores_schema.dq_staging.puml
+153 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

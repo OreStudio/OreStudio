@@ -8,7 +8,7 @@
 #+filetags: :split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/every-report-run-fails-on-an-orphan-commodity-future-part
-#+pr:
+#+pr: 4393
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4393][#4393]] | [ore] Read a grouped convention row's party from its identity |
 
 * Review
 

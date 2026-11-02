@@ -47,13 +47,13 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
 namespace {
-
 
 const std::string codec_tags("[codec]");
 
@@ -130,6 +130,50 @@ TEST_CASE("every telemetry and work message's default has reflect-cpp's bytes", 
                                      work_available_event,
                                      submit_result_request,
                                      submit_result_response>();
+}
+
+TEST_CASE("filled work and telemetry messages have reflect-cpp's bytes", codec_tags) {
+    ores::compute::messaging::claim_work_response claimed;
+    claimed.success = true;
+    claimed.has_work = true;
+    claimed.message = "claimed";
+    claimed.tenant_id = "t1";
+    claimed.result_id = "r1";
+    claimed.workunit_id = "w1";
+    claimed.app_version_id = "a1";
+    claimed.package_uri = "s3://p";
+    claimed.package_sha256 = "abc";
+    claimed.input_uri = "s3://i";
+    claimed.config_uri = "s3://c";
+    claimed.output_uri = "s3://o";
+    claimed.output_files_uri = "s3://f";
+    claimed.logs_uri = "s3://l";
+    claimed.storage_token = "tok";
+    claimed.attempt = 3;
+    same_bytes_as_reflect_cpp(claimed);
+
+    ores::compute::messaging::get_grid_series_response series;
+    series.success = true;
+    series.message = "ok";
+    series.start_time =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+    series.bucket_seconds = 60;
+    series.bucket_count = 2;
+    series.samples = {1, 2};
+    series.total_hosts = {3, 4};
+    series.online_hosts = {2, 3};
+    series.idle_hosts = {1, 0};
+    series.results_inactive = {0, 1};
+    series.results_unsent = {5, 6};
+    series.results_in_progress = {7, 8};
+    series.results_done = {9, 10};
+    series.total_workunits = {11, 12};
+    series.total_batches = {1, 1};
+    series.active_batches = {0, 1};
+    series.outcomes_success = {4, 5};
+    series.outcomes_client_error = {0, 1};
+    series.outcomes_no_reply = {1, 0};
+    same_bytes_as_reflect_cpp(series);
 }
 
 TEST_CASE("the entity list responses have reflect-cpp's bytes", codec_tags) {

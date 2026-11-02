@@ -50,7 +50,8 @@ def test_an_enriched_side_names_its_code_after_the_audit_members():
 
 def test_a_side_without_enrichment_names_no_code():
     text = render(False, False)
-    assert "_code\", &widget_part::" not in text.replace("change_reason_code", "")
+    assert 'field{"widget_code"' not in text
+    assert 'field{"part_code"' not in text
 
 
 def test_each_enriched_side_names_its_own_code():

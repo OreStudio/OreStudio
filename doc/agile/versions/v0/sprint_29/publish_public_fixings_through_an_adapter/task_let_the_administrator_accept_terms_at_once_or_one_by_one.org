@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-the-administrator-accept-terms-at-once-or-one-by-one
-#+pr:
+#+pr: 4367
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4367][#4367]] | [web] Accept the public terms at once or one by one, and fix the screens a new system reaches |
 
 * Review
 

@@ -43,7 +43,6 @@ a projection later, and this contract does not move when that changes.
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/messaging/trade_summary_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/domain/result.hpp"
 #+end_src
 
 * Messages

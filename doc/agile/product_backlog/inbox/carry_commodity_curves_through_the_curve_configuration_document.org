@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 22CB793C-AEF6-4E8D-8060-415C6352E123
+:END:
+#+title: curve_configuration_document_service saves and reads no comm…
+#+description: curve_configuration_document_service saves and reads no commodity curve rows: commodity_curve_configs, commodity_price_segments, and the commodity curve parts (interpolation, direct, cross currency, basis) are absent from its write, read and remove paths, and from the dq publisher's table list. A saved curve configuration keeps its CommodityCurves definitions but drops their settings, so the export fails with 'curve NaturalGas in section CommodityCurves has no settings row'. Main has the same gap. Observed live on 2026-11-02 with 'ore import-run' then 'ore export-run' of external/ore/examples/MarketRisk/Input/Curvealgebra/curveconfig.xml.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

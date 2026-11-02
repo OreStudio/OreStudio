@@ -140,37 +140,22 @@ void commodity_curve_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <currency> <base_price_curve> <base_yield_curve> <yield_curve> "
-        "<spot_quote> <has_quotes> <day_counter> <interpolation_method> <conventions> "
-        "<extrapolation> <has_basis_configuration> <basis_base_price_curve> "
-        "<basis_base_price_conventions> <basis_conventions> <basis_day_counter> "
-        "<basis_interpolation_method> <basis_add_basis> <basis_month_offset> <basis_average_base> "
-        "<basis_price_as_historical_fixing> <has_price_segments> <reason> <commentary>");
+        "add <curve_definition_id> <currency> <extrapolation> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <currency> <base_price_curve> <base_yield_curve> "
-        "<yield_curve> <spot_quote> <has_quotes> <day_counter> <interpolation_method> "
-        "<conventions> <extrapolation> <has_basis_configuration> <basis_base_price_curve> "
-        "<basis_base_price_conventions> <basis_conventions> <basis_day_counter> "
-        "<basis_interpolation_method> <basis_add_basis> <basis_month_offset> <basis_average_base> "
-        "<basis_price_as_historical_fixing> <has_price_segments> <reason> <commentary> [--version "
-        "<n>]");
+        "set <id> <curve_definition_id> <currency> <extrapolation> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <curve_definition_id> <currency> <base_price_curve> "
-        "<base_yield_curve> <yield_curve> <spot_quote> <has_quotes> <day_counter> "
-        "<interpolation_method> <conventions> <extrapolation> <has_basis_configuration> "
-        "<basis_base_price_curve> <basis_base_price_conventions> <basis_conventions> "
-        "<basis_day_counter> <basis_interpolation_method> <basis_add_basis> <basis_month_offset> "
-        "<basis_average_base> <basis_price_as_historical_fixing> <has_price_segments> <reason> "
+        "put-many --count <n> <id> <curve_definition_id> <currency> <extrapolation> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -372,8 +357,8 @@ void commodity_curve_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 22 + 2) {
-            fail(out) << "Expected " << (22 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -384,51 +369,7 @@ void commodity_curve_config_commands::process_add(std::ostream& out,
         commodity_curve_config_read_token(
             req.change.write.currency, parsed->positionals[next++], "currency");
         commodity_curve_config_read_token(
-            req.change.write.base_price_curve, parsed->positionals[next++], "base_price_curve");
-        commodity_curve_config_read_token(
-            req.change.write.base_yield_curve, parsed->positionals[next++], "base_yield_curve");
-        commodity_curve_config_read_token(
-            req.change.write.yield_curve, parsed->positionals[next++], "yield_curve");
-        commodity_curve_config_read_token(
-            req.change.write.spot_quote, parsed->positionals[next++], "spot_quote");
-        commodity_curve_config_read_token(
-            req.change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-        commodity_curve_config_read_token(
-            req.change.write.day_counter, parsed->positionals[next++], "day_counter");
-        commodity_curve_config_read_token(req.change.write.interpolation_method,
-                                          parsed->positionals[next++],
-                                          "interpolation_method");
-        commodity_curve_config_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        commodity_curve_config_read_token(
             req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        commodity_curve_config_read_token(req.change.write.has_basis_configuration,
-                                          parsed->positionals[next++],
-                                          "has_basis_configuration");
-        commodity_curve_config_read_token(req.change.write.basis_base_price_curve,
-                                          parsed->positionals[next++],
-                                          "basis_base_price_curve");
-        commodity_curve_config_read_token(req.change.write.basis_base_price_conventions,
-                                          parsed->positionals[next++],
-                                          "basis_base_price_conventions");
-        commodity_curve_config_read_token(
-            req.change.write.basis_conventions, parsed->positionals[next++], "basis_conventions");
-        commodity_curve_config_read_token(
-            req.change.write.basis_day_counter, parsed->positionals[next++], "basis_day_counter");
-        commodity_curve_config_read_token(req.change.write.basis_interpolation_method,
-                                          parsed->positionals[next++],
-                                          "basis_interpolation_method");
-        commodity_curve_config_read_token(
-            req.change.write.basis_add_basis, parsed->positionals[next++], "basis_add_basis");
-        commodity_curve_config_read_token(
-            req.change.write.basis_month_offset, parsed->positionals[next++], "basis_month_offset");
-        commodity_curve_config_read_token(
-            req.change.write.basis_average_base, parsed->positionals[next++], "basis_average_base");
-        commodity_curve_config_read_token(req.change.write.basis_price_as_historical_fixing,
-                                          parsed->positionals[next++],
-                                          "basis_price_as_historical_fixing");
-        commodity_curve_config_read_token(
-            req.change.write.has_price_segments, parsed->positionals[next++], "has_price_segments");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -473,8 +414,8 @@ void commodity_curve_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 23 + 2) {
-            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -485,51 +426,7 @@ void commodity_curve_config_commands::process_set(std::ostream& out,
         commodity_curve_config_read_token(
             req.change.write.currency, parsed->positionals[next++], "currency");
         commodity_curve_config_read_token(
-            req.change.write.base_price_curve, parsed->positionals[next++], "base_price_curve");
-        commodity_curve_config_read_token(
-            req.change.write.base_yield_curve, parsed->positionals[next++], "base_yield_curve");
-        commodity_curve_config_read_token(
-            req.change.write.yield_curve, parsed->positionals[next++], "yield_curve");
-        commodity_curve_config_read_token(
-            req.change.write.spot_quote, parsed->positionals[next++], "spot_quote");
-        commodity_curve_config_read_token(
-            req.change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-        commodity_curve_config_read_token(
-            req.change.write.day_counter, parsed->positionals[next++], "day_counter");
-        commodity_curve_config_read_token(req.change.write.interpolation_method,
-                                          parsed->positionals[next++],
-                                          "interpolation_method");
-        commodity_curve_config_read_token(
-            req.change.write.conventions, parsed->positionals[next++], "conventions");
-        commodity_curve_config_read_token(
             req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        commodity_curve_config_read_token(req.change.write.has_basis_configuration,
-                                          parsed->positionals[next++],
-                                          "has_basis_configuration");
-        commodity_curve_config_read_token(req.change.write.basis_base_price_curve,
-                                          parsed->positionals[next++],
-                                          "basis_base_price_curve");
-        commodity_curve_config_read_token(req.change.write.basis_base_price_conventions,
-                                          parsed->positionals[next++],
-                                          "basis_base_price_conventions");
-        commodity_curve_config_read_token(
-            req.change.write.basis_conventions, parsed->positionals[next++], "basis_conventions");
-        commodity_curve_config_read_token(
-            req.change.write.basis_day_counter, parsed->positionals[next++], "basis_day_counter");
-        commodity_curve_config_read_token(req.change.write.basis_interpolation_method,
-                                          parsed->positionals[next++],
-                                          "basis_interpolation_method");
-        commodity_curve_config_read_token(
-            req.change.write.basis_add_basis, parsed->positionals[next++], "basis_add_basis");
-        commodity_curve_config_read_token(
-            req.change.write.basis_month_offset, parsed->positionals[next++], "basis_month_offset");
-        commodity_curve_config_read_token(
-            req.change.write.basis_average_base, parsed->positionals[next++], "basis_average_base");
-        commodity_curve_config_read_token(req.change.write.basis_price_as_historical_fixing,
-                                          parsed->positionals[next++],
-                                          "basis_price_as_historical_fixing");
-        commodity_curve_config_read_token(
-            req.change.write.has_price_segments, parsed->positionals[next++], "has_price_segments");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -586,8 +483,8 @@ void commodity_curve_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 23 + 2) {
-            fail(out) << "Expected " << (change_count * 23 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -600,51 +497,7 @@ void commodity_curve_config_commands::process_put_many(std::ostream& out,
             commodity_curve_config_read_token(
                 change.write.currency, parsed->positionals[next++], "currency");
             commodity_curve_config_read_token(
-                change.write.base_price_curve, parsed->positionals[next++], "base_price_curve");
-            commodity_curve_config_read_token(
-                change.write.base_yield_curve, parsed->positionals[next++], "base_yield_curve");
-            commodity_curve_config_read_token(
-                change.write.yield_curve, parsed->positionals[next++], "yield_curve");
-            commodity_curve_config_read_token(
-                change.write.spot_quote, parsed->positionals[next++], "spot_quote");
-            commodity_curve_config_read_token(
-                change.write.has_quotes, parsed->positionals[next++], "has_quotes");
-            commodity_curve_config_read_token(
-                change.write.day_counter, parsed->positionals[next++], "day_counter");
-            commodity_curve_config_read_token(change.write.interpolation_method,
-                                              parsed->positionals[next++],
-                                              "interpolation_method");
-            commodity_curve_config_read_token(
-                change.write.conventions, parsed->positionals[next++], "conventions");
-            commodity_curve_config_read_token(
                 change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-            commodity_curve_config_read_token(change.write.has_basis_configuration,
-                                              parsed->positionals[next++],
-                                              "has_basis_configuration");
-            commodity_curve_config_read_token(change.write.basis_base_price_curve,
-                                              parsed->positionals[next++],
-                                              "basis_base_price_curve");
-            commodity_curve_config_read_token(change.write.basis_base_price_conventions,
-                                              parsed->positionals[next++],
-                                              "basis_base_price_conventions");
-            commodity_curve_config_read_token(
-                change.write.basis_conventions, parsed->positionals[next++], "basis_conventions");
-            commodity_curve_config_read_token(
-                change.write.basis_day_counter, parsed->positionals[next++], "basis_day_counter");
-            commodity_curve_config_read_token(change.write.basis_interpolation_method,
-                                              parsed->positionals[next++],
-                                              "basis_interpolation_method");
-            commodity_curve_config_read_token(
-                change.write.basis_add_basis, parsed->positionals[next++], "basis_add_basis");
-            commodity_curve_config_read_token(
-                change.write.basis_month_offset, parsed->positionals[next++], "basis_month_offset");
-            commodity_curve_config_read_token(
-                change.write.basis_average_base, parsed->positionals[next++], "basis_average_base");
-            commodity_curve_config_read_token(change.write.basis_price_as_historical_fixing,
-                                              parsed->positionals[next++],
-                                              "basis_price_as_historical_fixing");
-            commodity_curve_config_read_token(
-                change.write.has_price_segments, parsed->positionals[next++], "has_price_segments");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

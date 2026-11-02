@@ -47,7 +47,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 | [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] | DONE | 2026-10-30 | 2026-10-31 | Five refdata volatility entries are one row per kind with a column per kind: cap floor and swaption carry a proxy block behind a flag, FX a smile behind a dimension, inflation cap floor a quote structure, and the volatility config a surface per kind. |
 | [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] | DONE | 2026-10-31 | 2026-11-02 | The conventions family has a central row and a part per kind, and three kinds never moved onto it: commodity future with five blocks in one row, and the cross currency basis and fix float conventions, each carrying two legs as flat columns. |
 | [[id:98901652-FEC5-4197-BE47-99F0C8453072][Split the curve segment by element]] | DONE | 2026-11-02 | 2026-11-02 | curve_segment holds segment_type and twenty columns that exist for one of twelve elements alone: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. |
-| [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] | BACKLOG | | | Two refdata curve entries are one row per construction: commodity curve config hides a whole basis curve behind has_basis_configuration, and default curve configuration carries one column per construction type behind default_curve_type. |
+| [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] | DONE | 2026-11-02 | 2026-11-02 | Two refdata curve entries are one row per construction: commodity curve config hides a whole basis curve behind has_basis_configuration, and default curve configuration carries one column per construction type behind default_curve_type. |
 | [[id:8A68BFFA-EF99-45A4-915D-92172BD042AA][Split the trading instrument parts by leg-data arm]] | BACKLOG | | | Five trading types are one arm of the schema's leg-data choice per row, or a rule block and a date list in one row: instrument option, bond leg rate, bond issue leg rate, instrument schedule and bond issue leg schedule. This is the trading owner's call, handed over with the inventory's reading. |
 | [[id:CC94A796-F6C1-4F59-B89E-CB5EB3133EC2][Split the market series identity by series kind]] | BACKLOG | | | market_series_identity is the widest type in the tree at 57 members and 54 nullable columns, with one column per identity field of a series kind and no discriminator to say which kind a row is. This is the market data owner's call, handed over with the inventory's reading. |
 | [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]] | BACKLOG | | | Once the split tasks are done, re-run the inventory and read what is left: the six types the first inventory marked group, any type the splits moved across the threshold, and whether the C1202 the story started from still reproduces. |
@@ -74,6 +74,13 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
   checklist]], and each task points at them rather than paraphrasing them.
   A compile error never reclassifies data: C1202 is why the story exists, and it
   is not the argument any split makes.
+- *One statement of which construction has which part, 2026-11-02.* When an
+  entry states its construction, the projection holds the one statement of the
+  parts each construction has (=import_segments= for a segment,
+  =parts_of_default_curve_type= for a default curve). The import, the export and
+  the generated insert triggers all read that statement, so they cannot
+  disagree. When an entry states no construction column, as a commodity curve
+  does not, the export enforces its parts and no trigger can.
 
 * Notes
 

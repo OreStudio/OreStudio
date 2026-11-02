@@ -61,7 +61,7 @@ OUT = os.path.join(
 
 SQL_OUT = os.path.join(
     ROOT, "projects", "ores.sql", "create", "refdata",
-    "refdata_curve_segment_parts_validate_fn_create.sql")
+    "refdata_curve_configuration_parts_validate_fn_create.sql")
 SCHEMA_NAME = "curveconfig.xsd"
 ROOT_ELEMENT = "CurveConfiguration"
 
@@ -197,6 +197,36 @@ def blocks_of(body):
     return names
 
 
+def block_entity(body, element, entity_of, text):
+    """The entity whose row the projection writes inside one child element, if any.
+
+    A construction an element selects is a part of the entry, or child rows of
+    it, rather than a flag on the entry's row. The block is present when the
+    entry has a row of the entity its branch writes: a part its reader keeps, or
+    a row the branch declares itself.
+    """
+    opened = re.search(r'const auto (\w+) = v\.child\("' + element + r'"\); \1\) \{', body)
+    if opened is None:
+        return ""
+    index = opened.end()
+    depth = 1
+    while depth > 0:
+        character = body[index]
+        if character == "{":
+            depth += 1
+        elif character == "}":
+            depth -= 1
+        index += 1
+    branch = body[opened.end():index - 1]
+    call = re.search(r"\b(import_\w+)\(ctx, [\w.]+, \*" + opened.group(1) + r"\);", branch)
+    if call is not None:
+        reader = definition_body(text, call.group(1)) or ""
+        declared = re.search(r"refdata::domain::(\w+) \w+;", reader)
+        return declared.group(1) if declared else ""
+    declared = re.search(r"refdata::domain::(\w+) (\w+);", branch)
+    return declared.group(1) if declared else ""
+
+
 def definition_body(text, name):
     """The body of the definition of one function or method, by name.
 
@@ -230,7 +260,6 @@ def collection_rules(text):
     """
     segment = definition_body(text, "segment")
     quotes = definition_body(text, "import_quotes")
-    keep = definition_body(text, "keep")
     if segment is None:
         return [], ["the projection has no import_context::segment"]
     if quotes is None:
@@ -249,7 +278,10 @@ def collection_rules(text):
     kind = re.search(r"\b" + row.group(2) + r"\.(\w+)\s*=\s*type;", segment)
     quote_parent = re.search(
         r"\b" + quote_row.group(2) + r"\.(\w+)\s*=\s*segment_id;", quotes)
-    part_parent = re.search(r"\bp\.(\w+)\s*=\s*segment_id;", keep or "")
+    segment_keys = {key for entity, (_, key) in part_traits(text).items()
+                    if entity.startswith(row.group(1) + "_")} if row else set()
+    part_parent = re.fullmatch(r"(\w+)", next(iter(segment_keys))) if len(segment_keys) == 1 \
+        else None
     for what, found in (("the segment's key to its entry", parent),
                         ("the part's key to its segment", part_parent),
                         ("the segment's kind column", kind),
@@ -288,18 +320,30 @@ KIND_LOOP = re.compile(
     r'for \(const auto& (\w+) : v\.children\("(\w+)"\)\) \{(.*?)\n    \}', re.S)
 
 # The table that names the document vector each segment part fills.
-PART_VECTOR = re.compile(
-    r"struct segment_part<refdata::domain::(\w+)> \{\s*"
-    r"static constexpr auto vector\s*=\s*&\w+::(\w+);")
+# The table that names the document vector and the key of each part.
+PART_TRAIT = re.compile(
+    r"struct document_part<refdata::domain::(\w+)> \{\s*"
+    r"static constexpr auto vector\s*=\s*&\w+::(\w+);\s*"
+    r"static constexpr auto key\s*=\s*&refdata::domain::\w+::(\w+);")
 
 # A call to one of the readers that fill a segment's parts, and the reader it
 # hands on.
 PART_CALL = re.compile(r"\b(import_\w+)\(ctx, \w+, (\w+)[,)]")
 
 
+# A call an entry's import makes to the reader of one of its parts, handed the
+# entry's own reader. A part read from a child element holds no entry leaves.
+ENTRY_PART_CALL = re.compile(r"\b(import_\w+)\(ctx, [\w.]+, v\);")
+
+
+def part_traits(text):
+    """The document vector and the key of every part, by the part's entity."""
+    return {entity: (vector, key) for entity, vector, key in PART_TRAIT.findall(text)}
+
+
 def part_vectors(text):
-    """The document vector of every segment part, by the part's entity."""
-    return dict(PART_VECTOR.findall(text))
+    """The document vector of every part, by the part's entity."""
+    return {entity: vector for entity, (vector, _) in part_traits(text).items()}
 
 
 def part_reader(text, name):
@@ -338,6 +382,39 @@ def part_leaves(text, name, vectors, problems):
         parts += more_parts
         leaves += more_leaves
     return parts, leaves
+
+
+# One branch of the default curve dispatch: the types it tests for, and the
+# parts it returns.
+DEFAULT_BRANCH = re.compile(r"(?:if|else if) \(([^{]*?)\) \{((?:[^{}]|\{[^{}]*\})*)\}", re.S)
+
+
+def default_curve_types(text):
+    """The default curve types that have each part, by the part's entity.
+
+    =parts_of_default_curve_type= is the projection's dispatch on a default
+    curve configuration's type, as ORE's reader dispatches on it: each branch
+    names its types and sets the parts those types have, each named for its
+    entity without the default_curve_ prefix.
+    """
+    body = definition_body(text, "parts_of_default_curve_type")
+    if body is None:
+        return {}, ["the projection has no parts_of_default_curve_type"]
+    vectors = part_vectors(text)
+    problems = []
+    by_part = {}
+    for condition, inner in DEFAULT_BRANCH.findall(body):
+        types = re.findall(r'type == "(\w+)"', condition)
+        for name in re.findall(r"\.(\w+) = true", inner):
+            part = "default_curve_" + name
+            if part not in vectors:
+                problems.append(f"the default curve part {part} has no vector")
+                continue
+            seen = by_part.setdefault(part, [])
+            seen.extend(t for t in types if t not in seen)
+    if not by_part:
+        problems.append("the projection's default curve dispatch fills no parts")
+    return by_part, problems
 
 
 def kind_leaves(text):
@@ -489,6 +566,19 @@ def section_wiring(text, declared, section, entry, import_name, segment_rules):
             presence[element] = column
             continue
         parameters.append({"entity": entity, "column": column, "ore": element})
+    # An entry's construction settings are parts of the entry, read by a reader
+    # per part and keyed by the definition as the entry's own row is.
+    vectors = part_vectors(text)
+    for called in dict.fromkeys(ENTRY_PART_CALL.findall(body)):
+        parts, part_leaves_read = part_leaves(text, called, vectors, problems)
+        for part in parts:
+            vectors_of.setdefault(part, vectors[part])
+        for leaf in part_leaves_read:
+            if leaf["ore"] in blocks and leaf["column"].startswith("has_"):
+                presence[leaf["ore"]] = leaf["column"]
+                continue
+            parameters.append(
+                {"entity": leaf["entity"], "column": leaf["column"], "ore": leaf["ore"]})
     # The schema is the authority on the leaves an entry holds, so every column
     # the projection reads is checked against it rather than against the prose.
     allowed = set(declared.get(section, {}).get("leaves", []))
@@ -511,6 +601,16 @@ def section_wiring(text, declared, section, entry, import_name, segment_rules):
         # A section that holds segments and whose reader the pattern does not see
         # would reach the screen as a block with no rows, and nothing would say why.
         problems.append(f"{section}: holds a Segments block the collection rule does not read")
+    block_rows = [{"element": element, "presence": presence.get(element, ""),
+                   "presenceEntity": "" if element in presence
+                   else block_entity(body, element, entity_of, text)}
+                  for element in blocks]
+    # The entity that states a block is one of the entry's tables, so the screen
+    # reads its rows: a part read from the block's element joins them here.
+    for block in block_rows:
+        entity = block["presenceEntity"]
+        if entity and entity not in vectors_of and entity in vectors:
+            vectors_of[entity] = vectors[entity]
     return {
         "section": section,
         "entryElement": entry,
@@ -518,8 +618,7 @@ def section_wiring(text, declared, section, entry, import_name, segment_rules):
         "entities": [{"entity": entity, "vector": vector}
                      for entity, vector in vectors_of.items()],
         "parameters": parameters,
-        "blocks": [{"element": element, "presence": presence.get(element, "")}
-                   for element in blocks],
+        "blocks": block_rows,
         "collections": collections,
     }, problems
 
@@ -580,11 +679,17 @@ export interface CurveEntity {
     readonly vector: string;
 }
 
-/** A child element an entry holds, and the column that records its presence. */
+/**
+ * A child element an entry holds, and how the entry records its presence: a
+ * column of the entry's rows, or the rows of an entity the element's
+ * construction writes.
+ */
 export interface CurveBlock {
     readonly element: string;
     /** The column that records whether the entry holds the element, and empty for none. */
     readonly presence: string;
+    /** The entity whose row states the element, and empty for none. */
+    readonly presenceEntity: string;
 }
 
 /** One kind of a collection row, and the leaves the projection reads for it. */
@@ -692,6 +797,7 @@ def render_blocks(blocks):
             "            {\n"
             f"                element: {quote(block['element'])},\n"
             f"                presence: {quote(block['presence'])},\n"
+            f"                presenceEntity: {quote(block['presenceEntity'])},\n"
             "            },")
     return "\n".join(lines)
 
@@ -793,21 +899,23 @@ def part_kinds(kinds):
     return by_part
 
 
-def render_sql(kinds):
-    """The functions that refuse a segment part its segment's kind does not have."""
+def render_sql(kinds, default_types):
+    """The functions that refuse a part its owner's construction does not have."""
     lines = [SQL_LICENCE, """
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  *
  * Generated by projects/ores.sql/utility/generate_curve_section_parameters.py
  * from the curve configuration projection. To modify, change the projection's
- * import_segments and run the generator.
+ * import_segments or parts_of_default_curve_type and run the generator.
  *
  * A curve segment's settings are parts of the segment, and each segment
- * element has only some of them. The projection's import_segments is the one
- * statement of which element fills which part, so these functions are written
- * from it. Each part's insert trigger calls its function on the segment the
- * row names.
+ * element has only some of them; a default curve configuration's settings are
+ * parts of the configuration, and each type has only some of them. The
+ * projection's import_segments and parts_of_default_curve_type are the one
+ * statement of which construction fills which part, so these functions are
+ * written from them. Each part's insert trigger calls its function on the row
+ * the part names.
  */
 
 create or replace function ores_refdata_validate_curve_segment_part_fn(
@@ -839,6 +947,48 @@ begin
 end;
 $$ language plpgsql stable;
 """]
+    lines.append("""
+create or replace function ores_refdata_validate_default_curve_part_fn(
+    p_tenant_id uuid,
+    p_configuration_id uuid,
+    p_part text,
+    p_types text[]
+) returns uuid as $$
+declare
+    v_type text;
+begin
+    select c.default_curve_type into v_type
+    from ores_refdata_default_curve_configurations_tbl c
+    where c.tenant_id = p_tenant_id
+      and c.id = p_configuration_id
+      and c.valid_to = ores_utility_infinity_timestamp_fn();
+
+    -- The trigger's key check refuses a configuration that is not there.
+    if v_type is not null and not (v_type = any(p_types)) then
+        raise exception 'Invalid default_curve_configuration_id: %. A % default curve has no % part.',
+            p_configuration_id, v_type, p_part
+            using errcode = '23514';
+    end if;
+    return p_configuration_id;
+end;
+$$ language plpgsql stable;
+""")
+    for part, types in default_types.items():
+        types_sql = textwrap.fill(", ".join(f"'{k}'" for k in types), width=80,
+                                  initial_indent=" " * 12, subsequent_indent=" " * 12,
+                                  break_on_hyphens=False)
+        lines.append(f"""
+create or replace function ores_refdata_validate_{part}_fn(
+    p_tenant_id uuid,
+    p_value uuid
+) returns uuid as $$
+    select ores_refdata_validate_default_curve_part_fn(
+        p_tenant_id, p_value, '{part}',
+        array[
+{types_sql}
+        ]);
+$$ language sql stable;
+""")
     for part, part_kinds_list in part_kinds(kinds).items():
         kinds_sql = textwrap.fill(", ".join(f"'{k}'" for k in part_kinds_list), width=80,
                                   initial_indent=" " * 12, subsequent_indent=" " * 12,
@@ -869,7 +1019,11 @@ def main():
         return 1
     content = render(sections)
     kinds, _ = kind_leaves(source())
-    sql = render_sql(kinds)
+    default_types, default_problems = default_curve_types(source())
+    if default_problems:
+        print("\n".join(default_problems), file=sys.stderr)
+        return 1
+    sql = render_sql(kinds, default_types)
     if args.check:
         for path, expected in ((OUT, content), (SQL_OUT, sql)):
             committed = (open(path, encoding="utf-8").read()

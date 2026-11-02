@@ -36,26 +36,7 @@ export interface CommodityCurveConfigWrite {
     id: string;
     curve_definition_id: string;
     currency: string;
-    base_price_curve: string | null;
-    base_yield_curve: string | null;
-    yield_curve: string | null;
-    spot_quote: string | null;
-    has_quotes: boolean;
-    day_counter: string | null;
-    interpolation_method: string | null;
-    conventions: string | null;
     extrapolation: string | null;
-    has_basis_configuration: boolean;
-    basis_base_price_curve: string | null;
-    basis_base_price_conventions: string | null;
-    basis_conventions: string | null;
-    basis_day_counter: string | null;
-    basis_interpolation_method: string | null;
-    basis_add_basis: string | null;
-    basis_month_offset: number | null;
-    basis_average_base: string | null;
-    basis_price_as_historical_fixing: string | null;
-    has_price_segments: boolean;
 }
 
 export interface CommodityCurveConfigChange {

@@ -49,6 +49,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -313,6 +315,30 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused",
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
+}
+
+TEST_CASE("a default curve part its configuration's type does not have is refused",
+          "[curveconfig][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "a default curve part its configuration's type does not have is refused";
+    ores::testing::scoped_database_helper h;
+    write_input_conventions(h.context());
+
+    auto mapped = curve_configuration_projection::map(equity_and_securities());
+    const auto cds = std::ranges::find_if(mapped.default_curve_configurations, [](const auto& c) {
+        return c.default_curve_type == std::optional<std::string>("SpreadCDS") ||
+               c.default_curve_type == std::optional<std::string>("HazardRate");
+    });
+    REQUIRE(cds != mapped.default_curve_configurations.end());
+    ores::refdata::domain::default_curve_benchmark p;
+    p.default_curve_configuration_id = cds->id;
+    p.pillars = "1Y";
+    mapped.default_curve_benchmarks.push_back(p);
+
+    CHECK_THROWS_WITH(
+        write(h.context(), mapped),
+        Catch::Matchers::ContainsSubstring("default curve has no default_curve_benchmark part"));
 }
 
 TEST_CASE("default, equity and inflation curves and securities round trip through the database",

@@ -38,7 +38,8 @@
  * The walk projects every curve configuration document in the corpus to rows
  * and back, and compares the whole document. The cases below the walk cover
  * what no corpus document writes: every segment element in one document, an FX
- * parametric smile, and the refusal of elements the projection cannot hold.
+ * parametric smile, the refusal of elements the projection cannot hold, and
+ * the refusal of parts a segment's or a curve entry's construction does not have.
  */
 
 namespace {
@@ -438,7 +439,7 @@ TEST_CASE("a_segment_holds_only_the_parts_its_element_has", "[ore][xml][roundtri
         p.extrapolate_flat = true;
         changed.segment_extrapolations.push_back(p);
         CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
-                          Catch::Matchers::ContainsSubstring("its element does not have"));
+                          Catch::Matchers::ContainsSubstring("its construction does not have"));
     }
     {
         auto changed = mapped;
@@ -567,4 +568,140 @@ TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtr
     CHECK(fallback.rfr_index == std::optional<std::string>("CHF-SARON"));
     REQUIRE(fallback.spread);
     CHECK_FALSE(fallback.spread->is_zero());
+}
+
+TEST_CASE("a_curve_entry_holds_only_the_parts_its_construction_has",
+          "[ore][xml][roundtrip][curveconfig]") {
+    auto lg(make_logger(test_suite));
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <DefaultCurves>
+    <DefaultCurve>
+      <CurveId>CPTY_A_SR_EUR</CurveId>
+      <CurveDescription>A hazard rate curve</CurveDescription>
+      <Currency>EUR</Currency>
+      <Type>HazardRate</Type>
+      <DiscountCurve/>
+      <DayCounter>A360</DayCounter>
+      <RecoveryRate>RECOVERY_RATE/RATE/CPTY_A/SR/EUR</RecoveryRate>
+      <Quotes><Quote>HAZARD_RATE/RATE/CPTY_A/SR/EUR/1Y</Quote></Quotes>
+      <Conventions>CDS-STANDARD-CONVENTIONS</Conventions>
+    </DefaultCurve>
+    <DefaultCurve>
+      <CurveId>BOND_YIELD_EUR_OVER_OIS</CurveId>
+      <CurveDescription>A benchmark curve</CurveDescription>
+      <Currency>EUR</Currency>
+      <Type>Benchmark</Type>
+      <DayCounter>A365</DayCounter>
+      <BenchmarkCurve>Yield/EUR/EUR1D</BenchmarkCurve>
+      <SourceCurve>Yield/EUR/BOND_YIELD_EUR</SourceCurve>
+      <Pillars>1Y,2Y</Pillars>
+      <SpotLag>0</SpotLag>
+      <Calendar>TARGET</Calendar>
+    </DefaultCurve>
+  </DefaultCurves>
+  <CommodityCurves>
+    <CommodityCurve>
+      <CurveId>NaturalGas</CurveId>
+      <CurveDescription>Direct quotes</CurveDescription>
+      <Currency>USD</Currency>
+      <Quotes><Quote>COMMODITY_FWD/PRICE/NaturalGas/*</Quote></Quotes>
+      <DayCounter>A365</DayCounter>
+      <InterpolationMethod>BackwardFlat</InterpolationMethod>
+      <Extrapolation>true</Extrapolation>
+    </CommodityCurve>
+    <CommodityCurve>
+      <CurveId>NaturalGasBasis</CurveId>
+      <CurveDescription>A basis</CurveDescription>
+      <Currency>USD</Currency>
+      <BasisConfiguration>
+        <BasePriceCurve>NaturalGas</BasePriceCurve>
+        <BasePriceConventions>NaturalGas</BasePriceConventions>
+        <BasisQuotes><Quote>COMMODITY_FWD/PRICE/NaturalGasBasis/*</Quote></BasisQuotes>
+        <BasisConventions>NaturalGas</BasisConventions>
+      </BasisConfiguration>
+      <Extrapolation>true</Extrapolation>
+    </CommodityCurve>
+  </CommodityCurves>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
+    REQUIRE(mapped.default_curve_configurations.size() == 2);
+    const auto& hazard = mapped.default_curve_configurations[0].id;
+    const auto& benchmark = mapped.default_curve_configurations[1].id;
+    REQUIRE(mapped.commodity_curves.size() == 2);
+    const auto& direct = mapped.commodity_curves[0].curve_definition_id;
+    const auto& basis = mapped.commodity_curves[1].curve_definition_id;
+
+    // A part of optional fields the configuration leaves out is no row: the
+    // hazard rate curve states no CDS terms.
+    REQUIRE(mapped.default_curve_market_terms.size() == 1);
+    CHECK(mapped.default_curve_market_terms.front().default_curve_configuration_id == hazard);
+    CHECK(mapped.default_curve_cds_terms.empty());
+    REQUIRE(mapped.default_curve_benchmarks.size() == 1);
+    CHECK(mapped.default_curve_benchmarks.front().default_curve_configuration_id == benchmark);
+    REQUIRE(mapped.commodity_curve_directs.size() == 1);
+    CHECK(mapped.commodity_curve_directs.front().curve_definition_id == direct);
+    REQUIRE(mapped.commodity_curve_interpolations.size() == 1);
+    CHECK(mapped.commodity_curve_interpolations.front().curve_definition_id == direct);
+    REQUIRE(mapped.commodity_curve_bases.size() == 1);
+    CHECK(mapped.commodity_curve_bases.front().curve_definition_id == basis);
+    CHECK(mapped.commodity_curve_cross_currencies.empty());
+
+    const auto refused = [](const auto& changed, const std::string& reason) {
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(changed),
+                          Catch::Matchers::ContainsSubstring(reason));
+    };
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_benchmark p;
+        p.default_curve_configuration_id = hazard;
+        p.pillars = "1Y";
+        changed.default_curve_benchmarks.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_market_terms p;
+        p.default_curve_configuration_id = benchmark;
+        p.conventions = "CDS-STANDARD-CONVENTIONS";
+        changed.default_curve_market_terms.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::default_curve_cds_terms p;
+        p.default_curve_configuration_id = boost::uuids::random_generator()();
+        p.index_term = "5Y";
+        changed.default_curve_cds_terms.push_back(p);
+        refused(changed, "is not in the document");
+    }
+    {
+        auto changed = mapped;
+        ores::refdata::domain::commodity_curve_direct p;
+        p.curve_definition_id = basis;
+        p.spot_quote = "COMMODITY/PRICE/NaturalGas";
+        changed.commodity_curve_directs.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+    {
+        auto changed = mapped;
+        auto p = mapped.commodity_curve_bases.front();
+        p.curve_definition_id = direct;
+        changed.commodity_curve_bases.push_back(p);
+        refused(changed, "its construction does not have");
+    }
+
+    const auto untyped = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <DefaultCurves>
+    <DefaultCurve>
+      <CurveId>CPTY_B_SR_EUR</CurveId>
+      <CurveDescription>No type</CurveDescription>
+      <Currency>EUR</Currency>
+      <DayCounter>A360</DayCounter>
+    </DefaultCurve>
+  </DefaultCurves>
+</CurveConfiguration>)");
+    CHECK_THROWS_WITH(
+        curve_configuration_projection::map(untyped),
+        Catch::Matchers::ContainsSubstring("states neither a Type nor Configurations"));
 }

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-714 tables in 21 groups.
+728 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -107,7 +107,11 @@ entity "refdata" as refdata {
   ores_refdata_cds_volatility_terms_tbl
   ores_refdata_cms_spread_option_conventions_tbl
   ores_refdata_commodities_tbl
+  ores_refdata_commodity_curve_bases_tbl
   ores_refdata_commodity_curve_configs_tbl
+  ores_refdata_commodity_curve_cross_currencies_tbl
+  ores_refdata_commodity_curve_directs_tbl
+  ores_refdata_commodity_curve_interpolations_tbl
   ores_refdata_commodity_forward_conventions_tbl
   ores_refdata_commodity_future_averaging_terms_tbl
   ores_refdata_commodity_future_contract_terms_tbl
@@ -188,8 +192,13 @@ entity "refdata" as refdata {
   ores_refdata_curve_volatility_strike_surfaces_tbl
   ores_refdata_day_count_fraction_types_tbl
   ores_refdata_day_counters_tbl
+  ores_refdata_default_curve_benchmarks_tbl
+  ores_refdata_default_curve_cds_terms_tbl
   ores_refdata_default_curve_configs_tbl
   ores_refdata_default_curve_configurations_tbl
+  ores_refdata_default_curve_market_terms_tbl
+  ores_refdata_default_curve_transition_matrices_tbl
+  ores_refdata_default_curve_yield_reinterpretations_tbl
   ores_refdata_deposit_conventions_tbl
   ores_refdata_derivation_kinds_tbl
   ores_refdata_diary_entry_types_tbl
@@ -277,7 +286,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-202 tables — ores_schema.refdata.puml
+211 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -364,8 +373,13 @@ entity "dq_staging" as dq_staging {
   ores_dq_curve_segment_weighted_averages_artefact_tbl
   ores_dq_curve_segments_artefact_tbl
   ores_dq_curve_volatility_configs_artefact_tbl
+  ores_dq_default_curve_benchmarks_artefact_tbl
+  ores_dq_default_curve_cds_terms_artefact_tbl
   ores_dq_default_curve_configs_artefact_tbl
   ores_dq_default_curve_configurations_artefact_tbl
+  ores_dq_default_curve_market_terms_artefact_tbl
+  ores_dq_default_curve_transition_matrices_artefact_tbl
+  ores_dq_default_curve_yield_reinterpretations_artefact_tbl
   ores_dq_deposit_conventions_artefact_tbl
   ores_dq_engine_settings_artefact_tbl
   ores_dq_engine_settings_building_artefact_tbl
@@ -447,7 +461,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-163 tables — ores_schema.dq_staging.puml
+168 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

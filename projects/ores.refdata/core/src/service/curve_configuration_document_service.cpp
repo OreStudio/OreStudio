@@ -60,8 +60,13 @@
 #include "ores.refdata.core/repository/curve_volatility_smile_parameter_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/curve_volatility_strike_surface_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_benchmark_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_cds_terms_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/default_curve_configuration_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_market_terms_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_transition_matrix_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_yield_reinterpretation_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/equity_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/fx_volatility_config_repository.hpp"
@@ -122,6 +127,31 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
     write_amendment(ctx_,
                     default_curve_configuration_repository(),
                     std::move(v.default_curve_configurations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_market_terms_repository(),
+                    std::move(v.default_curve_market_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_cds_terms_repository(),
+                    std::move(v.default_curve_cds_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_benchmark_repository(),
+                    std::move(v.default_curve_benchmarks),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_transition_matrix_repository(),
+                    std::move(v.default_curve_transition_matrices),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    default_curve_yield_reinterpretation_repository(),
+                    std::move(v.default_curve_yield_reinterpretations),
                     reason,
                     commentary);
     write_amendment(ctx_,
@@ -357,6 +387,22 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     r.default_curves = read_where(ctx_, default_curve_config_repository(), of_definition);
     r.default_curve_configurations =
         read_where(ctx_, default_curve_configuration_repository(), of_definition);
+    std::set<boost::uuids::uuid> configurations;
+    for (const auto& c : r.default_curve_configurations)
+        configurations.insert(c.id);
+    const auto of_configuration = [&](const auto& row) {
+        return configurations.contains(row.default_curve_configuration_id);
+    };
+    r.default_curve_market_terms =
+        read_where(ctx_, default_curve_market_terms_repository(), of_configuration);
+    r.default_curve_cds_terms =
+        read_where(ctx_, default_curve_cds_terms_repository(), of_configuration);
+    r.default_curve_benchmarks =
+        read_where(ctx_, default_curve_benchmark_repository(), of_configuration);
+    r.default_curve_transition_matrices =
+        read_where(ctx_, default_curve_transition_matrix_repository(), of_configuration);
+    r.default_curve_yield_reinterpretations =
+        read_where(ctx_, default_curve_yield_reinterpretation_repository(), of_configuration);
     r.inflation_curves = read_where(ctx_, inflation_curve_config_repository(), of_definition);
     r.seasonality_factors =
         read_where(ctx_, inflation_seasonality_factor_repository(), of_definition);
@@ -582,6 +628,18 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         inflation_seasonality_factor_repository().remove(ctx_, ids_of(d.seasonality_factors));
     if (!d.inflation_curves.empty())
         inflation_curve_config_repository().remove(ctx_, ids_of(d.inflation_curves));
+    if (!d.default_curve_market_terms.empty())
+        default_curve_market_terms_repository().remove(ctx_, ids_of(d.default_curve_market_terms));
+    if (!d.default_curve_cds_terms.empty())
+        default_curve_cds_terms_repository().remove(ctx_, ids_of(d.default_curve_cds_terms));
+    if (!d.default_curve_benchmarks.empty())
+        default_curve_benchmark_repository().remove(ctx_, ids_of(d.default_curve_benchmarks));
+    if (!d.default_curve_transition_matrices.empty())
+        default_curve_transition_matrix_repository().remove(
+            ctx_, ids_of(d.default_curve_transition_matrices));
+    if (!d.default_curve_yield_reinterpretations.empty())
+        default_curve_yield_reinterpretation_repository().remove(
+            ctx_, ids_of(d.default_curve_yield_reinterpretations));
     if (!d.default_curve_configurations.empty())
         default_curve_configuration_repository().remove(ctx_,
                                                         ids_of(d.default_curve_configurations));

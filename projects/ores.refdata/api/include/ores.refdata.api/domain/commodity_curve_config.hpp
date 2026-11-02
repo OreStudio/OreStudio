@@ -43,11 +43,19 @@ namespace ores::refdata::domain {
  * from forward quotes, or from a base curve and a yield curve, or as a basis over
  * another commodity curve, or from price segments.
  *
- * The basis form writes a BasisConfiguration element, whose settings are the
- * basis_ columns and whose BasisQuotes are rows of curve_quote with that
- * list name. Price segments are rows of commodity_price_segment. The entry's
- * own quotes are rows of curve_quote on the entry, and its BootstrapConfig a
- * row of curve_bootstrap_config.
+ * The row holds what every construction reads, its currency and whether it
+ * extrapolates. Each construction's settings are a part of the entry, keyed by
+ * its curve_definition_id and present only for the construction that reads
+ * them: commodity_curve_direct for a curve built from forward quotes,
+ * commodity_curve_cross_currency for one built from a base curve and a yield
+ * curve, commodity_curve_basis for the BasisConfiguration element, whose
+ * BasisQuotes are rows of curve_quote with that list name, and
+ * commodity_curve_interpolation for the day counter and interpolation the
+ * direct and piecewise curves state. Price segments are rows of
+ * commodity_price_segment. Which part an entry holds is its construction, so
+ * the row carries no flag for it. The entry's own quotes are rows of
+ * curve_quote on the entry, and its BootstrapConfig a row of
+ * curve_bootstrap_config.
  */
 struct commodity_curve_config final {
     /**
@@ -82,105 +90,9 @@ struct commodity_curve_config final {
     std::string currency;
 
     /**
-     * @brief The commodity curve a curve built from a base and a yield curve starts from.
-     */
-    std::optional<std::string> base_price_curve;
-
-    /**
-     * @brief The yield curve of the base curve's currency.
-     */
-    std::optional<std::string> base_yield_curve;
-
-    /**
-     * @brief The yield curve of the curve's own currency.
-     */
-    std::optional<std::string> yield_curve;
-
-    /**
-     * @brief The quote of the commodity's spot price.
-     */
-    std::optional<std::string> spot_quote;
-
-    /**
-     * @brief Whether the entry writes a Quotes element.
-     */
-    bool has_quotes = false;
-
-    /**
-     * @brief The day counter the curve is built on, as the document spells it.
-     */
-    std::optional<std::string> day_counter;
-
-    /**
-     * @brief How the curve interpolates between its pillars.
-     */
-    std::optional<std::string> interpolation_method;
-
-    /**
-     * @brief The convention the curve's instruments are priced with, by its id.
-     */
-    std::optional<std::string> conventions;
-
-    /**
      * @brief Whether the curve extrapolates, as the ORE boolean the document wrote.
      */
     std::optional<std::string> extrapolation;
-
-    /**
-     * @brief Whether the entry writes a BasisConfiguration element.
-     */
-    bool has_basis_configuration = false;
-
-    /**
-     * @brief The commodity curve a basis curve is built over.
-     */
-    std::optional<std::string> basis_base_price_curve;
-
-    /**
-     * @brief The convention of the base curve's prices, by its id.
-     */
-    std::optional<std::string> basis_base_price_conventions;
-
-    /**
-     * @brief The convention of the basis quotes, by its id.
-     */
-    std::optional<std::string> basis_conventions;
-
-    /**
-     * @brief The day counter of the basis, as the document spells it.
-     */
-    std::optional<std::string> basis_day_counter;
-
-    /**
-     * @brief How the basis interpolates.
-     */
-    std::optional<std::string> basis_interpolation_method;
-
-    /**
-     * @brief Whether the basis is added to the base price, as the ORE boolean the document wrote.
-     */
-    std::optional<std::string> basis_add_basis;
-
-    /**
-     * @brief The number of months the base curve is offset by.
-     */
-    std::optional<int> basis_month_offset;
-
-    /**
-     * @brief Whether the base price is averaged, as the ORE boolean the document wrote.
-     */
-    std::optional<std::string> basis_average_base;
-
-    /**
-     * @brief Whether a base price is taken as a historical fixing, as the ORE boolean the document
-     * wrote.
-     */
-    std::optional<std::string> basis_price_as_historical_fixing;
-
-    /**
-     * @brief Whether the entry writes a PriceSegments element.
-     */
-    bool has_price_segments = false;
 
     /**
      * @brief Username of the person who last modified this commodity curve config.

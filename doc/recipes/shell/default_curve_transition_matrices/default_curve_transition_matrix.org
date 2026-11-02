@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3DD09B83-11D1-5606-AA03-4A192EDC4903
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_transition_matrices commands from the shell?
+#+description: Every command the default_curve_transition_matrices submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_transition_matrices:
+
+This file documents the default_curve_transition_matrices resource at the shell, one section per command. Every command is a subcommand of =default_curve_transition_matrices=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8F0965E1-66AD-5C52-B6E3-AF2E7B42FC42
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.list=.
+
+#+name: default_curve_transition_matrices-list
+#+begin_src ores-shell :tangle default_curve_transition_matrices-list.ores :exports none
+default_curve_transition_matrices list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3D355BA6-853C-5111-92E3-39A50292B76A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.get=.
+
+#+name: default_curve_transition_matrices-get
+#+begin_src ores-shell :tangle default_curve_transition_matrices-get.ores :exports none
+default_curve_transition_matrices get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 61366E1D-0DFD-5802-B15E-E769439B77EA
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.get_many=.
+
+#+name: default_curve_transition_matrices-get-many
+#+begin_src ores-shell :tangle default_curve_transition_matrices-get-many.ores :exports none
+default_curve_transition_matrices get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 08D2FB1C-3AE2-5920-9F13-D146F886C7F9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices add <default_curve_configuration_id> <initial_state> <states> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.put=.
+
+#+name: default_curve_transition_matrices-add
+#+begin_src ores-shell :tangle default_curve_transition_matrices-add.ores :exports none
+default_curve_transition_matrices add 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 64DBCABB-EE93-52A5-A895-D5327C979931
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices set <id> <default_curve_configuration_id> <initial_state> <states> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.put=.
+
+#+name: default_curve_transition_matrices-set
+#+begin_src ores-shell :tangle default_curve_transition_matrices-set.ores :exports none
+default_curve_transition_matrices set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 12EF0AFF-7F6D-53C3-A5A8-362553CD9C0D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices put-many --count <n> <id> <default_curve_configuration_id> <initial_state> <states> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.put_many=.
+
+#+name: default_curve_transition_matrices-put-many
+#+begin_src ores-shell :tangle default_curve_transition_matrices-put-many.ores :exports none
+default_curve_transition_matrices put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F2EE2741-3545-51A0-AC2D-657856634DB7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.delete=.
+
+#+name: default_curve_transition_matrices-delete
+#+begin_src ores-shell :tangle default_curve_transition_matrices-delete.ores :exports none
+default_curve_transition_matrices delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 686C7499-9839-5A47-8CDE-BA69383985F4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices.delete_many=.
+
+#+name: default_curve_transition_matrices-delete-many
+#+begin_src ores-shell :tangle default_curve_transition_matrices-delete-many.ores :exports none
+default_curve_transition_matrices delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E7F66CC5-9A30-593D-A9A0-08F43E4D5BCD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices_versions.list=.
+
+#+name: default_curve_transition_matrices-versions
+#+begin_src ores-shell :tangle default_curve_transition_matrices-versions.ores :exports none
+default_curve_transition_matrices versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C2DEC444-38F9-523A-85E3-4F2BA4B6120C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_transition_matrices version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_transition_matrices_versions.get=.
+
+#+name: default_curve_transition_matrices-version
+#+begin_src ores-shell :tangle default_curve_transition_matrices-version.ores :exports none
+default_curve_transition_matrices version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

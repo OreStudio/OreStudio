@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.api/generators/default_curve_configuration_generator.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -51,26 +50,10 @@ generate_synthetic_default_curve_configuration(utility::generation::generation_c
     r.is_inline = false;
     r.priority = std::nullopt;
     r.default_curve_type = std::nullopt;
-    r.discount_curve = std::nullopt;
     r.day_counter = std::nullopt;
     r.recovery_rate = std::nullopt;
-    r.start_date = std::nullopt;
-    r.has_quotes = false;
-    r.benchmark_curve = std::nullopt;
-    r.reinterpreted_yield_curve = std::nullopt;
-    r.source_curve = std::nullopt;
-    r.pillars = std::nullopt;
-    r.spot_lag = std::nullopt;
-    r.calendar = std::nullopt;
-    r.conventions = std::nullopt;
     r.extrapolation = std::nullopt;
-    r.running_spread = std::nullopt;
-    r.index_term = std::nullopt;
-    r.imply_default_from_market = std::nullopt;
     r.allow_negative_rates = std::nullopt;
-    r.price_is_upfront = std::nullopt;
-    r.initial_state = std::nullopt;
-    r.states = std::nullopt;
     r.position = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

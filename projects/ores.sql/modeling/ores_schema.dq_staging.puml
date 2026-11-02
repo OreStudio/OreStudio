@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 163
+Tables: 168
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1630,6 +1630,44 @@ package "dq_staging" #F3E5F5 {
     The volatility block of one ORE curve entry: the holder its kinds are listed in. ORE writes either one bare kind element on the entry, or a VolatilityConfig element holding up to one of each kind in an xs:all; is_wrapped says which form this block was written in. The kinds themselves are rows of curve_volatility_kind, and each kind's own fields are the row of that kind's part. The row carries no kind and no field of any kind. Every one of those facts belongs to a kind or to a kind's part, and a row that carried them as well would state each one twice. - Artefact Table
     end note
 
+    entity ores_dq_default_curve_benchmarks_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          benchmark_curve : text
+          source_curve : text
+          pillars : text
+          spot_lag : integer
+          calendar : text
+    }
+
+    note right of ores_dq_default_curve_benchmarks_artefact_tbl
+    How a benchmark default curve is derived, as ORE's BenchmarkCurve, SourceCurve, Pillars, SpotLag and Calendar. Only the benchmark construction reads them, and ORE requires all five for it. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_cds_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          start_date : text
+          running_spread : numeric(38, 12)
+          index_term : text
+          imply_default_from_market : text
+          price_is_upfront : text
+    }
+
+    note right of ores_dq_default_curve_cds_terms_artefact_tbl
+    The settings of a default curve bootstrapped from CDS instruments, as ORE's StartDate, RunningSpread, IndexTerm, ImplyDefaultFromMarket and PriceIsUpfront. Only the CDS spread, hazard rate, price, conventional spread and null constructions read them, and each is optional, so a configuration has this part only when its document states one of them. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
     entity ores_dq_default_curve_configs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -1656,31 +1694,63 @@ package "dq_staging" #F3E5F5 {
         * is_inline : boolean
           priority : integer
           default_curve_type : text
-          discount_curve : text
           day_counter : text
           recovery_rate : text
-          start_date : text
-        * has_quotes : boolean
-          benchmark_curve : text
-          reinterpreted_yield_curve : text
-          source_curve : text
-          pillars : text
-          spot_lag : integer
-          calendar : text
-          conventions : text
           extrapolation : text
-          running_spread : numeric(38, 12)
-          index_term : text
-          imply_default_from_market : text
           allow_negative_rates : text
-          price_is_upfront : text
-          initial_state : text
-          states : text
         * position : integer
     }
 
     note right of ores_dq_default_curve_configurations_artefact_tbl
-    One way a default curve may be built. A DefaultCurve either writes its settings inline, or lists them as Configurations, each with a priority; ORE builds the first configuration that succeeds. The corpus writes 144 curves inline and 189 with configurations, nine of them with two, and never both. Each inline curve is one row with is_inline set; each listed configuration is one row with its priority. The quotes a configuration is built from are rows of curve_quote, and its BootstrapConfig a row of curve_bootstrap_config, both naming this row. Pillars and States are comma separated lists in ORE's own text, held as written. The schema also allows SourceCurves and SwitchDates lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    One way a default curve may be built. A DefaultCurve either writes its settings inline, or lists them as Configurations, each with a priority; ORE builds the first configuration that succeeds. The corpus writes 144 curves inline and 189 with configurations, nine of them with two, and never both. Each inline curve is one row with is_inline set; each listed configuration is one row with its priority. The row holds what every type reads: its type, day counter, recovery rate, extrapolation and whether it allows negative rates. Each type's settings are a part of the configuration, keyed by its id and present only for the types that read them: default_curve_market_terms and default_curve_cds_terms for the CDS spread, hazard rate, price, conventional spread and null types, default_curve_benchmark, default_curve_transition_matrix and default_curve_yield_reinterpretation for theirs. The quotes a configuration is built from are rows of curve_quote, and its BootstrapConfig a row of curve_bootstrap_config, both naming this row. Pillars and States are comma separated lists in ORE's own text, held as written in their parts. The schema also allows SourceCurves and SwitchDates lists, which no corpus document writes; the mapper refuses an entry that has them rather than lose them. - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_market_terms_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          discount_curve : text
+          conventions : text
+        * has_quotes : boolean
+    }
+
+    note right of ores_dq_default_curve_market_terms_artefact_tbl
+    What a default curve built from market quotes states about those quotes, as ORE's DiscountCurve, Conventions and Quotes. The CDS spread, hazard rate, price, conventional spread and null constructions read them. A transition matrix reads only its Quotes, but every transition matrix in the ORE examples also states a discount curve and conventions, so the part holds them for that type too and the document round trips as written. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_transition_matrices_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          initial_state : text
+          states : text
+    }
+
+    note right of ores_dq_default_curve_transition_matrices_artefact_tbl
+    The rating states of a default curve read from a transition matrix, as ORE's InitialState and States. Only the transition matrix construction reads them, and each is optional, so a configuration has this part only when its document states one of them. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
+    end note
+
+    entity ores_dq_default_curve_yield_reinterpretations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * default_curve_configuration_id : uuid <<FK>>
+          reinterpreted_yield_curve : text
+    }
+
+    note right of ores_dq_default_curve_yield_reinterpretations_artefact_tbl
+    The yield curve a default curve of type YieldCurve reads as survival probabilities, as ORE's ReinterpretedYieldCurve. Only that construction reads it, and ORE requires it there. A default curve configuration holds at most one row of this part, so the generated table adds the unique index on the live rows of (tenant_id, default_curve_configuration_id). - Artefact Table
     end note
 
     entity ores_dq_deposit_conventions_artefact_tbl  #F7E5FF {

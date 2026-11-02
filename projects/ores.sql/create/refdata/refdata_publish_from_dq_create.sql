@@ -6519,6 +6519,8 @@ begin
         array['curve_configurations', 'curve_configuration_sections', 'curve_global_reports',
               'curve_definitions', 'yield_curve_configs', 'equity_curve_configs',
               'default_curve_configs', 'default_curve_configurations', 'inflation_curve_configs',
+              'default_curve_market_terms', 'default_curve_cds_terms', 'default_curve_benchmarks',
+              'default_curve_transition_matrices', 'default_curve_yield_reinterpretations',
               'inflation_seasonality_factors', 'curve_security_configs',
               'intraday_power_curve_configs', 'fx_volatility_configs', 'base_correlation_configs',
               'curve_correlation_configs', 'curve_report_configurations', 'cds_volatility_configs',

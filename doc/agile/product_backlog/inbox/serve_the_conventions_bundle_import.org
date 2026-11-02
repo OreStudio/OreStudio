@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FE34DD26-2F96-4A3E-8EA8-A743E5A86CD6
+:END:
+#+title: No service subscribes to refdata.v1.ops.begin_bundle_import,…
+#+description: No service subscribes to refdata.v1.ops.begin_bundle_import, stage_bundle_family or commit_bundle_import. bundle_import_operations_service exists in ores.refdata.core, but no messaging handler registers it, and git history shows it was never wired, as conventions_import_operations_service either. The ore service's run configuration import calls these subjects for the run's conventions file, so 'ore import-run' on any directory with a conventions file fails with 'conventions.xml: Exception calling refdata.v1.ops.begin_bundle_import: NATS request timed out'. Observed live on 2026-11-02 against a recreated database with Acme provisioned. The import-run recipe was last tested on 2026-10-05, before the bundle import existed.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -66,7 +66,11 @@
 #include "ores.refdata.service/messaging/cds_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cds_volatility_term_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cms_spread_option_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_curve_basis_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_curve_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_curve_cross_currency_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_curve_direct_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_curve_interpolation_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_forward_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_future_averaging_terms_event_registrar.hpp"
@@ -147,8 +151,13 @@
 #include "ores.refdata.service/messaging/curve_volatility_strike_surface_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_counter_event_registrar.hpp"
+#include "ores.refdata.service/messaging/default_curve_benchmark_event_registrar.hpp"
+#include "ores.refdata.service/messaging/default_curve_cds_terms_event_registrar.hpp"
 #include "ores.refdata.service/messaging/default_curve_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/default_curve_configuration_event_registrar.hpp"
+#include "ores.refdata.service/messaging/default_curve_market_terms_event_registrar.hpp"
+#include "ores.refdata.service/messaging/default_curve_transition_matrix_event_registrar.hpp"
+#include "ores.refdata.service/messaging/default_curve_yield_reinterpretation_event_registrar.hpp"
 #include "ores.refdata.service/messaging/deposit_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/derivation_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/diary_entry_type_event_registrar.hpp"
@@ -339,6 +348,12 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
         register_cms_spread_option_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_commodity_curve_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(
+        register_commodity_curve_interpolation_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_commodity_curve_direct_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_curve_cross_currency_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_commodity_curve_basis_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
         register_commodity_forward_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_commodity_future_averaging_terms_event_mapping(event_source, event_bus, nats));
@@ -429,6 +444,14 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_default_curve_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_default_curve_configuration_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_default_curve_market_terms_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_default_curve_cds_terms_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_default_curve_benchmark_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_default_curve_transition_matrix_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_default_curve_yield_reinterpretation_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_deposit_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_derivation_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_equity_curve_config_event_mapping(event_source, event_bus, nats));

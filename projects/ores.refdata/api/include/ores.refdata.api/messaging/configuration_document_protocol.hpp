@@ -31,7 +31,11 @@
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
+#include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.api/domain/commodity_curve_config.hpp"
+#include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
+#include "ores.refdata.api/domain/commodity_curve_direct.hpp"
+#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
@@ -69,8 +73,13 @@
 #include "ores.refdata.api/domain/curve_volatility_smile.hpp"
 #include "ores.refdata.api/domain/curve_volatility_smile_parameter.hpp"
 #include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
+#include "ores.refdata.api/domain/default_curve_benchmark.hpp"
+#include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/default_curve_market_terms.hpp"
+#include "ores.refdata.api/domain/default_curve_transition_matrix.hpp"
+#include "ores.refdata.api/domain/default_curve_yield_reinterpretation.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
@@ -119,6 +128,12 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::inflation_curve_config> inflation_curves;
     std::vector<ores::refdata::domain::default_curve_config> default_curves;
     std::vector<ores::refdata::domain::commodity_curve_config> commodity_curves;
+    std::vector<ores::refdata::domain::commodity_curve_interpolation>
+        commodity_curve_interpolations;
+    std::vector<ores::refdata::domain::commodity_curve_direct> commodity_curve_directs;
+    std::vector<ores::refdata::domain::commodity_curve_cross_currency>
+        commodity_curve_cross_currencies;
+    std::vector<ores::refdata::domain::commodity_curve_basis> commodity_curve_bases;
     std::vector<ores::refdata::domain::fx_volatility_config> fx_volatilities;
     std::vector<ores::refdata::domain::fx_volatility_smile> fx_volatility_smiles;
     std::vector<ores::refdata::domain::yield_volatility_config> yield_volatilities;
@@ -156,6 +171,13 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_global_report> global_reports;
     std::vector<ores::refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<ores::refdata::domain::default_curve_configuration> default_curve_configurations;
+    std::vector<ores::refdata::domain::default_curve_market_terms> default_curve_market_terms;
+    std::vector<ores::refdata::domain::default_curve_cds_terms> default_curve_cds_terms;
+    std::vector<ores::refdata::domain::default_curve_benchmark> default_curve_benchmarks;
+    std::vector<ores::refdata::domain::default_curve_transition_matrix>
+        default_curve_transition_matrices;
+    std::vector<ores::refdata::domain::default_curve_yield_reinterpretation>
+        default_curve_yield_reinterpretations;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::vector<ores::refdata::domain::curve_security_config> securities;
     std::vector<ores::refdata::domain::intraday_power_curve_config> intraday_power_curves;

@@ -240,6 +240,11 @@
 \ir ./dq_yield_curve_configs_artefact_drop.sql
 \ir ./dq_equity_curve_configs_artefact_drop.sql
 \ir ./dq_default_curve_configs_artefact_drop.sql
+\ir ./dq_default_curve_market_terms_artefact_drop.sql
+\ir ./dq_default_curve_cds_terms_artefact_drop.sql
+\ir ./dq_default_curve_benchmarks_artefact_drop.sql
+\ir ./dq_default_curve_transition_matrices_artefact_drop.sql
+\ir ./dq_default_curve_yield_reinterpretations_artefact_drop.sql
 \ir ./dq_default_curve_configurations_artefact_drop.sql
 \ir ./dq_inflation_curve_configs_artefact_drop.sql
 \ir ./dq_inflation_seasonality_factors_artefact_drop.sql

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 856E7C12-D11F-52D3-876F-E49DF53BF3B0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_market_terms commands from the shell?
+#+description: Every command the default_curve_market_terms submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_market_terms:
+
+This file documents the default_curve_market_terms resource at the shell, one section per command. Every command is a subcommand of =default_curve_market_terms=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 71FF5EFB-78B7-50A5-A8C2-A0434C124B0B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.list=.
+
+#+name: default_curve_market_terms-list
+#+begin_src ores-shell :tangle default_curve_market_terms-list.ores :exports none
+default_curve_market_terms list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6675EB99-A9A7-562F-8BC5-95B8A9DE647D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.get=.
+
+#+name: default_curve_market_terms-get
+#+begin_src ores-shell :tangle default_curve_market_terms-get.ores :exports none
+default_curve_market_terms get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B3ABAAB5-10E0-5B53-8629-3AE961306573
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.get_many=.
+
+#+name: default_curve_market_terms-get-many
+#+begin_src ores-shell :tangle default_curve_market_terms-get-many.ores :exports none
+default_curve_market_terms get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 012A1A4D-773F-5950-95A1-E742C6053F81
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms add <default_curve_configuration_id> <discount_curve> <conventions> <has_quotes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.put=.
+
+#+name: default_curve_market_terms-add
+#+begin_src ores-shell :tangle default_curve_market_terms-add.ores :exports none
+default_curve_market_terms add 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D13FFCC5-604C-506E-9BE6-759E9416FE17
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms set <id> <default_curve_configuration_id> <discount_curve> <conventions> <has_quotes> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.put=.
+
+#+name: default_curve_market_terms-set
+#+begin_src ores-shell :tangle default_curve_market_terms-set.ores :exports none
+default_curve_market_terms set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B610E7C6-A18D-59E6-8730-3D5749D793C8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms put-many --count <n> <id> <default_curve_configuration_id> <discount_curve> <conventions> <has_quotes> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.put_many=.
+
+#+name: default_curve_market_terms-put-many
+#+begin_src ores-shell :tangle default_curve_market_terms-put-many.ores :exports none
+default_curve_market_terms put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 54C8E22C-3D41-54EF-90AE-CD150382C7DC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.delete=.
+
+#+name: default_curve_market_terms-delete
+#+begin_src ores-shell :tangle default_curve_market_terms-delete.ores :exports none
+default_curve_market_terms delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A7AE93EB-84F9-59E9-88AC-989D8A0B091D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms.delete_many=.
+
+#+name: default_curve_market_terms-delete-many
+#+begin_src ores-shell :tangle default_curve_market_terms-delete-many.ores :exports none
+default_curve_market_terms delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4E13606C-761F-54E8-A8BC-50EB133372E4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms_versions.list=.
+
+#+name: default_curve_market_terms-versions
+#+begin_src ores-shell :tangle default_curve_market_terms-versions.ores :exports none
+default_curve_market_terms versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6B67C58F-FA6C-591B-8405-C52E63B08DF8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_market_terms version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_market_terms_versions.get=.
+
+#+name: default_curve_market_terms-version
+#+begin_src ores-shell :tangle default_curve_market_terms-version.ores :exports none
+default_curve_market_terms version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

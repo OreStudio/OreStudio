@@ -31,10 +31,18 @@
  * inline curve is one row with is_inline set; each listed configuration is one
  * row with its priority.
  *
+ * The row holds what every type reads: its type, day counter, recovery rate,
+ * extrapolation and whether it allows negative rates. Each type's settings are a
+ * part of the configuration, keyed by its id and present only for the types that
+ * read them: default_curve_market_terms and default_curve_cds_terms for the
+ * CDS spread, hazard rate, price, conventional spread and null types,
+ * default_curve_benchmark, default_curve_transition_matrix and
+ * default_curve_yield_reinterpretation for theirs.
+ *
  * The quotes a configuration is built from are rows of curve_quote, and its
  * BootstrapConfig a row of curve_bootstrap_config, both naming this row.
  * Pillars and States are comma separated lists in ORE's own text, held as
- * written. The schema also allows SourceCurves and SwitchDates lists, which
+ * written in their parts. The schema also allows SourceCurves and SwitchDates lists, which
  * no corpus document writes; the mapper refuses an entry that has them rather
  * than lose them.
  */
@@ -48,26 +56,10 @@ create table if not exists "ores_refdata_default_curve_configurations_tbl" (
     "is_inline" boolean not null,
     "priority" integer null,
     "default_curve_type" text null,
-    "discount_curve" text null,
     "day_counter" text null,
     "recovery_rate" text null,
-    "start_date" text null,
-    "has_quotes" boolean not null,
-    "benchmark_curve" text null,
-    "reinterpreted_yield_curve" text null,
-    "source_curve" text null,
-    "pillars" text null,
-    "spot_lag" integer null,
-    "calendar" text null,
-    "conventions" text null,
     "extrapolation" text null,
-    "running_spread" numeric(38, 12) null,
-    "index_term" text null,
-    "imply_default_from_market" text null,
     "allow_negative_rates" text null,
-    "price_is_upfront" text null,
-    "initial_state" text null,
-    "states" text null,
     "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -116,16 +108,6 @@ begin
     ) then
         raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
             using errcode = '23503';
-    end if;
-
-    -- Validate conventions (optional field -- skip validation when null)
-    if NEW.conventions is not null then
-        NEW.conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.conventions);
-    end if;
-
-    -- Validate calendar (optional field -- skip validation when null)
-    if NEW.calendar is not null then
-        NEW.calendar := ores_refdata_validate_calendar_fn(NEW.tenant_id, NEW.calendar);
     end if;
 
     -- Validate change_reason_code

@@ -29,7 +29,7 @@ The three remaining convention kinds are on the family's shape: a central conven
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
 | Now          | The fix float kind is merged (PR #4351). The cross currency basis kind is split, built, tested and checked live. |
-| Waiting on   | The local gate and review of the basis PR. |
+| Waiting on   | The review of the basis PR. |
 | Next         | Raise the basis PR, then split commodity future. |
 | Last touched | 2026-11-02                             |
 
@@ -212,5 +212,11 @@ via its "Verifies task" field.
 | 9 | PR #4351, @claude 3: confirm main fails the checks the PR says it does | gate | Accept | Against main 88065820c9, route-inventory, unity-collisions, bff-list-requests and the web format check pass, so the PR's list was stale; after the rebase only xml-benchmark-recorded still fails on main. bff-list-requests failed on the branch: the generated list request table is regenerated. |
 | 10 | PR #4351, @claude 4: rebuild fully before merging | build | Accept | The branch is rebuilt in full after this round and its suites rerun. |
 | 11 | PR #4351, @claude 5: a check that refuses a truncation collision | codegen | Decline here | Over-long generated names are a codegen issue on main; captured as [[id:8EED0888-B80F-42FB-9B60-EE35ADEBFA1A][Refuse a generated SQL identifier that PostgreSQL truncates into a collision]]. |
+| 12 | Basis tests: the round trip read =SettlementDays= as text, and the reader refuses text from an integer element | =xml_roundtrip_conventions_tests.cpp= | Accept | The test reads it with =integer()=; fixed in 413fdf5e3c. |
+| 13 | Basis gate: =xml-benchmark-recorded= fails | gate | Decline here | The measured change is 3446abdb44, which is on main; this branch changes no measured XML code. |
+| 14 | Basis live check: a recreate under a running fleet leaves the workflow pool on the dropped database, and provisioning fails | services | Decline here | A service defect on main; captured as [[id:7BE089B8-384B-43CF-AAC8-66CFC583F4CF][Reconnect a service's connection pool after the database is recreated]]. |
+| 15 | Basis live check: =check_shell_recipes.py= hard-codes the debug preset's shell | codegen | Decline here | Captured as [[id:9AE00373-65AF-4864-8D7B-3F6AB99876C4][Take the shell binary from the preset in the shell recipe check]]; the 33 recipes were replayed with the release shell. |
+| 16 | Basis review: the three composite publishers repeat one shape | =refdata_publish_from_dq_create.sql= | Decline here | Each names its own part tables and columns; generating them is codegen work for when commodity future adds the fourth. |
+| 17 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
 
 * Result

@@ -36,6 +36,7 @@
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.testing/conventions_rows.hpp"
@@ -140,11 +141,21 @@ void write_missing(const ores::database::context& ctx,
 }
 
 // Writes the central rows of one atomised kind that the tenant does not hold
-// yet, matched by name. The checks that resolve a convention read the central
+// yet, matched by name, as the tenant's system party: the central table refuses
+// a row with no party. The checks that resolve a convention read the central
 // row, so a case that only needs a name to resolve writes no part.
-void write_missing_central(const ores::database::context& ctx,
-                           const std::vector<ores::refdata::domain::convention>& rows,
+void write_missing_central(ores::testing::scoped_database_helper& h,
+                           std::vector<ores::refdata::domain::convention> rows,
                            std::string_view kind) {
+    const auto& ctx = h.context();
+    boost::uuids::uuid system_party{};
+    for (const auto& p : party_repository().read_latest(ctx))
+        if (p.tenant_id == h.tenant_id() && p.party_category == "System")
+            system_party = p.id;
+    REQUIRE(system_party != boost::uuids::uuid{});
+    for (auto& r : rows)
+        r.identity.party_id = system_party;
+
     convention_repository repo;
     std::set<std::string> held;
     for (const auto& r : repo.read_latest(ctx))
@@ -358,7 +369,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
     write_missing_central(
-        h.context(),
+        h,
         rows_of<ores::refdata::domain::convention>(split_conventions(c), "convention"),
         "COMMODITY_FUTURE");
 

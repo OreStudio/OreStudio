@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: ABEA22FE-C92F-4522-8256-72DE1804295B
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.configuration_analytic

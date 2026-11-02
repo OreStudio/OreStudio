@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7C1F3B52-9D64-4A18-8E27-5B0FA2C6D914
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.run_result
 #+description: Codegen entity model for the run result read model: the figures of a run, at the keys and measures the screen reads.

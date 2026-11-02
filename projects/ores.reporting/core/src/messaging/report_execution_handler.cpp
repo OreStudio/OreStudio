@@ -45,7 +45,7 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -54,7 +54,6 @@
 #include <format>
 #include <fstream>
 #include <map>
-#include <rfl/json.hpp>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -246,7 +245,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<gather_trades_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<gather_trades_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_trades_request");
         ack.accept();
@@ -352,7 +351,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         // holds, so no reader has to rebuild it from the trades blob.
         result.trade_versions = exp_resp->trade_versions.empty() ?
                                     std::string{} :
-                                    rfl::json::write(exp_resp->trade_versions);
+                                    ores::utility::codec::json::write(exp_resp->trade_versions);
         result.message =
             std::format("Gathered {} trades from {} books", exp_resp->trade_count, book_ids.size());
 
@@ -360,7 +359,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
                                   << " trades=" << exp_resp->trade_count
                                   << " books=" << book_ids.size();
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
@@ -380,7 +379,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<gather_market_data_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<gather_market_data_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_market_data_request");
         ack.accept();
@@ -461,7 +460,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
                                   << req.report_instance_id << " series=" << md_resp->series_count;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
@@ -481,7 +480,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<assemble_bundle_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<assemble_bundle_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode assemble_bundle_request");
         ack.accept();
@@ -542,7 +541,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "assemble_bundle complete | instance="
                                   << req.report_instance_id << " bundle=" << bundle_id;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
@@ -635,7 +634,7 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<collect_compute_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<collect_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode collect_compute_results_request");
         ack.accept();
@@ -763,7 +762,7 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                                   << req.report_instance_id << " output=" << key
                                   << " bytes=" << body.size();
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
@@ -783,7 +782,7 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<resolve_prepared_input_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<resolve_prepared_input_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode resolve_prepared_input_request");
         ack.accept();
@@ -806,7 +805,7 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     result.success = true;
     result.message = std::format("Resolved prepared input {}", req.prepared_input_key);
     result.tarball_uris = {req.prepared_input_key};
-    wf->complete(rfl::json::write(result));
+    wf->complete(ores::utility::codec::json::write(result));
     ack.accept();
 }
 
@@ -835,7 +834,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<post_process_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<post_process_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode post_process_results_request");
         ack.accept();
@@ -948,8 +947,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                     std::string_view(text.data(), text.size()));
                 if (manifest.result_id != result_id)
                     throw std::runtime_error("its manifest states result " + manifest.result_id);
-                for (const auto& file :
-                     ores::ore::results::located_files(manifest, manifest_key)) {
+                for (const auto& file : ores::ore::results::located_files(manifest, manifest_key)) {
                     if (!ores::ore::results::is_result_file(file))
                         continue;
                     const auto body = transfer.download_blob(bucket, file.key);
@@ -1067,7 +1065,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
                                   << req.report_instance_id << " rows=" << loaded;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
@@ -1087,7 +1085,7 @@ void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ignore_compute_results_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<ignore_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode ignore_compute_results_request");
         ack.accept();
@@ -1102,7 +1100,7 @@ void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
     collect_compute_results_result result;
     result.success = true;
     result.message = std::format("Results of batch {} left unread by configuration.", req.batch_id);
-    wf->complete(rfl::json::write(result));
+    wf->complete(ores::utility::codec::json::write(result));
     ack.accept();
 }
 
@@ -1116,7 +1114,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<finalise_report_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<finalise_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode finalise_report_request");
         ack.accept();
@@ -1150,7 +1148,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         finalise_report_result result;
         result.success = true;
         result.message = "Report instance marked as completed.";
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "finalise failed: " << e.what();
@@ -1169,7 +1167,7 @@ void report_execution_handler::fail(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<fail_report_request>(sv);
+    auto parsed = ores::utility::codec::json::try_read<fail_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode fail_report_request");
         ack.accept();
@@ -1186,7 +1184,7 @@ void report_execution_handler::fail(ores::nats::message msg) {
         fail_report_result result;
         result.success = true;
         result.message = "Report instance marked as failed.";
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "fail handler error: " << e.what();

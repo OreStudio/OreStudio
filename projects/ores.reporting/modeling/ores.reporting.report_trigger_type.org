@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5E202386-A853-4F09-8D3A-026ECE6DAD4D
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_trigger_type
 #+description: Codegen entity model for the reporting =report_trigger_type= table. The types of report trigger: a run a person asks for, and a run a schedule asks for.

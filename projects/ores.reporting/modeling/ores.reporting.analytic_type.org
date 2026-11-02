@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F92E7855-D5F5-41AE-AD3E-9F61BCC3830F
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.analytic_type
 #+description: Codegen entity model for the reporting =analytic_type= table. The analytics an ORE run document can ask for.

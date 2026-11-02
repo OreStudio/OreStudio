@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5C7A2E41-9B3D-4F68-A0E5-2D8C6F1B4A97
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_proposal_operations
 #+description: Codegen operation model for proposing a change to a number-changing group of engine run settings -- a raise that holds the values in an approval request, the lines a decider reads, and the checks they run again -- rendered to C++ and TypeScript from one source.

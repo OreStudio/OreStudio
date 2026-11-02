@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BD6335F9-290A-4BE2-8F96-49D047DFF106
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_metric
 #+description: Codegen entity model for the reporting =report_metric= table. One figure a run produced, at one subject and one observation date.

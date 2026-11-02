@@ -36,7 +36,9 @@
 #include "ores.reporting.core/service/scheduling_plan.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -45,9 +47,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <expected>
 #include <map>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <set>
+#include <tuple>
 
 namespace ores::reporting::service {
 
@@ -63,6 +64,14 @@ struct report_trigger_action_payload {
     std::string report_definition_id;
     std::string tenant_id;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const report_trigger_action_payload&) {
+    using p = report_trigger_action_payload;
+    return std::tuple{ores::utility::codec::field{"subject", &p::subject},
+                      ores::utility::codec::field{"report_definition_id", &p::report_definition_id},
+                      ores::utility::codec::field{"tenant_id", &p::tenant_id}};
+}
+static_assert(ores::utility::codec::names_every_member<report_trigger_action_payload>());
 
 // The role a report run acts with, and the services that exchange its grant,
 // are the ones the trigger path consents under as well, so the pair is stated
@@ -224,7 +233,7 @@ report_scheduling_service::build_job_change(const domain::report_definition& def
     change.write.command = "";
     change.write.schedule_expression = *cron;
     change.write.action_type = "nats_publish";
-    change.write.action_payload = rfl::json::write(payload);
+    change.write.action_payload = ores::utility::codec::json::write(payload);
     change.write.is_active = true;
     // The reporting service owns the job's identity and replaces whatever
     // holds that identity, because reconciliation re-runs on every restart.

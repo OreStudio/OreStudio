@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BFDAC96E-3774-45F8-9013-DFDDF0EE7335
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.configuration_analytic_parameter

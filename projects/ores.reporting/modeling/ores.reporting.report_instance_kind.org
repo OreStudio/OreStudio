@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 79A42255-AACC-43BA-B876-60D421F6DBD0
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.report_instance_kind
 #+description: Codegen entity model for the reporting =report_instance_kind= table. The kinds of report instance: a production run and a package build.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 87effda4-50a8-4ff5-ab5b-5ff346554395
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_group
 #+description: Codegen entity model for the reporting =engine_settings_group= table. One group of engine settings, such as fixings, building or execution.

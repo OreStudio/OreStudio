@@ -18,14 +18,13 @@
  *
  */
 #include "ores.reporting.api/domain/report_definition_template_json_io.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::reporting::domain {
 
 std::ostream& operator<<(std::ostream& s, const report_definition_template& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

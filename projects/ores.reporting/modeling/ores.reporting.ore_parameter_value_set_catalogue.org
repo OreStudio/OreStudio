@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5F45F585-1C7B-4A09-A9DA-50D07D26CD9C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.ore_parameter_value_set_catalogue
 #+description: Codegen entity model for the reporting =ore_parameter_value_set_catalogue= table. The ORE Studio catalogues a parameter's allowed values may come from.

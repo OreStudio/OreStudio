@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9B4942EC-3F47-44D8-8305-8032230A7DD8
+:ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.reporting.engine_settings_execution

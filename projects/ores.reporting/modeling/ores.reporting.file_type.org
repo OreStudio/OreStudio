@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 65BA1988-C806-4E62-9B37-9CAC5A085C41
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.reporting.file_type
 #+description: Codegen entity model for the reporting =file_type= table. The kinds of file in the ORE universe and the well known name of each.

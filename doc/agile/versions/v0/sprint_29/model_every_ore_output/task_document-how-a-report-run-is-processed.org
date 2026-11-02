@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-how-a-report-run-is-processed
-#+pr:
+#+pr: 4383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4383][#4383]] | [doc] State how a report run's output becomes rows, and close the story |
 
 * Review
 

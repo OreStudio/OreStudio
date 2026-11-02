@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 06F7D57F-82C7-440D-91D7-54EED11EBB85
+:END:
+#+title: Task: Split the swaption smile and the inflation seasonality
+#+description: The re-inventory found two refdata blocks that exist only for one value of the entry: the swaption entry's three smile columns, which mean something only when Dimension is Smile, and the inflation curve's has_seasonality flag with its base date and frequency, whose factors are already their own rows.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two refdata entries still hold a block that exists for one value of the entry,
+which [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][the re-inventory]] found after
+the first splits:
+
+- =swaption_volatility_config= carries =smile_option_tenors=,
+  =smile_swap_tenors= and =smile_spreads=. They mean something only when
+  =dimension= is =Smile=. This is the reading the FX split made for
+  =fx_volatility_smile=, so the swaption smile becomes a part the same way.
+- =inflation_curve_config= carries =has_seasonality= with
+  =seasonality_base_date= and =seasonality_frequency=. ORE's =seasonalityType=
+  requires =BaseDate=, =Frequency= and =Factors= together, and the factors are
+  already the rows of =inflation_seasonality_factor=. The flag and its two
+  columns become a part, and the part's presence replaces the flag.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A swaption entry has a smile part only when its dimension is =Smile=, and the
+  import, the export and the insert trigger agree on that.
+- An inflation curve has a seasonality part with a required base date and
+  frequency, or none. =has_seasonality= is gone.
+- The model, SQL, C++, TypeScript twins and fixtures move in one change, and the
+  wire change is stated.
+- The ORE round trip and the database round trip hold for both, with a refused
+  case for each.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

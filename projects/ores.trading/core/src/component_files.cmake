@@ -913,6 +913,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/barrier_type_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/barrier_type_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/barrier_type_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/blotter_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/bond_forward_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/bond_forward_registrar.hpp"

@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-curve-segment-by-element
-#+pr:
+#+pr: 4385
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -185,7 +185,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4385][#4385]] | [refdata,ore,sql,web] Split the curve segment by element |
 
 * Review
 

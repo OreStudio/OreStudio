@@ -22,12 +22,18 @@ import { bundleCacheControl } from './server.js';
 
 describe('how long a browser may keep a file of the bundle', () => {
     it('never keeps the entry point, so a reload runs the build the server holds', () => {
-        expect(bundleCacheControl('/srv/web/dist/index.html')).toBe('no-store');
+        expect(bundleCacheControl('/srv/web/dist', '/srv/web/dist/index.html')).toBe('no-store');
     });
 
     it('keeps a hashed asset for good, because a new build names a new file', () => {
-        expect(bundleCacheControl('/srv/web/dist/assets/index-BaE7V_8Q.js')).toBe(
+        expect(bundleCacheControl('/srv/web/dist', '/srv/web/dist/assets/index-BaE7V_8Q.js')).toBe(
             'public, max-age=31536000, immutable',
+        );
+    });
+
+    it('never keeps the entry point of a bundle deployed under a folder named assets', () => {
+        expect(bundleCacheControl('/srv/assets/web/dist', '/srv/assets/web/dist/index.html')).toBe(
+            'no-store',
         );
     });
 });

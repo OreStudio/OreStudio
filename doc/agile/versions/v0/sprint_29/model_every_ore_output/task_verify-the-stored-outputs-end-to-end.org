@@ -28,9 +28,9 @@ A person can follow a report run from trigger to stored rows and confirm each fa
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | The run screens the scenario walks through: one run page with Details, Results, Errors and Downloads. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The tester runs the scenario.          |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -41,9 +41,25 @@ A person can follow a report run from trigger to stored rows and confirm each fa
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Fix the defect that failed every run: a central convention keeps its party
+   inside =identity=, so the run configuration read its party from there too.
+2. Write the first scenario: one report, four families stored, one skipped,
+   one misspelt.
+3. Make the run screens fit to test with, as the tester asked on first sight:
+   - The runs of a report are a standard record table: a state badge, a
+     duration column, and a row that opens the run.
+   - A run has one page, under reporting, with four tabs: Details, Results,
+     Errors and Downloads. The operations page of a run is gone, and its old
+     address sends the reader to the new page.
+   - The errors are one row each, with the columns Severity, Scope, Subject and
+     Message, and a filter by severity.
+   - Downloads lists every file the run read and wrote: the input package and
+     each file inside it, the output archive and each file its manifest names,
+     with size, digest, family and the job. The BFF builds the list from
+     compute's records and serves each file by its id in that list.
+   - A run with no results says so, and points at the Errors tab.
+4. Grant select on views to the service roles. The results view was never
+   granted, so every results read failed with "The results could not be read."
 
 * Measurements
 
@@ -60,6 +76,16 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Why the errors were all combined at the bottom
+
+The old operations run page grouped errors by curve. It made one card for each
+curve-scoped error and hung the trade errors that named the same curve under it.
+Every other scope, Analytics, Report and Configuration, and every row whose
+scope did not match a curve, fell into one catch-all card, "Analytic and report
+failures". That card dropped the scope and the subject, so a person could not
+tell which trade or analytic each line was about. The new list shows one row per
+error, with its scope and its subject.
 
 * Test Scenarios
 
@@ -82,6 +108,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The runs tab was a hand-written table over untyped rows | reporting/ReportPage.tsx | Accepted | Now a RecordTable over the typed run row. |
+| 2 | Two run pages and two run endpoints with different shapes | operations/GridReportRunPage.tsx, bff/src/grid-report-*.ts | Accepted | One page and one endpoint under reporting; the old address redirects. |
+| 3 | The run detail type was declared twice in the client | api/client.ts | Accepted | Replaced by the wire view. |
+| 4 | Error rows were parsed in two places | reporting/resultsModel.ts | Accepted | One wire view, parsed once in the client. |
+| 5 | The screen grouped errors by curve instead of the server naming the subject | bff/src/grid-report-runs.ts | Accepted | The BFF states =about= for each error. |
+| 6 | The results panel read the errors with its own query | reporting/RunResultsPanel.tsx | Accepted | Uses the shared hook. |
+| 7 | The severity filter would be copied into the files table | reporting/RunErrorsTable.tsx | Accepted | One CountFilter in reporting/shared.tsx. |
+| 8 | Two copies of asMiB in the operations screens | operations/GridPage.tsx, operations/BusPage.tsx | Declined | Not touched by this task. |
 
 * Result

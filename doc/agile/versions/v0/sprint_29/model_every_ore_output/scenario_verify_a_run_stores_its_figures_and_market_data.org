@@ -40,7 +40,7 @@ so it needs no id copied from the screen.
 | Parent story  | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]   |
 | Target screen | Web, http://localhost:20202: Reporting > Reports > Group Consolidated Exposure, its Run button, and the run page it opens (/reporting/runs/<id>). Stored rows: =compass sql= in a terminal. |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 What passes: a run of one report completes, and four families land where the
 story says, keyed by file and line. The NPV and SA-CCR figures and the run
@@ -57,6 +57,12 @@ rows, and an unknown family name is refused.
 - Pass: the header shows the Acme Corporation tenant and the party Acme
   Corporation Plc. If it asks for a party, choose Acme Corporation Plc.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the Group Consolidated Exposure report
 
 - Go to Reporting > Reports.
@@ -64,6 +70,12 @@ rows, and an unknown family name is refused.
   ACMCOR); other parties have a report of the same name.
 - Pass: the page shows the report, and the field "Families not stored" is
   empty. Its help text says an empty list stores every family.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Run the report and wait
 
@@ -73,11 +85,23 @@ rows, and an unknown family name is refused.
 - Pass: the state is Completed, not Failed. A failure names its reason on the
   page; record it under this step's Result.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** See the NPV results on the run
 
 - Stay on the run's page and look at its results panel.
 - Pass: the panel lists NPV results for the run's trades, with a currency for
   each, and no error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Check the figures by file and line
 
@@ -91,6 +115,12 @@ rows, and an unknown family name is refused.
   - =pricingstats.csv=, family =pricingstats=: about 219 figures.
   - =runtimes.csv=, family =runtimes=: a few figures.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Check the market data it read
 
 - In the terminal, run:
@@ -101,6 +131,12 @@ rows, and an unknown family name is refused.
   on line 2 and =FX/RATE/GBP/USD= on line 3, each with a value near 1.17 and
   1.36.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Set the report to skip SA-CCR
 
 - Go back to Reporting > Reports > Group Consolidated Exposure (ACMCOR).
@@ -108,12 +144,24 @@ rows, and an unknown family name is refused.
 - Save it with any change reason the form offers.
 - Pass: after the save, the page shows =saccr= in "Families not stored".
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Run again and check SA-CCR
 
 - Press Run and wait until the new run is Completed.
 - In the terminal, rerun the command of "Check the figures by file and line".
 - Pass: the run is Completed, and the output has no =saccr.csv= row.
   =npv.csv= still has 36 figures on lines 2 to 10.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Refuse an unknown family name
 
@@ -123,17 +171,29 @@ rows, and an unknown family name is refused.
   that does not exist, naming =sacr=. A run that starts and completes is a
   failure of this step.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Put the report back
 
 - Edit the report and clear "Families not stored", then save.
 - Pass: the field is empty again, so the report stores every family.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PENDING |
+| Completed at  |  |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

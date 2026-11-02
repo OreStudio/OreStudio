@@ -84,8 +84,18 @@ exit
 The administrator's password is the only value the command requires:
 it offers no default it could invent. It reads the installation's
 bootstrap answer, creates the system administrator, signs in as it, and
-sends one provision request for the first tenant. It then follows the
-run to its end.
+accepts the terms of every public source as they stand, printing one
+line a source. It then sends one provision request for the first tenant
+and follows the run to its end.
+
+A new system fetches no public rates until each public source's terms
+are accepted. The shell does not show the terms' text: running the
+command accepts each source's terms as they stand at that moment. The
+acceptance is recorded under the administrator's account, with the time
+the server records it. To leave the terms for the
+administrator to read and accept, add =--no-accept-terms=; accept them
+later on the Public rates screen, or all at once with
+=provider_terms_operations accept-all=.
 
 Tenant code =default=, name /Default Tenant/, hostname =localhost= and
 administrator =tenant_admin= are the tenant defaults; the

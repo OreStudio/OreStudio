@@ -2990,6 +2990,7 @@ const fr: SourceCatalogue = {
             storage: 'Stockage',
             storageAllowed: 'Ses valeurs peuvent être stockées',
             storageRefused: 'Ses valeurs ne peuvent pas être stockées, donc il n’est pas interrogé',
+            acceptAll: 'Accepter les conditions de toutes les sources publiques',
             accept: 'Accepter',
             decline: 'Refuser',
             accepted: 'Accepté',

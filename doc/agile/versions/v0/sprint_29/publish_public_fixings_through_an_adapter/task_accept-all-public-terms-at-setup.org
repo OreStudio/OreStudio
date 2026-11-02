@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/accept-all-public-terms-at-setup
+#+pr: 4358
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -26,11 +26,11 @@ A new system fetches public fixings as soon as it is set up: the administrator a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -43,9 +43,24 @@ A new system fetches public fixings as soon as it is set up: the administrator a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Data shape first. A =provider_terms_choice= is a provider code and the version
+read, zero for the terms as they stand. A =provider_terms_outcome= is the code,
+whether it was accepted, why not, and who and when. The new
+=accept_many_provider_terms_request= on =marketdata.v1.ops.accept_many_provider_terms=
+carries the choices; its response carries one outcome a choice and =success=
+when every one was accepted.
+
+1. Server: the model gains the two structs and the request and response; the
+   protocol is regenerated for C++ and TypeScript. The handler's single accept
+   becomes =accept_one=, and the list accept calls it for each choice, so one
+   rule records an acceptance. Same permission, =marketdata::providers:accept_terms=.
+2. Shell: =bootstrap setup= lists the providers after it signs in as the
+   administrator, accepts every one that states terms at version zero, and
+   prints one line a provider; =--no-accept-terms= skips it. A command accepts
+   all public terms on a system already set up.
+3. BFF and web: =POST /api/marketdata/public-rates/accept-terms= takes the list;
+   the first-run step gains an accept-all tick box that sends every listed
+   provider at the version shown.
 
 * Measurements
 
@@ -59,7 +74,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Providers accepted by bootstrap setup on a fresh database | 4 of 4 (boc, ecb, imf, tcmb), by super_admin | the Acme provisioning script after =compass db recreate= | d91f8fcbbe |
+| System fixings after that setup, with no manual step | 29294, about 15 s after setup | =select count(*) from ores_marketdata_market_fixings_tbl where tenant_id = ores_utility_system_tenant_id_fn()= | d91f8fcbbe |
+| FX feeds calibrated from a fixing on that system | 28 of 51 | =GET /api/synthetic/calibration/fx= | d91f8fcbbe |
 
 * Notes
 
@@ -86,12 +103,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4358][#4358]] | [marketdata] Accept all public terms at setup |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The step's doc comment sits above the new helper | PublicSourcesStep.tsx | Accept | 8b3452bd68: the helper moved above the comment |
+| 2 | Clearing the box loses the declines made before a failure | PublicSourcesStep.tsx | Accept | 8b3452bd68: declineEach records each decline as the service takes it; tested with a failure part way |
+| 3 | "Already accepted" is checked before the version | provider_terms_handler.hpp | Accept the test | terms_accepted compares the stored digest with the current terms' digest, so changed terms are never "already accepted"; b578dc61dc adds the test |
+| 4 | The shell accepts at version 0, so the help and the manual should say so | public_terms_commands.cpp, chapter_shell_provisioning.org | Accept | 164b7d574c |
+| 5a | The service has no cap on a list accept | provider_terms_handler.hpp | Accept | b578dc61dc: more than 100 is a bad request, the BFF's cap, with a test |
+| 5b | A failed list read prints two failure lines | provision_commands.cpp | Decline | The second line says how to accept later, which the first does not |
+| 6 | No test of a stale version in a list accept | messaging_provider_terms_handler_tests.cpp | Accept | b578dc61dc |
 
 * Result
+
+A new system now fetches public fixings with no manual step. =bootstrap setup=
+accepts every public source's terms after it signs in as the administrator, and
+on a fresh database the four sources were accepted, the adapter backfilled their
+fixings within seconds, and 28 FX feeds calibrated from them. The acceptance goes
+through the service's one accept, so it is recorded under the administrator's
+account and the server's time; =--no-accept-terms= leaves it to the person.
+
+The service gained a list accept, which the first run's new tick box and the
+shell's =provider_terms_operations accept-all= both use, and an accept of terms
+already accepted writes nothing, so a setup that runs again leaves each
+provider's history as it was.
+
+The FX calibration list read about 5 s on the fresh system, against 3.4 s
+measured on the calibration branch; this task does not touch that path.

@@ -340,6 +340,68 @@ describe('the public rates routes', () => {
         expect(response.json().message).toContain('Read them again');
     });
 
+    it('accepts several publishers in one call and answers each outcome', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.accept_many_provider_terms': {
+                success: false,
+                message: 'Accepted the terms of 1 of 2 provider(s).',
+                outcomes: [
+                    {
+                        provider_code: 'ecb',
+                        success: true,
+                        message: "Accepted the terms of 'ecb'.",
+                        accepted_by: 'super_admin',
+                        accepted_at: '2026-11-01 22:00:00Z',
+                    },
+                    {
+                        provider_code: 'imf',
+                        success: false,
+                        message:
+                            "The provider 'imf' changed after its terms were read. Read them again.",
+                    },
+                ],
+            },
+        });
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/public-rates/accept-terms',
+            payload: {
+                providers: [
+                    { code: 'ecb', version: 2 },
+                    { code: 'imf', version: 3 },
+                ],
+            },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({
+            providers: [
+                { provider_code: 'ecb', provider_version: 2 },
+                { provider_code: 'imf', provider_version: 3 },
+            ],
+        });
+        const body = response.json();
+        expect(body.success).toBe(false);
+        expect(
+            body.outcomes.map((o: { code: string; success: boolean }) => [o.code, o.success]),
+        ).toEqual([
+            ['ecb', true],
+            ['imf', false],
+        ]);
+    });
+
+    it('refuses a list accept that names no publisher before it asks the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/public-rates/accept-terms',
+            payload: { providers: [] },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
     it('withdraws an acceptance, naming only the publisher', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'marketdata.v1.ops.withdraw_provider_terms': {

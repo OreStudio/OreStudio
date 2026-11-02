@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story exists with its context, design, decisions, order and tasks, so the
+work can start from a reviewed plan.
 
 * Status
 
@@ -35,13 +36,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story states the measured gap, the design and the decisions.
+- Every task has a goal and acceptance, and the story table lists them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the story from the survey of the codegen tests, then add the tasks.
 
 * Measurements
 

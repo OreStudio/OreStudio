@@ -25,7 +25,7 @@ Every type the wire codec writes, from 621 opted-in models, has a generated test
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Design written, tasks added.           |
 | Waiting on    | Nothing.                               |
-| Next          | Defaulted equality on protocol messages. |
+| Next          | Defaulted equality and the sample table. |
 | Last touched  | 2026-11-02                               |
 
 * Acceptance
@@ -60,7 +60,9 @@ codec test is hand written: =codec_wire_bytes_tests.cpp= in ten api parts, and
 files is partial. For example, refdata has 199 opted-in models and one test
 file, and ores.http has an opted-in model and no codec test.
 
-Measured on 2026-11-02 at 28aff1f8a4:
+Measured on 2026-11-02 at 17019adff8, which includes the storage opt-in
+(#4386). The commands are =evidence/count_opted_in_models.py= and
+=evidence/survey_protocol_member_types.py=, run from the repository root:
 
 - 621 models set =ores.cpp.wire-codec.enabled=. 501 have a generator. 66
   operations, 36 field groups, 13 junctions and 5 entities have none.
@@ -85,12 +87,26 @@ roundtrip_case
                ... ]
 #+end_example
 
-- *The sample table.* One Python table maps a member type to a sample
-  expression. Each sample differs from the type's default and from the member's
-  modelled default, so a dropped member cannot pass. Strings carry a quote, a
-  backslash, a newline and a non-ASCII character. Integers take their maximum.
-  A =double= is not integral. A time point has sub-second precision. An
-  =optional= is engaged, and a =vector= holds two different samples.
+- *The sample table.* One Python table maps a member type to a fixed sample
+  expression. A sample must differ from the type's default and from the
+  member's modelled default. When the table's value equals the modelled
+  default, codegen takes the table's second value. The rules:
+  - =std::string=: text with a quote, a backslash, a newline and a non-ASCII
+    character.
+  - Integer types: the maximum minus one. The second value is one.
+  - =bool=: the inverse of the modelled default, or =true= when there is none.
+  - =double=: an exactly representable, non-integral value such as =1.5=. The
+    second value is =-0.25=.
+  - =ores::utility::decimal::decimal=: a value with more significant digits
+    than a =double= holds, stated as text, such as =12345678901234567.25=.
+  - =std::chrono::system_clock::time_point=: a fixed instant with sub-second
+    precision.
+  - =std::chrono::year_month_day=: a fixed valid date that is not the epoch.
+  - =boost::uuids::uuid=: a fixed non-nil value.
+  - =std::optional<T>=: engaged with the sample of =T=.
+  - =std::vector<T>=: two elements, the first and second samples of =T=.
+  Equality is exact. The values are chosen so that JSON text holds them
+  exactly, so an inexact result is a codec defect, not a rounding artefact.
 - *Nested modelled types.* A member whose type is another modelled type, in any
   component, gets that type's sample helper. Codegen emits each helper the case
   reaches into the test file, prefixed with the model's name, so a unity build
@@ -106,6 +122,15 @@ roundtrip_case
 - *Proof.* The story ends with evidence that the tests catch a broken codec: a
   member dropped from a field list, a member renamed, and a MessagePack value of
   the wrong type each fail a generated test.
+
+* Order
+
+1. Defaulted equality on protocol messages, and the sample table. These two are
+   independent.
+2. The archetype for entities, junctions and field groups. It needs the table.
+3. The archetype for protocol messages. It needs the equality and the table.
+4. The mutation proof, then the rollout, then the fold of the hand-written
+   checks.
 
 * Decisions
 

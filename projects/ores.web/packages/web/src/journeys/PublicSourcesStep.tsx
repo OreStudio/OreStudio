@@ -37,6 +37,9 @@ export function decisionOf(
     return made[provider.code] ?? (provider.terms_accepted ? 'accepted' : undefined);
 }
 
+/** How the administrator decides: every publisher at once, or each in turn. */
+type SourcesWay = 'all' | 'each';
+
 /** Every publisher that states terms has a decision. */
 export function everyDecided(
     providers: readonly PublicRatesProvider[],
@@ -63,21 +66,6 @@ export function madeAfterAccepting(
 }
 
 /**
- * Declines each publisher in turn and records each decline as the service takes it, so a
- * failure part way leaves the screen showing what the service holds.
- */
-export async function declineEach(
-    codes: readonly string[],
-    decline: (code: string) => Promise<void>,
-    record: (code: string) => void,
-): Promise<void> {
-    for (const code of codes) {
-        await decline(code);
-        record(code);
-    }
-}
-
-/**
  * The public sources step of the first run. The administrator reads each
  * publisher's terms and accepts or declines it before any of its quotes are
  * fetched. An acceptance is recorded by the server against the terms it holds;
@@ -99,6 +87,7 @@ export function PublicSourcesStep({
     const [failure, setFailure] = useState<string>();
     const [pending, setPending] = useState(false);
     const [made, setMade] = useState<Readonly<Record<string, SourceDecision>>>({});
+    const [way, setWay] = useState<SourcesWay>();
     useEffect(() => {
         let live = true;
         server.publicSources().then(
@@ -126,28 +115,19 @@ export function PublicSourcesStep({
             setPending(false);
         }
     };
-    // Ticking accepts every publisher not yet accepted, at the version shown, in one request;
-    // clearing it declines them all. Each card still decides its own publisher.
-    const acceptAll = async (accept: boolean) => {
+    // Accepts every publisher not yet accepted, at the version shown, in one request.
+    const acceptAll = async () => {
         setPending(true);
         setFailure(undefined);
         try {
-            if (accept) {
-                const open = list.filter((p) => decisionOf(p, made) !== 'accepted');
-                const outcomes = await server.acceptAllSourceTerms(
-                    open.map((p) => ({ code: p.code, version: p.version })),
-                );
-                setMade((before) => madeAfterAccepting(before, outcomes));
-                const refused = outcomes.filter((o) => !o.success);
-                if (refused.length > 0) {
-                    setFailure(refused.map((o) => o.message).join(' '));
-                }
-            } else {
-                await declineEach(
-                    list.map((p) => p.code),
-                    (code) => server.declineSourceTerms(code),
-                    (code) => setMade((before) => ({ ...before, [code]: 'declined' })),
-                );
+            const open = list.filter((p) => decisionOf(p, made) !== 'accepted');
+            const outcomes = await server.acceptAllSourceTerms(
+                open.map((p) => ({ code: p.code, version: p.version })),
+            );
+            setMade((before) => madeAfterAccepting(before, outcomes));
+            const refused = outcomes.filter((o) => !o.success);
+            if (refused.length > 0) {
+                setFailure(refused.map((o) => o.message).join(' '));
             }
         } catch (error) {
             setFailure(error instanceof Error ? error.message : String(error));
@@ -155,8 +135,13 @@ export function PublicSourcesStep({
             setPending(false);
         }
     };
+    const chooseWay = (next: SourcesWay) => {
+        setWay(next);
+        if (next === 'all') {
+            void acceptAll();
+        }
+    };
     const list = (providers ?? []).filter((p) => p.terms_url !== '');
-    const allAccepted = list.length > 0 && list.every((p) => decisionOf(p, made) === 'accepted');
     const all = providers !== undefined && everyDecided(list, made);
     useEffect(() => onDecided(all), [all, onDecided]);
 
@@ -169,87 +154,112 @@ export function PublicSourcesStep({
     if (list.length === 0) {
         return <p className="text-sm text-ink-muted">{t('journey.sources.none')}</p>;
     }
+    const option = (id: SourcesWay, label: string): ReactNode => (
+        <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+                type="radio"
+                name="public-sources-way"
+                checked={way === id}
+                disabled={pending}
+                onChange={() => chooseWay(id)}
+            />
+            {label}
+        </label>
+    );
     return (
         <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm font-medium">
-                <input
-                    type="checkbox"
-                    checked={allAccepted}
-                    disabled={pending}
-                    onChange={(event) => void acceptAll(event.target.checked)}
-                />
-                {t('journey.sources.acceptAll')}
-            </label>
-            {list.map((p) => {
-                const decision = decisionOf(p, made);
-                return (
-                    <section key={p.code} className="card space-y-2 p-4" aria-label={p.name}>
-                        <header className="flex flex-wrap items-baseline justify-between gap-2">
-                            <h3 className="font-medium">{p.name}</h3>
-                            {decision === 'accepted' && (
-                                <Tag tone="up" small>
-                                    {t('journey.sources.accepted')}
-                                </Tag>
-                            )}
-                            {decision === 'declined' && (
-                                <Tag tone="warn" small>
-                                    {t('journey.sources.declined')}
-                                </Tag>
-                            )}
-                        </header>
-                        <p className="text-sm text-ink-muted">
-                            {p.description !== ''
-                                ? p.description
-                                : t('journey.sources.gives', { count: String(p.series.length) })}
-                        </p>
-                        <dl className="grid gap-1 text-sm sm:grid-cols-3">
-                            <div>
-                                <dt className="text-xs text-ink-faint">
-                                    {t('journey.sources.terms')}
-                                </dt>
-                                <dd>
+            <fieldset className="space-y-2">
+                <legend className="sr-only">{t('journey.sources.way')}</legend>
+                {option('all', t('journey.sources.acceptAll'))}
+                {option('each', t('journey.sources.decideEach'))}
+            </fieldset>
+            <ul className="space-y-2">
+                {list.map((p) => {
+                    const decision = decisionOf(p, made);
+                    return (
+                        <li key={p.code}>
+                            <details
+                                className="rounded-md border border-line bg-surface-raised"
+                                aria-label={p.name}
+                            >
+                                <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm">
+                                    <span className="min-w-0 flex-1 font-medium">{p.name}</span>
                                     <a
                                         className="text-accent hover:underline"
                                         href={p.terms_url}
                                         target="_blank"
                                         rel="noreferrer"
                                     >
-                                        {p.terms_url}
+                                        {t('journey.sources.termsLink', {
+                                            name: p.code.toUpperCase(),
+                                        })}
                                     </a>
-                                </dd>
-                            </div>
-                            <div>
-                                <dt className="text-xs text-ink-faint">
-                                    {t('journey.sources.credit')}
-                                </dt>
-                                <dd>{p.terms_credit === '' ? '—' : p.terms_credit}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-xs text-ink-faint">
-                                    {t('journey.sources.storage')}
-                                </dt>
-                                <dd>
-                                    {p.allows_storage
-                                        ? t('journey.sources.storageAllowed')
-                                        : t('journey.sources.storageRefused')}
-                                </dd>
-                            </div>
-                        </dl>
-                        <div className="flex flex-wrap gap-2">
-                            <Button
-                                variant={decision === 'accepted' ? 'primary' : 'secondary'}
-                                disabled={pending}
-                                onClick={() => void decide(p, 'accepted')}
-                            >
-                                {t('journey.sources.accept')}
-                            </Button>
-                            <Button disabled={pending} onClick={() => void decide(p, 'declined')}>
-                                {t('journey.sources.decline')}
-                            </Button>
-                        </div>
-                    </section>
-                );
-            })}
+                                    {decision === 'accepted' && (
+                                        <Tag tone="up" small>
+                                            {t('journey.sources.accepted')}
+                                        </Tag>
+                                    )}
+                                    {decision === 'declined' && (
+                                        <Tag tone="warn" small>
+                                            {t('journey.sources.declined')}
+                                        </Tag>
+                                    )}
+                                </summary>
+                                <div className="space-y-2 border-t border-line px-4 py-3 text-sm">
+                                    <p className="text-ink-muted">
+                                        {p.description !== ''
+                                            ? p.description
+                                            : t('journey.sources.gives', {
+                                                  count: String(p.series.length),
+                                              })}
+                                    </p>
+                                    <dl className="grid gap-2 sm:grid-cols-2">
+                                        <div className="min-w-0">
+                                            <dt className="text-xs text-ink-faint">
+                                                {t('journey.sources.credit')}
+                                            </dt>
+                                            <dd className="break-words">
+                                                {p.terms_credit === '' ? '—' : p.terms_credit}
+                                            </dd>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <dt className="text-xs text-ink-faint">
+                                                {t('journey.sources.storage')}
+                                            </dt>
+                                            <dd>
+                                                {p.allows_storage
+                                                    ? t('journey.sources.storageAllowed')
+                                                    : t('journey.sources.storageRefused')}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                    {way === 'each' && (
+                                        <div className="flex flex-wrap gap-2">
+                                            <Button
+                                                variant={
+                                                    decision === 'accepted'
+                                                        ? 'primary'
+                                                        : 'secondary'
+                                                }
+                                                disabled={pending}
+                                                onClick={() => void decide(p, 'accepted')}
+                                            >
+                                                {t('journey.sources.accept')}
+                                            </Button>
+                                            <Button
+                                                disabled={pending}
+                                                onClick={() => void decide(p, 'declined')}
+                                            >
+                                                {t('journey.sources.decline')}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </details>
+                        </li>
+                    );
+                })}
+            </ul>
             {failure !== undefined && <Notice tone="error">{failure}</Notice>}
         </div>
     );

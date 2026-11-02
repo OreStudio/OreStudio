@@ -23,7 +23,6 @@ import type { PublicRatesProvider } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import {
     decisionOf,
-    declineEach,
     everyDecided,
     madeAfterAccepting,
     PublicSourcesStep,
@@ -72,24 +71,6 @@ describe('accepting every public source at once', () => {
             { code: 'imf', success: false, message: 'Read them again.' },
         ]);
         expect(made).toEqual({ ecb: 'accepted', boc: 'accepted', tcmb: 'declined' });
-    });
-});
-
-describe('declining every public source at once', () => {
-    it('records each decline the service took and stops at the one it refused', async () => {
-        const recorded: string[] = [];
-        const decline = vi.fn(async (code: string) => {
-            if (code === 'imf') {
-                throw new Error('The service is not available.');
-            }
-        });
-
-        await expect(
-            declineEach(['ecb', 'imf', 'boc'], decline, (code) => recorded.push(code)),
-        ).rejects.toThrow('The service is not available.');
-
-        expect(recorded).toEqual(['ecb']);
-        expect(decline).toHaveBeenCalledTimes(2);
     });
 });
 

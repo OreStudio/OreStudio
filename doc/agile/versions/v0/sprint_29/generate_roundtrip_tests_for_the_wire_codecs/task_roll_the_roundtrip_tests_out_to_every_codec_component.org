@@ -26,7 +26,7 @@ All 621 opted-in models have generated roundtrip tests that build and pass.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. The facet opt-in decides for every archetype under it, so each new
+archetype reaches every opted-in component in the task that adds it. The task
+for entities, junctions and field groups generated, built and ran all 562 of
+their tests. The protocol message task will do the same for messages.

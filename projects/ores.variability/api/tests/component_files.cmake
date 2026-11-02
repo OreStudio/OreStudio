@@ -23,4 +23,5 @@ set(files
     "codec_wire_bytes_tests.cpp"
     "domain_system_setting_tests.cpp"
     "main.cpp"
+    "system_setting_codec_roundtrip_tests.cpp"
 )

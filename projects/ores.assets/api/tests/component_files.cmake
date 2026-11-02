@@ -24,5 +24,8 @@ set(files
     "domain_image_tag_tests.cpp"
     "domain_image_tests.cpp"
     "domain_tag_tests.cpp"
+    "image_codec_roundtrip_tests.cpp"
+    "image_tag_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "tag_codec_roundtrip_tests.cpp"
 )

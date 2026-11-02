@@ -132,6 +132,8 @@ template <>
 struct ores::utility::codec::text_form<ores::scheduler::domain::cron_expression> {
     static constexpr std::string_view wire_name = "a cron expression";
 
+    static constexpr std::string_view sample_texts[] = {"30 6 1 * *", "*/5 * * * 1-5"};
+
     static std::string to_text(const ores::scheduler::domain::cron_expression& v) {
         return v.to_string();
     }

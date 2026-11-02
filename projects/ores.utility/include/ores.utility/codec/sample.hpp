@@ -58,6 +58,10 @@
  * second sample is negative. Every value is held exactly by both formats: no
  * NaN and no computed double.
  *
+ * A type that states its own text_form outside this header states its two
+ * samples there too, as sample_texts, and the sampler reads them back through
+ * from_text. The type's owner knows which texts are valid.
+ *
  * An enumeration takes its values from magic_enum, which sees only those in
  * its range, -128 to 128 by default.
  */
@@ -79,11 +83,12 @@ namespace detail {
 template <typename T>
 inline constexpr bool unsampled = false;
 
+// signed char and unsigned char are std::int8_t and std::uint8_t, which the
+// codec writes as numbers, so only the plain character types are refused.
 template <typename T>
 inline constexpr bool is_character =
-    std::is_same_v<T, char> || std::is_same_v<T, signed char> ||
-    std::is_same_v<T, unsigned char> || std::is_same_v<T, wchar_t> ||
-    std::is_same_v<T, char8_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>;
+    std::is_same_v<T, char> || std::is_same_v<T, wchar_t> || std::is_same_v<T, char8_t> ||
+    std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>;
 
 template <typename T>
 struct sampler {
@@ -117,6 +122,8 @@ struct sampler {
             return static_cast<T>(1);
         } else if constexpr (std::is_same_v<T, double>) {
             return which == 0 ? 1.5 : -0.25;
+        } else if constexpr (requires { text_form<T>::sample_texts[1]; }) {
+            return text_form<T>::from_text(text_form<T>::sample_texts[which == 0 ? 0 : 1]);
         } else {
             static_assert(unsampled<T>, "the wire codec writes a type with no sample");
         }

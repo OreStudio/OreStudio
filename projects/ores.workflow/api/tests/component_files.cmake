@@ -25,4 +25,8 @@ set(files
     "identity_workflow_tests.cpp"
     "main.cpp"
     "messaging_workflow_protocol_tests.cpp"
+    "workflow_instance_codec_roundtrip_tests.cpp"
+    "workflow_plan_dependency_codec_roundtrip_tests.cpp"
+    "workflow_plan_step_codec_roundtrip_tests.cpp"
+    "workflow_step_codec_roundtrip_tests.cpp"
 )

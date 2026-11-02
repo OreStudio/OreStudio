@@ -1,0 +1,158 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.wire-codec.roundtrip_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
+{{#wire_codec_includes}}
+#include "{{{.}}}"
+{{/wire_codec_includes}}
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/sample.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <span>
+#include <string>
+
+namespace {
+
+using {{entity_singular}}_roundtrip_type = ores::{{component}}::domain::{{entity_singular}};
+using {{entity_singular}}_roundtrip_traits =
+    ores::utility::codec::wire_traits<{{entity_singular}}_roundtrip_type>;
+
+const std::string {{entity_singular}}_roundtrip_tags("[codec][roundtrip]");
+
+std::span<const std::byte> {{entity_singular}}_roundtrip_bytes(const std::string& s) {
+    return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
+}
+
+}
+
+static_assert(ores::utility::codec::names_every_member<{{entity_singular}}_roundtrip_type>({{wire_left_out}}),
+              "{{entity_singular}} has a member its wire shape does not name");
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_json_sample", {{entity_singular}}_roundtrip_tags) {
+    const auto v = ores::utility::codec::sample<{{entity_singular}}_roundtrip_type>(0);
+    CHECK({{entity_singular}}_roundtrip_traits::read_json({{entity_singular}}_roundtrip_traits::write_json(v)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_msgpack_sample", {{entity_singular}}_roundtrip_tags) {
+    const auto v = ores::utility::codec::sample<{{entity_singular}}_roundtrip_type>(0);
+    const auto packed = {{entity_singular}}_roundtrip_traits::write_msgpack(v);
+    CHECK({{entity_singular}}_roundtrip_traits::read_msgpack({{entity_singular}}_roundtrip_bytes(packed)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_json_default", {{entity_singular}}_roundtrip_tags) {
+    const {{entity_singular}}_roundtrip_type v{};
+    CHECK({{entity_singular}}_roundtrip_traits::read_json({{entity_singular}}_roundtrip_traits::write_json(v)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_msgpack_default", {{entity_singular}}_roundtrip_tags) {
+    const {{entity_singular}}_roundtrip_type v{};
+    const auto packed = {{entity_singular}}_roundtrip_traits::write_msgpack(v);
+    CHECK({{entity_singular}}_roundtrip_traits::read_msgpack({{entity_singular}}_roundtrip_bytes(packed)) == v);
+}
+{{/domain_entity}}
+{{#junction}}
+#include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
+{{#wire_codec_includes}}
+#include "{{{.}}}"
+{{/wire_codec_includes}}
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/sample.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <span>
+#include <string>
+
+namespace {
+
+using {{name_singular}}_roundtrip_type = ores::{{component}}::domain::{{name_singular}};
+using {{name_singular}}_roundtrip_traits =
+    ores::utility::codec::wire_traits<{{name_singular}}_roundtrip_type>;
+
+const std::string {{name_singular}}_roundtrip_tags("[codec][roundtrip]");
+
+std::span<const std::byte> {{name_singular}}_roundtrip_bytes(const std::string& s) {
+    return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
+}
+
+}
+
+static_assert(ores::utility::codec::names_every_member<{{name_singular}}_roundtrip_type>({{wire_left_out}}),
+              "{{name_singular}} has a member its wire shape does not name");
+
+TEST_CASE("{{name_singular}}_codec_roundtrip_json_sample", {{name_singular}}_roundtrip_tags) {
+    const auto v = ores::utility::codec::sample<{{name_singular}}_roundtrip_type>(0);
+    CHECK({{name_singular}}_roundtrip_traits::read_json({{name_singular}}_roundtrip_traits::write_json(v)) == v);
+}
+
+TEST_CASE("{{name_singular}}_codec_roundtrip_msgpack_sample", {{name_singular}}_roundtrip_tags) {
+    const auto v = ores::utility::codec::sample<{{name_singular}}_roundtrip_type>(0);
+    const auto packed = {{name_singular}}_roundtrip_traits::write_msgpack(v);
+    CHECK({{name_singular}}_roundtrip_traits::read_msgpack({{name_singular}}_roundtrip_bytes(packed)) == v);
+}
+
+TEST_CASE("{{name_singular}}_codec_roundtrip_json_default", {{name_singular}}_roundtrip_tags) {
+    const {{name_singular}}_roundtrip_type v{};
+    CHECK({{name_singular}}_roundtrip_traits::read_json({{name_singular}}_roundtrip_traits::write_json(v)) == v);
+}
+
+TEST_CASE("{{name_singular}}_codec_roundtrip_msgpack_default", {{name_singular}}_roundtrip_tags) {
+    const {{name_singular}}_roundtrip_type v{};
+    const auto packed = {{name_singular}}_roundtrip_traits::write_msgpack(v);
+    CHECK({{name_singular}}_roundtrip_traits::read_msgpack({{name_singular}}_roundtrip_bytes(packed)) == v);
+}
+{{/junction}}
+{{#field_group}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#wire_codec_includes}}
+#include "{{{.}}}"
+{{/wire_codec_includes}}
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/sample.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <span>
+#include <string>
+
+namespace {
+
+using {{entity_singular}}_roundtrip_type = {{cpp.namespace}}::{{entity_singular}};
+
+const std::string {{entity_singular}}_roundtrip_tags("[codec][roundtrip]");
+
+std::span<const std::byte> {{entity_singular}}_roundtrip_bytes(const std::string& s) {
+    return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
+}
+
+}
+
+static_assert(ores::utility::codec::names_every_member<{{entity_singular}}_roundtrip_type>({{wire_left_out}}),
+              "{{entity_singular}} has a member its wire shape does not name");
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_json_sample", {{entity_singular}}_roundtrip_tags) {
+    using namespace ores::utility::codec;
+    const auto v = sample<{{entity_singular}}_roundtrip_type>(0);
+    CHECK(object::read_json<{{entity_singular}}_roundtrip_type>(object::write_json(v)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_msgpack_sample", {{entity_singular}}_roundtrip_tags) {
+    using namespace ores::utility::codec;
+    const auto v = sample<{{entity_singular}}_roundtrip_type>(0);
+    const auto packed = object::write_msgpack(v);
+    CHECK(object::read_msgpack<{{entity_singular}}_roundtrip_type>({{entity_singular}}_roundtrip_bytes(packed)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_json_default", {{entity_singular}}_roundtrip_tags) {
+    using namespace ores::utility::codec;
+    const {{entity_singular}}_roundtrip_type v{};
+    CHECK(object::read_json<{{entity_singular}}_roundtrip_type>(object::write_json(v)) == v);
+}
+
+TEST_CASE("{{entity_singular}}_codec_roundtrip_msgpack_default", {{entity_singular}}_roundtrip_tags) {
+    using namespace ores::utility::codec;
+    const {{entity_singular}}_roundtrip_type v{};
+    const auto packed = object::write_msgpack(v);
+    CHECK(object::read_msgpack<{{entity_singular}}_roundtrip_type>({{entity_singular}}_roundtrip_bytes(packed)) == v);
+}
+{{/field_group}}

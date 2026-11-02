@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Evidence that the generated tests detect a dropped member, a renamed member and a MessagePack value of the wrong type.
+Evidence that the generated tests detect a dropped member and a value the codec reads back wrong. A renamed member is out of reach for a roundtrip test, because the codec writes and reads under the same name.
 
 * Status
 

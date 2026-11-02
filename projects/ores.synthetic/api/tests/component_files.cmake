@@ -20,6 +20,9 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "calibration_fallback_codec_roundtrip_tests.cpp"
+    "calibration_policy_codec_roundtrip_tests.cpp"
+    "calibration_provider_order_codec_roundtrip_tests.cpp"
     "codec_wire_bytes_tests.cpp"
     "domain_curve_template_validation_tests.cpp"
     "domain_generation_options_tests.cpp"
@@ -29,8 +32,22 @@ set(files
     "feed_overview_tests.cpp"
     "feeds_fixing_calibration_tests.cpp"
     "feeds_publish_subject_tests.cpp"
+    "folder_codec_roundtrip_tests.cpp"
     "fx_mixture_conversion_tests.cpp"
     "fx_simple_conversion_tests.cpp"
+    "fx_spot_fixing_item_codec_roundtrip_tests.cpp"
+    "fx_spot_generation_config_codec_roundtrip_tests.cpp"
+    "gmm_component_codec_roundtrip_tests.cpp"
+    "ir_curve_generation_config_codec_roundtrip_tests.cpp"
+    "ir_curve_generation_config_process_parameter_value_codec_roundtrip_tests.cpp"
+    "ir_curve_template_entry_codec_roundtrip_tests.cpp"
     "ir_parameter_conversion_tests.cpp"
     "main.cpp"
+    "market_data_generation_config_codec_roundtrip_tests.cpp"
+    "market_data_provider_codec_roundtrip_tests.cpp"
+    "trade_generation_book_codec_roundtrip_tests.cpp"
+    "trade_generation_config_codec_roundtrip_tests.cpp"
+    "trade_generation_counterparty_codec_roundtrip_tests.cpp"
+    "yield_curve_process_parameter_definition_codec_roundtrip_tests.cpp"
+    "yield_curve_process_type_codec_roundtrip_tests.cpp"
 )

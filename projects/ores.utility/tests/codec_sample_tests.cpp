@@ -63,6 +63,7 @@ struct sample_probe_every_member {
     boost::asio::ip::address host;
     ores::utility::serialization::error_code code = ores::utility::serialization::error_code::none;
     std::int16_t signed_small = 0;
+    std::vector<std::uint8_t> bytes;
 
     friend bool operator==(const sample_probe_every_member&, const sample_probe_every_member&) = default;
 };
@@ -91,16 +92,39 @@ struct sample_probe_every_member {
         utility::codec::field{"host", &sample_probe_every_member::host},
         utility::codec::field{"code", &sample_probe_every_member::code},
         utility::codec::field{"signed_small", &sample_probe_every_member::signed_small},
+        utility::codec::field{"bytes", &sample_probe_every_member::bytes},
     };
 }
 
+struct sample_probe_code {
+    std::string text = "unset";
+
+    friend bool operator==(const sample_probe_code&, const sample_probe_code&) = default;
+};
+
 }
+
+template <>
+struct ores::utility::codec::text_form<ores::utility::codec_sample_probe::sample_probe_code> {
+    static constexpr std::string_view wire_name = "a probe code";
+
+    static constexpr std::string_view sample_texts[] = {"first", "second"};
+
+    static std::string to_text(const ores::utility::codec_sample_probe::sample_probe_code& v) {
+        return v.text;
+    }
+
+    static ores::utility::codec_sample_probe::sample_probe_code from_text(std::string_view text) {
+        return {std::string(text)};
+    }
+};
 
 namespace {
 
 const std::string sample_tags("[codec][sample]");
 
 using ores::utility::codec::sample;
+using ores::utility::codec_sample_probe::sample_probe_code;
 using ores::utility::codec_sample_probe::sample_probe_colour;
 using ores::utility::codec_sample_probe::sample_probe_every_member;
 using ores::utility::codec_sample_probe::sample_probe_leaf;
@@ -148,6 +172,7 @@ TEST_CASE("a sampled struct sets every member away from its default", sample_tag
     CHECK(v.host != d.host);
     CHECK(v.code != d.code);
     CHECK(v.signed_small != d.signed_small);
+    CHECK(v.bytes != d.bytes);
 }
 
 TEST_CASE("a member whose default is the first sample takes the second", sample_tags) {
@@ -187,4 +212,10 @@ TEST_CASE("both samples survive JSON and MessagePack exactly", sample_tags) {
         const auto packed = object::write_msgpack(v);
         CHECK(object::read_msgpack<sample_probe_every_member>(sample_bytes_of(packed)) == v);
     }
+}
+
+TEST_CASE("a type with its own text form samples through its sample texts", sample_tags) {
+    CHECK(sample<sample_probe_code>(0).text == "first");
+    CHECK(sample<sample_probe_code>(1).text == "second");
+    CHECK(ores::utility::codec::sample_unlike(sample_probe_code{"first"}).text == "second");
 }

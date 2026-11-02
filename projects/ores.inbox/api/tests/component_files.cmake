@@ -20,6 +20,24 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "approval_decision_codec_roundtrip_tests.cpp"
+    "approval_decision_type_codec_roundtrip_tests.cpp"
+    "approval_kind_codec_roundtrip_tests.cpp"
+    "approval_kind_part_codec_roundtrip_tests.cpp"
+    "approval_part_codec_roundtrip_tests.cpp"
+    "approval_policy_codec_roundtrip_tests.cpp"
+    "approval_request_codec_roundtrip_tests.cpp"
+    "approval_request_part_codec_roundtrip_tests.cpp"
+    "approval_request_state_codec_roundtrip_tests.cpp"
     "codec_wire_bytes_tests.cpp"
+    "delivery_outcome_type_codec_roundtrip_tests.cpp"
+    "hold_reason_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "notification_argument_codec_roundtrip_tests.cpp"
+    "notification_channel_codec_roundtrip_tests.cpp"
+    "notification_codec_roundtrip_tests.cpp"
+    "notification_delivery_codec_roundtrip_tests.cpp"
+    "notification_kind_codec_roundtrip_tests.cpp"
+    "notification_preference_codec_roundtrip_tests.cpp"
+    "notification_recipient_codec_roundtrip_tests.cpp"
 )

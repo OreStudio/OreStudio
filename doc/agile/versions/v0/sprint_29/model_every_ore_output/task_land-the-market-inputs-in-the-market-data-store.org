@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:marketdata:ore:sprint_29:v0:
 #+owner: marco
 #+branch: feature/land-the-market-inputs-in-the-market-data-store
-#+pr:
+#+pr: 4374
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4374][#4374]] | [ore,marketdata] Store the market data a run read |
 
 * Review
 

@@ -35,6 +35,7 @@ import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/re
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
+import type { TriggerReportInstanceRequest } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -100,7 +101,10 @@ export async function triggerReportRun(
             tenant_id: session.tenantId,
             job_instance_id: 0,
             kind: 'production',
-        },
+            covered_date: '',
+            scope_code: '',
+            business_centre_code: '',
+        } satisfies TriggerReportInstanceRequest,
         z.looseObject({
             result: resultSchema,
             report_instance_id: z.string().default(''),
@@ -421,50 +425,47 @@ export function registerGridReportRunRoutes(
         },
     );
     /** One run: what it is, the state it reached, its batch and where its output is. */
-    server.get(
-        '/api/reporting/runs/:id',
-        async (request): Promise<ReportRunDetailView> => {
-            const session = requireSession(request);
-            const parsed = idParamsSchema.safeParse(request.params);
-            if (!parsed.success) {
-                throw invalidRequest('The address names an id that is not a uuid.');
-            }
-            const id = parsed.data.id;
-            const run = await readRun(session, id);
-            if (run === null) {
-                throw notFound('No report run has this id.');
-            }
-            const [health, batchId, definitionName] = await Promise.all([
-                readHealth(session, id, request.log),
-                readBatchId(session, id, request.log),
-                readDefinitionName(session, text(run['definition_id']), request.log),
-            ]);
-            const started = nullableText(run['started_at']);
-            const completed = nullableText(run['completed_at']);
-            return reportRunDetailViewSchema.parse({
-                id: text(run['id']),
-                name: text(run['name']),
-                description: text(run['description']),
-                definition_id: text(run['definition_id']),
-                definition_name: definitionName,
-                party_id: text(run['party_id']),
-                party_name:
-                    session.availableParties.find((party) => party.id === text(run['party_id']))
-                        ?.name ?? null,
-                kind: text(run['kind']),
-                state_name: health.stateName,
-                health: health.health,
-                output_message: text(run['output_message']),
-                output_storage_key: text(run['output_storage_key']),
-                started_at: started,
-                completed_at: completed,
-                duration_ms: durationMs(started, completed),
-                priced_at: nullableText(run['priced_at']),
-                price_note: text(run['price_note']),
-                batch_id: batchId,
-                modified_by: text(run['modified_by']),
-                recorded_at: text(run['recorded_at']),
-            });
-        },
-    );
+    server.get('/api/reporting/runs/:id', async (request): Promise<ReportRunDetailView> => {
+        const session = requireSession(request);
+        const parsed = idParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address names an id that is not a uuid.');
+        }
+        const id = parsed.data.id;
+        const run = await readRun(session, id);
+        if (run === null) {
+            throw notFound('No report run has this id.');
+        }
+        const [health, batchId, definitionName] = await Promise.all([
+            readHealth(session, id, request.log),
+            readBatchId(session, id, request.log),
+            readDefinitionName(session, text(run['definition_id']), request.log),
+        ]);
+        const started = nullableText(run['started_at']);
+        const completed = nullableText(run['completed_at']);
+        return reportRunDetailViewSchema.parse({
+            id: text(run['id']),
+            name: text(run['name']),
+            description: text(run['description']),
+            definition_id: text(run['definition_id']),
+            definition_name: definitionName,
+            party_id: text(run['party_id']),
+            party_name:
+                session.availableParties.find((party) => party.id === text(run['party_id']))
+                    ?.name ?? null,
+            kind: text(run['kind']),
+            state_name: health.stateName,
+            health: health.health,
+            output_message: text(run['output_message']),
+            output_storage_key: text(run['output_storage_key']),
+            started_at: started,
+            completed_at: completed,
+            duration_ms: durationMs(started, completed),
+            priced_at: nullableText(run['priced_at']),
+            price_note: text(run['price_note']),
+            batch_id: batchId,
+            modified_by: text(run['modified_by']),
+            recorded_at: text(run['recorded_at']),
+        });
+    });
 }

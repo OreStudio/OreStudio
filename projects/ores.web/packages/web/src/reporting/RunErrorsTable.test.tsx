@@ -21,9 +21,11 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
+import { TranslationProvider } from '../i18n/Provider.js';
 import type { ReportRunErrorView } from '@ores/wire-protocol/browser';
-import { ErrorSubject } from './RunErrorsTable.js';
+import { ErrorSubject, RunErrors, runErrorsKey } from './RunErrorsTable.js';
 
 /**
  * The errors of a run, one row each. What is checked is what a reader follows:
@@ -73,5 +75,41 @@ describe('the subject of a run error', () => {
 
         expect(html).toContain('Yield/USD/USD1D');
         expect(html).not.toContain('/trading/trades/');
+    });
+});
+
+describe('the errors tab of a run', () => {
+    it('labels its views and its overview in words, never by their keys', () => {
+        const run = '22222222-2222-4222-8222-222222222222';
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        client.setQueryData(runErrorsKey(run), [
+            error({}),
+            error({
+                id: 'e0000000-0000-4000-8000-000000000002',
+                severity: 'warning',
+                scope: 'Report',
+            }),
+        ]);
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter initialEntries={[`/reporting/runs/${run}?tab=errors`]}>
+                        <RunErrors runId={run} />
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+
+        for (const label of [
+            'Overview',
+            'List',
+            'Errors',
+            'Warnings',
+            'Total',
+            'problems by scope',
+        ]) {
+            expect(html).toContain(label);
+        }
+        expect(html).not.toContain('reporting.run.');
     });
 });

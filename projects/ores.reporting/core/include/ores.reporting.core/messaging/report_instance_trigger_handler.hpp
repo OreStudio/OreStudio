@@ -30,6 +30,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
@@ -233,6 +234,16 @@ private:
                             "execute or ignore.",
                             definition_id,
                             def->post_processing);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+        try {
+            (void)ores::ore::results::family_selection_of(def->skipped_families);
+        } catch (const std::invalid_argument& e) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_skipped_family";
+            response.result.message = std::format(
+                "Report definition {} skips a family that does not exist: {}", definition_id, e.what());
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
@@ -614,6 +625,7 @@ private:
                                           .pre_processing = def.pre_processing,
                                           .prepared_input_key = def.prepared_input_key,
                                           .post_processing = def.post_processing,
+                                          .skipped_families = def.skipped_families,
                                           .kind = kind};
         ores::workflow::messaging::start_workflow_message swm{
             .type = workflow_type,

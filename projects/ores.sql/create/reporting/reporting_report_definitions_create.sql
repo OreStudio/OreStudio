@@ -58,6 +58,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "pre_processing" text not null,
     "prepared_input_key" text null,
     "post_processing" text not null,
+    "skipped_families" text not null default '',
     "is_official" boolean not null default true,
     "regulatory_book_type" text null,
     "cut_kind_code" text null,

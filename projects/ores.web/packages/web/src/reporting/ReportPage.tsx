@@ -147,6 +147,14 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         means: { key: 'reporting.means.postProcessing', values: ['execute', 'ignore'] },
     },
     {
+        field: 'skipped_families',
+        history: 'Skipped Families',
+        labelKey: 'reporting.fields.skipped_families',
+        kind: { kind: 'text', max: 2000 },
+        blank: true,
+        means: { key: 'reporting.means.skippedFamilies' },
+    },
+    {
         field: 'is_official',
         history: 'Is Official',
         labelKey: 'reporting.fields.is_official',

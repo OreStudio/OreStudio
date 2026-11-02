@@ -1339,6 +1339,7 @@ struct store_market_state_request {
     std::string as_of;
     std::string storage_token;
     std::vector<std::string> manifest_uris;
+    std::vector<std::string> skipped_families;
 };
 
 struct store_market_state_response {

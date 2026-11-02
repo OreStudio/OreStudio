@@ -7616,6 +7616,7 @@ const fr: SourceCatalogue = {
             prepared_input_key: 'Entrée préparée',
             pre_processing: 'Prétraitement',
             post_processing: 'Post-traitement',
+            skipped_families: 'Familles non stockées',
             is_official: 'Officielle',
             regulatory_book_type: 'Type de livre',
         },
@@ -7645,6 +7646,8 @@ const fr: SourceCatalogue = {
                     'Chaque exécution saute cette construction et lit une archive d’entrée préparée, nommée sous Entrée préparée.',
                 other: 'Comment une exécution obtient l’entrée du moteur.',
             },
+            skippedFamilies:
+                'Les familles de sortie qu’une exécution ne stocke pas en lignes, telles que le catalogue les nomme, séparées par des virgules, par exemple rawcube, netcube. Vide stocke toutes les familles. Les fichiers du moteur restent stockés dans tous les cas.',
             preparedInputKey:
                 'L’archive stockée dont une exécution lit son entrée quand le pré-traitement est Substituer. Elle reste vide tant que les exécutions construisent leur propre entrée.',
             postProcessing: {

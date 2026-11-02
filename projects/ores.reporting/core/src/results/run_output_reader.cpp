@@ -84,6 +84,10 @@ run_output_outcome read_run_outputs(const std::vector<output_file>& files, const
             outcome.files_not_modelled.push_back(file.name);
             continue;
         }
+        if (!run.families.stores(family->code)) {
+            outcome.files_skipped.push_back(file.name);
+            continue;
+        }
 
         if (ores::ore::results::is_cashflow_family(*family)) {
             auto read = ores::ore::results::read_cashflows(file.body, *family);

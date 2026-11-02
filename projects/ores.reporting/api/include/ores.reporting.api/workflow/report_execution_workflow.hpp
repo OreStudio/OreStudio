@@ -423,7 +423,8 @@ template <typename Command>
             post_process_results_request{.report_instance_id = req.report_instance_id,
                                          .tenant_id = req.tenant_id,
                                          .correlation_id = req.correlation_id,
-                                         .batch_id = submitted.batch_id});
+                                         .batch_id = submitted.batch_id,
+                                         .skipped_families = req.skipped_families.value_or("")});
     };
 
     s.build_compensation = [](const std::string& cmd_json,

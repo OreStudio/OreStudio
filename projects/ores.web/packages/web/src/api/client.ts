@@ -985,6 +985,7 @@ export interface ReportEdit {
     readonly pre_processing: string;
     readonly prepared_input_key: string;
     readonly post_processing: string;
+    readonly skipped_families: string;
 }
 
 /**

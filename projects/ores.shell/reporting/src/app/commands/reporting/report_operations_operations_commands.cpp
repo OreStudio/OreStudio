@@ -182,7 +182,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_post_process_results(std::ref(out), std::ref(session), std::move(args));
         },
-        "post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>");
+        "post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id> "
+        "<skipped_families>");
 
     menu->Insert(
         "finalise-report",
@@ -926,7 +927,7 @@ void report_operations_operations_commands::process_post_process_results(
         return;
     }
 
-    constexpr std::size_t positional_count = 4;
+    constexpr std::size_t positional_count = 5;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -940,6 +941,7 @@ void report_operations_operations_commands::process_post_process_results(
         req.tenant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];
         req.batch_id = parsed->positionals[next++];
+        req.skipped_families = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

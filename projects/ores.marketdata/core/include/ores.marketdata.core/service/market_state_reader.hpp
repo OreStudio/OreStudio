@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/market_calibration_value.hpp"
 #include "ores.marketdata.api/domain/market_scenario_value.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.ore.core/results/output_catalogue.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
@@ -71,6 +72,10 @@ struct market_state_run {
      * @brief The date the run priced at, which is the state's observation date.
      */
     std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The families the run stores as rows, as its definition chose them.
+     */
+    ores::ore::results::family_selection families;
 };
 
 /**
@@ -98,6 +103,10 @@ struct market_state_outcome {
      * them.
      */
     std::vector<std::string> left_alone;
+    /**
+     * @brief The market-state files whose family the run's definition skips.
+     */
+    std::vector<std::string> skipped;
     /**
      * @brief The reasons a file that is market state could not be read.
      */

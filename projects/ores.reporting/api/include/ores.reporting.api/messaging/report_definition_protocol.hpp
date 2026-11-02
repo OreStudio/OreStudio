@@ -59,6 +59,7 @@ struct report_definition_write {
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;
+    std::string skipped_families;
     bool is_official;
     std::optional<std::string> regulatory_book_type;
     std::optional<std::string> cut_kind_code;

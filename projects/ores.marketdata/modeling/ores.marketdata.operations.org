@@ -3046,6 +3046,15 @@ Where the manifest of each result of the run is, as bucket and key. A manifest
 names the result that wrote the files and where each file is, so the store
 fetches the market-state files by name and never unpacks an archive.
 
+*** skipped_families
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The market-state families the run does not store as rows, as its definition
+names them. A skipped file is not fetched and is named in the reply as left
+alone; it stays in the object store.
+
 ** store_market_state_response
 
 *** result

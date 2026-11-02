@@ -68,6 +68,7 @@ struct report_definition_entity {
     std::string pre_processing;
     std::optional<std::string> prepared_input_key;
     std::string post_processing;
+    std::string skipped_families;
     bool is_official = true;
     std::optional<std::string> regulatory_book_type;
     std::optional<std::string> cut_kind_code;
@@ -99,6 +100,7 @@ struct report_definition_entity {
                query_builder::bind("pre_processing", &e::pre_processing) |
                query_builder::bind("prepared_input_key", &e::prepared_input_key) |
                query_builder::bind("post_processing", &e::post_processing) |
+               query_builder::bind("skipped_families", &e::skipped_families) |
                query_builder::bind("is_official", &e::is_official) |
                query_builder::bind("regulatory_book_type", &e::regulatory_book_type) |
                query_builder::bind("cut_kind_code", &e::cut_kind_code) |

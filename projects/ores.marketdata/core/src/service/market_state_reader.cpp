@@ -142,6 +142,10 @@ market_state_outcome read_market_state(const std::vector<market_state_file>& fil
             outcome.left_alone.push_back(file.name);
             continue;
         }
+        if (!run.families.stores(family->code)) {
+            outcome.skipped.push_back(file.name);
+            continue;
+        }
 
         // A value is keyed by its result, its file and its line, so a second file
         // of the same name would close the first in the same statement. It is

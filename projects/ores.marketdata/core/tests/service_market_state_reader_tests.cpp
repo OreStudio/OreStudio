@@ -122,6 +122,26 @@ TEST_CASE("a calibration is stored as one value for each line, text kept as text
     CHECK(pillar.line == 3);
 }
 
+TEST_CASE("a market-state family the definition skips stores no rows and is named",
+          market_state_tags) {
+    auto run = the_run();
+    run.families = ores::ore::results::family_selection_of("stress_scenarios");
+    const auto outcome = read_market_state(
+        {market_state_file{.name = "stress_scenarios.csv", .body = two_date_scenario_file()},
+         market_state_file{
+             .name = "todaysmarketcalibration.csv",
+             .body = "#MarketObjectType,MarketObjectId,ResultId,ResultKey1,ResultKey2,ResultKey3,"
+                     "ResultType,ResultValue\n"
+                     "yieldCurve,USD1D,currency,,,,string,USD\n"}},
+        run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.scenario_values.empty());
+    CHECK(outcome.skipped == std::vector<std::string>{"stress_scenarios.csv"});
+    CHECK(outcome.calibration_values.size() == 1);
+    CHECK(outcome.families == std::vector<std::string>{"todaysmarketcalibration"});
+}
+
 TEST_CASE("a run's results are left alone rather than stored as market state", market_state_tags) {
     const auto outcome = read_market_state(
         {market_state_file{.name = "npv.csv", .body = "#TradeId,NPV\nT1,1.0\n"},

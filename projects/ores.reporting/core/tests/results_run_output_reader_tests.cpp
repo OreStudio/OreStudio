@@ -170,6 +170,20 @@ TEST_CASE("two rows that state the same heading for the same trade stay apart", 
     CHECK(lines == std::vector<int>{2, 3});
 }
 
+TEST_CASE("a family the definition skips stores no rows and is named", run_tags) {
+    auto run = the_run();
+    run.families = ores::ore::results::family_selection_of("npv");
+    const auto outcome = read_run_outputs({output_file{.name = "npv.csv", .body = npv_file()},
+                                           output_file{.name = "flows.csv", .body = flows_file()}},
+                                          run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.metrics.empty());
+    CHECK_FALSE(outcome.cashflows.empty());
+    CHECK(outcome.files_skipped == std::vector<std::string>{"npv.csv"});
+    CHECK(outcome.files_read == std::vector<std::string>{"flows.csv"});
+}
+
 TEST_CASE("a file no family states is counted rather than refused", run_tags) {
     const auto outcome = read_run_outputs(
         {output_file{.name = "something-else.csv", .body = "a,b\n1,2\n"}}, the_run());

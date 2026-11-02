@@ -731,6 +731,7 @@ function definitionRowOf(
         pre_processing: text(definition['pre_processing']),
         prepared_input_key: text(definition['prepared_input_key']),
         post_processing: text(definition['post_processing']),
+        skipped_families: text(definition['skipped_families']),
         version: countOf(definition['version']),
         modified_by: text(definition['modified_by']),
         performed_by: text(definition['performed_by']),
@@ -934,6 +935,7 @@ const editSchema = z.object({
     pre_processing: z.string().max(2000),
     prepared_input_key: z.string().max(500),
     post_processing: z.string().max(2000),
+    skipped_families: z.string().max(2000),
 });
 
 const editBodySchema = z.object({
@@ -945,7 +947,7 @@ const editBodySchema = z.object({
 /**
  * The write the edit form makes, rebuilt from the read.
  *
- * The form offers nine fields and the record has nineteen, so the write is
+ * The form offers ten fields and the record has twenty, so the write is
  * assembled from the definition just read and only the offered fields are
  * replaced. A save therefore cannot blank a field the screen does not show,
  * whatever the browser sends. The version is the one the form was drawn from,
@@ -970,6 +972,7 @@ function writeOf(
         pre_processing: change.pre_processing,
         prepared_input_key: change.prepared_input_key,
         post_processing: change.post_processing,
+        skipped_families: change.skipped_families,
         is_official: change.is_official,
         // An edit that states no book type keeps the one the report holds. Null clears it.
         regulatory_book_type:

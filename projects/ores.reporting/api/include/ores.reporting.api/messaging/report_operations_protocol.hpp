@@ -485,6 +485,7 @@ struct post_process_results_request {
     std::string tenant_id;
     std::string correlation_id;
     std::string batch_id;
+    std::string skipped_families;
 };
 
 struct post_process_results_result {
@@ -544,6 +545,7 @@ struct report_execution_request {
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;
+    std::optional<std::string> skipped_families;
     std::optional<std::string> kind;
 };
 

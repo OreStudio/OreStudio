@@ -26,11 +26,11 @@ Step 6 of 7, one component. ores.ore encodes and decodes without reflect-cpp. St
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ Step 6 of 7, one component. ores.ore encodes and decodes without reflect-cpp. St
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Opt the five ore message models into the wire codec and regenerate.
+- Build =ores.ore.api= as a library, since it now carries compiled codecs.
+- Move the import and run configuration workflows and handlers onto the codec.
+- Read the trade export through trading's generated codec.
+- Give the planner's =import_choices= wire fields and enum text forms, because
+  the execute handler parses them from the request.
+- Leave the conventions path alone: questioning it showed it carries untyped
+  data, and the conventions redesign story now owns making it typed.
+- Prove every message's and the choices' bytes against reflect-cpp.
 
 * Measurements
 
@@ -58,9 +64,46 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Ore suites | api, core and service pass; the pattern ran 98 suites and 97 passed, and ores.refdata.core.tests failed because the environment's database lacks a table added at 4358fa8164 | =compass test run --preset linux-clang-release-ninja -- -R ore= | 30202911ed plus this branch |
+| Ore byte tests against reflect-cpp | 6 cases, 276 assertions pass | =ores.ore.core.tests "[codec]"= | 30202911ed plus this branch |
+| Component drift (ore), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component ore=, and the check scripts | 30202911ed plus this branch |
+| reflect-cpp left in ore sources, outside tests | 6 files | =grep -rn -E "rfl::\|<rfl\|reflectors" projects/ores.ore= | 30202911ed plus this branch |
 
 * Notes
+
+** The conventions path carries untyped data
+
+Questioning =run_configuration_operations.cpp= before replacing its
+=rfl::Generic= use showed that the conventions code drifted from its design.
+The stage message carries each row as a JSON string, the export reads each
+family untyped with a hand-built request and a party filter in ores.ore, and
+the package inside ores.ore holds rows as JSON strings. The bundle docs say a
+bundle's rows never sit in a message field. Four tasks on
+[[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]]
+make each part typed, so this task leaves =run_configuration_operations.cpp=,
+=conventions_family_pack.hpp=, =conventions_diff.cpp= and
+=conventions_family_cross_currency_fix_float.cpp= on reflect-cpp.
+
+** What else keeps reflect-cpp
+
+- =report_package_handler.cpp= reads =prepare_ore_package_request= and writes
+  =prepare_ore_package_result=, which belong to reporting and have no codec
+  until reporting's own task.
+- =nats_call.hpp= keeps the reflectors, because it calls analytics and
+  reporting, whose types still fall back to reflect-cpp.
+
+** The import choices travel as a JSON string
+
+=ore_import_request= and =ore_import_execute_request= carry the choices as
+=import_choices_json=. The capture
+=carry-the-ore-import-choices-as-a-typed-member= owns making the member typed.
+The choices now have a codec, so that change needs no new one.
+
+** The api part was header-only
+
+=ores.ore.api= was an INTERFACE library, so the generated protocol codecs were
+never compiled and the first build failed to link. Its model no longer
+declares it header-only.
 
 * Test Scenarios
 
@@ -86,3 +129,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.ore's messages encode and decode without reflect-cpp. Its five models use
+the generated codec, its workflows and handlers read and write through it, and
+the import choices have their own codec. The bytes match reflect-cpp's. The
+acceptance that nothing in ores.ore includes reflect-cpp is met only in part:
+the conventions path waits on the conventions redesign, the reporting package
+messages on reporting's task, and =nats_call.hpp= on the components it calls.

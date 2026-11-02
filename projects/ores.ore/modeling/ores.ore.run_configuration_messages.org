@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D196F614-02AF-472E-9754-2BEED439A4F5
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.ore.run_configuration_messages
 #+description: Codegen operation model for importing a run's configuration into a report definition and exporting it back: the files of an ORE input directory travel inline, and the service stores them through the run store under the caller's session.

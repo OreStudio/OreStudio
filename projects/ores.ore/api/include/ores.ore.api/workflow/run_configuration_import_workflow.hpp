@@ -21,10 +21,9 @@
 #define ORES_ORE_API_WORKFLOW_RUN_CONFIGURATION_IMPORT_WORKFLOW_HPP
 
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 
 namespace ores::ore::workflow {
 
@@ -71,8 +70,11 @@ register_run_configuration_import_workflow(ores::workflow::service::workflow_reg
         s.build_compensation = [](const std::string& cmd_json,
                                   const std::string& result_json,
                                   const std::string&) -> std::string {
-            const auto cmd = rfl::json::read<run_configuration_import_execute_request>(cmd_json);
-            const auto res = rfl::json::read<run_configuration_import_execute_result>(result_json);
+            const auto cmd =
+                utility::codec::json::try_read<run_configuration_import_execute_request>(cmd_json);
+            const auto res =
+                utility::codec::json::try_read<run_configuration_import_execute_result>(
+                    result_json);
             run_configuration_import_rollback_request rollback;
             if (cmd) {
                 rollback.correlation_id = cmd->correlation_id;
@@ -83,7 +85,7 @@ register_run_configuration_import_workflow(ores::workflow::service::workflow_reg
                 rollback.run_document_saved = res->run_document_saved;
                 rollback.saved_documents = res->saved_documents;
             }
-            return rfl::json::write(rollback);
+            return utility::codec::json::write(rollback);
         };
         return {std::move(s)};
     };

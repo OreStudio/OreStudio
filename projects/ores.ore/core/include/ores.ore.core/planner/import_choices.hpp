@@ -20,9 +20,15 @@
 #ifndef ORES_ORE_CORE_PLANNER_IMPORT_CHOICES_HPP
 #define ORES_ORE_CORE_PLANNER_IMPORT_CHOICES_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <stdexcept>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::ore::planner {
@@ -58,6 +64,14 @@ struct trade_defaults {
     std::string activity_type_code;
     std::optional<boost::uuids::uuid> default_counterparty_id;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const trade_defaults&) {
+    return std::tuple{
+        utility::codec::field{"trade_date", &trade_defaults::trade_date},
+        utility::codec::field{"activity_type_code", &trade_defaults::activity_type_code},
+        utility::codec::field{"default_counterparty_id", &trade_defaults::default_counterparty_id}};
+}
+static_assert(utility::codec::names_every_member<trade_defaults>());
 
 /**
  * @brief User-supplied choices that drive the import plan.
@@ -180,6 +194,63 @@ struct import_choices {
     std::string purpose_type = "Internal";
 };
 
+[[nodiscard]] constexpr auto wire_fields(const import_choices&) {
+    using c = import_choices;
+    return std::tuple{
+        utility::codec::field{"currency_mode", &c::currency_mode},
+        utility::codec::field{"portfolio_reimport_mode", &c::portfolio_reimport_mode},
+        utility::codec::field{"parent_portfolio_name", &c::parent_portfolio_name},
+        utility::codec::field{"create_parent_portfolio", &c::create_parent_portfolio},
+        utility::codec::field{"scan_exclusions", &c::scan_exclusions},
+        utility::codec::field{"hierarchy_strip", &c::hierarchy_strip},
+        utility::codec::field{"defaults", &c::defaults},
+        utility::codec::field{"existing_parent_portfolio_id", &c::existing_parent_portfolio_id},
+        utility::codec::field{"existing_target_book_id", &c::existing_target_book_id},
+        utility::codec::field{"sandbox_id", &c::sandbox_id},
+        utility::codec::field{"official", &c::official},
+        utility::codec::field{"party_id", &c::party_id},
+        utility::codec::field{"aggregation_ccy", &c::aggregation_ccy},
+        utility::codec::field{"functional_currency", &c::functional_currency},
+        utility::codec::field{"purpose_type", &c::purpose_type}};
 }
+static_assert(utility::codec::names_every_member<import_choices>());
+
+}
+
+template <>
+struct ores::utility::codec::text_form<ores::ore::planner::currency_import_mode> {
+    using mode = ores::ore::planner::currency_import_mode;
+    static constexpr std::string_view wire_name = "a currency import mode";
+
+    static std::string to_text(const mode& v) {
+        return v == mode::all ? "all" : "missing_only";
+    }
+
+    static mode from_text(std::string_view text) {
+        if (text == "all")
+            return mode::all;
+        if (text == "missing_only")
+            return mode::missing_only;
+        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text));
+    }
+};
+
+template <>
+struct ores::utility::codec::text_form<ores::ore::planner::reimport_mode> {
+    using mode = ores::ore::planner::reimport_mode;
+    static constexpr std::string_view wire_name = "a reimport mode";
+
+    static std::string to_text(const mode& v) {
+        return v == mode::add_trades_only ? "add_trades_only" : "create_new_versions";
+    }
+
+    static mode from_text(std::string_view text) {
+        if (text == "add_trades_only")
+            return mode::add_trades_only;
+        if (text == "create_new_versions")
+            return mode::create_new_versions;
+        throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text));
+    }
+};
 
 #endif

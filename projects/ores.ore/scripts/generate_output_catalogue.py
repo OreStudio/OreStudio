@@ -28,8 +28,8 @@ Two things the corpus does not say and this file does:
 """
 
 import argparse
-import fnmatch
 import csv
+import fnmatch
 import io
 import os
 import re
@@ -133,7 +133,9 @@ ALIASES = {
 }
 
 # The output files the seed names that are not read into rows, and why. The
-# generator refuses a seed output that is neither a family nor stated here.
+# generator refuses a seed output that is neither a family nor stated here. The
+# reasons that cite a version hold for that version: re-check them when the
+# vendored ORE moves.
 OUT_OF_SCOPE = {
     "amcBuffer.dat": "binary path data the AMC engine reads back, not a report",
     "scenariodata.dat": "binary scenario data the engine reads back, not a report",

@@ -110,6 +110,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | fnmatch imported out of order | generate_output_catalogue.py | Accepted | Sorted. |
+| 3 | The generator's fnmatch and the C++ matcher could disagree; dim_evolution.txt untested | results_output_catalogue_tests.cpp | Accepted | The C++ test now finds every alias, dim_evolution.txt included. |
+| 4 | Say that dim_regression*.txt also matches the bare name | generate_output_catalogue.py | Declined | The seed names dim_regression.txt and the engine takes a list of names; the pattern is meant to match both. |
+| 5 | The out-of-scope reasons cite v1.8.17.0 and nothing re-checks them | README.org, generate_output_catalogue.py | Accepted | Both say to re-check the writers and the reasons when the vendored ORE moves. |
+| 6 | Synthetic fixtures prove columns, not figures; the synthetic test names five codes | | No change | Stated in the PR and marked in the catalogue. |
+| 7 | Run compass check | PR | Declined | The operator asked for builds and tests instead; the new org files carry ids. |
 |   |                 |      |          |       |
 
 * Result

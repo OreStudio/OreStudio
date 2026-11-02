@@ -13,6 +13,9 @@ here instead.
   in the order it adds them, at ORE v1.8.17.0 (3d75a6908), with two rows of
   plausible values. The catalogue marks a family whose only sample is synthetic.
 
+When the vendored ORE moves, re-read each writer below and the generator's
+out-of-scope reasons, which cite the version they hold for.
+
 | File | Writer at v1.8.17.0 |
 |------+---------------------|
 | synthetic/crif.csv | =SimmReportWriter::writeCrifReport=, OREAnalytics/orea/app/reportwriters/simmreportwriter.cpp |

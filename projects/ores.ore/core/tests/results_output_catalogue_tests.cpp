@@ -263,6 +263,10 @@ TEST_CASE("a family is found by the report name the engine writes when none is c
     REQUIRE(detail != nullptr);
     CHECK(detail->code == "saccr_detail");
 
+    const auto* evolution = ores::ore::results::family_of_file("dim_evolution.txt");
+    REQUIRE(evolution != nullptr);
+    CHECK(evolution->code == "dim_evolution");
+
     const auto* regression = ores::ore::results::family_of_file("dim_regression_1.txt");
     REQUIRE(regression != nullptr);
     CHECK(regression->code == "dim_regression");

@@ -23,15 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.api/domain/workflow_batch_link_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.compute.api/domain/workflow_batch_link_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::compute::domain {
 
 std::ostream& operator<<(std::ostream& s, const workflow_batch_link& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0739BC05-3713-4695-8B7B-04D9DBA1AEE0
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.host
 #+description: Codegen entity model for the compute =host= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

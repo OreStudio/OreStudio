@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: E0010C05-D225-462B-A194-330F12A41B28
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.app_version_platform
 #+description: Codegen junction model for app_version_platforms.

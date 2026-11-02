@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.compute.grid_sample
 #+description: Codegen entity model for the compute grid_samples hypertable, one point-in-time snapshot of server-side grid metrics.

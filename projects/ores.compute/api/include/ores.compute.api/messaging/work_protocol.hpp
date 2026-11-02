@@ -25,9 +25,15 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_WORK_PROTOCOL_HPP
 
+#include "ores.compute.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::compute::messaging {
 
@@ -369,6 +375,237 @@ struct submit_result_response {
     std::string message;
 };
 
+/**
+ * @brief The members of work_assignment_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const work_assignment_event&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &work_assignment_event::tenant_id},
+        ::ores::utility::codec::field{"result_id", &work_assignment_event::result_id},
+        ::ores::utility::codec::field{"workunit_id", &work_assignment_event::workunit_id},
+        ::ores::utility::codec::field{"app_version_id", &work_assignment_event::app_version_id},
+        ::ores::utility::codec::field{"package_uri", &work_assignment_event::package_uri},
+        ::ores::utility::codec::field{"package_sha256", &work_assignment_event::package_sha256},
+        ::ores::utility::codec::field{"input_uri", &work_assignment_event::input_uri},
+        ::ores::utility::codec::field{"config_uri", &work_assignment_event::config_uri},
+        ::ores::utility::codec::field{"output_uri", &work_assignment_event::output_uri},
+        ::ores::utility::codec::field{"output_files_uri", &work_assignment_event::output_files_uri},
+        ::ores::utility::codec::field{"logs_uri", &work_assignment_event::logs_uri},
+        ::ores::utility::codec::field{"storage_token", &work_assignment_event::storage_token},
+    };
 }
+
+/**
+ * @brief The members of heartbeat_message, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const heartbeat_message&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"host_id", &heartbeat_message::host_id},
+        ::ores::utility::codec::field{"cpu_count", &heartbeat_message::cpu_count},
+        ::ores::utility::codec::field{"ram_mb", &heartbeat_message::ram_mb},
+        ::ores::utility::codec::field{"result_id", &heartbeat_message::result_id},
+    };
+}
+
+/**
+ * @brief The members of reap_work_message, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const reap_work_message&) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of claim_work_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const claim_work_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"host_id", &claim_work_request::host_id},
+        ::ores::utility::codec::field{"platform", &claim_work_request::platform},
+    };
+}
+
+/**
+ * @brief The members of claim_work_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const claim_work_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &claim_work_response::success},
+        ::ores::utility::codec::field{"has_work", &claim_work_response::has_work},
+        ::ores::utility::codec::field{"message", &claim_work_response::message},
+        ::ores::utility::codec::field{"tenant_id", &claim_work_response::tenant_id},
+        ::ores::utility::codec::field{"result_id", &claim_work_response::result_id},
+        ::ores::utility::codec::field{"workunit_id", &claim_work_response::workunit_id},
+        ::ores::utility::codec::field{"app_version_id", &claim_work_response::app_version_id},
+        ::ores::utility::codec::field{"package_uri", &claim_work_response::package_uri},
+        ::ores::utility::codec::field{"package_sha256", &claim_work_response::package_sha256},
+        ::ores::utility::codec::field{"input_uri", &claim_work_response::input_uri},
+        ::ores::utility::codec::field{"config_uri", &claim_work_response::config_uri},
+        ::ores::utility::codec::field{"output_uri", &claim_work_response::output_uri},
+        ::ores::utility::codec::field{"output_files_uri", &claim_work_response::output_files_uri},
+        ::ores::utility::codec::field{"logs_uri", &claim_work_response::logs_uri},
+        ::ores::utility::codec::field{"storage_token", &claim_work_response::storage_token},
+        ::ores::utility::codec::field{"attempt", &claim_work_response::attempt},
+    };
+}
+
+/**
+ * @brief The members of work_available_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const work_available_event&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"queued", &work_available_event::queued},
+    };
+}
+
+/**
+ * @brief The members of submit_result_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const submit_result_request&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"tenant_id", &submit_result_request::tenant_id},
+        ::ores::utility::codec::field{"result_id", &submit_result_request::result_id},
+        ::ores::utility::codec::field{"host_id", &submit_result_request::host_id},
+        ::ores::utility::codec::field{"output_uri", &submit_result_request::output_uri},
+        ::ores::utility::codec::field{"outcome", &submit_result_request::outcome},
+        ::ores::utility::codec::field{"error_message", &submit_result_request::error_message},
+        ::ores::utility::codec::field{"duration_ms", &submit_result_request::duration_ms},
+    };
+}
+
+/**
+ * @brief The members of submit_result_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const submit_result_response&) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &submit_result_response::success},
+        ::ores::utility::codec::field{"message", &submit_result_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::work_assignment_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::work_assignment_event& v);
+    static ores::compute::messaging::work_assignment_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::work_assignment_event& v);
+    static ores::compute::messaging::work_assignment_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::heartbeat_message> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::heartbeat_message& v);
+    static ores::compute::messaging::heartbeat_message read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::heartbeat_message& v);
+    static ores::compute::messaging::heartbeat_message
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::reap_work_message> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::reap_work_message& v);
+    static ores::compute::messaging::reap_work_message read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::reap_work_message& v);
+    static ores::compute::messaging::reap_work_message
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::claim_work_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::claim_work_request& v);
+    static ores::compute::messaging::claim_work_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::claim_work_request& v);
+    static ores::compute::messaging::claim_work_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::claim_work_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::claim_work_response& v);
+    static ores::compute::messaging::claim_work_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::claim_work_response& v);
+    static ores::compute::messaging::claim_work_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::work_available_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::work_available_event& v);
+    static ores::compute::messaging::work_available_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::work_available_event& v);
+    static ores::compute::messaging::work_available_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::submit_result_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::submit_result_request& v);
+    static ores::compute::messaging::submit_result_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::submit_result_request& v);
+    static ores::compute::messaging::submit_result_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_COMPUTE_API_EXPORT wire_traits<ores::compute::messaging::submit_result_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::compute::messaging::submit_result_response& v);
+    static ores::compute::messaging::submit_result_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::compute::messaging::submit_result_response& v);
+    static ores::compute::messaging::submit_result_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

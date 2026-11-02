@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 30
+Tables: 31
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -471,6 +471,38 @@ package "marketdata" #E3F2FD {
     TimescaleDB hypertable partitioned by fixing_date with 30-day chunks.
     Corrections use the soft-update/soft-delete pattern (no GIST, no DELETE RULEs).
     No audit trail columns — volume makes them impractical.
+    end note
+
+    entity ores_marketdata_market_input_values_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * result_id : uuid <<FK>>
+        * source : text
+        * line : integer
+        * report_definition_id : uuid <<FK>>
+        * family : text
+        * datum_id : text <<FK>>
+        * value : double
+          payment_date : timestamptz
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_market_input_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Input Value Table
+    The market a run read, one value at a time. The engine writes back the quotes,
+    the fixings and the dividends it loaded, so a run states what it priced against.
+    Each of those values is a row here, scoped to the run.
+    These are not observations: the observations a run reads come from this store,
+    so writing the run's copy back as an observation would duplicate it and replace
+    its provenance with the run's. A row here says what one run saw.
     end note
 
     entity ores_marketdata_market_observations_tbl <<temporal>> #C6F0D8 {

@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/messaging/market_state_handler.hpp"
 #include "ores.marketdata.core/repository/market_calibration_value_repository.hpp"
+#include "ores.marketdata.core/repository/market_input_value_repository.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
@@ -99,7 +100,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     }
     const auto& ctx = *ctx_expected;
     if (!has_permission(ctx, "marketdata::market_scenario_values:write") ||
-        !has_permission(ctx, "marketdata::market_calibration_values:write")) {
+        !has_permission(ctx, "marketdata::market_calibration_values:write") ||
+        !has_permission(ctx, "marketdata::market_input_values:write")) {
         error_reply(nats_, msg, ores::service::error_code::forbidden);
         return;
     }
@@ -156,7 +158,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     response.families = outcome.families;
     response.files = static_cast<int>(outcome.families.size());
     response.rows = static_cast<std::int64_t>(outcome.scenario_values.size() +
-                                              outcome.calibration_values.size());
+                                              outcome.calibration_values.size() +
+                                              outcome.input_values.size());
     if (response.files == 0) {
         response.result.message = "The run wrote no market state, so there is nothing to store.";
         reply(nats_, msg, response);
@@ -171,6 +174,10 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
         if (!outcome.calibration_values.empty()) {
             repository::market_calibration_value_repository repo;
             repo.insert(ctx, outcome.calibration_values);
+        }
+        if (!outcome.input_values.empty()) {
+            repository::market_input_value_repository repo;
+            repo.insert(ctx, outcome.input_values);
         }
     } catch (const std::exception& e) {
         refuse(std::string("The run's market state was not stored: ") + e.what());

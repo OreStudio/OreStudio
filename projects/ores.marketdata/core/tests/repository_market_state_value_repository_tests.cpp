@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/market_calibration_value_repository.hpp"
+#include "ores.marketdata.core/repository/market_input_value_repository.hpp"
 #include "ores.marketdata.core/repository/market_scenario_value_repository.hpp"
 #include "ores.marketdata.core/service/market_state_reader.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -32,6 +33,7 @@ namespace {
 const std::string value_tags("[repository][market_state_value]");
 
 using ores::marketdata::repository::market_calibration_value_repository;
+using ores::marketdata::repository::market_input_value_repository;
 using ores::marketdata::repository::market_scenario_value_repository;
 using ores::marketdata::service::market_state_file;
 using ores::marketdata::service::market_state_run;
@@ -114,4 +116,27 @@ TEST_CASE("a calibration reads back with its text and its figure", value_tags) {
     CHECK(pillar->result_key_2 == "MM/RATE/USD/0D/1D");
     REQUIRE(pillar->figure.has_value());
     CHECK(*pillar->figure == 0.00821918);
+}
+
+TEST_CASE("two quotes of one datum on one date from two lines are both stored", value_tags) {
+    database_helper h;
+    const auto run = the_run();
+
+    const auto outcome = read_market_state(
+        {market_state_file{.result_id = boost::uuids::random_generator()(),
+                           .name = "fixings.csv",
+                           .body = "#fixingDate,fixingId,fixingValue\n"
+                                   "2026-10-30,EQ-SP5,2244.2\n"
+                                   "2026-10-30,EQ-SP5,2244.3\n"}},
+        run);
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.input_values.size() == 2);
+
+    market_input_value_repository repo;
+    repo.insert(h.context(), outcome.input_values);
+
+    const auto rows = repo.read_latest(h.context());
+    const auto stored = std::ranges::count_if(
+        rows, [&](const auto& one) { return one.report_instance_id == run.report_instance_id; });
+    CHECK(stored == 2);
 }

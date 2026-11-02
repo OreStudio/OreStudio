@@ -131,8 +131,12 @@ bool is_market_state(const output_family& family) {
     // run produced, stated once. The cubes and the sensitivity scenarios state a
     // trade's or a netting set's value under a shift or a sample, so they are
     // results and belong to the run's result tables.
-    static const std::vector<std::string> codes = {
-        "stress_scenarios", "scenariostatistics", "todaysmarketcalibration"};
+    static const std::vector<std::string> codes = {"stress_scenarios",
+                                                   "scenariostatistics",
+                                                   "todaysmarketcalibration",
+                                                   "marketdata",
+                                                   "fixings",
+                                                   "dividends"};
     return std::ranges::find(codes, family.code) != codes.end();
 }
 

@@ -17,6 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/results/calibration_reader.hpp"
+#include "ores.ore.core/results/cashflow_reader.hpp"
+#include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.testing/test_files.hpp"
@@ -236,21 +239,13 @@ TEST_CASE("a file no family covers is refused", metric_tags) {
 }
 
 TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
-    // The three child-row families have a reader of their own, and the wide
-    // market state is stored as a payload rather than read as metrics.
-    const std::vector<std::string> other_shapes = {"flows",
-                                                   "stresstest_flows",
-                                                   "todaysmarketcalibration_cashflows",
-                                                   "stress_scenarios",
-                                                   "scenariostatistics"};
-
+    // The payments, the calibration and the market inputs have readers of
+    // their own; every other family is read as metrics.
     std::size_t read = 0;
     for (const auto& family : output_families()) {
-        if (std::ranges::find(other_shapes, family.code) != other_shapes.end())
-            continue;
-        // A family of no figures is not a metric family: the calibration
-        // report states text beside a key, and it is market state, not a result.
-        if (family.measure_columns.empty())
+        if (ores::ore::results::is_cashflow_family(family) ||
+            ores::ore::results::is_calibration_family(family) ||
+            ores::ore::results::is_market_input_family(family))
             continue;
         INFO("the family is " << family.code);
 

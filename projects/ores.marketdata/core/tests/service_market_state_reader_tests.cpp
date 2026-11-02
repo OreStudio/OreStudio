@@ -142,6 +142,39 @@ TEST_CASE("a market-state family the definition skips stores no rows and is name
     CHECK(outcome.families == std::vector<std::string>{"todaysmarketcalibration"});
 }
 
+TEST_CASE("the quotes, fixings and dividends a run read are one value for each line",
+          market_state_tags) {
+    const auto run = the_run();
+    const auto outcome = read_market_state(
+        {market_state_file{.name = "marketdata.csv",
+                           .body = "#datumDate,datumId,datumValue\n"
+                                   "2026-10-30,FX/RATE/EUR/USD,1.17\n"
+                                   "2026-10-30,FX/RATE/GBP/USD,1.35\n"},
+         market_state_file{.name = "dividends.csv",
+                           .body = "#dividendExDate,equityId,dividendRate,dividendPaymentDate\n"
+                                   "2026-03-20,SP5,1.25,2026-04-01\n"}},
+        run);
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.families == std::vector<std::string>{"marketdata", "dividends"});
+    REQUIRE(outcome.input_values.size() == 3);
+
+    const auto& gbp = outcome.input_values[1];
+    CHECK(gbp.family == "marketdata");
+    CHECK(gbp.datum_id == "FX/RATE/GBP/USD");
+    CHECK(gbp.value == 1.35);
+    CHECK(gbp.line == 3);
+    CHECK(gbp.source == "marketdata.csv");
+    CHECK(gbp.as_of == std::chrono::sys_days{std::chrono::year{2026} / 10 / 30});
+    CHECK_FALSE(gbp.payment_date.has_value());
+
+    const auto& dividend = outcome.input_values[2];
+    CHECK(dividend.family == "dividends");
+    CHECK(dividend.datum_id == "SP5");
+    REQUIRE(dividend.payment_date.has_value());
+    CHECK(*dividend.payment_date == std::chrono::sys_days{std::chrono::year{2026} / 4 / 1});
+}
+
 TEST_CASE("a run's results are left alone rather than stored as market state", market_state_tags) {
     const auto outcome = read_market_state(
         {market_state_file{.name = "npv.csv", .body = "#TradeId,NPV\nT1,1.0\n"},

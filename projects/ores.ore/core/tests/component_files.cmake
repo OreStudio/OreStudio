@@ -36,6 +36,7 @@ set(files
     "results_calibration_reader_tests.cpp"
     "results_cashflow_reader_tests.cpp"
     "results_corpus_gate_tests.cpp"
+    "results_market_input_reader_tests.cpp"
     "results_metric_reader_tests.cpp"
     "results_output_catalogue_tests.cpp"
     "results_output_manifest_tests.cpp"

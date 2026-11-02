@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/results/calibration_reader.hpp"
 #include "ores.ore.core/results/cashflow_reader.hpp"
+#include "ores.ore.core/results/market_input_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.testing/test_files.hpp"
@@ -37,15 +38,19 @@ using ores::ore::results::output_families;
 using ores::ore::results::output_family;
 using ores::ore::results::is_cashflow_family;
 using ores::ore::results::is_calibration_family;
+using ores::ore::results::is_market_input_family;
 using ores::ore::results::read_calibration;
+using ores::ore::results::read_market_inputs;
 using ores::ore::results::read_cashflows;
 using ores::ore::results::read_metrics;
 
-enum class shape { metric, cashflow, calibration };
+enum class shape { metric, cashflow, calibration, market_input };
 
 shape shape_of(const output_family& family) {
     if (is_calibration_family(family))
         return shape::calibration;
+    if (is_market_input_family(family))
+        return shape::market_input;
     // A family whose key names a payment states a cashflow, and every other
     // family states figures about a subject.
     if (is_cashflow_family(family))
@@ -61,6 +66,8 @@ bool reads_whole(const output_family& family, const std::string& csv) {
             return read_metrics(csv, family).refusals.empty();
         case shape::calibration:
             return read_calibration(csv, family).refusals.empty();
+        case shape::market_input:
+            return read_market_inputs(csv, family).refusals.empty();
     }
     return false;
 }
@@ -71,6 +78,7 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
     std::size_t metrics = 0;
     std::size_t cashflows = 0;
     std::size_t calibrations = 0;
+    std::size_t market_inputs = 0;
 
     for (const auto& family : output_families()) {
         INFO("the family is " << family.code);
@@ -83,6 +91,9 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
                 break;
             case shape::calibration:
                 ++calibrations;
+                break;
+            case shape::market_input:
+                ++market_inputs;
                 break;
             case shape::cashflow:
                 // A cashflow family states the numbering of a payment, or its
@@ -97,6 +108,7 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
     CHECK(metrics == 56);
     CHECK(cashflows == 3);
     CHECK(calibrations == 1);
+    CHECK(market_inputs == 3);
 }
 
 TEST_CASE("the checked-in corpus reads whole with the reader each family states", gate_tags) {
@@ -126,4 +138,15 @@ TEST_CASE("the checked-in corpus reads whole with the reader each family states"
 
     CHECK(files > 400);
     CHECK(read > 400);
+}
+
+TEST_CASE("every family's own sample reads whole with the reader it states", gate_tags) {
+    for (const auto& family : output_families()) {
+        INFO("the family is " << family.code << ", its sample " << family.sample_file);
+        const auto relative =
+            std::filesystem::path(family.sample_file).lexically_relative("external/ore");
+        const auto path = ores::testing::ore_path(relative.string());
+        REQUIRE(std::filesystem::exists(path));
+        CHECK(reads_whole(family, ores::testing::read_file(path)));
+    }
 }

@@ -40,6 +40,8 @@
 \ir ./marketdata_market_scenario_values_notify_trigger_create.sql
 \ir ./marketdata_market_calibration_values_create.sql
 \ir ./marketdata_market_calibration_values_notify_trigger_create.sql
+\ir ./marketdata_market_input_values_create.sql
+\ir ./marketdata_market_input_values_notify_trigger_create.sql
 \ir ./marketdata_ticks_create.sql
 \ir ./marketdata_tick_coords_create.sql
 \ir ./marketdata_observation_lineages_create.sql

@@ -224,8 +224,12 @@ TEST_CASE("a configuration-driven family says its measures are open", catalogue_
 }
 
 TEST_CASE("every market-state family is a family of the catalogue", catalogue_tags) {
-    const std::vector<std::string> expected = {
-        "scenariostatistics", "stress_scenarios", "todaysmarketcalibration"};
+    const std::vector<std::string> expected = {"dividends",
+                                               "fixings",
+                                               "marketdata",
+                                               "scenariostatistics",
+                                               "stress_scenarios",
+                                               "todaysmarketcalibration"};
 
     std::vector<std::string> stated;
     for (const auto& family : output_families())

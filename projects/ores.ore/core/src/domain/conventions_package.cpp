@@ -43,7 +43,6 @@ constexpr family_codec family_codecs[] = {
     {"cds", &pack_cds, &join_cds},
     {"cms_spread_option", &pack_cms_spread_option, &join_cms_spread_option},
     {"commodity_forward", &pack_commodity_forward, &join_commodity_forward},
-    {"commodity_future", &pack_commodity_future, &join_commodity_future},
     {"deposit", &pack_deposit, &join_deposit},
     {"fra", &pack_fra, &join_fra},
     {"future", &pack_future, &join_future},

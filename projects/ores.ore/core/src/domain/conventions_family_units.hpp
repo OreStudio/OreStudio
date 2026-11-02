@@ -39,8 +39,8 @@
  * writes it back. The declarations take records and strings alone and name no
  * family type, so the code that walks all the families reflects none of them.
  *
- * The tenor basis swap and the two cross-currency swaps are each one document
- * element held by a central row and its parts, and the FX conventions are a
+ * The tenor basis swap, the two cross-currency swaps and the commodity future
+ * are each one document element held by a central row and its parts, and the FX conventions are a
  * projection that no family holds, so each has a unit of its own that is not
  * part of the table.
  */
@@ -79,10 +79,6 @@ void join_cms_spread_option(const package_row& row, xml::record_writer& root);
 void pack_commodity_forward(const xml::record_reader& root,
                             refdata::messaging::conventions_bundle& bundle);
 void join_commodity_forward(const package_row& row, xml::record_writer& root);
-
-void pack_commodity_future(const xml::record_reader& root,
-                           refdata::messaging::conventions_bundle& bundle);
-void join_commodity_future(const package_row& row, xml::record_writer& root);
 
 void pack_deposit(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
 void join_deposit(const package_row& row, xml::record_writer& root);
@@ -185,6 +181,33 @@ inline constexpr std::string_view cross_currency_basis_families[] = {
     "cross_currency_basis_spread_leg",
     "cross_currency_basis_swap_terms"};
 
+/// The six families a commodity future element is: the central convention row,
+/// the contract terms every convention fills, and four optional parts.
+void pack_commodity_future(const xml::record_reader& root,
+                           refdata::messaging::conventions_bundle& bundle);
+
+/// Writes the elements of the rows that belong to the six commodity future
+/// families.
+void join_commodity_future(const std::vector<const package_row*>& rows,
+                           xml::record_writer& root);
+
+/// The facts of each commodity future the rows hold, keyed as the fix-float
+/// swap's are.
+std::map<std::string, std::string>
+commodity_future_facts(const refdata::messaging::conventions_bundle& bundle);
+
+/// The kind of the central convention row of a commodity future.
+inline constexpr std::string_view commodity_future_kind = "COMMODITY_FUTURE";
+
+/// The families that are one document element, the commodity future.
+inline constexpr std::string_view commodity_future_families[] = {
+    "convention",
+    "commodity_future_averaging_terms",
+    "commodity_future_contract_terms",
+    "commodity_future_expiry_anchor",
+    "commodity_future_off_peak_index",
+    "commodity_future_option_expiry"};
+
 /// Writes the elements of the rows that belong to the three tenor families.
 void join_tenor_basis_swap(const std::vector<const package_row*>& rows, xml::record_writer& root);
 
@@ -214,6 +237,7 @@ inline constexpr joined_kind joined_kinds[] = {
      &pack_cross_currency_fix_float,
      &join_cross_currency_fix_float},
     {cross_currency_basis_families, &pack_cross_currency_basis, &join_cross_currency_basis},
+    {commodity_future_families, &pack_commodity_future, &join_commodity_future},
 };
 
 constexpr bool is_in(const joined_kind& kind, std::string_view family) {

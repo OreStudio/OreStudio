@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: EDD17F4A-A108-4F6D-919E-1C19DAE3AF69
+:END:
+#+title: Task: Let the administrator accept the public terms at once or one by one
+#+description: Task for: Publish public fixings through an adapter
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-the-administrator-accept-terms-at-once-or-one-by-one
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The first run shows the public sources' terms step to every administrator, even one who is already signed in. The step offers one choice to accept every source's terms, or to decide each source in turn. Each source is a short row that expands to its terms, so the step stays readable with any number of sources.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A signed-in first run resumes at the public sources step, not at the starting point
+- The step offers accept all or decide one by one; each source collapses to one row and expands to its terms
+- Each source's terms are a short link, such as 'ECB terms', that does not overlap the text beside it
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

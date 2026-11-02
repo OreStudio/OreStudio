@@ -23,9 +23,11 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/asio/co_spawn.hpp>
-#include <rfl/json.hpp>
+#include <exception>
+#include <optional>
+#include <type_traits>
 
 namespace ores::http::routes::iam {
 
@@ -116,8 +118,10 @@ void auth_session_routes::register_routes(
 boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_request& req) {
     using request_type = ores::iam::messaging::login_request;
 
-    const auto parsed = rfl::json::read<request_type>(req.body);
-    if (!parsed) {
+    std::optional<request_type> parsed;
+    try {
+        parsed = ores::utility::codec::wire_traits<request_type>::read_json(req.body);
+    } catch (const std::exception&) {
         co_return http_response::bad_request("Invalid request body");
     }
 
@@ -159,7 +163,8 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
         if (!decoded->success || decoded->token.empty()) {
             // The service states why in its own words and code; the browser is told
             // them rather than a status.
-            auto body = rfl::json::write(*decoded);
+            auto body = ores::utility::codec::wire_traits<
+                std::remove_cvref_t<decltype(*decoded)>>::write_json(*decoded);
             co_return http_response::json(body, http::domain::http_status::unauthorized);
         }
 

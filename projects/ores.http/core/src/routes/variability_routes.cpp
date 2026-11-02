@@ -18,9 +18,8 @@
  *
  */
 #include "ores.http.core/routes/variability_routes.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
-#include <rfl/json.hpp>
 
 namespace ores::http::server::routes {
 
@@ -68,7 +67,9 @@ variability_routes::handle_list_system_settings(const http_request&) {
         resp.settings = system_settings_->get_all();
         resp.total = resp.settings.size();
 
-        co_return http_response::json(rfl::json::write(resp));
+        co_return http_response::json(
+            ores::utility::codec::wire_traits<
+                variability::messaging::list_system_settings_response>::write_json(resp));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "List system settings error: " << e.what();
         co_return http_response::internal_error(e.what());

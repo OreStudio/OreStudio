@@ -114,6 +114,21 @@ begin
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
+        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_curve_cross_currencies_tbl', 'commodity_curve_cross_currency');
+
+    execute format(
+        'create or replace trigger %I before insert or update on %I '
+        'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
+        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_curve_directs_tbl', 'commodity_curve_direct');
+
+    execute format(
+        'create or replace trigger %I before insert or update on %I '
+        'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
+        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_curve_interpolations_tbl', 'commodity_curve_interpolation');
+
+    execute format(
+        'create or replace trigger %I before insert or update on %I '
+        'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
         'ores_refdata_curve_values_trg', 'ores_refdata_commodity_volatility_configs_tbl', 'commodity_volatility_config');
 
     execute format(

@@ -32,7 +32,11 @@
 #include "ores.shell/app/commands/refdata/cds_volatility_term_commands.hpp"
 #include "ores.shell/app/commands/refdata/cms_spread_option_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_curve_basis_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_curve_cross_currency_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_curve_direct_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_curve_interpolation_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_forward_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_future_averaging_terms_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_future_contract_terms_commands.hpp"
@@ -112,8 +116,13 @@
 #include "ores.shell/app/commands/refdata/curve_volatility_strike_surface_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_count_fraction_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_counter_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_benchmark_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_cds_terms_commands.hpp"
 #include "ores.shell/app/commands/refdata/default_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/default_curve_configuration_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_market_terms_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_transition_matrix_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_yield_reinterpretation_commands.hpp"
 #include "ores.shell/app/commands/refdata/deposit_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/derivation_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
@@ -249,6 +258,10 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     cms_spread_option_convention_commands::register_commands(root_menu, session);
     commodity_commands::register_commands(root_menu, session);
     commodity_curve_config_commands::register_commands(root_menu, session);
+    commodity_curve_interpolation_commands::register_commands(root_menu, session);
+    commodity_curve_direct_commands::register_commands(root_menu, session);
+    commodity_curve_cross_currency_commands::register_commands(root_menu, session);
+    commodity_curve_basis_commands::register_commands(root_menu, session);
     commodity_forward_convention_commands::register_commands(root_menu, session);
     commodity_future_averaging_terms_commands::register_commands(root_menu, session);
     commodity_future_contract_terms_commands::register_commands(root_menu, session);
@@ -321,6 +334,11 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     day_counter_commands::register_commands(root_menu, session);
     default_curve_config_commands::register_commands(root_menu, session);
     default_curve_configuration_commands::register_commands(root_menu, session);
+    default_curve_market_terms_commands::register_commands(root_menu, session);
+    default_curve_cds_terms_commands::register_commands(root_menu, session);
+    default_curve_benchmark_commands::register_commands(root_menu, session);
+    default_curve_transition_matrix_commands::register_commands(root_menu, session);
+    default_curve_yield_reinterpretation_commands::register_commands(root_menu, session);
     deposit_convention_commands::register_commands(root_menu, session);
     derivation_kind_commands::register_commands(root_menu, session);
     diary_entry_type_commands::register_commands(root_menu, session);

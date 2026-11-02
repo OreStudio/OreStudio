@@ -255,6 +255,11 @@
 \ir ./dq_equity_curve_configs_artefact_create.sql
 \ir ./dq_default_curve_configs_artefact_create.sql
 \ir ./dq_default_curve_configurations_artefact_create.sql
+\ir ./dq_default_curve_market_terms_artefact_create.sql
+\ir ./dq_default_curve_cds_terms_artefact_create.sql
+\ir ./dq_default_curve_benchmarks_artefact_create.sql
+\ir ./dq_default_curve_transition_matrices_artefact_create.sql
+\ir ./dq_default_curve_yield_reinterpretations_artefact_create.sql
 \ir ./dq_inflation_curve_configs_artefact_create.sql
 \ir ./dq_inflation_seasonality_factors_artefact_create.sql
 \ir ./dq_curve_security_configs_artefact_create.sql

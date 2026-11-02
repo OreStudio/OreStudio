@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 186
+Tables: 192
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1395,12 +1395,51 @@ package "refdata" #FFF3E0 {
     location, which none sets.
     end note
 
-    entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_commodity_future_averaging_terms_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
+        * convention_id : uuid <<FK>>
+        * averaging_commodity_name : text
+        * averaging_period : text
+        * averaging_pricing_calendar : text
+        * averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_averaging_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Averaging Terms Table
+    How an averaging commodity future averages the prices of its underlying, as
+    ORE's AveragingData: the commodity it averages, the period, the pricing
+    calendar, the conventions the averaging follows, whether it counts business
+    days, the delivery roll days, the future month offset and the daily expiry
+    offset. It is a part because its fields hold one invariant: each applies only
+    when the future averages, and ORE requires the commodity, the period, the
+    calendar and the conventions together, so the part makes those four columns
+    required. A convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_contract_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
         * contract_frequency : text
         * calendar : text
           expiry_calendar : text
@@ -1411,6 +1450,46 @@ package "refdata" #FFF3E0 {
           adjust_before_offset : boolean
           is_averaging : boolean
           valid_contract_months : text
+          hours_per_day : integer
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          prohibited_expiries : text
+          future_continuation_mappings : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_contract_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Contract Terms Table
+    The terms that state the futures contract itself, as ORE's
+    ContractFrequency, Calendar, the expiry calendar, month lag and offset, the
+    contract months, the business day convention, the averaging flag, the hours
+    per day, the index name, the savings time, the delivery location, the balance
+    of the month fields, the prohibited expiries and the future continuation
+    mappings. It is a part because its fields hold one invariant: each describes
+    the listed contract, and ORE requires the frequency and the calendar of every
+    commodity future. So every convention of the kind fills this part once. The
+    anchor day, the option expiry, the off-peak index and the averaging data beside
+    it are optional, and each is a part of its own.
+    end note
+
+    entity ores_refdata_commodity_future_expiry_anchors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
           anchor_day_of_month : integer
           anchor_calendar_days_before : integer
           anchor_business_days_after : integer
@@ -1418,6 +1497,66 @@ package "refdata" #FFF3E0 {
           anchor_nth_weekday : text
           anchor_last_weekday : text
           anchor_weekly_day_of_the_week : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_expiry_anchors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Expiry Anchor Table
+    The day the expiry of a commodity future is anchored to, as ORE's
+    AnchorDay: a day of the month, a number of calendar days before the month
+    end, a number of business days after the month start, the nth weekday, the last
+    weekday, or a weekly day. It is a part because its fields hold one invariant:
+    together they state one anchor, and ORE allows one form of it at a time. The
+    element is optional, so a convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_off_peak_indexes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * off_peak_index : text
+        * peak_index : text
+        * off_peak_hours : double
+        * peak_calendar : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_off_peak_indexes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Off Peak Index Table
+    The peak and off-peak indices a power future's price is made of, as ORE's
+    OffPeakPowerIndexData: the off-peak index, the peak index, the hours of the
+    day that count as off-peak, and the calendar the peak hours are read on. It is a
+    part because its fields hold one invariant: ORE requires all four together, so
+    the part makes each column required. Only a power future states it, so a
+    convention fills this part at most once.
+    end note
+
+    entity ores_refdata_commodity_future_option_expiries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
           option_expiry_month_lag : integer
           option_contract_frequency : text
           option_expiry_offset : integer
@@ -1429,29 +1568,8 @@ package "refdata" #FFF3E0 {
           option_expiry_last_weekday_of_month : text
           option_expiry_weekly_day_of_the_week : text
           option_business_day_convention : text
-          hours_per_day : integer
-          off_peak_index : text
-          peak_index : text
-          off_peak_hours : double
-          peak_calendar : text
-          index_name : text
-          savings_time : text
-          delivery_location : text
-          balance_of_the_month : boolean
-          balance_of_the_month_pricing_calendar : text
           option_underlying_future_convention : text
-          averaging_commodity_name : text
-          averaging_period : text
-          averaging_pricing_calendar : text
-          averaging_conventions : text
-          averaging_use_business_days : boolean
-          averaging_delivery_roll_days : integer
-          averaging_future_month_offset : integer
-          averaging_daily_expiry_offset : integer
-          prohibited_expiries : text
-          future_continuation_mappings : text
           option_continuation_mappings : text
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1460,30 +1578,19 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_commodity_future_conventions_tbl
+    note right of ores_refdata_commodity_future_option_expiries_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Commodity Future Convention Table
-    Describes how ORE builds a commodity future: when it expires, which contract
-    months it lists, how its expiry anchors to a day of the month or a weekday, and
-    the schedule of the options written on it. Corresponds to the
-    <CommodityFuture> element in ORE conventions.xml. The id field is the natural
-    key (ORE <Id> element).
-    Thirty of the element's thirty-four fields are modelled here, as forty columns,
-    because the element's nested structs are flattened rather than given tables of
-    their own.
-    AnchorDay becomes seven columns, OptionNthWeekday two more, and
-    OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants,
-    so flattening it is what lets a commodity future round trip at all.
-    Five files carry the element, in eight hundred and eight elements, and two of
-    them carried nothing else unmodelled when it landed.
-    Four more fields hold lists, and each is written as a text column rather than
-    counted: AveragingData becomes eight columns, and ProhibitedExpiries,
-    FutureContinuationMappings and OptionContinuationMappings become one text
-    column each, holding comma-separated dates and from:to pairs. A column is a
-    weaker home than a table, and it is what keeps the field in the element's
-    round trip rather than excluding the file from it.
+    Commodity Future Option Expiry Table
+    The expiry schedule of the options written on a commodity future, as ORE's
+    Option* fields: the month lag, the contract frequency, the offset, the
+    calendar and business days before, the expiry day, the nth weekday, the last
+    weekday, the weekly day and the business day convention, with the future
+    convention an option names as its underlying and the option continuation
+    mappings. It is a part because its fields hold one invariant: each applies only
+    when the convention states options on the future. A convention with no
+    options fills none of it, so it fills this part at most once.
     end note
 
     entity ores_refdata_commodity_price_segments_tbl <<temporal>> #C6F0D8 {
@@ -2042,37 +2149,23 @@ package "refdata" #FFF3E0 {
     topologies and never share an engine.
     end note
 
-    entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cross_currency_basis_flat_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : text <<PK>>
+        * id : uuid <<PK>>
         * party_id : uuid <<PK, FK>>
         --
         * version : integer
-        * settlement_days : integer
-          settlement_calendar : text
-        * roll_convention : text
+        * convention_id : uuid <<FK>>
         * flat_index : text
-        * spread_index : text
-          eom : boolean
-          is_resettable : boolean
           flat_index_is_resettable : boolean
           flat_tenor : text
-          spread_tenor : text
-          spread_payment_lag : integer
           flat_payment_lag : integer
-          spread_include_spread : boolean
-          spread_lookback : text
-          spread_fixing_days : integer
-          spread_rate_cutoff : integer
-          spread_is_averaged : boolean
-          spread_observation_shift : boolean
           flat_include_spread : boolean
           flat_lookback : text
           flat_fixing_days : integer
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-          oresmd_uri : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2081,16 +2174,92 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cross_currency_basis_conventions_tbl
+    note right of ores_refdata_cross_currency_basis_flat_legs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cross-Currency Basis Convention Table
-    Describes how ORE builds both legs of a cross-currency basis swap: the two
-    indices, their tenors, their payment lags and their fixing and cutoff rules, and
-    whether the spread is included in a leg's coupons. Corresponds to the
-    <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
-    key (ORE <Id> element).
+    Cross Currency Basis Flat Leg Table
+    The leg of a cross-currency basis swap that pays its index flat, as ORE's
+    FlatIndex with the Flat* fixing rules: whether the index is resettable,
+    the tenor, the payment lag, whether the spread is included in the coupon, the
+    lookback, the fixing days, the rate cutoff, whether coupons are averaged, and
+    whether the observation is shifted. They are a part because each states how
+    this one leg builds its coupon; the spread leg beside it states its own. Each
+    column keeps the flat_ prefix of ORE's element, because the screen shows
+    both legs of one convention on one row, and the two legs' columns would
+    otherwise share their names.
+    end note
+
+    entity ores_refdata_cross_currency_basis_spread_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * spread_index : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_spread_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Spread Leg Table
+    The leg of a cross-currency basis swap that pays its index plus the basis
+    spread, as ORE's SpreadIndex with the Spread* fixing rules: the tenor, the
+    payment lag, whether the spread is included in the coupon, the lookback, the
+    fixing days, the rate cutoff, whether coupons are averaged, and whether the
+    observation is shifted. They are a part because each states how this one leg
+    builds its coupon; the flat leg beside it states its own. Each column keeps the
+    spread_ prefix of ORE's element, for the reason the flat leg's columns do.
+    end note
+
+    entity ores_refdata_cross_currency_basis_swap_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * convention_id : uuid <<FK>>
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+          eom : boolean
+          is_resettable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_swap_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross Currency Basis Swap Terms Table
+    The terms a cross-currency basis swap states once for both legs, as ORE's
+    SettlementDays, SettlementCalendar, RollConvention, EOM and
+    IsResettable. It is a part because its fields hold one invariant: each
+    applies to the whole swap at once, so neither leg can hold it alone. The
+    settlement fields fix the settlement date, the roll convention and the end of
+    month rule roll the schedules of both legs, and the resettable flag resets the
+    notional of the swap. The flat and spread legs beside it hold none of them.
     end note
 
     entity ores_refdata_cross_currency_fix_float_fixed_legs_tbl <<temporal>> #C6F0D8 {
@@ -6639,6 +6808,11 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cap_floor_volatility_conf
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_terms_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_curve_configs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_averaging_terms_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_contract_terms_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_expiry_anchors_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_off_peak_indexes_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_commodity_future_option_expiries_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_price_segments_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_conventions_tbl : "has"
@@ -6649,6 +6823,9 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_flat_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_spread_legs_tbl : "has"
+ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_basis_swap_terms_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_fixed_legs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_float_legs_tbl : "has"
 ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_swap_terms_tbl : "has"

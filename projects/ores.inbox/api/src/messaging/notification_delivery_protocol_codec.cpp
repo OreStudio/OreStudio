@@ -22,6 +22,7 @@
  * Template: cpp_protocol_codec.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.inbox.api/domain/delivery_outcome.hpp"
 #include "ores.inbox.api/domain/notification_delivery_codec.hpp"
 #include "ores.inbox.api/messaging/notification_delivery_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"

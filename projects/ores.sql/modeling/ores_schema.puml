@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-679 tables in 21 groups.
+694 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -109,7 +109,11 @@ entity "refdata" as refdata {
   ores_refdata_commodities_tbl
   ores_refdata_commodity_curve_configs_tbl
   ores_refdata_commodity_forward_conventions_tbl
-  ores_refdata_commodity_future_conventions_tbl
+  ores_refdata_commodity_future_averaging_terms_tbl
+  ores_refdata_commodity_future_contract_terms_tbl
+  ores_refdata_commodity_future_expiry_anchors_tbl
+  ores_refdata_commodity_future_off_peak_indexes_tbl
+  ores_refdata_commodity_future_option_expiries_tbl
   ores_refdata_commodity_price_segments_tbl
   ores_refdata_commodity_volatility_configs_tbl
   ores_refdata_contact_types_tbl
@@ -127,7 +131,9 @@ entity "refdata" as refdata {
   ores_refdata_crm_driver_pairs_tbl
   ores_refdata_crm_enabled_derived_pairs_tbl
   ores_refdata_crm_topology_configs_tbl
-  ores_refdata_cross_currency_basis_conventions_tbl
+  ores_refdata_cross_currency_basis_flat_legs_tbl
+  ores_refdata_cross_currency_basis_spread_legs_tbl
+  ores_refdata_cross_currency_basis_swap_terms_tbl
   ores_refdata_cross_currency_fix_float_fixed_legs_tbl
   ores_refdata_cross_currency_fix_float_float_legs_tbl
   ores_refdata_cross_currency_fix_float_swap_terms_tbl
@@ -261,7 +267,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-186 tables — ores_schema.refdata.puml
+192 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -296,7 +302,11 @@ entity "dq_staging" as dq_staging {
   ores_dq_coding_schemes_artefact_tbl
   ores_dq_commodities_artefact_tbl
   ores_dq_commodity_forward_conventions_artefact_tbl
-  ores_dq_commodity_future_conventions_artefact_tbl
+  ores_dq_commodity_future_averaging_terms_artefact_tbl
+  ores_dq_commodity_future_contract_terms_artefact_tbl
+  ores_dq_commodity_future_expiry_anchors_artefact_tbl
+  ores_dq_commodity_future_off_peak_indexes_artefact_tbl
+  ores_dq_commodity_future_option_expiries_artefact_tbl
   ores_dq_commodity_volatility_configs_artefact_tbl
   ores_dq_configuration_analytic_parameters_artefact_tbl
   ores_dq_configuration_analytics_artefact_tbl
@@ -305,7 +315,9 @@ entity "dq_staging" as dq_staging {
   ores_dq_counterparty_identifiers_artefact_tbl
   ores_dq_countries_artefact_tbl
   ores_dq_crm_topology_configs_artefact_tbl
-  ores_dq_cross_currency_basis_conventions_artefact_tbl
+  ores_dq_cross_currency_basis_flat_legs_artefact_tbl
+  ores_dq_cross_currency_basis_spread_legs_artefact_tbl
+  ores_dq_cross_currency_basis_swap_terms_artefact_tbl
   ores_dq_cross_currency_fix_float_fixed_legs_artefact_tbl
   ores_dq_cross_currency_fix_float_float_legs_artefact_tbl
   ores_dq_cross_currency_fix_float_swap_terms_artefact_tbl
@@ -415,7 +427,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-147 tables — ores_schema.dq_staging.puml
+153 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -682,6 +694,7 @@ entity "reporting" as reporting {
   ores_reporting_report_instance_kinds_tbl
   ores_reporting_report_instances_tbl
   ores_reporting_report_metrics_tbl
+  ores_reporting_report_text_values_tbl
   ores_reporting_report_trigger_events_tbl
   ores_reporting_report_trigger_types_tbl
   ores_reporting_report_type_configuration_types_tbl
@@ -692,7 +705,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-46 tables — ores_schema.reporting.puml
+47 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -746,14 +759,16 @@ entity "marketdata" as marketdata {
   ores_marketdata_demand_intervals_tbl
   ores_marketdata_feed_scopes_tbl
   ores_marketdata_feeds_tbl
+  ores_marketdata_market_calibration_values_tbl
   ores_marketdata_market_data_mappings_tbl
   ores_marketdata_market_data_vendor_instruments_tbl
   ores_marketdata_market_fixings_tbl
+  ores_marketdata_market_input_values_tbl
   ores_marketdata_market_observations_tbl
+  ores_marketdata_market_scenario_values_tbl
   ores_marketdata_market_series_asset_classes_tbl
   ores_marketdata_market_series_identity_tbl
   ores_marketdata_market_series_tbl
-  ores_marketdata_market_state_payloads_tbl
   ores_marketdata_observation_lineages_tbl
   ores_marketdata_providers_tbl
   ores_marketdata_rate_card_components_tbl
@@ -770,7 +785,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-29 tables — ores_schema.marketdata.puml
+31 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-a-run-s-figures-in-blocks
-#+pr:
+#+pr: 4381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -122,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4381][#4381]] | [ore,reporting] Load a run's rows a block at a time |
 
 * Review
 

@@ -36,11 +36,16 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:A14C2E06-4D32-4672-A1F2-DBB57DA13C19][Generate a typed view of the convention family registry]] | BACKLOG | | | Generate, beside the string registry, a compile-time list of every convention family's value type and protocol, so a caller can visit each family with its own types. |
+| [[id:21FA9141-74C1-437B-9F60-57C7D4AD5D2D][Stage each convention family as a typed message]] | BACKLOG | | | Replace the generic stage request, which carries a family name and the row as a JSON string, with one generated stage message per family that carries the family's own value type. |
+| [[id:B144F3E9-99F6-4BC0-BF84-D83A57A0F35B][Export conventions through the typed family reads]] | BACKLOG | | | Read each convention family through its generated list request at one instant and for the run's party, in place of the untyped rfl::Generic reads in ores.ore. |
+| [[id:8153D891-838A-4896-B13B-E66F16F5C809][Hold the conventions package as typed rows in ores.ore]] | BACKLOG | | | Keep the transient conventions package inside ores.ore as typed family rows, not JSON strings, so the mapper, the joins and the diff work on values. |
 
 * Decisions
 
 - Pull requests merged in sprint 28 for this work, with no task to record them: #3462, #3465, #3467, #3469, #3474, #3475, #3481, #3482 and #3485. They stage a conventions import in two tables, apply it in one transaction, move the ORE path onto it, and rename the staging to bundle import. The story was carried with no task. The next owner should write the tasks and close the ones these PRs finished.
+
+- 2026-11-02: the code drifted from [[file:design.org][the design]] into untyped data in three places. The stage message carries a family name and the row as a JSON string, where the design asks for one typed stage per family. The export reads each family through =rfl::Generic=, with a hand-built request, the first array of the reply and a party filter in ores.ore, and a null =as_of=. Inside ores.ore the package holds rows as JSON strings. The cause is that the registry is a table of strings, so only refdata's generated apply could dispatch on it. A typed view of the registry is the first task, and the other three build on it. A typed transient package inside ores.ore is allowed; one struct with a typed array per kind on the wire is not.
 
 * Out of scope
 

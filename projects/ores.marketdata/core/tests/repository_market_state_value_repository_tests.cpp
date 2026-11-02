@@ -40,7 +40,7 @@ using ores::marketdata::service::market_state_run;
 using ores::marketdata::service::read_market_state;
 using ores::testing::database_helper;
 
-market_state_run the_run() {
+market_state_run a_stored_run() {
     return market_state_run{.party_id = boost::uuids::random_generator()(),
                             .report_instance_id = boost::uuids::random_generator()(),
                             .report_definition_id = boost::uuids::random_generator()(),
@@ -51,7 +51,7 @@ market_state_run the_run() {
 
 TEST_CASE("every value a scenario file states for one date is stored", value_tags) {
     database_helper h;
-    const auto run = the_run();
+    const auto run = a_stored_run();
 
     // Three scenarios on one date state the same factors, so only the line tells
     // one value of a factor from another.
@@ -85,7 +85,7 @@ TEST_CASE("every value a scenario file states for one date is stored", value_tag
 
 TEST_CASE("a calibration reads back with its text and its figure", value_tags) {
     database_helper h;
-    const auto run = the_run();
+    const auto run = a_stored_run();
 
     const auto outcome = read_market_state(
         {market_state_file{

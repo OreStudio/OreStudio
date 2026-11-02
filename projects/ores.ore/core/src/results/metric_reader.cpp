@@ -95,9 +95,9 @@ std::vector<std::size_t> subject_order(const output_family& family) {
 }
 
 std::vector<std::string> read_metrics_in_blocks(std::string_view csv,
-                                               const output_family& family,
-                                               std::size_t block_size,
-                                               const metric_block_sink& sink) {
+                                                const output_family& family,
+                                                std::size_t block_size,
+                                                const metric_block_sink& sink) {
     metric_read_outcome outcome;
     const auto hand_over = [&] {
         if (outcome.metrics.empty())

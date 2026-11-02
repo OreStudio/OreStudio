@@ -54,8 +54,9 @@ constexpr std::array<text_columns, 6> text_columns_of_families = {{
 }};
 
 const text_columns* text_columns_of(const output_family& family) {
-    const auto it = std::ranges::find_if(
-        text_columns_of_families, [&](const text_columns& one) { return one.family == family.code; });
+    const auto it = std::ranges::find_if(text_columns_of_families, [&](const text_columns& one) {
+        return one.family == family.code;
+    });
     return it == text_columns_of_families.end() ? nullptr : &*it;
 }
 
@@ -105,8 +106,8 @@ text_value_read_outcome read_text_values(std::string_view csv, const output_fami
         }
     }
 
-    const auto body = first_break == std::string_view::npos ? std::string_view() :
-                                                              csv.substr(first_break + 1);
+    const auto body =
+        first_break == std::string_view::npos ? std::string_view() : csv.substr(first_break + 1);
     if (columns->document) {
         const auto document = trimmed_text(body);
         // The engine writes the model only when it calibrated one, so a heading
@@ -117,9 +118,9 @@ text_value_read_outcome read_text_values(std::string_view csv, const output_fami
             return outcome;
         }
         outcome.rows.push_back(text_value_row{.name = std::string(columns->value),
-                                                  .value_type = "xml",
-                                                  .value = std::string(document),
-                                                  .line = 2});
+                                              .value_type = "xml",
+                                              .value = std::string(document),
+                                              .line = 2});
         return outcome;
     }
 

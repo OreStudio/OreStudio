@@ -156,15 +156,15 @@ TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[reposit
                                  .report_instance_id = instance,
                                  .report_definition_id = boost::uuids::random_generator()(),
                                  .result_id = boost::uuids::random_generator()(),
-                                 .priced_at = std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}};
+                                 .priced_at =
+                                     std::chrono::sys_days{std::chrono::year{2026} / 11 / 2}};
 
     // Two good lines, written a block at a time, then a figure that is not one.
-    const results::output_file file{
-        .name = "rawcube.csv",
-        .body = "#Id,NettingSet,DateIndex,Date,Sample,Depth,Value\n"
-                "Swap_1,CPTY_A,0,2026-11-02,0,0,1.5\n"
-                "Swap_1,CPTY_A,1,2026-11-03,0,0,2.5\n"
-                "Swap_1,CPTY_A,2,2026-11-04,0,0,soon\n"};
+    const results::output_file file{.name = "rawcube.csv",
+                                    .body = "#Id,NettingSet,DateIndex,Date,Sample,Depth,Value\n"
+                                            "Swap_1,CPTY_A,0,2026-11-02,0,0,1.5\n"
+                                            "Swap_1,CPTY_A,1,2026-11-03,0,0,2.5\n"
+                                            "Swap_1,CPTY_A,2,2026-11-04,0,0,soon\n"};
 
     std::size_t written = 0;
     {
@@ -176,7 +176,9 @@ TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[reposit
                     written += block.size();
                 },
             .cashflows = [](auto&) {},
-            .text_values = [](auto&) {}};
+            .text_values =
+                [](auto&) {
+                }};
         results::run_output_outcome outcome;
         results::read_run_output(file, run, 1, sinks, outcome);
         REQUIRE_FALSE(outcome.refusals.empty());
@@ -184,7 +186,6 @@ TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[reposit
     CHECK(written == 2);
 
     const auto rows = report_metric_repository{}.read_latest(h.context());
-    CHECK(std::ranges::none_of(rows, [&](const auto& one) {
-        return one.report_instance_id == instance;
-    }));
+    CHECK(std::ranges::none_of(
+        rows, [&](const auto& one) { return one.report_instance_id == instance; }));
 }

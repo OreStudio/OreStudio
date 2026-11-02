@@ -97,8 +97,8 @@ market_input_read_outcome read_market_inputs(std::string_view csv, const output_
     const auto date_at = at(columns->date);
     const auto datum_at = at(columns->datum);
     const auto value_at = at(columns->value);
-    const auto payment_at = columns->payment_date.empty() ? headings.size() :
-                                                            at(columns->payment_date);
+    const auto payment_at =
+        columns->payment_date.empty() ? headings.size() : at(columns->payment_date);
 
     std::size_t line_number = 1;
     std::size_t offset = first_break == std::string_view::npos ? csv.size() : first_break + 1;
@@ -133,8 +133,7 @@ market_input_read_outcome read_market_inputs(std::string_view csv, const output_
         const auto text = field_at(value_at);
         if (!figure_of(text, row.value)) {
             outcome.refusals.push_back(family.code + " line " + std::to_string(line_number) +
-                                       " states the value '" + text +
-                                       "', which is not a figure.");
+                                       " states the value '" + text + "', which is not a figure.");
             continue;
         }
         outcome.rows.push_back(std::move(row));

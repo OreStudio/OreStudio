@@ -68,11 +68,11 @@ change_routes::handle_changes(const domain::http_request& req) {
      * before it queues anything: a session must not be able to read another
      * tenant's changes, whatever the stream is called.
      */
-    const auto tenant =
-        req.authenticated_user ? req.authenticated_user->tenant_id.value_or(std::string{})
-                               : std::string{};
-    resp.body_awaitable = std::make_shared<stream::change_stream_source>(
-        hub_->subscribe(tenant), keep_alive_);
+    const auto tenant = req.authenticated_user ?
+                            req.authenticated_user->tenant_id.value_or(std::string{}) :
+                            std::string{};
+    resp.body_awaitable =
+        std::make_shared<stream::change_stream_source>(hub_->subscribe(tenant), keep_alive_);
     co_return resp;
 }
 

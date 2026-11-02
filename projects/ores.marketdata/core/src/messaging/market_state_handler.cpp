@@ -126,8 +126,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
             .party_id = sg(req->party_id),
             .report_instance_id = sg(req->report_instance_id),
             .report_definition_id = sg(req->report_definition_id),
-            .as_of = std::chrono::sys_days{
-                ores::platform::time::datetime::from_iso8601_date(req->as_of)},
+            .as_of = std::chrono::sys_days{ores::platform::time::datetime::from_iso8601_date(
+                req->as_of)},
             .families = ores::ore::results::family_selection_of(req->skipped_families)};
     } catch (const std::exception& e) {
         refuse(std::string("The request names no readable run: ") + e.what());
@@ -146,8 +146,8 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
         response.left_alone.end(), outcome.skipped.begin(), outcome.skipped.end());
     for (const auto& skipped : outcome.skipped)
         BOOST_LOG_SEV(market_state_handler_lg(), info)
-            << "store_market_state | instance=" << req->report_instance_id << " skipped "
-            << skipped << ": its definition does not store the family";
+            << "store_market_state | instance=" << req->report_instance_id << " skipped " << skipped
+            << ": its definition does not store the family";
     response.refusals = outcome.refusals;
     // A run's state is stored whole or not at all, because a partial store
     // reads as the state the run priced against.
@@ -157,9 +157,9 @@ void market_state_handler::store(ores::nats::message msg, const std::string& htt
     }
     response.families = outcome.families;
     response.files = static_cast<int>(outcome.families.size());
-    response.rows = static_cast<std::int64_t>(outcome.scenario_values.size() +
-                                              outcome.calibration_values.size() +
-                                              outcome.input_values.size());
+    response.rows =
+        static_cast<std::int64_t>(outcome.scenario_values.size() +
+                                  outcome.calibration_values.size() + outcome.input_values.size());
     if (response.files == 0) {
         response.result.message = "The run wrote no market state, so there is nothing to store.";
         reply(nats_, msg, response);

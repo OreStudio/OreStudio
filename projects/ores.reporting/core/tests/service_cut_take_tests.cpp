@@ -90,8 +90,7 @@ ores::reporting::service::cut_body_facts full_answers() {
 
 /** A request to take a cut of one kind at one instant, fixed a day ago so it is never ahead. */
 ores::reporting::messaging::take_cut_request
-a_take_at(const std::string& kind_code,
-          const std::chrono::system_clock::time_point& instant) {
+a_take_at(const std::string& kind_code, const std::chrono::system_clock::time_point& instant) {
     return {.kind_code = kind_code,
             .scope_code = "ACME-LONDON",
             .business_centre_code = "GBLO",

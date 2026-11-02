@@ -126,8 +126,7 @@ struct cut_kind_facts {
 /**
  * @brief The facts @p kind fixes for a body taken under it.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_kind_facts
-kind_facts_of(const domain::cut_kind& kind);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT cut_kind_facts kind_facts_of(const domain::cut_kind& kind);
 
 /**
  * @brief The day an instant falls in, as the window a take ordinal counts over.

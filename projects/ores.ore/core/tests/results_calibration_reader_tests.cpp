@@ -86,8 +86,7 @@ TEST_CASE("a calibration double the engine left empty has no figure and is not r
     const auto* family = family_named("todaysmarketcalibration");
     REQUIRE(family != nullptr);
 
-    const auto outcome =
-        read_calibration(heading + "yieldCurve,USD1D,time,,,,double,\n", *family);
+    const auto outcome = read_calibration(heading + "yieldCurve,USD1D,time,,,,double,\n", *family);
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.rows.size() == 1);
@@ -109,7 +108,8 @@ TEST_CASE("the checked-in calibration sample reads whole, one row for each line"
           calibration_tags) {
     const auto* family = family_named("todaysmarketcalibration");
     REQUIRE(family != nullptr);
-    const auto csv = ores::testing::read_file(ores::testing::project_root::resolve(family->sample_file));
+    const auto csv =
+        ores::testing::read_file(ores::testing::project_root::resolve(family->sample_file));
 
     const auto outcome = read_calibration(csv, *family);
 

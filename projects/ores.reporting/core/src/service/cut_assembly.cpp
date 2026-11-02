@@ -67,10 +67,7 @@ std::string reason_of(const std::string& refusal, std::string fallback) {
 
 } // namespace
 
-void cut_assembly::gap(std::string code,
-                       std::string item,
-                       std::string reason,
-                       std::string remedy) {
+void cut_assembly::gap(std::string code, std::string item, std::string reason, std::string remedy) {
     parts.push_back(gapped(std::move(code), std::move(item), std::move(reason), std::move(remedy)));
     const auto& part = parts.back();
     gaps.push_back({part.part_code, part.item, part.reason});

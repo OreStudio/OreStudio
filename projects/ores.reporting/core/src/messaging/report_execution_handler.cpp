@@ -1018,8 +1018,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 refuse("The run's output was refused: " + reasons_of(read.refusals));
                 return;
             }
-            BOOST_LOG_SEV(lg(), info) << "Read " << read.files_read.size()
-                                      << " output file(s) of result " << result_id;
+            BOOST_LOG_SEV(lg(), info)
+                << "Read " << read.files_read.size() << " output file(s) of result " << result_id;
             for (const auto& skipped : read.files_skipped)
                 BOOST_LOG_SEV(lg(), info) << "Skipped " << skipped << " of result " << result_id
                                           << ": its definition does not store the family";

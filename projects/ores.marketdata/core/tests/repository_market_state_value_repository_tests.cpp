@@ -122,13 +122,13 @@ TEST_CASE("two quotes of one datum on one date from two lines are both stored", 
     database_helper h;
     const auto run = a_stored_run();
 
-    const auto outcome = read_market_state(
-        {market_state_file{.result_id = boost::uuids::random_generator()(),
-                           .name = "fixings.csv",
-                           .body = "#fixingDate,fixingId,fixingValue\n"
-                                   "2026-10-30,EQ-SP5,2244.2\n"
-                                   "2026-10-30,EQ-SP5,2244.3\n"}},
-        run);
+    const auto outcome =
+        read_market_state({market_state_file{.result_id = boost::uuids::random_generator()(),
+                                             .name = "fixings.csv",
+                                             .body = "#fixingDate,fixingId,fixingValue\n"
+                                                     "2026-10-30,EQ-SP5,2244.2\n"
+                                                     "2026-10-30,EQ-SP5,2244.3\n"}},
+                          run);
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.input_values.size() == 2);
 

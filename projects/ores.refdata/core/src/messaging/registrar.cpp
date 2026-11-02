@@ -281,12 +281,22 @@
 #include "ores.refdata.core/messaging/curve_section_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_security_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_security_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_convention_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_cross_currency_terms_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_curve_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_curve_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_discount_ratio_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_extrapolation_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_ibor_fallback_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_pillar_rule_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_projection_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_reference_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_tenor_basis_curves_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_segment_type_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_weighted_average_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_constant_history_provider_registrar.hpp"
@@ -894,6 +904,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_curve_volatility_smile_history_provider(hist_registry);
         register_curve_volatility_smile_parameter_history_provider(hist_registry);
         register_curve_volatility_moneyness_surface_history_provider(hist_registry);
+        register_curve_segment_convention_history_provider(hist_registry);
+        register_curve_segment_cross_currency_terms_history_provider(hist_registry);
+        register_curve_segment_discount_ratio_history_provider(hist_registry);
+        register_curve_segment_extrapolation_history_provider(hist_registry);
+        register_curve_segment_ibor_fallback_history_provider(hist_registry);
+        register_curve_segment_pillar_rule_history_provider(hist_registry);
+        register_curve_segment_projection_history_provider(hist_registry);
+        register_curve_segment_reference_history_provider(hist_registry);
+        register_curve_segment_tenor_basis_curves_history_provider(hist_registry);
+        register_curve_segment_weighted_average_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

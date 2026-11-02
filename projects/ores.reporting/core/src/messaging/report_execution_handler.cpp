@@ -948,10 +948,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             return;
         }
 
-        // The run's rows are written in one transaction, a block at a time, as
-        // each file is read: a file's rows are never all held at once, and a
-        // refusal anywhere rolls back every block already written, so a partial
-        // load is never seen.
+        // One transaction, written a block at a time: a refusal anywhere rolls
+        // back every block, so a partial load is never seen.
         ores::database::repository::unit_of_work uow(tenant_ctx);
         const auto& load_ctx = uow.ctx();
         std::size_t metrics_loaded = 0;
@@ -1001,8 +999,10 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                         continue;
                     results::output_file one{.name = file.name};
                     if (families.stores(file.family)) {
-                        const auto body = transfer.download_blob(bucket, file.key);
-                        one.body.assign(body.begin(), body.end());
+                        {
+                            const auto body = transfer.download_blob(bucket, file.key);
+                            one.body.assign(body.begin(), body.end());
+                        }
                         ores::ore::results::verify_body(file, one.body);
                     }
                     results::read_run_output(one, run, load_block_size, sinks, read);

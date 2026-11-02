@@ -128,6 +128,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review: spelling check over the changed files | | Clean | |
+| 2 | Text values are read whole, then sliced into blocks | run_output_reader.cpp | Noted | Text-value files hold a few dozen lines; the cubes, metrics and cashflows are the large ones and are read in blocks. |
+| 3 | The file body is copied twice while it is verified | report_execution_handler.cpp | Accepted | The downloaded buffer is released before the check. |
+| 4 | A bad date keeps the reader writing blocks until the rollback | run_output_reader.cpp | Declined | Correct by the rollback; stopping early needs a sink that can say stop, a later improvement. |
+| 5 | One transaction holds a connection for the whole load | report_execution_handler.cpp | Noted | 200 s for 500000 rows; a production statement or idle timeout must allow it. |
+| 6 | std::move on a returned member | metric_reader.cpp | Declined | A member is not implicitly moved, so the move is needed. |
+| 7 | Shorten the comment above the unit of work | report_execution_handler.cpp | Accepted | Shortened. |
+| 8 | Run compass check | PR | Declined | The operator asked for builds and tests instead. |
 |   |                 |      |          |       |
 
 * Result

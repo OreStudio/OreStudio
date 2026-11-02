@@ -49,9 +49,14 @@ export function filterOf(value: string | null): CalibrationFilter {
     return FILTERS.find((f) => f === value) ?? 'all';
 }
 
-/** The vendor a synthetic feed simulates: the part of its source name after the synthetic mark. */
+/**
+ * The vendor a synthetic feed simulates, from a source name of the form
+ * synthetic.<vendor>.<name>; none for a name without a vendor, such as
+ * synthetic.<pair>, which shows only under every vendor.
+ */
 export function vendorOf(sourceName: string): string {
-    return sourceName.split('.')[1] ?? '';
+    const parts = sourceName.split('.');
+    return parts.length >= 3 ? (parts[1] ?? '') : '';
 }
 
 /** The vendors the feeds simulate, each once, in order. */

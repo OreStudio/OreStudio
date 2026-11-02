@@ -372,5 +372,6 @@ describe('the vendor of a synthetic feed', () => {
     it('is the part of the source name after the synthetic mark', () => {
         expect(vendorOf('synthetic.bloomberg.audusd')).toBe('bloomberg');
         expect(vendorOf('synthetic')).toBe('');
+        expect(vendorOf('synthetic.audusd')).toBe('');
     });
 });

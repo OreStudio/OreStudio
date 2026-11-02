@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-694 tables in 21 groups.
+714 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -163,8 +163,18 @@ entity "refdata" as refdata {
   ores_refdata_curve_roles_tbl
   ores_refdata_curve_sections_tbl
   ores_refdata_curve_security_configs_tbl
+  ores_refdata_curve_segment_conventions_tbl
+  ores_refdata_curve_segment_cross_currency_terms_tbl
   ores_refdata_curve_segment_curves_tbl
+  ores_refdata_curve_segment_discount_ratios_tbl
+  ores_refdata_curve_segment_extrapolations_tbl
+  ores_refdata_curve_segment_ibor_fallbacks_tbl
+  ores_refdata_curve_segment_pillar_rules_tbl
+  ores_refdata_curve_segment_projections_tbl
+  ores_refdata_curve_segment_references_tbl
+  ores_refdata_curve_segment_tenor_basis_curves_tbl
   ores_refdata_curve_segment_types_tbl
+  ores_refdata_curve_segment_weighted_averages_tbl
   ores_refdata_curve_segments_tbl
   ores_refdata_curve_volatility_configs_tbl
   ores_refdata_curve_volatility_constants_tbl
@@ -267,7 +277,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-192 tables — ores_schema.refdata.puml
+202 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -341,7 +351,17 @@ entity "dq_staging" as dq_staging {
   ores_dq_curve_quotes_artefact_tbl
   ores_dq_curve_report_configurations_artefact_tbl
   ores_dq_curve_security_configs_artefact_tbl
+  ores_dq_curve_segment_conventions_artefact_tbl
+  ores_dq_curve_segment_cross_currency_terms_artefact_tbl
   ores_dq_curve_segment_curves_artefact_tbl
+  ores_dq_curve_segment_discount_ratios_artefact_tbl
+  ores_dq_curve_segment_extrapolations_artefact_tbl
+  ores_dq_curve_segment_ibor_fallbacks_artefact_tbl
+  ores_dq_curve_segment_pillar_rules_artefact_tbl
+  ores_dq_curve_segment_projections_artefact_tbl
+  ores_dq_curve_segment_references_artefact_tbl
+  ores_dq_curve_segment_tenor_basis_curves_artefact_tbl
+  ores_dq_curve_segment_weighted_averages_artefact_tbl
   ores_dq_curve_segments_artefact_tbl
   ores_dq_curve_volatility_configs_artefact_tbl
   ores_dq_default_curve_configs_artefact_tbl
@@ -427,7 +447,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-153 tables — ores_schema.dq_staging.puml
+163 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {

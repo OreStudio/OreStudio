@@ -354,6 +354,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     REQUIRE(!mapped.equity_curves.empty());
     REQUIRE(!mapped.securities.empty());
     REQUIRE(!mapped.inflation_curves.empty());
+    REQUIRE(!mapped.inflation_seasonalities.empty());
     REQUIRE(!mapped.default_curve_configurations.empty());
     REQUIRE(!mapped.fx_volatilities.empty());
     REQUIRE(!mapped.base_correlations.empty());
@@ -370,6 +371,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(back.securities.size() == mapped.securities.size());
     CHECK(back.inflation_curves.size() == mapped.inflation_curves.size());
     CHECK(back.default_curve_configurations.size() == mapped.default_curve_configurations.size());
+    CHECK(back.inflation_seasonalities.size() == mapped.inflation_seasonalities.size());
     CHECK(back.seasonality_factors.size() == mapped.seasonality_factors.size());
     CHECK(back.fx_volatilities.size() == mapped.fx_volatilities.size());
     CHECK(back.base_correlations.size() == mapped.base_correlations.size());
@@ -452,6 +454,7 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info)
         << "swaption and cap and floor proxies and smiles round trip through the database";
+    std::size_t swaption_smiles = 0;
     for (const std::string path :
          {"external/ore/examples/Legacy/Example_63/Input/curveconfig.xml",
           "external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml"}) {
@@ -473,6 +476,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         const auto back = read_back(h.context(), mapped);
         CHECK(back.parametric_smiles.size() == mapped.parametric_smiles.size());
         CHECK(back.parametric_smile_parameters.size() == mapped.parametric_smile_parameters.size());
+        CHECK(back.swaption_volatility_smiles.size() == mapped.swaption_volatility_smiles.size());
+        swaption_smiles += mapped.swaption_volatility_smiles.size();
 
         // The store holds one form of each vocabulary value, so the two sides
         // are the document the store returns and the export of it.
@@ -483,6 +488,7 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         INFO(difference);
         CHECK(difference.empty());
     }
+    CHECK(swaption_smiles > 0);
 }
 
 TEST_CASE("a CDS volatility's terms and strike surface round trip through the database",

@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 714B893C-CC1B-43BC-956C-B1EF8FDD9E89
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.commodity_curve_direct
 #+description: Codegen entity model for the refdata =commodity_curve_direct= table. One part of a commodity curve: the spot quote, conventions and quotes of a commodity curve built directly from quotes.
@@ -128,13 +127,9 @@ false
 * Insert trigger
 ** Validations
 
-The parent's construction must be one that has this part. The function is
-written by the section generator from the projection's readers.
-
-| column              | validation_function                             |
-|---------------------+-------------------------------------------------|
-| curve_definition_id | ores_refdata_validate_commodity_curve_direct_fn |
-| conventions         | ores_refdata_validate_convention_id_fn          |
+| column      | validation_function                    |
+|-------------+----------------------------------------|
+| conventions | ores_refdata_validate_convention_id_fn |
 
 * SQL
 

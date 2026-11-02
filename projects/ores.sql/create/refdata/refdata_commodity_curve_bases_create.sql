@@ -103,9 +103,6 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate curve_definition_id
-    NEW.curve_definition_id := ores_refdata_validate_commodity_curve_basis_fn(NEW.tenant_id, NEW.curve_definition_id);
-
     -- Validate basis_base_price_conventions (optional field -- skip validation when null)
     if NEW.basis_base_price_conventions is not null then
         NEW.basis_base_price_conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.basis_base_price_conventions);

@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: FEAC29A9-87A8-4B71-8C70-F3EAD9A157E5
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.commodity_curve_cross_currency
 #+description: Codegen entity model for the refdata =commodity_curve_cross_currency= table. One part of a commodity curve: the base price curve and the two yield curves a cross currency commodity curve is built from.
@@ -124,16 +123,6 @@ std::nullopt
 :nullable:      false
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
 :END:
-
-* Insert trigger
-** Validations
-
-The parent's construction must be one that has this part. The function is
-written by the section generator from the projection's readers.
-
-| column              | validation_function                                     |
-|---------------------+---------------------------------------------------------|
-| curve_definition_id | ores_refdata_validate_commodity_curve_cross_currency_fn |
 
 * SQL
 

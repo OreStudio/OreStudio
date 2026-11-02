@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 95CA6C55-A716-4B7B-925C-5A94806BC824
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.commodity_curve_basis
 #+description: Codegen entity model for the refdata =commodity_curve_basis= table. One part of a commodity curve: the basis configuration of a commodity curve built as a basis to another.
@@ -211,14 +210,10 @@ std::nullopt
 * Insert trigger
 ** Validations
 
-The parent's construction must be one that has this part. The function is
-written by the section generator from the projection's readers.
-
-| column                       | validation_function                            |
-|------------------------------+------------------------------------------------|
-| curve_definition_id          | ores_refdata_validate_commodity_curve_basis_fn |
-| basis_base_price_conventions | ores_refdata_validate_convention_id_fn         |
-| basis_conventions            | ores_refdata_validate_convention_id_fn         |
+| column                       | validation_function                    |
+|------------------------------+----------------------------------------|
+| basis_base_price_conventions | ores_refdata_validate_convention_id_fn |
+| basis_conventions            | ores_refdata_validate_convention_id_fn |
 
 * SQL
 

@@ -94,9 +94,6 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate curve_definition_id
-    NEW.curve_definition_id := ores_refdata_validate_commodity_curve_cross_currency_fn(NEW.tenant_id, NEW.curve_definition_id);
-
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

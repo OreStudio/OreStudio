@@ -1,7 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: ED84BE8A-5538-4825-A374-AB5786899D8A
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.commodity_curve_interpolation
 #+description: Codegen entity model for the refdata =commodity_curve_interpolation= table. One part of a commodity curve: the day counter and interpolation a direct or piecewise commodity curve is built with.
@@ -113,16 +112,6 @@ std::nullopt
 :nullable:      false
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
 :END:
-
-* Insert trigger
-** Validations
-
-The parent's construction must be one that has this part. The function is
-written by the section generator from the projection's readers.
-
-| column              | validation_function                                    |
-|---------------------+--------------------------------------------------------|
-| curve_definition_id | ores_refdata_validate_commodity_curve_interpolation_fn |
 
 * SQL
 

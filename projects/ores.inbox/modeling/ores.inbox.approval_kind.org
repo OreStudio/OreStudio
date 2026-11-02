@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.approval_kind
 #+description: Codegen entity model for the inbox =approval_kind= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

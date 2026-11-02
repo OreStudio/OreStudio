@@ -25,7 +25,9 @@
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -34,8 +36,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <tuple>
 #include <utility>
 
 namespace ores::inbox::service::app {
@@ -54,6 +55,11 @@ namespace {
 struct sweep_action_payload {
     std::string subject;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const sweep_action_payload&) {
+    return std::tuple{ores::utility::codec::field{"subject", &sweep_action_payload::subject}};
+}
+static_assert(ores::utility::codec::names_every_member<sweep_action_payload>());
 
 /**
  * @brief Sends one authenticated request and reads the answer.
@@ -179,7 +185,7 @@ std::expected<void, approval_sweep_schedule::failure> approval_sweep_schedule::t
     change.write.schedule_expression = *cron;
     change.write.action_type = "nats_publish";
     change.write.action_payload =
-        rfl::json::write(sweep_action_payload{.subject = described_.subject});
+        ores::utility::codec::json::write(sweep_action_payload{.subject = described_.subject});
     change.write.is_active = true;
     // The component owns the job's identity and replaces whatever holds it,
     // because this runs again on every restart.

@@ -24,10 +24,8 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -98,7 +96,7 @@ register_engine_settings_apply_workflow(ores::workflow::service::workflow_regist
         if (!parsed || parsed->request_id.empty())
             return {};
 
-        const auto command = rfl::json::write(
+        const auto command = utility::codec::json::write(
             ores::inbox::workflow::apply_step_command{.request_id = parsed->request_id});
         const auto build = [command](const std::string& /*request_json*/,
                                      const workflow_step_results& /*results*/) {

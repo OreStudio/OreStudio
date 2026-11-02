@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3411B9E4-753C-456B-AE51-7CFA64B8EDF2
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.approval_request_part
 #+description: Codegen junction model for approval_request_parts.

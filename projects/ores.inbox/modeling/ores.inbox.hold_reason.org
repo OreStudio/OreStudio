@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 4c8b25d0-8f6a-4d19-9a41-6b2e07c53f18
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.inbox.hold_reason
 #+description: Codegen entity model for the inbox =hold_reason= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

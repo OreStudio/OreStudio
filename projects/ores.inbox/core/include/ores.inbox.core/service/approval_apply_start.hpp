@@ -23,11 +23,11 @@
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::inbox::service {
@@ -58,8 +58,8 @@ apply_start_of(const domain::approval_kind& kind,
     start.tenant_id = request.tenant_id.to_string();
     start.target_kind = "approval_request";
     start.target_id = request_id;
-    start.request_json =
-        rfl::json::write(ores::inbox::workflow::apply_step_command{.request_id = request_id});
+    start.request_json = ores::utility::codec::json::write(
+        ores::inbox::workflow::apply_step_command{.request_id = request_id});
     start.correlation_id = correlation_id;
     start.instance_id = boost::uuids::to_string(
         boost::uuids::name_generator_sha1{apply_namespace}("approval-apply:" + request_id));

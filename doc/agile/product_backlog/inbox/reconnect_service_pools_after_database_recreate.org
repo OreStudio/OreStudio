@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 7BE089B8-384B-43CF-AAC8-66CFC583F4CF
+:END:
+#+title: Reconnect a service's connection pool after the database is recreated
+#+description: After compass db recreate, a running service's listener reconnects but its repository pool keeps the dead connections, so the next request fails with 'SSL connection has been closed unexpectedly'.
+#+type: capture
+#+level: cross
+#+filetags: :database:services:resilience:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service that loses its database reconnects every connection it holds, not
+only its listener. After =compass db recreate=, the PostgreSQL listener of the
+workflow service reconnected after about five seconds, but its repository pool
+kept the connections to the dropped database. The next request through the
+pool failed with "The pipeline ended without its sync: SSL connection has been
+closed unexpectedly". A pool should test a connection that failed, drop it and
+open a new one, so a request after the outage succeeds.
+
+* Why
+
+=compass services start= finds the fleet already active and does not restart
+it. So a recreate followed by a start leaves every service with a pool that
+points at the old database. The Acme provisioning then fails in
+=system_provision=, and the error does not name the cause. A stop, a recreate
+and a start is the only workaround today. A database restart or a failover in
+production would leave the same dead pool.
+
+* References
+
+- The workflow journal on 2026-11-02 00:24:34:
+  =workflow_instance_repository= "The pipeline ended without its sync: SSL
+  connection has been closed unexpectedly", after the listener reconnected at
+  23:53:18.
+- =compass services logs workflow --errors=.
+
+* See also
+
+-

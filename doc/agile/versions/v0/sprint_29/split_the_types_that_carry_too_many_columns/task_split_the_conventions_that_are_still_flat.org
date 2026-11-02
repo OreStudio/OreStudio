@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-11-01
+#+updated: 2026-11-02
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ The three remaining convention kinds are on the family's shape: a central conven
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The fix float kind is merged (PR #4351). The cross currency basis kind is split into a central row and three parts. |
-| Waiting on   | The build and tests of the basis slice. |
+| Now          | The fix float kind is merged (PR #4351). The cross currency basis kind is split, built, tested and checked live. |
+| Waiting on   | The local gate and review of the basis PR. |
 | Next         | Raise the basis PR, then split commodity future. |
-| Last touched | 2026-11-01                             |
+| Last touched | 2026-11-02                             |
 
 * Acceptance
 
@@ -110,6 +110,12 @@ task and name that file in the Command column.
 | Rows one conventions publish writes | 2297 inserted; a second publish skips 2297 | =ores_refdata_publish_conventions_from_dq_fn= in a rolled-back transaction | e1e512ef31 |
 | Convention terms of the fix float kind | 18: the name, 5 swap terms, 4 fixed leg, 8 float leg | =generate_convention_kind_terms.py --check= | a47616746f |
 | Conventions export digests | 72 of 72 files unchanged against main's recorded digests | =ores.ore.core.tests=, "the exported conventions corpus matches its recorded digests" | a47616746f |
+| Basis conventions the DQ seed stages | 207 central rows; 207 rows in each of swap terms, flat leg and spread leg; the flat table is gone | =build/xccb_counts.sql= through =compass db sql -u ddl=, after =compass db recreate -y -k= | 413fdf5e3c |
+| Basis conventions live after Acme provisioning | 1035 conventions over 5 parties, 1035 with exactly one row of each part, 0 malformed; fix float still 120 of 120 | =build/xccb_shape.sql= and =build/ccff_shape.sql= through =compass db sql -u ddl= | 413fdf5e3c |
+| Convention terms of the basis kind | 25: the name, 5 swap terms, 10 flat leg, 9 spread leg; 3 term triggers | =generate_convention_kind_terms.py --check= and =build/xccb_counts.sql= | 413fdf5e3c |
+| Basis corpus round trip | 49 files hold a basis convention; each maps to one central row and one row of each part, and exports with no difference | =ores.ore.core.tests=, =conventions_cross_currency_basis_round_trips= | 413fdf5e3c |
+| Basis part shell recipes | 33 of 33 answered, 11 per part | =check_shell_recipes.py= on the three part groups, with the release preset's shell | 413fdf5e3c |
+| Test suites after the basis split | 98 of 98 pass | =compass test run=, then =ores.ore.core.tests= again after its fix | 413fdf5e3c |
 
 * Notes
 

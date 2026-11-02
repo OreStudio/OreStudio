@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 9AE00373-65AF-4864-8D7B-3F6AB99876C4
+:END:
+#+title: Take the shell binary from the preset in the shell recipe check
+#+description: check_shell_recipes.py hard-codes the linux-clang-debug-make shell binary, so it refuses to run in a worktree that builds another preset.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:check:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/scripts/check_shell_recipes.py= finds =ores.shell=
+under =build/output/linux-clang-debug-make/publish/bin=. It should take the
+preset from =ORES_PRESET= in =.env=, as =compass= does, or accept a
+=--preset= option.
+
+* Why
+
+A worktree that builds =linux-clang-release-ninja= has no debug binary, so the
+check stops with "shell binary not found" and replays no recipe. The V04
+evidence of the cross currency basis split was taken by loading the script and
+replacing its =SHELL= path for one run, which a reader cannot repeat from the
+script alone.
+
+* References
+
+- =check_shell_recipes.py=, the =SHELL= constant.
+- [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] — where the check was run.
+
+* See also
+
+-

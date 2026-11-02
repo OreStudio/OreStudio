@@ -167,6 +167,21 @@ presence states the Basis construction, and the price segment rows, already a
 child entity, state the Piecewise one. An empty =PriceSegments= element would
 give ORE a piecewise curve with no segments, and the corpus states none.
 
+** Where each part's rule is enforced
+
+A default curve configuration states its type, so each of its parts' insert
+triggers checks the type against the types that fill the part. The section
+generator writes those checks from the projection's
+=import_default_curve_parts=, the one statement of which type fills which part,
+as it writes the segment checks from =import_segments=.
+
+A commodity curve states no construction column: the part it holds is its
+construction. So no trigger can check a commodity part against a construction,
+and the export does instead: it takes the parts of the one construction ORE's
+reader would select, and refuses any part left over. The document pipeline
+does not store commodity curves today, so a database check would guard no
+write.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

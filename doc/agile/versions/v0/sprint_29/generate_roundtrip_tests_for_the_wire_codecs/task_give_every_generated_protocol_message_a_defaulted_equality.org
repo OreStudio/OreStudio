@@ -27,11 +27,11 @@ compares by value with a defaulted =operator====.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -70,6 +70,9 @@ task and name that file in the Command column.
 | Messages not equality comparable, final run | 0 | same | da9129215a + branch |
 | Codegen pytest | 1,826 pass | =pytest projects/ores.codegen/tests= | da9129215a + branch |
 | New pytest against the old template | 8 of 8 fail | =pytest test_protocol_message_equality.py= | da9129215a |
+| Test suites after the user's full build | 84 pass, 9 hold no cases | every =publish/bin/*.tests= in turn | db470827ae |
+| marketdata and synthetic service suites, services stopped, NATS up | 205 and 76 cases pass | same | db470827ae |
+| security suite with =ORES_TEST_PASSWORD_FAST=1= | 68 cases pass | same | db470827ae |
 
 * Notes
 
@@ -84,6 +87,12 @@ task and name that file in the Command column.
 - The drift check also found four inbox and scheduler codec files that main
   had not regenerated after a codegen change added enum includes. They are
   regenerated here.
+- Four suites failed in the full run, none from this change. The marketdata
+  feed and synthetic announce cases compete with the running services, and
+  pass with them stopped. The security case needs =ORES_TEST_PASSWORD_FAST=,
+  which a direct run does not set. =ores.trading.core.digest.tests= is a stale
+  binary from 2026-10-17: a regeneration dropped its directory from the build.
+  Captured as [[file:../../../../product_backlog/inbox/build_the_trade_digest_tests_again.org][Build the trade digest tests again]].
 
 * Test Scenarios
 
@@ -109,3 +118,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every generated protocol message, and every hand-written type nested in one,
+compares by value. The build refuses a message member without equality.

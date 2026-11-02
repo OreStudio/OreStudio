@@ -39,6 +39,8 @@
 #include "ores.reporting.api/domain/engine_settings_group_codec.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_setting_codec.hpp"
 #include "ores.reporting.api/domain/file_type_codec.hpp"
+#include "ores.reporting.api/domain/ore_file_category_codec.hpp"
+#include "ores.reporting.api/domain/ore_file_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_setting_value_set_codec.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_domain_codec.hpp"

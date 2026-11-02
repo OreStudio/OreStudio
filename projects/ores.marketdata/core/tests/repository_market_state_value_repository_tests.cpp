@@ -120,7 +120,7 @@ TEST_CASE("a calibration reads back with its text and its figure", value_tags) {
 
 TEST_CASE("two quotes of one datum on one date from two lines are both stored", value_tags) {
     database_helper h;
-    const auto run = the_run();
+    const auto run = a_stored_run();
 
     const auto outcome = read_market_state(
         {market_state_file{.result_id = boost::uuids::random_generator()(),

@@ -503,7 +503,8 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", "[ore][xml][roundtrip]
 
 // The contract terms are required, and each other part is at most one row: a
 // join that finds no contract terms, or two of an optional part, refuses the
-// convention rather than write half of it.
+// convention rather than write half of it. A part whose convention is missing
+// refuses the join rather than vanish from the export.
 TEST_CASE("conventions_commodity_future_without_its_contract_terms_is_refused",
           "[ore][xml][roundtrip][conventions]") {
     const std::string text = R"(<Conventions>
@@ -539,6 +540,12 @@ TEST_CASE("conventions_commodity_future_without_its_contract_terms_is_refused",
             return row.family == "commodity_future_expiry_anchor";
         });
         CHECK_NOTHROW(join_conventions(package));
+    }
+    {
+        auto package = split_conventions(conventions_mapper::read(text));
+        std::erase_if(package.bundle.rows,
+                      [](const auto& row) { return row.family == "convention"; });
+        CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
     }
 }
 

@@ -119,6 +119,7 @@ task and name that file in the Command column.
 | Commodity future conventions the DQ seed stages | 790 central rows and 790 contract terms; 645 expiry anchors, 38 option expiries, 26 off-peak indexes and 60 averaging terms; the flat table is gone | =build/cf_counts.sql= through =compass db sql -u ddl=, after =compass db recreate -y -k= | 6d50def26e |
 | Commodity future conventions live after Acme provisioning | 3950 conventions over 5 parties, each with its contract terms; 3225 anchors, 190 option expiries, 130 off-peak indexes, 300 averaging terms; 0 malformed | =build/cf_shape.sql= through =compass db sql -u ddl= | 6d50def26e |
 | Commodity future republish | 2349 rows skipped, none inserted | =ores_refdata_publish_commodity_future_conventions_from_dq_fn= for one Acme party in a rolled-back transaction (=build/cf_publish.sql=) | 6d50def26e |
+| Commodity future part shell recipes | 55 of 55 answered, 11 per part | =check_shell_recipes.py= on the five part groups, with the release preset's shell | 15f4507f7f |
 | Convention terms of the commodity future kind | 47, the same columns as the flat table, now on the parts; 5 term triggers | =generate_convention_kind_terms.py --check= and =build/cf_counts.sql= | 6d50def26e |
 | DQ seed rows | 4477 over 24 kinds | =tools/ore_conventions/generate_dq_seed.py= | 6d50def26e |
 
@@ -280,6 +281,11 @@ via its "Verifies task" field.
 | 18 | Commodity future tests: the curve test wrote flat commodity future rows, and the central table refuses a row with no party | =curve_configuration_database_roundtrip_tests.cpp= | Accept | The fixture writes each future's central row and contract terms as the system party; fixed in 6d50def26e and fe2f96477a. |
 | 19 | Commodity future review: the family put checks no part count, so a future with no contract terms is accepted and the export refuses it | generated family service | Decline here | Every composite kind has the gap, and the Parts table states no cardinality; captured as [[id:B8D97A88-7B39-4CBF-A0D9-F44727CC8FE8][State each family part's cardinality and refuse a family write that breaks it]]. |
 | 20 | Misspell: =LOAD_PROFILE_1_EXPLICT= again | =refdata_conventions_seed_populate.sql= | Decline | As row 6. |
+| 21 | PR #4369, @claude 1: an empty =AnchorDay= is dropped on a round trip | =conventions_family_commodity_future.cpp= | Decline | The flat mapper on main drops it the same way, and the export digests pin that output; ORE's schema gives the element a child. |
+| 22 | PR #4369, @claude 2: a part with no central row is dropped silently by the join | =conventions_family_commodity_future.cpp= | Accept | The join refuses a part whose convention is not in the bundle; the refusal test removes the central row and expects the throw. |
+| 23 | PR #4369, @claude 3: =at_most_one= and the size guard are two sources of truth | =conventions_family_commodity_future.cpp= | Accept | =at_most_one= refuses more than one row itself, and the guard checks only the central row and the contract terms. |
+| 24 | PR #4369, @claude 4: the ="Mon"= fallback invents half of an nth weekday | =conventions_family_commodity_future.cpp= | Decline | It is main's export behaviour, moved unchanged; the seed stages no such half pair. |
+| 25 | PR #4369, @claude 5: the parts' shell recipes were not replayed live | shell | Accept | 55 of 55 recipes answer, 11 per part, with the release preset's shell. |
 
 * Result
 

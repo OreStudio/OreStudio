@@ -22,13 +22,16 @@
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
 #include <format>
 #include <map>
 #include <optional>
 #include <rfl/json.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -76,9 +79,14 @@ bool states_option_expiry(const refdata::domain::commodity_future_option_expiry&
            o.option_continuation_mappings;
 }
 
-/// The one row of an optional part, or null when the convention has none.
+/// The one row of an optional part, or null when the convention has none. A
+/// convention holds at most one row of each optional part.
 template <typename Part>
-const Part* at_most_one(const std::vector<Part>& parts) {
+const Part* at_most_one(const std::vector<Part>& parts, std::string_view convention) {
+    if (parts.size() > 1)
+        throw std::runtime_error(std::format(
+            "Commodity future convention \"{}\" has more than one row of an optional part.",
+            convention));
     return parts.empty() ? nullptr : &parts.front();
 }
 
@@ -213,18 +221,18 @@ conventions_mapper::map_commodity_future(const record_reader& v) {
 // underlying comes after the power and balance of the month fields.
 void conventions_mapper::reverse_commodity_future(
     const ores::refdata::messaging::commodity_future_convention_item& v, record_writer w) {
-    if (!v.convention || v.contract_terms.size() != 1 || v.expiry_anchor.size() > 1 ||
-        v.option_expiry.size() > 1 || v.off_peak_index.size() > 1 || v.averaging_terms.size() > 1)
+    if (!v.convention || v.contract_terms.size() != 1)
         throw std::runtime_error(
-            std::format("Commodity future convention \"{}\" needs its central row, one contract "
-                        "terms row, and at most one row of each other part.",
+            std::format("Commodity future convention \"{}\" needs its central row and one "
+                        "contract terms row.",
                         v.convention ? v.convention->payload.name : std::string("?")));
 
+    const auto& name = v.convention->payload.name;
     const auto& t = v.contract_terms.front();
-    const auto* anchor = at_most_one(v.expiry_anchor);
-    const auto* option = at_most_one(v.option_expiry);
-    const auto* off_peak = at_most_one(v.off_peak_index);
-    const auto* averaging = at_most_one(v.averaging_terms);
+    const auto* anchor = at_most_one(v.expiry_anchor, name);
+    const auto* option = at_most_one(v.option_expiry, name);
+    const auto* off_peak = at_most_one(v.off_peak_index, name);
+    const auto* averaging = at_most_one(v.averaging_terms, name);
 
     w.set_text("Id", v.convention->payload.name);
     put_enum(w, "ContractFrequency", t.contract_frequency, "frequency type");
@@ -390,6 +398,25 @@ struct commodity_future_parts {
         return true;
     }
 
+    /// The family of the first part that names none of the conventions, if any.
+    std::optional<std::string> orphan_of(const std::set<boost::uuids::uuid>& ids) const {
+        const auto named = [&](const auto& rows) {
+            return std::ranges::all_of(
+                rows, [&](const auto& r) { return ids.contains(r.convention_id); });
+        };
+        if (!named(averaging))
+            return "commodity_future_averaging_terms";
+        if (!named(terms))
+            return "commodity_future_contract_terms";
+        if (!named(anchor))
+            return "commodity_future_expiry_anchor";
+        if (!named(off_peak))
+            return "commodity_future_off_peak_index";
+        if (!named(option))
+            return "commodity_future_option_expiry";
+        return std::nullopt;
+    }
+
     /// The item of one central row, with the parts that name it. The transform
     /// is applied to each part, so the facts can clear the keys.
     template <typename Transform>
@@ -430,6 +457,15 @@ void join_commodity_future(const std::vector<const package_row*>& rows, record_w
                 std::format("Family \"{}\" is not a commodity future family.", row->family));
         }
     }
+
+    // A part names its convention by id, so a part whose convention is not here
+    // would be lost from the export rather than written.
+    std::set<boost::uuids::uuid> ids;
+    for (const auto& c : central)
+        ids.insert(c.identity.id);
+    if (const auto orphan = parts.orphan_of(ids))
+        throw std::runtime_error(std::format(
+            "Commodity future part \"{}\" names no commodity future convention.", *orphan));
 
     const auto as_is = [](const auto& part) {
         return part;

@@ -26,11 +26,11 @@ Each curve entry holds one construction. The basis curve that exists only when t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -94,7 +94,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =default_curve_configuration= members, audit excluded | 27 before, 11 after | count of member declarations in =ores.refdata.api/domain/default_curve_configuration.hpp= at =origin/main= and at the commit, less the 7 audit members | 8a75447336 |
+| =commodity_curve_config= members, audit excluded | 24 before, 5 after | the same count on =commodity_curve_config.hpp= | 8a75447336 |
+| Curve configuration corpus round trip | 89 documents, no difference | =ores.ore.core.tests= case =every_curve_configuration_in_the_corpus_round_trips= | b4f02a42fd |
+| ores.ore.core.tests | 494 cases, 0 failed | =compass test run -- -R ores.ore.core.tests= | b4f02a42fd |
+| ores.refdata.core.tests | 519 cases, 0 failed | =compass test run -- -R ores.refdata.core.tests= | b4f02a42fd |
+| Live default curve parts, Input/curveconfig.xml | 9 configurations; 1 benchmark on Benchmark, 8 market terms on HazardRate and SpreadCDS, none on another type | =ore import-run= then a count of each part by its configuration's type | b4f02a42fd |
+| Live default curve export against its source | same 138 elements; 11 values differ, each a canonical spelling (A360 to ACT/360, A365 to ACT/365.FIXED, an accuracy to 1e-12) | =ore export-run= then an element-by-element comparison | b4f02a42fd |
+| Generated part checks | 19 sections of 247 parameters; type lists unchanged by the dispatch rewrite | =generate_curve_section_parameters.py --check= | bac3900a11 |
 
 * Notes
 
@@ -170,10 +177,11 @@ give ORE a piecewise curve with no segments, and the corpus states none.
 ** Where each part's rule is enforced
 
 A default curve configuration states its type, so each of its parts' insert
-triggers checks the type against the types that fill the part. The section
-generator writes those checks from the projection's
-=import_default_curve_parts=, the one statement of which type fills which part,
-as it writes the segment checks from =import_segments=.
+triggers checks the type against the types that have the part. The projection's
+=parts_of_default_curve_type= is the one statement of which type has which
+part. The import fills only those parts, the export takes only those and
+refuses any other, and the section generator writes the triggers' checks from
+it, as it writes the segment checks from =import_segments=.
 
 A commodity curve states no construction column: the part it holds is its
 construction. So no trigger can check a commodity part against a construction,
@@ -203,6 +211,36 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The default curve export wrote every part a configuration held, whatever its type, so a benchmark part on a hazard rate configuration was exported, not refused. Found by the new refusal test. | =curve_configuration_projection.cpp= | Accept | Fixed in bac3900a11: =parts_of_default_curve_type= states each type's parts, and the import, the export and the generated check all read it. |
+| 2 | The document service saves and reads no commodity curve rows, so a stored document loses its commodity curves' settings and its export fails. Found by the live check; main has the same gap. | =curve_configuration_document_service.cpp= | Decline here | Not this task's split. Captured as =carry_commodity_curves_through_the_curve_configuration_document=. |
+| 3 | No service serves =refdata.v1.ops.begin_bundle_import=, so =ore import-run= fails on any run with a conventions file. Found by the live check; main has the same gap. | =ores.refdata= messaging | Decline here | Not this task's split. Captured as =serve_the_conventions_bundle_import=. The live check ran without a conventions file. |
+| 4 | misspell-fixer on the branch's changed files. | all | Clean | Exit 0. |
 
 * Result
+
+The default curve configuration and the commodity curve are split by
+construction. Each keeps what every one of its constructions reads, and each
+construction's settings are a part keyed by the entry. A row now holds only
+columns its construction can use: =default_curve_configuration= falls from 27
+members to 11 and =commodity_curve_config= from 24 to 5.
+
+Each part is justified by its own invariant, which is ORE's reader: the fields
+=DefaultCurveConfig::Config::fromXML= and =CommodityCurveConfig::fromXML= read
+for one construction, and only those. The basis configuration is one part,
+=commodity_curve_basis=, whose presence states the Basis construction, so
+=has_basis_configuration= and =has_price_segments= are gone. One
+denormalisation is recorded: a transition matrix keeps the market terms part,
+because all 14 corpus transition matrices state a discount curve and
+conventions that ORE ignores, and the round trip keeps them.
+
+Each part's rule is enforced once. =parts_of_default_curve_type= states which
+type has which default curve part. The import and the export follow it, and
+the generated insert triggers check it in the database. A commodity curve
+states no construction column, so the export enforces its parts by taking only
+the construction ORE's reader would select.
+
+The ORE projection writes one typed array per part, and all 89 corpus curve
+configurations round trip with no difference. New tests refuse a part of
+another construction on export and in the database. The live check stored and
+exported the default curves of =Input/curveconfig.xml= with each part on its
+own type. It also found two gaps that main already has, recorded under Review.

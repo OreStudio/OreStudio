@@ -21,7 +21,7 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | STARTED                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -61,6 +61,7 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 | [[id:40A46EF1-C11A-4652-A490-4B0D454E24FB][Parse the market state into timeseries tables]] | DONE | 2026-11-01 | 2026-11-02 | Every market-state file a run writes is parsed into rows in a hypertable, so a user can query what the computation did. The NPV cubes are values of trades, so they are run results and go to ores.reporting. The simulated factor values, the stress shifts and the calibrated market go to ores.marketdata. The payload table and its index are removed, and scenario.csv moves to the run results, because it holds sensitivity figures. |
 | [[id:E10EB70F-4B61-43AA-97A4-440991BB8FD5][Choose per report definition what a run stores]] | DONE | 2026-11-02 | 2026-11-02 | A report definition states which output families its runs store as rows. The default stores every family, so we can see that the parsers work. When we trust them, a definition can turn off the large intermediate families, such as the NPV cubes and the scenario dumps. The raw files stay in the object store, so a run that did not store a family can be parsed later. |
 | [[id:008C03B9-11AB-4B9E-814E-08C3995054F4][Store the text-valued outputs]] | DONE | 2026-11-02 | 2026-11-02 | Four outputs state text rather than figures: additional_results, marketObjects, riskFactors and the calibrated model's XML. Each gets a row shape so no output is left unread. |
+| [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] | STARTED | 2026-11-02 | | Run reports for Acme and check, through the shell and the web, that every output a run writes lands as rows where the story says, starting with one report and a few families. |
 
 * Result
 

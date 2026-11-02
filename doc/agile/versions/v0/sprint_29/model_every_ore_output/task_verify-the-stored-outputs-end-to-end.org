@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 9DC65D63-B7A7-4E27-8248-115D41D2D795
+:END:
+#+title: Task: Verify the stored outputs end to end
+#+description: Run reports for Acme and check, through the shell and the web, that every output a run writes lands as rows where the story says, starting with one report and a few families.
+#+type: task
+#+level: s1
+#+filetags: :reporting:ore:marketdata:test:model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch: feature/verify-the-stored-outputs-end-to-end
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can follow a report run from trigger to stored rows and confirm each family landed where the story says.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A run of a report completes for Acme Corporation Plc, which needs the orphan commodity future part defect fixed first.
+- A test scenario covers one report and a small number of families: the figures, the market data the run read, and a family a definition skips.
+- The tester ticks every step, and any failure becomes a capture or a fix.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

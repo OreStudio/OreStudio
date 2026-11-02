@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: A84F2177-C31C-426A-B81F-BD042E7E6961
+:END:
+#+title: Test Scenario: Verify a run stores its figures and the market it read
+#+description: Run Group Consolidated Exposure for Acme Corporation Plc and confirm that its NPV and SA-CCR figures, its run statistics and the FX quotes it read land as rows keyed by result, file and line, and that skipping a family stores none of its rows.
+#+type: test_scenario
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: swift_curie
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] in [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+Done before the scenario reaches you, so Step 1 can assume it:
+
+- The branch =feature/verify-the-stored-outputs-end-to-end= is built and the
+  services run on that build. It carries the fix for the orphan commodity future
+  part, without which every report run fails before it stores anything.
+- The database was recreated from this branch's schema and the Acme Corporation
+  holding group provisioned with
+  =projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- Group Consolidated Exposure for Acme Corporation Plc skips no family.
+
+The checks that read stored rows use =compass sql= from the root of this
+worktree, =/home/marco/Development/OreStudio/ores_dev_swift_curie=. Each command
+below reads the latest run of Group Consolidated Exposure for Acme Corporation Plc,
+so it needs no id copied from the screen.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] |
+| Parent story  | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]   |
+| Target screen | Web, http://localhost:20202: Reporting > Reports > Group Consolidated Exposure, its Run button, and the run page it opens (/reporting/runs/<id>). Stored rows: =compass sql= in a terminal. |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+What passes: a run of one report completes, and four families land where the
+story says, keyed by file and line. The NPV and SA-CCR figures and the run
+statistics are in reporting's metric table, and the FX quotes the run read are
+in marketdata's market input table. A family the report is set to skip stores no
+rows, and an unknown family name is refused.
+
+* Steps
+
+** Log in as the Acme tenant admin
+
+- Open http://localhost:20202 in a browser.
+- Log in as =tenant_admin@acme_corporation= with password =Secure-Password-123=.
+- Pass: the header shows the Acme Corporation tenant and the party Acme
+  Corporation Plc. If it asks for a party, choose Acme Corporation Plc.
+
+** Open the Group Consolidated Exposure report
+
+- Go to Reporting > Reports.
+- Open Group Consolidated Exposure whose party is Acme Corporation Plc (code
+  ACMCOR); other parties have a report of the same name.
+- Pass: the page shows the report, and the field "Families not stored" is
+  empty. Its help text says an empty list stores every family.
+
+** Run the report and wait
+
+- Press Run on the report page.
+- The browser moves to the run's page, /reporting/runs/<id>.
+- Wait until the run's state is Completed. A run takes about a minute.
+- Pass: the state is Completed, not Failed. A failure names its reason on the
+  page; record it under this step's Result.
+
+** See the NPV results on the run
+
+- Stay on the run's page and look at its results panel.
+- Pass: the panel lists NPV results for the run's trades, with a currency for
+  each, and no error.
+
+** Check the figures by file and line
+
+- In a terminal, at the worktree root, run:
+  #+begin_src sh
+  ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, count(*) as figures, min(line), max(line) from ores_reporting_report_metrics_tbl where report_instance_id = (select id from latest) group by 1, 2 order by 1;"
+  #+end_src
+- Pass: four rows.
+  - =npv.csv=, family =npv=: 36 figures, lines 2 to 10.
+  - =saccr.csv=, family =saccr=: 2 figures, line 2.
+  - =pricingstats.csv=, family =pricingstats=: about 219 figures.
+  - =runtimes.csv=, family =runtimes=: a few figures.
+
+** Check the market data it read
+
+- In the terminal, run:
+  #+begin_src sh
+  ./compass.sh sql -- -c "with latest as (select i.id from ores_reporting_report_instances_tbl i join ores_reporting_report_definitions_tbl d on d.id = i.definition_id and d.valid_to > now() join ores_refdata_parties_tbl p on p.id = d.party_id and p.valid_to > now() where d.name = 'Group Consolidated Exposure' and p.short_code = 'ACMCOR' order by i.valid_from desc limit 1) select source, family, datum_id, value, line from ores_marketdata_market_input_values_tbl where report_instance_id = (select id from latest) order by line;"
+  #+end_src
+- Pass: two rows from =marketdata.csv=, family =marketdata=: =FX/RATE/EUR/USD=
+  on line 2 and =FX/RATE/GBP/USD= on line 3, each with a value near 1.17 and
+  1.36.
+
+** Set the report to skip SA-CCR
+
+- Go back to Reporting > Reports > Group Consolidated Exposure (ACMCOR).
+- Edit the report and set "Families not stored" to =saccr=.
+- Save it with any change reason the form offers.
+- Pass: after the save, the page shows =saccr= in "Families not stored".
+
+** Run again and check SA-CCR
+
+- Press Run and wait until the new run is Completed.
+- In the terminal, rerun the command of "Check the figures by file and line".
+- Pass: the run is Completed, and the output has no =saccr.csv= row.
+  =npv.csv= still has 36 figures on lines 2 to 10.
+
+** Refuse an unknown family name
+
+- Edit the report again and set "Families not stored" to =sacr=, a misspelling.
+- Save, then press Run.
+- Pass: the run does not start, and the message says the report skips a family
+  that does not exist, naming =sacr=. A run that starts and completes is a
+  failure of this step.
+
+** Put the report back
+
+- Edit the report and clear "Families not stored", then save.
+- Pass: the field is empty again, so the report stores every family.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

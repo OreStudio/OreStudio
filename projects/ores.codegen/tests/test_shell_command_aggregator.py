@@ -84,6 +84,9 @@ def _opted_in_trading_units():
             continue
         singular = re.search(r"^#\+entity_singular:\s*(\S+)", text,
                              re.MULTILINE)
+        if singular is None and "#+type: ores.codegen.junction" in text:
+            singular = re.search(r"^#\+name_singular:\s*(\S+)", text,
+                                 re.MULTILINE)
         if singular:
             names.append(f"{singular.group(1)}_commands")
     return sorted(names)
@@ -222,7 +225,7 @@ class TestTheComponentOptIn:
         assert _AGGREGATOR_KEY in TRADING_SHELL_OVERVIEW.read_text(
             encoding="utf-8")
         units, _, _ = resolve_targets(
-            TRADING_MODELING / "ores.trading.trade_type.org", CODEGEN_BASE,
+            TRADING_MODELING / "ores.trading.product_type.org", CODEGEN_BASE,
             address="ores.cpp.shell-command")
         templates = {u["template"] for u in units}
         assert AGGREGATOR_TEMPLATES <= templates

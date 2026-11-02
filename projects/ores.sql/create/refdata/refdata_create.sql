@@ -136,6 +136,10 @@
 \ir ./refdata_ledger_feed_types_notify_trigger_create.sql
 \ir ./refdata_sub_periods_coupon_types_create.sql
 \ir ./refdata_sub_periods_coupon_types_notify_trigger_create.sql
+-- Product family codes: the shapes a product type carries.
+\ir ./refdata_product_family_codes_create.sql
+\ir ./refdata_product_family_codes_notify_trigger_create.sql
+
 
 -- Product catalogue: asset_class_codes and curve_roles before instrument_codes (FK).
 \ir ./refdata_asset_class_codes_create.sql

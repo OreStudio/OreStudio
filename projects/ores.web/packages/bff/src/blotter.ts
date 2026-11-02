@@ -28,7 +28,7 @@ import { subjects as memberSubjects } from '@ores/wire-protocol/generated/tradin
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as assetClassSubjects } from '@ores/wire-protocol/generated/refdata/protocol/asset_class_code_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
-import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
+import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
@@ -331,7 +331,7 @@ export function registerBlotterRoutes(
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+            readAll(session, productTypeSubjects.list_product_types_request, 'types', {
                 filter: { code_one_of: null },
             }),
             readAll(session, instrumentCodeSubjects.list_instrument_codes_request, 'instruments', {
@@ -352,7 +352,9 @@ export function registerBlotterRoutes(
                 (row) =>
                     [
                         text(row['code']),
-                        text(row['description']) || humanise(text(row['code'])),
+                        text(row['name']) ||
+                            text(row['description']) ||
+                            humanise(text(row['code'])),
                     ] as const,
             ),
         );

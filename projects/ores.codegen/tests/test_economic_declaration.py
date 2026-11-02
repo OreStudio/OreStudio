@@ -251,9 +251,9 @@ def _catalogue_in(tmp_path, entity_text, digest_rows, shared_rows=""):
 
 * Trade types
 
-| code | description | product_type | has_options | has_extension | instrument |
-|------+-------------+--------------+-------------+---------------+------------|
-| Swap | Swap        | swap         | false       | false         | widget     |
+| code | name | family | construction | markets | has_options | has_extension | instrument |
+|------+------+--------+--------------+---------+-------------+---------------+------------|
+| Swap | Swap | swap   | native       | interest_rates! | false | false | widget |
 
 * Digest
 

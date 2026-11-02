@@ -17,175 +17,169 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_PRODUCT_TYPE_HPP
-#define ORES_TRADING_DOMAIN_PRODUCT_TYPE_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_class.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_API_DOMAIN_PRODUCT_TYPE_HPP
+#define ORES_TRADING_API_DOMAIN_PRODUCT_TYPE_HPP
 
-#include "ores.utility/codec/text_form.hpp"
-#include <cstdint>
-#include <optional>
-#include <ostream>
-#include <rfl.hpp>
-#include <stdexcept>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Structural routing discriminator for trades and instruments.
+ * @brief One kind of instrument a desk can book.
  *
- * Mirrors the @c product_type_t Postgres enum and partitions all trade types
- * into one of eight families. The family selects which extension table the
- * instrument record lives in and which @c IInstrumentForm the Qt UI shows.
+ * The catalogue of the instrument types a tenant can book, keyed by the code
+ * ORE uses. One row per kind: a BondOption, a CrossCurrencySwap, a
+ * ScriptedTrade.
  *
- * The @c unknown sentinel is the default-constructed value and represents
- * "no family selected yet" — it is the only enumerator that has no
- * counterpart in the @c product_type_t Postgres enum. The Qt UI uses it for
- * trades in create mode that have not yet been assigned a trade type, and
- * dispatch sites must reject it explicitly. It serialises to the empty
- * string on the wire and round-trips to/from a SQL @c NULL via the
- * appropriate mapper.
+ * The row is the golden source for what a product type is. It carries the name a
+ * desk uses, the description and the source that description came from, the
+ * product family that names its contract shape, the construction method that says
+ * how the payoff is expressed, and the instrument table that holds a trade of the
+ * kind. The markets it references are a junction, because a kind may reference
+ * more than one.
  *
- * String form for the eight real values matches the SQL enum and is used
- * unchanged on the JSON wire format.
+ * The catalogue is declared once, in ores.trading.trade_type_catalogue, and
+ * seeded into the system tenant. Every tenant reads those rows; a tenant does not
+ * hold a product type of its own.
  */
-enum class product_type : std::uint8_t {
-    unknown = 0,
-    swap,
-    fx,
-    bond,
-    credit,
-    equity,
-    commodity,
-    composite,
-    scripted
+struct product_type final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief The ORE code, which is the identity.
+     *
+     * Examples: 'Swap', 'FxForward', 'CapFloor', 'Swaption'.
+     */
+    std::string code;
+
+    /**
+     * @brief The name a desk uses for the product.
+     */
+    std::string name;
+
+    /**
+     * @brief What the product is, in prose: its cashflows and when a desk uses it.
+     */
+    std::string description;
+
+    /**
+     * @brief The body that states the description, such as the ORE User Guide.
+     */
+    std::string source;
+
+    /**
+     * @brief Where in that body the description is stated, as a link.
+     */
+    std::string source_ref;
+
+    /**
+     * @brief The contract shape the product type takes. Null where the shape is not stated.
+     */
+    std::string product_family_code;
+
+    /**
+     * @brief How the payoff is expressed: native, scripted or container.
+     */
+    std::string construction;
+
+    /**
+     * @brief True when a trade of this type carries an option block.
+     */
+    bool has_options = false;
+
+    /**
+     * @brief True when a trade of this type carries an extension block.
+     */
+    bool has_extension = false;
+
+    /**
+     * @brief The instrument table that holds a trade of this type. Null when nothing holds it yet,
+     * so no trade of the type can be imported.
+     */
+    std::string instrument_table;
+
+    /**
+     * @brief The order the catalogue lists the type in.
+     */
+    int display_order = 0;
+
+    /**
+     * @brief The knowledge note that describes the product, by document id.
+     */
+    std::string knowledge_note;
+
+    /**
+     * @brief Username of the person who last modified this product type.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality.
+     *
+     * Every generated domain type is a value: two of them are equal when their
+     * members are, whatever the entity means. A test that round-trips one
+     * through the wire asserts exactly that, so equality is part of the shape
+     * rather than something each entity decides -- an entity without it cannot
+     * be round-trip tested at all, which is why the omission went unnoticed
+     * until the diff payloads were the first generated types to have a test.
+     */
+    friend bool operator==(const product_type&, const product_type&) = default;
 };
 
 /**
- * @brief Convert a product_type to its lowercase string representation.
- *
- * The eight real values match the SQL @c product_type_t enum values and the
- * JSON wire format. The @c unknown sentinel maps to the empty string.
- * Throws @c std::invalid_argument on an out-of-range value.
+ * @brief Dispatch-key identifier for product_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
  */
-[[nodiscard]] inline std::string_view to_string(product_type pt) {
-    switch (pt) {
-        case product_type::unknown:
-            return "";
-        case product_type::swap:
-            return "swap";
-        case product_type::fx:
-            return "fx";
-        case product_type::bond:
-            return "bond";
-        case product_type::credit:
-            return "credit";
-        case product_type::equity:
-            return "equity";
-        case product_type::commodity:
-            return "commodity";
-        case product_type::composite:
-            return "composite";
-        case product_type::scripted:
-            return "scripted";
-    }
-    throw std::invalid_argument("Out-of-range product_type");
-}
-
-/**
- * @brief Stream a product_type using its string representation.
- *
- * Generated table code streams entity members directly; without this
- * operator a domain-enum member in a table display does not compile.
- */
-inline std::ostream& operator<<(std::ostream& s, product_type pt) {
-    return s << to_string(pt);
-}
-
-/**
- * @brief Parse a product_type from its lowercase string representation.
- *
- * The empty string parses to @c product_type::unknown. Returns
- * @c std::nullopt for any other unrecognised value so the caller has to
- * decide whether the input is genuinely a parsing error or just absent.
- */
-[[nodiscard]] inline std::optional<product_type> product_type_from_string(std::string_view sv) {
-    if (sv.empty())
-        return product_type::unknown;
-    if (sv == "swap")
-        return product_type::swap;
-    if (sv == "fx")
-        return product_type::fx;
-    if (sv == "bond")
-        return product_type::bond;
-    if (sv == "credit")
-        return product_type::credit;
-    if (sv == "equity")
-        return product_type::equity;
-    if (sv == "commodity")
-        return product_type::commodity;
-    if (sv == "composite")
-        return product_type::composite;
-    if (sv == "scripted")
-        return product_type::scripted;
-    return std::nullopt;
-}
-
-/**
- * @brief Parse the value a command token states, so a generated shell
- * command unit can take a product type as an argument.
- *
- * The shell's token reader finds this by argument-dependent lookup; the
- * shell header carries no domain include of its own.
- */
-[[nodiscard]] inline std::optional<product_type> parse_token(std::string_view sv, product_type) {
-    return product_type_from_string(sv);
+[[nodiscard]] constexpr std::string_view entity_type_of(const product_type&) {
+    return "ores.trading.product_type";
 }
 
 }
-
-namespace rfl {
-
-/**
- * @brief rfl reflector for ores::trading::domain::product_type.
- *
- * Serialises to/from a lowercase string in JSON and any other rfl-driven
- * wire format. Wire shape stays identical to the previous @c std::string
- * field, so no protocol changes are required when consumers migrate.
- */
-template <>
-struct Reflector<ores::trading::domain::product_type> {
-    using ReflType = std::string;
-
-    static ores::trading::domain::product_type to(const ReflType& s) {
-        auto parsed = ores::trading::domain::product_type_from_string(s);
-        if (!parsed) {
-            throw std::invalid_argument("Invalid product_type: '" + s + "'");
-        }
-        return *parsed;
-    }
-
-    static ReflType from(const ores::trading::domain::product_type& v) {
-        return std::string(ores::trading::domain::to_string(v));
-    }
-};
-
-}
-
-template <>
-struct ores::utility::codec::text_form<ores::trading::domain::product_type> {
-    static constexpr std::string_view wire_name = "a product type";
-
-    static std::string to_text(const ores::trading::domain::product_type& v) {
-        return std::string(ores::trading::domain::to_string(v));
-    }
-
-    static ores::trading::domain::product_type from_text(std::string_view text) {
-        auto parsed = ores::trading::domain::product_type_from_string(text);
-        if (!parsed)
-            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text));
-        return *parsed;
-    }
-};
 
 #endif

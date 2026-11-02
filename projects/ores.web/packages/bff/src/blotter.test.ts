@@ -66,7 +66,7 @@ const subjects = {
     members: 'trading.v1.structure_members.list',
     identifiers: 'trading.v1.structure_identifiers.list',
     tradeIdentifiers: 'trading.v1.trade_identifiers.list',
-    tradeTypes: 'trading.v1.trade_types.list',
+    productTypes: 'trading.v1.product_types.list',
     instrumentCodes: 'refdata.v1.instrument_codes.list',
     summaries: 'trading.v1.trade_summaries.list',
     assetClasses: 'refdata.v1.asset_class_codes.list',
@@ -239,9 +239,22 @@ function replies(): Readonly<Record<string, unknown>> {
             ],
             total: 2,
         },
-        [subjects.tradeTypes]: {
+        [subjects.productTypes]: {
             result: ok,
-            types: [{ code: 'Swap', description: 'Interest Rate Swap', product_type: 'swap' }],
+            types: [
+                {
+                    code: 'Swap',
+                    name: 'Interest Rate Swap',
+                    description: 'A single-currency interest rate swap.',
+                    product_family_code: 'swap',
+                    construction: 'native',
+                    has_options: false,
+                    has_extension: false,
+                    instrument_table: 'rate_instrument',
+                    display_order: 1,
+                    version: 1,
+                },
+            ],
             total: 1,
         },
         [subjects.instrumentCodes]: {

@@ -310,8 +310,12 @@
 \ir ./trading_lifecycle_events_notify_trigger_drop.sql
 \ir ./trading_lifecycle_events_drop.sql
 
-\ir ./trading_trade_types_notify_trigger_drop.sql
-\ir ./trading_trade_types_drop.sql
+\ir ./trading_product_type_asset_classes_notify_trigger_drop.sql
+\ir ./trading_product_type_asset_classes_drop.sql
+\ir ./trading_draft_reasons_notify_trigger_drop.sql
+\ir ./trading_draft_reasons_drop.sql
+\ir ./trading_product_types_notify_trigger_drop.sql
+\ir ./trading_product_types_drop.sql
 
 -- Closed-set reference data (dropped after the tables that reference it)
 \ir ./trading_settlement_types_notify_trigger_drop.sql

@@ -72,6 +72,7 @@ set(files
     "party_role_type_eventing_integration_tests.cpp"
     "payoff_type_eventing_integration_tests.cpp"
     "price_type_eventing_integration_tests.cpp"
+    "product_type_eventing_integration_tests.cpp"
     "rate_instrument_eventing_integration_tests.cpp"
     "repository_activity_type_repository_tests.cpp"
     "repository_bond_composite_versioning_tests.cpp"
@@ -97,7 +98,6 @@ set(files
     "repository_trade_booking_range_tests.cpp"
     "repository_trade_filter_tests.cpp"
     "repository_trade_summary_tests.cpp"
-    "repository_trade_type_repository_tests.cpp"
     "return_type_eventing_integration_tests.cpp"
     "risk_participation_agreement_instrument_eventing_integration_tests.cpp"
     "scripted_instrument_eventing_integration_tests.cpp"
@@ -115,6 +115,5 @@ set(files
     "trade_id_type_eventing_integration_tests.cpp"
     "trade_link_type_eventing_integration_tests.cpp"
     "trade_state_eventing_integration_tests.cpp"
-    "trade_type_eventing_integration_tests.cpp"
     "vanilla_swap_instrument_eventing_integration_tests.cpp"
 )

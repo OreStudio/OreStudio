@@ -89,6 +89,7 @@
 #include "ores.trading.core/messaging/payoff_type_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
+#include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/range_bound_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
@@ -133,7 +134,6 @@
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_summary_registrar.hpp"
-#include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
 #include "ores.trading.core/service/bus_book_status.hpp"
 #include <memory>
 
@@ -323,7 +323,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_trade_party_role_history_provider(hist_registry);
     register_trade_state_history_provider(hist_registry);
     register_trade_authorisation_request_history_provider(hist_registry);
-    register_trade_type_history_provider(hist_registry);
+    register_product_type_history_provider(hist_registry);
     subs.push_back(ores::history::messaging::register_history_handlers(
         nats, hist_registry, "trading", queue_group, ctx, verifier));
 

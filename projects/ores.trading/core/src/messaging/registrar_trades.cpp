@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/product_type_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
-#include "ores.trading.core/messaging/trade_type_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -28,8 +28,8 @@ register_trade_handlers(ores::nats::service::client& nats,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     // Instrument reference data — floating index types and leg types moved
     // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); trade
-    // types are handled by the entity-shaped trade_type handler stack.
-    return register_trade_type_handlers(nats, ctx, verifier);
+    // types are handled by the entity-shaped product_type handler stack.
+    return register_product_type_handlers(nats, ctx, verifier);
 }
 
 }

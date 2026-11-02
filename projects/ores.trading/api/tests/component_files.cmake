@@ -20,7 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "codec_product_type_tests.cpp"
     "domain_activity_type_tests.cpp"
     "domain_bond_instruments_tests.cpp"
     "domain_commodity_instruments_tests.cpp"
@@ -37,7 +36,6 @@ set(files
     "domain_trade_id_type_tests.cpp"
     "domain_trade_identifier_tests.cpp"
     "domain_trade_party_role_tests.cpp"
-    "domain_trade_type_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
 )

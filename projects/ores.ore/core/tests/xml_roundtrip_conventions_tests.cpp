@@ -485,8 +485,7 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", "[ore][xml][roundtrip]
             REQUIRE(t != terms.end());
             REQUIRE(f != flats.end());
             REQUIRE(sp != spreads.end());
-            CHECK(t->settlement_days ==
-                  std::stoi(in.text("SettlementDays").value_or(std::string("0"))));
+            CHECK(t->settlement_days == in.integer("SettlementDays").value_or(0));
             CHECK(f->flat_index == in.text("FlatIndex").value_or(std::string()));
             CHECK(sp->spread_index == in.text("SpreadIndex").value_or(std::string()));
             CHECK(f->flat_tenor == in.text("FlatTenor"));

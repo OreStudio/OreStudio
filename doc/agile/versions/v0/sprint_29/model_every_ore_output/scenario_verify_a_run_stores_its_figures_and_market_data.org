@@ -38,12 +38,13 @@ so it needs no id copied from the screen.
 |---------------+------------------------------------------|
 | Verifies task | [[id:9DC65D63-B7A7-4E27-8248-115D41D2D795][Verify the stored outputs end to end]] |
 | Parent story  | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]]   |
-| Target screen | Web, http://localhost:20202: Reporting > Reports > Group Consolidated Exposure, its Run button, and the run page it opens (/reporting/runs/<id>). Stored rows: =compass sql= in a terminal. |
+| Target screen | Web, http://localhost:20202: Reporting > Reports > Group Consolidated Exposure, its Run button, the run page it opens (/reporting/runs/<id>) with its Results, Errors and Downloads tabs, and the page of one file (/reporting/runs/<id>/files/<file>). Stored rows: =compass sql= in a terminal. |
 | Clients       |                                          |
 | State         | PENDING |
 
-What passes: a run of one report completes, and four families land where the
-story says, keyed by file and line. The NPV and SA-CCR figures and the run
+What passes: a run of one report completes, its run page states its problems
+and its files, each file says what it is with the schema that validates it, and
+four families land where the story says, keyed by file and line. The NPV and SA-CCR figures and the run
 statistics are in reporting's metric table, and the FX quotes the run read are
 in marketdata's market input table. A family the report is set to skip stores no
 rows, and an unknown family name is refused.
@@ -96,6 +97,66 @@ rows, and an unknown family name is refused.
 - Stay on the run's page and look at its results panel.
 - Pass: the panel lists NPV results for the run's trades, with a currency for
   each, and no error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** See the run's problems by scope, then one by one
+
+- Open the Errors tab of the run.
+- Pass: the Overview view shows a ring of the problems by scope and a table of
+  the errors and warnings in each scope, with a total. No label shows a raw key
+  such as reporting.run.errors.
+- Press a scope in the table, for example Trade.
+- Pass: the List view opens narrowed to that scope, says so above the table,
+  and offers "Show every scope". Each problem is its own row with its severity,
+  scope, subject and message, and a subject that is a trade links to the trade.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Find the run's files in their tree
+
+- Open the Downloads tab of the run.
+- Pass: a tree beside the table holds the run, its batch, the job, and the
+  job's input package and output, each with the number of files under it. The
+  run counts 25 files: 9 in the input package and 16 in the output.
+- Choose the input package in the tree.
+- Pass: the table narrows to the package and its files. Every row names its
+  ORE file: Input/ore.xml is Analytics, Input/market.txt is Market Data,
+  Input/portfolio.xml is Trade Data. No row says Not catalogued.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open a file and download its schema
+
+- Press the row of Input/portfolio.xml.
+- Pass: the page names the file Trade Data, in the Trade Data category,
+  describes what the portfolio holds, and gives its format, typical name, the
+  names it is recognised by, the ORE version 1.8.17.0 and the parameter
+  setup.portfolioFile that names it.
+- Press "Download the schema and its includes" beside Trade Data Schema.
+- Pass: a zip named trade_data_schema-1.8.17.0.zip downloads, and it holds
+  input.xsd with every schema it includes, 24 files in all.
+- Press Download on the page.
+- Pass: the portfolio downloads, and it validates against the schema:
+  #+begin_src sh
+  xmllint --noout --schema input.xsd portfolio.xml
+  #+end_src
+  prints "portfolio.xml validates".
+- Go back and open the row of npv.csv.
+- Pass: the page names it NPV Report in Valuation Reports, offers no schema,
+  and names the parameter npv.outputFileName.
 
 *** Result
 

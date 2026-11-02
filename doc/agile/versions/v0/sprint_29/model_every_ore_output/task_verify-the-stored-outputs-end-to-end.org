@@ -28,9 +28,9 @@ A person can follow a report run from trigger to stored rows and confirm each fa
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The run screens the scenario walks through: one run page with Details, Results, Errors and Downloads. |
-| Waiting on   | Nothing.                               |
-| Next         | The tester runs the scenario.          |
+| Now          | The PR, with the run screens, the ORE file catalogue and its schemas. |
+| Waiting on   | The tester's run of the scenario, which the acceptance asks for. |
+| Next         | The tester runs the scenario; a failure becomes a capture or a fix. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -64,6 +64,31 @@ A person can follow a report run from trigger to stored rows and confirm each fa
    804a0dad50 moved the read to =reporting.v1.run_results.list= but kept the
    old reply key =rows=. The reply names them =results=, so every run showed no
    results while its figures were stored. Run 9f2a5329 has 36 rows in the view.
+6. Give the run screens what a tester asked for on second sight: an overview
+   and a list of the errors, with a trade subject linking to its trade; the
+   results tables as standard record tables; the files in a tree of the run,
+   its batch, each job and its input package and output, on the blotter's rail
+   moved into a shared TreeRail.
+7. Name every file of a run as the ORE user guide names it. A new reporting
+   entity, the ORE file, is keyed by the guide's name: market_data, npv_cube,
+   npv_report. It has a category, a configuration type, a guide section, an
+   origin, a format, a typical name and the regex of every name a run gives it,
+   and a description written by hand. Fourteen categories group the 148 files,
+   following the guide's chapters for what a run is given and its data flow
+   for what ORE writes, with one for ORE Studio's packaging and one for the
+   schemas. File types name their ORE file by code; the output catalogue keys
+   each family by it, so stress.csv is the stress test report's other name.
+8. Store the schemas: each XML schema ORE ships is an ORE file, an xml file
+   names its schema by a self join, and ore_file_version holds the contents of
+   a file at one engine version, seeded from external/ore/xsd after checking
+   its manifest's digest. A file's page offers its schema for the engine that
+   ran the job, as a zip with every schema it includes.
+9. Send every member of a request the generated codec now requires. The run
+   trigger, the booking and its instrument batch were refused with "Missing
+   member"; the bodies are now typed with the generated requests.
+10. Keep the tests to what they mean: the SQL tests read the moved columns
+    through the ORE file, and a test that counted every live feed counts the
+    seeded ones, since the integration tests write into the same database.
 
 * Measurements
 
@@ -80,6 +105,29 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Why a file is an entity of its own
+
+A file type is a parameter that names a file: npv.outputFileName,
+simulation.cubeFile. Many parameters name one file, the cube is written by one
+analytic and read by two, and some files no parameter names at all: ore.xml,
+the log, the outputs the engine names itself. So the file is the parent and the
+parameter points at it. Direction and kind stay on the file type, because the
+cube is an output of the simulation and an input of xva: they belong to the
+parameter. The format and the schema belong to the file.
+
+** Why the includes are read from the contents
+
+A schema is complete only with the schemas it includes, and input.xsd includes
+22. The stored contents state the includes, so the download reads them there; a
+table of includes would state the same fact twice and could disagree with it.
+
+** Why the schema check orders paths as sort does
+
+The vendoring script's tree digest orders the paths with sort, which follows the
+locale, so the seed check orders them the same way. A machine whose locale sorts
+differently would compute another digest; the fix belongs in the vendoring
+script.
 
 ** Why the errors were all combined at the bottom
 
@@ -100,7 +148,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:A84F2177-C31C-426A-B81F-BD042E7E6961][Verify a run stores its figures and the market it read]] | PENDING | Steps for the errors overview, the files tree, the file page and the schema download added. |
 
 * PRs
 
@@ -120,5 +168,22 @@ via its "Verifies task" field.
 | 6 | The results panel read the errors with its own query | reporting/RunResultsPanel.tsx | Accepted | Uses the shared hook. |
 | 7 | The severity filter would be copied into the files table | reporting/RunErrorsTable.tsx | Accepted | One CountFilter in reporting/shared.tsx. |
 | 8 | Two copies of asMiB in the operations screens | operations/GridPage.tsx, operations/BusPage.tsx | Declined | Not touched by this task. |
+| 9 | The error overview texts were placed in the files block, so the tab showed keys | i18n/locales/*.ts | Accepted | Moved; a test renders the tab and fails on any key on screen. |
+| 10 | A typed audit of every BFF request against its generated type | bff/src/*.ts | Accepted | The booking and its batch were missing members; typed with the generated requests. |
+| 11 | Matching run files to ORE files in the BFF rather than the service | bff/src/report-run-files.ts | Accepted as is | One place, on the server side; the regexes come from the catalogue. |
+| 12 | HTTP and CLI layers of the new entities | ores.reporting | Deferred | A codegen gap, raised as a story rather than written by hand. |
 
 * Result
+
+A run of Group Consolidated Exposure completes for Acme Corporation Plc, and its
+page states it: its details, its results with nine trades, its problems as an
+overview and a list, and its 25 files in a tree, each named as the ORE user guide
+names it with a page that says what it holds, how it is laid out and which
+parameter names it. An XML file's page offers its schema with every schema it
+includes for the engine that ran it; the run's portfolio validates against the
+downloaded schema with xmllint. The figures land under the new family codes:
+36 under npv_report, 2 under saccr_report, 219 under pricing_stats, and the
+market data the run read under market_data_report.
+
+The scenario holds the steps; the acceptance's last clause, the tester's run of
+it, is still to come.

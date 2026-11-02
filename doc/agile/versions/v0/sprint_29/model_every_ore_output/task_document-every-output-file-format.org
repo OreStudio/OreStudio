@@ -8,7 +8,7 @@
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-every-output-file-format
-#+pr:
+#+pr: 4382
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4382][#4382]] | [ore,doc] Document every output file ORE writes |
 
 * Review
 

@@ -478,7 +478,7 @@ def todays_market():
 def curve_configuration():
     """An overnight discount curve for each currency of the entity, built from the
     overnight swap ladder the synthetic feeds publish."""
-    headers, definitions, yields, segments, quotes = [], [], [], [], []
+    headers, definitions, yields, segments, conventions, quotes = [], [], [], [], [], []
     for company, currencies in ENTITY_CURRENCIES.items():
         header_id = new_uuid(f"curve_configuration:{company}")
         headers.append(row(
@@ -504,7 +504,12 @@ def curve_configuration():
                 segment_id = new_uuid(f"curve_configuration:{company}:{curve_id}:{kind}")
                 segments.append(row(
                     company, id=segment_id, curve_definition_id=definition_id,
-                    segment_type=kind, position=segment_position, conventions=convention))
+                    segment_type=kind, position=segment_position))
+                # A segment's convention is a part of the segment, keyed by its id.
+                part_key = f"curve_configuration:{company}:{curve_id}:{kind}:conventions"
+                conventions.append(row(
+                    company, id=new_uuid(part_key), curve_segment_id=segment_id,
+                    conventions=convention))
                 for number, key in enumerate(quote_keys):
                     quotes.append(row(
                         company,
@@ -514,7 +519,7 @@ def curve_configuration():
 
             segment(0, "OIS", ois_convention,
                     [f"IR_SWAP/RATE/{currency}/{SPOT_LAG}/1D/{tenor}" for tenor in OIS_TENORS])
-    return headers, definitions, yields, segments, quotes
+    return headers, definitions, yields, segments, conventions, quotes
 
 
 def inflation_curve_configuration():
@@ -566,7 +571,7 @@ def main():
     # The inflation curves join the same curve configuration document, so they
     # publish through the artefact the tenant already reads.
     names = ("curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
-             "curve_quotes")
+             "curve_segment_conventions", "curve_quotes")
     records = list(curve_configuration())
     inflation_definitions, inflation_configs = inflation_curve_configuration()
     records[1] = records[1] + inflation_definitions

@@ -6,8 +6,7 @@
     "id": "2a3091d0-459c-5df2-bb71-823ab529c9cd",
     "curve_definition_id": "dadac1a9-5607-5f5c-8a3e-2a8196c92a6c",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "GBP-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_group",
@@ -16,8 +15,7 @@
     "id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
     "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "USD-SOFR-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_group",
@@ -26,8 +24,7 @@
     "id": "826dc027-43ae-585e-89de-06634b65247d",
     "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "HKD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_group",
@@ -36,8 +33,7 @@
     "id": "57287b30-7942-59ae-a03a-3bf882020c4a",
     "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "EUR-ESTER-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -46,8 +42,7 @@
     "id": "74043045-16a5-5a5b-b1d9-10779106197a",
     "curve_definition_id": "1be918ea-5cf8-52e5-985c-8ca390eba26f",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "GBP-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -56,8 +51,7 @@
     "id": "49cd0562-72bc-5184-805c-de32add5d72e",
     "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "EUR-ESTER-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -66,8 +60,7 @@
     "id": "43a9c899-e25c-5136-9883-2e40ac218cde",
     "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "USD-SOFR-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -76,8 +69,7 @@
     "id": "97af060a-3515-5964-827b-896d9ebda0d2",
     "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "CHF-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -86,8 +78,7 @@
     "id": "ef8ea040-2e6b-5366-87e1-b3013eff1cd4",
     "curve_definition_id": "ca79329d-baa7-5ce8-bc7f-76d586c26716",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "JPY-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -96,8 +87,7 @@
     "id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
     "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "CAD-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -106,8 +96,7 @@
     "id": "83f63436-e382-59b2-8d4b-39faf6051914",
     "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "AUD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -116,8 +105,7 @@
     "id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
     "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "NZD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -126,8 +114,7 @@
     "id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
     "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "SEK-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -136,8 +123,7 @@
     "id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
     "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "NOK-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -146,8 +132,7 @@
     "id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
     "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "DKK-DESTR-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -156,8 +141,7 @@
     "id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
     "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "ZAR-ZARONIA-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -166,8 +150,7 @@
     "id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
     "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "TRY-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -176,8 +159,7 @@
     "id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
     "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "PLN-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -186,8 +168,7 @@
     "id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
     "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "CZK-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -196,8 +177,7 @@
     "id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
     "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "HUF-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -206,8 +186,7 @@
     "id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
     "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "ILS-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -216,8 +195,7 @@
     "id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
     "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "USD-SOFR-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -226,8 +204,7 @@
     "id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
     "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "CAD-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -236,8 +213,7 @@
     "id": "afb14727-076d-5a09-9b73-589b43cfd015",
     "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "EUR-ESTER-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -246,8 +222,7 @@
     "id": "bf02717a-1674-515e-9146-693831e53ccb",
     "curve_definition_id": "8b6396cf-809a-5f5b-91ce-fb539bc0841b",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "GBP-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -256,8 +231,7 @@
     "id": "4f22330f-23a8-5127-a7ff-0cd47e366b34",
     "curve_definition_id": "36d36abe-a413-5ed1-90e0-099a64ca728d",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "JPY-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -266,8 +240,7 @@
     "id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
     "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "MXN-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -276,8 +249,7 @@
     "id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
     "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "BRL-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -286,8 +258,7 @@
     "id": "c352e89b-df70-5b94-b98b-14e595da98a2",
     "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "HKD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -296,8 +267,7 @@
     "id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
     "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "USD-SOFR-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -306,8 +276,7 @@
     "id": "1b2eb559-6605-5f9b-8092-6413c07afb0a",
     "curve_definition_id": "eab9d8cb-550f-538a-aa22-c8176c629da0",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "JPY-OIS-CONVENTIONS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -316,8 +285,7 @@
     "id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
     "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "AUD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -326,8 +294,7 @@
     "id": "b607a216-41e9-5d66-b751-702a1c6b892f",
     "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "NZD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -336,8 +303,7 @@
     "id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
     "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "SGD-OIS"
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -346,7 +312,6 @@
     "id": "6006c831-598a-5108-ae18-3a9520a2dc55",
     "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
     "segment_type": "OIS",
-    "position": 0,
-    "conventions": "INR-OIS"
+    "position": 0
   }
 ]

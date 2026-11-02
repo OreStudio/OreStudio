@@ -75,8 +75,8 @@ its runs skip, storing every family by default. A run's rows load a block at a
 time in one transaction, which cut peak memory on a 500000-row cube from 1992 MiB
 to 202 MiB. ORE output formats documents every family, generated from the
 catalogue, and Report post-processing states the flow as built. A defect found on
-the way is captured: every report run now fails on an orphan commodity future part
-since the conventions split. The block load's wall clock is set by the per-row
+the way is captured, [[id:0393A6B0-A31E-4375-9BE4-8B7CFC4B0208][Every report run fails on an orphan commodity future part]]:
+since the conventions split, no report run reaches post-processing. The block load's wall clock is set by the per-row
 insert trigger, a limit recorded on its task.
 
 * Decisions

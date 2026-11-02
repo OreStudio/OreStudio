@@ -108,7 +108,7 @@ netting set, date and sample.
   subject, the observation date, the measure, the currency, the scenario, the risk
   factor, every other qualifier as one JSON object, and the figure. It is a
   hypertable on the observation date, and the family is a column rather than a
-  table: sixty tables would be sixty identical shapes and a union for every
+  table: dozens of tables would be dozens of identical shapes and a union for every
   cross-family read. The cubes and the sensitivity scenarios are here too: they
   state a trade's or a netting set's value, which is a result.
 - A cashflow row is the payment's trade or market object, its scenario, its leg,
@@ -137,7 +137,7 @@ default, so a new definition stores every family, and a family the catalogue
 gains later is stored without anyone editing a definition. The list is copied into
 the run when it starts, so a run stores what its definition said then. A skipped
 family's file is not fetched and stays in storage, so a run that did not store a
-family can be read again later.
+family can be read later, while storage keeps the run's objects.
 
 ** Why the store is shaped this way
 

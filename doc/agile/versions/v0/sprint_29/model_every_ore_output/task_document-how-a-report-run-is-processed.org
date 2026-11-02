@@ -99,7 +99,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: spelling and doc validation | | Clean | |
+| 2 | Say how long a skipped family's file stays | report_post_processing.org | Accepted | It can be read while storage keeps the run's objects. |
+| 3 | A hard-coded count of tables | report_post_processing.org | Accepted | Dozens, not sixty. |
+| 4 | Name the timeout setting a long load needs | report_post_processing.org | Declined | Where the deployment sets it is not traced here; the risk is recorded on the blocks task. |
+| 5 | Link the capture that blocks the end-to-end run | story.org | Accepted | Linked from the story's result. |
 
 * Result
 

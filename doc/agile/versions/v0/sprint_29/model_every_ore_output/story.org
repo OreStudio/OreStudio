@@ -23,9 +23,9 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Every output a run writes is read into rows, text values included. |
+| Now           | A run's rows load a block at a time in one transaction. |
 | Waiting on    | Nothing.                               |
-| Next          | Store a run's figures in blocks. |
+| Next          | Document every output file format. |
 | Last touched  | 2026-11-02                               |
 
 * Acceptance

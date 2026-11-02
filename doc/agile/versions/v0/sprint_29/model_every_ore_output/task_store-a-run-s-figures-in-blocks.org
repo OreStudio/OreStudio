@@ -35,7 +35,7 @@ It should read a block of rows, write the block, and read the next.
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-31                               |
+| Last touched | 2026-11-02                               |
 
 * Acceptance
 
@@ -60,6 +60,21 @@ The run's figures are written in one transaction, so a refusal part way through
 leaves nothing behind: a partial load reads as a complete one, which is the rule
 this story already keeps everywhere else.
 
+Baseline first: a hidden benchmark loads a generated raw cube the way the handler
+did, read whole then inserted, and reports the wall clock and the peak resident
+memory. Then:
+
+1. =read_metrics_in_blocks= and =read_cashflows_in_blocks= hand rows over a block
+   at a time; the whole readers wrap them.
+2. =read_run_output= reads one file and hands each block of reporting rows to a
+   sink; =read_run_outputs= wraps it for the tests.
+3. =post_process_results= opens one unit of work, reads one file at a time, writes
+   each block of 10000 rows as it comes, and commits once. A refusal anywhere
+   leaves the unit of work uncommitted, which rolls back every block written.
+
+The marketdata state store is unchanged: its files are a run's scenario and
+calibration files, which are small beside the cubes.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -72,9 +87,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Whole load, 500000-row raw cube | 200.9 s; peak 1992 MiB, 135 MiB before the load | =ORES_BENCH_ROWS=500000 ores.reporting.core.tests "load a large cube whole*"= | 5c897c9feb |
+| Block load, same cube, blocks of 10000 | 207.6 s; peak 202 MiB, 134 MiB before the load; 50 blocks | =ORES_BENCH_ROWS=500000 ores.reporting.core.tests "load a large cube in blocks*"= | 5c897c9feb |
+| ore, reporting core suites | 491 and 248 cases pass | the test binaries | 5c897c9feb |
 
 * Notes
+
+- The whole load costs about 3.7 KiB a row at peak: the reader's rows, the
+  repository's entities and the insert's parameters are all held at once. The
+  block load holds one block of each, so the load adds 68 MiB whatever the cube's
+  size; the cube's own text, which storage returns whole, is the rest.
+- The wall clock did not move, and should not: a block is one pipeline with one
+  sync, so round trips fell from one per family to one per block, but each row
+  still runs the bitemporal insert trigger, which looks for a current row of the
+  same key to close. That trigger sets the 2500 rows a second.
+- No end-to-end run proves the handler: since the conventions split merged, every
+  report run fails while its input is built, before post-processing; captured as
+  Every report run fails on an orphan commodity future part. The rollback is
+  proven by a repository test and the block load by the benchmark, both against
+  the real tables.
 
 * Test Scenarios
 
@@ -100,3 +131,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A run's rows are loaded a block at a time: the handler reads one file at a time
+and writes each block of 10000 rows as it is read, in one transaction committed
+once, so a refusal anywhere leaves nothing behind. Peak memory for a 500000-row
+cube fell from 1992 MiB to 202 MiB, bounded by one file's text and one block of
+rows rather than by the family's row count; the wall clock is set by the insert
+trigger and did not change. Every acceptance bullet is met; a block is one
+pipeline of row statements with one sync rather than one statement, which keeps
+the round trips proportional to blocks.

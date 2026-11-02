@@ -43,9 +43,10 @@ Step 6 of 7, one component. ores.iam encodes and decodes without reflect-cpp. St
 * Plan
 
 - Opt the 42 iam models into the wire codec and regenerate.
-- Stop wrapping a wire-hidden column in =rfl::Skip= where the model has its own
-  codec: the codec already leaves the column out, so the credential's secrets
-  become plain members and its header names no reflector.
+- Keep the credential's secrets wrapped in =rfl::Skip=: the http routes and
+  shell commands still write the credential responses with reflect-cpp, so the
+  wrapper is what keeps the secrets out of their output. A first attempt made
+  them plain members, and the review showed why that waits.
 - Give security's =storage_grant= wire fields, because an iam message holds it.
 - Move the auth, account, account party, seed profile parameter and dq publish
   sites onto the codec.
@@ -66,11 +67,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Iam suites | api 137 cases, core 316, service 13, shell iam 466, http iam 35 and security 68 pass; client has no cases | the =ores.iam.*.tests=, =ores.shell.iam.tests= and =ores.http.iam.tests= binaries | 88a92d2bf3 plus this branch |
-| Codec cases | 3 cases, 819 assertions pass | =ores.iam.api.tests "[codec]"= | 88a92d2bf3 plus this branch |
-| Codegen suite | 1807 pass before the no_wire test, 3 more after | =pytest projects/ores.codegen/tests= | 88a92d2bf3 plus this branch |
+| Iam suites | api 138 cases, core 316, service 13, shell iam 466, http iam 35 and security 68 pass; client has no cases | the =ores.iam.*.tests=, =ores.shell.iam.tests= and =ores.http.iam.tests= binaries | 88a92d2bf3 plus this branch |
+| Codec cases | 4 cases, 831 assertions pass | =ores.iam.api.tests "[codec]"= | 88a92d2bf3 plus this branch |
+| Codegen suite | 1807 pass | =pytest projects/ores.codegen/tests= | 88a92d2bf3 plus this branch |
 | Component drift (iam), format, CMake lists, unique type names | all clean | =check_component_drift.py --component iam-cpp=, and the check scripts | 88a92d2bf3 plus this branch |
-| reflect-cpp left in iam sources, outside tests | 3 files, all on the provisioning path | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.iam= | 88a92d2bf3 plus this branch |
+| reflect-cpp left in iam sources, outside tests | 4 files: the 3 on the provisioning path and the credential's =rfl::Skip= | =grep -rn -E "rfl::\\|<rfl\\|reflectors" projects/ores.iam= | 88a92d2bf3 plus this branch |
 
 * Notes
 
@@ -86,14 +87,25 @@ design choice, so this task leaves =provision_step_arguments.hpp=,
 =tenant_provisioning_handler.hpp= and =provision_tenant_workflow.hpp= on
 reflect-cpp and raises it.
 
-** Wire-hidden columns no longer need rfl::Skip
+** The credential's secrets stay wrapped
 
-The class template wrapped every =:no_wire:= column in =rfl::Skip=, which is how
-the reflector kept the credential's secrets out of a response. The generated
-codec leaves those columns out of its field list, so a model with its own codec
-now keeps the plain type; a model still on the reflector keeps the wrapper.
-=test_no_wire_member_type.py= pins both, and a codec case checks that no secret
-reaches either encoding.
+The generated codec leaves the =:no_wire:= columns out of its field list, so it
+never writes a secret. reflect-cpp writes every member that is not an
+=rfl::Skip=, and =account_credential_routes.cpp= in ores.http and
+=account_credential_commands.cpp= in ores.shell still write the credential
+responses with it. Making the secrets plain members would put them in that
+output, empty today because the server codec never sends them, and would move
+the protection from the type to every caller. The PR #4368 review found this,
+so the wrapper stays and =account_credential.hpp= keeps =rfl::Skip=. A codec
+case checks that no secret reaches the codec's encodings or reflect-cpp's. The
+capture =drop-rfl-skip-once-nothing-reflects-a-credential= owns the plain
+member once those writers move.
+
+The credential is the one type whose MessagePack bytes differ from
+reflect-cpp's. reflect-cpp keeps the three skipped members' names in its
+MessagePack map with nil values, while its JSON drops them; the codec drops
+them in both. A reader skips names it does not take, so each form reads to the
+same value, and the codec case proves the codec reads reflect-cpp's bytes.
 
 ** Security's storage grant
 
@@ -137,12 +149,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Plain secret members let reflect-cpp writers serialise them | =account_credential.hpp=, http and shell writers | Accepted, changed | Reverted the plain-member change; the secrets stay in rfl::Skip. A codec case checks no encoding carries a secret. Capture for later. |
+| 2 | Warn when a codec model has no_wire columns | =core.py= | No change | The reverted change took that code out. |
+| 3 | The no_wire test set flags by hand; unused output path | =test_no_wire_member_type.py= | No change | The test went with the revert. |
+| 4 | Hand-built JSON in the auth handler | =auth_handler.hpp= | No change | Not a regression; the public key is one string member. |
 
 * Result
 
 ores.iam encodes and decodes without reflect-cpp, apart from the tenant
-provisioning path, whose untyped step arguments wait on a design decision. Its
-42 models use the generated codec, the credential's secrets are plain members
-the codec keeps off the wire, and security's storage grant states its fields.
+provisioning path, whose untyped step arguments wait on a design decision, and
+the credential's =rfl::Skip=, which stays while http and shell write the type
+with reflect-cpp. Its 42 models use the generated codec, and security's storage
+grant states its fields.
 The bytes match reflect-cpp's.

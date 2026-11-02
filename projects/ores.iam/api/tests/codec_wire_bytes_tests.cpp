@@ -303,21 +303,42 @@ TEST_CASE("every iam operation message's default has reflect-cpp's bytes", codec
         ores::iam::messaging::leave_tenant_response>();
 }
 
+TEST_CASE("an account credential reads what reflect-cpp wrote", codec_tags) {
+    ores::utility::generation::generation_context ctx(20261104);
+    const auto credential = ores::iam::generators::generate_synthetic_account_credential(ctx);
+    using codec = ores::utility::codec::wire_traits<ores::iam::domain::account_credential>;
+    CHECK(codec::write_json(credential) == rfl::json::write(credential));
+
+    // reflect-cpp's MessagePack keeps the three skipped members' names with nil
+    // values, and its JSON drops them; the codec drops them in both. A reader
+    // skips names it does not take, so either form reads to the same value.
+    const auto ours = codec::write_msgpack(credential);
+    const auto theirs = their_msgpack(credential);
+    CHECK(theirs.find("password_hash") != std::string::npos);
+    CHECK(ours.find("password_hash") == std::string::npos);
+    CHECK(ours.find("totp_secret") == std::string::npos);
+    CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(theirs))) == ours);
+    CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(ours))) == ours);
+}
+
 TEST_CASE("an account credential's secrets stay off the wire", codec_tags) {
     ores::utility::generation::generation_context ctx(20261103);
     const auto credential = ores::iam::generators::generate_synthetic_account_credential(ctx);
     using codec = ores::utility::codec::wire_traits<ores::iam::domain::account_credential>;
     CHECK(codec::is_generated);
-    for (const auto& secret :
-         {credential.password_hash, credential.service_password_hash, credential.totp_secret}) {
+    for (const auto& secret : {credential.password_hash.value(),
+                               credential.service_password_hash.value(),
+                               credential.totp_secret.value()}) {
         REQUIRE_FALSE(secret.empty());
         CHECK(codec::write_json(credential).find(secret) == std::string::npos);
         CHECK(codec::write_msgpack(credential).find(secret) == std::string::npos);
+        CHECK(rfl::json::write(credential).find(secret) == std::string::npos);
+        CHECK(their_msgpack(credential).find(secret) == std::string::npos);
     }
     const auto json = codec::write_json(credential);
     CHECK(json.find("password_hash") == std::string::npos);
     CHECK(json.find("totp_secret") == std::string::npos);
     const auto read = codec::read_json(json);
-    CHECK(read.password_hash.empty());
-    CHECK(read.totp_secret.empty());
+    CHECK(read.password_hash.value().empty());
+    CHECK(read.totp_secret.value().empty());
 }

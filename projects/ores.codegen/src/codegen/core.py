@@ -4438,6 +4438,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_no_wire_columns'] = any(
                 c.get('no_wire') for c in domain_entity['columns']
             )
+            # The roundtrip test checks the struct's member count against its
+            # wire_fields, so it needs the members the shape leaves out.
+            domain_entity['wire_left_out'] = sum(
+                1 for c in domain_entity['columns']
+                if c.get('no_wire') and not c.get('sql_only')
+                and not c.get('is_identity_group_column'))
             # The mapper's own include gate: read and write both convert
             # through boost::asio::ip, which the mapper template includes
             # under this flag rather than relying on a transitive include
@@ -6837,6 +6843,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        junction['wire_left_out'] = 0
         _require_visible_write_observer(model_path, junction.get('name_singular'))
         for _message in junction['messages']:
             _message['struct_name'] = _message['name']
@@ -7044,6 +7051,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fg['component_dir'] = f"ores.{component}"
         fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
         fg['has_generated_wire_codec'] = _has_wire_codec(model_path)
+        fg['wire_left_out'] = sum(1 for f in fg.get('fields') or [] if f.get('no_wire'))
+        # A group's members may be entities, whose shapes are in their codec
+        # headers, so the group's roundtrip test includes them.
+        fg['wire_codec_includes'] = _member_headers(
+            (f.get('cpp_type', '') for f in fg.get('fields') or []), model_path, fg)
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()

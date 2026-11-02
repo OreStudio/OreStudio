@@ -20,6 +20,10 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app_codec_roundtrip_tests.cpp"
+    "app_version_codec_roundtrip_tests.cpp"
+    "app_version_platform_codec_roundtrip_tests.cpp"
+    "batch_codec_roundtrip_tests.cpp"
     "codec_wire_bytes_tests.cpp"
     "domain_app_tests.cpp"
     "domain_app_version_platform_tests.cpp"
@@ -28,8 +32,15 @@ set(files
     "domain_host_tests.cpp"
     "domain_result_tests.cpp"
     "domain_workunit_tests.cpp"
+    "grid_sample_codec_roundtrip_tests.cpp"
+    "host_codec_roundtrip_tests.cpp"
     "main.cpp"
     "messaging_assignment_expiry_tests.cpp"
     "messaging_claim_pacing_tests.cpp"
     "net_compute_storage_tests.cpp"
+    "node_sample_codec_roundtrip_tests.cpp"
+    "platform_codec_roundtrip_tests.cpp"
+    "result_codec_roundtrip_tests.cpp"
+    "workflow_batch_link_codec_roundtrip_tests.cpp"
+    "workunit_codec_roundtrip_tests.cpp"
 )

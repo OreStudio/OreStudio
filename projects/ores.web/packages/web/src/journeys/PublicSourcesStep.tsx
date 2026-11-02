@@ -46,12 +46,6 @@ export function everyDecided(
 }
 
 /**
- * The public sources step of the first run. The administrator reads each
- * publisher's terms and accepts or declines it before any of its quotes are
- * fetched. An acceptance is recorded by the server against the terms it holds;
- * a decline withdraws any acceptance, so the publisher is not fetched.
- */
-/**
  * The decisions after a list accept: each publisher the service recorded is accepted, and
  * a refused one keeps the decision it had, so the person sees which still need them.
  */
@@ -68,6 +62,27 @@ export function madeAfterAccepting(
     return next;
 }
 
+/**
+ * Declines each publisher in turn and records each decline as the service takes it, so a
+ * failure part way leaves the screen showing what the service holds.
+ */
+export async function declineEach(
+    codes: readonly string[],
+    decline: (code: string) => Promise<void>,
+    record: (code: string) => void,
+): Promise<void> {
+    for (const code of codes) {
+        await decline(code);
+        record(code);
+    }
+}
+
+/**
+ * The public sources step of the first run. The administrator reads each
+ * publisher's terms and accepts or declines it before any of its quotes are
+ * fetched. An acceptance is recorded by the server against the terms it holds;
+ * a decline withdraws any acceptance, so the publisher is not fetched.
+ */
 export function PublicSourcesStep({
     server,
     onDecided,
@@ -128,10 +143,11 @@ export function PublicSourcesStep({
                     setFailure(refused.map((o) => o.message).join(' '));
                 }
             } else {
-                for (const p of list) {
-                    await server.declineSourceTerms(p.code);
-                }
-                setMade(Object.fromEntries(list.map((p) => [p.code, 'declined' as const])));
+                await declineEach(
+                    list.map((p) => p.code),
+                    (code) => server.declineSourceTerms(code),
+                    (code) => setMade((before) => ({ ...before, [code]: 'declined' })),
+                );
             }
         } catch (error) {
             setFailure(error instanceof Error ? error.message : String(error));

@@ -2462,7 +2462,12 @@ begin
     from ores_dq_csas_artefact_tbl
     where dataset_id = p_dataset_id;
 
-    with staged as materialized (
+    -- The CSAs and their eligible currencies are written in two statements. The
+    -- sub-statements of one WITH run on one snapshot in no set order, so a
+    -- currency's insert trigger could look for its CSA before the CSA was
+    -- written, and the publish failed now and then with "No active CSA found".
+    drop table if exists t_staged_csas;
+    create temporary table t_staged_csas on commit drop as
         select gen_random_uuid() as csa_id, ns.id as netting_set_id, c.*
         from ores_dq_csas_artefact_tbl c
         join ores_refdata_netting_sets_tbl ns
@@ -2475,47 +2480,42 @@ begin
             select 1 from ores_refdata_csas_tbl o
             where o.tenant_id = p_target_tenant_id
               and o.netting_set_id = ns.id
-              and o.valid_to = ores_utility_infinity_timestamp_fn())
-    ),
-    csas as (
-        insert into ores_refdata_csas_tbl (
-            tenant_id, id, version, netting_set_id, party_id, is_active, bilateral, csa_currency,
-            index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
-            minimum_transfer_amount_receive, independent_amount_held,
-            independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
-            collateral_compounding_spread_receive, collateral_compounding_spread_pay,
-            apply_initial_margin, initial_margin_type, calculate_im_amount,
-            calculate_vm_amount, non_exempt_im_regulations,
-            modified_by, performed_by, change_reason_code, change_commentary
-        )
-        select p_target_tenant_id, s.csa_id, 0, s.netting_set_id, v_party_id, s.is_active, s.bilateral,
-            s.csa_currency, s.index_name, s.threshold_pay, s.threshold_receive,
-            s.minimum_transfer_amount_pay, s.minimum_transfer_amount_receive,
-            s.independent_amount_held, s.independent_amount_type, s.call_frequency,
-            s.post_frequency, s.margin_period_of_risk,
-            s.collateral_compounding_spread_receive, s.collateral_compounding_spread_pay,
-            s.apply_initial_margin, s.initial_margin_type, s.calculate_im_amount,
-            s.calculate_vm_amount, s.non_exempt_im_regulations,
-            v_modified_by, current_user, 'system.external_data_import', v_commentary
-        from staged s
-        returning id
-    ),
-    currencies as (
-        insert into ores_refdata_csa_eligible_currencies_tbl (
-            tenant_id, id, version, csa_id, currency_code, position,
-            modified_by, performed_by, change_reason_code, change_commentary
-        )
-        select p_target_tenant_id, gen_random_uuid(), 0, s.csa_id, trim(e.currency_code),
-            (e.ordinal - 1)::integer,
-            v_modified_by, current_user, 'system.external_data_import', v_commentary
-        from staged s
-        join csas on csas.id = s.csa_id
-        cross join lateral unnest(string_to_array(s.eligible_currencies, ','))
-            with ordinality as e(currency_code, ordinal)
-        where trim(e.currency_code) <> ''
-        returning 1
+              and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    insert into ores_refdata_csas_tbl (
+        tenant_id, id, version, netting_set_id, party_id, is_active, bilateral, csa_currency,
+        index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
+        minimum_transfer_amount_receive, independent_amount_held,
+        independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
+        collateral_compounding_spread_receive, collateral_compounding_spread_pay,
+        apply_initial_margin, initial_margin_type, calculate_im_amount,
+        calculate_vm_amount, non_exempt_im_regulations,
+        modified_by, performed_by, change_reason_code, change_commentary
     )
-    select count(*) into v_inserted from csas;
+    select p_target_tenant_id, s.csa_id, 0, s.netting_set_id, v_party_id, s.is_active, s.bilateral,
+        s.csa_currency, s.index_name, s.threshold_pay, s.threshold_receive,
+        s.minimum_transfer_amount_pay, s.minimum_transfer_amount_receive,
+        s.independent_amount_held, s.independent_amount_type, s.call_frequency,
+        s.post_frequency, s.margin_period_of_risk,
+        s.collateral_compounding_spread_receive, s.collateral_compounding_spread_pay,
+        s.apply_initial_margin, s.initial_margin_type, s.calculate_im_amount,
+        s.calculate_vm_amount, s.non_exempt_im_regulations,
+        v_modified_by, current_user, 'system.external_data_import', v_commentary
+    from t_staged_csas s;
+
+    get diagnostics v_inserted = row_count;
+
+    insert into ores_refdata_csa_eligible_currencies_tbl (
+        tenant_id, id, version, csa_id, currency_code, position,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select p_target_tenant_id, gen_random_uuid(), 0, s.csa_id, trim(e.currency_code),
+        (e.ordinal - 1)::integer,
+        v_modified_by, current_user, 'system.external_data_import', v_commentary
+    from t_staged_csas s
+    cross join lateral unnest(string_to_array(s.eligible_currencies, ','))
+        with ordinality as e(currency_code, ordinal)
+    where trim(e.currency_code) <> '';
 
     return query
     select 'inserted'::text, v_inserted
@@ -5339,6 +5339,12 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- convention arrives in the other form, so a convention never holds both forms
 -- at once. The mode has no effect: like the flat publisher, this one only
 -- inserts what is absent.
+--
+-- Each part insert keeps its guard and ends in on conflict do nothing, as the
+-- flat publisher's does: the unique index on the live part is the statement's
+-- own guarantee, so a republish inserts nothing even when the guard misses a
+-- row. A full run of the SQL tests showed a republish failing on that index now
+-- and then, with the guard's inputs the same as on a run that passed.
 create or replace function ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5446,7 +5452,8 @@ begin
           select 1 from ores_refdata_tenor_basis_swap_pay_receives_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_inserted_part = row_count;
 
@@ -5476,7 +5483,8 @@ begin
           select 1 from ores_refdata_tenor_basis_swap_long_shorts_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5676,7 +5684,8 @@ begin
           select 1 from ores_refdata_cross_currency_fix_float_swap_terms_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5704,7 +5713,8 @@ begin
           select 1 from ores_refdata_cross_currency_fix_float_fixed_legs_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5732,7 +5742,8 @@ begin
           select 1 from ores_refdata_cross_currency_fix_float_float_legs_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5866,7 +5877,8 @@ begin
           select 1 from ores_refdata_cross_currency_basis_swap_terms_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5894,7 +5906,8 @@ begin
           select 1 from ores_refdata_cross_currency_basis_flat_legs_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -5922,7 +5935,8 @@ begin
           select 1 from ores_refdata_cross_currency_basis_spread_legs_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -6065,7 +6079,8 @@ begin
           select 1 from ores_refdata_commodity_future_contract_terms_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -6093,7 +6108,8 @@ begin
           select 1 from ores_refdata_commodity_future_expiry_anchors_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -6121,7 +6137,8 @@ begin
           select 1 from ores_refdata_commodity_future_option_expiries_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -6149,7 +6166,8 @@ begin
           select 1 from ores_refdata_commodity_future_off_peak_indexes_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;
@@ -6177,7 +6195,8 @@ begin
           select 1 from ores_refdata_commodity_future_averaging_terms_tbl o
           where o.tenant_id = p_target_tenant_id
             and o.convention_id = c.id
-            and o.valid_to = ores_utility_infinity_timestamp_fn());
+            and o.valid_to = ores_utility_infinity_timestamp_fn())
+    on conflict do nothing;
 
     get diagnostics v_batch = row_count;
     v_inserted_part := v_inserted_part + v_batch;

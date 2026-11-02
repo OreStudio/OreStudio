@@ -53,17 +53,17 @@ fi
 
 # A precompiled header records the absolute paths of the headers it read, and
 # base_dir does not rewrite them. A cached one from another worktree points at
-# that worktree's headers, and clang refuses it once one of them changes there.
-prev=""
-for arg in "$@"; do
-    if [ "${arg}" = "-emit-pch" ]; then
-        exec "$@"
-    fi
-    case "${prev}:${arg}" in
-        -o:*.pch) exec "$@" ;;
-    esac
-    prev="${arg}"
-done
+# that worktree's headers, and the compiler refuses it once one of them changes
+# there. CI has one checkout per job, so its cached headers stay valid.
+if [ -z "${CI:-}" ]; then
+    prev=""
+    for arg in "$@"; do
+        case "${prev}:${arg}" in
+            *:-emit-pch | -o:*.pch | -o:*.gch | *:-o*.pch | *:-o*.gch) exec "$@" ;;
+        esac
+        prev="${arg}"
+    done
+fi
 
 if [ "${TOOL}" = "sccache" ]; then
     export SCCACHE_BASEDIR="${SCCACHE_BASEDIR:-${PROJECT_ROOT}}"

@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct report_error_scope_key {
     std::string code;
+
+    friend bool operator==(const report_error_scope_key&, const report_error_scope_key&) = default;
 };
 
 struct report_error_scope_write {
@@ -50,25 +52,40 @@ struct report_error_scope_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const report_error_scope_write&,
+                           const report_error_scope_write&) = default;
 };
 
 struct report_error_scope_change {
     report_error_scope_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_error_scope_change&,
+                           const report_error_scope_change&) = default;
 };
 
 struct report_error_scope_removal {
     report_error_scope_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_error_scope_removal&,
+                           const report_error_scope_removal&) = default;
 };
 
 struct report_error_scope_lookup {
     report_error_scope_key key;
     std::optional<ores::reporting::domain::report_error_scope> report_error_scope;
+
+    friend bool operator==(const report_error_scope_lookup&,
+                           const report_error_scope_lookup&) = default;
 };
 
 struct report_error_scopes_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const report_error_scopes_filter&,
+                           const report_error_scopes_filter&) = default;
 };
 
 struct report_error_scope_event {
@@ -78,17 +95,26 @@ struct report_error_scope_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_error_scope_event&,
+                           const report_error_scope_event&) = default;
 };
 
 struct report_error_scope_version_key {
     report_error_scope_key report_error_scope;
     std::uint32_t version;
+
+    friend bool operator==(const report_error_scope_version_key&,
+                           const report_error_scope_version_key&) = default;
 };
 
 struct report_error_scope_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const report_error_scope_versions_filter&,
+                           const report_error_scope_versions_filter&) = default;
 };
 
 struct list_report_error_scopes_request {
@@ -106,12 +132,18 @@ struct list_report_error_scopes_request {
     ores::utility::domain::order order;
     std::optional<report_error_scopes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_error_scopes_request&,
+                           const list_report_error_scopes_request&) = default;
 };
 
 struct list_report_error_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_scope> scopes;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_error_scopes_response&,
+                           const list_report_error_scopes_response&) = default;
 };
 
 struct get_report_error_scope_request {
@@ -125,11 +157,17 @@ struct get_report_error_scope_request {
      */
     static constexpr bool requires_session = true;
     report_error_scope_key key;
+
+    friend bool operator==(const get_report_error_scope_request&,
+                           const get_report_error_scope_request&) = default;
 };
 
 struct get_report_error_scope_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_error_scope> report_error_scope;
+
+    friend bool operator==(const get_report_error_scope_response&,
+                           const get_report_error_scope_response&) = default;
 };
 
 struct get_many_report_error_scopes_request {
@@ -143,11 +181,17 @@ struct get_many_report_error_scopes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_error_scope_key> keys;
+
+    friend bool operator==(const get_many_report_error_scopes_request&,
+                           const get_many_report_error_scopes_request&) = default;
 };
 
 struct get_many_report_error_scopes_response {
     ores::utility::domain::result result;
     std::vector<report_error_scope_lookup> entries;
+
+    friend bool operator==(const get_many_report_error_scopes_response&,
+                           const get_many_report_error_scopes_response&) = default;
 };
 
 struct put_report_error_scope_request {
@@ -162,11 +206,17 @@ struct put_report_error_scope_request {
     static constexpr bool requires_session = true;
     report_error_scope_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_error_scope_request&,
+                           const put_report_error_scope_request&) = default;
 };
 
 struct put_report_error_scope_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_error_scope> report_error_scope;
+
+    friend bool operator==(const put_report_error_scope_response&,
+                           const put_report_error_scope_response&) = default;
 };
 
 struct put_many_report_error_scopes_request {
@@ -181,11 +231,17 @@ struct put_many_report_error_scopes_request {
     static constexpr bool requires_session = true;
     std::vector<report_error_scope_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_error_scopes_request&,
+                           const put_many_report_error_scopes_request&) = default;
 };
 
 struct put_many_report_error_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_scope> scopes;
+
+    friend bool operator==(const put_many_report_error_scopes_response&,
+                           const put_many_report_error_scopes_response&) = default;
 };
 
 struct delete_report_error_scope_request {
@@ -200,10 +256,16 @@ struct delete_report_error_scope_request {
     static constexpr bool requires_session = true;
     report_error_scope_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_error_scope_request&,
+                           const delete_report_error_scope_request&) = default;
 };
 
 struct delete_report_error_scope_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_error_scope_response&,
+                           const delete_report_error_scope_response&) = default;
 };
 
 struct delete_many_report_error_scopes_request {
@@ -218,10 +280,16 @@ struct delete_many_report_error_scopes_request {
     static constexpr bool requires_session = true;
     std::vector<report_error_scope_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_error_scopes_request&,
+                           const delete_many_report_error_scopes_request&) = default;
 };
 
 struct delete_many_report_error_scopes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_error_scopes_response&,
+                           const delete_many_report_error_scopes_response&) = default;
 };
 
 struct list_report_error_scope_versions_request {
@@ -240,12 +308,18 @@ struct list_report_error_scope_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_error_scope_versions_filter> filter;
+
+    friend bool operator==(const list_report_error_scope_versions_request&,
+                           const list_report_error_scope_versions_request&) = default;
 };
 
 struct list_report_error_scope_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_scope> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_error_scope_versions_response&,
+                           const list_report_error_scope_versions_response&) = default;
 };
 
 struct get_report_error_scope_version_request {
@@ -260,11 +334,17 @@ struct get_report_error_scope_version_request {
      */
     static constexpr bool requires_session = true;
     report_error_scope_version_key key;
+
+    friend bool operator==(const get_report_error_scope_version_request&,
+                           const get_report_error_scope_version_request&) = default;
 };
 
 struct get_report_error_scope_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_error_scope> version;
+
+    friend bool operator==(const get_report_error_scope_version_response&,
+                           const get_report_error_scope_version_response&) = default;
 };
 
 /**

@@ -60,6 +60,9 @@ struct publish_accounts_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_accounts_from_dq_request&,
+                           const publish_accounts_from_dq_request&) = default;
 };
 
 struct save_account_request {
@@ -84,6 +87,8 @@ struct save_account_request {
     std::string password;
     std::string email;
     std::string account_type;
+
+    friend bool operator==(const save_account_request&, const save_account_request&) = default;
 };
 
 struct update_account_request {
@@ -125,17 +130,24 @@ struct update_account_request {
     std::string image_id;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const update_account_request&, const update_account_request&) = default;
 };
 
 struct update_account_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const update_account_response&,
+                           const update_account_response&) = default;
 };
 
 struct save_account_response {
     bool success = false;
     std::string message;
     std::string account_id;
+
+    friend bool operator==(const save_account_response&, const save_account_response&) = default;
 };
 
 struct delete_account_request {
@@ -149,16 +161,24 @@ struct delete_account_request {
      */
     static constexpr bool requires_session = true;
     std::string account_id;
+
+    friend bool operator==(const delete_account_request&, const delete_account_request&) = default;
 };
 
 struct delete_account_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_account_response&,
+                           const delete_account_response&) = default;
 };
 
 struct account_operation_result {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const account_operation_result&,
+                           const account_operation_result&) = default;
 };
 
 struct lock_account_request {
@@ -172,10 +192,14 @@ struct lock_account_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
+
+    friend bool operator==(const lock_account_request&, const lock_account_request&) = default;
 };
 
 struct lock_account_response {
     std::vector<account_operation_result> results;
+
+    friend bool operator==(const lock_account_response&, const lock_account_response&) = default;
 };
 
 struct unlock_account_request {
@@ -189,10 +213,15 @@ struct unlock_account_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
+
+    friend bool operator==(const unlock_account_request&, const unlock_account_request&) = default;
 };
 
 struct unlock_account_response {
     std::vector<account_operation_result> results;
+
+    friend bool operator==(const unlock_account_response&,
+                           const unlock_account_response&) = default;
 };
 
 struct reset_password_request {
@@ -207,22 +236,33 @@ struct reset_password_request {
     static constexpr bool requires_session = true;
     std::vector<std::string> account_ids;
     std::string new_password;
+
+    friend bool operator==(const reset_password_request&, const reset_password_request&) = default;
 };
 
 struct reset_password_response {
     bool success = false;
     std::string message;
     std::vector<account_operation_result> results;
+
+    friend bool operator==(const reset_password_response&,
+                           const reset_password_response&) = default;
 };
 
 struct change_password_request {
     std::string current_password;
     std::string new_password;
+
+    friend bool operator==(const change_password_request&,
+                           const change_password_request&) = default;
 };
 
 struct change_password_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const change_password_response&,
+                           const change_password_response&) = default;
 };
 
 struct update_my_email_request {
@@ -236,11 +276,17 @@ struct update_my_email_request {
      */
     static constexpr bool requires_session = true;
     std::string email;
+
+    friend bool operator==(const update_my_email_request&,
+                           const update_my_email_request&) = default;
 };
 
 struct update_my_email_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const update_my_email_response&,
+                           const update_my_email_response&) = default;
 };
 
 /**
@@ -269,11 +315,17 @@ struct set_my_default_party_request {
      * @brief The party to store as the default, or empty to clear it.
      */
     std::string party_id;
+
+    friend bool operator==(const set_my_default_party_request&,
+                           const set_my_default_party_request&) = default;
 };
 
 struct set_my_default_party_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const set_my_default_party_response&,
+                           const set_my_default_party_response&) = default;
 };
 
 struct select_party_request {
@@ -287,6 +339,8 @@ struct select_party_request {
      */
     static constexpr bool requires_session = true;
     std::string party_id;
+
+    friend bool operator==(const select_party_request&, const select_party_request&) = default;
 };
 
 /**
@@ -314,6 +368,8 @@ struct switch_party_request {
      */
     static constexpr bool requires_session = true;
     std::string party_id;
+
+    friend bool operator==(const switch_party_request&, const switch_party_request&) = default;
 };
 
 struct select_party_response {
@@ -340,6 +396,8 @@ struct select_party_response {
      * Clients re-arm the proactive refresh timer using this value.
      */
     int access_lifetime_s = 1800;
+
+    friend bool operator==(const select_party_response&, const select_party_response&) = default;
 };
 
 struct change_password_request_typed {
@@ -354,6 +412,9 @@ struct change_password_request_typed {
     static constexpr bool requires_session = true;
     std::string current_password;
     std::string new_password;
+
+    friend bool operator==(const change_password_request_typed&,
+                           const change_password_request_typed&) = default;
 };
 
 /**
@@ -414,6 +475,9 @@ struct update_self_account_request {
     std::string reports_to_account_id;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const update_self_account_request&,
+                           const update_self_account_request&) = default;
 };
 
 struct update_self_account_response {
@@ -423,6 +487,9 @@ struct update_self_account_response {
      * Stated only when the outcome is ok.
      */
     std::optional<ores::iam::domain::account> account;
+
+    friend bool operator==(const update_self_account_response&,
+                           const update_self_account_response&) = default;
 };
 
 /**
@@ -465,6 +532,9 @@ struct update_self_account_contact_information_request {
     std::string web_page;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const update_self_account_contact_information_request&,
+                           const update_self_account_contact_information_request&) = default;
 };
 
 struct update_self_account_contact_information_response {
@@ -474,6 +544,9 @@ struct update_self_account_contact_information_response {
      * version. Stated only when the outcome is ok.
      */
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+
+    friend bool operator==(const update_self_account_contact_information_response&,
+                           const update_self_account_contact_information_response&) = default;
 };
 
 /**
@@ -496,6 +569,9 @@ struct get_my_account_contact_information_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_account_contact_information_request&,
+                           const get_my_account_contact_information_request&) = default;
 };
 
 struct get_my_account_contact_information_response {
@@ -505,6 +581,9 @@ struct get_my_account_contact_information_response {
      * The first update-self creates it.
      */
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+
+    friend bool operator==(const get_my_account_contact_information_response&,
+                           const get_my_account_contact_information_response&) = default;
 };
 
 /**
@@ -526,6 +605,8 @@ struct get_my_account_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_account_request&, const get_my_account_request&) = default;
 };
 
 struct get_my_account_response {
@@ -534,6 +615,9 @@ struct get_my_account_response {
      * @brief The caller's account, or nothing when the session names none.
      */
     std::optional<ores::iam::domain::account> account;
+
+    friend bool operator==(const get_my_account_response&,
+                           const get_my_account_response&) = default;
 };
 
 /**
@@ -556,6 +640,9 @@ struct get_my_login_info_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_login_info_request&,
+                           const get_my_login_info_request&) = default;
 };
 
 struct get_my_login_info_response {
@@ -564,6 +651,9 @@ struct get_my_login_info_response {
      * @brief The caller's sign-in state, or nothing when none is recorded.
      */
     std::optional<ores::iam::domain::login_info> login_info;
+
+    friend bool operator==(const get_my_login_info_response&,
+                           const get_my_login_info_response&) = default;
 };
 
 /**
@@ -584,6 +674,9 @@ struct get_my_sessions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_sessions_request&,
+                           const get_my_sessions_request&) = default;
 };
 
 struct get_my_sessions_response {
@@ -592,6 +685,9 @@ struct get_my_sessions_response {
      * @brief The caller's sessions with no end time, newest first.
      */
     std::vector<ores::iam::domain::session> sessions;
+
+    friend bool operator==(const get_my_sessions_response&,
+                           const get_my_sessions_response&) = default;
 };
 
 /**
@@ -612,6 +708,8 @@ struct my_party {
     std::string short_code;
     std::string party_category;
     std::string business_center_code;
+
+    friend bool operator==(const my_party&, const my_party&) = default;
 };
 
 /**
@@ -635,6 +733,8 @@ struct get_my_parties_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_my_parties_request&, const get_my_parties_request&) = default;
 };
 
 struct get_my_parties_response {
@@ -644,6 +744,9 @@ struct get_my_parties_response {
      */
     std::string default_party_id;
     std::vector<my_party> parties;
+
+    friend bool operator==(const get_my_parties_response&,
+                           const get_my_parties_response&) = default;
 };
 
 /**
@@ -686,6 +789,9 @@ struct set_reporting_line_request {
     std::string expected_version;
     std::string change_reason_code;
     std::string change_commentary;
+
+    friend bool operator==(const set_reporting_line_request&,
+                           const set_reporting_line_request&) = default;
 };
 
 struct set_reporting_line_response {
@@ -695,6 +801,9 @@ struct set_reporting_line_response {
      * version. Stated only when the outcome is ok.
      */
     std::optional<ores::iam::domain::account> account;
+
+    friend bool operator==(const set_reporting_line_response&,
+                           const set_reporting_line_response&) = default;
 };
 
 /**
@@ -718,6 +827,8 @@ struct reporting_tree_party {
      * is not in the scope the caller may read.
      */
     std::string parent_party_id;
+
+    friend bool operator==(const reporting_tree_party&, const reporting_tree_party&) = default;
 };
 
 /**
@@ -772,6 +883,8 @@ struct reporting_tree_node {
      * the account is linked to none of them.
      */
     std::vector<std::string> party_ids;
+
+    friend bool operator==(const reporting_tree_node&, const reporting_tree_node&) = default;
 };
 
 /**
@@ -797,6 +910,9 @@ struct get_reporting_tree_request {
      */
     static constexpr bool requires_session = true;
     std::string root_account_id;
+
+    friend bool operator==(const get_reporting_tree_request&,
+                           const get_reporting_tree_request&) = default;
 };
 
 struct get_reporting_tree_response {
@@ -813,6 +929,9 @@ struct get_reporting_tree_response {
      * can say the shape is broken rather than draw a tree that is missing people.
      */
     int unrooted = 0;
+
+    friend bool operator==(const get_reporting_tree_response&,
+                           const get_reporting_tree_response&) = default;
 };
 
 /**
@@ -836,6 +955,9 @@ struct attach_account_pictures_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const attach_account_pictures_request&,
+                           const attach_account_pictures_request&) = default;
 };
 
 struct attach_account_pictures_response {
@@ -848,6 +970,9 @@ struct attach_account_pictures_response {
      * @brief The accounts the images were attached to.
      */
     std::vector<std::string> account_ids;
+
+    friend bool operator==(const attach_account_pictures_response&,
+                           const attach_account_pictures_response&) = default;
 };
 
 /**

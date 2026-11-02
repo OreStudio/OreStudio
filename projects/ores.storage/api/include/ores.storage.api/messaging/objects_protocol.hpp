@@ -75,6 +75,8 @@ struct put_objects_request {
      * nothing on the wire marks an object as compressed.
      */
     std::string content_encoding;
+
+    friend bool operator==(const put_objects_request&, const put_objects_request&) = default;
 };
 
 /**
@@ -87,6 +89,8 @@ struct put_objects_response {
      * @brief How many bytes the store now holds under the key.
      */
     std::uint64_t size_bytes = 0;
+
+    friend bool operator==(const put_objects_response&, const put_objects_response&) = default;
 };
 
 /**
@@ -111,6 +115,8 @@ struct get_objects_request {
      * @brief Whether the reply should carry the object's bytes.
      */
     bool include_content = false;
+
+    friend bool operator==(const get_objects_request&, const get_objects_request&) = default;
 };
 
 /**
@@ -128,6 +134,8 @@ struct get_objects_response {
      * @brief The object's bytes, present only when the request asked for them.
      */
     std::string content;
+
+    friend bool operator==(const get_objects_response&, const get_objects_response&) = default;
 };
 
 /**
@@ -145,6 +153,8 @@ struct delete_objects_request {
     static constexpr bool requires_session = true;
     std::string bucket;
     std::string key;
+
+    friend bool operator==(const delete_objects_request&, const delete_objects_request&) = default;
 };
 
 /**
@@ -157,6 +167,9 @@ struct delete_objects_response {
      * @brief False when there was nothing at the key to remove.
      */
     bool removed = false;
+
+    friend bool operator==(const delete_objects_response&,
+                           const delete_objects_response&) = default;
 };
 
 /**
@@ -183,6 +196,8 @@ struct list_objects_request {
     std::string prefix;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+
+    friend bool operator==(const list_objects_request&, const list_objects_request&) = default;
 };
 
 /**
@@ -191,6 +206,8 @@ struct list_objects_request {
 struct object_summary {
     std::string key;
     std::uint64_t size_bytes = 0;
+
+    friend bool operator==(const object_summary&, const object_summary&) = default;
 };
 
 /**
@@ -201,6 +218,8 @@ struct list_objects_response {
     std::string message;
     std::vector<object_summary> objects;
     std::uint64_t total_available_count = 0;
+
+    friend bool operator==(const list_objects_response&, const list_objects_response&) = default;
 };
 
 /**

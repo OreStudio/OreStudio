@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct structure_member_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const structure_member_key&, const structure_member_key&) = default;
 };
 
 struct structure_member_write {
@@ -50,25 +52,39 @@ struct structure_member_write {
     boost::uuids::uuid structure_id;
     std::string role;
     int sequence_number;
+
+    friend bool operator==(const structure_member_write&, const structure_member_write&) = default;
 };
 
 struct structure_member_change {
     structure_member_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const structure_member_change&,
+                           const structure_member_change&) = default;
 };
 
 struct structure_member_removal {
     structure_member_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const structure_member_removal&,
+                           const structure_member_removal&) = default;
 };
 
 struct structure_member_lookup {
     structure_member_key key;
     std::optional<ores::trading::domain::structure_member> structure_member;
+
+    friend bool operator==(const structure_member_lookup&,
+                           const structure_member_lookup&) = default;
 };
 
 struct structure_members_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const structure_members_filter&,
+                           const structure_members_filter&) = default;
 };
 
 struct structure_member_event {
@@ -78,17 +94,25 @@ struct structure_member_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const structure_member_event&, const structure_member_event&) = default;
 };
 
 struct structure_member_version_key {
     structure_member_key structure_member;
     std::uint32_t version;
+
+    friend bool operator==(const structure_member_version_key&,
+                           const structure_member_version_key&) = default;
 };
 
 struct structure_member_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const structure_member_versions_filter&,
+                           const structure_member_versions_filter&) = default;
 };
 
 struct list_structure_members_request {
@@ -106,12 +130,18 @@ struct list_structure_members_request {
     ores::utility::domain::order order;
     std::optional<structure_members_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_structure_members_request&,
+                           const list_structure_members_request&) = default;
 };
 
 struct list_structure_members_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_member> members;
     std::uint64_t total;
+
+    friend bool operator==(const list_structure_members_response&,
+                           const list_structure_members_response&) = default;
 };
 
 struct get_structure_member_request {
@@ -125,11 +155,17 @@ struct get_structure_member_request {
      */
     static constexpr bool requires_session = true;
     structure_member_key key;
+
+    friend bool operator==(const get_structure_member_request&,
+                           const get_structure_member_request&) = default;
 };
 
 struct get_structure_member_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_member> structure_member;
+
+    friend bool operator==(const get_structure_member_response&,
+                           const get_structure_member_response&) = default;
 };
 
 struct get_many_structure_members_request {
@@ -143,11 +179,17 @@ struct get_many_structure_members_request {
      */
     static constexpr bool requires_session = true;
     std::vector<structure_member_key> keys;
+
+    friend bool operator==(const get_many_structure_members_request&,
+                           const get_many_structure_members_request&) = default;
 };
 
 struct get_many_structure_members_response {
     ores::utility::domain::result result;
     std::vector<structure_member_lookup> entries;
+
+    friend bool operator==(const get_many_structure_members_response&,
+                           const get_many_structure_members_response&) = default;
 };
 
 struct put_structure_member_request {
@@ -162,11 +204,17 @@ struct put_structure_member_request {
     static constexpr bool requires_session = true;
     structure_member_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_structure_member_request&,
+                           const put_structure_member_request&) = default;
 };
 
 struct put_structure_member_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_member> structure_member;
+
+    friend bool operator==(const put_structure_member_response&,
+                           const put_structure_member_response&) = default;
 };
 
 struct put_many_structure_members_request {
@@ -181,11 +229,17 @@ struct put_many_structure_members_request {
     static constexpr bool requires_session = true;
     std::vector<structure_member_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_structure_members_request&,
+                           const put_many_structure_members_request&) = default;
 };
 
 struct put_many_structure_members_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_member> members;
+
+    friend bool operator==(const put_many_structure_members_response&,
+                           const put_many_structure_members_response&) = default;
 };
 
 struct delete_structure_member_request {
@@ -200,10 +254,16 @@ struct delete_structure_member_request {
     static constexpr bool requires_session = true;
     structure_member_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_structure_member_request&,
+                           const delete_structure_member_request&) = default;
 };
 
 struct delete_structure_member_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_structure_member_response&,
+                           const delete_structure_member_response&) = default;
 };
 
 struct delete_many_structure_members_request {
@@ -218,10 +278,16 @@ struct delete_many_structure_members_request {
     static constexpr bool requires_session = true;
     std::vector<structure_member_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_structure_members_request&,
+                           const delete_many_structure_members_request&) = default;
 };
 
 struct delete_many_structure_members_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_structure_members_response&,
+                           const delete_many_structure_members_response&) = default;
 };
 
 struct list_structure_member_versions_request {
@@ -239,12 +305,18 @@ struct list_structure_member_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<structure_member_versions_filter> filter;
+
+    friend bool operator==(const list_structure_member_versions_request&,
+                           const list_structure_member_versions_request&) = default;
 };
 
 struct list_structure_member_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_member> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_structure_member_versions_response&,
+                           const list_structure_member_versions_response&) = default;
 };
 
 struct get_structure_member_version_request {
@@ -258,11 +330,17 @@ struct get_structure_member_version_request {
      */
     static constexpr bool requires_session = true;
     structure_member_version_key key;
+
+    friend bool operator==(const get_structure_member_version_request&,
+                           const get_structure_member_version_request&) = default;
 };
 
 struct get_structure_member_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::structure_member> version;
+
+    friend bool operator==(const get_structure_member_version_response&,
+                           const get_structure_member_version_response&) = default;
 };
 
 /**

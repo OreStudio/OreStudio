@@ -66,6 +66,8 @@ struct service_sample {
      * @brief Version the instance reports.
      */
     std::string version;
+
+    friend bool operator==(const service_sample&, const service_sample&) = default;
 };
 
 /**
@@ -101,6 +103,9 @@ struct service_heartbeat_message {
      * @brief Version the instance reports.
      */
     std::string version;
+
+    friend bool operator==(const service_heartbeat_message&,
+                           const service_heartbeat_message&) = default;
 };
 
 /**
@@ -118,6 +123,9 @@ struct get_service_samples_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_service_samples_request&,
+                           const get_service_samples_request&) = default;
 };
 
 /**
@@ -136,6 +144,9 @@ struct get_service_samples_response {
      * @brief One sample per running instance, in no particular order.
      */
     std::vector<service_sample> samples;
+
+    friend bool operator==(const get_service_samples_response&,
+                           const get_service_samples_response&) = default;
 };
 
 /**
@@ -190,6 +201,8 @@ struct service_roster_slot {
      * missing.
      */
     std::optional<std::chrono::system_clock::time_point> sampled_at;
+
+    friend bool operator==(const service_roster_slot&, const service_roster_slot&) = default;
 };
 
 /**
@@ -207,6 +220,9 @@ struct get_service_roster_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_service_roster_request&,
+                           const get_service_roster_request&) = default;
 };
 
 /**
@@ -225,6 +241,9 @@ struct get_service_roster_response {
      * @brief One slot per expected instance, ordered by service name, then slot.
      */
     std::vector<service_roster_slot> slots;
+
+    friend bool operator==(const get_service_roster_response&,
+                           const get_service_roster_response&) = default;
 };
 
 /**

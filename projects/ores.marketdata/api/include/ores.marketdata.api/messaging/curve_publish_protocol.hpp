@@ -43,11 +43,15 @@ namespace ores::marketdata::messaging {
 
 struct curve_publish_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const curve_publish_key&, const curve_publish_key&) = default;
 };
 
 struct curve_publish_lookup {
     curve_publish_key key;
     std::optional<ores::marketdata::domain::curve_publish> curve_publish;
+
+    friend bool operator==(const curve_publish_lookup&, const curve_publish_lookup&) = default;
 };
 
 struct curve_publishes_filter {
@@ -58,6 +62,8 @@ struct curve_publishes_filter {
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> bootstrap_config_id_one_of;
+
+    friend bool operator==(const curve_publishes_filter&, const curve_publishes_filter&) = default;
 };
 
 struct curve_publish_event {
@@ -67,17 +73,25 @@ struct curve_publish_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const curve_publish_event&, const curve_publish_event&) = default;
 };
 
 struct curve_publish_version_key {
     curve_publish_key curve_publish;
     std::uint32_t version;
+
+    friend bool operator==(const curve_publish_version_key&,
+                           const curve_publish_version_key&) = default;
 };
 
 struct curve_publish_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const curve_publish_versions_filter&,
+                           const curve_publish_versions_filter&) = default;
 };
 
 struct list_curve_publishes_request {
@@ -95,12 +109,18 @@ struct list_curve_publishes_request {
     ores::utility::domain::order order;
     std::optional<curve_publishes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_curve_publishes_request&,
+                           const list_curve_publishes_request&) = default;
 };
 
 struct list_curve_publishes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> curve_publishes;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_publishes_response&,
+                           const list_curve_publishes_response&) = default;
 };
 
 struct get_curve_publish_request {
@@ -114,11 +134,17 @@ struct get_curve_publish_request {
      */
     static constexpr bool requires_session = true;
     curve_publish_key key;
+
+    friend bool operator==(const get_curve_publish_request&,
+                           const get_curve_publish_request&) = default;
 };
 
 struct get_curve_publish_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::curve_publish> curve_publish;
+
+    friend bool operator==(const get_curve_publish_response&,
+                           const get_curve_publish_response&) = default;
 };
 
 struct get_many_curve_publishes_request {
@@ -132,11 +158,17 @@ struct get_many_curve_publishes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<curve_publish_key> keys;
+
+    friend bool operator==(const get_many_curve_publishes_request&,
+                           const get_many_curve_publishes_request&) = default;
 };
 
 struct get_many_curve_publishes_response {
     ores::utility::domain::result result;
     std::vector<curve_publish_lookup> entries;
+
+    friend bool operator==(const get_many_curve_publishes_response&,
+                           const get_many_curve_publishes_response&) = default;
 };
 
 struct list_by_request_id_curve_publishes_request {
@@ -156,12 +188,18 @@ struct list_by_request_id_curve_publishes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_publishes_filter> filter;
+
+    friend bool operator==(const list_by_request_id_curve_publishes_request&,
+                           const list_by_request_id_curve_publishes_request&) = default;
 };
 
 struct list_by_request_id_curve_publishes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> curve_publishes;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_request_id_curve_publishes_response&,
+                           const list_by_request_id_curve_publishes_response&) = default;
 };
 
 struct list_curve_publish_versions_request {
@@ -179,12 +217,18 @@ struct list_curve_publish_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_publish_versions_filter> filter;
+
+    friend bool operator==(const list_curve_publish_versions_request&,
+                           const list_curve_publish_versions_request&) = default;
 };
 
 struct list_curve_publish_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_publish_versions_response&,
+                           const list_curve_publish_versions_response&) = default;
 };
 
 struct get_curve_publish_version_request {
@@ -198,11 +242,17 @@ struct get_curve_publish_version_request {
      */
     static constexpr bool requires_session = true;
     curve_publish_version_key key;
+
+    friend bool operator==(const get_curve_publish_version_request&,
+                           const get_curve_publish_version_request&) = default;
 };
 
 struct get_curve_publish_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::curve_publish> version;
+
+    friend bool operator==(const get_curve_publish_version_response&,
+                           const get_curve_publish_version_response&) = default;
 };
 
 /**

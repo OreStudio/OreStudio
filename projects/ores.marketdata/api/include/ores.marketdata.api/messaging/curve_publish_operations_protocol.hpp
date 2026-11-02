@@ -84,6 +84,8 @@ struct publish_curve_request {
      * Required when the call raises a request, and ignored when it applies one.
      */
     std::string reason = "";
+
+    friend bool operator==(const publish_curve_request&, const publish_curve_request&) = default;
 };
 
 struct publish_curve_response {
@@ -117,6 +119,8 @@ struct publish_curve_response {
      * Empty when the call raised a request or was refused.
      */
     std::string published_by;
+
+    friend bool operator==(const publish_curve_response&, const publish_curve_response&) = default;
 };
 
 /**

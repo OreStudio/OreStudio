@@ -43,16 +43,22 @@ namespace ores::iam::messaging {
 
 struct account_key {
     std::string username;
+
+    friend bool operator==(const account_key&, const account_key&) = default;
 };
 
 struct account_lookup {
     account_key key;
     std::optional<ores::iam::domain::account> account;
+
+    friend bool operator==(const account_lookup&, const account_lookup&) = default;
 };
 
 struct accounts_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const accounts_filter&, const accounts_filter&) = default;
 };
 
 struct account_event {
@@ -62,17 +68,24 @@ struct account_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_event&, const account_event&) = default;
 };
 
 struct account_version_key {
     account_key account;
     std::uint32_t version;
+
+    friend bool operator==(const account_version_key&, const account_version_key&) = default;
 };
 
 struct account_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const account_versions_filter&,
+                           const account_versions_filter&) = default;
 };
 
 struct list_accounts_request {
@@ -90,12 +103,16 @@ struct list_accounts_request {
     ores::utility::domain::order order;
     std::optional<accounts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_accounts_request&, const list_accounts_request&) = default;
 };
 
 struct list_accounts_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account> accounts;
     std::uint64_t total;
+
+    friend bool operator==(const list_accounts_response&, const list_accounts_response&) = default;
 };
 
 struct get_account_request {
@@ -109,11 +126,15 @@ struct get_account_request {
      */
     static constexpr bool requires_session = true;
     account_key key;
+
+    friend bool operator==(const get_account_request&, const get_account_request&) = default;
 };
 
 struct get_account_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account> account;
+
+    friend bool operator==(const get_account_response&, const get_account_response&) = default;
 };
 
 struct get_many_accounts_request {
@@ -127,11 +148,17 @@ struct get_many_accounts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_key> keys;
+
+    friend bool operator==(const get_many_accounts_request&,
+                           const get_many_accounts_request&) = default;
 };
 
 struct get_many_accounts_response {
     ores::utility::domain::result result;
     std::vector<account_lookup> entries;
+
+    friend bool operator==(const get_many_accounts_response&,
+                           const get_many_accounts_response&) = default;
 };
 
 struct list_account_versions_request {
@@ -149,12 +176,18 @@ struct list_account_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_versions_filter> filter;
+
+    friend bool operator==(const list_account_versions_request&,
+                           const list_account_versions_request&) = default;
 };
 
 struct list_account_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_versions_response&,
+                           const list_account_versions_response&) = default;
 };
 
 struct get_account_version_request {
@@ -168,11 +201,17 @@ struct get_account_version_request {
      */
     static constexpr bool requires_session = true;
     account_version_key key;
+
+    friend bool operator==(const get_account_version_request&,
+                           const get_account_version_request&) = default;
 };
 
 struct get_account_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account> version;
+
+    friend bool operator==(const get_account_version_response&,
+                           const get_account_version_response&) = default;
 };
 
 /**

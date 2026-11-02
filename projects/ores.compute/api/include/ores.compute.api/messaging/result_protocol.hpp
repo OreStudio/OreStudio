@@ -43,6 +43,8 @@ namespace ores::compute::messaging {
 
 struct result_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const result_key&, const result_key&) = default;
 };
 
 struct result_write {
@@ -55,21 +57,29 @@ struct result_write {
     std::string error_message;
     std::chrono::system_clock::time_point received_at;
     std::optional<std::int64_t> duration_ms;
+
+    friend bool operator==(const result_write&, const result_write&) = default;
 };
 
 struct result_change {
     result_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const result_change&, const result_change&) = default;
 };
 
 struct result_removal {
     result_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const result_removal&, const result_removal&) = default;
 };
 
 struct result_lookup {
     result_key key;
     std::optional<ores::compute::domain::result> result;
+
+    friend bool operator==(const result_lookup&, const result_lookup&) = default;
 };
 
 struct results_filter {
@@ -78,6 +88,8 @@ struct results_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> workunit_id_one_of;
     std::optional<std::vector<int>> outcome_one_of;
+
+    friend bool operator==(const results_filter&, const results_filter&) = default;
 };
 
 struct result_event {
@@ -87,17 +99,23 @@ struct result_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const result_event&, const result_event&) = default;
 };
 
 struct result_version_key {
     result_key result;
     std::uint32_t version;
+
+    friend bool operator==(const result_version_key&, const result_version_key&) = default;
 };
 
 struct result_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const result_versions_filter&, const result_versions_filter&) = default;
 };
 
 struct list_results_request {
@@ -115,12 +133,16 @@ struct list_results_request {
     ores::utility::domain::order order;
     std::optional<results_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_results_request&, const list_results_request&) = default;
 };
 
 struct list_results_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::result> results;
     std::uint64_t total;
+
+    friend bool operator==(const list_results_response&, const list_results_response&) = default;
 };
 
 struct get_result_request {
@@ -134,11 +156,15 @@ struct get_result_request {
      */
     static constexpr bool requires_session = true;
     result_key key;
+
+    friend bool operator==(const get_result_request&, const get_result_request&) = default;
 };
 
 struct get_result_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::result> result_value;
+
+    friend bool operator==(const get_result_response&, const get_result_response&) = default;
 };
 
 struct get_many_results_request {
@@ -152,11 +178,17 @@ struct get_many_results_request {
      */
     static constexpr bool requires_session = true;
     std::vector<result_key> keys;
+
+    friend bool operator==(const get_many_results_request&,
+                           const get_many_results_request&) = default;
 };
 
 struct get_many_results_response {
     ores::utility::domain::result result;
     std::vector<result_lookup> entries;
+
+    friend bool operator==(const get_many_results_response&,
+                           const get_many_results_response&) = default;
 };
 
 struct put_result_request {
@@ -171,11 +203,15 @@ struct put_result_request {
     static constexpr bool requires_session = true;
     result_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_result_request&, const put_result_request&) = default;
 };
 
 struct put_result_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::result> result_value;
+
+    friend bool operator==(const put_result_response&, const put_result_response&) = default;
 };
 
 struct put_many_results_request {
@@ -190,11 +226,17 @@ struct put_many_results_request {
     static constexpr bool requires_session = true;
     std::vector<result_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_results_request&,
+                           const put_many_results_request&) = default;
 };
 
 struct put_many_results_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::result> results;
+
+    friend bool operator==(const put_many_results_response&,
+                           const put_many_results_response&) = default;
 };
 
 struct delete_result_request {
@@ -209,10 +251,14 @@ struct delete_result_request {
     static constexpr bool requires_session = true;
     result_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_result_request&, const delete_result_request&) = default;
 };
 
 struct delete_result_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_result_response&, const delete_result_response&) = default;
 };
 
 struct delete_many_results_request {
@@ -227,10 +273,16 @@ struct delete_many_results_request {
     static constexpr bool requires_session = true;
     std::vector<result_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_results_request&,
+                           const delete_many_results_request&) = default;
 };
 
 struct delete_many_results_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_results_response&,
+                           const delete_many_results_response&) = default;
 };
 
 struct list_by_workunit_id_results_request {
@@ -249,12 +301,18 @@ struct list_by_workunit_id_results_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<results_filter> filter;
+
+    friend bool operator==(const list_by_workunit_id_results_request&,
+                           const list_by_workunit_id_results_request&) = default;
 };
 
 struct list_by_workunit_id_results_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::result> results;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_workunit_id_results_response&,
+                           const list_by_workunit_id_results_response&) = default;
 };
 
 struct list_result_versions_request {
@@ -272,12 +330,18 @@ struct list_result_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<result_versions_filter> filter;
+
+    friend bool operator==(const list_result_versions_request&,
+                           const list_result_versions_request&) = default;
 };
 
 struct list_result_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::result> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_result_versions_response&,
+                           const list_result_versions_response&) = default;
 };
 
 struct get_result_version_request {
@@ -291,11 +355,17 @@ struct get_result_version_request {
      */
     static constexpr bool requires_session = true;
     result_version_key key;
+
+    friend bool operator==(const get_result_version_request&,
+                           const get_result_version_request&) = default;
 };
 
 struct get_result_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::result> version;
+
+    friend bool operator==(const get_result_version_response&,
+                           const get_result_version_response&) = default;
 };
 
 /**

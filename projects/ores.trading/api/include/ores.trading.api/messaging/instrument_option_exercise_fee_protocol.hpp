@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct instrument_option_exercise_fee_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const instrument_option_exercise_fee_key&,
+                           const instrument_option_exercise_fee_key&) = default;
 };
 
 struct instrument_option_exercise_fee_write {
@@ -54,27 +57,42 @@ struct instrument_option_exercise_fee_write {
     std::optional<std::string> type;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::string> currency;
+
+    friend bool operator==(const instrument_option_exercise_fee_write&,
+                           const instrument_option_exercise_fee_write&) = default;
 };
 
 struct instrument_option_exercise_fee_change {
     instrument_option_exercise_fee_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const instrument_option_exercise_fee_change&,
+                           const instrument_option_exercise_fee_change&) = default;
 };
 
 struct instrument_option_exercise_fee_removal {
     instrument_option_exercise_fee_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const instrument_option_exercise_fee_removal&,
+                           const instrument_option_exercise_fee_removal&) = default;
 };
 
 struct instrument_option_exercise_fee_lookup {
     instrument_option_exercise_fee_key key;
     std::optional<ores::trading::domain::instrument_option_exercise_fee>
         instrument_option_exercise_fee;
+
+    friend bool operator==(const instrument_option_exercise_fee_lookup&,
+                           const instrument_option_exercise_fee_lookup&) = default;
 };
 
 struct instrument_option_exercise_fees_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const instrument_option_exercise_fees_filter&,
+                           const instrument_option_exercise_fees_filter&) = default;
 };
 
 struct instrument_option_exercise_fee_event {
@@ -84,17 +102,26 @@ struct instrument_option_exercise_fee_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const instrument_option_exercise_fee_event&,
+                           const instrument_option_exercise_fee_event&) = default;
 };
 
 struct instrument_option_exercise_fee_version_key {
     instrument_option_exercise_fee_key instrument_option_exercise_fee;
     std::uint32_t version;
+
+    friend bool operator==(const instrument_option_exercise_fee_version_key&,
+                           const instrument_option_exercise_fee_version_key&) = default;
 };
 
 struct instrument_option_exercise_fee_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const instrument_option_exercise_fee_versions_filter&,
+                           const instrument_option_exercise_fee_versions_filter&) = default;
 };
 
 struct list_instrument_option_exercise_fees_request {
@@ -113,12 +140,18 @@ struct list_instrument_option_exercise_fees_request {
     ores::utility::domain::order order;
     std::optional<instrument_option_exercise_fees_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_instrument_option_exercise_fees_request&,
+                           const list_instrument_option_exercise_fees_request&) = default;
 };
 
 struct list_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
     std::uint64_t total;
+
+    friend bool operator==(const list_instrument_option_exercise_fees_response&,
+                           const list_instrument_option_exercise_fees_response&) = default;
 };
 
 struct get_instrument_option_exercise_fee_request {
@@ -133,12 +166,18 @@ struct get_instrument_option_exercise_fee_request {
      */
     static constexpr bool requires_session = true;
     instrument_option_exercise_fee_key key;
+
+    friend bool operator==(const get_instrument_option_exercise_fee_request&,
+                           const get_instrument_option_exercise_fee_request&) = default;
 };
 
 struct get_instrument_option_exercise_fee_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_option_exercise_fee>
         instrument_option_exercise_fee;
+
+    friend bool operator==(const get_instrument_option_exercise_fee_response&,
+                           const get_instrument_option_exercise_fee_response&) = default;
 };
 
 struct get_many_instrument_option_exercise_fees_request {
@@ -153,11 +192,17 @@ struct get_many_instrument_option_exercise_fees_request {
      */
     static constexpr bool requires_session = true;
     std::vector<instrument_option_exercise_fee_key> keys;
+
+    friend bool operator==(const get_many_instrument_option_exercise_fees_request&,
+                           const get_many_instrument_option_exercise_fees_request&) = default;
 };
 
 struct get_many_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<instrument_option_exercise_fee_lookup> entries;
+
+    friend bool operator==(const get_many_instrument_option_exercise_fees_response&,
+                           const get_many_instrument_option_exercise_fees_response&) = default;
 };
 
 struct put_instrument_option_exercise_fee_request {
@@ -173,12 +218,18 @@ struct put_instrument_option_exercise_fee_request {
     static constexpr bool requires_session = true;
     instrument_option_exercise_fee_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_instrument_option_exercise_fee_request&,
+                           const put_instrument_option_exercise_fee_request&) = default;
 };
 
 struct put_instrument_option_exercise_fee_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_option_exercise_fee>
         instrument_option_exercise_fee;
+
+    friend bool operator==(const put_instrument_option_exercise_fee_response&,
+                           const put_instrument_option_exercise_fee_response&) = default;
 };
 
 struct put_many_instrument_option_exercise_fees_request {
@@ -194,11 +245,17 @@ struct put_many_instrument_option_exercise_fees_request {
     static constexpr bool requires_session = true;
     std::vector<instrument_option_exercise_fee_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_instrument_option_exercise_fees_request&,
+                           const put_many_instrument_option_exercise_fees_request&) = default;
 };
 
 struct put_many_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
+
+    friend bool operator==(const put_many_instrument_option_exercise_fees_response&,
+                           const put_many_instrument_option_exercise_fees_response&) = default;
 };
 
 struct delete_instrument_option_exercise_fee_request {
@@ -214,10 +271,16 @@ struct delete_instrument_option_exercise_fee_request {
     static constexpr bool requires_session = true;
     instrument_option_exercise_fee_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_instrument_option_exercise_fee_request&,
+                           const delete_instrument_option_exercise_fee_request&) = default;
 };
 
 struct delete_instrument_option_exercise_fee_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_instrument_option_exercise_fee_response&,
+                           const delete_instrument_option_exercise_fee_response&) = default;
 };
 
 struct delete_many_instrument_option_exercise_fees_request {
@@ -233,10 +296,16 @@ struct delete_many_instrument_option_exercise_fees_request {
     static constexpr bool requires_session = true;
     std::vector<instrument_option_exercise_fee_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_instrument_option_exercise_fees_request&,
+                           const delete_many_instrument_option_exercise_fees_request&) = default;
 };
 
 struct delete_many_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_instrument_option_exercise_fees_response&,
+                           const delete_many_instrument_option_exercise_fees_response&) = default;
 };
 
 struct list_by_trade_id_instrument_option_exercise_fees_request {
@@ -256,12 +325,20 @@ struct list_by_trade_id_instrument_option_exercise_fees_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<instrument_option_exercise_fees_filter> filter;
+
+    friend bool
+    operator==(const list_by_trade_id_instrument_option_exercise_fees_request&,
+               const list_by_trade_id_instrument_option_exercise_fees_request&) = default;
 };
 
 struct list_by_trade_id_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_trade_id_instrument_option_exercise_fees_response&,
+               const list_by_trade_id_instrument_option_exercise_fees_response&) = default;
 };
 
 struct list_instrument_option_exercise_fee_versions_request {
@@ -280,12 +357,18 @@ struct list_instrument_option_exercise_fee_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<instrument_option_exercise_fee_versions_filter> filter;
+
+    friend bool operator==(const list_instrument_option_exercise_fee_versions_request&,
+                           const list_instrument_option_exercise_fee_versions_request&) = default;
 };
 
 struct list_instrument_option_exercise_fee_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_instrument_option_exercise_fee_versions_response&,
+                           const list_instrument_option_exercise_fee_versions_response&) = default;
 };
 
 struct get_instrument_option_exercise_fee_version_request {
@@ -300,11 +383,17 @@ struct get_instrument_option_exercise_fee_version_request {
      */
     static constexpr bool requires_session = true;
     instrument_option_exercise_fee_version_key key;
+
+    friend bool operator==(const get_instrument_option_exercise_fee_version_request&,
+                           const get_instrument_option_exercise_fee_version_request&) = default;
 };
 
 struct get_instrument_option_exercise_fee_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::instrument_option_exercise_fee> version;
+
+    friend bool operator==(const get_instrument_option_exercise_fee_version_response&,
+                           const get_instrument_option_exercise_fee_version_response&) = default;
 };
 
 /**

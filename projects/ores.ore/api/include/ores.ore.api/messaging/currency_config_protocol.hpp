@@ -55,6 +55,9 @@ struct export_currency_config_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> iso_codes;
+
+    friend bool operator==(const export_currency_config_request&,
+                           const export_currency_config_request&) = default;
 };
 
 /**
@@ -65,6 +68,9 @@ struct export_currency_config_response {
     std::string message;
     std::uint32_t count = 0;
     std::vector<ores::ore::messaging::ore_document> files;
+
+    friend bool operator==(const export_currency_config_response&,
+                           const export_currency_config_response&) = default;
 };
 
 /**
@@ -77,6 +83,8 @@ struct currency_import_row {
     /** One of added, changed, removed. */
     std::string change;
     std::string what;
+
+    friend bool operator==(const currency_import_row&, const currency_import_row&) = default;
 };
 
 /**
@@ -88,6 +96,8 @@ struct currency_import_issue {
     std::string kind;
     std::string subject;
     std::string detail;
+
+    friend bool operator==(const currency_import_issue&, const currency_import_issue&) = default;
 };
 
 /**
@@ -107,6 +117,9 @@ struct preview_currency_config_import_request {
      */
     static constexpr bool requires_session = true;
     std::string content;
+
+    friend bool operator==(const preview_currency_config_import_request&,
+                           const preview_currency_config_import_request&) = default;
 };
 
 /**
@@ -126,6 +139,9 @@ struct preview_currency_config_import_response {
     std::uint32_t removed = 0;
     std::vector<currency_import_row> rows;
     std::vector<currency_import_issue> issues;
+
+    friend bool operator==(const preview_currency_config_import_response&,
+                           const preview_currency_config_import_response&) = default;
 };
 
 /**
@@ -136,6 +152,8 @@ struct currency_import_choice {
     /** One of take, keep, delete, skip. Take writes the file's row; keep leaves ours; delete
      * removes a row the file omits; skip leaves a new row out. */
     std::string action;
+
+    friend bool operator==(const currency_import_choice&, const currency_import_choice&) = default;
 };
 
 /**
@@ -158,6 +176,9 @@ struct import_currency_config_request {
     std::vector<currency_import_choice> choices;
     std::string reason_code;
     std::string commentary;
+
+    friend bool operator==(const import_currency_config_request&,
+                           const import_currency_config_request&) = default;
 };
 
 /**
@@ -166,6 +187,8 @@ struct import_currency_config_request {
 struct currency_import_error {
     std::string iso_code;
     std::string message;
+
+    friend bool operator==(const currency_import_error&, const currency_import_error&) = default;
 };
 
 /**
@@ -179,6 +202,9 @@ struct import_currency_config_response {
     std::uint32_t deleted = 0;
     std::uint32_t kept = 0;
     std::vector<currency_import_error> errors;
+
+    friend bool operator==(const import_currency_config_response&,
+                           const import_currency_config_response&) = default;
 };
 
 /**

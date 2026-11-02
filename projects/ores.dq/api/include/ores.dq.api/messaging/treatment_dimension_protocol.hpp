@@ -43,31 +43,49 @@ namespace ores::dq::messaging {
 
 struct treatment_dimension_key {
     std::string code;
+
+    friend bool operator==(const treatment_dimension_key&,
+                           const treatment_dimension_key&) = default;
 };
 
 struct treatment_dimension_write {
     std::string code;
     std::string name;
     std::string description;
+
+    friend bool operator==(const treatment_dimension_write&,
+                           const treatment_dimension_write&) = default;
 };
 
 struct treatment_dimension_change {
     treatment_dimension_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const treatment_dimension_change&,
+                           const treatment_dimension_change&) = default;
 };
 
 struct treatment_dimension_removal {
     treatment_dimension_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const treatment_dimension_removal&,
+                           const treatment_dimension_removal&) = default;
 };
 
 struct treatment_dimension_lookup {
     treatment_dimension_key key;
     std::optional<ores::dq::domain::treatment_dimension> treatment_dimension;
+
+    friend bool operator==(const treatment_dimension_lookup&,
+                           const treatment_dimension_lookup&) = default;
 };
 
 struct treatment_dimensions_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const treatment_dimensions_filter&,
+                           const treatment_dimensions_filter&) = default;
 };
 
 struct treatment_dimension_event {
@@ -77,17 +95,26 @@ struct treatment_dimension_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const treatment_dimension_event&,
+                           const treatment_dimension_event&) = default;
 };
 
 struct treatment_dimension_version_key {
     treatment_dimension_key treatment_dimension;
     std::uint32_t version;
+
+    friend bool operator==(const treatment_dimension_version_key&,
+                           const treatment_dimension_version_key&) = default;
 };
 
 struct treatment_dimension_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const treatment_dimension_versions_filter&,
+                           const treatment_dimension_versions_filter&) = default;
 };
 
 struct list_treatment_dimensions_request {
@@ -105,12 +132,18 @@ struct list_treatment_dimensions_request {
     ores::utility::domain::order order;
     std::optional<treatment_dimensions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_treatment_dimensions_request&,
+                           const list_treatment_dimensions_request&) = default;
 };
 
 struct list_treatment_dimensions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::treatment_dimension> dimensions;
     std::uint64_t total;
+
+    friend bool operator==(const list_treatment_dimensions_response&,
+                           const list_treatment_dimensions_response&) = default;
 };
 
 struct get_treatment_dimension_request {
@@ -124,11 +157,17 @@ struct get_treatment_dimension_request {
      */
     static constexpr bool requires_session = true;
     treatment_dimension_key key;
+
+    friend bool operator==(const get_treatment_dimension_request&,
+                           const get_treatment_dimension_request&) = default;
 };
 
 struct get_treatment_dimension_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::treatment_dimension> treatment_dimension;
+
+    friend bool operator==(const get_treatment_dimension_response&,
+                           const get_treatment_dimension_response&) = default;
 };
 
 struct get_many_treatment_dimensions_request {
@@ -142,11 +181,17 @@ struct get_many_treatment_dimensions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<treatment_dimension_key> keys;
+
+    friend bool operator==(const get_many_treatment_dimensions_request&,
+                           const get_many_treatment_dimensions_request&) = default;
 };
 
 struct get_many_treatment_dimensions_response {
     ores::utility::domain::result result;
     std::vector<treatment_dimension_lookup> entries;
+
+    friend bool operator==(const get_many_treatment_dimensions_response&,
+                           const get_many_treatment_dimensions_response&) = default;
 };
 
 struct put_treatment_dimension_request {
@@ -161,11 +206,17 @@ struct put_treatment_dimension_request {
     static constexpr bool requires_session = true;
     treatment_dimension_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_treatment_dimension_request&,
+                           const put_treatment_dimension_request&) = default;
 };
 
 struct put_treatment_dimension_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::treatment_dimension> treatment_dimension;
+
+    friend bool operator==(const put_treatment_dimension_response&,
+                           const put_treatment_dimension_response&) = default;
 };
 
 struct put_many_treatment_dimensions_request {
@@ -180,11 +231,17 @@ struct put_many_treatment_dimensions_request {
     static constexpr bool requires_session = true;
     std::vector<treatment_dimension_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_treatment_dimensions_request&,
+                           const put_many_treatment_dimensions_request&) = default;
 };
 
 struct put_many_treatment_dimensions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::treatment_dimension> dimensions;
+
+    friend bool operator==(const put_many_treatment_dimensions_response&,
+                           const put_many_treatment_dimensions_response&) = default;
 };
 
 struct delete_treatment_dimension_request {
@@ -199,10 +256,16 @@ struct delete_treatment_dimension_request {
     static constexpr bool requires_session = true;
     treatment_dimension_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_treatment_dimension_request&,
+                           const delete_treatment_dimension_request&) = default;
 };
 
 struct delete_treatment_dimension_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_treatment_dimension_response&,
+                           const delete_treatment_dimension_response&) = default;
 };
 
 struct delete_many_treatment_dimensions_request {
@@ -217,10 +280,16 @@ struct delete_many_treatment_dimensions_request {
     static constexpr bool requires_session = true;
     std::vector<treatment_dimension_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_treatment_dimensions_request&,
+                           const delete_many_treatment_dimensions_request&) = default;
 };
 
 struct delete_many_treatment_dimensions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_treatment_dimensions_response&,
+                           const delete_many_treatment_dimensions_response&) = default;
 };
 
 struct list_treatment_dimension_versions_request {
@@ -238,12 +307,18 @@ struct list_treatment_dimension_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<treatment_dimension_versions_filter> filter;
+
+    friend bool operator==(const list_treatment_dimension_versions_request&,
+                           const list_treatment_dimension_versions_request&) = default;
 };
 
 struct list_treatment_dimension_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::treatment_dimension> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_treatment_dimension_versions_response&,
+                           const list_treatment_dimension_versions_response&) = default;
 };
 
 struct get_treatment_dimension_version_request {
@@ -257,11 +332,17 @@ struct get_treatment_dimension_version_request {
      */
     static constexpr bool requires_session = true;
     treatment_dimension_version_key key;
+
+    friend bool operator==(const get_treatment_dimension_version_request&,
+                           const get_treatment_dimension_version_request&) = default;
 };
 
 struct get_treatment_dimension_version_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::treatment_dimension> version;
+
+    friend bool operator==(const get_treatment_dimension_version_response&,
+                           const get_treatment_dimension_version_response&) = default;
 };
 
 /**

@@ -44,26 +44,36 @@ namespace ores::iam::messaging {
 struct account_role_key {
     boost::uuids::uuid account_id;
     boost::uuids::uuid role_id;
+
+    friend bool operator==(const account_role_key&, const account_role_key&) = default;
 };
 
 struct account_role_write {
     boost::uuids::uuid account_id;
     boost::uuids::uuid role_id;
+
+    friend bool operator==(const account_role_write&, const account_role_write&) = default;
 };
 
 struct account_role_change {
     account_role_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const account_role_change&, const account_role_change&) = default;
 };
 
 struct account_role_removal {
     account_role_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const account_role_removal&, const account_role_removal&) = default;
 };
 
 struct account_role_lookup {
     account_role_key key;
     std::optional<ores::iam::domain::account_role> account_role;
+
+    friend bool operator==(const account_role_lookup&, const account_role_lookup&) = default;
 };
 
 struct account_roles_filter {
@@ -71,6 +81,8 @@ struct account_roles_filter {
     std::optional<boost::uuids::uuid> role_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> role_id_one_of;
+
+    friend bool operator==(const account_roles_filter&, const account_roles_filter&) = default;
 };
 
 struct account_role_event {
@@ -80,6 +92,8 @@ struct account_role_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_role_event&, const account_role_event&) = default;
 };
 
 struct list_account_roles_request {
@@ -96,12 +110,18 @@ struct list_account_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_roles_filter> filter;
+
+    friend bool operator==(const list_account_roles_request&,
+                           const list_account_roles_request&) = default;
 };
 
 struct list_account_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_role> account_roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_roles_response&,
+                           const list_account_roles_response&) = default;
 };
 
 struct get_account_role_request {
@@ -115,11 +135,17 @@ struct get_account_role_request {
      */
     static constexpr bool requires_session = true;
     account_role_key key;
+
+    friend bool operator==(const get_account_role_request&,
+                           const get_account_role_request&) = default;
 };
 
 struct get_account_role_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_role> account_role;
+
+    friend bool operator==(const get_account_role_response&,
+                           const get_account_role_response&) = default;
 };
 
 struct get_many_account_roles_request {
@@ -133,11 +159,17 @@ struct get_many_account_roles_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_role_key> keys;
+
+    friend bool operator==(const get_many_account_roles_request&,
+                           const get_many_account_roles_request&) = default;
 };
 
 struct get_many_account_roles_response {
     ores::utility::domain::result result;
     std::vector<account_role_lookup> entries;
+
+    friend bool operator==(const get_many_account_roles_response&,
+                           const get_many_account_roles_response&) = default;
 };
 
 struct put_account_role_request {
@@ -152,11 +184,17 @@ struct put_account_role_request {
     static constexpr bool requires_session = true;
     account_role_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_account_role_request&,
+                           const put_account_role_request&) = default;
 };
 
 struct put_account_role_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_role> account_role;
+
+    friend bool operator==(const put_account_role_response&,
+                           const put_account_role_response&) = default;
 };
 
 struct put_many_account_roles_request {
@@ -171,11 +209,17 @@ struct put_many_account_roles_request {
     static constexpr bool requires_session = true;
     std::vector<account_role_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_account_roles_request&,
+                           const put_many_account_roles_request&) = default;
 };
 
 struct put_many_account_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_role> account_roles;
+
+    friend bool operator==(const put_many_account_roles_response&,
+                           const put_many_account_roles_response&) = default;
 };
 
 struct delete_account_role_request {
@@ -190,10 +234,16 @@ struct delete_account_role_request {
     static constexpr bool requires_session = true;
     account_role_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_account_role_request&,
+                           const delete_account_role_request&) = default;
 };
 
 struct delete_account_role_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_account_role_response&,
+                           const delete_account_role_response&) = default;
 };
 
 struct delete_many_account_roles_request {
@@ -208,10 +258,16 @@ struct delete_many_account_roles_request {
     static constexpr bool requires_session = true;
     std::vector<account_role_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_account_roles_request&,
+                           const delete_many_account_roles_request&) = default;
 };
 
 struct delete_many_account_roles_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_account_roles_response&,
+                           const delete_many_account_roles_response&) = default;
 };
 
 struct list_by_account_id_account_roles_request {
@@ -230,12 +286,18 @@ struct list_by_account_id_account_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_roles_filter> filter;
+
+    friend bool operator==(const list_by_account_id_account_roles_request&,
+                           const list_by_account_id_account_roles_request&) = default;
 };
 
 struct list_by_account_id_account_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_role> account_roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_account_roles_response&,
+                           const list_by_account_id_account_roles_response&) = default;
 };
 
 struct list_by_role_id_account_roles_request {
@@ -254,12 +316,18 @@ struct list_by_role_id_account_roles_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_roles_filter> filter;
+
+    friend bool operator==(const list_by_role_id_account_roles_request&,
+                           const list_by_role_id_account_roles_request&) = default;
 };
 
 struct list_by_role_id_account_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_role> account_roles;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_role_id_account_roles_response&,
+                           const list_by_role_id_account_roles_response&) = default;
 };
 
 /**

@@ -38,32 +38,50 @@ namespace ores::trading::messaging {
 struct product_type_asset_class_key {
     std::string product_type_code;
     std::string asset_class_code;
+
+    friend bool operator==(const product_type_asset_class_key&,
+                           const product_type_asset_class_key&) = default;
 };
 
 struct product_type_asset_class_write {
     std::string product_type_code;
     std::string asset_class_code;
     bool is_home;
+
+    friend bool operator==(const product_type_asset_class_write&,
+                           const product_type_asset_class_write&) = default;
 };
 
 struct product_type_asset_class_change {
     product_type_asset_class_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const product_type_asset_class_change&,
+                           const product_type_asset_class_change&) = default;
 };
 
 struct product_type_asset_class_removal {
     product_type_asset_class_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const product_type_asset_class_removal&,
+                           const product_type_asset_class_removal&) = default;
 };
 
 struct product_type_asset_class_lookup {
     product_type_asset_class_key key;
     std::optional<ores::trading::domain::product_type_asset_class> product_type_asset_class;
+
+    friend bool operator==(const product_type_asset_class_lookup&,
+                           const product_type_asset_class_lookup&) = default;
 };
 
 struct product_type_asset_classes_filter {
     std::optional<std::string> product_type_code;
     std::optional<std::vector<std::string>> product_type_code_one_of;
+
+    friend bool operator==(const product_type_asset_classes_filter&,
+                           const product_type_asset_classes_filter&) = default;
 };
 
 struct product_type_asset_class_event {
@@ -73,6 +91,9 @@ struct product_type_asset_class_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const product_type_asset_class_event&,
+                           const product_type_asset_class_event&) = default;
 };
 
 struct list_product_type_asset_classes_request {
@@ -89,12 +110,18 @@ struct list_product_type_asset_classes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<product_type_asset_classes_filter> filter;
+
+    friend bool operator==(const list_product_type_asset_classes_request&,
+                           const list_product_type_asset_classes_request&) = default;
 };
 
 struct list_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type_asset_class> product_type_asset_classes;
     std::uint64_t total;
+
+    friend bool operator==(const list_product_type_asset_classes_response&,
+                           const list_product_type_asset_classes_response&) = default;
 };
 
 struct get_product_type_asset_class_request {
@@ -108,11 +135,17 @@ struct get_product_type_asset_class_request {
      */
     static constexpr bool requires_session = true;
     product_type_asset_class_key key;
+
+    friend bool operator==(const get_product_type_asset_class_request&,
+                           const get_product_type_asset_class_request&) = default;
 };
 
 struct get_product_type_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::product_type_asset_class> product_type_asset_class;
+
+    friend bool operator==(const get_product_type_asset_class_response&,
+                           const get_product_type_asset_class_response&) = default;
 };
 
 struct get_many_product_type_asset_classes_request {
@@ -127,11 +160,17 @@ struct get_many_product_type_asset_classes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<product_type_asset_class_key> keys;
+
+    friend bool operator==(const get_many_product_type_asset_classes_request&,
+                           const get_many_product_type_asset_classes_request&) = default;
 };
 
 struct get_many_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<product_type_asset_class_lookup> entries;
+
+    friend bool operator==(const get_many_product_type_asset_classes_response&,
+                           const get_many_product_type_asset_classes_response&) = default;
 };
 
 struct put_product_type_asset_class_request {
@@ -146,11 +185,17 @@ struct put_product_type_asset_class_request {
     static constexpr bool requires_session = true;
     product_type_asset_class_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_product_type_asset_class_request&,
+                           const put_product_type_asset_class_request&) = default;
 };
 
 struct put_product_type_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::product_type_asset_class> product_type_asset_class;
+
+    friend bool operator==(const put_product_type_asset_class_response&,
+                           const put_product_type_asset_class_response&) = default;
 };
 
 struct put_many_product_type_asset_classes_request {
@@ -166,11 +211,17 @@ struct put_many_product_type_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<product_type_asset_class_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_product_type_asset_classes_request&,
+                           const put_many_product_type_asset_classes_request&) = default;
 };
 
 struct put_many_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type_asset_class> product_type_asset_classes;
+
+    friend bool operator==(const put_many_product_type_asset_classes_response&,
+                           const put_many_product_type_asset_classes_response&) = default;
 };
 
 struct delete_product_type_asset_class_request {
@@ -185,10 +236,16 @@ struct delete_product_type_asset_class_request {
     static constexpr bool requires_session = true;
     product_type_asset_class_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_product_type_asset_class_request&,
+                           const delete_product_type_asset_class_request&) = default;
 };
 
 struct delete_product_type_asset_class_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_product_type_asset_class_response&,
+                           const delete_product_type_asset_class_response&) = default;
 };
 
 struct delete_many_product_type_asset_classes_request {
@@ -204,10 +261,16 @@ struct delete_many_product_type_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<product_type_asset_class_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_product_type_asset_classes_request&,
+                           const delete_many_product_type_asset_classes_request&) = default;
 };
 
 struct delete_many_product_type_asset_classes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_product_type_asset_classes_response&,
+                           const delete_many_product_type_asset_classes_response&) = default;
 };
 
 struct list_by_product_type_code_product_type_asset_classes_request {
@@ -227,12 +290,20 @@ struct list_by_product_type_code_product_type_asset_classes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<product_type_asset_classes_filter> filter;
+
+    friend bool
+    operator==(const list_by_product_type_code_product_type_asset_classes_request&,
+               const list_by_product_type_code_product_type_asset_classes_request&) = default;
 };
 
 struct list_by_product_type_code_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type_asset_class> product_type_asset_classes;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_product_type_code_product_type_asset_classes_response&,
+               const list_by_product_type_code_product_type_asset_classes_response&) = default;
 };
 
 }

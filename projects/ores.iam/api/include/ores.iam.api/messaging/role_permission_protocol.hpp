@@ -44,26 +44,37 @@ namespace ores::iam::messaging {
 struct role_permission_key {
     boost::uuids::uuid role_id;
     boost::uuids::uuid permission_id;
+
+    friend bool operator==(const role_permission_key&, const role_permission_key&) = default;
 };
 
 struct role_permission_write {
     boost::uuids::uuid role_id;
     boost::uuids::uuid permission_id;
+
+    friend bool operator==(const role_permission_write&, const role_permission_write&) = default;
 };
 
 struct role_permission_change {
     role_permission_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const role_permission_change&, const role_permission_change&) = default;
 };
 
 struct role_permission_removal {
     role_permission_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const role_permission_removal&,
+                           const role_permission_removal&) = default;
 };
 
 struct role_permission_lookup {
     role_permission_key key;
     std::optional<ores::iam::domain::role_permission> role_permission;
+
+    friend bool operator==(const role_permission_lookup&, const role_permission_lookup&) = default;
 };
 
 struct role_permissions_filter {
@@ -71,6 +82,9 @@ struct role_permissions_filter {
     std::optional<boost::uuids::uuid> permission_id;
     std::optional<std::vector<boost::uuids::uuid>> role_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> permission_id_one_of;
+
+    friend bool operator==(const role_permissions_filter&,
+                           const role_permissions_filter&) = default;
 };
 
 struct role_permission_event {
@@ -80,6 +94,8 @@ struct role_permission_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const role_permission_event&, const role_permission_event&) = default;
 };
 
 struct list_role_permissions_request {
@@ -96,12 +112,18 @@ struct list_role_permissions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_permissions_filter> filter;
+
+    friend bool operator==(const list_role_permissions_request&,
+                           const list_role_permissions_request&) = default;
 };
 
 struct list_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_permission> role_permissions;
     std::uint64_t total;
+
+    friend bool operator==(const list_role_permissions_response&,
+                           const list_role_permissions_response&) = default;
 };
 
 struct get_role_permission_request {
@@ -115,11 +137,17 @@ struct get_role_permission_request {
      */
     static constexpr bool requires_session = true;
     role_permission_key key;
+
+    friend bool operator==(const get_role_permission_request&,
+                           const get_role_permission_request&) = default;
 };
 
 struct get_role_permission_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::role_permission> role_permission;
+
+    friend bool operator==(const get_role_permission_response&,
+                           const get_role_permission_response&) = default;
 };
 
 struct get_many_role_permissions_request {
@@ -133,11 +161,17 @@ struct get_many_role_permissions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<role_permission_key> keys;
+
+    friend bool operator==(const get_many_role_permissions_request&,
+                           const get_many_role_permissions_request&) = default;
 };
 
 struct get_many_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<role_permission_lookup> entries;
+
+    friend bool operator==(const get_many_role_permissions_response&,
+                           const get_many_role_permissions_response&) = default;
 };
 
 struct put_role_permission_request {
@@ -152,11 +186,17 @@ struct put_role_permission_request {
     static constexpr bool requires_session = true;
     role_permission_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_role_permission_request&,
+                           const put_role_permission_request&) = default;
 };
 
 struct put_role_permission_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::role_permission> role_permission;
+
+    friend bool operator==(const put_role_permission_response&,
+                           const put_role_permission_response&) = default;
 };
 
 struct put_many_role_permissions_request {
@@ -171,11 +211,17 @@ struct put_many_role_permissions_request {
     static constexpr bool requires_session = true;
     std::vector<role_permission_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_role_permissions_request&,
+                           const put_many_role_permissions_request&) = default;
 };
 
 struct put_many_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_permission> role_permissions;
+
+    friend bool operator==(const put_many_role_permissions_response&,
+                           const put_many_role_permissions_response&) = default;
 };
 
 struct delete_role_permission_request {
@@ -190,10 +236,16 @@ struct delete_role_permission_request {
     static constexpr bool requires_session = true;
     role_permission_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_role_permission_request&,
+                           const delete_role_permission_request&) = default;
 };
 
 struct delete_role_permission_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_role_permission_response&,
+                           const delete_role_permission_response&) = default;
 };
 
 struct delete_many_role_permissions_request {
@@ -208,10 +260,16 @@ struct delete_many_role_permissions_request {
     static constexpr bool requires_session = true;
     std::vector<role_permission_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_role_permissions_request&,
+                           const delete_many_role_permissions_request&) = default;
 };
 
 struct delete_many_role_permissions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_role_permissions_response&,
+                           const delete_many_role_permissions_response&) = default;
 };
 
 struct list_by_role_id_role_permissions_request {
@@ -230,12 +288,18 @@ struct list_by_role_id_role_permissions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_permissions_filter> filter;
+
+    friend bool operator==(const list_by_role_id_role_permissions_request&,
+                           const list_by_role_id_role_permissions_request&) = default;
 };
 
 struct list_by_role_id_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_permission> role_permissions;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_role_id_role_permissions_response&,
+                           const list_by_role_id_role_permissions_response&) = default;
 };
 
 struct list_by_permission_id_role_permissions_request {
@@ -255,12 +319,18 @@ struct list_by_permission_id_role_permissions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_permissions_filter> filter;
+
+    friend bool operator==(const list_by_permission_id_role_permissions_request&,
+                           const list_by_permission_id_role_permissions_request&) = default;
 };
 
 struct list_by_permission_id_role_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_permission> role_permissions;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_permission_id_role_permissions_response&,
+                           const list_by_permission_id_role_permissions_response&) = default;
 };
 
 /**

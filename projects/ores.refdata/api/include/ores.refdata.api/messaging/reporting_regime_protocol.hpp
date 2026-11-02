@@ -44,6 +44,8 @@ namespace ores::refdata::messaging {
 struct reporting_regime_key {
     std::string code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const reporting_regime_key&, const reporting_regime_key&) = default;
 };
 
 struct reporting_regime_write {
@@ -51,21 +53,32 @@ struct reporting_regime_write {
     std::string coding_scheme_code;
     std::string source;
     std::string description;
+
+    friend bool operator==(const reporting_regime_write&, const reporting_regime_write&) = default;
 };
 
 struct reporting_regime_change {
     reporting_regime_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const reporting_regime_change&,
+                           const reporting_regime_change&) = default;
 };
 
 struct reporting_regime_removal {
     reporting_regime_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const reporting_regime_removal&,
+                           const reporting_regime_removal&) = default;
 };
 
 struct reporting_regime_lookup {
     reporting_regime_key key;
     std::optional<ores::refdata::domain::reporting_regime> reporting_regime;
+
+    friend bool operator==(const reporting_regime_lookup&,
+                           const reporting_regime_lookup&) = default;
 };
 
 struct reporting_regime_event {
@@ -75,17 +88,25 @@ struct reporting_regime_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const reporting_regime_event&, const reporting_regime_event&) = default;
 };
 
 struct reporting_regime_version_key {
     reporting_regime_key reporting_regime;
     std::uint32_t version;
+
+    friend bool operator==(const reporting_regime_version_key&,
+                           const reporting_regime_version_key&) = default;
 };
 
 struct reporting_regime_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const reporting_regime_versions_filter&,
+                           const reporting_regime_versions_filter&) = default;
 };
 
 struct list_reporting_regimes_request {
@@ -102,12 +123,18 @@ struct list_reporting_regimes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_reporting_regimes_request&,
+                           const list_reporting_regimes_request&) = default;
 };
 
 struct list_reporting_regimes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::reporting_regime> regimes;
     std::uint64_t total;
+
+    friend bool operator==(const list_reporting_regimes_response&,
+                           const list_reporting_regimes_response&) = default;
 };
 
 struct get_reporting_regime_request {
@@ -121,11 +148,17 @@ struct get_reporting_regime_request {
      */
     static constexpr bool requires_session = true;
     reporting_regime_key key;
+
+    friend bool operator==(const get_reporting_regime_request&,
+                           const get_reporting_regime_request&) = default;
 };
 
 struct get_reporting_regime_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::reporting_regime> reporting_regime;
+
+    friend bool operator==(const get_reporting_regime_response&,
+                           const get_reporting_regime_response&) = default;
 };
 
 struct get_many_reporting_regimes_request {
@@ -139,11 +172,17 @@ struct get_many_reporting_regimes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<reporting_regime_key> keys;
+
+    friend bool operator==(const get_many_reporting_regimes_request&,
+                           const get_many_reporting_regimes_request&) = default;
 };
 
 struct get_many_reporting_regimes_response {
     ores::utility::domain::result result;
     std::vector<reporting_regime_lookup> entries;
+
+    friend bool operator==(const get_many_reporting_regimes_response&,
+                           const get_many_reporting_regimes_response&) = default;
 };
 
 struct put_reporting_regime_request {
@@ -158,11 +197,17 @@ struct put_reporting_regime_request {
     static constexpr bool requires_session = true;
     reporting_regime_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_reporting_regime_request&,
+                           const put_reporting_regime_request&) = default;
 };
 
 struct put_reporting_regime_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::reporting_regime> reporting_regime;
+
+    friend bool operator==(const put_reporting_regime_response&,
+                           const put_reporting_regime_response&) = default;
 };
 
 struct put_many_reporting_regimes_request {
@@ -177,11 +222,17 @@ struct put_many_reporting_regimes_request {
     static constexpr bool requires_session = true;
     std::vector<reporting_regime_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_reporting_regimes_request&,
+                           const put_many_reporting_regimes_request&) = default;
 };
 
 struct put_many_reporting_regimes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::reporting_regime> regimes;
+
+    friend bool operator==(const put_many_reporting_regimes_response&,
+                           const put_many_reporting_regimes_response&) = default;
 };
 
 struct delete_reporting_regime_request {
@@ -196,10 +247,16 @@ struct delete_reporting_regime_request {
     static constexpr bool requires_session = true;
     reporting_regime_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_reporting_regime_request&,
+                           const delete_reporting_regime_request&) = default;
 };
 
 struct delete_reporting_regime_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_reporting_regime_response&,
+                           const delete_reporting_regime_response&) = default;
 };
 
 struct delete_many_reporting_regimes_request {
@@ -214,10 +271,16 @@ struct delete_many_reporting_regimes_request {
     static constexpr bool requires_session = true;
     std::vector<reporting_regime_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_reporting_regimes_request&,
+                           const delete_many_reporting_regimes_request&) = default;
 };
 
 struct delete_many_reporting_regimes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_reporting_regimes_response&,
+                           const delete_many_reporting_regimes_response&) = default;
 };
 
 struct list_reporting_regime_versions_request {
@@ -235,12 +298,18 @@ struct list_reporting_regime_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<reporting_regime_versions_filter> filter;
+
+    friend bool operator==(const list_reporting_regime_versions_request&,
+                           const list_reporting_regime_versions_request&) = default;
 };
 
 struct list_reporting_regime_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::reporting_regime> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_reporting_regime_versions_response&,
+                           const list_reporting_regime_versions_response&) = default;
 };
 
 struct get_reporting_regime_version_request {
@@ -254,11 +323,17 @@ struct get_reporting_regime_version_request {
      */
     static constexpr bool requires_session = true;
     reporting_regime_version_key key;
+
+    friend bool operator==(const get_reporting_regime_version_request&,
+                           const get_reporting_regime_version_request&) = default;
 };
 
 struct get_reporting_regime_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::reporting_regime> version;
+
+    friend bool operator==(const get_reporting_regime_version_response&,
+                           const get_reporting_regime_version_response&) = default;
 };
 
 /**

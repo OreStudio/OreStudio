@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct report_definition_key {
     std::string name;
+
+    friend bool operator==(const report_definition_key&, const report_definition_key&) = default;
 };
 
 struct report_definition_write {
@@ -64,21 +66,33 @@ struct report_definition_write {
     std::optional<std::string> regulatory_book_type;
     std::optional<std::string> cut_kind_code;
     std::optional<boost::uuids::uuid> cut_id;
+
+    friend bool operator==(const report_definition_write&,
+                           const report_definition_write&) = default;
 };
 
 struct report_definition_change {
     report_definition_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_definition_change&,
+                           const report_definition_change&) = default;
 };
 
 struct report_definition_removal {
     report_definition_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_definition_removal&,
+                           const report_definition_removal&) = default;
 };
 
 struct report_definition_lookup {
     report_definition_key key;
     std::optional<ores::reporting::domain::report_definition> report_definition;
+
+    friend bool operator==(const report_definition_lookup&,
+                           const report_definition_lookup&) = default;
 };
 
 struct report_definitions_filter {
@@ -88,6 +102,9 @@ struct report_definitions_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> cut_kind_code_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const report_definitions_filter&,
+                           const report_definitions_filter&) = default;
 };
 
 struct report_definition_event {
@@ -97,17 +114,26 @@ struct report_definition_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_definition_event&,
+                           const report_definition_event&) = default;
 };
 
 struct report_definition_version_key {
     report_definition_key report_definition;
     std::uint32_t version;
+
+    friend bool operator==(const report_definition_version_key&,
+                           const report_definition_version_key&) = default;
 };
 
 struct report_definition_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const report_definition_versions_filter&,
+                           const report_definition_versions_filter&) = default;
 };
 
 struct list_report_definitions_request {
@@ -125,12 +151,18 @@ struct list_report_definitions_request {
     ores::utility::domain::order order;
     std::optional<report_definitions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_definitions_request&,
+                           const list_report_definitions_request&) = default;
 };
 
 struct list_report_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_definition> definitions;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_definitions_response&,
+                           const list_report_definitions_response&) = default;
 };
 
 struct get_report_definition_request {
@@ -144,11 +176,17 @@ struct get_report_definition_request {
      */
     static constexpr bool requires_session = true;
     report_definition_key key;
+
+    friend bool operator==(const get_report_definition_request&,
+                           const get_report_definition_request&) = default;
 };
 
 struct get_report_definition_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_definition> report_definition;
+
+    friend bool operator==(const get_report_definition_response&,
+                           const get_report_definition_response&) = default;
 };
 
 struct get_many_report_definitions_request {
@@ -162,11 +200,17 @@ struct get_many_report_definitions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_definition_key> keys;
+
+    friend bool operator==(const get_many_report_definitions_request&,
+                           const get_many_report_definitions_request&) = default;
 };
 
 struct get_many_report_definitions_response {
     ores::utility::domain::result result;
     std::vector<report_definition_lookup> entries;
+
+    friend bool operator==(const get_many_report_definitions_response&,
+                           const get_many_report_definitions_response&) = default;
 };
 
 struct put_report_definition_request {
@@ -181,11 +225,17 @@ struct put_report_definition_request {
     static constexpr bool requires_session = true;
     report_definition_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_definition_request&,
+                           const put_report_definition_request&) = default;
 };
 
 struct put_report_definition_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_definition> report_definition;
+
+    friend bool operator==(const put_report_definition_response&,
+                           const put_report_definition_response&) = default;
 };
 
 struct put_many_report_definitions_request {
@@ -200,11 +250,17 @@ struct put_many_report_definitions_request {
     static constexpr bool requires_session = true;
     std::vector<report_definition_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_definitions_request&,
+                           const put_many_report_definitions_request&) = default;
 };
 
 struct put_many_report_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_definition> definitions;
+
+    friend bool operator==(const put_many_report_definitions_response&,
+                           const put_many_report_definitions_response&) = default;
 };
 
 struct delete_report_definition_request {
@@ -219,10 +275,16 @@ struct delete_report_definition_request {
     static constexpr bool requires_session = true;
     report_definition_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_definition_request&,
+                           const delete_report_definition_request&) = default;
 };
 
 struct delete_report_definition_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_definition_response&,
+                           const delete_report_definition_response&) = default;
 };
 
 struct delete_many_report_definitions_request {
@@ -237,10 +299,16 @@ struct delete_many_report_definitions_request {
     static constexpr bool requires_session = true;
     std::vector<report_definition_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_definitions_request&,
+                           const delete_many_report_definitions_request&) = default;
 };
 
 struct delete_many_report_definitions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_definitions_response&,
+                           const delete_many_report_definitions_response&) = default;
 };
 
 struct list_report_definition_versions_request {
@@ -259,12 +327,18 @@ struct list_report_definition_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_definition_versions_filter> filter;
+
+    friend bool operator==(const list_report_definition_versions_request&,
+                           const list_report_definition_versions_request&) = default;
 };
 
 struct list_report_definition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_definition> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_definition_versions_response&,
+                           const list_report_definition_versions_response&) = default;
 };
 
 struct get_report_definition_version_request {
@@ -278,11 +352,17 @@ struct get_report_definition_version_request {
      */
     static constexpr bool requires_session = true;
     report_definition_version_key key;
+
+    friend bool operator==(const get_report_definition_version_request&,
+                           const get_report_definition_version_request&) = default;
 };
 
 struct get_report_definition_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_definition> version;
+
+    friend bool operator==(const get_report_definition_version_response&,
+                           const get_report_definition_version_response&) = default;
 };
 
 /**

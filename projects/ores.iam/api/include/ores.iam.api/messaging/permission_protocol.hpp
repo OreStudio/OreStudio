@@ -43,31 +43,43 @@ namespace ores::iam::messaging {
 
 struct permission_key {
     std::string code;
+
+    friend bool operator==(const permission_key&, const permission_key&) = default;
 };
 
 struct permission_write {
     boost::uuids::uuid id;
     std::string code;
     std::string description;
+
+    friend bool operator==(const permission_write&, const permission_write&) = default;
 };
 
 struct permission_change {
     permission_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const permission_change&, const permission_change&) = default;
 };
 
 struct permission_removal {
     permission_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const permission_removal&, const permission_removal&) = default;
 };
 
 struct permission_lookup {
     permission_key key;
     std::optional<ores::iam::domain::permission> permission;
+
+    friend bool operator==(const permission_lookup&, const permission_lookup&) = default;
 };
 
 struct permissions_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const permissions_filter&, const permissions_filter&) = default;
 };
 
 struct permission_event {
@@ -77,6 +89,8 @@ struct permission_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const permission_event&, const permission_event&) = default;
 };
 
 struct list_permissions_request {
@@ -94,12 +108,18 @@ struct list_permissions_request {
     ores::utility::domain::order order;
     std::optional<permissions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_permissions_request&,
+                           const list_permissions_request&) = default;
 };
 
 struct list_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::permission> permissions;
     std::uint64_t total;
+
+    friend bool operator==(const list_permissions_response&,
+                           const list_permissions_response&) = default;
 };
 
 struct get_permission_request {
@@ -113,11 +133,16 @@ struct get_permission_request {
      */
     static constexpr bool requires_session = true;
     permission_key key;
+
+    friend bool operator==(const get_permission_request&, const get_permission_request&) = default;
 };
 
 struct get_permission_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::permission> permission;
+
+    friend bool operator==(const get_permission_response&,
+                           const get_permission_response&) = default;
 };
 
 struct get_many_permissions_request {
@@ -131,11 +156,17 @@ struct get_many_permissions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<permission_key> keys;
+
+    friend bool operator==(const get_many_permissions_request&,
+                           const get_many_permissions_request&) = default;
 };
 
 struct get_many_permissions_response {
     ores::utility::domain::result result;
     std::vector<permission_lookup> entries;
+
+    friend bool operator==(const get_many_permissions_response&,
+                           const get_many_permissions_response&) = default;
 };
 
 struct put_permission_request {
@@ -150,11 +181,16 @@ struct put_permission_request {
     static constexpr bool requires_session = true;
     permission_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_permission_request&, const put_permission_request&) = default;
 };
 
 struct put_permission_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::permission> permission;
+
+    friend bool operator==(const put_permission_response&,
+                           const put_permission_response&) = default;
 };
 
 struct put_many_permissions_request {
@@ -169,11 +205,17 @@ struct put_many_permissions_request {
     static constexpr bool requires_session = true;
     std::vector<permission_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_permissions_request&,
+                           const put_many_permissions_request&) = default;
 };
 
 struct put_many_permissions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::permission> permissions;
+
+    friend bool operator==(const put_many_permissions_response&,
+                           const put_many_permissions_response&) = default;
 };
 
 struct delete_permission_request {
@@ -188,10 +230,16 @@ struct delete_permission_request {
     static constexpr bool requires_session = true;
     permission_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_permission_request&,
+                           const delete_permission_request&) = default;
 };
 
 struct delete_permission_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_permission_response&,
+                           const delete_permission_response&) = default;
 };
 
 struct delete_many_permissions_request {
@@ -206,10 +254,16 @@ struct delete_many_permissions_request {
     static constexpr bool requires_session = true;
     std::vector<permission_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_permissions_request&,
+                           const delete_many_permissions_request&) = default;
 };
 
 struct delete_many_permissions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_permissions_response&,
+                           const delete_many_permissions_response&) = default;
 };
 
 /**

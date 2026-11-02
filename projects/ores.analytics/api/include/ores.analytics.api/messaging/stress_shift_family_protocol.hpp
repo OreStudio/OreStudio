@@ -43,30 +43,48 @@ namespace ores::analytics::messaging {
 
 struct stress_shift_family_key {
     std::string code;
+
+    friend bool operator==(const stress_shift_family_key&,
+                           const stress_shift_family_key&) = default;
 };
 
 struct stress_shift_family_write {
     std::string code;
     std::string description;
+
+    friend bool operator==(const stress_shift_family_write&,
+                           const stress_shift_family_write&) = default;
 };
 
 struct stress_shift_family_change {
     stress_shift_family_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const stress_shift_family_change&,
+                           const stress_shift_family_change&) = default;
 };
 
 struct stress_shift_family_removal {
     stress_shift_family_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const stress_shift_family_removal&,
+                           const stress_shift_family_removal&) = default;
 };
 
 struct stress_shift_family_lookup {
     stress_shift_family_key key;
     std::optional<ores::analytics::domain::stress_shift_family> stress_shift_family;
+
+    friend bool operator==(const stress_shift_family_lookup&,
+                           const stress_shift_family_lookup&) = default;
 };
 
 struct stress_shift_families_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const stress_shift_families_filter&,
+                           const stress_shift_families_filter&) = default;
 };
 
 struct stress_shift_family_event {
@@ -76,17 +94,26 @@ struct stress_shift_family_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const stress_shift_family_event&,
+                           const stress_shift_family_event&) = default;
 };
 
 struct stress_shift_family_version_key {
     stress_shift_family_key stress_shift_family;
     std::uint32_t version;
+
+    friend bool operator==(const stress_shift_family_version_key&,
+                           const stress_shift_family_version_key&) = default;
 };
 
 struct stress_shift_family_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const stress_shift_family_versions_filter&,
+                           const stress_shift_family_versions_filter&) = default;
 };
 
 struct list_stress_shift_families_request {
@@ -104,12 +131,18 @@ struct list_stress_shift_families_request {
     ores::utility::domain::order order;
     std::optional<stress_shift_families_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_stress_shift_families_request&,
+                           const list_stress_shift_families_request&) = default;
 };
 
 struct list_stress_shift_families_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_shift_family> families;
     std::uint64_t total;
+
+    friend bool operator==(const list_stress_shift_families_response&,
+                           const list_stress_shift_families_response&) = default;
 };
 
 struct get_stress_shift_family_request {
@@ -123,11 +156,17 @@ struct get_stress_shift_family_request {
      */
     static constexpr bool requires_session = true;
     stress_shift_family_key key;
+
+    friend bool operator==(const get_stress_shift_family_request&,
+                           const get_stress_shift_family_request&) = default;
 };
 
 struct get_stress_shift_family_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_shift_family> stress_shift_family;
+
+    friend bool operator==(const get_stress_shift_family_response&,
+                           const get_stress_shift_family_response&) = default;
 };
 
 struct get_many_stress_shift_families_request {
@@ -141,11 +180,17 @@ struct get_many_stress_shift_families_request {
      */
     static constexpr bool requires_session = true;
     std::vector<stress_shift_family_key> keys;
+
+    friend bool operator==(const get_many_stress_shift_families_request&,
+                           const get_many_stress_shift_families_request&) = default;
 };
 
 struct get_many_stress_shift_families_response {
     ores::utility::domain::result result;
     std::vector<stress_shift_family_lookup> entries;
+
+    friend bool operator==(const get_many_stress_shift_families_response&,
+                           const get_many_stress_shift_families_response&) = default;
 };
 
 struct put_stress_shift_family_request {
@@ -160,11 +205,17 @@ struct put_stress_shift_family_request {
     static constexpr bool requires_session = true;
     stress_shift_family_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_stress_shift_family_request&,
+                           const put_stress_shift_family_request&) = default;
 };
 
 struct put_stress_shift_family_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_shift_family> stress_shift_family;
+
+    friend bool operator==(const put_stress_shift_family_response&,
+                           const put_stress_shift_family_response&) = default;
 };
 
 struct put_many_stress_shift_families_request {
@@ -179,11 +230,17 @@ struct put_many_stress_shift_families_request {
     static constexpr bool requires_session = true;
     std::vector<stress_shift_family_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_stress_shift_families_request&,
+                           const put_many_stress_shift_families_request&) = default;
 };
 
 struct put_many_stress_shift_families_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_shift_family> families;
+
+    friend bool operator==(const put_many_stress_shift_families_response&,
+                           const put_many_stress_shift_families_response&) = default;
 };
 
 struct delete_stress_shift_family_request {
@@ -198,10 +255,16 @@ struct delete_stress_shift_family_request {
     static constexpr bool requires_session = true;
     stress_shift_family_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_stress_shift_family_request&,
+                           const delete_stress_shift_family_request&) = default;
 };
 
 struct delete_stress_shift_family_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_stress_shift_family_response&,
+                           const delete_stress_shift_family_response&) = default;
 };
 
 struct delete_many_stress_shift_families_request {
@@ -217,10 +280,16 @@ struct delete_many_stress_shift_families_request {
     static constexpr bool requires_session = true;
     std::vector<stress_shift_family_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_stress_shift_families_request&,
+                           const delete_many_stress_shift_families_request&) = default;
 };
 
 struct delete_many_stress_shift_families_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_stress_shift_families_response&,
+                           const delete_many_stress_shift_families_response&) = default;
 };
 
 struct list_stress_shift_family_versions_request {
@@ -239,12 +308,18 @@ struct list_stress_shift_family_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<stress_shift_family_versions_filter> filter;
+
+    friend bool operator==(const list_stress_shift_family_versions_request&,
+                           const list_stress_shift_family_versions_request&) = default;
 };
 
 struct list_stress_shift_family_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_shift_family> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_stress_shift_family_versions_response&,
+                           const list_stress_shift_family_versions_response&) = default;
 };
 
 struct get_stress_shift_family_version_request {
@@ -259,11 +334,17 @@ struct get_stress_shift_family_version_request {
      */
     static constexpr bool requires_session = true;
     stress_shift_family_version_key key;
+
+    friend bool operator==(const get_stress_shift_family_version_request&,
+                           const get_stress_shift_family_version_request&) = default;
 };
 
 struct get_stress_shift_family_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_shift_family> version;
+
+    friend bool operator==(const get_stress_shift_family_version_response&,
+                           const get_stress_shift_family_version_response&) = default;
 };
 
 /**

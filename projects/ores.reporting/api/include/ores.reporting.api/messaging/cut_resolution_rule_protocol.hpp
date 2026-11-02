@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct cut_resolution_rule_key {
     std::string code;
+
+    friend bool operator==(const cut_resolution_rule_key&,
+                           const cut_resolution_rule_key&) = default;
 };
 
 struct cut_resolution_rule_write {
@@ -50,25 +53,40 @@ struct cut_resolution_rule_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const cut_resolution_rule_write&,
+                           const cut_resolution_rule_write&) = default;
 };
 
 struct cut_resolution_rule_change {
     cut_resolution_rule_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const cut_resolution_rule_change&,
+                           const cut_resolution_rule_change&) = default;
 };
 
 struct cut_resolution_rule_removal {
     cut_resolution_rule_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const cut_resolution_rule_removal&,
+                           const cut_resolution_rule_removal&) = default;
 };
 
 struct cut_resolution_rule_lookup {
     cut_resolution_rule_key key;
     std::optional<ores::reporting::domain::cut_resolution_rule> cut_resolution_rule;
+
+    friend bool operator==(const cut_resolution_rule_lookup&,
+                           const cut_resolution_rule_lookup&) = default;
 };
 
 struct cut_resolution_rules_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const cut_resolution_rules_filter&,
+                           const cut_resolution_rules_filter&) = default;
 };
 
 struct cut_resolution_rule_event {
@@ -78,17 +96,26 @@ struct cut_resolution_rule_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cut_resolution_rule_event&,
+                           const cut_resolution_rule_event&) = default;
 };
 
 struct cut_resolution_rule_version_key {
     cut_resolution_rule_key cut_resolution_rule;
     std::uint32_t version;
+
+    friend bool operator==(const cut_resolution_rule_version_key&,
+                           const cut_resolution_rule_version_key&) = default;
 };
 
 struct cut_resolution_rule_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cut_resolution_rule_versions_filter&,
+                           const cut_resolution_rule_versions_filter&) = default;
 };
 
 struct list_cut_resolution_rules_request {
@@ -106,12 +133,18 @@ struct list_cut_resolution_rules_request {
     ores::utility::domain::order order;
     std::optional<cut_resolution_rules_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cut_resolution_rules_request&,
+                           const list_cut_resolution_rules_request&) = default;
 };
 
 struct list_cut_resolution_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_resolution_rule> rules;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_resolution_rules_response&,
+                           const list_cut_resolution_rules_response&) = default;
 };
 
 struct get_cut_resolution_rule_request {
@@ -125,11 +158,17 @@ struct get_cut_resolution_rule_request {
      */
     static constexpr bool requires_session = true;
     cut_resolution_rule_key key;
+
+    friend bool operator==(const get_cut_resolution_rule_request&,
+                           const get_cut_resolution_rule_request&) = default;
 };
 
 struct get_cut_resolution_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_resolution_rule> cut_resolution_rule;
+
+    friend bool operator==(const get_cut_resolution_rule_response&,
+                           const get_cut_resolution_rule_response&) = default;
 };
 
 struct get_many_cut_resolution_rules_request {
@@ -143,11 +182,17 @@ struct get_many_cut_resolution_rules_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cut_resolution_rule_key> keys;
+
+    friend bool operator==(const get_many_cut_resolution_rules_request&,
+                           const get_many_cut_resolution_rules_request&) = default;
 };
 
 struct get_many_cut_resolution_rules_response {
     ores::utility::domain::result result;
     std::vector<cut_resolution_rule_lookup> entries;
+
+    friend bool operator==(const get_many_cut_resolution_rules_response&,
+                           const get_many_cut_resolution_rules_response&) = default;
 };
 
 struct put_cut_resolution_rule_request {
@@ -162,11 +207,17 @@ struct put_cut_resolution_rule_request {
     static constexpr bool requires_session = true;
     cut_resolution_rule_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cut_resolution_rule_request&,
+                           const put_cut_resolution_rule_request&) = default;
 };
 
 struct put_cut_resolution_rule_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_resolution_rule> cut_resolution_rule;
+
+    friend bool operator==(const put_cut_resolution_rule_response&,
+                           const put_cut_resolution_rule_response&) = default;
 };
 
 struct put_many_cut_resolution_rules_request {
@@ -181,11 +232,17 @@ struct put_many_cut_resolution_rules_request {
     static constexpr bool requires_session = true;
     std::vector<cut_resolution_rule_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cut_resolution_rules_request&,
+                           const put_many_cut_resolution_rules_request&) = default;
 };
 
 struct put_many_cut_resolution_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_resolution_rule> rules;
+
+    friend bool operator==(const put_many_cut_resolution_rules_response&,
+                           const put_many_cut_resolution_rules_response&) = default;
 };
 
 struct delete_cut_resolution_rule_request {
@@ -200,10 +257,16 @@ struct delete_cut_resolution_rule_request {
     static constexpr bool requires_session = true;
     cut_resolution_rule_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_cut_resolution_rule_request&,
+                           const delete_cut_resolution_rule_request&) = default;
 };
 
 struct delete_cut_resolution_rule_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_cut_resolution_rule_response&,
+                           const delete_cut_resolution_rule_response&) = default;
 };
 
 struct delete_many_cut_resolution_rules_request {
@@ -219,10 +282,16 @@ struct delete_many_cut_resolution_rules_request {
     static constexpr bool requires_session = true;
     std::vector<cut_resolution_rule_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_cut_resolution_rules_request&,
+                           const delete_many_cut_resolution_rules_request&) = default;
 };
 
 struct delete_many_cut_resolution_rules_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_cut_resolution_rules_response&,
+                           const delete_many_cut_resolution_rules_response&) = default;
 };
 
 struct list_cut_resolution_rule_versions_request {
@@ -241,12 +310,18 @@ struct list_cut_resolution_rule_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_resolution_rule_versions_filter> filter;
+
+    friend bool operator==(const list_cut_resolution_rule_versions_request&,
+                           const list_cut_resolution_rule_versions_request&) = default;
 };
 
 struct list_cut_resolution_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_resolution_rule> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_resolution_rule_versions_response&,
+                           const list_cut_resolution_rule_versions_response&) = default;
 };
 
 struct get_cut_resolution_rule_version_request {
@@ -261,11 +336,17 @@ struct get_cut_resolution_rule_version_request {
      */
     static constexpr bool requires_session = true;
     cut_resolution_rule_version_key key;
+
+    friend bool operator==(const get_cut_resolution_rule_version_request&,
+                           const get_cut_resolution_rule_version_request&) = default;
 };
 
 struct get_cut_resolution_rule_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut_resolution_rule> version;
+
+    friend bool operator==(const get_cut_resolution_rule_version_response&,
+                           const get_cut_resolution_rule_version_response&) = default;
 };
 
 /**

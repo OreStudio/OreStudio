@@ -57,6 +57,9 @@ struct get_job_instances_request {
     static constexpr bool requires_session = true;
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+
+    friend bool operator==(const get_job_instances_request&,
+                           const get_job_instances_request&) = default;
 };
 
 /**
@@ -106,6 +109,8 @@ struct job_instance_summary {
      * @brief Why execution failed, when it failed.
      */
     std::string error_message;
+
+    friend bool operator==(const job_instance_summary&, const job_instance_summary&) = default;
 };
 
 /**
@@ -116,6 +121,9 @@ struct get_job_instances_response {
     std::string message;
     std::vector<job_instance_summary> instances;
     int total_available_count = 0;
+
+    friend bool operator==(const get_job_instances_response&,
+                           const get_job_instances_response&) = default;
 };
 
 /**
@@ -134,6 +142,9 @@ struct get_scheduler_status_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_scheduler_status_request&,
+                           const get_scheduler_status_request&) = default;
 };
 
 /**
@@ -167,6 +178,8 @@ struct job_schedule_status {
      * @brief Executions of this job that are still starting.
      */
     int running_count = 0;
+
+    friend bool operator==(const job_schedule_status&, const job_schedule_status&) = default;
 };
 
 /**
@@ -178,6 +191,9 @@ struct get_scheduler_status_response {
     std::vector<job_schedule_status> jobs;
     int total_running = 0;
     int total_active = 0;
+
+    friend bool operator==(const get_scheduler_status_response&,
+                           const get_scheduler_status_response&) = default;
 };
 
 /**

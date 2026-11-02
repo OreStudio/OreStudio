@@ -43,6 +43,9 @@ namespace ores::synthetic::messaging {
 
 struct ir_curve_template_entry_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const ir_curve_template_entry_key&,
+                           const ir_curve_template_entry_key&) = default;
 };
 
 struct ir_curve_template_entry_write {
@@ -52,27 +55,42 @@ struct ir_curve_template_entry_write {
     std::string start_tenor_code;
     std::string end_tenor_code;
     std::string instrument_code;
+
+    friend bool operator==(const ir_curve_template_entry_write&,
+                           const ir_curve_template_entry_write&) = default;
 };
 
 struct ir_curve_template_entry_change {
     ir_curve_template_entry_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ir_curve_template_entry_change&,
+                           const ir_curve_template_entry_change&) = default;
 };
 
 struct ir_curve_template_entry_removal {
     ir_curve_template_entry_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ir_curve_template_entry_removal&,
+                           const ir_curve_template_entry_removal&) = default;
 };
 
 struct ir_curve_template_entry_lookup {
     ir_curve_template_entry_key key;
     std::optional<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entry;
+
+    friend bool operator==(const ir_curve_template_entry_lookup&,
+                           const ir_curve_template_entry_lookup&) = default;
 };
 
 struct ir_curve_template_entries_filter {
     std::optional<boost::uuids::uuid> ir_curve_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> ir_curve_config_id_one_of;
+
+    friend bool operator==(const ir_curve_template_entries_filter&,
+                           const ir_curve_template_entries_filter&) = default;
 };
 
 struct ir_curve_template_entry_event {
@@ -82,17 +100,26 @@ struct ir_curve_template_entry_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ir_curve_template_entry_event&,
+                           const ir_curve_template_entry_event&) = default;
 };
 
 struct ir_curve_template_entry_version_key {
     ir_curve_template_entry_key ir_curve_template_entry;
     std::uint32_t version;
+
+    friend bool operator==(const ir_curve_template_entry_version_key&,
+                           const ir_curve_template_entry_version_key&) = default;
 };
 
 struct ir_curve_template_entry_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ir_curve_template_entry_versions_filter&,
+                           const ir_curve_template_entry_versions_filter&) = default;
 };
 
 struct list_ir_curve_template_entries_request {
@@ -110,12 +137,18 @@ struct list_ir_curve_template_entries_request {
     ores::utility::domain::order order;
     std::optional<ir_curve_template_entries_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ir_curve_template_entries_request&,
+                           const list_ir_curve_template_entries_request&) = default;
 };
 
 struct list_ir_curve_template_entries_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entries;
     std::uint64_t total;
+
+    friend bool operator==(const list_ir_curve_template_entries_response&,
+                           const list_ir_curve_template_entries_response&) = default;
 };
 
 struct get_ir_curve_template_entry_request {
@@ -129,11 +162,17 @@ struct get_ir_curve_template_entry_request {
      */
     static constexpr bool requires_session = true;
     ir_curve_template_entry_key key;
+
+    friend bool operator==(const get_ir_curve_template_entry_request&,
+                           const get_ir_curve_template_entry_request&) = default;
 };
 
 struct get_ir_curve_template_entry_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entry;
+
+    friend bool operator==(const get_ir_curve_template_entry_response&,
+                           const get_ir_curve_template_entry_response&) = default;
 };
 
 struct get_many_ir_curve_template_entries_request {
@@ -148,11 +187,17 @@ struct get_many_ir_curve_template_entries_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ir_curve_template_entry_key> keys;
+
+    friend bool operator==(const get_many_ir_curve_template_entries_request&,
+                           const get_many_ir_curve_template_entries_request&) = default;
 };
 
 struct get_many_ir_curve_template_entries_response {
     ores::utility::domain::result result;
     std::vector<ir_curve_template_entry_lookup> entries;
+
+    friend bool operator==(const get_many_ir_curve_template_entries_response&,
+                           const get_many_ir_curve_template_entries_response&) = default;
 };
 
 struct put_ir_curve_template_entry_request {
@@ -167,11 +212,17 @@ struct put_ir_curve_template_entry_request {
     static constexpr bool requires_session = true;
     ir_curve_template_entry_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ir_curve_template_entry_request&,
+                           const put_ir_curve_template_entry_request&) = default;
 };
 
 struct put_ir_curve_template_entry_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entry;
+
+    friend bool operator==(const put_ir_curve_template_entry_response&,
+                           const put_ir_curve_template_entry_response&) = default;
 };
 
 struct put_many_ir_curve_template_entries_request {
@@ -187,11 +238,17 @@ struct put_many_ir_curve_template_entries_request {
     static constexpr bool requires_session = true;
     std::vector<ir_curve_template_entry_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ir_curve_template_entries_request&,
+                           const put_many_ir_curve_template_entries_request&) = default;
 };
 
 struct put_many_ir_curve_template_entries_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_template_entry> ir_curve_template_entries;
+
+    friend bool operator==(const put_many_ir_curve_template_entries_response&,
+                           const put_many_ir_curve_template_entries_response&) = default;
 };
 
 struct delete_ir_curve_template_entry_request {
@@ -207,10 +264,16 @@ struct delete_ir_curve_template_entry_request {
     static constexpr bool requires_session = true;
     ir_curve_template_entry_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ir_curve_template_entry_request&,
+                           const delete_ir_curve_template_entry_request&) = default;
 };
 
 struct delete_ir_curve_template_entry_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ir_curve_template_entry_response&,
+                           const delete_ir_curve_template_entry_response&) = default;
 };
 
 struct delete_many_ir_curve_template_entries_request {
@@ -226,10 +289,16 @@ struct delete_many_ir_curve_template_entries_request {
     static constexpr bool requires_session = true;
     std::vector<ir_curve_template_entry_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ir_curve_template_entries_request&,
+                           const delete_many_ir_curve_template_entries_request&) = default;
 };
 
 struct delete_many_ir_curve_template_entries_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ir_curve_template_entries_response&,
+                           const delete_many_ir_curve_template_entries_response&) = default;
 };
 
 struct list_ir_curve_template_entry_versions_request {
@@ -248,12 +317,18 @@ struct list_ir_curve_template_entry_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ir_curve_template_entry_versions_filter> filter;
+
+    friend bool operator==(const list_ir_curve_template_entry_versions_request&,
+                           const list_ir_curve_template_entry_versions_request&) = default;
 };
 
 struct list_ir_curve_template_entry_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_template_entry> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ir_curve_template_entry_versions_response&,
+                           const list_ir_curve_template_entry_versions_response&) = default;
 };
 
 struct get_ir_curve_template_entry_version_request {
@@ -268,11 +343,17 @@ struct get_ir_curve_template_entry_version_request {
      */
     static constexpr bool requires_session = true;
     ir_curve_template_entry_version_key key;
+
+    friend bool operator==(const get_ir_curve_template_entry_version_request&,
+                           const get_ir_curve_template_entry_version_request&) = default;
 };
 
 struct get_ir_curve_template_entry_version_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::ir_curve_template_entry> version;
+
+    friend bool operator==(const get_ir_curve_template_entry_version_response&,
+                           const get_ir_curve_template_entry_version_response&) = default;
 };
 
 /**

@@ -43,31 +43,43 @@ namespace ores::trading::messaging {
 
 struct ascot_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const ascot_key&, const ascot_key&) = default;
 };
 
 struct ascot_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
     std::string ascot_option_type;
+
+    friend bool operator==(const ascot_write&, const ascot_write&) = default;
 };
 
 struct ascot_change {
     ascot_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ascot_change&, const ascot_change&) = default;
 };
 
 struct ascot_removal {
     ascot_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ascot_removal&, const ascot_removal&) = default;
 };
 
 struct ascot_lookup {
     ascot_key key;
     std::optional<ores::trading::domain::ascot> ascot;
+
+    friend bool operator==(const ascot_lookup&, const ascot_lookup&) = default;
 };
 
 struct ascots_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const ascots_filter&, const ascots_filter&) = default;
 };
 
 struct ascot_event {
@@ -77,17 +89,23 @@ struct ascot_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ascot_event&, const ascot_event&) = default;
 };
 
 struct ascot_version_key {
     ascot_key ascot;
     std::uint32_t version;
+
+    friend bool operator==(const ascot_version_key&, const ascot_version_key&) = default;
 };
 
 struct ascot_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ascot_versions_filter&, const ascot_versions_filter&) = default;
 };
 
 struct list_ascots_request {
@@ -105,12 +123,16 @@ struct list_ascots_request {
     ores::utility::domain::order order;
     std::optional<ascots_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ascots_request&, const list_ascots_request&) = default;
 };
 
 struct list_ascots_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::ascot> ascots;
     std::uint64_t total;
+
+    friend bool operator==(const list_ascots_response&, const list_ascots_response&) = default;
 };
 
 struct get_ascot_request {
@@ -124,11 +146,15 @@ struct get_ascot_request {
      */
     static constexpr bool requires_session = true;
     ascot_key key;
+
+    friend bool operator==(const get_ascot_request&, const get_ascot_request&) = default;
 };
 
 struct get_ascot_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::ascot> ascot;
+
+    friend bool operator==(const get_ascot_response&, const get_ascot_response&) = default;
 };
 
 struct get_many_ascots_request {
@@ -142,11 +168,17 @@ struct get_many_ascots_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ascot_key> keys;
+
+    friend bool operator==(const get_many_ascots_request&,
+                           const get_many_ascots_request&) = default;
 };
 
 struct get_many_ascots_response {
     ores::utility::domain::result result;
     std::vector<ascot_lookup> entries;
+
+    friend bool operator==(const get_many_ascots_response&,
+                           const get_many_ascots_response&) = default;
 };
 
 struct put_ascot_request {
@@ -161,11 +193,15 @@ struct put_ascot_request {
     static constexpr bool requires_session = true;
     ascot_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ascot_request&, const put_ascot_request&) = default;
 };
 
 struct put_ascot_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::ascot> ascot;
+
+    friend bool operator==(const put_ascot_response&, const put_ascot_response&) = default;
 };
 
 struct put_many_ascots_request {
@@ -180,11 +216,17 @@ struct put_many_ascots_request {
     static constexpr bool requires_session = true;
     std::vector<ascot_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ascots_request&,
+                           const put_many_ascots_request&) = default;
 };
 
 struct put_many_ascots_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::ascot> ascots;
+
+    friend bool operator==(const put_many_ascots_response&,
+                           const put_many_ascots_response&) = default;
 };
 
 struct delete_ascot_request {
@@ -199,10 +241,14 @@ struct delete_ascot_request {
     static constexpr bool requires_session = true;
     ascot_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ascot_request&, const delete_ascot_request&) = default;
 };
 
 struct delete_ascot_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ascot_response&, const delete_ascot_response&) = default;
 };
 
 struct delete_many_ascots_request {
@@ -217,10 +263,16 @@ struct delete_many_ascots_request {
     static constexpr bool requires_session = true;
     std::vector<ascot_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ascots_request&,
+                           const delete_many_ascots_request&) = default;
 };
 
 struct delete_many_ascots_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ascots_response&,
+                           const delete_many_ascots_response&) = default;
 };
 
 struct list_ascot_versions_request {
@@ -238,12 +290,18 @@ struct list_ascot_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ascot_versions_filter> filter;
+
+    friend bool operator==(const list_ascot_versions_request&,
+                           const list_ascot_versions_request&) = default;
 };
 
 struct list_ascot_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::ascot> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ascot_versions_response&,
+                           const list_ascot_versions_response&) = default;
 };
 
 struct get_ascot_version_request {
@@ -257,11 +315,17 @@ struct get_ascot_version_request {
      */
     static constexpr bool requires_session = true;
     ascot_version_key key;
+
+    friend bool operator==(const get_ascot_version_request&,
+                           const get_ascot_version_request&) = default;
 };
 
 struct get_ascot_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::ascot> version;
+
+    friend bool operator==(const get_ascot_version_response&,
+                           const get_ascot_version_response&) = default;
 };
 
 /**

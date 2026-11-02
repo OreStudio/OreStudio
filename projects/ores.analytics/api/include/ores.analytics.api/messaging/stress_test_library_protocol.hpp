@@ -43,6 +43,9 @@ namespace ores::analytics::messaging {
 
 struct stress_test_library_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const stress_test_library_key&,
+                           const stress_test_library_key&) = default;
 };
 
 struct stress_test_library_write {
@@ -50,25 +53,40 @@ struct stress_test_library_write {
     std::string name;
     boost::uuids::uuid configuration_id;
     std::optional<bool> use_spreaded_term_structures;
+
+    friend bool operator==(const stress_test_library_write&,
+                           const stress_test_library_write&) = default;
 };
 
 struct stress_test_library_change {
     stress_test_library_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const stress_test_library_change&,
+                           const stress_test_library_change&) = default;
 };
 
 struct stress_test_library_removal {
     stress_test_library_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const stress_test_library_removal&,
+                           const stress_test_library_removal&) = default;
 };
 
 struct stress_test_library_lookup {
     stress_test_library_key key;
     std::optional<ores::analytics::domain::stress_test_library> stress_test_library;
+
+    friend bool operator==(const stress_test_library_lookup&,
+                           const stress_test_library_lookup&) = default;
 };
 
 struct stress_test_libraries_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const stress_test_libraries_filter&,
+                           const stress_test_libraries_filter&) = default;
 };
 
 struct stress_test_library_event {
@@ -78,17 +96,26 @@ struct stress_test_library_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const stress_test_library_event&,
+                           const stress_test_library_event&) = default;
 };
 
 struct stress_test_library_version_key {
     stress_test_library_key stress_test_library;
     std::uint32_t version;
+
+    friend bool operator==(const stress_test_library_version_key&,
+                           const stress_test_library_version_key&) = default;
 };
 
 struct stress_test_library_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const stress_test_library_versions_filter&,
+                           const stress_test_library_versions_filter&) = default;
 };
 
 struct list_stress_test_libraries_request {
@@ -106,12 +133,18 @@ struct list_stress_test_libraries_request {
     ores::utility::domain::order order;
     std::optional<stress_test_libraries_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_stress_test_libraries_request&,
+                           const list_stress_test_libraries_request&) = default;
 };
 
 struct list_stress_test_libraries_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_test_library> stress_test_libraries;
     std::uint64_t total;
+
+    friend bool operator==(const list_stress_test_libraries_response&,
+                           const list_stress_test_libraries_response&) = default;
 };
 
 struct get_stress_test_library_request {
@@ -125,11 +158,17 @@ struct get_stress_test_library_request {
      */
     static constexpr bool requires_session = true;
     stress_test_library_key key;
+
+    friend bool operator==(const get_stress_test_library_request&,
+                           const get_stress_test_library_request&) = default;
 };
 
 struct get_stress_test_library_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_test_library> stress_test_library;
+
+    friend bool operator==(const get_stress_test_library_response&,
+                           const get_stress_test_library_response&) = default;
 };
 
 struct get_many_stress_test_libraries_request {
@@ -143,11 +182,17 @@ struct get_many_stress_test_libraries_request {
      */
     static constexpr bool requires_session = true;
     std::vector<stress_test_library_key> keys;
+
+    friend bool operator==(const get_many_stress_test_libraries_request&,
+                           const get_many_stress_test_libraries_request&) = default;
 };
 
 struct get_many_stress_test_libraries_response {
     ores::utility::domain::result result;
     std::vector<stress_test_library_lookup> entries;
+
+    friend bool operator==(const get_many_stress_test_libraries_response&,
+                           const get_many_stress_test_libraries_response&) = default;
 };
 
 struct put_stress_test_library_request {
@@ -162,11 +207,17 @@ struct put_stress_test_library_request {
     static constexpr bool requires_session = true;
     stress_test_library_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_stress_test_library_request&,
+                           const put_stress_test_library_request&) = default;
 };
 
 struct put_stress_test_library_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_test_library> stress_test_library;
+
+    friend bool operator==(const put_stress_test_library_response&,
+                           const put_stress_test_library_response&) = default;
 };
 
 struct put_many_stress_test_libraries_request {
@@ -181,11 +232,17 @@ struct put_many_stress_test_libraries_request {
     static constexpr bool requires_session = true;
     std::vector<stress_test_library_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_stress_test_libraries_request&,
+                           const put_many_stress_test_libraries_request&) = default;
 };
 
 struct put_many_stress_test_libraries_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_test_library> stress_test_libraries;
+
+    friend bool operator==(const put_many_stress_test_libraries_response&,
+                           const put_many_stress_test_libraries_response&) = default;
 };
 
 struct delete_stress_test_library_request {
@@ -200,10 +257,16 @@ struct delete_stress_test_library_request {
     static constexpr bool requires_session = true;
     stress_test_library_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_stress_test_library_request&,
+                           const delete_stress_test_library_request&) = default;
 };
 
 struct delete_stress_test_library_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_stress_test_library_response&,
+                           const delete_stress_test_library_response&) = default;
 };
 
 struct delete_many_stress_test_libraries_request {
@@ -219,10 +282,16 @@ struct delete_many_stress_test_libraries_request {
     static constexpr bool requires_session = true;
     std::vector<stress_test_library_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_stress_test_libraries_request&,
+                           const delete_many_stress_test_libraries_request&) = default;
 };
 
 struct delete_many_stress_test_libraries_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_stress_test_libraries_response&,
+                           const delete_many_stress_test_libraries_response&) = default;
 };
 
 struct list_stress_test_library_versions_request {
@@ -241,12 +310,18 @@ struct list_stress_test_library_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<stress_test_library_versions_filter> filter;
+
+    friend bool operator==(const list_stress_test_library_versions_request&,
+                           const list_stress_test_library_versions_request&) = default;
 };
 
 struct list_stress_test_library_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::stress_test_library> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_stress_test_library_versions_response&,
+                           const list_stress_test_library_versions_response&) = default;
 };
 
 struct get_stress_test_library_version_request {
@@ -261,11 +336,17 @@ struct get_stress_test_library_version_request {
      */
     static constexpr bool requires_session = true;
     stress_test_library_version_key key;
+
+    friend bool operator==(const get_stress_test_library_version_request&,
+                           const get_stress_test_library_version_request&) = default;
 };
 
 struct get_stress_test_library_version_response {
     ores::utility::domain::result result;
     std::optional<ores::analytics::domain::stress_test_library> version;
+
+    friend bool operator==(const get_stress_test_library_version_response&,
+                           const get_stress_test_library_version_response&) = default;
 };
 
 /**

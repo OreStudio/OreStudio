@@ -57,6 +57,8 @@ struct enter_tenant_request {
      * @brief The id of the tenant to enter.
      */
     std::string tenant_id;
+
+    friend bool operator==(const enter_tenant_request&, const enter_tenant_request&) = default;
 };
 
 struct enter_tenant_response {
@@ -87,6 +89,8 @@ struct enter_tenant_response {
      * @brief How long the session lasts. It is not refreshed.
      */
     int access_lifetime_s = 1800;
+
+    friend bool operator==(const enter_tenant_response&, const enter_tenant_response&) = default;
 };
 
 /**
@@ -105,11 +109,15 @@ struct leave_tenant_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const leave_tenant_request&, const leave_tenant_request&) = default;
 };
 
 struct leave_tenant_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const leave_tenant_response&, const leave_tenant_response&) = default;
 };
 
 /**

@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct configuration_analytic_parameter_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const configuration_analytic_parameter_key&,
+                           const configuration_analytic_parameter_key&) = default;
 };
 
 struct configuration_analytic_parameter_write {
@@ -51,22 +54,34 @@ struct configuration_analytic_parameter_write {
     boost::uuids::uuid ore_parameter_id;
     std::string value;
     int position;
+
+    friend bool operator==(const configuration_analytic_parameter_write&,
+                           const configuration_analytic_parameter_write&) = default;
 };
 
 struct configuration_analytic_parameter_change {
     configuration_analytic_parameter_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const configuration_analytic_parameter_change&,
+                           const configuration_analytic_parameter_change&) = default;
 };
 
 struct configuration_analytic_parameter_removal {
     configuration_analytic_parameter_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const configuration_analytic_parameter_removal&,
+                           const configuration_analytic_parameter_removal&) = default;
 };
 
 struct configuration_analytic_parameter_lookup {
     configuration_analytic_parameter_key key;
     std::optional<ores::reporting::domain::configuration_analytic_parameter>
         configuration_analytic_parameter;
+
+    friend bool operator==(const configuration_analytic_parameter_lookup&,
+                           const configuration_analytic_parameter_lookup&) = default;
 };
 
 struct configuration_analytic_parameters_filter {
@@ -75,6 +90,9 @@ struct configuration_analytic_parameters_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> configuration_analytic_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> ore_parameter_id_one_of;
+
+    friend bool operator==(const configuration_analytic_parameters_filter&,
+                           const configuration_analytic_parameters_filter&) = default;
 };
 
 struct configuration_analytic_parameter_event {
@@ -84,17 +102,26 @@ struct configuration_analytic_parameter_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const configuration_analytic_parameter_event&,
+                           const configuration_analytic_parameter_event&) = default;
 };
 
 struct configuration_analytic_parameter_version_key {
     configuration_analytic_parameter_key configuration_analytic_parameter;
     std::uint32_t version;
+
+    friend bool operator==(const configuration_analytic_parameter_version_key&,
+                           const configuration_analytic_parameter_version_key&) = default;
 };
 
 struct configuration_analytic_parameter_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const configuration_analytic_parameter_versions_filter&,
+                           const configuration_analytic_parameter_versions_filter&) = default;
 };
 
 struct list_configuration_analytic_parameters_request {
@@ -113,12 +140,18 @@ struct list_configuration_analytic_parameters_request {
     ores::utility::domain::order order;
     std::optional<configuration_analytic_parameters_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_configuration_analytic_parameters_request&,
+                           const list_configuration_analytic_parameters_request&) = default;
 };
 
 struct list_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
     std::uint64_t total;
+
+    friend bool operator==(const list_configuration_analytic_parameters_response&,
+                           const list_configuration_analytic_parameters_response&) = default;
 };
 
 struct get_configuration_analytic_parameter_request {
@@ -133,12 +166,18 @@ struct get_configuration_analytic_parameter_request {
      */
     static constexpr bool requires_session = true;
     configuration_analytic_parameter_key key;
+
+    friend bool operator==(const get_configuration_analytic_parameter_request&,
+                           const get_configuration_analytic_parameter_request&) = default;
 };
 
 struct get_configuration_analytic_parameter_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_analytic_parameter>
         configuration_analytic_parameter;
+
+    friend bool operator==(const get_configuration_analytic_parameter_response&,
+                           const get_configuration_analytic_parameter_response&) = default;
 };
 
 struct get_many_configuration_analytic_parameters_request {
@@ -153,11 +192,17 @@ struct get_many_configuration_analytic_parameters_request {
      */
     static constexpr bool requires_session = true;
     std::vector<configuration_analytic_parameter_key> keys;
+
+    friend bool operator==(const get_many_configuration_analytic_parameters_request&,
+                           const get_many_configuration_analytic_parameters_request&) = default;
 };
 
 struct get_many_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<configuration_analytic_parameter_lookup> entries;
+
+    friend bool operator==(const get_many_configuration_analytic_parameters_response&,
+                           const get_many_configuration_analytic_parameters_response&) = default;
 };
 
 struct put_configuration_analytic_parameter_request {
@@ -173,12 +218,18 @@ struct put_configuration_analytic_parameter_request {
     static constexpr bool requires_session = true;
     configuration_analytic_parameter_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_configuration_analytic_parameter_request&,
+                           const put_configuration_analytic_parameter_request&) = default;
 };
 
 struct put_configuration_analytic_parameter_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_analytic_parameter>
         configuration_analytic_parameter;
+
+    friend bool operator==(const put_configuration_analytic_parameter_response&,
+                           const put_configuration_analytic_parameter_response&) = default;
 };
 
 struct put_many_configuration_analytic_parameters_request {
@@ -194,11 +245,17 @@ struct put_many_configuration_analytic_parameters_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_analytic_parameter_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_configuration_analytic_parameters_request&,
+                           const put_many_configuration_analytic_parameters_request&) = default;
 };
 
 struct put_many_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
+
+    friend bool operator==(const put_many_configuration_analytic_parameters_response&,
+                           const put_many_configuration_analytic_parameters_response&) = default;
 };
 
 struct delete_configuration_analytic_parameter_request {
@@ -214,10 +271,16 @@ struct delete_configuration_analytic_parameter_request {
     static constexpr bool requires_session = true;
     configuration_analytic_parameter_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_configuration_analytic_parameter_request&,
+                           const delete_configuration_analytic_parameter_request&) = default;
 };
 
 struct delete_configuration_analytic_parameter_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_configuration_analytic_parameter_response&,
+                           const delete_configuration_analytic_parameter_response&) = default;
 };
 
 struct delete_many_configuration_analytic_parameters_request {
@@ -233,10 +296,16 @@ struct delete_many_configuration_analytic_parameters_request {
     static constexpr bool requires_session = true;
     std::vector<configuration_analytic_parameter_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_configuration_analytic_parameters_request&,
+                           const delete_many_configuration_analytic_parameters_request&) = default;
 };
 
 struct delete_many_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_configuration_analytic_parameters_response&,
+                           const delete_many_configuration_analytic_parameters_response&) = default;
 };
 
 struct list_by_configuration_analytic_id_configuration_analytic_parameters_request {
@@ -257,12 +326,22 @@ struct list_by_configuration_analytic_id_configuration_analytic_parameters_reque
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_analytic_parameters_filter> filter;
+
+    friend bool
+    operator==(const list_by_configuration_analytic_id_configuration_analytic_parameters_request&,
+               const list_by_configuration_analytic_id_configuration_analytic_parameters_request&) =
+        default;
 };
 
 struct list_by_configuration_analytic_id_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
     std::uint64_t total;
+
+    friend bool operator==(
+        const list_by_configuration_analytic_id_configuration_analytic_parameters_response&,
+        const list_by_configuration_analytic_id_configuration_analytic_parameters_response&) =
+        default;
 };
 
 struct list_by_ore_parameter_id_configuration_analytic_parameters_request {
@@ -283,12 +362,20 @@ struct list_by_ore_parameter_id_configuration_analytic_parameters_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_analytic_parameters_filter> filter;
+
+    friend bool
+    operator==(const list_by_ore_parameter_id_configuration_analytic_parameters_request&,
+               const list_by_ore_parameter_id_configuration_analytic_parameters_request&) = default;
 };
 
 struct list_by_ore_parameter_id_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
     std::uint64_t total;
+
+    friend bool operator==(
+        const list_by_ore_parameter_id_configuration_analytic_parameters_response&,
+        const list_by_ore_parameter_id_configuration_analytic_parameters_response&) = default;
 };
 
 struct list_configuration_analytic_parameter_versions_request {
@@ -307,12 +394,19 @@ struct list_configuration_analytic_parameter_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<configuration_analytic_parameter_versions_filter> filter;
+
+    friend bool operator==(const list_configuration_analytic_parameter_versions_request&,
+                           const list_configuration_analytic_parameter_versions_request&) = default;
 };
 
 struct list_configuration_analytic_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> versions;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_configuration_analytic_parameter_versions_response&,
+               const list_configuration_analytic_parameter_versions_response&) = default;
 };
 
 struct get_configuration_analytic_parameter_version_request {
@@ -327,11 +421,17 @@ struct get_configuration_analytic_parameter_version_request {
      */
     static constexpr bool requires_session = true;
     configuration_analytic_parameter_version_key key;
+
+    friend bool operator==(const get_configuration_analytic_parameter_version_request&,
+                           const get_configuration_analytic_parameter_version_request&) = default;
 };
 
 struct get_configuration_analytic_parameter_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::configuration_analytic_parameter> version;
+
+    friend bool operator==(const get_configuration_analytic_parameter_version_response&,
+                           const get_configuration_analytic_parameter_version_response&) = default;
 };
 
 /**

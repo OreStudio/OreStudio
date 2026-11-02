@@ -43,6 +43,8 @@ namespace ores::workflow::messaging {
 
 struct workflow_instance_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const workflow_instance_key&, const workflow_instance_key&) = default;
 };
 
 struct workflow_instance_write {
@@ -57,25 +59,40 @@ struct workflow_instance_write {
     std::string correlation_id;
     std::string created_by;
     int step_count;
+
+    friend bool operator==(const workflow_instance_write&,
+                           const workflow_instance_write&) = default;
 };
 
 struct workflow_instance_change {
     workflow_instance_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const workflow_instance_change&,
+                           const workflow_instance_change&) = default;
 };
 
 struct workflow_instance_removal {
     workflow_instance_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const workflow_instance_removal&,
+                           const workflow_instance_removal&) = default;
 };
 
 struct workflow_instance_lookup {
     workflow_instance_key key;
     std::optional<ores::workflow::domain::workflow_instance> workflow_instance;
+
+    friend bool operator==(const workflow_instance_lookup&,
+                           const workflow_instance_lookup&) = default;
 };
 
 struct workflow_instances_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const workflow_instances_filter&,
+                           const workflow_instances_filter&) = default;
 };
 
 struct workflow_instance_event {
@@ -85,17 +102,26 @@ struct workflow_instance_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const workflow_instance_event&,
+                           const workflow_instance_event&) = default;
 };
 
 struct workflow_instance_version_key {
     workflow_instance_key workflow_instance;
     std::uint32_t version;
+
+    friend bool operator==(const workflow_instance_version_key&,
+                           const workflow_instance_version_key&) = default;
 };
 
 struct workflow_instance_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const workflow_instance_versions_filter&,
+                           const workflow_instance_versions_filter&) = default;
 };
 
 struct list_workflow_instances_request {
@@ -113,12 +139,18 @@ struct list_workflow_instances_request {
     ores::utility::domain::order order;
     std::optional<workflow_instances_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_workflow_instances_request&,
+                           const list_workflow_instances_request&) = default;
 };
 
 struct list_workflow_instances_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_instance> instances;
     std::uint64_t total;
+
+    friend bool operator==(const list_workflow_instances_response&,
+                           const list_workflow_instances_response&) = default;
 };
 
 struct get_workflow_instance_request {
@@ -132,11 +164,17 @@ struct get_workflow_instance_request {
      */
     static constexpr bool requires_session = true;
     workflow_instance_key key;
+
+    friend bool operator==(const get_workflow_instance_request&,
+                           const get_workflow_instance_request&) = default;
 };
 
 struct get_workflow_instance_response {
     ores::utility::domain::result result;
     std::optional<ores::workflow::domain::workflow_instance> workflow_instance;
+
+    friend bool operator==(const get_workflow_instance_response&,
+                           const get_workflow_instance_response&) = default;
 };
 
 struct get_many_workflow_instances_request {
@@ -150,11 +188,17 @@ struct get_many_workflow_instances_request {
      */
     static constexpr bool requires_session = true;
     std::vector<workflow_instance_key> keys;
+
+    friend bool operator==(const get_many_workflow_instances_request&,
+                           const get_many_workflow_instances_request&) = default;
 };
 
 struct get_many_workflow_instances_response {
     ores::utility::domain::result result;
     std::vector<workflow_instance_lookup> entries;
+
+    friend bool operator==(const get_many_workflow_instances_response&,
+                           const get_many_workflow_instances_response&) = default;
 };
 
 struct put_workflow_instance_request {
@@ -169,11 +213,17 @@ struct put_workflow_instance_request {
     static constexpr bool requires_session = true;
     workflow_instance_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_workflow_instance_request&,
+                           const put_workflow_instance_request&) = default;
 };
 
 struct put_workflow_instance_response {
     ores::utility::domain::result result;
     std::optional<ores::workflow::domain::workflow_instance> workflow_instance;
+
+    friend bool operator==(const put_workflow_instance_response&,
+                           const put_workflow_instance_response&) = default;
 };
 
 struct put_many_workflow_instances_request {
@@ -188,11 +238,17 @@ struct put_many_workflow_instances_request {
     static constexpr bool requires_session = true;
     std::vector<workflow_instance_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_workflow_instances_request&,
+                           const put_many_workflow_instances_request&) = default;
 };
 
 struct put_many_workflow_instances_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_instance> instances;
+
+    friend bool operator==(const put_many_workflow_instances_response&,
+                           const put_many_workflow_instances_response&) = default;
 };
 
 struct delete_workflow_instance_request {
@@ -207,10 +263,16 @@ struct delete_workflow_instance_request {
     static constexpr bool requires_session = true;
     workflow_instance_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_workflow_instance_request&,
+                           const delete_workflow_instance_request&) = default;
 };
 
 struct delete_workflow_instance_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_workflow_instance_response&,
+                           const delete_workflow_instance_response&) = default;
 };
 
 struct delete_many_workflow_instances_request {
@@ -225,10 +287,16 @@ struct delete_many_workflow_instances_request {
     static constexpr bool requires_session = true;
     std::vector<workflow_instance_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_workflow_instances_request&,
+                           const delete_many_workflow_instances_request&) = default;
 };
 
 struct delete_many_workflow_instances_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_workflow_instances_response&,
+                           const delete_many_workflow_instances_response&) = default;
 };
 
 struct list_workflow_instance_versions_request {
@@ -246,12 +314,18 @@ struct list_workflow_instance_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<workflow_instance_versions_filter> filter;
+
+    friend bool operator==(const list_workflow_instance_versions_request&,
+                           const list_workflow_instance_versions_request&) = default;
 };
 
 struct list_workflow_instance_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_instance> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_workflow_instance_versions_response&,
+                           const list_workflow_instance_versions_response&) = default;
 };
 
 struct get_workflow_instance_version_request {
@@ -265,11 +339,17 @@ struct get_workflow_instance_version_request {
      */
     static constexpr bool requires_session = true;
     workflow_instance_version_key key;
+
+    friend bool operator==(const get_workflow_instance_version_request&,
+                           const get_workflow_instance_version_request&) = default;
 };
 
 struct get_workflow_instance_version_response {
     ores::utility::domain::result result;
     std::optional<ores::workflow::domain::workflow_instance> version;
+
+    friend bool operator==(const get_workflow_instance_version_response&,
+                           const get_workflow_instance_version_response&) = default;
 };
 
 /**

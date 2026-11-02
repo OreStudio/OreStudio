@@ -44,31 +44,43 @@ namespace ores::refdata::messaging {
 struct party_country_key {
     boost::uuids::uuid party_id;
     std::string country_alpha2_code;
+
+    friend bool operator==(const party_country_key&, const party_country_key&) = default;
 };
 
 struct party_country_write {
     boost::uuids::uuid party_id;
     std::string country_alpha2_code;
+
+    friend bool operator==(const party_country_write&, const party_country_write&) = default;
 };
 
 struct party_country_change {
     party_country_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const party_country_change&, const party_country_change&) = default;
 };
 
 struct party_country_removal {
     party_country_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const party_country_removal&, const party_country_removal&) = default;
 };
 
 struct party_country_lookup {
     party_country_key key;
     std::optional<ores::refdata::domain::party_country> party_country;
+
+    friend bool operator==(const party_country_lookup&, const party_country_lookup&) = default;
 };
 
 struct party_countries_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const party_countries_filter&, const party_countries_filter&) = default;
 };
 
 struct party_country_event {
@@ -78,6 +90,8 @@ struct party_country_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_country_event&, const party_country_event&) = default;
 };
 
 struct list_party_countries_request {
@@ -94,12 +108,18 @@ struct list_party_countries_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_countries_filter> filter;
+
+    friend bool operator==(const list_party_countries_request&,
+                           const list_party_countries_request&) = default;
 };
 
 struct list_party_countries_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_country> party_countries;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_countries_response&,
+                           const list_party_countries_response&) = default;
 };
 
 struct get_party_country_request {
@@ -113,11 +133,17 @@ struct get_party_country_request {
      */
     static constexpr bool requires_session = true;
     party_country_key key;
+
+    friend bool operator==(const get_party_country_request&,
+                           const get_party_country_request&) = default;
 };
 
 struct get_party_country_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_country> party_country;
+
+    friend bool operator==(const get_party_country_response&,
+                           const get_party_country_response&) = default;
 };
 
 struct get_many_party_countries_request {
@@ -131,11 +157,17 @@ struct get_many_party_countries_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_country_key> keys;
+
+    friend bool operator==(const get_many_party_countries_request&,
+                           const get_many_party_countries_request&) = default;
 };
 
 struct get_many_party_countries_response {
     ores::utility::domain::result result;
     std::vector<party_country_lookup> entries;
+
+    friend bool operator==(const get_many_party_countries_response&,
+                           const get_many_party_countries_response&) = default;
 };
 
 struct put_party_country_request {
@@ -150,11 +182,17 @@ struct put_party_country_request {
     static constexpr bool requires_session = true;
     party_country_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_party_country_request&,
+                           const put_party_country_request&) = default;
 };
 
 struct put_party_country_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_country> party_country;
+
+    friend bool operator==(const put_party_country_response&,
+                           const put_party_country_response&) = default;
 };
 
 struct put_many_party_countries_request {
@@ -169,11 +207,17 @@ struct put_many_party_countries_request {
     static constexpr bool requires_session = true;
     std::vector<party_country_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_party_countries_request&,
+                           const put_many_party_countries_request&) = default;
 };
 
 struct put_many_party_countries_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_country> party_countries;
+
+    friend bool operator==(const put_many_party_countries_response&,
+                           const put_many_party_countries_response&) = default;
 };
 
 struct delete_party_country_request {
@@ -188,10 +232,16 @@ struct delete_party_country_request {
     static constexpr bool requires_session = true;
     party_country_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_party_country_request&,
+                           const delete_party_country_request&) = default;
 };
 
 struct delete_party_country_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_party_country_response&,
+                           const delete_party_country_response&) = default;
 };
 
 struct delete_many_party_countries_request {
@@ -206,10 +256,16 @@ struct delete_many_party_countries_request {
     static constexpr bool requires_session = true;
     std::vector<party_country_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_party_countries_request&,
+                           const delete_many_party_countries_request&) = default;
 };
 
 struct delete_many_party_countries_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_party_countries_response&,
+                           const delete_many_party_countries_response&) = default;
 };
 
 struct list_by_party_id_party_countries_request {
@@ -228,12 +284,18 @@ struct list_by_party_id_party_countries_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_countries_filter> filter;
+
+    friend bool operator==(const list_by_party_id_party_countries_request&,
+                           const list_by_party_id_party_countries_request&) = default;
 };
 
 struct list_by_party_id_party_countries_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_country> party_countries;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_party_id_party_countries_response&,
+                           const list_by_party_id_party_countries_response&) = default;
 };
 
 /**

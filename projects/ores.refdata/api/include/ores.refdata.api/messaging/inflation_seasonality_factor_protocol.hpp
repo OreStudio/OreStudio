@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct inflation_seasonality_factor_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const inflation_seasonality_factor_key&,
+                           const inflation_seasonality_factor_key&) = default;
 };
 
 struct inflation_seasonality_factor_write {
@@ -50,25 +53,40 @@ struct inflation_seasonality_factor_write {
     boost::uuids::uuid curve_definition_id;
     std::string factor;
     int position;
+
+    friend bool operator==(const inflation_seasonality_factor_write&,
+                           const inflation_seasonality_factor_write&) = default;
 };
 
 struct inflation_seasonality_factor_change {
     inflation_seasonality_factor_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const inflation_seasonality_factor_change&,
+                           const inflation_seasonality_factor_change&) = default;
 };
 
 struct inflation_seasonality_factor_removal {
     inflation_seasonality_factor_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const inflation_seasonality_factor_removal&,
+                           const inflation_seasonality_factor_removal&) = default;
 };
 
 struct inflation_seasonality_factor_lookup {
     inflation_seasonality_factor_key key;
     std::optional<ores::refdata::domain::inflation_seasonality_factor> inflation_seasonality_factor;
+
+    friend bool operator==(const inflation_seasonality_factor_lookup&,
+                           const inflation_seasonality_factor_lookup&) = default;
 };
 
 struct inflation_seasonality_factors_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const inflation_seasonality_factors_filter&,
+                           const inflation_seasonality_factors_filter&) = default;
 };
 
 struct inflation_seasonality_factor_event {
@@ -78,17 +96,26 @@ struct inflation_seasonality_factor_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const inflation_seasonality_factor_event&,
+                           const inflation_seasonality_factor_event&) = default;
 };
 
 struct inflation_seasonality_factor_version_key {
     inflation_seasonality_factor_key inflation_seasonality_factor;
     std::uint32_t version;
+
+    friend bool operator==(const inflation_seasonality_factor_version_key&,
+                           const inflation_seasonality_factor_version_key&) = default;
 };
 
 struct inflation_seasonality_factor_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const inflation_seasonality_factor_versions_filter&,
+                           const inflation_seasonality_factor_versions_filter&) = default;
 };
 
 struct list_inflation_seasonality_factors_request {
@@ -107,12 +134,18 @@ struct list_inflation_seasonality_factors_request {
     ores::utility::domain::order order;
     std::optional<inflation_seasonality_factors_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_inflation_seasonality_factors_request&,
+                           const list_inflation_seasonality_factors_request&) = default;
 };
 
 struct list_inflation_seasonality_factors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::uint64_t total;
+
+    friend bool operator==(const list_inflation_seasonality_factors_response&,
+                           const list_inflation_seasonality_factors_response&) = default;
 };
 
 struct get_inflation_seasonality_factor_request {
@@ -126,11 +159,17 @@ struct get_inflation_seasonality_factor_request {
      */
     static constexpr bool requires_session = true;
     inflation_seasonality_factor_key key;
+
+    friend bool operator==(const get_inflation_seasonality_factor_request&,
+                           const get_inflation_seasonality_factor_request&) = default;
 };
 
 struct get_inflation_seasonality_factor_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_seasonality_factor> inflation_seasonality_factor;
+
+    friend bool operator==(const get_inflation_seasonality_factor_response&,
+                           const get_inflation_seasonality_factor_response&) = default;
 };
 
 struct get_many_inflation_seasonality_factors_request {
@@ -145,11 +184,17 @@ struct get_many_inflation_seasonality_factors_request {
      */
     static constexpr bool requires_session = true;
     std::vector<inflation_seasonality_factor_key> keys;
+
+    friend bool operator==(const get_many_inflation_seasonality_factors_request&,
+                           const get_many_inflation_seasonality_factors_request&) = default;
 };
 
 struct get_many_inflation_seasonality_factors_response {
     ores::utility::domain::result result;
     std::vector<inflation_seasonality_factor_lookup> entries;
+
+    friend bool operator==(const get_many_inflation_seasonality_factors_response&,
+                           const get_many_inflation_seasonality_factors_response&) = default;
 };
 
 struct put_inflation_seasonality_factor_request {
@@ -164,11 +209,17 @@ struct put_inflation_seasonality_factor_request {
     static constexpr bool requires_session = true;
     inflation_seasonality_factor_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_inflation_seasonality_factor_request&,
+                           const put_inflation_seasonality_factor_request&) = default;
 };
 
 struct put_inflation_seasonality_factor_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_seasonality_factor> inflation_seasonality_factor;
+
+    friend bool operator==(const put_inflation_seasonality_factor_response&,
+                           const put_inflation_seasonality_factor_response&) = default;
 };
 
 struct put_many_inflation_seasonality_factors_request {
@@ -184,11 +235,17 @@ struct put_many_inflation_seasonality_factors_request {
     static constexpr bool requires_session = true;
     std::vector<inflation_seasonality_factor_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_inflation_seasonality_factors_request&,
+                           const put_many_inflation_seasonality_factors_request&) = default;
 };
 
 struct put_many_inflation_seasonality_factors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
+
+    friend bool operator==(const put_many_inflation_seasonality_factors_response&,
+                           const put_many_inflation_seasonality_factors_response&) = default;
 };
 
 struct delete_inflation_seasonality_factor_request {
@@ -204,10 +261,16 @@ struct delete_inflation_seasonality_factor_request {
     static constexpr bool requires_session = true;
     inflation_seasonality_factor_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_inflation_seasonality_factor_request&,
+                           const delete_inflation_seasonality_factor_request&) = default;
 };
 
 struct delete_inflation_seasonality_factor_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_inflation_seasonality_factor_response&,
+                           const delete_inflation_seasonality_factor_response&) = default;
 };
 
 struct delete_many_inflation_seasonality_factors_request {
@@ -223,10 +286,16 @@ struct delete_many_inflation_seasonality_factors_request {
     static constexpr bool requires_session = true;
     std::vector<inflation_seasonality_factor_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_inflation_seasonality_factors_request&,
+                           const delete_many_inflation_seasonality_factors_request&) = default;
 };
 
 struct delete_many_inflation_seasonality_factors_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_inflation_seasonality_factors_response&,
+                           const delete_many_inflation_seasonality_factors_response&) = default;
 };
 
 struct list_inflation_seasonality_factor_versions_request {
@@ -245,12 +314,18 @@ struct list_inflation_seasonality_factor_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<inflation_seasonality_factor_versions_filter> filter;
+
+    friend bool operator==(const list_inflation_seasonality_factor_versions_request&,
+                           const list_inflation_seasonality_factor_versions_request&) = default;
 };
 
 struct list_inflation_seasonality_factor_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_inflation_seasonality_factor_versions_response&,
+                           const list_inflation_seasonality_factor_versions_response&) = default;
 };
 
 struct get_inflation_seasonality_factor_version_request {
@@ -265,11 +340,17 @@ struct get_inflation_seasonality_factor_version_request {
      */
     static constexpr bool requires_session = true;
     inflation_seasonality_factor_version_key key;
+
+    friend bool operator==(const get_inflation_seasonality_factor_version_request&,
+                           const get_inflation_seasonality_factor_version_request&) = default;
 };
 
 struct get_inflation_seasonality_factor_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::inflation_seasonality_factor> version;
+
+    friend bool operator==(const get_inflation_seasonality_factor_version_response&,
+                           const get_inflation_seasonality_factor_version_response&) = default;
 };
 
 /**

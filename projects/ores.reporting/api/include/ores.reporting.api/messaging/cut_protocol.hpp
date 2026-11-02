@@ -43,11 +43,15 @@ namespace ores::reporting::messaging {
 
 struct cut_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const cut_key&, const cut_key&) = default;
 };
 
 struct cut_lookup {
     cut_key key;
     std::optional<ores::reporting::domain::cut> cut;
+
+    friend bool operator==(const cut_lookup&, const cut_lookup&) = default;
 };
 
 struct cuts_filter {
@@ -58,6 +62,8 @@ struct cuts_filter {
     std::optional<std::vector<std::string>> kind_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> business_centre_code_one_of;
+
+    friend bool operator==(const cuts_filter&, const cuts_filter&) = default;
 };
 
 struct cut_event {
@@ -67,17 +73,23 @@ struct cut_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const cut_event&, const cut_event&) = default;
 };
 
 struct cut_version_key {
     cut_key cut;
     std::uint32_t version;
+
+    friend bool operator==(const cut_version_key&, const cut_version_key&) = default;
 };
 
 struct cut_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const cut_versions_filter&, const cut_versions_filter&) = default;
 };
 
 struct list_cuts_request {
@@ -95,12 +107,16 @@ struct list_cuts_request {
     ores::utility::domain::order order;
     std::optional<cuts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_cuts_request&, const list_cuts_request&) = default;
 };
 
 struct list_cuts_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> cuts;
     std::uint64_t total;
+
+    friend bool operator==(const list_cuts_response&, const list_cuts_response&) = default;
 };
 
 struct get_cut_request {
@@ -114,11 +130,15 @@ struct get_cut_request {
      */
     static constexpr bool requires_session = true;
     cut_key key;
+
+    friend bool operator==(const get_cut_request&, const get_cut_request&) = default;
 };
 
 struct get_cut_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut> cut;
+
+    friend bool operator==(const get_cut_response&, const get_cut_response&) = default;
 };
 
 struct get_many_cuts_request {
@@ -132,11 +152,15 @@ struct get_many_cuts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cut_key> keys;
+
+    friend bool operator==(const get_many_cuts_request&, const get_many_cuts_request&) = default;
 };
 
 struct get_many_cuts_response {
     ores::utility::domain::result result;
     std::vector<cut_lookup> entries;
+
+    friend bool operator==(const get_many_cuts_response&, const get_many_cuts_response&) = default;
 };
 
 struct list_by_kind_code_cuts_request {
@@ -155,12 +179,18 @@ struct list_by_kind_code_cuts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cuts_filter> filter;
+
+    friend bool operator==(const list_by_kind_code_cuts_request&,
+                           const list_by_kind_code_cuts_request&) = default;
 };
 
 struct list_by_kind_code_cuts_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> cuts;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_kind_code_cuts_response&,
+                           const list_by_kind_code_cuts_response&) = default;
 };
 
 struct list_cut_versions_request {
@@ -178,12 +208,18 @@ struct list_cut_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cut_versions_filter> filter;
+
+    friend bool operator==(const list_cut_versions_request&,
+                           const list_cut_versions_request&) = default;
 };
 
 struct list_cut_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_cut_versions_response&,
+                           const list_cut_versions_response&) = default;
 };
 
 struct get_cut_version_request {
@@ -197,11 +233,17 @@ struct get_cut_version_request {
      */
     static constexpr bool requires_session = true;
     cut_version_key key;
+
+    friend bool operator==(const get_cut_version_request&,
+                           const get_cut_version_request&) = default;
 };
 
 struct get_cut_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::cut> version;
+
+    friend bool operator==(const get_cut_version_response&,
+                           const get_cut_version_response&) = default;
 };
 
 /**

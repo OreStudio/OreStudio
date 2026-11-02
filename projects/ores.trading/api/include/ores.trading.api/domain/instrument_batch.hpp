@@ -439,6 +439,8 @@ struct instrument_batch {
      * @brief The vanilla_swap_instrument rows, keyed by trade id.
      */
     std::vector<vanilla_swap_instrument> vanilla_swap_instruments;
+
+    friend bool operator==(const instrument_batch&, const instrument_batch&) = default;
 };
 
 /**

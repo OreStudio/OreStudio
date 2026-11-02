@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct default_curve_configuration_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const default_curve_configuration_key&,
+                           const default_curve_configuration_key&) = default;
 };
 
 struct default_curve_configuration_write {
@@ -72,25 +75,40 @@ struct default_curve_configuration_write {
     std::optional<std::string> initial_state;
     std::optional<std::string> states;
     int position;
+
+    friend bool operator==(const default_curve_configuration_write&,
+                           const default_curve_configuration_write&) = default;
 };
 
 struct default_curve_configuration_change {
     default_curve_configuration_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const default_curve_configuration_change&,
+                           const default_curve_configuration_change&) = default;
 };
 
 struct default_curve_configuration_removal {
     default_curve_configuration_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const default_curve_configuration_removal&,
+                           const default_curve_configuration_removal&) = default;
 };
 
 struct default_curve_configuration_lookup {
     default_curve_configuration_key key;
     std::optional<ores::refdata::domain::default_curve_configuration> default_curve_configuration;
+
+    friend bool operator==(const default_curve_configuration_lookup&,
+                           const default_curve_configuration_lookup&) = default;
 };
 
 struct default_curve_configurations_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const default_curve_configurations_filter&,
+                           const default_curve_configurations_filter&) = default;
 };
 
 struct default_curve_configuration_event {
@@ -100,17 +118,26 @@ struct default_curve_configuration_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const default_curve_configuration_event&,
+                           const default_curve_configuration_event&) = default;
 };
 
 struct default_curve_configuration_version_key {
     default_curve_configuration_key default_curve_configuration;
     std::uint32_t version;
+
+    friend bool operator==(const default_curve_configuration_version_key&,
+                           const default_curve_configuration_version_key&) = default;
 };
 
 struct default_curve_configuration_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const default_curve_configuration_versions_filter&,
+                           const default_curve_configuration_versions_filter&) = default;
 };
 
 struct list_default_curve_configurations_request {
@@ -128,12 +155,18 @@ struct list_default_curve_configurations_request {
     ores::utility::domain::order order;
     std::optional<default_curve_configurations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_default_curve_configurations_request&,
+                           const list_default_curve_configurations_request&) = default;
 };
 
 struct list_default_curve_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_configuration> configurations;
     std::uint64_t total;
+
+    friend bool operator==(const list_default_curve_configurations_response&,
+                           const list_default_curve_configurations_response&) = default;
 };
 
 struct get_default_curve_configuration_request {
@@ -147,11 +180,17 @@ struct get_default_curve_configuration_request {
      */
     static constexpr bool requires_session = true;
     default_curve_configuration_key key;
+
+    friend bool operator==(const get_default_curve_configuration_request&,
+                           const get_default_curve_configuration_request&) = default;
 };
 
 struct get_default_curve_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::default_curve_configuration> default_curve_configuration;
+
+    friend bool operator==(const get_default_curve_configuration_response&,
+                           const get_default_curve_configuration_response&) = default;
 };
 
 struct get_many_default_curve_configurations_request {
@@ -166,11 +205,17 @@ struct get_many_default_curve_configurations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<default_curve_configuration_key> keys;
+
+    friend bool operator==(const get_many_default_curve_configurations_request&,
+                           const get_many_default_curve_configurations_request&) = default;
 };
 
 struct get_many_default_curve_configurations_response {
     ores::utility::domain::result result;
     std::vector<default_curve_configuration_lookup> entries;
+
+    friend bool operator==(const get_many_default_curve_configurations_response&,
+                           const get_many_default_curve_configurations_response&) = default;
 };
 
 struct put_default_curve_configuration_request {
@@ -185,11 +230,17 @@ struct put_default_curve_configuration_request {
     static constexpr bool requires_session = true;
     default_curve_configuration_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_default_curve_configuration_request&,
+                           const put_default_curve_configuration_request&) = default;
 };
 
 struct put_default_curve_configuration_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::default_curve_configuration> default_curve_configuration;
+
+    friend bool operator==(const put_default_curve_configuration_response&,
+                           const put_default_curve_configuration_response&) = default;
 };
 
 struct put_many_default_curve_configurations_request {
@@ -205,11 +256,17 @@ struct put_many_default_curve_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<default_curve_configuration_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_default_curve_configurations_request&,
+                           const put_many_default_curve_configurations_request&) = default;
 };
 
 struct put_many_default_curve_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_configuration> configurations;
+
+    friend bool operator==(const put_many_default_curve_configurations_response&,
+                           const put_many_default_curve_configurations_response&) = default;
 };
 
 struct delete_default_curve_configuration_request {
@@ -225,10 +282,16 @@ struct delete_default_curve_configuration_request {
     static constexpr bool requires_session = true;
     default_curve_configuration_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_default_curve_configuration_request&,
+                           const delete_default_curve_configuration_request&) = default;
 };
 
 struct delete_default_curve_configuration_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_default_curve_configuration_response&,
+                           const delete_default_curve_configuration_response&) = default;
 };
 
 struct delete_many_default_curve_configurations_request {
@@ -244,10 +307,16 @@ struct delete_many_default_curve_configurations_request {
     static constexpr bool requires_session = true;
     std::vector<default_curve_configuration_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_default_curve_configurations_request&,
+                           const delete_many_default_curve_configurations_request&) = default;
 };
 
 struct delete_many_default_curve_configurations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_default_curve_configurations_response&,
+                           const delete_many_default_curve_configurations_response&) = default;
 };
 
 struct list_default_curve_configuration_versions_request {
@@ -266,12 +335,18 @@ struct list_default_curve_configuration_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<default_curve_configuration_versions_filter> filter;
+
+    friend bool operator==(const list_default_curve_configuration_versions_request&,
+                           const list_default_curve_configuration_versions_request&) = default;
 };
 
 struct list_default_curve_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_configuration> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_default_curve_configuration_versions_response&,
+                           const list_default_curve_configuration_versions_response&) = default;
 };
 
 struct get_default_curve_configuration_version_request {
@@ -286,11 +361,17 @@ struct get_default_curve_configuration_version_request {
      */
     static constexpr bool requires_session = true;
     default_curve_configuration_version_key key;
+
+    friend bool operator==(const get_default_curve_configuration_version_request&,
+                           const get_default_curve_configuration_version_request&) = default;
 };
 
 struct get_default_curve_configuration_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::default_curve_configuration> version;
+
+    friend bool operator==(const get_default_curve_configuration_version_response&,
+                           const get_default_curve_configuration_version_response&) = default;
 };
 
 /**

@@ -58,6 +58,8 @@ struct run_parameter {
     std::string name;
     std::string value;
     int position = 0;
+
+    friend bool operator==(const run_parameter&, const run_parameter&) = default;
 };
 
 /**
@@ -70,6 +72,8 @@ struct run_parameter {
 struct run_analytic {
     ores::reporting::domain::configuration_analytic analytic;
     std::vector<run_parameter> parameters;
+
+    friend bool operator==(const run_analytic&, const run_analytic&) = default;
 };
 
 /**
@@ -84,6 +88,8 @@ struct run_analytic {
 struct run_file {
     std::string parameter;
     std::string name;
+
+    friend bool operator==(const run_file&, const run_file&) = default;
 };
 
 /**
@@ -98,6 +104,8 @@ struct run_engine_settings {
     std::optional<ores::reporting::domain::engine_settings_fixings> fixings;
     std::optional<ores::reporting::domain::engine_settings_building> building;
     std::optional<ores::reporting::domain::engine_settings_execution> execution;
+
+    friend bool operator==(const run_engine_settings&, const run_engine_settings&) = default;
 };
 
 /**
@@ -115,6 +123,8 @@ struct run_document {
     std::vector<run_file> files;
     std::vector<run_analytic> analytics;
     std::vector<ores::reporting::domain::configuration_market_binding> market_bindings;
+
+    friend bool operator==(const run_document&, const run_document&) = default;
 };
 
 /**
@@ -135,6 +145,9 @@ struct save_run_document_request {
     static constexpr bool requires_session = true;
     std::string report_definition_id;
     run_document document;
+
+    friend bool operator==(const save_run_document_request&,
+                           const save_run_document_request&) = default;
 };
 
 /**
@@ -143,6 +156,9 @@ struct save_run_document_request {
 struct save_run_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const save_run_document_response&,
+                           const save_run_document_response&) = default;
 };
 
 /**
@@ -162,6 +178,9 @@ struct bind_configuration_request {
     std::string report_definition_id;
     std::string configuration_type_code;
     std::string name;
+
+    friend bool operator==(const bind_configuration_request&,
+                           const bind_configuration_request&) = default;
 };
 
 /**
@@ -171,6 +190,9 @@ struct bind_configuration_response {
     bool success = false;
     std::string message;
     std::string configuration_id;
+
+    friend bool operator==(const bind_configuration_response&,
+                           const bind_configuration_response&) = default;
 };
 
 /**
@@ -187,6 +209,9 @@ struct get_run_document_request {
      */
     static constexpr bool requires_session = true;
     std::string report_definition_id;
+
+    friend bool operator==(const get_run_document_request&,
+                           const get_run_document_request&) = default;
 };
 
 /**
@@ -199,6 +224,9 @@ struct get_run_document_response {
     std::vector<domain::report_configuration> bindings;
     /** The party that owns the definition, whose configuration documents the run reads. */
     std::string party_id;
+
+    friend bool operator==(const get_run_document_response&,
+                           const get_run_document_response&) = default;
 };
 
 /**
@@ -218,6 +246,9 @@ struct delete_run_document_request {
      */
     static constexpr bool requires_session = true;
     std::string report_definition_id;
+
+    friend bool operator==(const delete_run_document_request&,
+                           const delete_run_document_request&) = default;
 };
 
 /**
@@ -226,6 +257,9 @@ struct delete_run_document_request {
 struct delete_run_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_run_document_response&,
+                           const delete_run_document_response&) = default;
 };
 
 /**

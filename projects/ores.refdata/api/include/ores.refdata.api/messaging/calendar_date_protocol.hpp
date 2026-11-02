@@ -44,16 +44,22 @@ namespace ores::refdata::messaging {
 struct calendar_date_key {
     std::string calendar_code;
     std::chrono::year_month_day date;
+
+    friend bool operator==(const calendar_date_key&, const calendar_date_key&) = default;
 };
 
 struct calendar_date_lookup {
     calendar_date_key key;
     std::optional<ores::refdata::domain::calendar_date> calendar_date;
+
+    friend bool operator==(const calendar_date_lookup&, const calendar_date_lookup&) = default;
 };
 
 struct calendar_dates_filter {
     std::optional<std::string> calendar_code;
     std::optional<std::vector<std::string>> calendar_code_one_of;
+
+    friend bool operator==(const calendar_dates_filter&, const calendar_dates_filter&) = default;
 };
 
 struct list_calendar_dates_request {
@@ -70,12 +76,18 @@ struct list_calendar_dates_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_dates_filter> filter;
+
+    friend bool operator==(const list_calendar_dates_request&,
+                           const list_calendar_dates_request&) = default;
 };
 
 struct list_calendar_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_date> calendar_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_calendar_dates_response&,
+                           const list_calendar_dates_response&) = default;
 };
 
 struct get_calendar_date_request {
@@ -89,11 +101,17 @@ struct get_calendar_date_request {
      */
     static constexpr bool requires_session = true;
     calendar_date_key key;
+
+    friend bool operator==(const get_calendar_date_request&,
+                           const get_calendar_date_request&) = default;
 };
 
 struct get_calendar_date_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::calendar_date> calendar_date;
+
+    friend bool operator==(const get_calendar_date_response&,
+                           const get_calendar_date_response&) = default;
 };
 
 struct get_many_calendar_dates_request {
@@ -107,11 +125,17 @@ struct get_many_calendar_dates_request {
      */
     static constexpr bool requires_session = true;
     std::vector<calendar_date_key> keys;
+
+    friend bool operator==(const get_many_calendar_dates_request&,
+                           const get_many_calendar_dates_request&) = default;
 };
 
 struct get_many_calendar_dates_response {
     ores::utility::domain::result result;
     std::vector<calendar_date_lookup> entries;
+
+    friend bool operator==(const get_many_calendar_dates_response&,
+                           const get_many_calendar_dates_response&) = default;
 };
 
 struct list_by_calendar_code_calendar_dates_request {
@@ -131,12 +155,18 @@ struct list_by_calendar_code_calendar_dates_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<calendar_dates_filter> filter;
+
+    friend bool operator==(const list_by_calendar_code_calendar_dates_request&,
+                           const list_by_calendar_code_calendar_dates_request&) = default;
 };
 
 struct list_by_calendar_code_calendar_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_date> calendar_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_calendar_code_calendar_dates_response&,
+                           const list_by_calendar_code_calendar_dates_response&) = default;
 };
 
 /**

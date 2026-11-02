@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct market_fixing_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const market_fixing_key&, const market_fixing_key&) = default;
 };
 
 struct market_fixing_write {
@@ -52,27 +54,37 @@ struct market_fixing_write {
     std::chrono::year_month_day fixing_date;
     std::string value;
     std::string source;
+
+    friend bool operator==(const market_fixing_write&, const market_fixing_write&) = default;
 };
 
 struct market_fixing_change {
     market_fixing_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const market_fixing_change&, const market_fixing_change&) = default;
 };
 
 struct market_fixing_removal {
     market_fixing_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const market_fixing_removal&, const market_fixing_removal&) = default;
 };
 
 struct market_fixing_lookup {
     market_fixing_key key;
     std::optional<ores::marketdata::domain::market_fixing> market_fixing;
+
+    friend bool operator==(const market_fixing_lookup&, const market_fixing_lookup&) = default;
 };
 
 struct market_fixings_filter {
     std::optional<boost::uuids::uuid> series_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> series_id_one_of;
+
+    friend bool operator==(const market_fixings_filter&, const market_fixings_filter&) = default;
 };
 
 struct market_fixing_event {
@@ -82,6 +94,8 @@ struct market_fixing_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const market_fixing_event&, const market_fixing_event&) = default;
 };
 
 struct list_market_fixings_request {
@@ -99,12 +113,18 @@ struct list_market_fixings_request {
     ores::utility::domain::order order;
     std::optional<market_fixings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_market_fixings_request&,
+                           const list_market_fixings_request&) = default;
 };
 
 struct list_market_fixings_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_fixing> market_fixings;
     std::uint64_t total;
+
+    friend bool operator==(const list_market_fixings_response&,
+                           const list_market_fixings_response&) = default;
 };
 
 struct get_market_fixing_request {
@@ -118,11 +138,17 @@ struct get_market_fixing_request {
      */
     static constexpr bool requires_session = true;
     market_fixing_key key;
+
+    friend bool operator==(const get_market_fixing_request&,
+                           const get_market_fixing_request&) = default;
 };
 
 struct get_market_fixing_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_fixing> market_fixing;
+
+    friend bool operator==(const get_market_fixing_response&,
+                           const get_market_fixing_response&) = default;
 };
 
 struct get_many_market_fixings_request {
@@ -136,11 +162,17 @@ struct get_many_market_fixings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<market_fixing_key> keys;
+
+    friend bool operator==(const get_many_market_fixings_request&,
+                           const get_many_market_fixings_request&) = default;
 };
 
 struct get_many_market_fixings_response {
     ores::utility::domain::result result;
     std::vector<market_fixing_lookup> entries;
+
+    friend bool operator==(const get_many_market_fixings_response&,
+                           const get_many_market_fixings_response&) = default;
 };
 
 struct put_market_fixing_request {
@@ -155,11 +187,17 @@ struct put_market_fixing_request {
     static constexpr bool requires_session = true;
     market_fixing_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_market_fixing_request&,
+                           const put_market_fixing_request&) = default;
 };
 
 struct put_market_fixing_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_fixing> market_fixing;
+
+    friend bool operator==(const put_market_fixing_response&,
+                           const put_market_fixing_response&) = default;
 };
 
 struct put_many_market_fixings_request {
@@ -174,11 +212,17 @@ struct put_many_market_fixings_request {
     static constexpr bool requires_session = true;
     std::vector<market_fixing_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_market_fixings_request&,
+                           const put_many_market_fixings_request&) = default;
 };
 
 struct put_many_market_fixings_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_fixing> market_fixings;
+
+    friend bool operator==(const put_many_market_fixings_response&,
+                           const put_many_market_fixings_response&) = default;
 };
 
 struct delete_market_fixing_request {
@@ -193,10 +237,16 @@ struct delete_market_fixing_request {
     static constexpr bool requires_session = true;
     market_fixing_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_market_fixing_request&,
+                           const delete_market_fixing_request&) = default;
 };
 
 struct delete_market_fixing_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_market_fixing_response&,
+                           const delete_market_fixing_response&) = default;
 };
 
 struct delete_many_market_fixings_request {
@@ -211,10 +261,16 @@ struct delete_many_market_fixings_request {
     static constexpr bool requires_session = true;
     std::vector<market_fixing_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_market_fixings_request&,
+                           const delete_many_market_fixings_request&) = default;
 };
 
 struct delete_many_market_fixings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_market_fixings_response&,
+                           const delete_many_market_fixings_response&) = default;
 };
 
 /**

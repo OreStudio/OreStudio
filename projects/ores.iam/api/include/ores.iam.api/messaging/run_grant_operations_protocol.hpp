@@ -76,6 +76,9 @@ struct create_run_grant_request {
      * @brief How long the grant serves runs; zero for a standing grant.
      */
     int valid_seconds = 0;
+
+    friend bool operator==(const create_run_grant_request&,
+                           const create_run_grant_request&) = default;
 };
 
 /**
@@ -90,6 +93,9 @@ struct create_run_grant_response {
      * when it returned one that was already active.
      */
     bool created = false;
+
+    friend bool operator==(const create_run_grant_response&,
+                           const create_run_grant_response&) = default;
 };
 
 /**
@@ -115,6 +121,9 @@ struct revoke_run_grant_request {
      * person's reason.
      */
     std::string reason;
+
+    friend bool operator==(const revoke_run_grant_request&,
+                           const revoke_run_grant_request&) = default;
 };
 
 /**
@@ -123,6 +132,9 @@ struct revoke_run_grant_request {
 struct revoke_run_grant_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const revoke_run_grant_response&,
+                           const revoke_run_grant_response&) = default;
 };
 
 /**
@@ -146,6 +158,9 @@ struct exchange_run_grant_request {
     std::string grant_id;
     std::string run_id;
     std::string tenant_id;
+
+    friend bool operator==(const exchange_run_grant_request&,
+                           const exchange_run_grant_request&) = default;
 };
 
 /**
@@ -159,6 +174,9 @@ struct exchange_run_grant_response {
      * @brief When the token stops working, in seconds since the epoch.
      */
     std::int64_t expires_at = 0;
+
+    friend bool operator==(const exchange_run_grant_response&,
+                           const exchange_run_grant_response&) = default;
 };
 
 /**

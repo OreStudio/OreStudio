@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct analytic_type_key {
     std::string code;
+
+    friend bool operator==(const analytic_type_key&, const analytic_type_key&) = default;
 };
 
 struct analytic_type_write {
@@ -52,25 +54,35 @@ struct analytic_type_write {
     std::optional<std::string> parameter_entity;
     std::optional<std::string> requires_analytic_type_code;
     int display_order;
+
+    friend bool operator==(const analytic_type_write&, const analytic_type_write&) = default;
 };
 
 struct analytic_type_change {
     analytic_type_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const analytic_type_change&, const analytic_type_change&) = default;
 };
 
 struct analytic_type_removal {
     analytic_type_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const analytic_type_removal&, const analytic_type_removal&) = default;
 };
 
 struct analytic_type_lookup {
     analytic_type_key key;
     std::optional<ores::reporting::domain::analytic_type> analytic_type;
+
+    friend bool operator==(const analytic_type_lookup&, const analytic_type_lookup&) = default;
 };
 
 struct analytic_types_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const analytic_types_filter&, const analytic_types_filter&) = default;
 };
 
 struct analytic_type_event {
@@ -80,17 +92,25 @@ struct analytic_type_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const analytic_type_event&, const analytic_type_event&) = default;
 };
 
 struct analytic_type_version_key {
     analytic_type_key analytic_type;
     std::uint32_t version;
+
+    friend bool operator==(const analytic_type_version_key&,
+                           const analytic_type_version_key&) = default;
 };
 
 struct analytic_type_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const analytic_type_versions_filter&,
+                           const analytic_type_versions_filter&) = default;
 };
 
 struct list_analytic_types_request {
@@ -108,12 +128,18 @@ struct list_analytic_types_request {
     ores::utility::domain::order order;
     std::optional<analytic_types_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_analytic_types_request&,
+                           const list_analytic_types_request&) = default;
 };
 
 struct list_analytic_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::analytic_type> types;
     std::uint64_t total;
+
+    friend bool operator==(const list_analytic_types_response&,
+                           const list_analytic_types_response&) = default;
 };
 
 struct get_analytic_type_request {
@@ -127,11 +153,17 @@ struct get_analytic_type_request {
      */
     static constexpr bool requires_session = true;
     analytic_type_key key;
+
+    friend bool operator==(const get_analytic_type_request&,
+                           const get_analytic_type_request&) = default;
 };
 
 struct get_analytic_type_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::analytic_type> analytic_type;
+
+    friend bool operator==(const get_analytic_type_response&,
+                           const get_analytic_type_response&) = default;
 };
 
 struct get_many_analytic_types_request {
@@ -145,11 +177,17 @@ struct get_many_analytic_types_request {
      */
     static constexpr bool requires_session = true;
     std::vector<analytic_type_key> keys;
+
+    friend bool operator==(const get_many_analytic_types_request&,
+                           const get_many_analytic_types_request&) = default;
 };
 
 struct get_many_analytic_types_response {
     ores::utility::domain::result result;
     std::vector<analytic_type_lookup> entries;
+
+    friend bool operator==(const get_many_analytic_types_response&,
+                           const get_many_analytic_types_response&) = default;
 };
 
 struct put_analytic_type_request {
@@ -164,11 +202,17 @@ struct put_analytic_type_request {
     static constexpr bool requires_session = true;
     analytic_type_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_analytic_type_request&,
+                           const put_analytic_type_request&) = default;
 };
 
 struct put_analytic_type_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::analytic_type> analytic_type;
+
+    friend bool operator==(const put_analytic_type_response&,
+                           const put_analytic_type_response&) = default;
 };
 
 struct put_many_analytic_types_request {
@@ -183,11 +227,17 @@ struct put_many_analytic_types_request {
     static constexpr bool requires_session = true;
     std::vector<analytic_type_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_analytic_types_request&,
+                           const put_many_analytic_types_request&) = default;
 };
 
 struct put_many_analytic_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::analytic_type> types;
+
+    friend bool operator==(const put_many_analytic_types_response&,
+                           const put_many_analytic_types_response&) = default;
 };
 
 struct delete_analytic_type_request {
@@ -202,10 +252,16 @@ struct delete_analytic_type_request {
     static constexpr bool requires_session = true;
     analytic_type_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_analytic_type_request&,
+                           const delete_analytic_type_request&) = default;
 };
 
 struct delete_analytic_type_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_analytic_type_response&,
+                           const delete_analytic_type_response&) = default;
 };
 
 struct delete_many_analytic_types_request {
@@ -220,10 +276,16 @@ struct delete_many_analytic_types_request {
     static constexpr bool requires_session = true;
     std::vector<analytic_type_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_analytic_types_request&,
+                           const delete_many_analytic_types_request&) = default;
 };
 
 struct delete_many_analytic_types_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_analytic_types_response&,
+                           const delete_many_analytic_types_response&) = default;
 };
 
 struct list_analytic_type_versions_request {
@@ -241,12 +303,18 @@ struct list_analytic_type_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<analytic_type_versions_filter> filter;
+
+    friend bool operator==(const list_analytic_type_versions_request&,
+                           const list_analytic_type_versions_request&) = default;
 };
 
 struct list_analytic_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::analytic_type> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_analytic_type_versions_response&,
+                           const list_analytic_type_versions_response&) = default;
 };
 
 struct get_analytic_type_version_request {
@@ -260,11 +328,17 @@ struct get_analytic_type_version_request {
      */
     static constexpr bool requires_session = true;
     analytic_type_version_key key;
+
+    friend bool operator==(const get_analytic_type_version_request&,
+                           const get_analytic_type_version_request&) = default;
 };
 
 struct get_analytic_type_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::analytic_type> version;
+
+    friend bool operator==(const get_analytic_type_version_response&,
+                           const get_analytic_type_version_response&) = default;
 };
 
 /**

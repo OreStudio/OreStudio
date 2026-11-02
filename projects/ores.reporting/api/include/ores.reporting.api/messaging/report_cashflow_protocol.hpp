@@ -43,6 +43,8 @@ namespace ores::reporting::messaging {
 
 struct report_cashflow_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const report_cashflow_key&, const report_cashflow_key&) = default;
 };
 
 struct report_cashflow_write {
@@ -65,21 +67,30 @@ struct report_cashflow_write {
     std::string qualifiers;
     double value;
     std::string source;
+
+    friend bool operator==(const report_cashflow_write&, const report_cashflow_write&) = default;
 };
 
 struct report_cashflow_change {
     report_cashflow_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_cashflow_change&, const report_cashflow_change&) = default;
 };
 
 struct report_cashflow_removal {
     report_cashflow_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_cashflow_removal&,
+                           const report_cashflow_removal&) = default;
 };
 
 struct report_cashflow_lookup {
     report_cashflow_key key;
     std::optional<ores::reporting::domain::report_cashflow> report_cashflow;
+
+    friend bool operator==(const report_cashflow_lookup&, const report_cashflow_lookup&) = default;
 };
 
 struct report_cashflows_filter {
@@ -96,6 +107,9 @@ struct report_cashflows_filter {
     std::optional<std::vector<std::string>> measure_one_of;
     std::optional<std::vector<std::string>> part_one_of;
     std::optional<std::vector<std::string>> flow_type_one_of;
+
+    friend bool operator==(const report_cashflows_filter&,
+                           const report_cashflows_filter&) = default;
 };
 
 struct report_cashflow_event {
@@ -105,6 +119,8 @@ struct report_cashflow_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_cashflow_event&, const report_cashflow_event&) = default;
 };
 
 struct list_report_cashflows_request {
@@ -122,12 +138,18 @@ struct list_report_cashflows_request {
     ores::utility::domain::order order;
     std::optional<report_cashflows_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_report_cashflows_request&,
+                           const list_report_cashflows_request&) = default;
 };
 
 struct list_report_cashflows_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_cashflow> cashflows;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_cashflows_response&,
+                           const list_report_cashflows_response&) = default;
 };
 
 struct get_report_cashflow_request {
@@ -141,11 +163,17 @@ struct get_report_cashflow_request {
      */
     static constexpr bool requires_session = true;
     report_cashflow_key key;
+
+    friend bool operator==(const get_report_cashflow_request&,
+                           const get_report_cashflow_request&) = default;
 };
 
 struct get_report_cashflow_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_cashflow> report_cashflow;
+
+    friend bool operator==(const get_report_cashflow_response&,
+                           const get_report_cashflow_response&) = default;
 };
 
 struct get_many_report_cashflows_request {
@@ -159,11 +187,17 @@ struct get_many_report_cashflows_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_cashflow_key> keys;
+
+    friend bool operator==(const get_many_report_cashflows_request&,
+                           const get_many_report_cashflows_request&) = default;
 };
 
 struct get_many_report_cashflows_response {
     ores::utility::domain::result result;
     std::vector<report_cashflow_lookup> entries;
+
+    friend bool operator==(const get_many_report_cashflows_response&,
+                           const get_many_report_cashflows_response&) = default;
 };
 
 struct put_report_cashflow_request {
@@ -178,11 +212,17 @@ struct put_report_cashflow_request {
     static constexpr bool requires_session = true;
     report_cashflow_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_cashflow_request&,
+                           const put_report_cashflow_request&) = default;
 };
 
 struct put_report_cashflow_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_cashflow> report_cashflow;
+
+    friend bool operator==(const put_report_cashflow_response&,
+                           const put_report_cashflow_response&) = default;
 };
 
 struct put_many_report_cashflows_request {
@@ -197,11 +237,17 @@ struct put_many_report_cashflows_request {
     static constexpr bool requires_session = true;
     std::vector<report_cashflow_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_cashflows_request&,
+                           const put_many_report_cashflows_request&) = default;
 };
 
 struct put_many_report_cashflows_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_cashflow> cashflows;
+
+    friend bool operator==(const put_many_report_cashflows_response&,
+                           const put_many_report_cashflows_response&) = default;
 };
 
 struct delete_report_cashflow_request {
@@ -216,10 +262,16 @@ struct delete_report_cashflow_request {
     static constexpr bool requires_session = true;
     report_cashflow_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_cashflow_request&,
+                           const delete_report_cashflow_request&) = default;
 };
 
 struct delete_report_cashflow_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_cashflow_response&,
+                           const delete_report_cashflow_response&) = default;
 };
 
 struct delete_many_report_cashflows_request {
@@ -234,10 +286,16 @@ struct delete_many_report_cashflows_request {
     static constexpr bool requires_session = true;
     std::vector<report_cashflow_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_cashflows_request&,
+                           const delete_many_report_cashflows_request&) = default;
 };
 
 struct delete_many_report_cashflows_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_cashflows_response&,
+                           const delete_many_report_cashflows_response&) = default;
 };
 
 /**

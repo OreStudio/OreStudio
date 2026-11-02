@@ -44,6 +44,9 @@ namespace ores::inbox::messaging {
 struct notification_recipient_key {
     boost::uuids::uuid notification_id;
     boost::uuids::uuid account_id;
+
+    friend bool operator==(const notification_recipient_key&,
+                           const notification_recipient_key&) = default;
 };
 
 struct notification_recipient_write {
@@ -51,26 +54,41 @@ struct notification_recipient_write {
     boost::uuids::uuid account_id;
     std::optional<std::chrono::system_clock::time_point> read_at;
     std::optional<std::chrono::system_clock::time_point> cleared_at;
+
+    friend bool operator==(const notification_recipient_write&,
+                           const notification_recipient_write&) = default;
 };
 
 struct notification_recipient_change {
     notification_recipient_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const notification_recipient_change&,
+                           const notification_recipient_change&) = default;
 };
 
 struct notification_recipient_removal {
     notification_recipient_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const notification_recipient_removal&,
+                           const notification_recipient_removal&) = default;
 };
 
 struct notification_recipient_lookup {
     notification_recipient_key key;
     std::optional<ores::inbox::domain::notification_recipient> notification_recipient;
+
+    friend bool operator==(const notification_recipient_lookup&,
+                           const notification_recipient_lookup&) = default;
 };
 
 struct notification_recipients_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const notification_recipients_filter&,
+                           const notification_recipients_filter&) = default;
 };
 
 struct list_notification_recipients_request {
@@ -87,12 +105,18 @@ struct list_notification_recipients_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_recipients_filter> filter;
+
+    friend bool operator==(const list_notification_recipients_request&,
+                           const list_notification_recipients_request&) = default;
 };
 
 struct list_notification_recipients_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_recipient> notification_recipients;
     std::uint64_t total;
+
+    friend bool operator==(const list_notification_recipients_response&,
+                           const list_notification_recipients_response&) = default;
 };
 
 struct get_notification_recipient_request {
@@ -106,11 +130,17 @@ struct get_notification_recipient_request {
      */
     static constexpr bool requires_session = true;
     notification_recipient_key key;
+
+    friend bool operator==(const get_notification_recipient_request&,
+                           const get_notification_recipient_request&) = default;
 };
 
 struct get_notification_recipient_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_recipient> notification_recipient;
+
+    friend bool operator==(const get_notification_recipient_response&,
+                           const get_notification_recipient_response&) = default;
 };
 
 struct get_many_notification_recipients_request {
@@ -124,11 +154,17 @@ struct get_many_notification_recipients_request {
      */
     static constexpr bool requires_session = true;
     std::vector<notification_recipient_key> keys;
+
+    friend bool operator==(const get_many_notification_recipients_request&,
+                           const get_many_notification_recipients_request&) = default;
 };
 
 struct get_many_notification_recipients_response {
     ores::utility::domain::result result;
     std::vector<notification_recipient_lookup> entries;
+
+    friend bool operator==(const get_many_notification_recipients_response&,
+                           const get_many_notification_recipients_response&) = default;
 };
 
 struct put_notification_recipient_request {
@@ -143,11 +179,17 @@ struct put_notification_recipient_request {
     static constexpr bool requires_session = true;
     notification_recipient_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_notification_recipient_request&,
+                           const put_notification_recipient_request&) = default;
 };
 
 struct put_notification_recipient_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_recipient> notification_recipient;
+
+    friend bool operator==(const put_notification_recipient_response&,
+                           const put_notification_recipient_response&) = default;
 };
 
 struct put_many_notification_recipients_request {
@@ -162,11 +204,17 @@ struct put_many_notification_recipients_request {
     static constexpr bool requires_session = true;
     std::vector<notification_recipient_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_notification_recipients_request&,
+                           const put_many_notification_recipients_request&) = default;
 };
 
 struct put_many_notification_recipients_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_recipient> notification_recipients;
+
+    friend bool operator==(const put_many_notification_recipients_response&,
+                           const put_many_notification_recipients_response&) = default;
 };
 
 struct delete_notification_recipient_request {
@@ -181,10 +229,16 @@ struct delete_notification_recipient_request {
     static constexpr bool requires_session = true;
     notification_recipient_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_notification_recipient_request&,
+                           const delete_notification_recipient_request&) = default;
 };
 
 struct delete_notification_recipient_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_notification_recipient_response&,
+                           const delete_notification_recipient_response&) = default;
 };
 
 struct delete_many_notification_recipients_request {
@@ -199,10 +253,16 @@ struct delete_many_notification_recipients_request {
     static constexpr bool requires_session = true;
     std::vector<notification_recipient_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_notification_recipients_request&,
+                           const delete_many_notification_recipients_request&) = default;
 };
 
 struct delete_many_notification_recipients_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_notification_recipients_response&,
+                           const delete_many_notification_recipients_response&) = default;
 };
 
 struct list_by_account_id_notification_recipients_request {
@@ -222,12 +282,18 @@ struct list_by_account_id_notification_recipients_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_recipients_filter> filter;
+
+    friend bool operator==(const list_by_account_id_notification_recipients_request&,
+                           const list_by_account_id_notification_recipients_request&) = default;
 };
 
 struct list_by_account_id_notification_recipients_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_recipient> notification_recipients;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_notification_recipients_response&,
+                           const list_by_account_id_notification_recipients_response&) = default;
 };
 
 /**

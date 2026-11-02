@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct composite_key {
     std::string name;
+
+    friend bool operator==(const composite_key&, const composite_key&) = default;
 };
 
 struct composite_write {
@@ -52,21 +54,29 @@ struct composite_write {
     std::string oresmd_uri;
     std::string rule_code;
     std::string description;
+
+    friend bool operator==(const composite_write&, const composite_write&) = default;
 };
 
 struct composite_change {
     composite_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const composite_change&, const composite_change&) = default;
 };
 
 struct composite_removal {
     composite_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const composite_removal&, const composite_removal&) = default;
 };
 
 struct composite_lookup {
     composite_key key;
     std::optional<ores::marketdata::domain::composite> composite;
+
+    friend bool operator==(const composite_lookup&, const composite_lookup&) = default;
 };
 
 struct composites_filter {
@@ -74,6 +84,8 @@ struct composites_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const composites_filter&, const composites_filter&) = default;
 };
 
 struct composite_event {
@@ -83,17 +95,24 @@ struct composite_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const composite_event&, const composite_event&) = default;
 };
 
 struct composite_version_key {
     composite_key composite;
     std::uint32_t version;
+
+    friend bool operator==(const composite_version_key&, const composite_version_key&) = default;
 };
 
 struct composite_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const composite_versions_filter&,
+                           const composite_versions_filter&) = default;
 };
 
 struct list_composites_request {
@@ -111,12 +130,18 @@ struct list_composites_request {
     ores::utility::domain::order order;
     std::optional<composites_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_composites_request&,
+                           const list_composites_request&) = default;
 };
 
 struct list_composites_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite> composites;
     std::uint64_t total;
+
+    friend bool operator==(const list_composites_response&,
+                           const list_composites_response&) = default;
 };
 
 struct get_composite_request {
@@ -130,11 +155,15 @@ struct get_composite_request {
      */
     static constexpr bool requires_session = true;
     composite_key key;
+
+    friend bool operator==(const get_composite_request&, const get_composite_request&) = default;
 };
 
 struct get_composite_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite> composite;
+
+    friend bool operator==(const get_composite_response&, const get_composite_response&) = default;
 };
 
 struct get_many_composites_request {
@@ -148,11 +177,17 @@ struct get_many_composites_request {
      */
     static constexpr bool requires_session = true;
     std::vector<composite_key> keys;
+
+    friend bool operator==(const get_many_composites_request&,
+                           const get_many_composites_request&) = default;
 };
 
 struct get_many_composites_response {
     ores::utility::domain::result result;
     std::vector<composite_lookup> entries;
+
+    friend bool operator==(const get_many_composites_response&,
+                           const get_many_composites_response&) = default;
 };
 
 struct put_composite_request {
@@ -167,11 +202,15 @@ struct put_composite_request {
     static constexpr bool requires_session = true;
     composite_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_composite_request&, const put_composite_request&) = default;
 };
 
 struct put_composite_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite> composite;
+
+    friend bool operator==(const put_composite_response&, const put_composite_response&) = default;
 };
 
 struct put_many_composites_request {
@@ -186,11 +225,17 @@ struct put_many_composites_request {
     static constexpr bool requires_session = true;
     std::vector<composite_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_composites_request&,
+                           const put_many_composites_request&) = default;
 };
 
 struct put_many_composites_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite> composites;
+
+    friend bool operator==(const put_many_composites_response&,
+                           const put_many_composites_response&) = default;
 };
 
 struct delete_composite_request {
@@ -205,10 +250,16 @@ struct delete_composite_request {
     static constexpr bool requires_session = true;
     composite_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_composite_request&,
+                           const delete_composite_request&) = default;
 };
 
 struct delete_composite_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_composite_response&,
+                           const delete_composite_response&) = default;
 };
 
 struct delete_many_composites_request {
@@ -223,10 +274,16 @@ struct delete_many_composites_request {
     static constexpr bool requires_session = true;
     std::vector<composite_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_composites_request&,
+                           const delete_many_composites_request&) = default;
 };
 
 struct delete_many_composites_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_composites_response&,
+                           const delete_many_composites_response&) = default;
 };
 
 struct list_composite_versions_request {
@@ -244,12 +301,18 @@ struct list_composite_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_versions_filter> filter;
+
+    friend bool operator==(const list_composite_versions_request&,
+                           const list_composite_versions_request&) = default;
 };
 
 struct list_composite_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_composite_versions_response&,
+                           const list_composite_versions_response&) = default;
 };
 
 struct get_composite_version_request {
@@ -263,11 +326,17 @@ struct get_composite_version_request {
      */
     static constexpr bool requires_session = true;
     composite_version_key key;
+
+    friend bool operator==(const get_composite_version_request&,
+                           const get_composite_version_request&) = default;
 };
 
 struct get_composite_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite> version;
+
+    friend bool operator==(const get_composite_version_response&,
+                           const get_composite_version_response&) = default;
 };
 
 /**

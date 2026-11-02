@@ -64,6 +64,9 @@ struct mint_storage_capability_request {
      * @brief The grants the capability carries, one row per operation.
      */
     std::vector<ores::security::jwt::storage_grant> grants;
+
+    friend bool operator==(const mint_storage_capability_request&,
+                           const mint_storage_capability_request&) = default;
 };
 
 /**
@@ -77,6 +80,9 @@ struct mint_storage_capability_response {
      * @brief When the capability stops working, in seconds since the epoch.
      */
     std::int64_t expires_at = 0;
+
+    friend bool operator==(const mint_storage_capability_response&,
+                           const mint_storage_capability_response&) = default;
 };
 
 /**

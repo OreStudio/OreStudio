@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct feed_scope_key {
     std::string item;
+
+    friend bool operator==(const feed_scope_key&, const feed_scope_key&) = default;
 };
 
 struct feed_scope_write {
@@ -51,21 +53,29 @@ struct feed_scope_write {
     std::string asset_class;
     std::string item;
     boost::uuids::uuid vendor_instrument_id;
+
+    friend bool operator==(const feed_scope_write&, const feed_scope_write&) = default;
 };
 
 struct feed_scope_change {
     feed_scope_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const feed_scope_change&, const feed_scope_change&) = default;
 };
 
 struct feed_scope_removal {
     feed_scope_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const feed_scope_removal&, const feed_scope_removal&) = default;
 };
 
 struct feed_scope_lookup {
     feed_scope_key key;
     std::optional<ores::marketdata::domain::feed_scope> feed_scope;
+
+    friend bool operator==(const feed_scope_lookup&, const feed_scope_lookup&) = default;
 };
 
 struct feed_scopes_filter {
@@ -79,6 +89,8 @@ struct feed_scopes_filter {
     std::optional<std::vector<std::string>> item_one_of;
     std::optional<std::vector<boost::uuids::uuid>> vendor_instrument_id_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const feed_scopes_filter&, const feed_scopes_filter&) = default;
 };
 
 struct feed_scope_event {
@@ -88,17 +100,24 @@ struct feed_scope_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const feed_scope_event&, const feed_scope_event&) = default;
 };
 
 struct feed_scope_version_key {
     feed_scope_key feed_scope;
     std::uint32_t version;
+
+    friend bool operator==(const feed_scope_version_key&, const feed_scope_version_key&) = default;
 };
 
 struct feed_scope_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const feed_scope_versions_filter&,
+                           const feed_scope_versions_filter&) = default;
 };
 
 struct list_feed_scopes_request {
@@ -116,12 +135,18 @@ struct list_feed_scopes_request {
     ores::utility::domain::order order;
     std::optional<feed_scopes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_feed_scopes_request&,
+                           const list_feed_scopes_request&) = default;
 };
 
 struct list_feed_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed_scope> scopes;
     std::uint64_t total;
+
+    friend bool operator==(const list_feed_scopes_response&,
+                           const list_feed_scopes_response&) = default;
 };
 
 struct get_feed_scope_request {
@@ -135,11 +160,16 @@ struct get_feed_scope_request {
      */
     static constexpr bool requires_session = true;
     feed_scope_key key;
+
+    friend bool operator==(const get_feed_scope_request&, const get_feed_scope_request&) = default;
 };
 
 struct get_feed_scope_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed_scope> feed_scope;
+
+    friend bool operator==(const get_feed_scope_response&,
+                           const get_feed_scope_response&) = default;
 };
 
 struct get_many_feed_scopes_request {
@@ -153,11 +183,17 @@ struct get_many_feed_scopes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<feed_scope_key> keys;
+
+    friend bool operator==(const get_many_feed_scopes_request&,
+                           const get_many_feed_scopes_request&) = default;
 };
 
 struct get_many_feed_scopes_response {
     ores::utility::domain::result result;
     std::vector<feed_scope_lookup> entries;
+
+    friend bool operator==(const get_many_feed_scopes_response&,
+                           const get_many_feed_scopes_response&) = default;
 };
 
 struct put_feed_scope_request {
@@ -172,11 +208,16 @@ struct put_feed_scope_request {
     static constexpr bool requires_session = true;
     feed_scope_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_feed_scope_request&, const put_feed_scope_request&) = default;
 };
 
 struct put_feed_scope_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed_scope> feed_scope;
+
+    friend bool operator==(const put_feed_scope_response&,
+                           const put_feed_scope_response&) = default;
 };
 
 struct put_many_feed_scopes_request {
@@ -191,11 +232,17 @@ struct put_many_feed_scopes_request {
     static constexpr bool requires_session = true;
     std::vector<feed_scope_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_feed_scopes_request&,
+                           const put_many_feed_scopes_request&) = default;
 };
 
 struct put_many_feed_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed_scope> scopes;
+
+    friend bool operator==(const put_many_feed_scopes_response&,
+                           const put_many_feed_scopes_response&) = default;
 };
 
 struct delete_feed_scope_request {
@@ -210,10 +257,16 @@ struct delete_feed_scope_request {
     static constexpr bool requires_session = true;
     feed_scope_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_feed_scope_request&,
+                           const delete_feed_scope_request&) = default;
 };
 
 struct delete_feed_scope_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_feed_scope_response&,
+                           const delete_feed_scope_response&) = default;
 };
 
 struct delete_many_feed_scopes_request {
@@ -228,10 +281,16 @@ struct delete_many_feed_scopes_request {
     static constexpr bool requires_session = true;
     std::vector<feed_scope_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_feed_scopes_request&,
+                           const delete_many_feed_scopes_request&) = default;
 };
 
 struct delete_many_feed_scopes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_feed_scopes_response&,
+                           const delete_many_feed_scopes_response&) = default;
 };
 
 struct list_feed_scope_versions_request {
@@ -249,12 +308,18 @@ struct list_feed_scope_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<feed_scope_versions_filter> filter;
+
+    friend bool operator==(const list_feed_scope_versions_request&,
+                           const list_feed_scope_versions_request&) = default;
 };
 
 struct list_feed_scope_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed_scope> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_feed_scope_versions_response&,
+                           const list_feed_scope_versions_response&) = default;
 };
 
 struct get_feed_scope_version_request {
@@ -268,11 +333,17 @@ struct get_feed_scope_version_request {
      */
     static constexpr bool requires_session = true;
     feed_scope_version_key key;
+
+    friend bool operator==(const get_feed_scope_version_request&,
+                           const get_feed_scope_version_request&) = default;
 };
 
 struct get_feed_scope_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::feed_scope> version;
+
+    friend bool operator==(const get_feed_scope_version_response&,
+                           const get_feed_scope_version_response&) = default;
 };
 
 /**

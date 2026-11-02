@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct book_key {
     std::string name;
+
+    friend bool operator==(const book_key&, const book_key&) = default;
 };
 
 struct book_write {
@@ -62,27 +64,37 @@ struct book_write {
     bool is_sweepable;
     std::string rates_centre_code;
     std::optional<boost::uuids::uuid> sandbox_id;
+
+    friend bool operator==(const book_write&, const book_write&) = default;
 };
 
 struct book_change {
     book_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const book_change&, const book_change&) = default;
 };
 
 struct book_removal {
     book_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const book_removal&, const book_removal&) = default;
 };
 
 struct book_lookup {
     book_key key;
     std::optional<ores::refdata::domain::book> book;
+
+    friend bool operator==(const book_lookup&, const book_lookup&) = default;
 };
 
 struct books_filter {
     std::optional<boost::uuids::uuid> parent_portfolio_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> parent_portfolio_id_one_of;
+
+    friend bool operator==(const books_filter&, const books_filter&) = default;
 };
 
 struct book_event {
@@ -92,17 +104,23 @@ struct book_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const book_event&, const book_event&) = default;
 };
 
 struct book_version_key {
     book_key book;
     std::uint32_t version;
+
+    friend bool operator==(const book_version_key&, const book_version_key&) = default;
 };
 
 struct book_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const book_versions_filter&, const book_versions_filter&) = default;
 };
 
 struct list_books_request {
@@ -120,12 +138,16 @@ struct list_books_request {
     ores::utility::domain::order order;
     std::optional<books_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_books_request&, const list_books_request&) = default;
 };
 
 struct list_books_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> books;
     std::uint64_t total;
+
+    friend bool operator==(const list_books_response&, const list_books_response&) = default;
 };
 
 struct get_book_request {
@@ -139,11 +161,15 @@ struct get_book_request {
      */
     static constexpr bool requires_session = true;
     book_key key;
+
+    friend bool operator==(const get_book_request&, const get_book_request&) = default;
 };
 
 struct get_book_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::book> book;
+
+    friend bool operator==(const get_book_response&, const get_book_response&) = default;
 };
 
 struct get_many_books_request {
@@ -157,11 +183,16 @@ struct get_many_books_request {
      */
     static constexpr bool requires_session = true;
     std::vector<book_key> keys;
+
+    friend bool operator==(const get_many_books_request&, const get_many_books_request&) = default;
 };
 
 struct get_many_books_response {
     ores::utility::domain::result result;
     std::vector<book_lookup> entries;
+
+    friend bool operator==(const get_many_books_response&,
+                           const get_many_books_response&) = default;
 };
 
 struct put_book_request {
@@ -176,11 +207,15 @@ struct put_book_request {
     static constexpr bool requires_session = true;
     book_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_book_request&, const put_book_request&) = default;
 };
 
 struct put_book_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::book> book;
+
+    friend bool operator==(const put_book_response&, const put_book_response&) = default;
 };
 
 struct put_many_books_request {
@@ -195,11 +230,16 @@ struct put_many_books_request {
     static constexpr bool requires_session = true;
     std::vector<book_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_books_request&, const put_many_books_request&) = default;
 };
 
 struct put_many_books_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> books;
+
+    friend bool operator==(const put_many_books_response&,
+                           const put_many_books_response&) = default;
 };
 
 struct delete_book_request {
@@ -214,10 +254,14 @@ struct delete_book_request {
     static constexpr bool requires_session = true;
     book_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_book_request&, const delete_book_request&) = default;
 };
 
 struct delete_book_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_book_response&, const delete_book_response&) = default;
 };
 
 struct delete_many_books_request {
@@ -232,10 +276,16 @@ struct delete_many_books_request {
     static constexpr bool requires_session = true;
     std::vector<book_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_books_request&,
+                           const delete_many_books_request&) = default;
 };
 
 struct delete_many_books_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_books_response&,
+                           const delete_many_books_response&) = default;
 };
 
 struct list_by_parent_portfolio_id_books_request {
@@ -254,12 +304,18 @@ struct list_by_parent_portfolio_id_books_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<books_filter> filter;
+
+    friend bool operator==(const list_by_parent_portfolio_id_books_request&,
+                           const list_by_parent_portfolio_id_books_request&) = default;
 };
 
 struct list_by_parent_portfolio_id_books_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> books;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_parent_portfolio_id_books_response&,
+                           const list_by_parent_portfolio_id_books_response&) = default;
 };
 
 struct list_book_versions_request {
@@ -277,12 +333,18 @@ struct list_book_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<book_versions_filter> filter;
+
+    friend bool operator==(const list_book_versions_request&,
+                           const list_book_versions_request&) = default;
 };
 
 struct list_book_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_book_versions_response&,
+                           const list_book_versions_response&) = default;
 };
 
 struct get_book_version_request {
@@ -296,11 +358,17 @@ struct get_book_version_request {
      */
     static constexpr bool requires_session = true;
     book_version_key key;
+
+    friend bool operator==(const get_book_version_request&,
+                           const get_book_version_request&) = default;
 };
 
 struct get_book_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::book> version;
+
+    friend bool operator==(const get_book_version_response&,
+                           const get_book_version_response&) = default;
 };
 
 /**

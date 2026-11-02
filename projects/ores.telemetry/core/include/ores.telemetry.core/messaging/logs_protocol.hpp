@@ -91,6 +91,8 @@ struct telemetry_log_entry {
      * @brief Server receipt timestamp.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    friend bool operator==(const telemetry_log_entry&, const telemetry_log_entry&) = default;
 };
 
 /**
@@ -152,6 +154,8 @@ struct telemetry_query {
      * @brief Number of results to skip, for pagination.
      */
     std::uint32_t offset = 0;
+
+    friend bool operator==(const telemetry_query&, const telemetry_query&) = default;
 };
 
 /**
@@ -171,6 +175,9 @@ struct get_telemetry_logs_request {
      * @brief The time range and filters the read applies.
      */
     telemetry_query query;
+
+    friend bool operator==(const get_telemetry_logs_request&,
+                           const get_telemetry_logs_request&) = default;
 };
 
 /**
@@ -193,6 +200,9 @@ struct get_telemetry_logs_response {
      * @brief How many entries the filter matches in total.
      */
     std::uint64_t total_count = 0;
+
+    friend bool operator==(const get_telemetry_logs_response&,
+                           const get_telemetry_logs_response&) = default;
 };
 
 /**
@@ -215,6 +225,8 @@ struct publish_log_entry_item {
      * @brief The log message.
      */
     std::string message;
+
+    friend bool operator==(const publish_log_entry_item&, const publish_log_entry_item&) = default;
 };
 
 /**
@@ -244,6 +256,9 @@ struct publish_log_entries_request {
      * @brief The entries the batch carries.
      */
     std::vector<publish_log_entry_item> entries;
+
+    friend bool operator==(const publish_log_entries_request&,
+                           const publish_log_entries_request&) = default;
 };
 
 /**

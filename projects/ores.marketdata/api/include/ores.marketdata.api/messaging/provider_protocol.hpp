@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct provider_key {
     std::string code;
+
+    friend bool operator==(const provider_key&, const provider_key&) = default;
 };
 
 struct provider_write {
@@ -55,25 +57,35 @@ struct provider_write {
     std::string terms_credit;
     bool allows_storage;
     std::string credential_ref;
+
+    friend bool operator==(const provider_write&, const provider_write&) = default;
 };
 
 struct provider_change {
     provider_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const provider_change&, const provider_change&) = default;
 };
 
 struct provider_removal {
     provider_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const provider_removal&, const provider_removal&) = default;
 };
 
 struct provider_lookup {
     provider_key key;
     std::optional<ores::marketdata::domain::provider> provider;
+
+    friend bool operator==(const provider_lookup&, const provider_lookup&) = default;
 };
 
 struct providers_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const providers_filter&, const providers_filter&) = default;
 };
 
 struct provider_event {
@@ -83,17 +95,24 @@ struct provider_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const provider_event&, const provider_event&) = default;
 };
 
 struct provider_version_key {
     provider_key provider;
     std::uint32_t version;
+
+    friend bool operator==(const provider_version_key&, const provider_version_key&) = default;
 };
 
 struct provider_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const provider_versions_filter&,
+                           const provider_versions_filter&) = default;
 };
 
 struct list_providers_request {
@@ -111,12 +130,17 @@ struct list_providers_request {
     ores::utility::domain::order order;
     std::optional<providers_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_providers_request&, const list_providers_request&) = default;
 };
 
 struct list_providers_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::provider> providers;
     std::uint64_t total;
+
+    friend bool operator==(const list_providers_response&,
+                           const list_providers_response&) = default;
 };
 
 struct get_provider_request {
@@ -130,11 +154,15 @@ struct get_provider_request {
      */
     static constexpr bool requires_session = true;
     provider_key key;
+
+    friend bool operator==(const get_provider_request&, const get_provider_request&) = default;
 };
 
 struct get_provider_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::provider> provider;
+
+    friend bool operator==(const get_provider_response&, const get_provider_response&) = default;
 };
 
 struct get_many_providers_request {
@@ -148,11 +176,17 @@ struct get_many_providers_request {
      */
     static constexpr bool requires_session = true;
     std::vector<provider_key> keys;
+
+    friend bool operator==(const get_many_providers_request&,
+                           const get_many_providers_request&) = default;
 };
 
 struct get_many_providers_response {
     ores::utility::domain::result result;
     std::vector<provider_lookup> entries;
+
+    friend bool operator==(const get_many_providers_response&,
+                           const get_many_providers_response&) = default;
 };
 
 struct put_provider_request {
@@ -167,11 +201,15 @@ struct put_provider_request {
     static constexpr bool requires_session = true;
     provider_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_provider_request&, const put_provider_request&) = default;
 };
 
 struct put_provider_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::provider> provider;
+
+    friend bool operator==(const put_provider_response&, const put_provider_response&) = default;
 };
 
 struct put_many_providers_request {
@@ -186,11 +224,17 @@ struct put_many_providers_request {
     static constexpr bool requires_session = true;
     std::vector<provider_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_providers_request&,
+                           const put_many_providers_request&) = default;
 };
 
 struct put_many_providers_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::provider> providers;
+
+    friend bool operator==(const put_many_providers_response&,
+                           const put_many_providers_response&) = default;
 };
 
 struct delete_provider_request {
@@ -205,10 +249,16 @@ struct delete_provider_request {
     static constexpr bool requires_session = true;
     provider_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_provider_request&,
+                           const delete_provider_request&) = default;
 };
 
 struct delete_provider_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_provider_response&,
+                           const delete_provider_response&) = default;
 };
 
 struct delete_many_providers_request {
@@ -223,10 +273,16 @@ struct delete_many_providers_request {
     static constexpr bool requires_session = true;
     std::vector<provider_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_providers_request&,
+                           const delete_many_providers_request&) = default;
 };
 
 struct delete_many_providers_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_providers_response&,
+                           const delete_many_providers_response&) = default;
 };
 
 struct list_provider_versions_request {
@@ -244,12 +300,18 @@ struct list_provider_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<provider_versions_filter> filter;
+
+    friend bool operator==(const list_provider_versions_request&,
+                           const list_provider_versions_request&) = default;
 };
 
 struct list_provider_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::provider> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_provider_versions_response&,
+                           const list_provider_versions_response&) = default;
 };
 
 struct get_provider_version_request {
@@ -263,11 +325,17 @@ struct get_provider_version_request {
      */
     static constexpr bool requires_session = true;
     provider_version_key key;
+
+    friend bool operator==(const get_provider_version_request&,
+                           const get_provider_version_request&) = default;
 };
 
 struct get_provider_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::provider> version;
+
+    friend bool operator==(const get_provider_version_response&,
+                           const get_provider_version_response&) = default;
 };
 
 /**

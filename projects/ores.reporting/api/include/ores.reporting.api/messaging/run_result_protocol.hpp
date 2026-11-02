@@ -43,11 +43,15 @@ namespace ores::reporting::messaging {
 
 struct run_result_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const run_result_key&, const run_result_key&) = default;
 };
 
 struct run_result_lookup {
     run_result_key key;
     std::optional<ores::reporting::domain::run_result> run_result;
+
+    friend bool operator==(const run_result_lookup&, const run_result_lookup&) = default;
 };
 
 struct run_results_filter {
@@ -68,6 +72,8 @@ struct run_results_filter {
     std::optional<std::vector<std::string>> measure_one_of;
     std::optional<std::vector<std::string>> currency_one_of;
     std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
+
+    friend bool operator==(const run_results_filter&, const run_results_filter&) = default;
 };
 
 struct run_result_event {
@@ -77,6 +83,8 @@ struct run_result_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const run_result_event&, const run_result_event&) = default;
 };
 
 struct list_run_results_request {
@@ -93,12 +101,18 @@ struct list_run_results_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<run_results_filter> filter;
+
+    friend bool operator==(const list_run_results_request&,
+                           const list_run_results_request&) = default;
 };
 
 struct list_run_results_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::run_result> results;
     std::uint64_t total;
+
+    friend bool operator==(const list_run_results_response&,
+                           const list_run_results_response&) = default;
 };
 
 struct get_run_result_request {
@@ -112,11 +126,16 @@ struct get_run_result_request {
      */
     static constexpr bool requires_session = true;
     run_result_key key;
+
+    friend bool operator==(const get_run_result_request&, const get_run_result_request&) = default;
 };
 
 struct get_run_result_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::run_result> run_result;
+
+    friend bool operator==(const get_run_result_response&,
+                           const get_run_result_response&) = default;
 };
 
 struct get_many_run_results_request {
@@ -130,11 +149,17 @@ struct get_many_run_results_request {
      */
     static constexpr bool requires_session = true;
     std::vector<run_result_key> keys;
+
+    friend bool operator==(const get_many_run_results_request&,
+                           const get_many_run_results_request&) = default;
 };
 
 struct get_many_run_results_response {
     ores::utility::domain::result result;
     std::vector<run_result_lookup> entries;
+
+    friend bool operator==(const get_many_run_results_response&,
+                           const get_many_run_results_response&) = default;
 };
 
 /**

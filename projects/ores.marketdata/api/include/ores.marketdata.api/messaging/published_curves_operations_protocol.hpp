@@ -54,6 +54,8 @@ struct published_curve_point {
     std::string value_kind;
     std::string oresmd_uri;
     std::chrono::system_clock::time_point observation_datetime;
+
+    friend bool operator==(const published_curve_point&, const published_curve_point&) = default;
 };
 
 /**
@@ -91,6 +93,8 @@ struct published_curve_set {
     std::string superseded_by_request_id;
     std::optional<std::chrono::system_clock::time_point> superseded_as_of;
     std::vector<published_curve_point> points;
+
+    friend bool operator==(const published_curve_set&, const published_curve_set&) = default;
 };
 
 /**
@@ -121,6 +125,9 @@ struct list_published_curves_request {
     std::vector<std::string> request_id_one_of;
     std::uint32_t offset = 0;
     std::uint32_t limit = 50;
+
+    friend bool operator==(const list_published_curves_request&,
+                           const list_published_curves_request&) = default;
 };
 
 /**
@@ -135,6 +142,9 @@ struct list_published_curves_response {
     std::uint32_t total = 0;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const list_published_curves_response&,
+                           const list_published_curves_response&) = default;
 };
 
 /**
@@ -158,6 +168,9 @@ struct get_published_curve_sets_request {
     std::string series_id;
     std::uint32_t limit = 5;
     bool include_candidates = true;
+
+    friend bool operator==(const get_published_curve_sets_request&,
+                           const get_published_curve_sets_request&) = default;
 };
 
 /**
@@ -171,6 +184,9 @@ struct get_published_curve_sets_response {
     std::uint32_t published_count = 0;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_published_curve_sets_response&,
+                           const get_published_curve_sets_response&) = default;
 };
 
 /**
@@ -200,6 +216,8 @@ struct withdraw_curve_request {
     std::string reason_code;
     std::string comment = "";
     std::string approval_request_id = "";
+
+    friend bool operator==(const withdraw_curve_request&, const withdraw_curve_request&) = default;
 };
 
 /**
@@ -213,6 +231,9 @@ struct withdraw_curve_response {
     std::string withdrawn_by;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const withdraw_curve_response&,
+                           const withdraw_curve_response&) = default;
 };
 
 /**

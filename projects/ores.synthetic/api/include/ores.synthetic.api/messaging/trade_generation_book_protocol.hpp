@@ -43,33 +43,51 @@ namespace ores::synthetic::messaging {
 
 struct trade_generation_book_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const trade_generation_book_key&,
+                           const trade_generation_book_key&) = default;
 };
 
 struct trade_generation_book_write {
     boost::uuids::uuid id;
     boost::uuids::uuid config_id;
     boost::uuids::uuid book_id;
+
+    friend bool operator==(const trade_generation_book_write&,
+                           const trade_generation_book_write&) = default;
 };
 
 struct trade_generation_book_change {
     trade_generation_book_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const trade_generation_book_change&,
+                           const trade_generation_book_change&) = default;
 };
 
 struct trade_generation_book_removal {
     trade_generation_book_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const trade_generation_book_removal&,
+                           const trade_generation_book_removal&) = default;
 };
 
 struct trade_generation_book_lookup {
     trade_generation_book_key key;
     std::optional<ores::synthetic::domain::trade_generation_book> trade_generation_book;
+
+    friend bool operator==(const trade_generation_book_lookup&,
+                           const trade_generation_book_lookup&) = default;
 };
 
 struct trade_generation_books_filter {
     std::optional<boost::uuids::uuid> config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> config_id_one_of;
+
+    friend bool operator==(const trade_generation_books_filter&,
+                           const trade_generation_books_filter&) = default;
 };
 
 struct trade_generation_book_event {
@@ -79,17 +97,26 @@ struct trade_generation_book_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const trade_generation_book_event&,
+                           const trade_generation_book_event&) = default;
 };
 
 struct trade_generation_book_version_key {
     trade_generation_book_key trade_generation_book;
     std::uint32_t version;
+
+    friend bool operator==(const trade_generation_book_version_key&,
+                           const trade_generation_book_version_key&) = default;
 };
 
 struct trade_generation_book_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const trade_generation_book_versions_filter&,
+                           const trade_generation_book_versions_filter&) = default;
 };
 
 struct list_trade_generation_books_request {
@@ -107,12 +134,18 @@ struct list_trade_generation_books_request {
     ores::utility::domain::order order;
     std::optional<trade_generation_books_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_trade_generation_books_request&,
+                           const list_trade_generation_books_request&) = default;
 };
 
 struct list_trade_generation_books_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::trade_generation_book> trade_generation_books;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_generation_books_response&,
+                           const list_trade_generation_books_response&) = default;
 };
 
 struct get_trade_generation_book_request {
@@ -126,11 +159,17 @@ struct get_trade_generation_book_request {
      */
     static constexpr bool requires_session = true;
     trade_generation_book_key key;
+
+    friend bool operator==(const get_trade_generation_book_request&,
+                           const get_trade_generation_book_request&) = default;
 };
 
 struct get_trade_generation_book_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::trade_generation_book> trade_generation_book;
+
+    friend bool operator==(const get_trade_generation_book_response&,
+                           const get_trade_generation_book_response&) = default;
 };
 
 struct get_many_trade_generation_books_request {
@@ -144,11 +183,17 @@ struct get_many_trade_generation_books_request {
      */
     static constexpr bool requires_session = true;
     std::vector<trade_generation_book_key> keys;
+
+    friend bool operator==(const get_many_trade_generation_books_request&,
+                           const get_many_trade_generation_books_request&) = default;
 };
 
 struct get_many_trade_generation_books_response {
     ores::utility::domain::result result;
     std::vector<trade_generation_book_lookup> entries;
+
+    friend bool operator==(const get_many_trade_generation_books_response&,
+                           const get_many_trade_generation_books_response&) = default;
 };
 
 struct put_trade_generation_book_request {
@@ -163,11 +208,17 @@ struct put_trade_generation_book_request {
     static constexpr bool requires_session = true;
     trade_generation_book_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_trade_generation_book_request&,
+                           const put_trade_generation_book_request&) = default;
 };
 
 struct put_trade_generation_book_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::trade_generation_book> trade_generation_book;
+
+    friend bool operator==(const put_trade_generation_book_response&,
+                           const put_trade_generation_book_response&) = default;
 };
 
 struct put_many_trade_generation_books_request {
@@ -182,11 +233,17 @@ struct put_many_trade_generation_books_request {
     static constexpr bool requires_session = true;
     std::vector<trade_generation_book_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_trade_generation_books_request&,
+                           const put_many_trade_generation_books_request&) = default;
 };
 
 struct put_many_trade_generation_books_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::trade_generation_book> trade_generation_books;
+
+    friend bool operator==(const put_many_trade_generation_books_response&,
+                           const put_many_trade_generation_books_response&) = default;
 };
 
 struct delete_trade_generation_book_request {
@@ -201,10 +258,16 @@ struct delete_trade_generation_book_request {
     static constexpr bool requires_session = true;
     trade_generation_book_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_trade_generation_book_request&,
+                           const delete_trade_generation_book_request&) = default;
 };
 
 struct delete_trade_generation_book_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_trade_generation_book_response&,
+                           const delete_trade_generation_book_response&) = default;
 };
 
 struct delete_many_trade_generation_books_request {
@@ -220,10 +283,16 @@ struct delete_many_trade_generation_books_request {
     static constexpr bool requires_session = true;
     std::vector<trade_generation_book_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_trade_generation_books_request&,
+                           const delete_many_trade_generation_books_request&) = default;
 };
 
 struct delete_many_trade_generation_books_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_trade_generation_books_response&,
+                           const delete_many_trade_generation_books_response&) = default;
 };
 
 struct list_trade_generation_book_versions_request {
@@ -242,12 +311,18 @@ struct list_trade_generation_book_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<trade_generation_book_versions_filter> filter;
+
+    friend bool operator==(const list_trade_generation_book_versions_request&,
+                           const list_trade_generation_book_versions_request&) = default;
 };
 
 struct list_trade_generation_book_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::trade_generation_book> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_trade_generation_book_versions_response&,
+                           const list_trade_generation_book_versions_response&) = default;
 };
 
 struct get_trade_generation_book_version_request {
@@ -262,11 +337,17 @@ struct get_trade_generation_book_version_request {
      */
     static constexpr bool requires_session = true;
     trade_generation_book_version_key key;
+
+    friend bool operator==(const get_trade_generation_book_version_request&,
+                           const get_trade_generation_book_version_request&) = default;
 };
 
 struct get_trade_generation_book_version_response {
     ores::utility::domain::result result;
     std::optional<ores::synthetic::domain::trade_generation_book> version;
+
+    friend bool operator==(const get_trade_generation_book_version_response&,
+                           const get_trade_generation_book_version_response&) = default;
 };
 
 /**

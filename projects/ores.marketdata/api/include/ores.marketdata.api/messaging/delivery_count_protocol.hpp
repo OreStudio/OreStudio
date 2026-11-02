@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct delivery_count_key {
     std::string oresmd_uri;
+
+    friend bool operator==(const delivery_count_key&, const delivery_count_key&) = default;
 };
 
 struct delivery_count_write {
@@ -54,21 +56,29 @@ struct delivery_count_write {
     std::chrono::system_clock::time_point flushed_at;
     boost::uuids::uuid feed_id;
     std::int64_t deliveries;
+
+    friend bool operator==(const delivery_count_write&, const delivery_count_write&) = default;
 };
 
 struct delivery_count_change {
     delivery_count_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const delivery_count_change&, const delivery_count_change&) = default;
 };
 
 struct delivery_count_removal {
     delivery_count_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const delivery_count_removal&, const delivery_count_removal&) = default;
 };
 
 struct delivery_count_lookup {
     delivery_count_key key;
     std::optional<ores::marketdata::domain::delivery_count> delivery_count;
+
+    friend bool operator==(const delivery_count_lookup&, const delivery_count_lookup&) = default;
 };
 
 struct delivery_counts_filter {
@@ -79,6 +89,8 @@ struct delivery_counts_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
+
+    friend bool operator==(const delivery_counts_filter&, const delivery_counts_filter&) = default;
 };
 
 struct delivery_count_event {
@@ -88,17 +100,25 @@ struct delivery_count_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const delivery_count_event&, const delivery_count_event&) = default;
 };
 
 struct delivery_count_version_key {
     delivery_count_key delivery_count;
     std::uint32_t version;
+
+    friend bool operator==(const delivery_count_version_key&,
+                           const delivery_count_version_key&) = default;
 };
 
 struct delivery_count_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const delivery_count_versions_filter&,
+                           const delivery_count_versions_filter&) = default;
 };
 
 struct list_delivery_counts_request {
@@ -116,12 +136,18 @@ struct list_delivery_counts_request {
     ores::utility::domain::order order;
     std::optional<delivery_counts_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_delivery_counts_request&,
+                           const list_delivery_counts_request&) = default;
 };
 
 struct list_delivery_counts_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::delivery_count> delivery_counts;
     std::uint64_t total;
+
+    friend bool operator==(const list_delivery_counts_response&,
+                           const list_delivery_counts_response&) = default;
 };
 
 struct get_delivery_count_request {
@@ -135,11 +161,17 @@ struct get_delivery_count_request {
      */
     static constexpr bool requires_session = true;
     delivery_count_key key;
+
+    friend bool operator==(const get_delivery_count_request&,
+                           const get_delivery_count_request&) = default;
 };
 
 struct get_delivery_count_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::delivery_count> delivery_count;
+
+    friend bool operator==(const get_delivery_count_response&,
+                           const get_delivery_count_response&) = default;
 };
 
 struct get_many_delivery_counts_request {
@@ -153,11 +185,17 @@ struct get_many_delivery_counts_request {
      */
     static constexpr bool requires_session = true;
     std::vector<delivery_count_key> keys;
+
+    friend bool operator==(const get_many_delivery_counts_request&,
+                           const get_many_delivery_counts_request&) = default;
 };
 
 struct get_many_delivery_counts_response {
     ores::utility::domain::result result;
     std::vector<delivery_count_lookup> entries;
+
+    friend bool operator==(const get_many_delivery_counts_response&,
+                           const get_many_delivery_counts_response&) = default;
 };
 
 struct put_delivery_count_request {
@@ -172,11 +210,17 @@ struct put_delivery_count_request {
     static constexpr bool requires_session = true;
     delivery_count_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_delivery_count_request&,
+                           const put_delivery_count_request&) = default;
 };
 
 struct put_delivery_count_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::delivery_count> delivery_count;
+
+    friend bool operator==(const put_delivery_count_response&,
+                           const put_delivery_count_response&) = default;
 };
 
 struct put_many_delivery_counts_request {
@@ -191,11 +235,17 @@ struct put_many_delivery_counts_request {
     static constexpr bool requires_session = true;
     std::vector<delivery_count_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_delivery_counts_request&,
+                           const put_many_delivery_counts_request&) = default;
 };
 
 struct put_many_delivery_counts_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::delivery_count> delivery_counts;
+
+    friend bool operator==(const put_many_delivery_counts_response&,
+                           const put_many_delivery_counts_response&) = default;
 };
 
 struct delete_delivery_count_request {
@@ -210,10 +260,16 @@ struct delete_delivery_count_request {
     static constexpr bool requires_session = true;
     delivery_count_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_delivery_count_request&,
+                           const delete_delivery_count_request&) = default;
 };
 
 struct delete_delivery_count_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_delivery_count_response&,
+                           const delete_delivery_count_response&) = default;
 };
 
 struct delete_many_delivery_counts_request {
@@ -228,10 +284,16 @@ struct delete_many_delivery_counts_request {
     static constexpr bool requires_session = true;
     std::vector<delivery_count_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_delivery_counts_request&,
+                           const delete_many_delivery_counts_request&) = default;
 };
 
 struct delete_many_delivery_counts_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_delivery_counts_response&,
+                           const delete_many_delivery_counts_response&) = default;
 };
 
 struct list_delivery_count_versions_request {
@@ -249,12 +311,18 @@ struct list_delivery_count_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<delivery_count_versions_filter> filter;
+
+    friend bool operator==(const list_delivery_count_versions_request&,
+                           const list_delivery_count_versions_request&) = default;
 };
 
 struct list_delivery_count_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::delivery_count> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_delivery_count_versions_response&,
+                           const list_delivery_count_versions_response&) = default;
 };
 
 struct get_delivery_count_version_request {
@@ -268,11 +336,17 @@ struct get_delivery_count_version_request {
      */
     static constexpr bool requires_session = true;
     delivery_count_version_key key;
+
+    friend bool operator==(const get_delivery_count_version_request&,
+                           const get_delivery_count_version_request&) = default;
 };
 
 struct get_delivery_count_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::delivery_count> version;
+
+    friend bool operator==(const get_delivery_count_version_response&,
+                           const get_delivery_count_version_response&) = default;
 };
 
 /**

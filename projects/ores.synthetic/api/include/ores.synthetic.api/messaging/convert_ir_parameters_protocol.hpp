@@ -62,6 +62,9 @@ struct convert_ir_parameters_request {
     std::vector<std::string> parameter_names;
     /** @brief The values given, rates as decimals. */
     std::vector<double> parameter_values;
+
+    friend bool operator==(const convert_ir_parameters_request&,
+                           const convert_ir_parameters_request&) = default;
 };
 
 /**
@@ -78,6 +81,9 @@ struct convert_ir_parameters_response {
     std::vector<std::string> parameter_names;
     /** @brief The converted values. */
     std::vector<double> parameter_values;
+
+    friend bool operator==(const convert_ir_parameters_response&,
+                           const convert_ir_parameters_response&) = default;
 };
 
 /**

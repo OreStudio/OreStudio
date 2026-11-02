@@ -56,6 +56,8 @@ struct auth_event {
     std::string session_id;
     std::string party_id;
     std::string error_detail;
+
+    friend bool operator==(const auth_event&, const auth_event&) = default;
 };
 
 /**
@@ -81,12 +83,18 @@ struct list_auth_events_request {
     std::optional<std::chrono::system_clock::time_point> to_time;
     std::uint32_t limit = 200;
     std::uint32_t offset = 0;
+
+    friend bool operator==(const list_auth_events_request&,
+                           const list_auth_events_request&) = default;
 };
 
 struct list_auth_events_response {
     std::vector<auth_event> events;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const list_auth_events_response&,
+                           const list_auth_events_response&) = default;
 };
 
 /**

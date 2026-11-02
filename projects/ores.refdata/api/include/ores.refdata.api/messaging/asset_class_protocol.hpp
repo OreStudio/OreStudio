@@ -44,6 +44,8 @@ namespace ores::refdata::messaging {
 struct asset_class_key {
     std::string code;
     std::string coding_scheme_code;
+
+    friend bool operator==(const asset_class_key&, const asset_class_key&) = default;
 };
 
 struct asset_class_write {
@@ -51,21 +53,29 @@ struct asset_class_write {
     std::string coding_scheme_code;
     std::string source;
     std::string description;
+
+    friend bool operator==(const asset_class_write&, const asset_class_write&) = default;
 };
 
 struct asset_class_change {
     asset_class_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const asset_class_change&, const asset_class_change&) = default;
 };
 
 struct asset_class_removal {
     asset_class_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const asset_class_removal&, const asset_class_removal&) = default;
 };
 
 struct asset_class_lookup {
     asset_class_key key;
     std::optional<ores::refdata::domain::asset_class> asset_class;
+
+    friend bool operator==(const asset_class_lookup&, const asset_class_lookup&) = default;
 };
 
 struct asset_class_event {
@@ -75,17 +85,25 @@ struct asset_class_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const asset_class_event&, const asset_class_event&) = default;
 };
 
 struct asset_class_version_key {
     asset_class_key asset_class;
     std::uint32_t version;
+
+    friend bool operator==(const asset_class_version_key&,
+                           const asset_class_version_key&) = default;
 };
 
 struct asset_class_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const asset_class_versions_filter&,
+                           const asset_class_versions_filter&) = default;
 };
 
 struct list_asset_classes_request {
@@ -102,12 +120,18 @@ struct list_asset_classes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_asset_classes_request&,
+                           const list_asset_classes_request&) = default;
 };
 
 struct list_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::asset_class> asset_classes;
     std::uint64_t total;
+
+    friend bool operator==(const list_asset_classes_response&,
+                           const list_asset_classes_response&) = default;
 };
 
 struct get_asset_class_request {
@@ -121,11 +145,17 @@ struct get_asset_class_request {
      */
     static constexpr bool requires_session = true;
     asset_class_key key;
+
+    friend bool operator==(const get_asset_class_request&,
+                           const get_asset_class_request&) = default;
 };
 
 struct get_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::asset_class> asset_class;
+
+    friend bool operator==(const get_asset_class_response&,
+                           const get_asset_class_response&) = default;
 };
 
 struct get_many_asset_classes_request {
@@ -139,11 +169,17 @@ struct get_many_asset_classes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<asset_class_key> keys;
+
+    friend bool operator==(const get_many_asset_classes_request&,
+                           const get_many_asset_classes_request&) = default;
 };
 
 struct get_many_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<asset_class_lookup> entries;
+
+    friend bool operator==(const get_many_asset_classes_response&,
+                           const get_many_asset_classes_response&) = default;
 };
 
 struct put_asset_class_request {
@@ -158,11 +194,17 @@ struct put_asset_class_request {
     static constexpr bool requires_session = true;
     asset_class_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_asset_class_request&,
+                           const put_asset_class_request&) = default;
 };
 
 struct put_asset_class_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::asset_class> asset_class;
+
+    friend bool operator==(const put_asset_class_response&,
+                           const put_asset_class_response&) = default;
 };
 
 struct put_many_asset_classes_request {
@@ -177,11 +219,17 @@ struct put_many_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<asset_class_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_asset_classes_request&,
+                           const put_many_asset_classes_request&) = default;
 };
 
 struct put_many_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::asset_class> asset_classes;
+
+    friend bool operator==(const put_many_asset_classes_response&,
+                           const put_many_asset_classes_response&) = default;
 };
 
 struct delete_asset_class_request {
@@ -196,10 +244,16 @@ struct delete_asset_class_request {
     static constexpr bool requires_session = true;
     asset_class_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_asset_class_request&,
+                           const delete_asset_class_request&) = default;
 };
 
 struct delete_asset_class_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_asset_class_response&,
+                           const delete_asset_class_response&) = default;
 };
 
 struct delete_many_asset_classes_request {
@@ -214,10 +268,16 @@ struct delete_many_asset_classes_request {
     static constexpr bool requires_session = true;
     std::vector<asset_class_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_asset_classes_request&,
+                           const delete_many_asset_classes_request&) = default;
 };
 
 struct delete_many_asset_classes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_asset_classes_response&,
+                           const delete_many_asset_classes_response&) = default;
 };
 
 struct list_asset_class_versions_request {
@@ -235,12 +295,18 @@ struct list_asset_class_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<asset_class_versions_filter> filter;
+
+    friend bool operator==(const list_asset_class_versions_request&,
+                           const list_asset_class_versions_request&) = default;
 };
 
 struct list_asset_class_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::asset_class> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_asset_class_versions_response&,
+                           const list_asset_class_versions_response&) = default;
 };
 
 struct get_asset_class_version_request {
@@ -254,11 +320,17 @@ struct get_asset_class_version_request {
      */
     static constexpr bool requires_session = true;
     asset_class_version_key key;
+
+    friend bool operator==(const get_asset_class_version_request&,
+                           const get_asset_class_version_request&) = default;
 };
 
 struct get_asset_class_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::asset_class> version;
+
+    friend bool operator==(const get_asset_class_version_response&,
+                           const get_asset_class_version_response&) = default;
 };
 
 /**

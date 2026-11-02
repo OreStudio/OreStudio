@@ -43,6 +43,8 @@ namespace ores::marketdata::messaging {
 
 struct composite_input_key {
     std::string oresmd_uri;
+
+    friend bool operator==(const composite_input_key&, const composite_input_key&) = default;
 };
 
 struct composite_input_write {
@@ -51,21 +53,30 @@ struct composite_input_write {
     std::string provider_code;
     std::string oresmd_uri;
     int position;
+
+    friend bool operator==(const composite_input_write&, const composite_input_write&) = default;
 };
 
 struct composite_input_change {
     composite_input_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const composite_input_change&, const composite_input_change&) = default;
 };
 
 struct composite_input_removal {
     composite_input_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const composite_input_removal&,
+                           const composite_input_removal&) = default;
 };
 
 struct composite_input_lookup {
     composite_input_key key;
     std::optional<ores::marketdata::domain::composite_input> composite_input;
+
+    friend bool operator==(const composite_input_lookup&, const composite_input_lookup&) = default;
 };
 
 struct composite_inputs_filter {
@@ -74,6 +85,9 @@ struct composite_inputs_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> composite_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
+
+    friend bool operator==(const composite_inputs_filter&,
+                           const composite_inputs_filter&) = default;
 };
 
 struct composite_input_event {
@@ -83,17 +97,25 @@ struct composite_input_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const composite_input_event&, const composite_input_event&) = default;
 };
 
 struct composite_input_version_key {
     composite_input_key composite_input;
     std::uint32_t version;
+
+    friend bool operator==(const composite_input_version_key&,
+                           const composite_input_version_key&) = default;
 };
 
 struct composite_input_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const composite_input_versions_filter&,
+                           const composite_input_versions_filter&) = default;
 };
 
 struct list_composite_inputs_request {
@@ -111,12 +133,18 @@ struct list_composite_inputs_request {
     ores::utility::domain::order order;
     std::optional<composite_inputs_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_composite_inputs_request&,
+                           const list_composite_inputs_request&) = default;
 };
 
 struct list_composite_inputs_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite_input> composite_inputs;
     std::uint64_t total;
+
+    friend bool operator==(const list_composite_inputs_response&,
+                           const list_composite_inputs_response&) = default;
 };
 
 struct get_composite_input_request {
@@ -130,11 +158,17 @@ struct get_composite_input_request {
      */
     static constexpr bool requires_session = true;
     composite_input_key key;
+
+    friend bool operator==(const get_composite_input_request&,
+                           const get_composite_input_request&) = default;
 };
 
 struct get_composite_input_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite_input> composite_input;
+
+    friend bool operator==(const get_composite_input_response&,
+                           const get_composite_input_response&) = default;
 };
 
 struct get_many_composite_inputs_request {
@@ -148,11 +182,17 @@ struct get_many_composite_inputs_request {
      */
     static constexpr bool requires_session = true;
     std::vector<composite_input_key> keys;
+
+    friend bool operator==(const get_many_composite_inputs_request&,
+                           const get_many_composite_inputs_request&) = default;
 };
 
 struct get_many_composite_inputs_response {
     ores::utility::domain::result result;
     std::vector<composite_input_lookup> entries;
+
+    friend bool operator==(const get_many_composite_inputs_response&,
+                           const get_many_composite_inputs_response&) = default;
 };
 
 struct put_composite_input_request {
@@ -167,11 +207,17 @@ struct put_composite_input_request {
     static constexpr bool requires_session = true;
     composite_input_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_composite_input_request&,
+                           const put_composite_input_request&) = default;
 };
 
 struct put_composite_input_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite_input> composite_input;
+
+    friend bool operator==(const put_composite_input_response&,
+                           const put_composite_input_response&) = default;
 };
 
 struct put_many_composite_inputs_request {
@@ -186,11 +232,17 @@ struct put_many_composite_inputs_request {
     static constexpr bool requires_session = true;
     std::vector<composite_input_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_composite_inputs_request&,
+                           const put_many_composite_inputs_request&) = default;
 };
 
 struct put_many_composite_inputs_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite_input> composite_inputs;
+
+    friend bool operator==(const put_many_composite_inputs_response&,
+                           const put_many_composite_inputs_response&) = default;
 };
 
 struct delete_composite_input_request {
@@ -205,10 +257,16 @@ struct delete_composite_input_request {
     static constexpr bool requires_session = true;
     composite_input_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_composite_input_request&,
+                           const delete_composite_input_request&) = default;
 };
 
 struct delete_composite_input_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_composite_input_response&,
+                           const delete_composite_input_response&) = default;
 };
 
 struct delete_many_composite_inputs_request {
@@ -223,10 +281,16 @@ struct delete_many_composite_inputs_request {
     static constexpr bool requires_session = true;
     std::vector<composite_input_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_composite_inputs_request&,
+                           const delete_many_composite_inputs_request&) = default;
 };
 
 struct delete_many_composite_inputs_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_composite_inputs_response&,
+                           const delete_many_composite_inputs_response&) = default;
 };
 
 struct list_composite_input_versions_request {
@@ -244,12 +308,18 @@ struct list_composite_input_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_input_versions_filter> filter;
+
+    friend bool operator==(const list_composite_input_versions_request&,
+                           const list_composite_input_versions_request&) = default;
 };
 
 struct list_composite_input_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite_input> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_composite_input_versions_response&,
+                           const list_composite_input_versions_response&) = default;
 };
 
 struct get_composite_input_version_request {
@@ -263,11 +333,17 @@ struct get_composite_input_version_request {
      */
     static constexpr bool requires_session = true;
     composite_input_version_key key;
+
+    friend bool operator==(const get_composite_input_version_request&,
+                           const get_composite_input_version_request&) = default;
 };
 
 struct get_composite_input_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::composite_input> version;
+
+    friend bool operator==(const get_composite_input_version_response&,
+                           const get_composite_input_version_response&) = default;
 };
 
 /**

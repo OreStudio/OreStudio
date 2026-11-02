@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-every-generated-protocol-message-a-defaulted-equality
+#+pr: 4391
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-02
 #+updated: 2026-11-02
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ compares by value with a defaulted =operator====.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ compares by value with a defaulted =operator====.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Emit =friend bool operator==(const T&, const T&) = default;= after the
+   members of every message, in the four message sections of
+   =ores.cpp.protocol.protocol_header= (entity, junction, operation, family).
+2. Regenerate every protocol header.
+3. A defaulted equality is deleted, not refused, when a member has no
+   equality, so find the gaps with a scratch check: one translation unit per
+   api part that asserts =std::equality_comparable= for every message.
+4. Give each blocking type a defaulted equality, in its template when it is
+   generated.
 
 * Measurements
 
@@ -58,9 +64,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Protocol headers regenerated | 583 | =compass codegen regenerate --all --address ores.cpp.protocol= | da9129215a + branch |
+| Messages checked for equality | 13,806 in 19 api parts | =evidence/equality_check/= scripts | da9129215a + branch |
+| Members blocking equality, first run | 7,668, from 6 types | same | da9129215a + branch |
+| Messages not equality comparable, final run | 0 | same | da9129215a + branch |
+| Codegen pytest | 1,826 pass | =pytest projects/ores.codegen/tests= | da9129215a + branch |
+| New pytest against the old template | 8 of 8 fail | =pytest test_protocol_message_equality.py= | da9129215a |
+| Test suites after the user's full build | 84 pass, 9 hold no cases | every =publish/bin/*.tests= in turn | db470827ae |
+| marketdata and synthetic service suites, services stopped, NATS up | 205 and 76 cases pass | same | db470827ae |
+| security suite with =ORES_TEST_PASSWORD_FAST=1= | 68 cases pass | same | db470827ae |
 
 * Notes
+
+- The six blocking types were =result=, =order=, =change_intent= and
+  =precondition= (with =field_failure= under =result=) in
+  =ores.utility/domain/protocol.hpp=, =trade_envelope_data= (with
+  =trade_envelope_field=), and the generated =instrument_batch=, whose
+  equality goes in the =ores.cpp.trade_type.batch= archetype.
+- Clang warns =-Wdefaulted-function-deleted= on a deleted defaulted equality,
+  and the build uses =-Werror=. A new message member without equality
+  therefore fails the build, which keeps the property.
+- The drift check also found four inbox and scheduler codec files that main
+  had not regenerated after a codegen change added enum includes. They are
+  regenerated here.
+- Four suites failed in the full run, none from this change. The marketdata
+  feed and synthetic announce cases compete with the running services, and
+  pass with them stopped. The security case needs =ORES_TEST_PASSWORD_FAST=,
+  which a direct run does not set. =ores.trading.core.digest.tests= is a stale
+  binary from 2026-10-17: a regeneration dropped its directory from the build.
+  Captured as [[file:../../../../product_backlog/inbox/build_the_trade_digest_tests_again.org][Build the trade digest tests again]].
 
 * Test Scenarios
 
@@ -77,12 +109,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4391][#4391]] | [codegen] Give every generated protocol message a defaulted equality |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | NaN and exact double equality | sample task | Moved | The sample task now refuses NaN and computed values. |
+| 2 | Long operator lines in hand-written headers | protocol.hpp, trade_envelope_data.hpp | No change | clang-format --dry-run --Werror passes on them. |
+| 3 | 14 headers regenerated after the full build | refdata, trading | No change | Syntax check over 14,119 messages; CI builds them. |
+| 4 | Digest tests did not run | - | Captured | build_the_trade_digest_tests_again. |
+| 5 | PR size | - | Noted | Almost all generated. |
 
 * Result
+
+Every generated protocol message, and every hand-written type nested in one,
+compares by value. The build refuses a message member without equality.

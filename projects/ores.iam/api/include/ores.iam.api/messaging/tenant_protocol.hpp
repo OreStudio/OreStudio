@@ -43,6 +43,8 @@ namespace ores::iam::messaging {
 
 struct tenant_key {
     std::string code;
+
+    friend bool operator==(const tenant_key&, const tenant_key&) = default;
 };
 
 struct tenant_write {
@@ -54,21 +56,29 @@ struct tenant_write {
     std::string hostname;
     std::string status;
     bool is_registration_default;
+
+    friend bool operator==(const tenant_write&, const tenant_write&) = default;
 };
 
 struct tenant_change {
     tenant_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenant_change&, const tenant_change&) = default;
 };
 
 struct tenant_removal {
     tenant_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenant_removal&, const tenant_removal&) = default;
 };
 
 struct tenant_lookup {
     tenant_key key;
     std::optional<ores::iam::domain::tenant> tenant;
+
+    friend bool operator==(const tenant_lookup&, const tenant_lookup&) = default;
 };
 
 struct tenants_filter {
@@ -78,6 +88,8 @@ struct tenants_filter {
     std::optional<std::vector<std::string>> type_one_of;
     std::optional<std::vector<std::string>> status_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const tenants_filter&, const tenants_filter&) = default;
 };
 
 struct tenant_event {
@@ -87,17 +99,23 @@ struct tenant_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenant_event&, const tenant_event&) = default;
 };
 
 struct tenant_version_key {
     tenant_key tenant;
     std::uint32_t version;
+
+    friend bool operator==(const tenant_version_key&, const tenant_version_key&) = default;
 };
 
 struct tenant_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenant_versions_filter&, const tenant_versions_filter&) = default;
 };
 
 struct list_tenants_request {
@@ -115,12 +133,16 @@ struct list_tenants_request {
     ores::utility::domain::order order;
     std::optional<tenants_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenants_request&, const list_tenants_request&) = default;
 };
 
 struct list_tenants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant> tenants;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenants_response&, const list_tenants_response&) = default;
 };
 
 struct get_tenant_request {
@@ -134,11 +156,15 @@ struct get_tenant_request {
      */
     static constexpr bool requires_session = true;
     tenant_key key;
+
+    friend bool operator==(const get_tenant_request&, const get_tenant_request&) = default;
 };
 
 struct get_tenant_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::tenant> tenant;
+
+    friend bool operator==(const get_tenant_response&, const get_tenant_response&) = default;
 };
 
 struct get_many_tenants_request {
@@ -152,11 +178,17 @@ struct get_many_tenants_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenant_key> keys;
+
+    friend bool operator==(const get_many_tenants_request&,
+                           const get_many_tenants_request&) = default;
 };
 
 struct get_many_tenants_response {
     ores::utility::domain::result result;
     std::vector<tenant_lookup> entries;
+
+    friend bool operator==(const get_many_tenants_response&,
+                           const get_many_tenants_response&) = default;
 };
 
 struct put_tenant_request {
@@ -171,11 +203,15 @@ struct put_tenant_request {
     static constexpr bool requires_session = true;
     tenant_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenant_request&, const put_tenant_request&) = default;
 };
 
 struct put_tenant_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::tenant> tenant;
+
+    friend bool operator==(const put_tenant_response&, const put_tenant_response&) = default;
 };
 
 struct put_many_tenants_request {
@@ -190,11 +226,17 @@ struct put_many_tenants_request {
     static constexpr bool requires_session = true;
     std::vector<tenant_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenants_request&,
+                           const put_many_tenants_request&) = default;
 };
 
 struct put_many_tenants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant> tenants;
+
+    friend bool operator==(const put_many_tenants_response&,
+                           const put_many_tenants_response&) = default;
 };
 
 struct delete_tenant_request {
@@ -209,10 +251,14 @@ struct delete_tenant_request {
     static constexpr bool requires_session = true;
     tenant_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenant_request&, const delete_tenant_request&) = default;
 };
 
 struct delete_tenant_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenant_response&, const delete_tenant_response&) = default;
 };
 
 struct delete_many_tenants_request {
@@ -227,10 +273,16 @@ struct delete_many_tenants_request {
     static constexpr bool requires_session = true;
     std::vector<tenant_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenants_request&,
+                           const delete_many_tenants_request&) = default;
 };
 
 struct delete_many_tenants_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenants_response&,
+                           const delete_many_tenants_response&) = default;
 };
 
 struct list_tenant_versions_request {
@@ -248,12 +300,18 @@ struct list_tenant_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenant_versions_filter> filter;
+
+    friend bool operator==(const list_tenant_versions_request&,
+                           const list_tenant_versions_request&) = default;
 };
 
 struct list_tenant_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenant_versions_response&,
+                           const list_tenant_versions_response&) = default;
 };
 
 struct get_tenant_version_request {
@@ -267,11 +325,17 @@ struct get_tenant_version_request {
      */
     static constexpr bool requires_session = true;
     tenant_version_key key;
+
+    friend bool operator==(const get_tenant_version_request&,
+                           const get_tenant_version_request&) = default;
 };
 
 struct get_tenant_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::tenant> version;
+
+    friend bool operator==(const get_tenant_version_response&,
+                           const get_tenant_version_response&) = default;
 };
 
 /**

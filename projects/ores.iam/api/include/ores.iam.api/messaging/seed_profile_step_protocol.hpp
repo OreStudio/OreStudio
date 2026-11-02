@@ -43,6 +43,8 @@ namespace ores::iam::messaging {
 
 struct seed_profile_step_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const seed_profile_step_key&, const seed_profile_step_key&) = default;
 };
 
 struct seed_profile_step_write {
@@ -51,27 +53,42 @@ struct seed_profile_step_write {
     std::string step_kind;
     std::string arguments_json;
     int display_order;
+
+    friend bool operator==(const seed_profile_step_write&,
+                           const seed_profile_step_write&) = default;
 };
 
 struct seed_profile_step_change {
     seed_profile_step_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const seed_profile_step_change&,
+                           const seed_profile_step_change&) = default;
 };
 
 struct seed_profile_step_removal {
     seed_profile_step_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const seed_profile_step_removal&,
+                           const seed_profile_step_removal&) = default;
 };
 
 struct seed_profile_step_lookup {
     seed_profile_step_key key;
     std::optional<ores::iam::domain::seed_profile_step> seed_profile_step;
+
+    friend bool operator==(const seed_profile_step_lookup&,
+                           const seed_profile_step_lookup&) = default;
 };
 
 struct seed_profile_steps_filter {
     std::optional<boost::uuids::uuid> seed_profile_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> seed_profile_id_one_of;
+
+    friend bool operator==(const seed_profile_steps_filter&,
+                           const seed_profile_steps_filter&) = default;
 };
 
 struct seed_profile_step_event {
@@ -81,17 +98,26 @@ struct seed_profile_step_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const seed_profile_step_event&,
+                           const seed_profile_step_event&) = default;
 };
 
 struct seed_profile_step_version_key {
     seed_profile_step_key seed_profile_step;
     std::uint32_t version;
+
+    friend bool operator==(const seed_profile_step_version_key&,
+                           const seed_profile_step_version_key&) = default;
 };
 
 struct seed_profile_step_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const seed_profile_step_versions_filter&,
+                           const seed_profile_step_versions_filter&) = default;
 };
 
 struct list_seed_profile_steps_request {
@@ -109,12 +135,18 @@ struct list_seed_profile_steps_request {
     ores::utility::domain::order order;
     std::optional<seed_profile_steps_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_seed_profile_steps_request&,
+                           const list_seed_profile_steps_request&) = default;
 };
 
 struct list_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> seed_profile_steps;
     std::uint64_t total;
+
+    friend bool operator==(const list_seed_profile_steps_response&,
+                           const list_seed_profile_steps_response&) = default;
 };
 
 struct get_seed_profile_step_request {
@@ -128,11 +160,17 @@ struct get_seed_profile_step_request {
      */
     static constexpr bool requires_session = true;
     seed_profile_step_key key;
+
+    friend bool operator==(const get_seed_profile_step_request&,
+                           const get_seed_profile_step_request&) = default;
 };
 
 struct get_seed_profile_step_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::seed_profile_step> seed_profile_step;
+
+    friend bool operator==(const get_seed_profile_step_response&,
+                           const get_seed_profile_step_response&) = default;
 };
 
 struct get_many_seed_profile_steps_request {
@@ -146,11 +184,17 @@ struct get_many_seed_profile_steps_request {
      */
     static constexpr bool requires_session = true;
     std::vector<seed_profile_step_key> keys;
+
+    friend bool operator==(const get_many_seed_profile_steps_request&,
+                           const get_many_seed_profile_steps_request&) = default;
 };
 
 struct get_many_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<seed_profile_step_lookup> entries;
+
+    friend bool operator==(const get_many_seed_profile_steps_response&,
+                           const get_many_seed_profile_steps_response&) = default;
 };
 
 struct put_seed_profile_step_request {
@@ -165,11 +209,17 @@ struct put_seed_profile_step_request {
     static constexpr bool requires_session = true;
     seed_profile_step_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_seed_profile_step_request&,
+                           const put_seed_profile_step_request&) = default;
 };
 
 struct put_seed_profile_step_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::seed_profile_step> seed_profile_step;
+
+    friend bool operator==(const put_seed_profile_step_response&,
+                           const put_seed_profile_step_response&) = default;
 };
 
 struct put_many_seed_profile_steps_request {
@@ -184,11 +234,17 @@ struct put_many_seed_profile_steps_request {
     static constexpr bool requires_session = true;
     std::vector<seed_profile_step_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_seed_profile_steps_request&,
+                           const put_many_seed_profile_steps_request&) = default;
 };
 
 struct put_many_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> seed_profile_steps;
+
+    friend bool operator==(const put_many_seed_profile_steps_response&,
+                           const put_many_seed_profile_steps_response&) = default;
 };
 
 struct delete_seed_profile_step_request {
@@ -203,10 +259,16 @@ struct delete_seed_profile_step_request {
     static constexpr bool requires_session = true;
     seed_profile_step_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_seed_profile_step_request&,
+                           const delete_seed_profile_step_request&) = default;
 };
 
 struct delete_seed_profile_step_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_seed_profile_step_response&,
+                           const delete_seed_profile_step_response&) = default;
 };
 
 struct delete_many_seed_profile_steps_request {
@@ -221,10 +283,16 @@ struct delete_many_seed_profile_steps_request {
     static constexpr bool requires_session = true;
     std::vector<seed_profile_step_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_seed_profile_steps_request&,
+                           const delete_many_seed_profile_steps_request&) = default;
 };
 
 struct delete_many_seed_profile_steps_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_seed_profile_steps_response&,
+                           const delete_many_seed_profile_steps_response&) = default;
 };
 
 struct list_by_seed_profile_id_seed_profile_steps_request {
@@ -244,12 +312,18 @@ struct list_by_seed_profile_id_seed_profile_steps_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<seed_profile_steps_filter> filter;
+
+    friend bool operator==(const list_by_seed_profile_id_seed_profile_steps_request&,
+                           const list_by_seed_profile_id_seed_profile_steps_request&) = default;
 };
 
 struct list_by_seed_profile_id_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> seed_profile_steps;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_seed_profile_id_seed_profile_steps_response&,
+                           const list_by_seed_profile_id_seed_profile_steps_response&) = default;
 };
 
 struct list_seed_profile_step_versions_request {
@@ -267,12 +341,18 @@ struct list_seed_profile_step_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<seed_profile_step_versions_filter> filter;
+
+    friend bool operator==(const list_seed_profile_step_versions_request&,
+                           const list_seed_profile_step_versions_request&) = default;
 };
 
 struct list_seed_profile_step_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_seed_profile_step_versions_response&,
+                           const list_seed_profile_step_versions_response&) = default;
 };
 
 struct get_seed_profile_step_version_request {
@@ -286,11 +366,17 @@ struct get_seed_profile_step_version_request {
      */
     static constexpr bool requires_session = true;
     seed_profile_step_version_key key;
+
+    friend bool operator==(const get_seed_profile_step_version_request&,
+                           const get_seed_profile_step_version_request&) = default;
 };
 
 struct get_seed_profile_step_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::seed_profile_step> version;
+
+    friend bool operator==(const get_seed_profile_step_version_response&,
+                           const get_seed_profile_step_version_response&) = default;
 };
 
 /**

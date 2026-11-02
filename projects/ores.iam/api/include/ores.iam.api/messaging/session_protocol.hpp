@@ -43,6 +43,8 @@ namespace ores::iam::messaging {
 
 struct session_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const session_key&, const session_key&) = default;
 };
 
 struct session_write {
@@ -58,26 +60,36 @@ struct session_write {
     std::uint64_t bytes_received;
     std::string country_code;
     std::string protocol;
+
+    friend bool operator==(const session_write&, const session_write&) = default;
 };
 
 struct session_change {
     session_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const session_change&, const session_change&) = default;
 };
 
 struct session_removal {
     session_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const session_removal&, const session_removal&) = default;
 };
 
 struct session_lookup {
     session_key key;
     std::optional<ores::iam::domain::session> session;
+
+    friend bool operator==(const session_lookup&, const session_lookup&) = default;
 };
 
 struct sessions_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const sessions_filter&, const sessions_filter&) = default;
 };
 
 struct session_event {
@@ -87,6 +99,8 @@ struct session_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const session_event&, const session_event&) = default;
 };
 
 struct list_sessions_request {
@@ -103,12 +117,16 @@ struct list_sessions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<sessions_filter> filter;
+
+    friend bool operator==(const list_sessions_request&, const list_sessions_request&) = default;
 };
 
 struct list_sessions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::session> sessions;
     std::uint64_t total;
+
+    friend bool operator==(const list_sessions_response&, const list_sessions_response&) = default;
 };
 
 struct get_session_request {
@@ -122,11 +140,15 @@ struct get_session_request {
      */
     static constexpr bool requires_session = true;
     session_key key;
+
+    friend bool operator==(const get_session_request&, const get_session_request&) = default;
 };
 
 struct get_session_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::session> session;
+
+    friend bool operator==(const get_session_response&, const get_session_response&) = default;
 };
 
 struct get_many_sessions_request {
@@ -140,11 +162,17 @@ struct get_many_sessions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<session_key> keys;
+
+    friend bool operator==(const get_many_sessions_request&,
+                           const get_many_sessions_request&) = default;
 };
 
 struct get_many_sessions_response {
     ores::utility::domain::result result;
     std::vector<session_lookup> entries;
+
+    friend bool operator==(const get_many_sessions_response&,
+                           const get_many_sessions_response&) = default;
 };
 
 struct put_session_request {
@@ -159,11 +187,15 @@ struct put_session_request {
     static constexpr bool requires_session = true;
     session_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_session_request&, const put_session_request&) = default;
 };
 
 struct put_session_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::session> session;
+
+    friend bool operator==(const put_session_response&, const put_session_response&) = default;
 };
 
 struct put_many_sessions_request {
@@ -178,11 +210,17 @@ struct put_many_sessions_request {
     static constexpr bool requires_session = true;
     std::vector<session_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_sessions_request&,
+                           const put_many_sessions_request&) = default;
 };
 
 struct put_many_sessions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::session> sessions;
+
+    friend bool operator==(const put_many_sessions_response&,
+                           const put_many_sessions_response&) = default;
 };
 
 struct delete_session_request {
@@ -197,10 +235,15 @@ struct delete_session_request {
     static constexpr bool requires_session = true;
     session_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_session_request&, const delete_session_request&) = default;
 };
 
 struct delete_session_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_session_response&,
+                           const delete_session_response&) = default;
 };
 
 struct delete_many_sessions_request {
@@ -215,10 +258,16 @@ struct delete_many_sessions_request {
     static constexpr bool requires_session = true;
     std::vector<session_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_sessions_request&,
+                           const delete_many_sessions_request&) = default;
 };
 
 struct delete_many_sessions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_sessions_response&,
+                           const delete_many_sessions_response&) = default;
 };
 
 /**

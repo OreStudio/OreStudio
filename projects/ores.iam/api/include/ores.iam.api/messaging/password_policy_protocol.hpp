@@ -46,6 +46,9 @@ struct get_password_policy_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = false;
+
+    friend bool operator==(const get_password_policy_request&,
+                           const get_password_policy_request&) = default;
 };
 
 struct get_password_policy_response {
@@ -57,6 +60,9 @@ struct get_password_policy_response {
     bool require_digit = false;
     bool require_special = false;
     std::string special_chars;
+
+    friend bool operator==(const get_password_policy_response&,
+                           const get_password_policy_response&) = default;
 };
 
 /**

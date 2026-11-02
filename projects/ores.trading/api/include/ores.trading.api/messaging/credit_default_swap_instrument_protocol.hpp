@@ -43,6 +43,9 @@ namespace ores::trading::messaging {
 
 struct credit_default_swap_instrument_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const credit_default_swap_instrument_key&,
+                           const credit_default_swap_instrument_key&) = default;
 };
 
 struct credit_default_swap_instrument_write {
@@ -61,26 +64,41 @@ struct credit_default_swap_instrument_write {
     std::optional<ores::utility::decimal::decimal> upfront_fee;
     std::optional<std::chrono::year_month_day> trade_date;
     std::optional<int> cash_settlement_days;
+
+    friend bool operator==(const credit_default_swap_instrument_write&,
+                           const credit_default_swap_instrument_write&) = default;
 };
 
 struct credit_default_swap_instrument_change {
     credit_default_swap_instrument_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const credit_default_swap_instrument_change&,
+                           const credit_default_swap_instrument_change&) = default;
 };
 
 struct credit_default_swap_instrument_removal {
     credit_default_swap_instrument_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const credit_default_swap_instrument_removal&,
+                           const credit_default_swap_instrument_removal&) = default;
 };
 
 struct credit_default_swap_instrument_lookup {
     credit_default_swap_instrument_key key;
     std::optional<ores::trading::domain::credit_default_swap_instrument>
         credit_default_swap_instrument;
+
+    friend bool operator==(const credit_default_swap_instrument_lookup&,
+                           const credit_default_swap_instrument_lookup&) = default;
 };
 
 struct credit_default_swap_instruments_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const credit_default_swap_instruments_filter&,
+                           const credit_default_swap_instruments_filter&) = default;
 };
 
 struct credit_default_swap_instrument_event {
@@ -90,17 +108,26 @@ struct credit_default_swap_instrument_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const credit_default_swap_instrument_event&,
+                           const credit_default_swap_instrument_event&) = default;
 };
 
 struct credit_default_swap_instrument_version_key {
     credit_default_swap_instrument_key credit_default_swap_instrument;
     std::uint32_t version;
+
+    friend bool operator==(const credit_default_swap_instrument_version_key&,
+                           const credit_default_swap_instrument_version_key&) = default;
 };
 
 struct credit_default_swap_instrument_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const credit_default_swap_instrument_versions_filter&,
+                           const credit_default_swap_instrument_versions_filter&) = default;
 };
 
 struct list_credit_default_swap_instruments_request {
@@ -119,12 +146,18 @@ struct list_credit_default_swap_instruments_request {
     ores::utility::domain::order order;
     std::optional<credit_default_swap_instruments_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_credit_default_swap_instruments_request&,
+                           const list_credit_default_swap_instruments_request&) = default;
 };
 
 struct list_credit_default_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::credit_default_swap_instrument> cds_instruments;
     std::uint64_t total;
+
+    friend bool operator==(const list_credit_default_swap_instruments_response&,
+                           const list_credit_default_swap_instruments_response&) = default;
 };
 
 struct get_credit_default_swap_instrument_request {
@@ -139,12 +172,18 @@ struct get_credit_default_swap_instrument_request {
      */
     static constexpr bool requires_session = true;
     credit_default_swap_instrument_key key;
+
+    friend bool operator==(const get_credit_default_swap_instrument_request&,
+                           const get_credit_default_swap_instrument_request&) = default;
 };
 
 struct get_credit_default_swap_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::credit_default_swap_instrument>
         credit_default_swap_instrument;
+
+    friend bool operator==(const get_credit_default_swap_instrument_response&,
+                           const get_credit_default_swap_instrument_response&) = default;
 };
 
 struct get_many_credit_default_swap_instruments_request {
@@ -159,11 +198,17 @@ struct get_many_credit_default_swap_instruments_request {
      */
     static constexpr bool requires_session = true;
     std::vector<credit_default_swap_instrument_key> keys;
+
+    friend bool operator==(const get_many_credit_default_swap_instruments_request&,
+                           const get_many_credit_default_swap_instruments_request&) = default;
 };
 
 struct get_many_credit_default_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<credit_default_swap_instrument_lookup> entries;
+
+    friend bool operator==(const get_many_credit_default_swap_instruments_response&,
+                           const get_many_credit_default_swap_instruments_response&) = default;
 };
 
 struct put_credit_default_swap_instrument_request {
@@ -179,12 +224,18 @@ struct put_credit_default_swap_instrument_request {
     static constexpr bool requires_session = true;
     credit_default_swap_instrument_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_credit_default_swap_instrument_request&,
+                           const put_credit_default_swap_instrument_request&) = default;
 };
 
 struct put_credit_default_swap_instrument_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::credit_default_swap_instrument>
         credit_default_swap_instrument;
+
+    friend bool operator==(const put_credit_default_swap_instrument_response&,
+                           const put_credit_default_swap_instrument_response&) = default;
 };
 
 struct put_many_credit_default_swap_instruments_request {
@@ -200,11 +251,17 @@ struct put_many_credit_default_swap_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<credit_default_swap_instrument_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_credit_default_swap_instruments_request&,
+                           const put_many_credit_default_swap_instruments_request&) = default;
 };
 
 struct put_many_credit_default_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::credit_default_swap_instrument> cds_instruments;
+
+    friend bool operator==(const put_many_credit_default_swap_instruments_response&,
+                           const put_many_credit_default_swap_instruments_response&) = default;
 };
 
 struct delete_credit_default_swap_instrument_request {
@@ -220,10 +277,16 @@ struct delete_credit_default_swap_instrument_request {
     static constexpr bool requires_session = true;
     credit_default_swap_instrument_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_credit_default_swap_instrument_request&,
+                           const delete_credit_default_swap_instrument_request&) = default;
 };
 
 struct delete_credit_default_swap_instrument_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_credit_default_swap_instrument_response&,
+                           const delete_credit_default_swap_instrument_response&) = default;
 };
 
 struct delete_many_credit_default_swap_instruments_request {
@@ -239,10 +302,16 @@ struct delete_many_credit_default_swap_instruments_request {
     static constexpr bool requires_session = true;
     std::vector<credit_default_swap_instrument_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_credit_default_swap_instruments_request&,
+                           const delete_many_credit_default_swap_instruments_request&) = default;
 };
 
 struct delete_many_credit_default_swap_instruments_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_credit_default_swap_instruments_response&,
+                           const delete_many_credit_default_swap_instruments_response&) = default;
 };
 
 struct list_credit_default_swap_instrument_versions_request {
@@ -261,12 +330,18 @@ struct list_credit_default_swap_instrument_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<credit_default_swap_instrument_versions_filter> filter;
+
+    friend bool operator==(const list_credit_default_swap_instrument_versions_request&,
+                           const list_credit_default_swap_instrument_versions_request&) = default;
 };
 
 struct list_credit_default_swap_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::credit_default_swap_instrument> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_credit_default_swap_instrument_versions_response&,
+                           const list_credit_default_swap_instrument_versions_response&) = default;
 };
 
 struct get_credit_default_swap_instrument_version_request {
@@ -281,11 +356,17 @@ struct get_credit_default_swap_instrument_version_request {
      */
     static constexpr bool requires_session = true;
     credit_default_swap_instrument_version_key key;
+
+    friend bool operator==(const get_credit_default_swap_instrument_version_request&,
+                           const get_credit_default_swap_instrument_version_request&) = default;
 };
 
 struct get_credit_default_swap_instrument_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::credit_default_swap_instrument> version;
+
+    friend bool operator==(const get_credit_default_swap_instrument_version_response&,
+                           const get_credit_default_swap_instrument_version_response&) = default;
 };
 
 /**

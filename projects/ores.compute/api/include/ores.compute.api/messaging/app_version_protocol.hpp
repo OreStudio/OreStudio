@@ -43,6 +43,8 @@ namespace ores::compute::messaging {
 
 struct app_version_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const app_version_key&, const app_version_key&) = default;
 };
 
 struct app_version_write {
@@ -52,27 +54,37 @@ struct app_version_write {
     std::string engine_version;
     int min_ram_mb;
     std::string release_note;
+
+    friend bool operator==(const app_version_write&, const app_version_write&) = default;
 };
 
 struct app_version_change {
     app_version_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const app_version_change&, const app_version_change&) = default;
 };
 
 struct app_version_removal {
     app_version_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const app_version_removal&, const app_version_removal&) = default;
 };
 
 struct app_version_lookup {
     app_version_key key;
     std::optional<ores::compute::domain::app_version> app_version;
+
+    friend bool operator==(const app_version_lookup&, const app_version_lookup&) = default;
 };
 
 struct app_versions_filter {
     std::optional<boost::uuids::uuid> app_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> app_id_one_of;
+
+    friend bool operator==(const app_versions_filter&, const app_versions_filter&) = default;
 };
 
 struct app_version_event {
@@ -82,17 +94,25 @@ struct app_version_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const app_version_event&, const app_version_event&) = default;
 };
 
 struct app_version_version_key {
     app_version_key app_version;
     std::uint32_t version;
+
+    friend bool operator==(const app_version_version_key&,
+                           const app_version_version_key&) = default;
 };
 
 struct app_version_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const app_version_versions_filter&,
+                           const app_version_versions_filter&) = default;
 };
 
 struct list_app_versions_request {
@@ -110,12 +130,18 @@ struct list_app_versions_request {
     ores::utility::domain::order order;
     std::optional<app_versions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_app_versions_request&,
+                           const list_app_versions_request&) = default;
 };
 
 struct list_app_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> app_versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_app_versions_response&,
+                           const list_app_versions_response&) = default;
 };
 
 struct get_app_version_request {
@@ -129,11 +155,17 @@ struct get_app_version_request {
      */
     static constexpr bool requires_session = true;
     app_version_key key;
+
+    friend bool operator==(const get_app_version_request&,
+                           const get_app_version_request&) = default;
 };
 
 struct get_app_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::app_version> app_version;
+
+    friend bool operator==(const get_app_version_response&,
+                           const get_app_version_response&) = default;
 };
 
 struct get_many_app_versions_request {
@@ -147,11 +179,17 @@ struct get_many_app_versions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<app_version_key> keys;
+
+    friend bool operator==(const get_many_app_versions_request&,
+                           const get_many_app_versions_request&) = default;
 };
 
 struct get_many_app_versions_response {
     ores::utility::domain::result result;
     std::vector<app_version_lookup> entries;
+
+    friend bool operator==(const get_many_app_versions_response&,
+                           const get_many_app_versions_response&) = default;
 };
 
 struct put_app_version_request {
@@ -166,11 +204,17 @@ struct put_app_version_request {
     static constexpr bool requires_session = true;
     app_version_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_app_version_request&,
+                           const put_app_version_request&) = default;
 };
 
 struct put_app_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::app_version> app_version;
+
+    friend bool operator==(const put_app_version_response&,
+                           const put_app_version_response&) = default;
 };
 
 struct put_many_app_versions_request {
@@ -185,11 +229,17 @@ struct put_many_app_versions_request {
     static constexpr bool requires_session = true;
     std::vector<app_version_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_app_versions_request&,
+                           const put_many_app_versions_request&) = default;
 };
 
 struct put_many_app_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> app_versions;
+
+    friend bool operator==(const put_many_app_versions_response&,
+                           const put_many_app_versions_response&) = default;
 };
 
 struct delete_app_version_request {
@@ -204,10 +254,16 @@ struct delete_app_version_request {
     static constexpr bool requires_session = true;
     app_version_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_app_version_request&,
+                           const delete_app_version_request&) = default;
 };
 
 struct delete_app_version_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_app_version_response&,
+                           const delete_app_version_response&) = default;
 };
 
 struct delete_many_app_versions_request {
@@ -222,10 +278,16 @@ struct delete_many_app_versions_request {
     static constexpr bool requires_session = true;
     std::vector<app_version_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_app_versions_request&,
+                           const delete_many_app_versions_request&) = default;
 };
 
 struct delete_many_app_versions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_app_versions_response&,
+                           const delete_many_app_versions_response&) = default;
 };
 
 struct list_by_app_id_app_versions_request {
@@ -244,12 +306,18 @@ struct list_by_app_id_app_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<app_versions_filter> filter;
+
+    friend bool operator==(const list_by_app_id_app_versions_request&,
+                           const list_by_app_id_app_versions_request&) = default;
 };
 
 struct list_by_app_id_app_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> app_versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_app_id_app_versions_response&,
+                           const list_by_app_id_app_versions_response&) = default;
 };
 
 struct list_app_version_versions_request {
@@ -267,12 +335,18 @@ struct list_app_version_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<app_version_versions_filter> filter;
+
+    friend bool operator==(const list_app_version_versions_request&,
+                           const list_app_version_versions_request&) = default;
 };
 
 struct list_app_version_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_app_version_versions_response&,
+                           const list_app_version_versions_response&) = default;
 };
 
 struct get_app_version_version_request {
@@ -286,11 +360,17 @@ struct get_app_version_version_request {
      */
     static constexpr bool requires_session = true;
     app_version_version_key key;
+
+    friend bool operator==(const get_app_version_version_request&,
+                           const get_app_version_version_request&) = default;
 };
 
 struct get_app_version_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::app_version> version;
+
+    friend bool operator==(const get_app_version_version_response&,
+                           const get_app_version_version_response&) = default;
 };
 
 /**

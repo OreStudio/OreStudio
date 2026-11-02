@@ -44,6 +44,9 @@ namespace ores::refdata::messaging {
 
 struct cross_currency_fix_float_convention_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const cross_currency_fix_float_convention_key&,
+                           const cross_currency_fix_float_convention_key&) = default;
 };
 
 struct cross_currency_fix_float_convention_item {
@@ -52,6 +55,9 @@ struct cross_currency_fix_float_convention_item {
     std::vector<ores::refdata::domain::cross_currency_fix_float_fixed_leg> fixed_leg;
     std::vector<ores::refdata::domain::cross_currency_fix_float_float_leg> float_leg;
     std::vector<ores::refdata::domain::cross_currency_fix_float_swap_terms> swap_terms;
+
+    friend bool operator==(const cross_currency_fix_float_convention_item&,
+                           const cross_currency_fix_float_convention_item&) = default;
 };
 
 struct cross_currency_fix_float_convention_write {
@@ -59,6 +65,9 @@ struct cross_currency_fix_float_convention_write {
     std::vector<cross_currency_fix_float_fixed_leg_change> fixed_leg;
     std::vector<cross_currency_fix_float_float_leg_change> float_leg;
     std::vector<cross_currency_fix_float_swap_terms_change> swap_terms;
+
+    friend bool operator==(const cross_currency_fix_float_convention_write&,
+                           const cross_currency_fix_float_convention_write&) = default;
 };
 
 struct get_cross_currency_fix_float_convention_request {
@@ -73,11 +82,17 @@ struct get_cross_currency_fix_float_convention_request {
      */
     static constexpr bool requires_session = true;
     cross_currency_fix_float_convention_key key;
+
+    friend bool operator==(const get_cross_currency_fix_float_convention_request&,
+                           const get_cross_currency_fix_float_convention_request&) = default;
 };
 
 struct get_cross_currency_fix_float_convention_response {
     ores::utility::domain::result result;
     std::optional<cross_currency_fix_float_convention_item> item;
+
+    friend bool operator==(const get_cross_currency_fix_float_convention_response&,
+                           const get_cross_currency_fix_float_convention_response&) = default;
 };
 
 struct get_many_cross_currency_fix_float_conventions_request {
@@ -92,11 +107,17 @@ struct get_many_cross_currency_fix_float_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<cross_currency_fix_float_convention_key> keys;
+
+    friend bool operator==(const get_many_cross_currency_fix_float_conventions_request&,
+                           const get_many_cross_currency_fix_float_conventions_request&) = default;
 };
 
 struct get_many_cross_currency_fix_float_conventions_response {
     ores::utility::domain::result result;
     std::vector<cross_currency_fix_float_convention_item> items;
+
+    friend bool operator==(const get_many_cross_currency_fix_float_conventions_response&,
+                           const get_many_cross_currency_fix_float_conventions_response&) = default;
 };
 
 struct put_cross_currency_fix_float_convention_request {
@@ -112,11 +133,17 @@ struct put_cross_currency_fix_float_convention_request {
     static constexpr bool requires_session = true;
     cross_currency_fix_float_convention_write item;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_cross_currency_fix_float_convention_request&,
+                           const put_cross_currency_fix_float_convention_request&) = default;
 };
 
 struct put_cross_currency_fix_float_convention_response {
     ores::utility::domain::result result;
     std::optional<cross_currency_fix_float_convention_item> item;
+
+    friend bool operator==(const put_cross_currency_fix_float_convention_response&,
+                           const put_cross_currency_fix_float_convention_response&) = default;
 };
 
 struct put_many_cross_currency_fix_float_conventions_request {
@@ -132,11 +159,17 @@ struct put_many_cross_currency_fix_float_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<cross_currency_fix_float_convention_write> items;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_cross_currency_fix_float_conventions_request&,
+                           const put_many_cross_currency_fix_float_conventions_request&) = default;
 };
 
 struct put_many_cross_currency_fix_float_conventions_response {
     ores::utility::domain::result result;
     std::vector<cross_currency_fix_float_convention_item> items;
+
+    friend bool operator==(const put_many_cross_currency_fix_float_conventions_response&,
+                           const put_many_cross_currency_fix_float_conventions_response&) = default;
 };
 
 }

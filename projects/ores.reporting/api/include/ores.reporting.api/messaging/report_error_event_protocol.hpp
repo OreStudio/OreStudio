@@ -43,11 +43,16 @@ namespace ores::reporting::messaging {
 
 struct report_error_event_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const report_error_event_key&, const report_error_event_key&) = default;
 };
 
 struct report_error_event_lookup {
     report_error_event_key key;
     std::optional<ores::reporting::domain::report_error_event> report_error_event;
+
+    friend bool operator==(const report_error_event_lookup&,
+                           const report_error_event_lookup&) = default;
 };
 
 struct report_error_events_filter {
@@ -56,6 +61,9 @@ struct report_error_events_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> report_instance_id_one_of;
     std::optional<std::vector<std::string>> severity_one_of;
+
+    friend bool operator==(const report_error_events_filter&,
+                           const report_error_events_filter&) = default;
 };
 
 struct report_error_event_event {
@@ -65,6 +73,9 @@ struct report_error_event_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const report_error_event_event&,
+                           const report_error_event_event&) = default;
 };
 
 struct list_report_error_events_request {
@@ -81,12 +92,18 @@ struct list_report_error_events_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_error_events_filter> filter;
+
+    friend bool operator==(const list_report_error_events_request&,
+                           const list_report_error_events_request&) = default;
 };
 
 struct list_report_error_events_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_event> errors;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_error_events_response&,
+                           const list_report_error_events_response&) = default;
 };
 
 struct get_report_error_event_request {
@@ -100,11 +117,17 @@ struct get_report_error_event_request {
      */
     static constexpr bool requires_session = true;
     report_error_event_key key;
+
+    friend bool operator==(const get_report_error_event_request&,
+                           const get_report_error_event_request&) = default;
 };
 
 struct get_report_error_event_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_error_event> report_error_event;
+
+    friend bool operator==(const get_report_error_event_response&,
+                           const get_report_error_event_response&) = default;
 };
 
 struct get_many_report_error_events_request {
@@ -118,11 +141,17 @@ struct get_many_report_error_events_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_error_event_key> keys;
+
+    friend bool operator==(const get_many_report_error_events_request&,
+                           const get_many_report_error_events_request&) = default;
 };
 
 struct get_many_report_error_events_response {
     ores::utility::domain::result result;
     std::vector<report_error_event_lookup> entries;
+
+    friend bool operator==(const get_many_report_error_events_response&,
+                           const get_many_report_error_events_response&) = default;
 };
 
 struct list_by_report_instance_id_report_error_events_request {
@@ -142,12 +171,19 @@ struct list_by_report_instance_id_report_error_events_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_error_events_filter> filter;
+
+    friend bool operator==(const list_by_report_instance_id_report_error_events_request&,
+                           const list_by_report_instance_id_report_error_events_request&) = default;
 };
 
 struct list_by_report_instance_id_report_error_events_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_event> errors;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_report_instance_id_report_error_events_response&,
+               const list_by_report_instance_id_report_error_events_response&) = default;
 };
 
 struct report_error_count {
@@ -157,6 +193,8 @@ struct report_error_count {
     std::int64_t errors = 0;
     /** @brief How many are warnings. */
     std::int64_t warnings = 0;
+
+    friend bool operator==(const report_error_count&, const report_error_count&) = default;
 };
 
 /**
@@ -179,6 +217,9 @@ struct get_report_error_counts_request {
     static constexpr bool requires_session = true;
     /** @brief The runs to count the problems of, in any order. */
     std::vector<boost::uuids::uuid> report_instance_ids;
+
+    friend bool operator==(const get_report_error_counts_request&,
+                           const get_report_error_counts_request&) = default;
 };
 
 struct get_report_error_counts_response {
@@ -190,6 +231,9 @@ struct get_report_error_counts_response {
      * The absence is the screen's zero: nothing was found against that run.
      */
     std::vector<report_error_count> counts;
+
+    friend bool operator==(const get_report_error_counts_response&,
+                           const get_report_error_counts_response&) = default;
 };
 
 /**

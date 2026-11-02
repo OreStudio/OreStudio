@@ -43,17 +43,25 @@ namespace ores::iam::messaging {
 
 struct account_credential_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const account_credential_key&, const account_credential_key&) = default;
 };
 
 struct account_credential_lookup {
     account_credential_key key;
     std::optional<ores::iam::domain::account_credential> account_credential;
+
+    friend bool operator==(const account_credential_lookup&,
+                           const account_credential_lookup&) = default;
 };
 
 struct account_credentials_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const account_credentials_filter&,
+                           const account_credentials_filter&) = default;
 };
 
 struct account_credential_event {
@@ -63,17 +71,26 @@ struct account_credential_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const account_credential_event&,
+                           const account_credential_event&) = default;
 };
 
 struct account_credential_version_key {
     account_credential_key account_credential;
     std::uint32_t version;
+
+    friend bool operator==(const account_credential_version_key&,
+                           const account_credential_version_key&) = default;
 };
 
 struct account_credential_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const account_credential_versions_filter&,
+                           const account_credential_versions_filter&) = default;
 };
 
 struct list_account_credentials_request {
@@ -91,12 +108,18 @@ struct list_account_credentials_request {
     ores::utility::domain::order order;
     std::optional<account_credentials_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_account_credentials_request&,
+                           const list_account_credentials_request&) = default;
 };
 
 struct list_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_credentials_response&,
+                           const list_account_credentials_response&) = default;
 };
 
 struct get_account_credential_request {
@@ -110,11 +133,17 @@ struct get_account_credential_request {
      */
     static constexpr bool requires_session = true;
     account_credential_key key;
+
+    friend bool operator==(const get_account_credential_request&,
+                           const get_account_credential_request&) = default;
 };
 
 struct get_account_credential_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_credential> account_credential;
+
+    friend bool operator==(const get_account_credential_response&,
+                           const get_account_credential_response&) = default;
 };
 
 struct get_many_account_credentials_request {
@@ -128,11 +157,17 @@ struct get_many_account_credentials_request {
      */
     static constexpr bool requires_session = true;
     std::vector<account_credential_key> keys;
+
+    friend bool operator==(const get_many_account_credentials_request&,
+                           const get_many_account_credentials_request&) = default;
 };
 
 struct get_many_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<account_credential_lookup> entries;
+
+    friend bool operator==(const get_many_account_credentials_response&,
+                           const get_many_account_credentials_response&) = default;
 };
 
 struct list_by_account_id_account_credentials_request {
@@ -152,12 +187,18 @@ struct list_by_account_id_account_credentials_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_credentials_filter> filter;
+
+    friend bool operator==(const list_by_account_id_account_credentials_request&,
+                           const list_by_account_id_account_credentials_request&) = default;
 };
 
 struct list_by_account_id_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_account_credentials_response&,
+                           const list_by_account_id_account_credentials_response&) = default;
 };
 
 struct list_account_credential_versions_request {
@@ -175,12 +216,18 @@ struct list_account_credential_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<account_credential_versions_filter> filter;
+
+    friend bool operator==(const list_account_credential_versions_request&,
+                           const list_account_credential_versions_request&) = default;
 };
 
 struct list_account_credential_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_account_credential_versions_response&,
+                           const list_account_credential_versions_response&) = default;
 };
 
 struct get_account_credential_version_request {
@@ -194,11 +241,17 @@ struct get_account_credential_version_request {
      */
     static constexpr bool requires_session = true;
     account_credential_version_key key;
+
+    friend bool operator==(const get_account_credential_version_request&,
+                           const get_account_credential_version_request&) = default;
 };
 
 struct get_account_credential_version_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::account_credential> version;
+
+    friend bool operator==(const get_account_credential_version_response&,
+                           const get_account_credential_version_response&) = default;
 };
 
 /**

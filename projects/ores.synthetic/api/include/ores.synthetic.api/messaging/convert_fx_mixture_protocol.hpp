@@ -67,6 +67,9 @@ struct convert_fx_mixture_request {
     double initial_price = 1.0;
     /** @brief The feed's rate, which turns the default half-life into κ. */
     int ticks_per_hour = 3600;
+
+    friend bool operator==(const convert_fx_mixture_request&,
+                           const convert_fx_mixture_request&) = default;
 };
 
 /**
@@ -81,6 +84,9 @@ struct convert_fx_mixture_response {
     std::vector<double> gmm_stdevs;
     /** @brief The converted weights, κ first under the Ornstein-Uhlenbeck engine. */
     std::vector<double> gmm_weights;
+
+    friend bool operator==(const convert_fx_mixture_response&,
+                           const convert_fx_mixture_response&) = default;
 };
 
 /**

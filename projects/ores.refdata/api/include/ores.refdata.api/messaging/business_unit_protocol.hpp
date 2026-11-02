@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct business_unit_key {
     std::string unit_code;
+
+    friend bool operator==(const business_unit_key&, const business_unit_key&) = default;
 };
 
 struct business_unit_write {
@@ -54,27 +56,37 @@ struct business_unit_write {
     std::string business_centre_code;
     std::optional<boost::uuids::uuid> unit_type_id;
     std::string status;
+
+    friend bool operator==(const business_unit_write&, const business_unit_write&) = default;
 };
 
 struct business_unit_change {
     business_unit_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const business_unit_change&, const business_unit_change&) = default;
 };
 
 struct business_unit_removal {
     business_unit_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const business_unit_removal&, const business_unit_removal&) = default;
 };
 
 struct business_unit_lookup {
     business_unit_key key;
     std::optional<ores::refdata::domain::business_unit> business_unit;
+
+    friend bool operator==(const business_unit_lookup&, const business_unit_lookup&) = default;
 };
 
 struct business_units_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+
+    friend bool operator==(const business_units_filter&, const business_units_filter&) = default;
 };
 
 struct business_unit_event {
@@ -84,17 +96,25 @@ struct business_unit_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const business_unit_event&, const business_unit_event&) = default;
 };
 
 struct business_unit_version_key {
     business_unit_key business_unit;
     std::uint32_t version;
+
+    friend bool operator==(const business_unit_version_key&,
+                           const business_unit_version_key&) = default;
 };
 
 struct business_unit_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const business_unit_versions_filter&,
+                           const business_unit_versions_filter&) = default;
 };
 
 struct list_business_units_request {
@@ -112,12 +132,18 @@ struct list_business_units_request {
     ores::utility::domain::order order;
     std::optional<business_units_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_business_units_request&,
+                           const list_business_units_request&) = default;
 };
 
 struct list_business_units_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_unit> business_units;
     std::uint64_t total;
+
+    friend bool operator==(const list_business_units_response&,
+                           const list_business_units_response&) = default;
 };
 
 struct get_business_unit_request {
@@ -131,11 +157,17 @@ struct get_business_unit_request {
      */
     static constexpr bool requires_session = true;
     business_unit_key key;
+
+    friend bool operator==(const get_business_unit_request&,
+                           const get_business_unit_request&) = default;
 };
 
 struct get_business_unit_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_unit> business_unit;
+
+    friend bool operator==(const get_business_unit_response&,
+                           const get_business_unit_response&) = default;
 };
 
 struct get_many_business_units_request {
@@ -149,11 +181,17 @@ struct get_many_business_units_request {
      */
     static constexpr bool requires_session = true;
     std::vector<business_unit_key> keys;
+
+    friend bool operator==(const get_many_business_units_request&,
+                           const get_many_business_units_request&) = default;
 };
 
 struct get_many_business_units_response {
     ores::utility::domain::result result;
     std::vector<business_unit_lookup> entries;
+
+    friend bool operator==(const get_many_business_units_response&,
+                           const get_many_business_units_response&) = default;
 };
 
 struct put_business_unit_request {
@@ -168,11 +206,17 @@ struct put_business_unit_request {
     static constexpr bool requires_session = true;
     business_unit_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_business_unit_request&,
+                           const put_business_unit_request&) = default;
 };
 
 struct put_business_unit_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_unit> business_unit;
+
+    friend bool operator==(const put_business_unit_response&,
+                           const put_business_unit_response&) = default;
 };
 
 struct put_many_business_units_request {
@@ -187,11 +231,17 @@ struct put_many_business_units_request {
     static constexpr bool requires_session = true;
     std::vector<business_unit_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_business_units_request&,
+                           const put_many_business_units_request&) = default;
 };
 
 struct put_many_business_units_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_unit> business_units;
+
+    friend bool operator==(const put_many_business_units_response&,
+                           const put_many_business_units_response&) = default;
 };
 
 struct delete_business_unit_request {
@@ -206,10 +256,16 @@ struct delete_business_unit_request {
     static constexpr bool requires_session = true;
     business_unit_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_business_unit_request&,
+                           const delete_business_unit_request&) = default;
 };
 
 struct delete_business_unit_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_business_unit_response&,
+                           const delete_business_unit_response&) = default;
 };
 
 struct delete_many_business_units_request {
@@ -224,10 +280,16 @@ struct delete_many_business_units_request {
     static constexpr bool requires_session = true;
     std::vector<business_unit_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_business_units_request&,
+                           const delete_many_business_units_request&) = default;
 };
 
 struct delete_many_business_units_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_business_units_response&,
+                           const delete_many_business_units_response&) = default;
 };
 
 struct list_by_party_id_business_units_request {
@@ -246,12 +308,18 @@ struct list_by_party_id_business_units_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<business_units_filter> filter;
+
+    friend bool operator==(const list_by_party_id_business_units_request&,
+                           const list_by_party_id_business_units_request&) = default;
 };
 
 struct list_by_party_id_business_units_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_unit> business_units;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_party_id_business_units_response&,
+                           const list_by_party_id_business_units_response&) = default;
 };
 
 struct list_business_unit_versions_request {
@@ -269,12 +337,18 @@ struct list_business_unit_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<business_unit_versions_filter> filter;
+
+    friend bool operator==(const list_business_unit_versions_request&,
+                           const list_business_unit_versions_request&) = default;
 };
 
 struct list_business_unit_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_unit> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_business_unit_versions_response&,
+                           const list_business_unit_versions_response&) = default;
 };
 
 struct get_business_unit_version_request {
@@ -288,11 +362,17 @@ struct get_business_unit_version_request {
      */
     static constexpr bool requires_session = true;
     business_unit_version_key key;
+
+    friend bool operator==(const get_business_unit_version_request&,
+                           const get_business_unit_version_request&) = default;
 };
 
 struct get_business_unit_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::business_unit> version;
+
+    friend bool operator==(const get_business_unit_version_response&,
+                           const get_business_unit_version_response&) = default;
 };
 
 /**

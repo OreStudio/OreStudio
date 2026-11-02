@@ -105,6 +105,8 @@ struct book_trade_request {
      * row. A row for a kind with no writer yet refuses the booking by name.
      */
     ores::trading::domain::instrument_batch instruments;
+
+    friend bool operator==(const book_trade_request&, const book_trade_request&) = default;
 };
 
 /**
@@ -121,6 +123,8 @@ struct book_trade_response {
      * refused.
      */
     std::optional<boost::uuids::uuid> activity_id;
+
+    friend bool operator==(const book_trade_response&, const book_trade_response&) = default;
 };
 
 /**
@@ -161,6 +165,8 @@ struct execute_trade_request {
      * @brief The note that goes with the reason.
      */
     std::string change_commentary;
+
+    friend bool operator==(const execute_trade_request&, const execute_trade_request&) = default;
 };
 
 /**
@@ -176,6 +182,8 @@ struct execute_trade_response {
      * @brief The activity that executed the trade; absent when it was refused.
      */
     std::optional<boost::uuids::uuid> activity_id;
+
+    friend bool operator==(const execute_trade_response&, const execute_trade_response&) = default;
 };
 
 /**
@@ -221,6 +229,9 @@ struct complete_structure_request {
      * @brief The note that goes with the reason.
      */
     std::string change_commentary;
+
+    friend bool operator==(const complete_structure_request&,
+                           const complete_structure_request&) = default;
 };
 
 /**
@@ -242,6 +253,9 @@ struct complete_structure_response {
      * address the structure it just made.
      */
     int structure_version;
+
+    friend bool operator==(const complete_structure_response&,
+                           const complete_structure_response&) = default;
 };
 
 /**
@@ -300,6 +314,9 @@ struct put_bond_issue_composite_request {
      * @brief The securities a convertible issue converts into.
      */
     std::vector<ores::trading::domain::bond_issue_conversion_target> conversion_targets;
+
+    friend bool operator==(const put_bond_issue_composite_request&,
+                           const put_bond_issue_composite_request&) = default;
 };
 
 /**
@@ -312,6 +329,9 @@ struct put_bond_issue_composite_response {
      * issue with this id or security id is stored with other terms.
      */
     ores::utility::domain::result result;
+
+    friend bool operator==(const put_bond_issue_composite_response&,
+                           const put_bond_issue_composite_response&) = default;
 };
 
 /**
@@ -338,6 +358,8 @@ struct trade_export_item {
      * recorded. Absent when the trade has none.
      */
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
+
+    friend bool operator==(const trade_export_item&, const trade_export_item&) = default;
 };
 
 /**
@@ -368,6 +390,9 @@ struct export_portfolio_request {
      * @brief The most trades to export.
      */
     int limit = 10000;
+
+    friend bool operator==(const export_portfolio_request&,
+                           const export_portfolio_request&) = default;
 };
 
 /**
@@ -397,6 +422,9 @@ struct export_portfolio_response {
      * joins the array that table names by the trade id.
      */
     ores::trading::domain::instrument_batch instruments;
+
+    friend bool operator==(const export_portfolio_response&,
+                           const export_portfolio_response&) = default;
 };
 
 /**
@@ -428,6 +456,9 @@ struct export_trades_to_storage_request {
      * @brief The target key, such as reporting/runs/{instance_id}/trades.msgpack.
      */
     std::string storage_key;
+
+    friend bool operator==(const export_trades_to_storage_request&,
+                           const export_trades_to_storage_request&) = default;
 };
 
 /**
@@ -459,6 +490,9 @@ struct export_trades_to_storage_response {
      * and an error about a trade names the version the engine was given.
      */
     std::map<std::string, int> trade_versions;
+
+    friend bool operator==(const export_trades_to_storage_response&,
+                           const export_trades_to_storage_response&) = default;
 };
 
 /**

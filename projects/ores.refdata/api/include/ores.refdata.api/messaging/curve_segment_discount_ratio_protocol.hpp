@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct curve_segment_discount_ratio_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const curve_segment_discount_ratio_key&,
+                           const curve_segment_discount_ratio_key&) = default;
 };
 
 struct curve_segment_discount_ratio_write {
@@ -54,25 +57,40 @@ struct curve_segment_discount_ratio_write {
     std::string numerator_curve_currency;
     std::string denominator_curve;
     std::string denominator_curve_currency;
+
+    friend bool operator==(const curve_segment_discount_ratio_write&,
+                           const curve_segment_discount_ratio_write&) = default;
 };
 
 struct curve_segment_discount_ratio_change {
     curve_segment_discount_ratio_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const curve_segment_discount_ratio_change&,
+                           const curve_segment_discount_ratio_change&) = default;
 };
 
 struct curve_segment_discount_ratio_removal {
     curve_segment_discount_ratio_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const curve_segment_discount_ratio_removal&,
+                           const curve_segment_discount_ratio_removal&) = default;
 };
 
 struct curve_segment_discount_ratio_lookup {
     curve_segment_discount_ratio_key key;
     std::optional<ores::refdata::domain::curve_segment_discount_ratio> curve_segment_discount_ratio;
+
+    friend bool operator==(const curve_segment_discount_ratio_lookup&,
+                           const curve_segment_discount_ratio_lookup&) = default;
 };
 
 struct curve_segment_discount_ratios_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const curve_segment_discount_ratios_filter&,
+                           const curve_segment_discount_ratios_filter&) = default;
 };
 
 struct curve_segment_discount_ratio_event {
@@ -82,17 +100,26 @@ struct curve_segment_discount_ratio_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const curve_segment_discount_ratio_event&,
+                           const curve_segment_discount_ratio_event&) = default;
 };
 
 struct curve_segment_discount_ratio_version_key {
     curve_segment_discount_ratio_key curve_segment_discount_ratio;
     std::uint32_t version;
+
+    friend bool operator==(const curve_segment_discount_ratio_version_key&,
+                           const curve_segment_discount_ratio_version_key&) = default;
 };
 
 struct curve_segment_discount_ratio_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const curve_segment_discount_ratio_versions_filter&,
+                           const curve_segment_discount_ratio_versions_filter&) = default;
 };
 
 struct list_curve_segment_discount_ratios_request {
@@ -111,12 +138,18 @@ struct list_curve_segment_discount_ratios_request {
     ores::utility::domain::order order;
     std::optional<curve_segment_discount_ratios_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_curve_segment_discount_ratios_request&,
+                           const list_curve_segment_discount_ratios_request&) = default;
 };
 
 struct list_curve_segment_discount_ratios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_discount_ratio> segment_discount_ratios;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_segment_discount_ratios_response&,
+                           const list_curve_segment_discount_ratios_response&) = default;
 };
 
 struct get_curve_segment_discount_ratio_request {
@@ -130,11 +163,17 @@ struct get_curve_segment_discount_ratio_request {
      */
     static constexpr bool requires_session = true;
     curve_segment_discount_ratio_key key;
+
+    friend bool operator==(const get_curve_segment_discount_ratio_request&,
+                           const get_curve_segment_discount_ratio_request&) = default;
 };
 
 struct get_curve_segment_discount_ratio_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_discount_ratio> curve_segment_discount_ratio;
+
+    friend bool operator==(const get_curve_segment_discount_ratio_response&,
+                           const get_curve_segment_discount_ratio_response&) = default;
 };
 
 struct get_many_curve_segment_discount_ratios_request {
@@ -149,11 +188,17 @@ struct get_many_curve_segment_discount_ratios_request {
      */
     static constexpr bool requires_session = true;
     std::vector<curve_segment_discount_ratio_key> keys;
+
+    friend bool operator==(const get_many_curve_segment_discount_ratios_request&,
+                           const get_many_curve_segment_discount_ratios_request&) = default;
 };
 
 struct get_many_curve_segment_discount_ratios_response {
     ores::utility::domain::result result;
     std::vector<curve_segment_discount_ratio_lookup> entries;
+
+    friend bool operator==(const get_many_curve_segment_discount_ratios_response&,
+                           const get_many_curve_segment_discount_ratios_response&) = default;
 };
 
 struct put_curve_segment_discount_ratio_request {
@@ -168,11 +213,17 @@ struct put_curve_segment_discount_ratio_request {
     static constexpr bool requires_session = true;
     curve_segment_discount_ratio_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_curve_segment_discount_ratio_request&,
+                           const put_curve_segment_discount_ratio_request&) = default;
 };
 
 struct put_curve_segment_discount_ratio_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_discount_ratio> curve_segment_discount_ratio;
+
+    friend bool operator==(const put_curve_segment_discount_ratio_response&,
+                           const put_curve_segment_discount_ratio_response&) = default;
 };
 
 struct put_many_curve_segment_discount_ratios_request {
@@ -188,11 +239,17 @@ struct put_many_curve_segment_discount_ratios_request {
     static constexpr bool requires_session = true;
     std::vector<curve_segment_discount_ratio_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_curve_segment_discount_ratios_request&,
+                           const put_many_curve_segment_discount_ratios_request&) = default;
 };
 
 struct put_many_curve_segment_discount_ratios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_discount_ratio> segment_discount_ratios;
+
+    friend bool operator==(const put_many_curve_segment_discount_ratios_response&,
+                           const put_many_curve_segment_discount_ratios_response&) = default;
 };
 
 struct delete_curve_segment_discount_ratio_request {
@@ -208,10 +265,16 @@ struct delete_curve_segment_discount_ratio_request {
     static constexpr bool requires_session = true;
     curve_segment_discount_ratio_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_curve_segment_discount_ratio_request&,
+                           const delete_curve_segment_discount_ratio_request&) = default;
 };
 
 struct delete_curve_segment_discount_ratio_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_curve_segment_discount_ratio_response&,
+                           const delete_curve_segment_discount_ratio_response&) = default;
 };
 
 struct delete_many_curve_segment_discount_ratios_request {
@@ -227,10 +290,16 @@ struct delete_many_curve_segment_discount_ratios_request {
     static constexpr bool requires_session = true;
     std::vector<curve_segment_discount_ratio_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_curve_segment_discount_ratios_request&,
+                           const delete_many_curve_segment_discount_ratios_request&) = default;
 };
 
 struct delete_many_curve_segment_discount_ratios_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_curve_segment_discount_ratios_response&,
+                           const delete_many_curve_segment_discount_ratios_response&) = default;
 };
 
 struct list_curve_segment_discount_ratio_versions_request {
@@ -249,12 +318,18 @@ struct list_curve_segment_discount_ratio_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_segment_discount_ratio_versions_filter> filter;
+
+    friend bool operator==(const list_curve_segment_discount_ratio_versions_request&,
+                           const list_curve_segment_discount_ratio_versions_request&) = default;
 };
 
 struct list_curve_segment_discount_ratio_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_discount_ratio> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_segment_discount_ratio_versions_response&,
+                           const list_curve_segment_discount_ratio_versions_response&) = default;
 };
 
 struct get_curve_segment_discount_ratio_version_request {
@@ -269,11 +344,17 @@ struct get_curve_segment_discount_ratio_version_request {
      */
     static constexpr bool requires_session = true;
     curve_segment_discount_ratio_version_key key;
+
+    friend bool operator==(const get_curve_segment_discount_ratio_version_request&,
+                           const get_curve_segment_discount_ratio_version_request&) = default;
 };
 
 struct get_curve_segment_discount_ratio_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_discount_ratio> version;
+
+    friend bool operator==(const get_curve_segment_discount_ratio_version_response&,
+                           const get_curve_segment_discount_ratio_version_response&) = default;
 };
 
 /**

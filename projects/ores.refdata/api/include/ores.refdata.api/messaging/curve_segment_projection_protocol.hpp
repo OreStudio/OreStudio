@@ -43,31 +43,49 @@ namespace ores::refdata::messaging {
 
 struct curve_segment_projection_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const curve_segment_projection_key&,
+                           const curve_segment_projection_key&) = default;
 };
 
 struct curve_segment_projection_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_segment_id;
     std::string projection_curve;
+
+    friend bool operator==(const curve_segment_projection_write&,
+                           const curve_segment_projection_write&) = default;
 };
 
 struct curve_segment_projection_change {
     curve_segment_projection_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const curve_segment_projection_change&,
+                           const curve_segment_projection_change&) = default;
 };
 
 struct curve_segment_projection_removal {
     curve_segment_projection_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const curve_segment_projection_removal&,
+                           const curve_segment_projection_removal&) = default;
 };
 
 struct curve_segment_projection_lookup {
     curve_segment_projection_key key;
     std::optional<ores::refdata::domain::curve_segment_projection> curve_segment_projection;
+
+    friend bool operator==(const curve_segment_projection_lookup&,
+                           const curve_segment_projection_lookup&) = default;
 };
 
 struct curve_segment_projections_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const curve_segment_projections_filter&,
+                           const curve_segment_projections_filter&) = default;
 };
 
 struct curve_segment_projection_event {
@@ -77,17 +95,26 @@ struct curve_segment_projection_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const curve_segment_projection_event&,
+                           const curve_segment_projection_event&) = default;
 };
 
 struct curve_segment_projection_version_key {
     curve_segment_projection_key curve_segment_projection;
     std::uint32_t version;
+
+    friend bool operator==(const curve_segment_projection_version_key&,
+                           const curve_segment_projection_version_key&) = default;
 };
 
 struct curve_segment_projection_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const curve_segment_projection_versions_filter&,
+                           const curve_segment_projection_versions_filter&) = default;
 };
 
 struct list_curve_segment_projections_request {
@@ -105,12 +132,18 @@ struct list_curve_segment_projections_request {
     ores::utility::domain::order order;
     std::optional<curve_segment_projections_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_curve_segment_projections_request&,
+                           const list_curve_segment_projections_request&) = default;
 };
 
 struct list_curve_segment_projections_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_projection> segment_projections;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_segment_projections_response&,
+                           const list_curve_segment_projections_response&) = default;
 };
 
 struct get_curve_segment_projection_request {
@@ -124,11 +157,17 @@ struct get_curve_segment_projection_request {
      */
     static constexpr bool requires_session = true;
     curve_segment_projection_key key;
+
+    friend bool operator==(const get_curve_segment_projection_request&,
+                           const get_curve_segment_projection_request&) = default;
 };
 
 struct get_curve_segment_projection_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_projection> curve_segment_projection;
+
+    friend bool operator==(const get_curve_segment_projection_response&,
+                           const get_curve_segment_projection_response&) = default;
 };
 
 struct get_many_curve_segment_projections_request {
@@ -143,11 +182,17 @@ struct get_many_curve_segment_projections_request {
      */
     static constexpr bool requires_session = true;
     std::vector<curve_segment_projection_key> keys;
+
+    friend bool operator==(const get_many_curve_segment_projections_request&,
+                           const get_many_curve_segment_projections_request&) = default;
 };
 
 struct get_many_curve_segment_projections_response {
     ores::utility::domain::result result;
     std::vector<curve_segment_projection_lookup> entries;
+
+    friend bool operator==(const get_many_curve_segment_projections_response&,
+                           const get_many_curve_segment_projections_response&) = default;
 };
 
 struct put_curve_segment_projection_request {
@@ -162,11 +207,17 @@ struct put_curve_segment_projection_request {
     static constexpr bool requires_session = true;
     curve_segment_projection_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_curve_segment_projection_request&,
+                           const put_curve_segment_projection_request&) = default;
 };
 
 struct put_curve_segment_projection_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_projection> curve_segment_projection;
+
+    friend bool operator==(const put_curve_segment_projection_response&,
+                           const put_curve_segment_projection_response&) = default;
 };
 
 struct put_many_curve_segment_projections_request {
@@ -182,11 +233,17 @@ struct put_many_curve_segment_projections_request {
     static constexpr bool requires_session = true;
     std::vector<curve_segment_projection_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_curve_segment_projections_request&,
+                           const put_many_curve_segment_projections_request&) = default;
 };
 
 struct put_many_curve_segment_projections_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_projection> segment_projections;
+
+    friend bool operator==(const put_many_curve_segment_projections_response&,
+                           const put_many_curve_segment_projections_response&) = default;
 };
 
 struct delete_curve_segment_projection_request {
@@ -201,10 +258,16 @@ struct delete_curve_segment_projection_request {
     static constexpr bool requires_session = true;
     curve_segment_projection_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_curve_segment_projection_request&,
+                           const delete_curve_segment_projection_request&) = default;
 };
 
 struct delete_curve_segment_projection_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_curve_segment_projection_response&,
+                           const delete_curve_segment_projection_response&) = default;
 };
 
 struct delete_many_curve_segment_projections_request {
@@ -220,10 +283,16 @@ struct delete_many_curve_segment_projections_request {
     static constexpr bool requires_session = true;
     std::vector<curve_segment_projection_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_curve_segment_projections_request&,
+                           const delete_many_curve_segment_projections_request&) = default;
 };
 
 struct delete_many_curve_segment_projections_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_curve_segment_projections_response&,
+                           const delete_many_curve_segment_projections_response&) = default;
 };
 
 struct list_curve_segment_projection_versions_request {
@@ -242,12 +311,18 @@ struct list_curve_segment_projection_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_segment_projection_versions_filter> filter;
+
+    friend bool operator==(const list_curve_segment_projection_versions_request&,
+                           const list_curve_segment_projection_versions_request&) = default;
 };
 
 struct list_curve_segment_projection_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_projection> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_curve_segment_projection_versions_response&,
+                           const list_curve_segment_projection_versions_response&) = default;
 };
 
 struct get_curve_segment_projection_version_request {
@@ -262,11 +337,17 @@ struct get_curve_segment_projection_version_request {
      */
     static constexpr bool requires_session = true;
     curve_segment_projection_version_key key;
+
+    friend bool operator==(const get_curve_segment_projection_version_request&,
+                           const get_curve_segment_projection_version_request&) = default;
 };
 
 struct get_curve_segment_projection_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::curve_segment_projection> version;
+
+    friend bool operator==(const get_curve_segment_projection_version_response&,
+                           const get_curve_segment_projection_version_response&) = default;
 };
 
 /**

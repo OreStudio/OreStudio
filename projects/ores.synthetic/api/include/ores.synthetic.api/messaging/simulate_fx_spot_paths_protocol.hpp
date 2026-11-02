@@ -74,6 +74,9 @@ struct simulate_fx_spot_paths_request {
     int num_paths = 5;
     /** @brief Base RNG seed; path i uses seed + i. Change to reseed. */
     std::uint32_t seed = 1;
+
+    friend bool operator==(const simulate_fx_spot_paths_request&,
+                           const simulate_fx_spot_paths_request&) = default;
 };
 
 /**
@@ -84,6 +87,9 @@ struct simulate_fx_spot_paths_response {
     std::string message;
     /** @brief num_paths series, each of num_ticks prices. */
     std::vector<std::vector<double>> paths;
+
+    friend bool operator==(const simulate_fx_spot_paths_response&,
+                           const simulate_fx_spot_paths_response&) = default;
 };
 
 /**

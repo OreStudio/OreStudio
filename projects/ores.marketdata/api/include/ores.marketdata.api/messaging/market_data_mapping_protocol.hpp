@@ -43,6 +43,9 @@ namespace ores::marketdata::messaging {
 
 struct market_data_mapping_key {
     std::string oresmd_uri;
+
+    friend bool operator==(const market_data_mapping_key&,
+                           const market_data_mapping_key&) = default;
 };
 
 struct market_data_mapping_write {
@@ -51,21 +54,33 @@ struct market_data_mapping_write {
     std::chrono::system_clock::time_point effective_from;
     std::string oresmd_uri;
     std::optional<std::chrono::system_clock::time_point> effective_to;
+
+    friend bool operator==(const market_data_mapping_write&,
+                           const market_data_mapping_write&) = default;
 };
 
 struct market_data_mapping_change {
     market_data_mapping_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const market_data_mapping_change&,
+                           const market_data_mapping_change&) = default;
 };
 
 struct market_data_mapping_removal {
     market_data_mapping_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const market_data_mapping_removal&,
+                           const market_data_mapping_removal&) = default;
 };
 
 struct market_data_mapping_lookup {
     market_data_mapping_key key;
     std::optional<ores::marketdata::domain::market_data_mapping> market_data_mapping;
+
+    friend bool operator==(const market_data_mapping_lookup&,
+                           const market_data_mapping_lookup&) = default;
 };
 
 struct market_data_mappings_filter {
@@ -75,6 +90,9 @@ struct market_data_mappings_filter {
     std::optional<std::vector<boost::uuids::uuid>> vendor_instrument_id_one_of;
     std::optional<std::vector<std::string>> oresmd_uri_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const market_data_mappings_filter&,
+                           const market_data_mappings_filter&) = default;
 };
 
 struct market_data_mapping_event {
@@ -84,17 +102,26 @@ struct market_data_mapping_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const market_data_mapping_event&,
+                           const market_data_mapping_event&) = default;
 };
 
 struct market_data_mapping_version_key {
     market_data_mapping_key market_data_mapping;
     std::uint32_t version;
+
+    friend bool operator==(const market_data_mapping_version_key&,
+                           const market_data_mapping_version_key&) = default;
 };
 
 struct market_data_mapping_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const market_data_mapping_versions_filter&,
+                           const market_data_mapping_versions_filter&) = default;
 };
 
 struct list_market_data_mappings_request {
@@ -112,12 +139,18 @@ struct list_market_data_mappings_request {
     ores::utility::domain::order order;
     std::optional<market_data_mappings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_market_data_mappings_request&,
+                           const list_market_data_mappings_request&) = default;
 };
 
 struct list_market_data_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_data_mapping> mappings;
     std::uint64_t total;
+
+    friend bool operator==(const list_market_data_mappings_response&,
+                           const list_market_data_mappings_response&) = default;
 };
 
 struct get_market_data_mapping_request {
@@ -131,11 +164,17 @@ struct get_market_data_mapping_request {
      */
     static constexpr bool requires_session = true;
     market_data_mapping_key key;
+
+    friend bool operator==(const get_market_data_mapping_request&,
+                           const get_market_data_mapping_request&) = default;
 };
 
 struct get_market_data_mapping_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_data_mapping> market_data_mapping;
+
+    friend bool operator==(const get_market_data_mapping_response&,
+                           const get_market_data_mapping_response&) = default;
 };
 
 struct get_many_market_data_mappings_request {
@@ -149,11 +188,17 @@ struct get_many_market_data_mappings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<market_data_mapping_key> keys;
+
+    friend bool operator==(const get_many_market_data_mappings_request&,
+                           const get_many_market_data_mappings_request&) = default;
 };
 
 struct get_many_market_data_mappings_response {
     ores::utility::domain::result result;
     std::vector<market_data_mapping_lookup> entries;
+
+    friend bool operator==(const get_many_market_data_mappings_response&,
+                           const get_many_market_data_mappings_response&) = default;
 };
 
 struct put_market_data_mapping_request {
@@ -168,11 +213,17 @@ struct put_market_data_mapping_request {
     static constexpr bool requires_session = true;
     market_data_mapping_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_market_data_mapping_request&,
+                           const put_market_data_mapping_request&) = default;
 };
 
 struct put_market_data_mapping_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_data_mapping> market_data_mapping;
+
+    friend bool operator==(const put_market_data_mapping_response&,
+                           const put_market_data_mapping_response&) = default;
 };
 
 struct put_many_market_data_mappings_request {
@@ -187,11 +238,17 @@ struct put_many_market_data_mappings_request {
     static constexpr bool requires_session = true;
     std::vector<market_data_mapping_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_market_data_mappings_request&,
+                           const put_many_market_data_mappings_request&) = default;
 };
 
 struct put_many_market_data_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_data_mapping> mappings;
+
+    friend bool operator==(const put_many_market_data_mappings_response&,
+                           const put_many_market_data_mappings_response&) = default;
 };
 
 struct delete_market_data_mapping_request {
@@ -206,10 +263,16 @@ struct delete_market_data_mapping_request {
     static constexpr bool requires_session = true;
     market_data_mapping_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_market_data_mapping_request&,
+                           const delete_market_data_mapping_request&) = default;
 };
 
 struct delete_market_data_mapping_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_market_data_mapping_response&,
+                           const delete_market_data_mapping_response&) = default;
 };
 
 struct delete_many_market_data_mappings_request {
@@ -225,10 +288,16 @@ struct delete_many_market_data_mappings_request {
     static constexpr bool requires_session = true;
     std::vector<market_data_mapping_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_market_data_mappings_request&,
+                           const delete_many_market_data_mappings_request&) = default;
 };
 
 struct delete_many_market_data_mappings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_market_data_mappings_response&,
+                           const delete_many_market_data_mappings_response&) = default;
 };
 
 struct list_market_data_mapping_versions_request {
@@ -247,12 +316,18 @@ struct list_market_data_mapping_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_data_mapping_versions_filter> filter;
+
+    friend bool operator==(const list_market_data_mapping_versions_request&,
+                           const list_market_data_mapping_versions_request&) = default;
 };
 
 struct list_market_data_mapping_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_data_mapping> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_market_data_mapping_versions_response&,
+                           const list_market_data_mapping_versions_response&) = default;
 };
 
 struct get_market_data_mapping_version_request {
@@ -267,11 +342,17 @@ struct get_market_data_mapping_version_request {
      */
     static constexpr bool requires_session = true;
     market_data_mapping_version_key key;
+
+    friend bool operator==(const get_market_data_mapping_version_request&,
+                           const get_market_data_mapping_version_request&) = default;
 };
 
 struct get_market_data_mapping_version_response {
     ores::utility::domain::result result;
     std::optional<ores::marketdata::domain::market_data_mapping> version;
+
+    friend bool operator==(const get_market_data_mapping_version_response&,
+                           const get_market_data_mapping_version_response&) = default;
 };
 
 /**

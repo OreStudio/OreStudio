@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct tenor_resolution_algorithm_key {
     std::string code;
+
+    friend bool operator==(const tenor_resolution_algorithm_key&,
+                           const tenor_resolution_algorithm_key&) = default;
 };
 
 struct tenor_resolution_algorithm_write {
@@ -50,25 +53,40 @@ struct tenor_resolution_algorithm_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const tenor_resolution_algorithm_write&,
+                           const tenor_resolution_algorithm_write&) = default;
 };
 
 struct tenor_resolution_algorithm_change {
     tenor_resolution_algorithm_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tenor_resolution_algorithm_change&,
+                           const tenor_resolution_algorithm_change&) = default;
 };
 
 struct tenor_resolution_algorithm_removal {
     tenor_resolution_algorithm_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tenor_resolution_algorithm_removal&,
+                           const tenor_resolution_algorithm_removal&) = default;
 };
 
 struct tenor_resolution_algorithm_lookup {
     tenor_resolution_algorithm_key key;
     std::optional<ores::refdata::domain::tenor_resolution_algorithm> tenor_resolution_algorithm;
+
+    friend bool operator==(const tenor_resolution_algorithm_lookup&,
+                           const tenor_resolution_algorithm_lookup&) = default;
 };
 
 struct tenor_resolution_algorithms_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const tenor_resolution_algorithms_filter&,
+                           const tenor_resolution_algorithms_filter&) = default;
 };
 
 struct tenor_resolution_algorithm_event {
@@ -78,17 +96,26 @@ struct tenor_resolution_algorithm_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tenor_resolution_algorithm_event&,
+                           const tenor_resolution_algorithm_event&) = default;
 };
 
 struct tenor_resolution_algorithm_version_key {
     tenor_resolution_algorithm_key tenor_resolution_algorithm;
     std::uint32_t version;
+
+    friend bool operator==(const tenor_resolution_algorithm_version_key&,
+                           const tenor_resolution_algorithm_version_key&) = default;
 };
 
 struct tenor_resolution_algorithm_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tenor_resolution_algorithm_versions_filter&,
+                           const tenor_resolution_algorithm_versions_filter&) = default;
 };
 
 struct list_tenor_resolution_algorithms_request {
@@ -106,12 +133,18 @@ struct list_tenor_resolution_algorithms_request {
     ores::utility::domain::order order;
     std::optional<tenor_resolution_algorithms_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tenor_resolution_algorithms_request&,
+                           const list_tenor_resolution_algorithms_request&) = default;
 };
 
 struct list_tenor_resolution_algorithms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_resolution_algorithm> algorithms;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_resolution_algorithms_response&,
+                           const list_tenor_resolution_algorithms_response&) = default;
 };
 
 struct get_tenor_resolution_algorithm_request {
@@ -125,11 +158,17 @@ struct get_tenor_resolution_algorithm_request {
      */
     static constexpr bool requires_session = true;
     tenor_resolution_algorithm_key key;
+
+    friend bool operator==(const get_tenor_resolution_algorithm_request&,
+                           const get_tenor_resolution_algorithm_request&) = default;
 };
 
 struct get_tenor_resolution_algorithm_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_resolution_algorithm> tenor_resolution_algorithm;
+
+    friend bool operator==(const get_tenor_resolution_algorithm_response&,
+                           const get_tenor_resolution_algorithm_response&) = default;
 };
 
 struct get_many_tenor_resolution_algorithms_request {
@@ -144,11 +183,17 @@ struct get_many_tenor_resolution_algorithms_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tenor_resolution_algorithm_key> keys;
+
+    friend bool operator==(const get_many_tenor_resolution_algorithms_request&,
+                           const get_many_tenor_resolution_algorithms_request&) = default;
 };
 
 struct get_many_tenor_resolution_algorithms_response {
     ores::utility::domain::result result;
     std::vector<tenor_resolution_algorithm_lookup> entries;
+
+    friend bool operator==(const get_many_tenor_resolution_algorithms_response&,
+                           const get_many_tenor_resolution_algorithms_response&) = default;
 };
 
 struct put_tenor_resolution_algorithm_request {
@@ -163,11 +208,17 @@ struct put_tenor_resolution_algorithm_request {
     static constexpr bool requires_session = true;
     tenor_resolution_algorithm_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tenor_resolution_algorithm_request&,
+                           const put_tenor_resolution_algorithm_request&) = default;
 };
 
 struct put_tenor_resolution_algorithm_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_resolution_algorithm> tenor_resolution_algorithm;
+
+    friend bool operator==(const put_tenor_resolution_algorithm_response&,
+                           const put_tenor_resolution_algorithm_response&) = default;
 };
 
 struct put_many_tenor_resolution_algorithms_request {
@@ -183,11 +234,17 @@ struct put_many_tenor_resolution_algorithms_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_resolution_algorithm_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tenor_resolution_algorithms_request&,
+                           const put_many_tenor_resolution_algorithms_request&) = default;
 };
 
 struct put_many_tenor_resolution_algorithms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_resolution_algorithm> algorithms;
+
+    friend bool operator==(const put_many_tenor_resolution_algorithms_response&,
+                           const put_many_tenor_resolution_algorithms_response&) = default;
 };
 
 struct delete_tenor_resolution_algorithm_request {
@@ -203,10 +260,16 @@ struct delete_tenor_resolution_algorithm_request {
     static constexpr bool requires_session = true;
     tenor_resolution_algorithm_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tenor_resolution_algorithm_request&,
+                           const delete_tenor_resolution_algorithm_request&) = default;
 };
 
 struct delete_tenor_resolution_algorithm_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tenor_resolution_algorithm_response&,
+                           const delete_tenor_resolution_algorithm_response&) = default;
 };
 
 struct delete_many_tenor_resolution_algorithms_request {
@@ -222,10 +285,16 @@ struct delete_many_tenor_resolution_algorithms_request {
     static constexpr bool requires_session = true;
     std::vector<tenor_resolution_algorithm_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tenor_resolution_algorithms_request&,
+                           const delete_many_tenor_resolution_algorithms_request&) = default;
 };
 
 struct delete_many_tenor_resolution_algorithms_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tenor_resolution_algorithms_response&,
+                           const delete_many_tenor_resolution_algorithms_response&) = default;
 };
 
 struct list_tenor_resolution_algorithm_versions_request {
@@ -244,12 +313,18 @@ struct list_tenor_resolution_algorithm_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_resolution_algorithm_versions_filter> filter;
+
+    friend bool operator==(const list_tenor_resolution_algorithm_versions_request&,
+                           const list_tenor_resolution_algorithm_versions_request&) = default;
 };
 
 struct list_tenor_resolution_algorithm_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_resolution_algorithm> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tenor_resolution_algorithm_versions_response&,
+                           const list_tenor_resolution_algorithm_versions_response&) = default;
 };
 
 struct get_tenor_resolution_algorithm_version_request {
@@ -264,11 +339,17 @@ struct get_tenor_resolution_algorithm_version_request {
      */
     static constexpr bool requires_session = true;
     tenor_resolution_algorithm_version_key key;
+
+    friend bool operator==(const get_tenor_resolution_algorithm_version_request&,
+                           const get_tenor_resolution_algorithm_version_request&) = default;
 };
 
 struct get_tenor_resolution_algorithm_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor_resolution_algorithm> version;
+
+    friend bool operator==(const get_tenor_resolution_algorithm_version_response&,
+                           const get_tenor_resolution_algorithm_version_response&) = default;
 };
 
 /**

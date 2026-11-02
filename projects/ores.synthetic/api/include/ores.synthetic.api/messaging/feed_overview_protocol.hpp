@@ -63,6 +63,8 @@ struct feed_folder {
     int idle_auto_feeds = 0;
     /** @brief Whether the folder has folders under it. */
     bool has_children = false;
+
+    friend bool operator==(const feed_folder&, const feed_folder&) = default;
 };
 
 /**
@@ -80,6 +82,9 @@ struct list_feed_folders_request {
     static constexpr bool requires_session = true;
     /** @brief The folder whose children are wanted; empty for the roots. */
     std::string parent_id;
+
+    friend bool operator==(const list_feed_folders_request&,
+                           const list_feed_folders_request&) = default;
 };
 
 /**
@@ -91,6 +96,9 @@ struct list_feed_folders_response {
     std::string message;
     /** @brief The children, in name order. */
     std::vector<feed_folder> folders;
+
+    friend bool operator==(const list_feed_folders_response&,
+                           const list_feed_folders_response&) = default;
 };
 
 /**
@@ -124,6 +132,8 @@ struct folder_feed {
     int ticks_per_hour = 0;
     /** @brief Whether the feed starts on its own when the service starts. */
     bool auto_start = false;
+
+    friend bool operator==(const folder_feed&, const folder_feed&) = default;
 };
 
 /**
@@ -158,6 +168,9 @@ struct list_folder_feeds_request {
     int offset = 0;
     /** @brief How many feeds to return at most. */
     int limit = 60;
+
+    friend bool operator==(const list_folder_feeds_request&,
+                           const list_folder_feeds_request&) = default;
 };
 
 /**
@@ -170,6 +183,9 @@ struct list_folder_feeds_response {
     int total = 0;
     /** @brief The page of feeds, in label order. */
     std::vector<folder_feed> feeds;
+
+    friend bool operator==(const list_folder_feeds_response&,
+                           const list_folder_feeds_response&) = default;
 };
 
 /**

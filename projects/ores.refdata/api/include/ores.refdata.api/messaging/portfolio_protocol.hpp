@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct portfolio_key {
     std::string name;
+
+    friend bool operator==(const portfolio_key&, const portfolio_key&) = default;
 };
 
 struct portfolio_write {
@@ -57,27 +59,37 @@ struct portfolio_write {
     bool is_virtual;
     std::optional<boost::uuids::uuid> sandbox_id;
     std::string status;
+
+    friend bool operator==(const portfolio_write&, const portfolio_write&) = default;
 };
 
 struct portfolio_change {
     portfolio_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const portfolio_change&, const portfolio_change&) = default;
 };
 
 struct portfolio_removal {
     portfolio_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const portfolio_removal&, const portfolio_removal&) = default;
 };
 
 struct portfolio_lookup {
     portfolio_key key;
     std::optional<ores::refdata::domain::portfolio> portfolio;
+
+    friend bool operator==(const portfolio_lookup&, const portfolio_lookup&) = default;
 };
 
 struct portfolios_filter {
     std::optional<std::optional<boost::uuids::uuid>> sandbox_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> sandbox_id_one_of;
+
+    friend bool operator==(const portfolios_filter&, const portfolios_filter&) = default;
 };
 
 struct portfolio_event {
@@ -87,17 +99,24 @@ struct portfolio_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const portfolio_event&, const portfolio_event&) = default;
 };
 
 struct portfolio_version_key {
     portfolio_key portfolio;
     std::uint32_t version;
+
+    friend bool operator==(const portfolio_version_key&, const portfolio_version_key&) = default;
 };
 
 struct portfolio_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const portfolio_versions_filter&,
+                           const portfolio_versions_filter&) = default;
 };
 
 struct list_portfolios_request {
@@ -115,12 +134,18 @@ struct list_portfolios_request {
     ores::utility::domain::order order;
     std::optional<portfolios_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_portfolios_request&,
+                           const list_portfolios_request&) = default;
 };
 
 struct list_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> portfolios;
     std::uint64_t total;
+
+    friend bool operator==(const list_portfolios_response&,
+                           const list_portfolios_response&) = default;
 };
 
 struct get_portfolio_request {
@@ -134,11 +159,15 @@ struct get_portfolio_request {
      */
     static constexpr bool requires_session = true;
     portfolio_key key;
+
+    friend bool operator==(const get_portfolio_request&, const get_portfolio_request&) = default;
 };
 
 struct get_portfolio_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::portfolio> portfolio;
+
+    friend bool operator==(const get_portfolio_response&, const get_portfolio_response&) = default;
 };
 
 struct get_many_portfolios_request {
@@ -152,11 +181,17 @@ struct get_many_portfolios_request {
      */
     static constexpr bool requires_session = true;
     std::vector<portfolio_key> keys;
+
+    friend bool operator==(const get_many_portfolios_request&,
+                           const get_many_portfolios_request&) = default;
 };
 
 struct get_many_portfolios_response {
     ores::utility::domain::result result;
     std::vector<portfolio_lookup> entries;
+
+    friend bool operator==(const get_many_portfolios_response&,
+                           const get_many_portfolios_response&) = default;
 };
 
 struct put_portfolio_request {
@@ -171,11 +206,15 @@ struct put_portfolio_request {
     static constexpr bool requires_session = true;
     portfolio_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_portfolio_request&, const put_portfolio_request&) = default;
 };
 
 struct put_portfolio_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::portfolio> portfolio;
+
+    friend bool operator==(const put_portfolio_response&, const put_portfolio_response&) = default;
 };
 
 struct put_many_portfolios_request {
@@ -190,11 +229,17 @@ struct put_many_portfolios_request {
     static constexpr bool requires_session = true;
     std::vector<portfolio_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_portfolios_request&,
+                           const put_many_portfolios_request&) = default;
 };
 
 struct put_many_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> portfolios;
+
+    friend bool operator==(const put_many_portfolios_response&,
+                           const put_many_portfolios_response&) = default;
 };
 
 struct delete_portfolio_request {
@@ -209,10 +254,16 @@ struct delete_portfolio_request {
     static constexpr bool requires_session = true;
     portfolio_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_portfolio_request&,
+                           const delete_portfolio_request&) = default;
 };
 
 struct delete_portfolio_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_portfolio_response&,
+                           const delete_portfolio_response&) = default;
 };
 
 struct delete_many_portfolios_request {
@@ -227,10 +278,16 @@ struct delete_many_portfolios_request {
     static constexpr bool requires_session = true;
     std::vector<portfolio_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_portfolios_request&,
+                           const delete_many_portfolios_request&) = default;
 };
 
 struct delete_many_portfolios_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_portfolios_response&,
+                           const delete_many_portfolios_response&) = default;
 };
 
 struct list_by_sandbox_id_portfolios_request {
@@ -249,12 +306,18 @@ struct list_by_sandbox_id_portfolios_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<portfolios_filter> filter;
+
+    friend bool operator==(const list_by_sandbox_id_portfolios_request&,
+                           const list_by_sandbox_id_portfolios_request&) = default;
 };
 
 struct list_by_sandbox_id_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> portfolios;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_sandbox_id_portfolios_response&,
+                           const list_by_sandbox_id_portfolios_response&) = default;
 };
 
 struct list_portfolio_versions_request {
@@ -272,12 +335,18 @@ struct list_portfolio_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<portfolio_versions_filter> filter;
+
+    friend bool operator==(const list_portfolio_versions_request&,
+                           const list_portfolio_versions_request&) = default;
 };
 
 struct list_portfolio_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_portfolio_versions_response&,
+                           const list_portfolio_versions_response&) = default;
 };
 
 struct get_portfolio_version_request {
@@ -291,11 +360,17 @@ struct get_portfolio_version_request {
      */
     static constexpr bool requires_session = true;
     portfolio_version_key key;
+
+    friend bool operator==(const get_portfolio_version_request&,
+                           const get_portfolio_version_request&) = default;
 };
 
 struct get_portfolio_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::portfolio> version;
+
+    friend bool operator==(const get_portfolio_version_response&,
+                           const get_portfolio_version_response&) = default;
 };
 
 /**

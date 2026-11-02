@@ -53,6 +53,8 @@ struct get_http_info_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_http_info_request&, const get_http_info_request&) = default;
 };
 
 /**
@@ -71,6 +73,8 @@ struct get_http_info_response {
      * @brief Why it was not, when it was not.
      */
     std::string message;
+
+    friend bool operator==(const get_http_info_response&, const get_http_info_response&) = default;
 };
 
 /**

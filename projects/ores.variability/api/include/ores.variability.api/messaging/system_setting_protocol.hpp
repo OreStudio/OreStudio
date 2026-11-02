@@ -43,6 +43,8 @@ namespace ores::variability::messaging {
 
 struct system_setting_key {
     std::string name;
+
+    friend bool operator==(const system_setting_key&, const system_setting_key&) = default;
 };
 
 struct system_setting_write {
@@ -52,25 +54,35 @@ struct system_setting_write {
     std::string value;
     std::string data_type;
     std::string description;
+
+    friend bool operator==(const system_setting_write&, const system_setting_write&) = default;
 };
 
 struct system_setting_change {
     system_setting_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const system_setting_change&, const system_setting_change&) = default;
 };
 
 struct system_setting_removal {
     system_setting_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const system_setting_removal&, const system_setting_removal&) = default;
 };
 
 struct system_setting_lookup {
     system_setting_key key;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const system_setting_lookup&, const system_setting_lookup&) = default;
 };
 
 struct system_settings_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const system_settings_filter&, const system_settings_filter&) = default;
 };
 
 struct system_setting_event {
@@ -80,17 +92,25 @@ struct system_setting_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const system_setting_event&, const system_setting_event&) = default;
 };
 
 struct system_setting_version_key {
     system_setting_key system_setting;
     std::uint32_t version;
+
+    friend bool operator==(const system_setting_version_key&,
+                           const system_setting_version_key&) = default;
 };
 
 struct system_setting_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const system_setting_versions_filter&,
+                           const system_setting_versions_filter&) = default;
 };
 
 struct list_system_settings_request {
@@ -108,12 +128,18 @@ struct list_system_settings_request {
     ores::utility::domain::order order;
     std::optional<system_settings_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_system_settings_request&,
+                           const list_system_settings_request&) = default;
 };
 
 struct list_system_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> settings;
     std::uint64_t total;
+
+    friend bool operator==(const list_system_settings_response&,
+                           const list_system_settings_response&) = default;
 };
 
 struct get_system_setting_request {
@@ -127,11 +153,17 @@ struct get_system_setting_request {
      */
     static constexpr bool requires_session = true;
     system_setting_key key;
+
+    friend bool operator==(const get_system_setting_request&,
+                           const get_system_setting_request&) = default;
 };
 
 struct get_system_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const get_system_setting_response&,
+                           const get_system_setting_response&) = default;
 };
 
 struct get_many_system_settings_request {
@@ -145,11 +177,17 @@ struct get_many_system_settings_request {
      */
     static constexpr bool requires_session = true;
     std::vector<system_setting_key> keys;
+
+    friend bool operator==(const get_many_system_settings_request&,
+                           const get_many_system_settings_request&) = default;
 };
 
 struct get_many_system_settings_response {
     ores::utility::domain::result result;
     std::vector<system_setting_lookup> entries;
+
+    friend bool operator==(const get_many_system_settings_response&,
+                           const get_many_system_settings_response&) = default;
 };
 
 struct put_system_setting_request {
@@ -164,11 +202,17 @@ struct put_system_setting_request {
     static constexpr bool requires_session = true;
     system_setting_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_system_setting_request&,
+                           const put_system_setting_request&) = default;
 };
 
 struct put_system_setting_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> system_setting;
+
+    friend bool operator==(const put_system_setting_response&,
+                           const put_system_setting_response&) = default;
 };
 
 struct put_many_system_settings_request {
@@ -183,11 +227,17 @@ struct put_many_system_settings_request {
     static constexpr bool requires_session = true;
     std::vector<system_setting_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_system_settings_request&,
+                           const put_many_system_settings_request&) = default;
 };
 
 struct put_many_system_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> settings;
+
+    friend bool operator==(const put_many_system_settings_response&,
+                           const put_many_system_settings_response&) = default;
 };
 
 struct delete_system_setting_request {
@@ -202,10 +252,16 @@ struct delete_system_setting_request {
     static constexpr bool requires_session = true;
     system_setting_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_system_setting_request&,
+                           const delete_system_setting_request&) = default;
 };
 
 struct delete_system_setting_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_system_setting_response&,
+                           const delete_system_setting_response&) = default;
 };
 
 struct delete_many_system_settings_request {
@@ -220,10 +276,16 @@ struct delete_many_system_settings_request {
     static constexpr bool requires_session = true;
     std::vector<system_setting_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_system_settings_request&,
+                           const delete_many_system_settings_request&) = default;
 };
 
 struct delete_many_system_settings_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_system_settings_response&,
+                           const delete_many_system_settings_response&) = default;
 };
 
 struct list_system_setting_versions_request {
@@ -241,12 +303,18 @@ struct list_system_setting_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<system_setting_versions_filter> filter;
+
+    friend bool operator==(const list_system_setting_versions_request&,
+                           const list_system_setting_versions_request&) = default;
 };
 
 struct list_system_setting_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_system_setting_versions_response&,
+                           const list_system_setting_versions_response&) = default;
 };
 
 struct get_system_setting_version_request {
@@ -260,11 +328,17 @@ struct get_system_setting_version_request {
      */
     static constexpr bool requires_session = true;
     system_setting_version_key key;
+
+    friend bool operator==(const get_system_setting_version_request&,
+                           const get_system_setting_version_request&) = default;
 };
 
 struct get_system_setting_version_response {
     ores::utility::domain::result result;
     std::optional<ores::variability::domain::system_setting> version;
+
+    friend bool operator==(const get_system_setting_version_response&,
+                           const get_system_setting_version_response&) = default;
 };
 
 /**

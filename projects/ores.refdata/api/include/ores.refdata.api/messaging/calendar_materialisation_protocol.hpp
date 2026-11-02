@@ -51,12 +51,18 @@ struct regenerate_calendar_dates_request {
     static constexpr bool requires_session = true;
     std::optional<std::string> calendar_code;
     std::optional<int> end_year;
+
+    friend bool operator==(const regenerate_calendar_dates_request&,
+                           const regenerate_calendar_dates_request&) = default;
 };
 
 struct regenerate_calendar_dates_response {
     bool success = false;
     std::string message;
     std::uint64_t rows_written = 0;
+
+    friend bool operator==(const regenerate_calendar_dates_response&,
+                           const regenerate_calendar_dates_response&) = default;
 };
 
 }

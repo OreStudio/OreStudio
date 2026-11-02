@@ -43,6 +43,8 @@ namespace ores::trading::messaging {
 
 struct bond_forward_key {
     boost::uuids::uuid trade_id;
+
+    friend bool operator==(const bond_forward_key&, const bond_forward_key&) = default;
 };
 
 struct bond_forward_write {
@@ -59,25 +61,35 @@ struct bond_forward_write {
     std::optional<std::string> settlement_dirty;
     std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> premium_date;
+
+    friend bool operator==(const bond_forward_write&, const bond_forward_write&) = default;
 };
 
 struct bond_forward_change {
     bond_forward_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bond_forward_change&, const bond_forward_change&) = default;
 };
 
 struct bond_forward_removal {
     bond_forward_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bond_forward_removal&, const bond_forward_removal&) = default;
 };
 
 struct bond_forward_lookup {
     bond_forward_key key;
     std::optional<ores::trading::domain::bond_forward> bond_forward;
+
+    friend bool operator==(const bond_forward_lookup&, const bond_forward_lookup&) = default;
 };
 
 struct bond_forwards_filter {
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const bond_forwards_filter&, const bond_forwards_filter&) = default;
 };
 
 struct bond_forward_event {
@@ -87,17 +99,25 @@ struct bond_forward_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bond_forward_event&, const bond_forward_event&) = default;
 };
 
 struct bond_forward_version_key {
     bond_forward_key bond_forward;
     std::uint32_t version;
+
+    friend bool operator==(const bond_forward_version_key&,
+                           const bond_forward_version_key&) = default;
 };
 
 struct bond_forward_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bond_forward_versions_filter&,
+                           const bond_forward_versions_filter&) = default;
 };
 
 struct list_bond_forwards_request {
@@ -115,12 +135,18 @@ struct list_bond_forwards_request {
     ores::utility::domain::order order;
     std::optional<bond_forwards_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bond_forwards_request&,
+                           const list_bond_forwards_request&) = default;
 };
 
 struct list_bond_forwards_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_forward> bond_forwards;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_forwards_response&,
+                           const list_bond_forwards_response&) = default;
 };
 
 struct get_bond_forward_request {
@@ -134,11 +160,17 @@ struct get_bond_forward_request {
      */
     static constexpr bool requires_session = true;
     bond_forward_key key;
+
+    friend bool operator==(const get_bond_forward_request&,
+                           const get_bond_forward_request&) = default;
 };
 
 struct get_bond_forward_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_forward> bond_forward;
+
+    friend bool operator==(const get_bond_forward_response&,
+                           const get_bond_forward_response&) = default;
 };
 
 struct get_many_bond_forwards_request {
@@ -152,11 +184,17 @@ struct get_many_bond_forwards_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bond_forward_key> keys;
+
+    friend bool operator==(const get_many_bond_forwards_request&,
+                           const get_many_bond_forwards_request&) = default;
 };
 
 struct get_many_bond_forwards_response {
     ores::utility::domain::result result;
     std::vector<bond_forward_lookup> entries;
+
+    friend bool operator==(const get_many_bond_forwards_response&,
+                           const get_many_bond_forwards_response&) = default;
 };
 
 struct put_bond_forward_request {
@@ -171,11 +209,17 @@ struct put_bond_forward_request {
     static constexpr bool requires_session = true;
     bond_forward_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bond_forward_request&,
+                           const put_bond_forward_request&) = default;
 };
 
 struct put_bond_forward_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_forward> bond_forward;
+
+    friend bool operator==(const put_bond_forward_response&,
+                           const put_bond_forward_response&) = default;
 };
 
 struct put_many_bond_forwards_request {
@@ -190,11 +234,17 @@ struct put_many_bond_forwards_request {
     static constexpr bool requires_session = true;
     std::vector<bond_forward_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bond_forwards_request&,
+                           const put_many_bond_forwards_request&) = default;
 };
 
 struct put_many_bond_forwards_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_forward> bond_forwards;
+
+    friend bool operator==(const put_many_bond_forwards_response&,
+                           const put_many_bond_forwards_response&) = default;
 };
 
 struct delete_bond_forward_request {
@@ -209,10 +259,16 @@ struct delete_bond_forward_request {
     static constexpr bool requires_session = true;
     bond_forward_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bond_forward_request&,
+                           const delete_bond_forward_request&) = default;
 };
 
 struct delete_bond_forward_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bond_forward_response&,
+                           const delete_bond_forward_response&) = default;
 };
 
 struct delete_many_bond_forwards_request {
@@ -227,10 +283,16 @@ struct delete_many_bond_forwards_request {
     static constexpr bool requires_session = true;
     std::vector<bond_forward_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bond_forwards_request&,
+                           const delete_many_bond_forwards_request&) = default;
 };
 
 struct delete_many_bond_forwards_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bond_forwards_response&,
+                           const delete_many_bond_forwards_response&) = default;
 };
 
 struct list_bond_forward_versions_request {
@@ -248,12 +310,18 @@ struct list_bond_forward_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_forward_versions_filter> filter;
+
+    friend bool operator==(const list_bond_forward_versions_request&,
+                           const list_bond_forward_versions_request&) = default;
 };
 
 struct list_bond_forward_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_forward> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_forward_versions_response&,
+                           const list_bond_forward_versions_response&) = default;
 };
 
 struct get_bond_forward_version_request {
@@ -267,11 +335,17 @@ struct get_bond_forward_version_request {
      */
     static constexpr bool requires_session = true;
     bond_forward_version_key key;
+
+    friend bool operator==(const get_bond_forward_version_request&,
+                           const get_bond_forward_version_request&) = default;
 };
 
 struct get_bond_forward_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_forward> version;
+
+    friend bool operator==(const get_bond_forward_version_response&,
+                           const get_bond_forward_version_response&) = default;
 };
 
 /**

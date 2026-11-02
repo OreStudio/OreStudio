@@ -54,6 +54,8 @@ struct lookup_country_request {
      */
     static constexpr bool requires_session = true;
     std::string address;
+
+    friend bool operator==(const lookup_country_request&, const lookup_country_request&) = default;
 };
 
 struct lookup_country_response {
@@ -61,6 +63,9 @@ struct lookup_country_response {
     bool found = false;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const lookup_country_response&,
+                           const lookup_country_response&) = default;
 };
 
 /**

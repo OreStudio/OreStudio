@@ -38,6 +38,7 @@ Codegen computes a roundtrip case, with one sample expression per member, for ev
 - The sample table covers every member type in the 621 opted-in models, or the model is named in a refusal.
 - Each sample differs from the type's default and from the member's modelled default.
 - Nested modelled types resolve across components to a prefixed sample helper.
+- No sample is NaN or a computed value, because a defaulted equality compares a =double= exactly and NaN never equals itself.
 - pytest covers the table, the nesting and the refusal.
 
 * Plan

@@ -43,6 +43,9 @@ namespace ores::reporting::messaging {
 
 struct ore_parameter_value_set_value_key {
     std::string code;
+
+    friend bool operator==(const ore_parameter_value_set_value_key&,
+                           const ore_parameter_value_set_value_key&) = default;
 };
 
 struct ore_parameter_value_set_value_write {
@@ -54,26 +57,41 @@ struct ore_parameter_value_set_value_write {
     int display_order;
     bool is_active;
     std::string canonical_value;
+
+    friend bool operator==(const ore_parameter_value_set_value_write&,
+                           const ore_parameter_value_set_value_write&) = default;
 };
 
 struct ore_parameter_value_set_value_change {
     ore_parameter_value_set_value_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ore_parameter_value_set_value_change&,
+                           const ore_parameter_value_set_value_change&) = default;
 };
 
 struct ore_parameter_value_set_value_removal {
     ore_parameter_value_set_value_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ore_parameter_value_set_value_removal&,
+                           const ore_parameter_value_set_value_removal&) = default;
 };
 
 struct ore_parameter_value_set_value_lookup {
     ore_parameter_value_set_value_key key;
     std::optional<ores::reporting::domain::ore_parameter_value_set_value>
         ore_parameter_value_set_value;
+
+    friend bool operator==(const ore_parameter_value_set_value_lookup&,
+                           const ore_parameter_value_set_value_lookup&) = default;
 };
 
 struct ore_parameter_value_set_values_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const ore_parameter_value_set_values_filter&,
+                           const ore_parameter_value_set_values_filter&) = default;
 };
 
 struct ore_parameter_value_set_value_event {
@@ -83,17 +101,26 @@ struct ore_parameter_value_set_value_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ore_parameter_value_set_value_event&,
+                           const ore_parameter_value_set_value_event&) = default;
 };
 
 struct ore_parameter_value_set_value_version_key {
     ore_parameter_value_set_value_key ore_parameter_value_set_value;
     std::uint32_t version;
+
+    friend bool operator==(const ore_parameter_value_set_value_version_key&,
+                           const ore_parameter_value_set_value_version_key&) = default;
 };
 
 struct ore_parameter_value_set_value_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ore_parameter_value_set_value_versions_filter&,
+                           const ore_parameter_value_set_value_versions_filter&) = default;
 };
 
 struct list_ore_parameter_value_set_values_request {
@@ -112,12 +139,18 @@ struct list_ore_parameter_value_set_values_request {
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_set_values_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ore_parameter_value_set_values_request&,
+                           const list_ore_parameter_value_set_values_request&) = default;
 };
 
 struct list_ore_parameter_value_set_values_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_value> values;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_parameter_value_set_values_response&,
+                           const list_ore_parameter_value_set_values_response&) = default;
 };
 
 struct get_ore_parameter_value_set_value_request {
@@ -132,12 +165,18 @@ struct get_ore_parameter_value_set_value_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_set_value_key key;
+
+    friend bool operator==(const get_ore_parameter_value_set_value_request&,
+                           const get_ore_parameter_value_set_value_request&) = default;
 };
 
 struct get_ore_parameter_value_set_value_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_value>
         ore_parameter_value_set_value;
+
+    friend bool operator==(const get_ore_parameter_value_set_value_response&,
+                           const get_ore_parameter_value_set_value_response&) = default;
 };
 
 struct get_many_ore_parameter_value_set_values_request {
@@ -152,11 +191,17 @@ struct get_many_ore_parameter_value_set_values_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_value_key> keys;
+
+    friend bool operator==(const get_many_ore_parameter_value_set_values_request&,
+                           const get_many_ore_parameter_value_set_values_request&) = default;
 };
 
 struct get_many_ore_parameter_value_set_values_response {
     ores::utility::domain::result result;
     std::vector<ore_parameter_value_set_value_lookup> entries;
+
+    friend bool operator==(const get_many_ore_parameter_value_set_values_response&,
+                           const get_many_ore_parameter_value_set_values_response&) = default;
 };
 
 struct put_ore_parameter_value_set_value_request {
@@ -172,12 +217,18 @@ struct put_ore_parameter_value_set_value_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_set_value_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ore_parameter_value_set_value_request&,
+                           const put_ore_parameter_value_set_value_request&) = default;
 };
 
 struct put_ore_parameter_value_set_value_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_value>
         ore_parameter_value_set_value;
+
+    friend bool operator==(const put_ore_parameter_value_set_value_response&,
+                           const put_ore_parameter_value_set_value_response&) = default;
 };
 
 struct put_many_ore_parameter_value_set_values_request {
@@ -193,11 +244,17 @@ struct put_many_ore_parameter_value_set_values_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_value_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ore_parameter_value_set_values_request&,
+                           const put_many_ore_parameter_value_set_values_request&) = default;
 };
 
 struct put_many_ore_parameter_value_set_values_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_value> values;
+
+    friend bool operator==(const put_many_ore_parameter_value_set_values_response&,
+                           const put_many_ore_parameter_value_set_values_response&) = default;
 };
 
 struct delete_ore_parameter_value_set_value_request {
@@ -213,10 +270,16 @@ struct delete_ore_parameter_value_set_value_request {
     static constexpr bool requires_session = true;
     ore_parameter_value_set_value_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ore_parameter_value_set_value_request&,
+                           const delete_ore_parameter_value_set_value_request&) = default;
 };
 
 struct delete_ore_parameter_value_set_value_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ore_parameter_value_set_value_response&,
+                           const delete_ore_parameter_value_set_value_response&) = default;
 };
 
 struct delete_many_ore_parameter_value_set_values_request {
@@ -232,10 +295,16 @@ struct delete_many_ore_parameter_value_set_values_request {
     static constexpr bool requires_session = true;
     std::vector<ore_parameter_value_set_value_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ore_parameter_value_set_values_request&,
+                           const delete_many_ore_parameter_value_set_values_request&) = default;
 };
 
 struct delete_many_ore_parameter_value_set_values_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ore_parameter_value_set_values_response&,
+                           const delete_many_ore_parameter_value_set_values_response&) = default;
 };
 
 struct list_ore_parameter_value_set_value_versions_request {
@@ -254,12 +323,18 @@ struct list_ore_parameter_value_set_value_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ore_parameter_value_set_value_versions_filter> filter;
+
+    friend bool operator==(const list_ore_parameter_value_set_value_versions_request&,
+                           const list_ore_parameter_value_set_value_versions_request&) = default;
 };
 
 struct list_ore_parameter_value_set_value_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_value> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ore_parameter_value_set_value_versions_response&,
+                           const list_ore_parameter_value_set_value_versions_response&) = default;
 };
 
 struct get_ore_parameter_value_set_value_version_request {
@@ -274,11 +349,17 @@ struct get_ore_parameter_value_set_value_version_request {
      */
     static constexpr bool requires_session = true;
     ore_parameter_value_set_value_version_key key;
+
+    friend bool operator==(const get_ore_parameter_value_set_value_version_request&,
+                           const get_ore_parameter_value_set_value_version_request&) = default;
 };
 
 struct get_ore_parameter_value_set_value_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::ore_parameter_value_set_value> version;
+
+    friend bool operator==(const get_ore_parameter_value_set_value_version_response&,
+                           const get_ore_parameter_value_set_value_version_response&) = default;
 };
 
 /**

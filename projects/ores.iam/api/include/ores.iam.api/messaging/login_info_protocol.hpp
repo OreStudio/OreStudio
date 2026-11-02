@@ -43,15 +43,21 @@ namespace ores::iam::messaging {
 
 struct login_info_key {
     boost::uuids::uuid account_id;
+
+    friend bool operator==(const login_info_key&, const login_info_key&) = default;
 };
 
 struct login_info_lookup {
     login_info_key key;
     std::optional<ores::iam::domain::login_info> login_info;
+
+    friend bool operator==(const login_info_lookup&, const login_info_lookup&) = default;
 };
 
 struct login_info_filter {
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const login_info_filter&, const login_info_filter&) = default;
 };
 
 struct login_info_event {
@@ -61,6 +67,8 @@ struct login_info_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const login_info_event&, const login_info_event&) = default;
 };
 
 struct list_login_info_request {
@@ -77,12 +85,18 @@ struct list_login_info_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<login_info_filter> filter;
+
+    friend bool operator==(const list_login_info_request&,
+                           const list_login_info_request&) = default;
 };
 
 struct list_login_info_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::login_info> login_info;
     std::uint64_t total;
+
+    friend bool operator==(const list_login_info_response&,
+                           const list_login_info_response&) = default;
 };
 
 struct get_login_info_request {
@@ -96,11 +110,16 @@ struct get_login_info_request {
      */
     static constexpr bool requires_session = true;
     login_info_key key;
+
+    friend bool operator==(const get_login_info_request&, const get_login_info_request&) = default;
 };
 
 struct get_login_info_response {
     ores::utility::domain::result result;
     std::optional<ores::iam::domain::login_info> login_info;
+
+    friend bool operator==(const get_login_info_response&,
+                           const get_login_info_response&) = default;
 };
 
 struct get_many_login_info_request {
@@ -114,11 +133,17 @@ struct get_many_login_info_request {
      */
     static constexpr bool requires_session = true;
     std::vector<login_info_key> keys;
+
+    friend bool operator==(const get_many_login_info_request&,
+                           const get_many_login_info_request&) = default;
 };
 
 struct get_many_login_info_response {
     ores::utility::domain::result result;
     std::vector<login_info_lookup> entries;
+
+    friend bool operator==(const get_many_login_info_response&,
+                           const get_many_login_info_response&) = default;
 };
 
 /**

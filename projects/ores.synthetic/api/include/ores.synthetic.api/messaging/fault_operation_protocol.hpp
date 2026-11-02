@@ -55,6 +55,8 @@ struct set_faults_request {
     bool repeat_ticks = false;
     bool out_of_range = false;
     bool not_entitled = false;
+
+    friend bool operator==(const set_faults_request&, const set_faults_request&) = default;
 };
 
 /**
@@ -63,6 +65,8 @@ struct set_faults_request {
 struct set_faults_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const set_faults_response&, const set_faults_response&) = default;
 };
 
 /**

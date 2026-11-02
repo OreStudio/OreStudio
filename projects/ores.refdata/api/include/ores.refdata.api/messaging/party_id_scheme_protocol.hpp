@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct party_id_scheme_key {
     std::string code;
+
+    friend bool operator==(const party_id_scheme_key&, const party_id_scheme_key&) = default;
 };
 
 struct party_id_scheme_write {
@@ -52,25 +54,37 @@ struct party_id_scheme_write {
     std::string coding_scheme_code;
     int display_order;
     std::optional<int> max_cardinality;
+
+    friend bool operator==(const party_id_scheme_write&, const party_id_scheme_write&) = default;
 };
 
 struct party_id_scheme_change {
     party_id_scheme_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const party_id_scheme_change&, const party_id_scheme_change&) = default;
 };
 
 struct party_id_scheme_removal {
     party_id_scheme_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const party_id_scheme_removal&,
+                           const party_id_scheme_removal&) = default;
 };
 
 struct party_id_scheme_lookup {
     party_id_scheme_key key;
     std::optional<ores::refdata::domain::party_id_scheme> party_id_scheme;
+
+    friend bool operator==(const party_id_scheme_lookup&, const party_id_scheme_lookup&) = default;
 };
 
 struct party_id_schemes_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const party_id_schemes_filter&,
+                           const party_id_schemes_filter&) = default;
 };
 
 struct party_id_scheme_event {
@@ -80,17 +94,25 @@ struct party_id_scheme_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_id_scheme_event&, const party_id_scheme_event&) = default;
 };
 
 struct party_id_scheme_version_key {
     party_id_scheme_key party_id_scheme;
     std::uint32_t version;
+
+    friend bool operator==(const party_id_scheme_version_key&,
+                           const party_id_scheme_version_key&) = default;
 };
 
 struct party_id_scheme_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const party_id_scheme_versions_filter&,
+                           const party_id_scheme_versions_filter&) = default;
 };
 
 struct list_party_id_schemes_request {
@@ -108,12 +130,18 @@ struct list_party_id_schemes_request {
     ores::utility::domain::order order;
     std::optional<party_id_schemes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_party_id_schemes_request&,
+                           const list_party_id_schemes_request&) = default;
 };
 
 struct list_party_id_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_id_scheme> schemes;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_id_schemes_response&,
+                           const list_party_id_schemes_response&) = default;
 };
 
 struct get_party_id_scheme_request {
@@ -127,11 +155,17 @@ struct get_party_id_scheme_request {
      */
     static constexpr bool requires_session = true;
     party_id_scheme_key key;
+
+    friend bool operator==(const get_party_id_scheme_request&,
+                           const get_party_id_scheme_request&) = default;
 };
 
 struct get_party_id_scheme_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_id_scheme> party_id_scheme;
+
+    friend bool operator==(const get_party_id_scheme_response&,
+                           const get_party_id_scheme_response&) = default;
 };
 
 struct get_many_party_id_schemes_request {
@@ -145,11 +179,17 @@ struct get_many_party_id_schemes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_id_scheme_key> keys;
+
+    friend bool operator==(const get_many_party_id_schemes_request&,
+                           const get_many_party_id_schemes_request&) = default;
 };
 
 struct get_many_party_id_schemes_response {
     ores::utility::domain::result result;
     std::vector<party_id_scheme_lookup> entries;
+
+    friend bool operator==(const get_many_party_id_schemes_response&,
+                           const get_many_party_id_schemes_response&) = default;
 };
 
 struct put_party_id_scheme_request {
@@ -164,11 +204,17 @@ struct put_party_id_scheme_request {
     static constexpr bool requires_session = true;
     party_id_scheme_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_party_id_scheme_request&,
+                           const put_party_id_scheme_request&) = default;
 };
 
 struct put_party_id_scheme_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_id_scheme> party_id_scheme;
+
+    friend bool operator==(const put_party_id_scheme_response&,
+                           const put_party_id_scheme_response&) = default;
 };
 
 struct put_many_party_id_schemes_request {
@@ -183,11 +229,17 @@ struct put_many_party_id_schemes_request {
     static constexpr bool requires_session = true;
     std::vector<party_id_scheme_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_party_id_schemes_request&,
+                           const put_many_party_id_schemes_request&) = default;
 };
 
 struct put_many_party_id_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_id_scheme> schemes;
+
+    friend bool operator==(const put_many_party_id_schemes_response&,
+                           const put_many_party_id_schemes_response&) = default;
 };
 
 struct delete_party_id_scheme_request {
@@ -202,10 +254,16 @@ struct delete_party_id_scheme_request {
     static constexpr bool requires_session = true;
     party_id_scheme_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_party_id_scheme_request&,
+                           const delete_party_id_scheme_request&) = default;
 };
 
 struct delete_party_id_scheme_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_party_id_scheme_response&,
+                           const delete_party_id_scheme_response&) = default;
 };
 
 struct delete_many_party_id_schemes_request {
@@ -220,10 +278,16 @@ struct delete_many_party_id_schemes_request {
     static constexpr bool requires_session = true;
     std::vector<party_id_scheme_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_party_id_schemes_request&,
+                           const delete_many_party_id_schemes_request&) = default;
 };
 
 struct delete_many_party_id_schemes_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_party_id_schemes_response&,
+                           const delete_many_party_id_schemes_response&) = default;
 };
 
 struct list_party_id_scheme_versions_request {
@@ -241,12 +305,18 @@ struct list_party_id_scheme_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_id_scheme_versions_filter> filter;
+
+    friend bool operator==(const list_party_id_scheme_versions_request&,
+                           const list_party_id_scheme_versions_request&) = default;
 };
 
 struct list_party_id_scheme_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_id_scheme> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_id_scheme_versions_response&,
+                           const list_party_id_scheme_versions_response&) = default;
 };
 
 struct get_party_id_scheme_version_request {
@@ -260,11 +330,17 @@ struct get_party_id_scheme_version_request {
      */
     static constexpr bool requires_session = true;
     party_id_scheme_version_key key;
+
+    friend bool operator==(const get_party_id_scheme_version_request&,
+                           const get_party_id_scheme_version_request&) = default;
 };
 
 struct get_party_id_scheme_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_id_scheme> version;
+
+    friend bool operator==(const get_party_id_scheme_version_response&,
+                           const get_party_id_scheme_version_response&) = default;
 };
 
 /**

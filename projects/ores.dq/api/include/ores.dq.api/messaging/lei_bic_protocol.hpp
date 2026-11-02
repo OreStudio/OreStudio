@@ -43,15 +43,21 @@ namespace ores::dq::messaging {
 
 struct lei_bic_key {
     std::string lei;
+
+    friend bool operator==(const lei_bic_key&, const lei_bic_key&) = default;
 };
 
 struct lei_bic_lookup {
     lei_bic_key key;
     std::optional<ores::dq::domain::lei_bic> lei_bic;
+
+    friend bool operator==(const lei_bic_lookup&, const lei_bic_lookup&) = default;
 };
 
 struct lei_bic_filter {
     std::optional<std::vector<std::string>> lei_one_of;
+
+    friend bool operator==(const lei_bic_filter&, const lei_bic_filter&) = default;
 };
 
 struct lei_bic_event {
@@ -61,6 +67,8 @@ struct lei_bic_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const lei_bic_event&, const lei_bic_event&) = default;
 };
 
 struct list_lei_bic_request {
@@ -77,12 +85,16 @@ struct list_lei_bic_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<lei_bic_filter> filter;
+
+    friend bool operator==(const list_lei_bic_request&, const list_lei_bic_request&) = default;
 };
 
 struct list_lei_bic_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::lei_bic> lei_bic;
     std::uint64_t total;
+
+    friend bool operator==(const list_lei_bic_response&, const list_lei_bic_response&) = default;
 };
 
 struct get_lei_bic_request {
@@ -96,11 +108,15 @@ struct get_lei_bic_request {
      */
     static constexpr bool requires_session = true;
     lei_bic_key key;
+
+    friend bool operator==(const get_lei_bic_request&, const get_lei_bic_request&) = default;
 };
 
 struct get_lei_bic_response {
     ores::utility::domain::result result;
     std::optional<ores::dq::domain::lei_bic> lei_bic;
+
+    friend bool operator==(const get_lei_bic_response&, const get_lei_bic_response&) = default;
 };
 
 struct get_many_lei_bic_request {
@@ -114,11 +130,17 @@ struct get_many_lei_bic_request {
      */
     static constexpr bool requires_session = true;
     std::vector<lei_bic_key> keys;
+
+    friend bool operator==(const get_many_lei_bic_request&,
+                           const get_many_lei_bic_request&) = default;
 };
 
 struct get_many_lei_bic_response {
     ores::utility::domain::result result;
     std::vector<lei_bic_lookup> entries;
+
+    friend bool operator==(const get_many_lei_bic_response&,
+                           const get_many_lei_bic_response&) = default;
 };
 
 /**

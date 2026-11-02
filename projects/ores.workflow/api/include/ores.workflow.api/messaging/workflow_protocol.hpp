@@ -53,6 +53,8 @@ struct step_log_entry {
         ores::workflow::messaging::step_log_level::info;
     std::string message;
     std::string context;
+
+    friend bool operator==(const step_log_entry&, const step_log_entry&) = default;
 };
 
 /**
@@ -111,6 +113,8 @@ struct step_completed_event {
      * steps that produce no user-visible diagnostic output.
      */
     std::vector<step_log_entry> log;
+
+    friend bool operator==(const step_completed_event&, const step_completed_event&) = default;
 };
 
 /**
@@ -171,6 +175,8 @@ struct start_workflow_message {
      * Empty string (default) means the engine generates a fresh UUID.
      */
     std::string instance_id;
+
+    friend bool operator==(const start_workflow_message&, const start_workflow_message&) = default;
 };
 
 /**
@@ -208,6 +214,9 @@ struct get_step_result_request {
      * found rather than being returned.
      */
     std::string tenant_id;
+
+    friend bool operator==(const get_step_result_request&,
+                           const get_step_result_request&) = default;
 };
 
 struct get_step_result_response {
@@ -245,6 +254,9 @@ struct get_step_result_response {
     std::vector<step_log_entry> log;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_step_result_response&,
+                           const get_step_result_response&) = default;
 };
 
 /**
@@ -281,6 +293,9 @@ struct workflow_instance_summary {
      */
     std::string target_kind;
     std::string target_id;
+
+    friend bool operator==(const workflow_instance_summary&,
+                           const workflow_instance_summary&) = default;
 };
 
 /**
@@ -336,12 +351,18 @@ struct list_workflow_instance_summaries_request {
      * at most 1000 identities.
      */
     std::vector<std::string> target_ids_filter = {};
+
+    friend bool operator==(const list_workflow_instance_summaries_request&,
+                           const list_workflow_instance_summaries_request&) = default;
 };
 
 struct list_workflow_instance_summaries_response {
     bool success = false;
     std::string message;
     std::vector<workflow_instance_summary> instances;
+
+    friend bool operator==(const list_workflow_instance_summaries_response&,
+                           const list_workflow_instance_summaries_response&) = default;
 };
 
 /**
@@ -363,6 +384,8 @@ struct workflow_step_summary {
     std::optional<std::string> completed_at;
     std::string error;
     std::vector<step_log_entry> log;
+
+    friend bool operator==(const workflow_step_summary&, const workflow_step_summary&) = default;
 };
 
 /**
@@ -383,6 +406,9 @@ struct get_workflow_steps_request {
      */
     static constexpr bool requires_session = true;
     std::string workflow_instance_id;
+
+    friend bool operator==(const get_workflow_steps_request&,
+                           const get_workflow_steps_request&) = default;
 };
 
 struct get_workflow_steps_response {
@@ -408,6 +434,9 @@ struct get_workflow_steps_response {
      */
     int step_count = 0;
     std::vector<workflow_step_summary> steps;
+
+    friend bool operator==(const get_workflow_steps_response&,
+                           const get_workflow_steps_response&) = default;
 };
 
 /**
@@ -419,6 +448,9 @@ struct workflow_step_definition_summary {
     std::string description;
     std::string command_subject;
     bool has_compensation = false;
+
+    friend bool operator==(const workflow_step_definition_summary&,
+                           const workflow_step_definition_summary&) = default;
 };
 
 /**
@@ -429,6 +461,9 @@ struct workflow_definition_summary {
     std::string description;
     int step_count = 0;
     std::vector<workflow_step_definition_summary> steps;
+
+    friend bool operator==(const workflow_definition_summary&,
+                           const workflow_definition_summary&) = default;
 };
 
 /**
@@ -448,12 +483,18 @@ struct list_workflow_definitions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const list_workflow_definitions_request&,
+                           const list_workflow_definitions_request&) = default;
 };
 
 struct list_workflow_definitions_response {
     bool success = false;
     std::string message;
     std::vector<workflow_definition_summary> definitions;
+
+    friend bool operator==(const list_workflow_definitions_response&,
+                           const list_workflow_definitions_response&) = default;
 };
 
 /**
@@ -486,6 +527,9 @@ struct retry_workflow_instance_request {
      * somewhere other than where the run stopped.
      */
     std::string step_name = {};
+
+    friend bool operator==(const retry_workflow_instance_request&,
+                           const retry_workflow_instance_request&) = default;
 };
 
 struct retry_workflow_instance_response {
@@ -509,6 +553,9 @@ struct retry_workflow_instance_response {
      * @brief The name of the step the engine re-dispatched, or empty on refusal.
      */
     std::string step_name;
+
+    friend bool operator==(const retry_workflow_instance_response&,
+                           const retry_workflow_instance_response&) = default;
 };
 
 /**

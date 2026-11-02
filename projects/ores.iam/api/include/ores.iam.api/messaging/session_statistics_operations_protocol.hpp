@@ -54,6 +54,8 @@ struct session_statistics_row {
     double avg_bytes_sent = 0.0;
     double avg_bytes_received = 0.0;
     std::uint64_t unique_countries = 0;
+
+    friend bool operator==(const session_statistics_row&, const session_statistics_row&) = default;
 };
 
 /**
@@ -78,12 +80,18 @@ struct get_session_statistics_request {
     std::optional<std::chrono::system_clock::time_point> to_time;
     std::uint32_t limit = 100;
     std::uint32_t offset = 0;
+
+    friend bool operator==(const get_session_statistics_request&,
+                           const get_session_statistics_request&) = default;
 };
 
 struct get_session_statistics_response {
     std::vector<session_statistics_row> rows;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_session_statistics_response&,
+                           const get_session_statistics_response&) = default;
 };
 
 /**

@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct swap_index_convention_key {
     std::string id;
+
+    friend bool operator==(const swap_index_convention_key&,
+                           const swap_index_convention_key&) = default;
 };
 
 struct swap_index_convention_write {
@@ -50,25 +53,40 @@ struct swap_index_convention_write {
     std::string conventions;
     std::optional<std::string> fixing_calendar;
     std::optional<std::string> oresmd_uri;
+
+    friend bool operator==(const swap_index_convention_write&,
+                           const swap_index_convention_write&) = default;
 };
 
 struct swap_index_convention_change {
     swap_index_convention_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const swap_index_convention_change&,
+                           const swap_index_convention_change&) = default;
 };
 
 struct swap_index_convention_removal {
     swap_index_convention_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const swap_index_convention_removal&,
+                           const swap_index_convention_removal&) = default;
 };
 
 struct swap_index_convention_lookup {
     swap_index_convention_key key;
     std::optional<ores::refdata::domain::swap_index_convention> swap_index_convention;
+
+    friend bool operator==(const swap_index_convention_lookup&,
+                           const swap_index_convention_lookup&) = default;
 };
 
 struct swap_index_conventions_filter {
     std::optional<std::vector<std::string>> id_one_of;
+
+    friend bool operator==(const swap_index_conventions_filter&,
+                           const swap_index_conventions_filter&) = default;
 };
 
 struct swap_index_convention_event {
@@ -78,17 +96,26 @@ struct swap_index_convention_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const swap_index_convention_event&,
+                           const swap_index_convention_event&) = default;
 };
 
 struct swap_index_convention_version_key {
     swap_index_convention_key swap_index_convention;
     std::uint32_t version;
+
+    friend bool operator==(const swap_index_convention_version_key&,
+                           const swap_index_convention_version_key&) = default;
 };
 
 struct swap_index_convention_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const swap_index_convention_versions_filter&,
+                           const swap_index_convention_versions_filter&) = default;
 };
 
 struct list_swap_index_conventions_request {
@@ -106,12 +133,18 @@ struct list_swap_index_conventions_request {
     ores::utility::domain::order order;
     std::optional<swap_index_conventions_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_swap_index_conventions_request&,
+                           const list_swap_index_conventions_request&) = default;
 };
 
 struct list_swap_index_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swap_index_convention> swap_index_conventions;
     std::uint64_t total;
+
+    friend bool operator==(const list_swap_index_conventions_response&,
+                           const list_swap_index_conventions_response&) = default;
 };
 
 struct get_swap_index_convention_request {
@@ -125,11 +158,17 @@ struct get_swap_index_convention_request {
      */
     static constexpr bool requires_session = true;
     swap_index_convention_key key;
+
+    friend bool operator==(const get_swap_index_convention_request&,
+                           const get_swap_index_convention_request&) = default;
 };
 
 struct get_swap_index_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swap_index_convention> swap_index_convention;
+
+    friend bool operator==(const get_swap_index_convention_response&,
+                           const get_swap_index_convention_response&) = default;
 };
 
 struct get_many_swap_index_conventions_request {
@@ -143,11 +182,17 @@ struct get_many_swap_index_conventions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<swap_index_convention_key> keys;
+
+    friend bool operator==(const get_many_swap_index_conventions_request&,
+                           const get_many_swap_index_conventions_request&) = default;
 };
 
 struct get_many_swap_index_conventions_response {
     ores::utility::domain::result result;
     std::vector<swap_index_convention_lookup> entries;
+
+    friend bool operator==(const get_many_swap_index_conventions_response&,
+                           const get_many_swap_index_conventions_response&) = default;
 };
 
 struct put_swap_index_convention_request {
@@ -162,11 +207,17 @@ struct put_swap_index_convention_request {
     static constexpr bool requires_session = true;
     swap_index_convention_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_swap_index_convention_request&,
+                           const put_swap_index_convention_request&) = default;
 };
 
 struct put_swap_index_convention_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swap_index_convention> swap_index_convention;
+
+    friend bool operator==(const put_swap_index_convention_response&,
+                           const put_swap_index_convention_response&) = default;
 };
 
 struct put_many_swap_index_conventions_request {
@@ -181,11 +232,17 @@ struct put_many_swap_index_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<swap_index_convention_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_swap_index_conventions_request&,
+                           const put_many_swap_index_conventions_request&) = default;
 };
 
 struct put_many_swap_index_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swap_index_convention> swap_index_conventions;
+
+    friend bool operator==(const put_many_swap_index_conventions_response&,
+                           const put_many_swap_index_conventions_response&) = default;
 };
 
 struct delete_swap_index_convention_request {
@@ -200,10 +257,16 @@ struct delete_swap_index_convention_request {
     static constexpr bool requires_session = true;
     swap_index_convention_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_swap_index_convention_request&,
+                           const delete_swap_index_convention_request&) = default;
 };
 
 struct delete_swap_index_convention_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_swap_index_convention_response&,
+                           const delete_swap_index_convention_response&) = default;
 };
 
 struct delete_many_swap_index_conventions_request {
@@ -219,10 +282,16 @@ struct delete_many_swap_index_conventions_request {
     static constexpr bool requires_session = true;
     std::vector<swap_index_convention_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_swap_index_conventions_request&,
+                           const delete_many_swap_index_conventions_request&) = default;
 };
 
 struct delete_many_swap_index_conventions_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_swap_index_conventions_response&,
+                           const delete_many_swap_index_conventions_response&) = default;
 };
 
 struct list_swap_index_convention_versions_request {
@@ -241,12 +310,18 @@ struct list_swap_index_convention_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<swap_index_convention_versions_filter> filter;
+
+    friend bool operator==(const list_swap_index_convention_versions_request&,
+                           const list_swap_index_convention_versions_request&) = default;
 };
 
 struct list_swap_index_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swap_index_convention> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_swap_index_convention_versions_response&,
+                           const list_swap_index_convention_versions_response&) = default;
 };
 
 struct get_swap_index_convention_version_request {
@@ -261,11 +336,17 @@ struct get_swap_index_convention_version_request {
      */
     static constexpr bool requires_session = true;
     swap_index_convention_version_key key;
+
+    friend bool operator==(const get_swap_index_convention_version_request&,
+                           const get_swap_index_convention_version_request&) = default;
 };
 
 struct get_swap_index_convention_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::swap_index_convention> version;
+
+    friend bool operator==(const get_swap_index_convention_version_response&,
+                           const get_swap_index_convention_version_response&) = default;
 };
 
 /**

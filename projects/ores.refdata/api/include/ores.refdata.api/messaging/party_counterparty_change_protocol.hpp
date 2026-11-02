@@ -43,17 +43,26 @@ namespace ores::refdata::messaging {
 
 struct party_counterparty_change_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const party_counterparty_change_key&,
+                           const party_counterparty_change_key&) = default;
 };
 
 struct party_counterparty_change_lookup {
     party_counterparty_change_key key;
     std::optional<ores::refdata::domain::party_counterparty_change> party_counterparty_change;
+
+    friend bool operator==(const party_counterparty_change_lookup&,
+                           const party_counterparty_change_lookup&) = default;
 };
 
 struct party_counterparty_changes_filter {
     std::optional<boost::uuids::uuid> request_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
+
+    friend bool operator==(const party_counterparty_changes_filter&,
+                           const party_counterparty_changes_filter&) = default;
 };
 
 struct party_counterparty_change_event {
@@ -63,17 +72,26 @@ struct party_counterparty_change_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_counterparty_change_event&,
+                           const party_counterparty_change_event&) = default;
 };
 
 struct party_counterparty_change_version_key {
     party_counterparty_change_key party_counterparty_change;
     std::uint32_t version;
+
+    friend bool operator==(const party_counterparty_change_version_key&,
+                           const party_counterparty_change_version_key&) = default;
 };
 
 struct party_counterparty_change_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const party_counterparty_change_versions_filter&,
+                           const party_counterparty_change_versions_filter&) = default;
 };
 
 struct list_party_counterparty_changes_request {
@@ -91,12 +109,18 @@ struct list_party_counterparty_changes_request {
     ores::utility::domain::order order;
     std::optional<party_counterparty_changes_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_party_counterparty_changes_request&,
+                           const list_party_counterparty_changes_request&) = default;
 };
 
 struct list_party_counterparty_changes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_counterparty_change> party_counterparty_changes;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_counterparty_changes_response&,
+                           const list_party_counterparty_changes_response&) = default;
 };
 
 struct get_party_counterparty_change_request {
@@ -110,11 +134,17 @@ struct get_party_counterparty_change_request {
      */
     static constexpr bool requires_session = true;
     party_counterparty_change_key key;
+
+    friend bool operator==(const get_party_counterparty_change_request&,
+                           const get_party_counterparty_change_request&) = default;
 };
 
 struct get_party_counterparty_change_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_counterparty_change> party_counterparty_change;
+
+    friend bool operator==(const get_party_counterparty_change_response&,
+                           const get_party_counterparty_change_response&) = default;
 };
 
 struct get_many_party_counterparty_changes_request {
@@ -129,11 +159,17 @@ struct get_many_party_counterparty_changes_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_counterparty_change_key> keys;
+
+    friend bool operator==(const get_many_party_counterparty_changes_request&,
+                           const get_many_party_counterparty_changes_request&) = default;
 };
 
 struct get_many_party_counterparty_changes_response {
     ores::utility::domain::result result;
     std::vector<party_counterparty_change_lookup> entries;
+
+    friend bool operator==(const get_many_party_counterparty_changes_response&,
+                           const get_many_party_counterparty_changes_response&) = default;
 };
 
 struct list_by_request_id_party_counterparty_changes_request {
@@ -153,12 +189,18 @@ struct list_by_request_id_party_counterparty_changes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_counterparty_changes_filter> filter;
+
+    friend bool operator==(const list_by_request_id_party_counterparty_changes_request&,
+                           const list_by_request_id_party_counterparty_changes_request&) = default;
 };
 
 struct list_by_request_id_party_counterparty_changes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_counterparty_change> party_counterparty_changes;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_request_id_party_counterparty_changes_response&,
+                           const list_by_request_id_party_counterparty_changes_response&) = default;
 };
 
 struct list_party_counterparty_change_versions_request {
@@ -177,12 +219,18 @@ struct list_party_counterparty_change_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_counterparty_change_versions_filter> filter;
+
+    friend bool operator==(const list_party_counterparty_change_versions_request&,
+                           const list_party_counterparty_change_versions_request&) = default;
 };
 
 struct list_party_counterparty_change_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_counterparty_change> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_counterparty_change_versions_response&,
+                           const list_party_counterparty_change_versions_response&) = default;
 };
 
 struct get_party_counterparty_change_version_request {
@@ -197,11 +245,17 @@ struct get_party_counterparty_change_version_request {
      */
     static constexpr bool requires_session = true;
     party_counterparty_change_version_key key;
+
+    friend bool operator==(const get_party_counterparty_change_version_request&,
+                           const get_party_counterparty_change_version_request&) = default;
 };
 
 struct get_party_counterparty_change_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party_counterparty_change> version;
+
+    friend bool operator==(const get_party_counterparty_change_version_response&,
+                           const get_party_counterparty_change_version_response&) = default;
 };
 
 /**

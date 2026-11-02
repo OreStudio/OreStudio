@@ -56,6 +56,9 @@ struct counterparty_line_outcome {
     std::vector<std::string> columns;
     std::string refusal;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const counterparty_line_outcome&,
+                           const counterparty_line_outcome&) = default;
 };
 
 /**
@@ -82,6 +85,9 @@ struct preview_counterparty_changes_request {
     std::vector<ores::refdata::domain::counterparty_change> counterparties;
     std::vector<ores::refdata::domain::counterparty_identifier_change> identifiers;
     std::vector<ores::refdata::domain::party_counterparty_change> links;
+
+    friend bool operator==(const preview_counterparty_changes_request&,
+                           const preview_counterparty_changes_request&) = default;
 };
 
 struct preview_counterparty_changes_response {
@@ -92,6 +98,9 @@ struct preview_counterparty_changes_response {
      * them.
      */
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const preview_counterparty_changes_response&,
+                           const preview_counterparty_changes_response&) = default;
 };
 
 /**
@@ -116,6 +125,9 @@ struct raise_counterparty_changes_request {
     std::vector<ores::refdata::domain::counterparty_change> counterparties;
     std::vector<ores::refdata::domain::counterparty_identifier_change> identifiers;
     std::vector<ores::refdata::domain::party_counterparty_change> links;
+
+    friend bool operator==(const raise_counterparty_changes_request&,
+                           const raise_counterparty_changes_request&) = default;
 };
 
 struct raise_counterparty_changes_response {
@@ -127,6 +139,9 @@ struct raise_counterparty_changes_response {
     std::optional<boost::uuids::uuid> request_id;
     std::vector<counterparty_line_outcome> lines;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const raise_counterparty_changes_response&,
+                           const raise_counterparty_changes_response&) = default;
 };
 
 /**
@@ -140,6 +155,9 @@ struct counterparty_field_delta {
     std::string before;
     std::string after;
     bool changed = false;
+
+    friend bool operator==(const counterparty_field_delta&,
+                           const counterparty_field_delta&) = default;
 };
 
 /**
@@ -154,6 +172,9 @@ struct counterparty_change_delta {
     int base_version = 0;
     bool applied = false;
     std::vector<counterparty_field_delta> fields;
+
+    friend bool operator==(const counterparty_change_delta&,
+                           const counterparty_change_delta&) = default;
 };
 
 /**
@@ -174,6 +195,9 @@ struct get_counterparty_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const get_counterparty_changes_request&,
+                           const get_counterparty_changes_request&) = default;
 };
 
 struct get_counterparty_changes_response {
@@ -182,6 +206,9 @@ struct get_counterparty_changes_response {
      * @brief The lines in line order.
      */
     std::vector<counterparty_change_delta> changes;
+
+    friend bool operator==(const get_counterparty_changes_response&,
+                           const get_counterparty_changes_response&) = default;
 };
 
 /**
@@ -202,12 +229,18 @@ struct recheck_counterparty_changes_request {
      */
     static constexpr bool requires_session = true;
     std::string request_id;
+
+    friend bool operator==(const recheck_counterparty_changes_request&,
+                           const recheck_counterparty_changes_request&) = default;
 };
 
 struct recheck_counterparty_changes_response {
     ores::utility::domain::result result;
     std::vector<counterparty_line_outcome> lines;
     std::vector<std::string> part_codes;
+
+    friend bool operator==(const recheck_counterparty_changes_response&,
+                           const recheck_counterparty_changes_response&) = default;
 };
 
 }

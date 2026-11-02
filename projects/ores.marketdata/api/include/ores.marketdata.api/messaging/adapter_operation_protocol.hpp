@@ -49,6 +49,8 @@ struct vendor_id {
     std::string id_scheme;
     std::string external_id;
     std::string field;
+
+    friend bool operator==(const vendor_id&, const vendor_id&) = default;
 };
 
 /**
@@ -59,6 +61,8 @@ struct vendor_id {
 struct rejected_id {
     vendor_id id;
     std::string reason;
+
+    friend bool operator==(const rejected_id&, const rejected_id&) = default;
 };
 
 /**
@@ -73,6 +77,9 @@ struct adapter_announce_request {
     std::string module_version;
     std::string provider_code;
     std::vector<vendor_id> universe;
+
+    friend bool operator==(const adapter_announce_request&,
+                           const adapter_announce_request&) = default;
 };
 
 /**
@@ -85,6 +92,9 @@ struct adapter_announce_response {
     std::string message;
     std::uint32_t served_count = 0;
     std::uint32_t unknown_count = 0;
+
+    friend bool operator==(const adapter_announce_response&,
+                           const adapter_announce_response&) = default;
 };
 
 /**
@@ -95,6 +105,8 @@ struct adapter_announce_response {
  */
 struct adapter_demand_request {
     std::vector<vendor_id> ids;
+
+    friend bool operator==(const adapter_demand_request&, const adapter_demand_request&) = default;
 };
 
 /**
@@ -103,6 +115,9 @@ struct adapter_demand_request {
 struct adapter_demand_response {
     std::vector<vendor_id> accepted;
     std::vector<rejected_id> rejected;
+
+    friend bool operator==(const adapter_demand_response&,
+                           const adapter_demand_response&) = default;
 };
 
 /**
@@ -118,6 +133,8 @@ struct adapter_tick {
     std::string value;
     std::chrono::system_clock::time_point vendor_time;
     std::uint64_t sequence = 0;
+
+    friend bool operator==(const adapter_tick&, const adapter_tick&) = default;
 };
 
 /**
@@ -128,6 +145,8 @@ struct adapter_tick {
 struct adapter_heartbeat {
     std::string adapter_id;
     std::uint64_t counter = 0;
+
+    friend bool operator==(const adapter_heartbeat&, const adapter_heartbeat&) = default;
 };
 
 /**
@@ -153,6 +172,8 @@ struct adapter_status {
     std::int64_t last_tick_age_ms = -1;
     std::vector<vendor_id> accepted;
     std::vector<rejected_id> rejected;
+
+    friend bool operator==(const adapter_status&, const adapter_status&) = default;
 };
 
 /**
@@ -170,6 +191,9 @@ struct list_adapter_status_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const list_adapter_status_request&,
+                           const list_adapter_status_request&) = default;
 };
 
 /**
@@ -179,6 +203,9 @@ struct list_adapter_status_response {
     std::vector<adapter_status> adapters;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const list_adapter_status_response&,
+                           const list_adapter_status_response&) = default;
 };
 
 /**

@@ -61,6 +61,9 @@ struct publish_from_dq_command {
      * @brief Extra per-artefact parameters, as JSON. May be an empty object.
      */
     std::string params_json;
+
+    friend bool operator==(const publish_from_dq_command&,
+                           const publish_from_dq_command&) = default;
 };
 
 /**
@@ -94,6 +97,8 @@ struct publish_from_dq_result {
      * @brief How many rows the publication removed.
      */
     std::uint64_t records_deleted = 0;
+
+    friend bool operator==(const publish_from_dq_result&, const publish_from_dq_result&) = default;
 };
 
 /**
@@ -111,6 +116,9 @@ struct publish_ip2country_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_ip2country_from_dq_request&,
+                           const publish_ip2country_from_dq_request&) = default;
 };
 
 /**
@@ -128,6 +136,9 @@ struct publish_coding_schemes_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_coding_schemes_from_dq_request&,
+                           const publish_coding_schemes_from_dq_request&) = default;
 };
 
 /**
@@ -145,6 +156,9 @@ struct publish_badge_severities_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_badge_severities_from_dq_request&,
+                           const publish_badge_severities_from_dq_request&) = default;
 };
 
 /**
@@ -162,6 +176,9 @@ struct publish_badge_definitions_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_badge_definitions_from_dq_request&,
+                           const publish_badge_definitions_from_dq_request&) = default;
 };
 
 /**
@@ -179,6 +196,9 @@ struct publish_code_domains_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_code_domains_from_dq_request&,
+                           const publish_code_domains_from_dq_request&) = default;
 };
 
 /**
@@ -196,6 +216,9 @@ struct publish_badge_mappings_from_dq_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_badge_mappings_from_dq_request&,
+                           const publish_badge_mappings_from_dq_request&) = default;
 };
 
 /**

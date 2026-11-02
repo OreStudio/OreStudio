@@ -43,6 +43,8 @@ namespace ores::refdata::messaging {
 
 struct monetary_nature_key {
     std::string code;
+
+    friend bool operator==(const monetary_nature_key&, const monetary_nature_key&) = default;
 };
 
 struct monetary_nature_write {
@@ -50,25 +52,37 @@ struct monetary_nature_write {
     std::string name;
     std::string description;
     int display_order;
+
+    friend bool operator==(const monetary_nature_write&, const monetary_nature_write&) = default;
 };
 
 struct monetary_nature_change {
     monetary_nature_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const monetary_nature_change&, const monetary_nature_change&) = default;
 };
 
 struct monetary_nature_removal {
     monetary_nature_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const monetary_nature_removal&,
+                           const monetary_nature_removal&) = default;
 };
 
 struct monetary_nature_lookup {
     monetary_nature_key key;
     std::optional<ores::refdata::domain::monetary_nature> monetary_nature;
+
+    friend bool operator==(const monetary_nature_lookup&, const monetary_nature_lookup&) = default;
 };
 
 struct monetary_natures_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const monetary_natures_filter&,
+                           const monetary_natures_filter&) = default;
 };
 
 struct monetary_nature_event {
@@ -78,17 +92,25 @@ struct monetary_nature_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const monetary_nature_event&, const monetary_nature_event&) = default;
 };
 
 struct monetary_nature_version_key {
     monetary_nature_key monetary_nature;
     std::uint32_t version;
+
+    friend bool operator==(const monetary_nature_version_key&,
+                           const monetary_nature_version_key&) = default;
 };
 
 struct monetary_nature_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const monetary_nature_versions_filter&,
+                           const monetary_nature_versions_filter&) = default;
 };
 
 struct list_monetary_natures_request {
@@ -106,12 +128,18 @@ struct list_monetary_natures_request {
     ores::utility::domain::order order;
     std::optional<monetary_natures_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_monetary_natures_request&,
+                           const list_monetary_natures_request&) = default;
 };
 
 struct list_monetary_natures_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::monetary_nature> types;
     std::uint64_t total;
+
+    friend bool operator==(const list_monetary_natures_response&,
+                           const list_monetary_natures_response&) = default;
 };
 
 struct get_monetary_nature_request {
@@ -125,11 +153,17 @@ struct get_monetary_nature_request {
      */
     static constexpr bool requires_session = true;
     monetary_nature_key key;
+
+    friend bool operator==(const get_monetary_nature_request&,
+                           const get_monetary_nature_request&) = default;
 };
 
 struct get_monetary_nature_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::monetary_nature> monetary_nature;
+
+    friend bool operator==(const get_monetary_nature_response&,
+                           const get_monetary_nature_response&) = default;
 };
 
 struct get_many_monetary_natures_request {
@@ -143,11 +177,17 @@ struct get_many_monetary_natures_request {
      */
     static constexpr bool requires_session = true;
     std::vector<monetary_nature_key> keys;
+
+    friend bool operator==(const get_many_monetary_natures_request&,
+                           const get_many_monetary_natures_request&) = default;
 };
 
 struct get_many_monetary_natures_response {
     ores::utility::domain::result result;
     std::vector<monetary_nature_lookup> entries;
+
+    friend bool operator==(const get_many_monetary_natures_response&,
+                           const get_many_monetary_natures_response&) = default;
 };
 
 struct put_monetary_nature_request {
@@ -162,11 +202,17 @@ struct put_monetary_nature_request {
     static constexpr bool requires_session = true;
     monetary_nature_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_monetary_nature_request&,
+                           const put_monetary_nature_request&) = default;
 };
 
 struct put_monetary_nature_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::monetary_nature> monetary_nature;
+
+    friend bool operator==(const put_monetary_nature_response&,
+                           const put_monetary_nature_response&) = default;
 };
 
 struct put_many_monetary_natures_request {
@@ -181,11 +227,17 @@ struct put_many_monetary_natures_request {
     static constexpr bool requires_session = true;
     std::vector<monetary_nature_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_monetary_natures_request&,
+                           const put_many_monetary_natures_request&) = default;
 };
 
 struct put_many_monetary_natures_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::monetary_nature> types;
+
+    friend bool operator==(const put_many_monetary_natures_response&,
+                           const put_many_monetary_natures_response&) = default;
 };
 
 struct delete_monetary_nature_request {
@@ -200,10 +252,16 @@ struct delete_monetary_nature_request {
     static constexpr bool requires_session = true;
     monetary_nature_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_monetary_nature_request&,
+                           const delete_monetary_nature_request&) = default;
 };
 
 struct delete_monetary_nature_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_monetary_nature_response&,
+                           const delete_monetary_nature_response&) = default;
 };
 
 struct delete_many_monetary_natures_request {
@@ -218,10 +276,16 @@ struct delete_many_monetary_natures_request {
     static constexpr bool requires_session = true;
     std::vector<monetary_nature_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_monetary_natures_request&,
+                           const delete_many_monetary_natures_request&) = default;
 };
 
 struct delete_many_monetary_natures_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_monetary_natures_response&,
+                           const delete_many_monetary_natures_response&) = default;
 };
 
 struct list_monetary_nature_versions_request {
@@ -239,12 +303,18 @@ struct list_monetary_nature_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<monetary_nature_versions_filter> filter;
+
+    friend bool operator==(const list_monetary_nature_versions_request&,
+                           const list_monetary_nature_versions_request&) = default;
 };
 
 struct list_monetary_nature_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::monetary_nature> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_monetary_nature_versions_response&,
+                           const list_monetary_nature_versions_response&) = default;
 };
 
 struct get_monetary_nature_version_request {
@@ -258,11 +328,17 @@ struct get_monetary_nature_version_request {
      */
     static constexpr bool requires_session = true;
     monetary_nature_version_key key;
+
+    friend bool operator==(const get_monetary_nature_version_request&,
+                           const get_monetary_nature_version_request&) = default;
 };
 
 struct get_monetary_nature_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::monetary_nature> version;
+
+    friend bool operator==(const get_monetary_nature_version_response&,
+                           const get_monetary_nature_version_response&) = default;
 };
 
 /**

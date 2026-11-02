@@ -46,6 +46,9 @@ struct bond_leg_amortization_key {
     std::string leg_role;
     int leg_number;
     int sequence_number;
+
+    friend bool operator==(const bond_leg_amortization_key&,
+                           const bond_leg_amortization_key&) = default;
 };
 
 struct bond_leg_amortization_write {
@@ -60,26 +63,41 @@ struct bond_leg_amortization_write {
     std::optional<std::string> end_date;
     std::optional<std::string> frequency;
     std::optional<bool> underflow;
+
+    friend bool operator==(const bond_leg_amortization_write&,
+                           const bond_leg_amortization_write&) = default;
 };
 
 struct bond_leg_amortization_change {
     bond_leg_amortization_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const bond_leg_amortization_change&,
+                           const bond_leg_amortization_change&) = default;
 };
 
 struct bond_leg_amortization_removal {
     bond_leg_amortization_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const bond_leg_amortization_removal&,
+                           const bond_leg_amortization_removal&) = default;
 };
 
 struct bond_leg_amortization_lookup {
     bond_leg_amortization_key key;
     std::optional<ores::trading::domain::bond_leg_amortization> bond_leg_amortization;
+
+    friend bool operator==(const bond_leg_amortization_lookup&,
+                           const bond_leg_amortization_lookup&) = default;
 };
 
 struct bond_leg_amortizations_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const bond_leg_amortizations_filter&,
+                           const bond_leg_amortizations_filter&) = default;
 };
 
 struct bond_leg_amortization_event {
@@ -89,17 +107,26 @@ struct bond_leg_amortization_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const bond_leg_amortization_event&,
+                           const bond_leg_amortization_event&) = default;
 };
 
 struct bond_leg_amortization_version_key {
     bond_leg_amortization_key bond_leg_amortization;
     std::uint32_t version;
+
+    friend bool operator==(const bond_leg_amortization_version_key&,
+                           const bond_leg_amortization_version_key&) = default;
 };
 
 struct bond_leg_amortization_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const bond_leg_amortization_versions_filter&,
+                           const bond_leg_amortization_versions_filter&) = default;
 };
 
 struct list_bond_leg_amortizations_request {
@@ -117,12 +144,18 @@ struct list_bond_leg_amortizations_request {
     ores::utility::domain::order order;
     std::optional<bond_leg_amortizations_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_bond_leg_amortizations_request&,
+                           const list_bond_leg_amortizations_request&) = default;
 };
 
 struct list_bond_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_amortization> bond_leg_amortizations;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_leg_amortizations_response&,
+                           const list_bond_leg_amortizations_response&) = default;
 };
 
 struct get_bond_leg_amortization_request {
@@ -136,11 +169,17 @@ struct get_bond_leg_amortization_request {
      */
     static constexpr bool requires_session = true;
     bond_leg_amortization_key key;
+
+    friend bool operator==(const get_bond_leg_amortization_request&,
+                           const get_bond_leg_amortization_request&) = default;
 };
 
 struct get_bond_leg_amortization_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_leg_amortization> bond_leg_amortization;
+
+    friend bool operator==(const get_bond_leg_amortization_response&,
+                           const get_bond_leg_amortization_response&) = default;
 };
 
 struct get_many_bond_leg_amortizations_request {
@@ -154,11 +193,17 @@ struct get_many_bond_leg_amortizations_request {
      */
     static constexpr bool requires_session = true;
     std::vector<bond_leg_amortization_key> keys;
+
+    friend bool operator==(const get_many_bond_leg_amortizations_request&,
+                           const get_many_bond_leg_amortizations_request&) = default;
 };
 
 struct get_many_bond_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<bond_leg_amortization_lookup> entries;
+
+    friend bool operator==(const get_many_bond_leg_amortizations_response&,
+                           const get_many_bond_leg_amortizations_response&) = default;
 };
 
 struct put_bond_leg_amortization_request {
@@ -173,11 +218,17 @@ struct put_bond_leg_amortization_request {
     static constexpr bool requires_session = true;
     bond_leg_amortization_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_bond_leg_amortization_request&,
+                           const put_bond_leg_amortization_request&) = default;
 };
 
 struct put_bond_leg_amortization_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_leg_amortization> bond_leg_amortization;
+
+    friend bool operator==(const put_bond_leg_amortization_response&,
+                           const put_bond_leg_amortization_response&) = default;
 };
 
 struct put_many_bond_leg_amortizations_request {
@@ -192,11 +243,17 @@ struct put_many_bond_leg_amortizations_request {
     static constexpr bool requires_session = true;
     std::vector<bond_leg_amortization_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_bond_leg_amortizations_request&,
+                           const put_many_bond_leg_amortizations_request&) = default;
 };
 
 struct put_many_bond_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_amortization> bond_leg_amortizations;
+
+    friend bool operator==(const put_many_bond_leg_amortizations_response&,
+                           const put_many_bond_leg_amortizations_response&) = default;
 };
 
 struct delete_bond_leg_amortization_request {
@@ -211,10 +268,16 @@ struct delete_bond_leg_amortization_request {
     static constexpr bool requires_session = true;
     bond_leg_amortization_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_bond_leg_amortization_request&,
+                           const delete_bond_leg_amortization_request&) = default;
 };
 
 struct delete_bond_leg_amortization_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_bond_leg_amortization_response&,
+                           const delete_bond_leg_amortization_response&) = default;
 };
 
 struct delete_many_bond_leg_amortizations_request {
@@ -230,10 +293,16 @@ struct delete_many_bond_leg_amortizations_request {
     static constexpr bool requires_session = true;
     std::vector<bond_leg_amortization_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_bond_leg_amortizations_request&,
+                           const delete_many_bond_leg_amortizations_request&) = default;
 };
 
 struct delete_many_bond_leg_amortizations_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_bond_leg_amortizations_response&,
+                           const delete_many_bond_leg_amortizations_response&) = default;
 };
 
 struct list_by_trade_id_bond_leg_amortizations_request {
@@ -253,12 +322,18 @@ struct list_by_trade_id_bond_leg_amortizations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_leg_amortizations_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_bond_leg_amortizations_request&,
+                           const list_by_trade_id_bond_leg_amortizations_request&) = default;
 };
 
 struct list_by_trade_id_bond_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_amortization> bond_leg_amortizations;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_bond_leg_amortizations_response&,
+                           const list_by_trade_id_bond_leg_amortizations_response&) = default;
 };
 
 struct list_bond_leg_amortization_versions_request {
@@ -277,12 +352,18 @@ struct list_bond_leg_amortization_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_leg_amortization_versions_filter> filter;
+
+    friend bool operator==(const list_bond_leg_amortization_versions_request&,
+                           const list_bond_leg_amortization_versions_request&) = default;
 };
 
 struct list_bond_leg_amortization_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_amortization> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_bond_leg_amortization_versions_response&,
+                           const list_bond_leg_amortization_versions_response&) = default;
 };
 
 struct get_bond_leg_amortization_version_request {
@@ -297,11 +378,17 @@ struct get_bond_leg_amortization_version_request {
      */
     static constexpr bool requires_session = true;
     bond_leg_amortization_version_key key;
+
+    friend bool operator==(const get_bond_leg_amortization_version_request&,
+                           const get_bond_leg_amortization_version_request&) = default;
 };
 
 struct get_bond_leg_amortization_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::bond_leg_amortization> version;
+
+    friend bool operator==(const get_bond_leg_amortization_version_response&,
+                           const get_bond_leg_amortization_version_response&) = default;
 };
 
 /**

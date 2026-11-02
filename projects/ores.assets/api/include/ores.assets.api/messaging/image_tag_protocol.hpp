@@ -44,6 +44,8 @@ namespace ores::assets::messaging {
 struct image_tag_key {
     boost::uuids::uuid image_id;
     boost::uuids::uuid tag_id;
+
+    friend bool operator==(const image_tag_key&, const image_tag_key&) = default;
 };
 
 struct image_tag_write {
@@ -51,26 +53,36 @@ struct image_tag_write {
     boost::uuids::uuid tag_id;
     std::string assigned_by;
     std::chrono::system_clock::time_point assigned_at;
+
+    friend bool operator==(const image_tag_write&, const image_tag_write&) = default;
 };
 
 struct image_tag_change {
     image_tag_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const image_tag_change&, const image_tag_change&) = default;
 };
 
 struct image_tag_removal {
     image_tag_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const image_tag_removal&, const image_tag_removal&) = default;
 };
 
 struct image_tag_lookup {
     image_tag_key key;
     std::optional<ores::assets::domain::image_tag> image_tag;
+
+    friend bool operator==(const image_tag_lookup&, const image_tag_lookup&) = default;
 };
 
 struct image_tags_filter {
     std::optional<boost::uuids::uuid> image_id;
     std::optional<std::vector<boost::uuids::uuid>> image_id_one_of;
+
+    friend bool operator==(const image_tags_filter&, const image_tags_filter&) = default;
 };
 
 struct list_image_tags_request {
@@ -87,12 +99,18 @@ struct list_image_tags_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<image_tags_filter> filter;
+
+    friend bool operator==(const list_image_tags_request&,
+                           const list_image_tags_request&) = default;
 };
 
 struct list_image_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image_tag> image_tags;
     std::uint64_t total;
+
+    friend bool operator==(const list_image_tags_response&,
+                           const list_image_tags_response&) = default;
 };
 
 struct get_image_tag_request {
@@ -106,11 +124,15 @@ struct get_image_tag_request {
      */
     static constexpr bool requires_session = true;
     image_tag_key key;
+
+    friend bool operator==(const get_image_tag_request&, const get_image_tag_request&) = default;
 };
 
 struct get_image_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::image_tag> image_tag;
+
+    friend bool operator==(const get_image_tag_response&, const get_image_tag_response&) = default;
 };
 
 struct get_many_image_tags_request {
@@ -124,11 +146,17 @@ struct get_many_image_tags_request {
      */
     static constexpr bool requires_session = true;
     std::vector<image_tag_key> keys;
+
+    friend bool operator==(const get_many_image_tags_request&,
+                           const get_many_image_tags_request&) = default;
 };
 
 struct get_many_image_tags_response {
     ores::utility::domain::result result;
     std::vector<image_tag_lookup> entries;
+
+    friend bool operator==(const get_many_image_tags_response&,
+                           const get_many_image_tags_response&) = default;
 };
 
 struct put_image_tag_request {
@@ -143,11 +171,15 @@ struct put_image_tag_request {
     static constexpr bool requires_session = true;
     image_tag_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_image_tag_request&, const put_image_tag_request&) = default;
 };
 
 struct put_image_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::image_tag> image_tag;
+
+    friend bool operator==(const put_image_tag_response&, const put_image_tag_response&) = default;
 };
 
 struct put_many_image_tags_request {
@@ -162,11 +194,17 @@ struct put_many_image_tags_request {
     static constexpr bool requires_session = true;
     std::vector<image_tag_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_image_tags_request&,
+                           const put_many_image_tags_request&) = default;
 };
 
 struct put_many_image_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image_tag> image_tags;
+
+    friend bool operator==(const put_many_image_tags_response&,
+                           const put_many_image_tags_response&) = default;
 };
 
 struct delete_image_tag_request {
@@ -181,10 +219,16 @@ struct delete_image_tag_request {
     static constexpr bool requires_session = true;
     image_tag_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_image_tag_request&,
+                           const delete_image_tag_request&) = default;
 };
 
 struct delete_image_tag_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_image_tag_response&,
+                           const delete_image_tag_response&) = default;
 };
 
 struct delete_many_image_tags_request {
@@ -199,10 +243,16 @@ struct delete_many_image_tags_request {
     static constexpr bool requires_session = true;
     std::vector<image_tag_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_image_tags_request&,
+                           const delete_many_image_tags_request&) = default;
 };
 
 struct delete_many_image_tags_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_image_tags_response&,
+                           const delete_many_image_tags_response&) = default;
 };
 
 struct list_by_image_id_image_tags_request {
@@ -221,12 +271,18 @@ struct list_by_image_id_image_tags_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<image_tags_filter> filter;
+
+    friend bool operator==(const list_by_image_id_image_tags_request&,
+                           const list_by_image_id_image_tags_request&) = default;
 };
 
 struct list_by_image_id_image_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image_tag> image_tags;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_image_id_image_tags_response&,
+                           const list_by_image_id_image_tags_response&) = default;
 };
 
 /**

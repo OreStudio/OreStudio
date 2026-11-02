@@ -43,6 +43,8 @@ namespace ores::ore::messaging {
 struct ore_document {
     std::string name;
     std::string content;
+
+    friend bool operator==(const ore_document&, const ore_document&) = default;
 };
 
 /**

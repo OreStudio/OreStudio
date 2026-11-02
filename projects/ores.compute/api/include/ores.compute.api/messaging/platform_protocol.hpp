@@ -43,6 +43,8 @@ namespace ores::compute::messaging {
 
 struct platform_key {
     std::string code;
+
+    friend bool operator==(const platform_key&, const platform_key&) = default;
 };
 
 struct platform_write {
@@ -54,25 +56,35 @@ struct platform_write {
     std::string cpu_arch;
     std::string abi;
     bool is_active;
+
+    friend bool operator==(const platform_write&, const platform_write&) = default;
 };
 
 struct platform_change {
     platform_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const platform_change&, const platform_change&) = default;
 };
 
 struct platform_removal {
     platform_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const platform_removal&, const platform_removal&) = default;
 };
 
 struct platform_lookup {
     platform_key key;
     std::optional<ores::compute::domain::platform> platform;
+
+    friend bool operator==(const platform_lookup&, const platform_lookup&) = default;
 };
 
 struct platforms_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const platforms_filter&, const platforms_filter&) = default;
 };
 
 struct platform_event {
@@ -82,17 +94,24 @@ struct platform_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const platform_event&, const platform_event&) = default;
 };
 
 struct platform_version_key {
     platform_key platform;
     std::uint32_t version;
+
+    friend bool operator==(const platform_version_key&, const platform_version_key&) = default;
 };
 
 struct platform_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const platform_versions_filter&,
+                           const platform_versions_filter&) = default;
 };
 
 struct list_platforms_request {
@@ -110,12 +129,17 @@ struct list_platforms_request {
     ores::utility::domain::order order;
     std::optional<platforms_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_platforms_request&, const list_platforms_request&) = default;
 };
 
 struct list_platforms_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::platform> platforms;
     std::uint64_t total;
+
+    friend bool operator==(const list_platforms_response&,
+                           const list_platforms_response&) = default;
 };
 
 struct get_platform_request {
@@ -129,11 +153,15 @@ struct get_platform_request {
      */
     static constexpr bool requires_session = true;
     platform_key key;
+
+    friend bool operator==(const get_platform_request&, const get_platform_request&) = default;
 };
 
 struct get_platform_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::platform> platform;
+
+    friend bool operator==(const get_platform_response&, const get_platform_response&) = default;
 };
 
 struct get_many_platforms_request {
@@ -147,11 +175,17 @@ struct get_many_platforms_request {
      */
     static constexpr bool requires_session = true;
     std::vector<platform_key> keys;
+
+    friend bool operator==(const get_many_platforms_request&,
+                           const get_many_platforms_request&) = default;
 };
 
 struct get_many_platforms_response {
     ores::utility::domain::result result;
     std::vector<platform_lookup> entries;
+
+    friend bool operator==(const get_many_platforms_response&,
+                           const get_many_platforms_response&) = default;
 };
 
 struct put_platform_request {
@@ -166,11 +200,15 @@ struct put_platform_request {
     static constexpr bool requires_session = true;
     platform_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_platform_request&, const put_platform_request&) = default;
 };
 
 struct put_platform_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::platform> platform;
+
+    friend bool operator==(const put_platform_response&, const put_platform_response&) = default;
 };
 
 struct put_many_platforms_request {
@@ -185,11 +223,17 @@ struct put_many_platforms_request {
     static constexpr bool requires_session = true;
     std::vector<platform_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_platforms_request&,
+                           const put_many_platforms_request&) = default;
 };
 
 struct put_many_platforms_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::platform> platforms;
+
+    friend bool operator==(const put_many_platforms_response&,
+                           const put_many_platforms_response&) = default;
 };
 
 struct delete_platform_request {
@@ -204,10 +248,16 @@ struct delete_platform_request {
     static constexpr bool requires_session = true;
     platform_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_platform_request&,
+                           const delete_platform_request&) = default;
 };
 
 struct delete_platform_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_platform_response&,
+                           const delete_platform_response&) = default;
 };
 
 struct delete_many_platforms_request {
@@ -222,10 +272,16 @@ struct delete_many_platforms_request {
     static constexpr bool requires_session = true;
     std::vector<platform_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_platforms_request&,
+                           const delete_many_platforms_request&) = default;
 };
 
 struct delete_many_platforms_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_platforms_response&,
+                           const delete_many_platforms_response&) = default;
 };
 
 struct list_platform_versions_request {
@@ -243,12 +299,18 @@ struct list_platform_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<platform_versions_filter> filter;
+
+    friend bool operator==(const list_platform_versions_request&,
+                           const list_platform_versions_request&) = default;
 };
 
 struct list_platform_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::platform> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_platform_versions_response&,
+                           const list_platform_versions_response&) = default;
 };
 
 struct get_platform_version_request {
@@ -262,11 +324,17 @@ struct get_platform_version_request {
      */
     static constexpr bool requires_session = true;
     platform_version_key key;
+
+    friend bool operator==(const get_platform_version_request&,
+                           const get_platform_version_request&) = default;
 };
 
 struct get_platform_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::platform> version;
+
+    friend bool operator==(const get_platform_version_response&,
+                           const get_platform_version_response&) = default;
 };
 
 /**

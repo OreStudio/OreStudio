@@ -43,6 +43,8 @@ namespace ores::compute::messaging {
 
 struct workunit_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const workunit_key&, const workunit_key&) = default;
 };
 
 struct workunit_write {
@@ -54,27 +56,37 @@ struct workunit_write {
     int priority;
     int target_redundancy;
     boost::uuids::uuid canonical_result_id;
+
+    friend bool operator==(const workunit_write&, const workunit_write&) = default;
 };
 
 struct workunit_change {
     workunit_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const workunit_change&, const workunit_change&) = default;
 };
 
 struct workunit_removal {
     workunit_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const workunit_removal&, const workunit_removal&) = default;
 };
 
 struct workunit_lookup {
     workunit_key key;
     std::optional<ores::compute::domain::workunit> workunit;
+
+    friend bool operator==(const workunit_lookup&, const workunit_lookup&) = default;
 };
 
 struct workunits_filter {
     std::optional<boost::uuids::uuid> batch_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> batch_id_one_of;
+
+    friend bool operator==(const workunits_filter&, const workunits_filter&) = default;
 };
 
 struct workunit_event {
@@ -84,17 +96,24 @@ struct workunit_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const workunit_event&, const workunit_event&) = default;
 };
 
 struct workunit_version_key {
     workunit_key workunit;
     std::uint32_t version;
+
+    friend bool operator==(const workunit_version_key&, const workunit_version_key&) = default;
 };
 
 struct workunit_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const workunit_versions_filter&,
+                           const workunit_versions_filter&) = default;
 };
 
 struct list_workunits_request {
@@ -112,12 +131,17 @@ struct list_workunits_request {
     ores::utility::domain::order order;
     std::optional<workunits_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_workunits_request&, const list_workunits_request&) = default;
 };
 
 struct list_workunits_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> workunits;
     std::uint64_t total;
+
+    friend bool operator==(const list_workunits_response&,
+                           const list_workunits_response&) = default;
 };
 
 struct get_workunit_request {
@@ -131,11 +155,15 @@ struct get_workunit_request {
      */
     static constexpr bool requires_session = true;
     workunit_key key;
+
+    friend bool operator==(const get_workunit_request&, const get_workunit_request&) = default;
 };
 
 struct get_workunit_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::workunit> workunit;
+
+    friend bool operator==(const get_workunit_response&, const get_workunit_response&) = default;
 };
 
 struct get_many_workunits_request {
@@ -149,11 +177,17 @@ struct get_many_workunits_request {
      */
     static constexpr bool requires_session = true;
     std::vector<workunit_key> keys;
+
+    friend bool operator==(const get_many_workunits_request&,
+                           const get_many_workunits_request&) = default;
 };
 
 struct get_many_workunits_response {
     ores::utility::domain::result result;
     std::vector<workunit_lookup> entries;
+
+    friend bool operator==(const get_many_workunits_response&,
+                           const get_many_workunits_response&) = default;
 };
 
 struct put_workunit_request {
@@ -168,11 +202,15 @@ struct put_workunit_request {
     static constexpr bool requires_session = true;
     workunit_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_workunit_request&, const put_workunit_request&) = default;
 };
 
 struct put_workunit_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::workunit> workunit;
+
+    friend bool operator==(const put_workunit_response&, const put_workunit_response&) = default;
 };
 
 struct put_many_workunits_request {
@@ -187,11 +225,17 @@ struct put_many_workunits_request {
     static constexpr bool requires_session = true;
     std::vector<workunit_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_workunits_request&,
+                           const put_many_workunits_request&) = default;
 };
 
 struct put_many_workunits_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> workunits;
+
+    friend bool operator==(const put_many_workunits_response&,
+                           const put_many_workunits_response&) = default;
 };
 
 struct delete_workunit_request {
@@ -206,10 +250,16 @@ struct delete_workunit_request {
     static constexpr bool requires_session = true;
     workunit_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_workunit_request&,
+                           const delete_workunit_request&) = default;
 };
 
 struct delete_workunit_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_workunit_response&,
+                           const delete_workunit_response&) = default;
 };
 
 struct delete_many_workunits_request {
@@ -224,10 +274,16 @@ struct delete_many_workunits_request {
     static constexpr bool requires_session = true;
     std::vector<workunit_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_workunits_request&,
+                           const delete_many_workunits_request&) = default;
 };
 
 struct delete_many_workunits_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_workunits_response&,
+                           const delete_many_workunits_response&) = default;
 };
 
 struct list_by_batch_id_workunits_request {
@@ -246,12 +302,18 @@ struct list_by_batch_id_workunits_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<workunits_filter> filter;
+
+    friend bool operator==(const list_by_batch_id_workunits_request&,
+                           const list_by_batch_id_workunits_request&) = default;
 };
 
 struct list_by_batch_id_workunits_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> workunits;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_batch_id_workunits_response&,
+                           const list_by_batch_id_workunits_response&) = default;
 };
 
 struct list_workunit_versions_request {
@@ -269,12 +331,18 @@ struct list_workunit_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<workunit_versions_filter> filter;
+
+    friend bool operator==(const list_workunit_versions_request&,
+                           const list_workunit_versions_request&) = default;
 };
 
 struct list_workunit_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_workunit_versions_response&,
+                           const list_workunit_versions_response&) = default;
 };
 
 struct get_workunit_version_request {
@@ -288,11 +356,17 @@ struct get_workunit_version_request {
      */
     static constexpr bool requires_session = true;
     workunit_version_key key;
+
+    friend bool operator==(const get_workunit_version_request&,
+                           const get_workunit_version_request&) = default;
 };
 
 struct get_workunit_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::workunit> version;
+
+    friend bool operator==(const get_workunit_version_response&,
+                           const get_workunit_version_response&) = default;
 };
 
 /**

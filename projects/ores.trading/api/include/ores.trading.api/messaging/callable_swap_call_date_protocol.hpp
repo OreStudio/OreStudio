@@ -44,6 +44,9 @@ namespace ores::trading::messaging {
 struct callable_swap_call_date_key {
     boost::uuids::uuid trade_id;
     int sequence_number;
+
+    friend bool operator==(const callable_swap_call_date_key&,
+                           const callable_swap_call_date_key&) = default;
 };
 
 struct callable_swap_call_date_write {
@@ -51,26 +54,41 @@ struct callable_swap_call_date_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day call_date;
+
+    friend bool operator==(const callable_swap_call_date_write&,
+                           const callable_swap_call_date_write&) = default;
 };
 
 struct callable_swap_call_date_change {
     callable_swap_call_date_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const callable_swap_call_date_change&,
+                           const callable_swap_call_date_change&) = default;
 };
 
 struct callable_swap_call_date_removal {
     callable_swap_call_date_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const callable_swap_call_date_removal&,
+                           const callable_swap_call_date_removal&) = default;
 };
 
 struct callable_swap_call_date_lookup {
     callable_swap_call_date_key key;
     std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
+
+    friend bool operator==(const callable_swap_call_date_lookup&,
+                           const callable_swap_call_date_lookup&) = default;
 };
 
 struct callable_swap_call_dates_filter {
     std::optional<boost::uuids::uuid> trade_id;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+
+    friend bool operator==(const callable_swap_call_dates_filter&,
+                           const callable_swap_call_dates_filter&) = default;
 };
 
 struct callable_swap_call_date_event {
@@ -80,17 +98,26 @@ struct callable_swap_call_date_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const callable_swap_call_date_event&,
+                           const callable_swap_call_date_event&) = default;
 };
 
 struct callable_swap_call_date_version_key {
     callable_swap_call_date_key callable_swap_call_date;
     std::uint32_t version;
+
+    friend bool operator==(const callable_swap_call_date_version_key&,
+                           const callable_swap_call_date_version_key&) = default;
 };
 
 struct callable_swap_call_date_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const callable_swap_call_date_versions_filter&,
+                           const callable_swap_call_date_versions_filter&) = default;
 };
 
 struct list_callable_swap_call_dates_request {
@@ -108,12 +135,18 @@ struct list_callable_swap_call_dates_request {
     ores::utility::domain::order order;
     std::optional<callable_swap_call_dates_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_callable_swap_call_dates_request&,
+                           const list_callable_swap_call_dates_request&) = default;
 };
 
 struct list_callable_swap_call_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_callable_swap_call_dates_response&,
+                           const list_callable_swap_call_dates_response&) = default;
 };
 
 struct get_callable_swap_call_date_request {
@@ -127,11 +160,17 @@ struct get_callable_swap_call_date_request {
      */
     static constexpr bool requires_session = true;
     callable_swap_call_date_key key;
+
+    friend bool operator==(const get_callable_swap_call_date_request&,
+                           const get_callable_swap_call_date_request&) = default;
 };
 
 struct get_callable_swap_call_date_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
+
+    friend bool operator==(const get_callable_swap_call_date_response&,
+                           const get_callable_swap_call_date_response&) = default;
 };
 
 struct get_many_callable_swap_call_dates_request {
@@ -145,11 +184,17 @@ struct get_many_callable_swap_call_dates_request {
      */
     static constexpr bool requires_session = true;
     std::vector<callable_swap_call_date_key> keys;
+
+    friend bool operator==(const get_many_callable_swap_call_dates_request&,
+                           const get_many_callable_swap_call_dates_request&) = default;
 };
 
 struct get_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
     std::vector<callable_swap_call_date_lookup> entries;
+
+    friend bool operator==(const get_many_callable_swap_call_dates_response&,
+                           const get_many_callable_swap_call_dates_response&) = default;
 };
 
 struct put_callable_swap_call_date_request {
@@ -164,11 +209,17 @@ struct put_callable_swap_call_date_request {
     static constexpr bool requires_session = true;
     callable_swap_call_date_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_callable_swap_call_date_request&,
+                           const put_callable_swap_call_date_request&) = default;
 };
 
 struct put_callable_swap_call_date_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::callable_swap_call_date> callable_swap_call_date;
+
+    friend bool operator==(const put_callable_swap_call_date_response&,
+                           const put_callable_swap_call_date_response&) = default;
 };
 
 struct put_many_callable_swap_call_dates_request {
@@ -183,11 +234,17 @@ struct put_many_callable_swap_call_dates_request {
     static constexpr bool requires_session = true;
     std::vector<callable_swap_call_date_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_callable_swap_call_dates_request&,
+                           const put_many_callable_swap_call_dates_request&) = default;
 };
 
 struct put_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
+
+    friend bool operator==(const put_many_callable_swap_call_dates_response&,
+                           const put_many_callable_swap_call_dates_response&) = default;
 };
 
 struct delete_callable_swap_call_date_request {
@@ -202,10 +259,16 @@ struct delete_callable_swap_call_date_request {
     static constexpr bool requires_session = true;
     callable_swap_call_date_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_callable_swap_call_date_request&,
+                           const delete_callable_swap_call_date_request&) = default;
 };
 
 struct delete_callable_swap_call_date_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_callable_swap_call_date_response&,
+                           const delete_callable_swap_call_date_response&) = default;
 };
 
 struct delete_many_callable_swap_call_dates_request {
@@ -221,10 +284,16 @@ struct delete_many_callable_swap_call_dates_request {
     static constexpr bool requires_session = true;
     std::vector<callable_swap_call_date_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_callable_swap_call_dates_request&,
+                           const delete_many_callable_swap_call_dates_request&) = default;
 };
 
 struct delete_many_callable_swap_call_dates_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_callable_swap_call_dates_response&,
+                           const delete_many_callable_swap_call_dates_response&) = default;
 };
 
 struct list_by_trade_id_callable_swap_call_dates_request {
@@ -244,12 +313,18 @@ struct list_by_trade_id_callable_swap_call_dates_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<callable_swap_call_dates_filter> filter;
+
+    friend bool operator==(const list_by_trade_id_callable_swap_call_dates_request&,
+                           const list_by_trade_id_callable_swap_call_dates_request&) = default;
 };
 
 struct list_by_trade_id_callable_swap_call_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::callable_swap_call_date> callable_swap_call_dates;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_trade_id_callable_swap_call_dates_response&,
+                           const list_by_trade_id_callable_swap_call_dates_response&) = default;
 };
 
 struct list_callable_swap_call_date_versions_request {
@@ -268,12 +343,18 @@ struct list_callable_swap_call_date_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<callable_swap_call_date_versions_filter> filter;
+
+    friend bool operator==(const list_callable_swap_call_date_versions_request&,
+                           const list_callable_swap_call_date_versions_request&) = default;
 };
 
 struct list_callable_swap_call_date_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::callable_swap_call_date> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_callable_swap_call_date_versions_response&,
+                           const list_callable_swap_call_date_versions_response&) = default;
 };
 
 struct get_callable_swap_call_date_version_request {
@@ -288,11 +369,17 @@ struct get_callable_swap_call_date_version_request {
      */
     static constexpr bool requires_session = true;
     callable_swap_call_date_version_key key;
+
+    friend bool operator==(const get_callable_swap_call_date_version_request&,
+                           const get_callable_swap_call_date_version_request&) = default;
 };
 
 struct get_callable_swap_call_date_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::callable_swap_call_date> version;
+
+    friend bool operator==(const get_callable_swap_call_date_version_response&,
+                           const get_callable_swap_call_date_version_response&) = default;
 };
 
 /**

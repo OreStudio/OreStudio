@@ -43,6 +43,9 @@ namespace ores::refdata::messaging {
 
 struct ir_curve_bootstrap_pillar_key {
     boost::uuids::uuid id;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_key&,
+                           const ir_curve_bootstrap_pillar_key&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_write {
@@ -54,27 +57,42 @@ struct ir_curve_bootstrap_pillar_write {
     std::string end_tenor_code;
     std::string curve_role_code;
     boost::uuids::uuid market_series_id;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_write&,
+                           const ir_curve_bootstrap_pillar_write&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_change {
     ir_curve_bootstrap_pillar_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_change&,
+                           const ir_curve_bootstrap_pillar_change&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_removal {
     ir_curve_bootstrap_pillar_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_removal&,
+                           const ir_curve_bootstrap_pillar_removal&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_lookup {
     ir_curve_bootstrap_pillar_key key;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> ir_curve_bootstrap_pillar;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_lookup&,
+                           const ir_curve_bootstrap_pillar_lookup&) = default;
 };
 
 struct ir_curve_bootstrap_pillars_filter {
     std::optional<boost::uuids::uuid> bootstrap_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> bootstrap_config_id_one_of;
+
+    friend bool operator==(const ir_curve_bootstrap_pillars_filter&,
+                           const ir_curve_bootstrap_pillars_filter&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_event {
@@ -84,17 +102,26 @@ struct ir_curve_bootstrap_pillar_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_event&,
+                           const ir_curve_bootstrap_pillar_event&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_version_key {
     ir_curve_bootstrap_pillar_key ir_curve_bootstrap_pillar;
     std::uint32_t version;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_version_key&,
+                           const ir_curve_bootstrap_pillar_version_key&) = default;
 };
 
 struct ir_curve_bootstrap_pillar_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const ir_curve_bootstrap_pillar_versions_filter&,
+                           const ir_curve_bootstrap_pillar_versions_filter&) = default;
 };
 
 struct list_ir_curve_bootstrap_pillars_request {
@@ -112,12 +139,18 @@ struct list_ir_curve_bootstrap_pillars_request {
     ores::utility::domain::order order;
     std::optional<ir_curve_bootstrap_pillars_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_ir_curve_bootstrap_pillars_request&,
+                           const list_ir_curve_bootstrap_pillars_request&) = default;
 };
 
 struct list_ir_curve_bootstrap_pillars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
     std::uint64_t total;
+
+    friend bool operator==(const list_ir_curve_bootstrap_pillars_response&,
+                           const list_ir_curve_bootstrap_pillars_response&) = default;
 };
 
 struct get_ir_curve_bootstrap_pillar_request {
@@ -131,11 +164,17 @@ struct get_ir_curve_bootstrap_pillar_request {
      */
     static constexpr bool requires_session = true;
     ir_curve_bootstrap_pillar_key key;
+
+    friend bool operator==(const get_ir_curve_bootstrap_pillar_request&,
+                           const get_ir_curve_bootstrap_pillar_request&) = default;
 };
 
 struct get_ir_curve_bootstrap_pillar_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> ir_curve_bootstrap_pillar;
+
+    friend bool operator==(const get_ir_curve_bootstrap_pillar_response&,
+                           const get_ir_curve_bootstrap_pillar_response&) = default;
 };
 
 struct get_many_ir_curve_bootstrap_pillars_request {
@@ -150,11 +189,17 @@ struct get_many_ir_curve_bootstrap_pillars_request {
      */
     static constexpr bool requires_session = true;
     std::vector<ir_curve_bootstrap_pillar_key> keys;
+
+    friend bool operator==(const get_many_ir_curve_bootstrap_pillars_request&,
+                           const get_many_ir_curve_bootstrap_pillars_request&) = default;
 };
 
 struct get_many_ir_curve_bootstrap_pillars_response {
     ores::utility::domain::result result;
     std::vector<ir_curve_bootstrap_pillar_lookup> entries;
+
+    friend bool operator==(const get_many_ir_curve_bootstrap_pillars_response&,
+                           const get_many_ir_curve_bootstrap_pillars_response&) = default;
 };
 
 struct put_ir_curve_bootstrap_pillar_request {
@@ -169,11 +214,17 @@ struct put_ir_curve_bootstrap_pillar_request {
     static constexpr bool requires_session = true;
     ir_curve_bootstrap_pillar_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_ir_curve_bootstrap_pillar_request&,
+                           const put_ir_curve_bootstrap_pillar_request&) = default;
 };
 
 struct put_ir_curve_bootstrap_pillar_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> ir_curve_bootstrap_pillar;
+
+    friend bool operator==(const put_ir_curve_bootstrap_pillar_response&,
+                           const put_ir_curve_bootstrap_pillar_response&) = default;
 };
 
 struct put_many_ir_curve_bootstrap_pillars_request {
@@ -189,11 +240,17 @@ struct put_many_ir_curve_bootstrap_pillars_request {
     static constexpr bool requires_session = true;
     std::vector<ir_curve_bootstrap_pillar_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_ir_curve_bootstrap_pillars_request&,
+                           const put_many_ir_curve_bootstrap_pillars_request&) = default;
 };
 
 struct put_many_ir_curve_bootstrap_pillars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
+
+    friend bool operator==(const put_many_ir_curve_bootstrap_pillars_response&,
+                           const put_many_ir_curve_bootstrap_pillars_response&) = default;
 };
 
 struct delete_ir_curve_bootstrap_pillar_request {
@@ -208,10 +265,16 @@ struct delete_ir_curve_bootstrap_pillar_request {
     static constexpr bool requires_session = true;
     ir_curve_bootstrap_pillar_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_ir_curve_bootstrap_pillar_request&,
+                           const delete_ir_curve_bootstrap_pillar_request&) = default;
 };
 
 struct delete_ir_curve_bootstrap_pillar_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_ir_curve_bootstrap_pillar_response&,
+                           const delete_ir_curve_bootstrap_pillar_response&) = default;
 };
 
 struct delete_many_ir_curve_bootstrap_pillars_request {
@@ -227,10 +290,16 @@ struct delete_many_ir_curve_bootstrap_pillars_request {
     static constexpr bool requires_session = true;
     std::vector<ir_curve_bootstrap_pillar_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_ir_curve_bootstrap_pillars_request&,
+                           const delete_many_ir_curve_bootstrap_pillars_request&) = default;
 };
 
 struct delete_many_ir_curve_bootstrap_pillars_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_ir_curve_bootstrap_pillars_response&,
+                           const delete_many_ir_curve_bootstrap_pillars_response&) = default;
 };
 
 struct list_ir_curve_bootstrap_pillar_versions_request {
@@ -249,12 +318,18 @@ struct list_ir_curve_bootstrap_pillar_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ir_curve_bootstrap_pillar_versions_filter> filter;
+
+    friend bool operator==(const list_ir_curve_bootstrap_pillar_versions_request&,
+                           const list_ir_curve_bootstrap_pillar_versions_request&) = default;
 };
 
 struct list_ir_curve_bootstrap_pillar_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_ir_curve_bootstrap_pillar_versions_response&,
+                           const list_ir_curve_bootstrap_pillar_versions_response&) = default;
 };
 
 struct get_ir_curve_bootstrap_pillar_version_request {
@@ -269,11 +344,17 @@ struct get_ir_curve_bootstrap_pillar_version_request {
      */
     static constexpr bool requires_session = true;
     ir_curve_bootstrap_pillar_version_key key;
+
+    friend bool operator==(const get_ir_curve_bootstrap_pillar_version_request&,
+                           const get_ir_curve_bootstrap_pillar_version_request&) = default;
 };
 
 struct get_ir_curve_bootstrap_pillar_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> version;
+
+    friend bool operator==(const get_ir_curve_bootstrap_pillar_version_response&,
+                           const get_ir_curve_bootstrap_pillar_version_response&) = default;
 };
 
 /**

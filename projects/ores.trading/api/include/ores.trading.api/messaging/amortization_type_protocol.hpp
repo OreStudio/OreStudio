@@ -43,30 +43,47 @@ namespace ores::trading::messaging {
 
 struct amortization_type_key {
     std::string code;
+
+    friend bool operator==(const amortization_type_key&, const amortization_type_key&) = default;
 };
 
 struct amortization_type_write {
     std::string code;
     std::string description;
+
+    friend bool operator==(const amortization_type_write&,
+                           const amortization_type_write&) = default;
 };
 
 struct amortization_type_change {
     amortization_type_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const amortization_type_change&,
+                           const amortization_type_change&) = default;
 };
 
 struct amortization_type_removal {
     amortization_type_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const amortization_type_removal&,
+                           const amortization_type_removal&) = default;
 };
 
 struct amortization_type_lookup {
     amortization_type_key key;
     std::optional<ores::trading::domain::amortization_type> amortization_type;
+
+    friend bool operator==(const amortization_type_lookup&,
+                           const amortization_type_lookup&) = default;
 };
 
 struct amortization_types_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const amortization_types_filter&,
+                           const amortization_types_filter&) = default;
 };
 
 struct amortization_type_event {
@@ -76,17 +93,26 @@ struct amortization_type_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const amortization_type_event&,
+                           const amortization_type_event&) = default;
 };
 
 struct amortization_type_version_key {
     amortization_type_key amortization_type;
     std::uint32_t version;
+
+    friend bool operator==(const amortization_type_version_key&,
+                           const amortization_type_version_key&) = default;
 };
 
 struct amortization_type_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const amortization_type_versions_filter&,
+                           const amortization_type_versions_filter&) = default;
 };
 
 struct list_amortization_types_request {
@@ -104,12 +130,18 @@ struct list_amortization_types_request {
     ores::utility::domain::order order;
     std::optional<amortization_types_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_amortization_types_request&,
+                           const list_amortization_types_request&) = default;
 };
 
 struct list_amortization_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::amortization_type> amortization_types;
     std::uint64_t total;
+
+    friend bool operator==(const list_amortization_types_response&,
+                           const list_amortization_types_response&) = default;
 };
 
 struct get_amortization_type_request {
@@ -123,11 +155,17 @@ struct get_amortization_type_request {
      */
     static constexpr bool requires_session = true;
     amortization_type_key key;
+
+    friend bool operator==(const get_amortization_type_request&,
+                           const get_amortization_type_request&) = default;
 };
 
 struct get_amortization_type_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::amortization_type> amortization_type;
+
+    friend bool operator==(const get_amortization_type_response&,
+                           const get_amortization_type_response&) = default;
 };
 
 struct get_many_amortization_types_request {
@@ -141,11 +179,17 @@ struct get_many_amortization_types_request {
      */
     static constexpr bool requires_session = true;
     std::vector<amortization_type_key> keys;
+
+    friend bool operator==(const get_many_amortization_types_request&,
+                           const get_many_amortization_types_request&) = default;
 };
 
 struct get_many_amortization_types_response {
     ores::utility::domain::result result;
     std::vector<amortization_type_lookup> entries;
+
+    friend bool operator==(const get_many_amortization_types_response&,
+                           const get_many_amortization_types_response&) = default;
 };
 
 struct put_amortization_type_request {
@@ -160,11 +204,17 @@ struct put_amortization_type_request {
     static constexpr bool requires_session = true;
     amortization_type_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_amortization_type_request&,
+                           const put_amortization_type_request&) = default;
 };
 
 struct put_amortization_type_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::amortization_type> amortization_type;
+
+    friend bool operator==(const put_amortization_type_response&,
+                           const put_amortization_type_response&) = default;
 };
 
 struct put_many_amortization_types_request {
@@ -179,11 +229,17 @@ struct put_many_amortization_types_request {
     static constexpr bool requires_session = true;
     std::vector<amortization_type_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_amortization_types_request&,
+                           const put_many_amortization_types_request&) = default;
 };
 
 struct put_many_amortization_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::amortization_type> amortization_types;
+
+    friend bool operator==(const put_many_amortization_types_response&,
+                           const put_many_amortization_types_response&) = default;
 };
 
 struct delete_amortization_type_request {
@@ -198,10 +254,16 @@ struct delete_amortization_type_request {
     static constexpr bool requires_session = true;
     amortization_type_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_amortization_type_request&,
+                           const delete_amortization_type_request&) = default;
 };
 
 struct delete_amortization_type_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_amortization_type_response&,
+                           const delete_amortization_type_response&) = default;
 };
 
 struct delete_many_amortization_types_request {
@@ -216,10 +278,16 @@ struct delete_many_amortization_types_request {
     static constexpr bool requires_session = true;
     std::vector<amortization_type_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_amortization_types_request&,
+                           const delete_many_amortization_types_request&) = default;
 };
 
 struct delete_many_amortization_types_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_amortization_types_response&,
+                           const delete_many_amortization_types_response&) = default;
 };
 
 struct list_amortization_type_versions_request {
@@ -237,12 +305,18 @@ struct list_amortization_type_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<amortization_type_versions_filter> filter;
+
+    friend bool operator==(const list_amortization_type_versions_request&,
+                           const list_amortization_type_versions_request&) = default;
 };
 
 struct list_amortization_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::amortization_type> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_amortization_type_versions_response&,
+                           const list_amortization_type_versions_response&) = default;
 };
 
 struct get_amortization_type_version_request {
@@ -256,11 +330,17 @@ struct get_amortization_type_version_request {
      */
     static constexpr bool requires_session = true;
     amortization_type_version_key key;
+
+    friend bool operator==(const get_amortization_type_version_request&,
+                           const get_amortization_type_version_request&) = default;
 };
 
 struct get_amortization_type_version_response {
     ores::utility::domain::result result;
     std::optional<ores::trading::domain::amortization_type> version;
+
+    friend bool operator==(const get_amortization_type_version_response&,
+                           const get_amortization_type_version_response&) = default;
 };
 
 /**

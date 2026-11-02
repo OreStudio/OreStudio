@@ -43,15 +43,24 @@ namespace ores::inbox::messaging {
 
 struct delivery_outcome_type_key {
     std::string code;
+
+    friend bool operator==(const delivery_outcome_type_key&,
+                           const delivery_outcome_type_key&) = default;
 };
 
 struct delivery_outcome_type_lookup {
     delivery_outcome_type_key key;
     std::optional<ores::inbox::domain::delivery_outcome_type> delivery_outcome_type;
+
+    friend bool operator==(const delivery_outcome_type_lookup&,
+                           const delivery_outcome_type_lookup&) = default;
 };
 
 struct delivery_outcome_types_filter {
     std::optional<std::vector<std::string>> code_one_of;
+
+    friend bool operator==(const delivery_outcome_types_filter&,
+                           const delivery_outcome_types_filter&) = default;
 };
 
 struct delivery_outcome_type_event {
@@ -61,6 +70,9 @@ struct delivery_outcome_type_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const delivery_outcome_type_event&,
+                           const delivery_outcome_type_event&) = default;
 };
 
 struct list_delivery_outcome_types_request {
@@ -77,12 +89,18 @@ struct list_delivery_outcome_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<delivery_outcome_types_filter> filter;
+
+    friend bool operator==(const list_delivery_outcome_types_request&,
+                           const list_delivery_outcome_types_request&) = default;
 };
 
 struct list_delivery_outcome_types_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::delivery_outcome_type> delivery_outcome_types;
     std::uint64_t total;
+
+    friend bool operator==(const list_delivery_outcome_types_response&,
+                           const list_delivery_outcome_types_response&) = default;
 };
 
 struct get_delivery_outcome_type_request {
@@ -96,11 +114,17 @@ struct get_delivery_outcome_type_request {
      */
     static constexpr bool requires_session = true;
     delivery_outcome_type_key key;
+
+    friend bool operator==(const get_delivery_outcome_type_request&,
+                           const get_delivery_outcome_type_request&) = default;
 };
 
 struct get_delivery_outcome_type_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::delivery_outcome_type> delivery_outcome_type;
+
+    friend bool operator==(const get_delivery_outcome_type_response&,
+                           const get_delivery_outcome_type_response&) = default;
 };
 
 struct get_many_delivery_outcome_types_request {
@@ -114,11 +138,17 @@ struct get_many_delivery_outcome_types_request {
      */
     static constexpr bool requires_session = true;
     std::vector<delivery_outcome_type_key> keys;
+
+    friend bool operator==(const get_many_delivery_outcome_types_request&,
+                           const get_many_delivery_outcome_types_request&) = default;
 };
 
 struct get_many_delivery_outcome_types_response {
     ores::utility::domain::result result;
     std::vector<delivery_outcome_type_lookup> entries;
+
+    friend bool operator==(const get_many_delivery_outcome_types_response&,
+                           const get_many_delivery_outcome_types_response&) = default;
 };
 
 /**

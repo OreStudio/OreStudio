@@ -43,27 +43,37 @@ namespace ores::compute::messaging {
 
 struct batch_key {
     std::string external_ref;
+
+    friend bool operator==(const batch_key&, const batch_key&) = default;
 };
 
 struct batch_write {
     boost::uuids::uuid id;
     std::string external_ref;
     std::string status;
+
+    friend bool operator==(const batch_write&, const batch_write&) = default;
 };
 
 struct batch_change {
     batch_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const batch_change&, const batch_change&) = default;
 };
 
 struct batch_removal {
     batch_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const batch_removal&, const batch_removal&) = default;
 };
 
 struct batch_lookup {
     batch_key key;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const batch_lookup&, const batch_lookup&) = default;
 };
 
 struct batches_filter {
@@ -73,6 +83,8 @@ struct batches_filter {
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> status_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const batches_filter&, const batches_filter&) = default;
 };
 
 struct batch_event {
@@ -82,17 +94,23 @@ struct batch_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const batch_event&, const batch_event&) = default;
 };
 
 struct batch_version_key {
     batch_key batch;
     std::uint32_t version;
+
+    friend bool operator==(const batch_version_key&, const batch_version_key&) = default;
 };
 
 struct batch_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const batch_versions_filter&, const batch_versions_filter&) = default;
 };
 
 struct list_batches_request {
@@ -110,12 +128,16 @@ struct list_batches_request {
     ores::utility::domain::order order;
     std::optional<batches_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_batches_request&, const list_batches_request&) = default;
 };
 
 struct list_batches_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
     std::uint64_t total;
+
+    friend bool operator==(const list_batches_response&, const list_batches_response&) = default;
 };
 
 struct get_batch_request {
@@ -129,11 +151,15 @@ struct get_batch_request {
      */
     static constexpr bool requires_session = true;
     batch_key key;
+
+    friend bool operator==(const get_batch_request&, const get_batch_request&) = default;
 };
 
 struct get_batch_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const get_batch_response&, const get_batch_response&) = default;
 };
 
 struct get_many_batches_request {
@@ -147,11 +173,17 @@ struct get_many_batches_request {
      */
     static constexpr bool requires_session = true;
     std::vector<batch_key> keys;
+
+    friend bool operator==(const get_many_batches_request&,
+                           const get_many_batches_request&) = default;
 };
 
 struct get_many_batches_response {
     ores::utility::domain::result result;
     std::vector<batch_lookup> entries;
+
+    friend bool operator==(const get_many_batches_response&,
+                           const get_many_batches_response&) = default;
 };
 
 struct put_batch_request {
@@ -166,11 +198,15 @@ struct put_batch_request {
     static constexpr bool requires_session = true;
     batch_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_batch_request&, const put_batch_request&) = default;
 };
 
 struct put_batch_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> batch;
+
+    friend bool operator==(const put_batch_response&, const put_batch_response&) = default;
 };
 
 struct put_many_batches_request {
@@ -185,11 +221,17 @@ struct put_many_batches_request {
     static constexpr bool requires_session = true;
     std::vector<batch_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_batches_request&,
+                           const put_many_batches_request&) = default;
 };
 
 struct put_many_batches_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
+
+    friend bool operator==(const put_many_batches_response&,
+                           const put_many_batches_response&) = default;
 };
 
 struct delete_batch_request {
@@ -204,10 +246,14 @@ struct delete_batch_request {
     static constexpr bool requires_session = true;
     batch_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_batch_request&, const delete_batch_request&) = default;
 };
 
 struct delete_batch_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_batch_response&, const delete_batch_response&) = default;
 };
 
 struct delete_many_batches_request {
@@ -222,10 +268,16 @@ struct delete_many_batches_request {
     static constexpr bool requires_session = true;
     std::vector<batch_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_batches_request&,
+                           const delete_many_batches_request&) = default;
 };
 
 struct delete_many_batches_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_batches_response&,
+                           const delete_many_batches_response&) = default;
 };
 
 struct list_batch_versions_request {
@@ -243,12 +295,18 @@ struct list_batch_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<batch_versions_filter> filter;
+
+    friend bool operator==(const list_batch_versions_request&,
+                           const list_batch_versions_request&) = default;
 };
 
 struct list_batch_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_batch_versions_response&,
+                           const list_batch_versions_response&) = default;
 };
 
 struct get_batch_version_request {
@@ -262,11 +320,17 @@ struct get_batch_version_request {
      */
     static constexpr bool requires_session = true;
     batch_version_key key;
+
+    friend bool operator==(const get_batch_version_request&,
+                           const get_batch_version_request&) = default;
 };
 
 struct get_batch_version_response {
     ores::utility::domain::result result;
     std::optional<ores::compute::domain::batch> version;
+
+    friend bool operator==(const get_batch_version_response&,
+                           const get_batch_version_response&) = default;
 };
 
 /**

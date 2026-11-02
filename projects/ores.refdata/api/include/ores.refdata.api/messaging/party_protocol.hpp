@@ -45,6 +45,8 @@ namespace ores::refdata::messaging {
 
 struct party_key {
     std::string short_code;
+
+    friend bool operator==(const party_key&, const party_key&) = default;
 };
 
 struct party_write {
@@ -60,26 +62,36 @@ struct party_write {
     std::string status;
     std::optional<boost::uuids::uuid> image_id;
     bool is_registration_default;
+
+    friend bool operator==(const party_write&, const party_write&) = default;
 };
 
 struct party_change {
     party_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const party_change&, const party_change&) = default;
 };
 
 struct party_removal {
     party_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const party_removal&, const party_removal&) = default;
 };
 
 struct party_lookup {
     party_key key;
     std::optional<ores::refdata::domain::party> party;
+
+    friend bool operator==(const party_lookup&, const party_lookup&) = default;
 };
 
 struct parties_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const parties_filter&, const parties_filter&) = default;
 };
 
 struct party_event {
@@ -89,17 +101,23 @@ struct party_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const party_event&, const party_event&) = default;
 };
 
 struct party_version_key {
     party_key party;
     std::uint32_t version;
+
+    friend bool operator==(const party_version_key&, const party_version_key&) = default;
 };
 
 struct party_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const party_versions_filter&, const party_versions_filter&) = default;
 };
 
 struct list_parties_request {
@@ -117,12 +135,16 @@ struct list_parties_request {
     ores::utility::domain::order order;
     std::optional<parties_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_parties_request&, const list_parties_request&) = default;
 };
 
 struct list_parties_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party> parties;
     std::uint64_t total;
+
+    friend bool operator==(const list_parties_response&, const list_parties_response&) = default;
 };
 
 struct get_party_request {
@@ -136,11 +158,15 @@ struct get_party_request {
      */
     static constexpr bool requires_session = true;
     party_key key;
+
+    friend bool operator==(const get_party_request&, const get_party_request&) = default;
 };
 
 struct get_party_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party> party;
+
+    friend bool operator==(const get_party_response&, const get_party_response&) = default;
 };
 
 struct get_many_parties_request {
@@ -154,11 +180,17 @@ struct get_many_parties_request {
      */
     static constexpr bool requires_session = true;
     std::vector<party_key> keys;
+
+    friend bool operator==(const get_many_parties_request&,
+                           const get_many_parties_request&) = default;
 };
 
 struct get_many_parties_response {
     ores::utility::domain::result result;
     std::vector<party_lookup> entries;
+
+    friend bool operator==(const get_many_parties_response&,
+                           const get_many_parties_response&) = default;
 };
 
 struct put_party_request {
@@ -173,11 +205,15 @@ struct put_party_request {
     static constexpr bool requires_session = true;
     party_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_party_request&, const put_party_request&) = default;
 };
 
 struct put_party_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party> party;
+
+    friend bool operator==(const put_party_response&, const put_party_response&) = default;
 };
 
 struct put_many_parties_request {
@@ -192,11 +228,17 @@ struct put_many_parties_request {
     static constexpr bool requires_session = true;
     std::vector<party_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_parties_request&,
+                           const put_many_parties_request&) = default;
 };
 
 struct put_many_parties_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party> parties;
+
+    friend bool operator==(const put_many_parties_response&,
+                           const put_many_parties_response&) = default;
 };
 
 struct delete_party_request {
@@ -211,10 +253,14 @@ struct delete_party_request {
     static constexpr bool requires_session = true;
     party_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_party_request&, const delete_party_request&) = default;
 };
 
 struct delete_party_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_party_response&, const delete_party_response&) = default;
 };
 
 struct delete_many_parties_request {
@@ -229,10 +275,16 @@ struct delete_many_parties_request {
     static constexpr bool requires_session = true;
     std::vector<party_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_parties_request&,
+                           const delete_many_parties_request&) = default;
 };
 
 struct delete_many_parties_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_parties_response&,
+                           const delete_many_parties_response&) = default;
 };
 
 struct list_party_versions_request {
@@ -250,12 +302,18 @@ struct list_party_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_versions_filter> filter;
+
+    friend bool operator==(const list_party_versions_request&,
+                           const list_party_versions_request&) = default;
 };
 
 struct list_party_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_party_versions_response&,
+                           const list_party_versions_response&) = default;
 };
 
 struct get_party_version_request {
@@ -269,11 +327,17 @@ struct get_party_version_request {
      */
     static constexpr bool requires_session = true;
     party_version_key key;
+
+    friend bool operator==(const get_party_version_request&,
+                           const get_party_version_request&) = default;
 };
 
 struct get_party_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::party> version;
+
+    friend bool operator==(const get_party_version_response&,
+                           const get_party_version_response&) = default;
 };
 
 /**
@@ -294,6 +358,9 @@ struct get_party_composite_as_of_request {
     static constexpr bool requires_session = true;
     boost::uuids::uuid id;
     int version = 0;
+
+    friend bool operator==(const get_party_composite_as_of_request&,
+                           const get_party_composite_as_of_request&) = default;
 };
 
 struct get_party_composite_as_of_response {
@@ -302,6 +369,9 @@ struct get_party_composite_as_of_response {
     ores::refdata::domain::party party;
     std::vector<ores::refdata::domain::party_identifier> identifiers;
     std::vector<ores::refdata::domain::party_contact_information> contacts;
+
+    friend bool operator==(const get_party_composite_as_of_response&,
+                           const get_party_composite_as_of_response&) = default;
 };
 
 /**
@@ -322,11 +392,17 @@ struct put_party_composite_request {
     ores::refdata::domain::party party;
     std::vector<ores::refdata::domain::party_identifier> identifiers;
     std::vector<ores::refdata::domain::party_contact_information> contacts;
+
+    friend bool operator==(const put_party_composite_request&,
+                           const put_party_composite_request&) = default;
 };
 
 struct put_party_composite_response {
     ores::utility::domain::result result;
     ores::refdata::domain::party party;
+
+    friend bool operator==(const put_party_composite_response&,
+                           const put_party_composite_response&) = default;
 };
 
 /**

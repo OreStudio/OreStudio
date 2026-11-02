@@ -44,32 +44,50 @@ namespace ores::reporting::messaging {
 struct report_type_configuration_type_key {
     std::string report_type_code;
     std::string configuration_type_code;
+
+    friend bool operator==(const report_type_configuration_type_key&,
+                           const report_type_configuration_type_key&) = default;
 };
 
 struct report_type_configuration_type_write {
     std::string report_type_code;
     std::string configuration_type_code;
+
+    friend bool operator==(const report_type_configuration_type_write&,
+                           const report_type_configuration_type_write&) = default;
 };
 
 struct report_type_configuration_type_change {
     report_type_configuration_type_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const report_type_configuration_type_change&,
+                           const report_type_configuration_type_change&) = default;
 };
 
 struct report_type_configuration_type_removal {
     report_type_configuration_type_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const report_type_configuration_type_removal&,
+                           const report_type_configuration_type_removal&) = default;
 };
 
 struct report_type_configuration_type_lookup {
     report_type_configuration_type_key key;
     std::optional<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_type;
+
+    friend bool operator==(const report_type_configuration_type_lookup&,
+                           const report_type_configuration_type_lookup&) = default;
 };
 
 struct report_type_configuration_types_filter {
     std::optional<std::string> report_type_code;
     std::optional<std::vector<std::string>> report_type_code_one_of;
+
+    friend bool operator==(const report_type_configuration_types_filter&,
+                           const report_type_configuration_types_filter&) = default;
 };
 
 struct list_report_type_configuration_types_request {
@@ -87,6 +105,9 @@ struct list_report_type_configuration_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_type_configuration_types_filter> filter;
+
+    friend bool operator==(const list_report_type_configuration_types_request&,
+                           const list_report_type_configuration_types_request&) = default;
 };
 
 struct list_report_type_configuration_types_response {
@@ -94,6 +115,9 @@ struct list_report_type_configuration_types_response {
     std::vector<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_types;
     std::uint64_t total;
+
+    friend bool operator==(const list_report_type_configuration_types_response&,
+                           const list_report_type_configuration_types_response&) = default;
 };
 
 struct get_report_type_configuration_type_request {
@@ -108,12 +132,18 @@ struct get_report_type_configuration_type_request {
      */
     static constexpr bool requires_session = true;
     report_type_configuration_type_key key;
+
+    friend bool operator==(const get_report_type_configuration_type_request&,
+                           const get_report_type_configuration_type_request&) = default;
 };
 
 struct get_report_type_configuration_type_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_type;
+
+    friend bool operator==(const get_report_type_configuration_type_response&,
+                           const get_report_type_configuration_type_response&) = default;
 };
 
 struct get_many_report_type_configuration_types_request {
@@ -128,11 +158,17 @@ struct get_many_report_type_configuration_types_request {
      */
     static constexpr bool requires_session = true;
     std::vector<report_type_configuration_type_key> keys;
+
+    friend bool operator==(const get_many_report_type_configuration_types_request&,
+                           const get_many_report_type_configuration_types_request&) = default;
 };
 
 struct get_many_report_type_configuration_types_response {
     ores::utility::domain::result result;
     std::vector<report_type_configuration_type_lookup> entries;
+
+    friend bool operator==(const get_many_report_type_configuration_types_response&,
+                           const get_many_report_type_configuration_types_response&) = default;
 };
 
 struct put_report_type_configuration_type_request {
@@ -148,12 +184,18 @@ struct put_report_type_configuration_type_request {
     static constexpr bool requires_session = true;
     report_type_configuration_type_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_report_type_configuration_type_request&,
+                           const put_report_type_configuration_type_request&) = default;
 };
 
 struct put_report_type_configuration_type_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_type;
+
+    friend bool operator==(const put_report_type_configuration_type_response&,
+                           const put_report_type_configuration_type_response&) = default;
 };
 
 struct put_many_report_type_configuration_types_request {
@@ -169,12 +211,18 @@ struct put_many_report_type_configuration_types_request {
     static constexpr bool requires_session = true;
     std::vector<report_type_configuration_type_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_report_type_configuration_types_request&,
+                           const put_many_report_type_configuration_types_request&) = default;
 };
 
 struct put_many_report_type_configuration_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_types;
+
+    friend bool operator==(const put_many_report_type_configuration_types_response&,
+                           const put_many_report_type_configuration_types_response&) = default;
 };
 
 struct delete_report_type_configuration_type_request {
@@ -190,10 +238,16 @@ struct delete_report_type_configuration_type_request {
     static constexpr bool requires_session = true;
     report_type_configuration_type_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_report_type_configuration_type_request&,
+                           const delete_report_type_configuration_type_request&) = default;
 };
 
 struct delete_report_type_configuration_type_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_report_type_configuration_type_response&,
+                           const delete_report_type_configuration_type_response&) = default;
 };
 
 struct delete_many_report_type_configuration_types_request {
@@ -209,10 +263,16 @@ struct delete_many_report_type_configuration_types_request {
     static constexpr bool requires_session = true;
     std::vector<report_type_configuration_type_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_report_type_configuration_types_request&,
+                           const delete_many_report_type_configuration_types_request&) = default;
 };
 
 struct delete_many_report_type_configuration_types_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_report_type_configuration_types_response&,
+                           const delete_many_report_type_configuration_types_response&) = default;
 };
 
 struct list_by_report_type_code_report_type_configuration_types_request {
@@ -232,6 +292,10 @@ struct list_by_report_type_code_report_type_configuration_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_type_configuration_types_filter> filter;
+
+    friend bool
+    operator==(const list_by_report_type_code_report_type_configuration_types_request&,
+               const list_by_report_type_code_report_type_configuration_types_request&) = default;
 };
 
 struct list_by_report_type_code_report_type_configuration_types_response {
@@ -239,6 +303,10 @@ struct list_by_report_type_code_report_type_configuration_types_response {
     std::vector<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_types;
     std::uint64_t total;
+
+    friend bool
+    operator==(const list_by_report_type_code_report_type_configuration_types_response&,
+               const list_by_report_type_code_report_type_configuration_types_response&) = default;
 };
 
 /**

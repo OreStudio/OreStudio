@@ -45,6 +45,9 @@ struct notification_preference_key {
     boost::uuids::uuid account_id;
     std::string kind_code;
     std::string channel_code;
+
+    friend bool operator==(const notification_preference_key&,
+                           const notification_preference_key&) = default;
 };
 
 struct notification_preference_write {
@@ -52,26 +55,41 @@ struct notification_preference_write {
     std::string kind_code;
     std::string channel_code;
     bool enabled;
+
+    friend bool operator==(const notification_preference_write&,
+                           const notification_preference_write&) = default;
 };
 
 struct notification_preference_change {
     notification_preference_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const notification_preference_change&,
+                           const notification_preference_change&) = default;
 };
 
 struct notification_preference_removal {
     notification_preference_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const notification_preference_removal&,
+                           const notification_preference_removal&) = default;
 };
 
 struct notification_preference_lookup {
     notification_preference_key key;
     std::optional<ores::inbox::domain::notification_preference> notification_preference;
+
+    friend bool operator==(const notification_preference_lookup&,
+                           const notification_preference_lookup&) = default;
 };
 
 struct notification_preferences_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+
+    friend bool operator==(const notification_preferences_filter&,
+                           const notification_preferences_filter&) = default;
 };
 
 struct notification_preference_event {
@@ -81,17 +99,26 @@ struct notification_preference_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const notification_preference_event&,
+                           const notification_preference_event&) = default;
 };
 
 struct notification_preference_version_key {
     notification_preference_key notification_preference;
     std::uint32_t version;
+
+    friend bool operator==(const notification_preference_version_key&,
+                           const notification_preference_version_key&) = default;
 };
 
 struct notification_preference_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const notification_preference_versions_filter&,
+                           const notification_preference_versions_filter&) = default;
 };
 
 struct list_notification_preferences_request {
@@ -109,12 +136,18 @@ struct list_notification_preferences_request {
     ores::utility::domain::order order;
     std::optional<notification_preferences_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_notification_preferences_request&,
+                           const list_notification_preferences_request&) = default;
 };
 
 struct list_notification_preferences_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_preference> preferences;
     std::uint64_t total;
+
+    friend bool operator==(const list_notification_preferences_response&,
+                           const list_notification_preferences_response&) = default;
 };
 
 struct get_notification_preference_request {
@@ -128,11 +161,17 @@ struct get_notification_preference_request {
      */
     static constexpr bool requires_session = true;
     notification_preference_key key;
+
+    friend bool operator==(const get_notification_preference_request&,
+                           const get_notification_preference_request&) = default;
 };
 
 struct get_notification_preference_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_preference> notification_preference;
+
+    friend bool operator==(const get_notification_preference_response&,
+                           const get_notification_preference_response&) = default;
 };
 
 struct get_many_notification_preferences_request {
@@ -146,11 +185,17 @@ struct get_many_notification_preferences_request {
      */
     static constexpr bool requires_session = true;
     std::vector<notification_preference_key> keys;
+
+    friend bool operator==(const get_many_notification_preferences_request&,
+                           const get_many_notification_preferences_request&) = default;
 };
 
 struct get_many_notification_preferences_response {
     ores::utility::domain::result result;
     std::vector<notification_preference_lookup> entries;
+
+    friend bool operator==(const get_many_notification_preferences_response&,
+                           const get_many_notification_preferences_response&) = default;
 };
 
 struct put_notification_preference_request {
@@ -165,11 +210,17 @@ struct put_notification_preference_request {
     static constexpr bool requires_session = true;
     notification_preference_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_notification_preference_request&,
+                           const put_notification_preference_request&) = default;
 };
 
 struct put_notification_preference_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_preference> notification_preference;
+
+    friend bool operator==(const put_notification_preference_response&,
+                           const put_notification_preference_response&) = default;
 };
 
 struct put_many_notification_preferences_request {
@@ -184,11 +235,17 @@ struct put_many_notification_preferences_request {
     static constexpr bool requires_session = true;
     std::vector<notification_preference_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_notification_preferences_request&,
+                           const put_many_notification_preferences_request&) = default;
 };
 
 struct put_many_notification_preferences_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_preference> preferences;
+
+    friend bool operator==(const put_many_notification_preferences_response&,
+                           const put_many_notification_preferences_response&) = default;
 };
 
 struct delete_notification_preference_request {
@@ -203,10 +260,16 @@ struct delete_notification_preference_request {
     static constexpr bool requires_session = true;
     notification_preference_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_notification_preference_request&,
+                           const delete_notification_preference_request&) = default;
 };
 
 struct delete_notification_preference_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_notification_preference_response&,
+                           const delete_notification_preference_response&) = default;
 };
 
 struct delete_many_notification_preferences_request {
@@ -222,10 +285,16 @@ struct delete_many_notification_preferences_request {
     static constexpr bool requires_session = true;
     std::vector<notification_preference_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_notification_preferences_request&,
+                           const delete_many_notification_preferences_request&) = default;
 };
 
 struct delete_many_notification_preferences_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_notification_preferences_response&,
+                           const delete_many_notification_preferences_response&) = default;
 };
 
 struct list_by_account_id_notification_preferences_request {
@@ -245,12 +314,18 @@ struct list_by_account_id_notification_preferences_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_preferences_filter> filter;
+
+    friend bool operator==(const list_by_account_id_notification_preferences_request&,
+                           const list_by_account_id_notification_preferences_request&) = default;
 };
 
 struct list_by_account_id_notification_preferences_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_preference> preferences;
     std::uint64_t total;
+
+    friend bool operator==(const list_by_account_id_notification_preferences_response&,
+                           const list_by_account_id_notification_preferences_response&) = default;
 };
 
 struct list_notification_preference_versions_request {
@@ -269,12 +344,18 @@ struct list_notification_preference_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_preference_versions_filter> filter;
+
+    friend bool operator==(const list_notification_preference_versions_request&,
+                           const list_notification_preference_versions_request&) = default;
 };
 
 struct list_notification_preference_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_preference> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_notification_preference_versions_response&,
+                           const list_notification_preference_versions_response&) = default;
 };
 
 struct get_notification_preference_version_request {
@@ -289,11 +370,17 @@ struct get_notification_preference_version_request {
      */
     static constexpr bool requires_session = true;
     notification_preference_version_key key;
+
+    friend bool operator==(const get_notification_preference_version_request&,
+                           const get_notification_preference_version_request&) = default;
 };
 
 struct get_notification_preference_version_response {
     ores::utility::domain::result result;
     std::optional<ores::inbox::domain::notification_preference> version;
+
+    friend bool operator==(const get_notification_preference_version_response&,
+                           const get_notification_preference_version_response&) = default;
 };
 
 /**

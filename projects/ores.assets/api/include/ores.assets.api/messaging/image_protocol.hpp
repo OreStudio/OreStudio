@@ -43,6 +43,8 @@ namespace ores::assets::messaging {
 
 struct image_key {
     std::string code;
+
+    friend bool operator==(const image_key&, const image_key&) = default;
 };
 
 struct image_write {
@@ -51,26 +53,36 @@ struct image_write {
     std::string description;
     std::string mime_type;
     std::vector<std::uint8_t> data;
+
+    friend bool operator==(const image_write&, const image_write&) = default;
 };
 
 struct image_change {
     image_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const image_change&, const image_change&) = default;
 };
 
 struct image_removal {
     image_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const image_removal&, const image_removal&) = default;
 };
 
 struct image_lookup {
     image_key key;
     std::optional<ores::assets::domain::image> image;
+
+    friend bool operator==(const image_lookup&, const image_lookup&) = default;
 };
 
 struct images_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::string> search;
+
+    friend bool operator==(const images_filter&, const images_filter&) = default;
 };
 
 struct image_event {
@@ -80,17 +92,23 @@ struct image_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const image_event&, const image_event&) = default;
 };
 
 struct image_version_key {
     image_key image;
     std::uint32_t version;
+
+    friend bool operator==(const image_version_key&, const image_version_key&) = default;
 };
 
 struct image_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const image_versions_filter&, const image_versions_filter&) = default;
 };
 
 struct list_images_request {
@@ -108,12 +126,16 @@ struct list_images_request {
     ores::utility::domain::order order;
     std::optional<images_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_images_request&, const list_images_request&) = default;
 };
 
 struct list_images_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image> images;
     std::uint64_t total;
+
+    friend bool operator==(const list_images_response&, const list_images_response&) = default;
 };
 
 struct get_image_request {
@@ -127,11 +149,15 @@ struct get_image_request {
      */
     static constexpr bool requires_session = true;
     image_key key;
+
+    friend bool operator==(const get_image_request&, const get_image_request&) = default;
 };
 
 struct get_image_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::image> image;
+
+    friend bool operator==(const get_image_response&, const get_image_response&) = default;
 };
 
 struct get_many_images_request {
@@ -145,11 +171,17 @@ struct get_many_images_request {
      */
     static constexpr bool requires_session = true;
     std::vector<image_key> keys;
+
+    friend bool operator==(const get_many_images_request&,
+                           const get_many_images_request&) = default;
 };
 
 struct get_many_images_response {
     ores::utility::domain::result result;
     std::vector<image_lookup> entries;
+
+    friend bool operator==(const get_many_images_response&,
+                           const get_many_images_response&) = default;
 };
 
 struct put_image_request {
@@ -164,11 +196,15 @@ struct put_image_request {
     static constexpr bool requires_session = true;
     image_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_image_request&, const put_image_request&) = default;
 };
 
 struct put_image_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::image> image;
+
+    friend bool operator==(const put_image_response&, const put_image_response&) = default;
 };
 
 struct put_many_images_request {
@@ -183,11 +219,17 @@ struct put_many_images_request {
     static constexpr bool requires_session = true;
     std::vector<image_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_images_request&,
+                           const put_many_images_request&) = default;
 };
 
 struct put_many_images_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image> images;
+
+    friend bool operator==(const put_many_images_response&,
+                           const put_many_images_response&) = default;
 };
 
 struct delete_image_request {
@@ -202,10 +244,14 @@ struct delete_image_request {
     static constexpr bool requires_session = true;
     image_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_image_request&, const delete_image_request&) = default;
 };
 
 struct delete_image_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_image_response&, const delete_image_response&) = default;
 };
 
 struct delete_many_images_request {
@@ -220,10 +266,16 @@ struct delete_many_images_request {
     static constexpr bool requires_session = true;
     std::vector<image_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_images_request&,
+                           const delete_many_images_request&) = default;
 };
 
 struct delete_many_images_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_images_response&,
+                           const delete_many_images_response&) = default;
 };
 
 struct list_image_versions_request {
@@ -241,12 +293,18 @@ struct list_image_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<image_versions_filter> filter;
+
+    friend bool operator==(const list_image_versions_request&,
+                           const list_image_versions_request&) = default;
 };
 
 struct list_image_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_image_versions_response&,
+                           const list_image_versions_response&) = default;
 };
 
 struct get_image_version_request {
@@ -260,11 +318,17 @@ struct get_image_version_request {
      */
     static constexpr bool requires_session = true;
     image_version_key key;
+
+    friend bool operator==(const get_image_version_request&,
+                           const get_image_version_request&) = default;
 };
 
 struct get_image_version_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::image> version;
+
+    friend bool operator==(const get_image_version_response&,
+                           const get_image_version_response&) = default;
 };
 
 /**

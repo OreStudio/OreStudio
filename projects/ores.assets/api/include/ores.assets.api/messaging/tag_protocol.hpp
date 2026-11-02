@@ -43,31 +43,43 @@ namespace ores::assets::messaging {
 
 struct tag_key {
     std::string name;
+
+    friend bool operator==(const tag_key&, const tag_key&) = default;
 };
 
 struct tag_write {
     boost::uuids::uuid id;
     std::string name;
     std::string description;
+
+    friend bool operator==(const tag_write&, const tag_write&) = default;
 };
 
 struct tag_change {
     tag_write write;
     ores::utility::domain::precondition precondition;
+
+    friend bool operator==(const tag_change&, const tag_change&) = default;
 };
 
 struct tag_removal {
     tag_key key;
     ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+
+    friend bool operator==(const tag_removal&, const tag_removal&) = default;
 };
 
 struct tag_lookup {
     tag_key key;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const tag_lookup&, const tag_lookup&) = default;
 };
 
 struct tags_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+
+    friend bool operator==(const tags_filter&, const tags_filter&) = default;
 };
 
 struct tag_event {
@@ -77,17 +89,23 @@ struct tag_event {
     std::uint32_t version;
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
+
+    friend bool operator==(const tag_event&, const tag_event&) = default;
 };
 
 struct tag_version_key {
     tag_key tag;
     std::uint32_t version;
+
+    friend bool operator==(const tag_version_key&, const tag_version_key&) = default;
 };
 
 struct tag_versions_filter {
     std::optional<std::uint32_t> version;
     std::optional<std::uint32_t> from_version;
     std::optional<std::uint32_t> to_version;
+
+    friend bool operator==(const tag_versions_filter&, const tag_versions_filter&) = default;
 };
 
 struct list_tags_request {
@@ -105,12 +123,16 @@ struct list_tags_request {
     ores::utility::domain::order order;
     std::optional<tags_filter> filter;
     std::optional<std::string> as_of;
+
+    friend bool operator==(const list_tags_request&, const list_tags_request&) = default;
 };
 
 struct list_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> tags;
     std::uint64_t total;
+
+    friend bool operator==(const list_tags_response&, const list_tags_response&) = default;
 };
 
 struct get_tag_request {
@@ -124,11 +146,15 @@ struct get_tag_request {
      */
     static constexpr bool requires_session = true;
     tag_key key;
+
+    friend bool operator==(const get_tag_request&, const get_tag_request&) = default;
 };
 
 struct get_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const get_tag_response&, const get_tag_response&) = default;
 };
 
 struct get_many_tags_request {
@@ -142,11 +168,15 @@ struct get_many_tags_request {
      */
     static constexpr bool requires_session = true;
     std::vector<tag_key> keys;
+
+    friend bool operator==(const get_many_tags_request&, const get_many_tags_request&) = default;
 };
 
 struct get_many_tags_response {
     ores::utility::domain::result result;
     std::vector<tag_lookup> entries;
+
+    friend bool operator==(const get_many_tags_response&, const get_many_tags_response&) = default;
 };
 
 struct put_tag_request {
@@ -161,11 +191,15 @@ struct put_tag_request {
     static constexpr bool requires_session = true;
     tag_change change;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_tag_request&, const put_tag_request&) = default;
 };
 
 struct put_tag_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> tag;
+
+    friend bool operator==(const put_tag_response&, const put_tag_response&) = default;
 };
 
 struct put_many_tags_request {
@@ -180,11 +214,15 @@ struct put_many_tags_request {
     static constexpr bool requires_session = true;
     std::vector<tag_change> changes;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const put_many_tags_request&, const put_many_tags_request&) = default;
 };
 
 struct put_many_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> tags;
+
+    friend bool operator==(const put_many_tags_response&, const put_many_tags_response&) = default;
 };
 
 struct delete_tag_request {
@@ -199,10 +237,14 @@ struct delete_tag_request {
     static constexpr bool requires_session = true;
     tag_removal removal;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_tag_request&, const delete_tag_request&) = default;
 };
 
 struct delete_tag_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_tag_response&, const delete_tag_response&) = default;
 };
 
 struct delete_many_tags_request {
@@ -217,10 +259,16 @@ struct delete_many_tags_request {
     static constexpr bool requires_session = true;
     std::vector<tag_removal> removals;
     ores::utility::domain::change_intent intent;
+
+    friend bool operator==(const delete_many_tags_request&,
+                           const delete_many_tags_request&) = default;
 };
 
 struct delete_many_tags_response {
     ores::utility::domain::result result;
+
+    friend bool operator==(const delete_many_tags_response&,
+                           const delete_many_tags_response&) = default;
 };
 
 struct list_tag_versions_request {
@@ -238,12 +286,18 @@ struct list_tag_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tag_versions_filter> filter;
+
+    friend bool operator==(const list_tag_versions_request&,
+                           const list_tag_versions_request&) = default;
 };
 
 struct list_tag_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::tag> versions;
     std::uint64_t total;
+
+    friend bool operator==(const list_tag_versions_response&,
+                           const list_tag_versions_response&) = default;
 };
 
 struct get_tag_version_request {
@@ -257,11 +311,17 @@ struct get_tag_version_request {
      */
     static constexpr bool requires_session = true;
     tag_version_key key;
+
+    friend bool operator==(const get_tag_version_request&,
+                           const get_tag_version_request&) = default;
 };
 
 struct get_tag_version_response {
     ores::utility::domain::result result;
     std::optional<ores::assets::domain::tag> version;
+
+    friend bool operator==(const get_tag_version_response&,
+                           const get_tag_version_response&) = default;
 };
 
 /**

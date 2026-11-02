@@ -52,6 +52,9 @@ struct pricing_engines_document {
     ores::analytics::domain::pricing_model_config config;
     std::vector<ores::analytics::domain::pricing_model_product> products;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
+
+    friend bool operator==(const pricing_engines_document&,
+                           const pricing_engines_document&) = default;
 };
 
 /**
@@ -63,6 +66,8 @@ struct todays_market_document {
     std::vector<ores::analytics::domain::todays_market_entry> entries;
     std::vector<ores::analytics::domain::todays_market_configuration> configurations;
     std::vector<ores::analytics::domain::todays_market_configuration_binding> bindings;
+
+    friend bool operator==(const todays_market_document&, const todays_market_document&) = default;
 };
 
 /**
@@ -94,6 +99,9 @@ struct pricing_engines_document_problem {
      * @brief The problem in a sentence a person reads.
      */
     std::string message;
+
+    friend bool operator==(const pricing_engines_document_problem&,
+                           const pricing_engines_document_problem&) = default;
 };
 
 /**
@@ -113,6 +121,9 @@ struct save_pricing_engines_document_request {
      */
     static constexpr bool requires_session = true;
     pricing_engines_document document;
+
+    friend bool operator==(const save_pricing_engines_document_request&,
+                           const save_pricing_engines_document_request&) = default;
 };
 
 /**
@@ -127,6 +138,9 @@ struct save_pricing_engines_document_response {
      * saved.
      */
     std::vector<pricing_engines_document_problem> problems;
+
+    friend bool operator==(const save_pricing_engines_document_response&,
+                           const save_pricing_engines_document_response&) = default;
 };
 
 /**
@@ -146,6 +160,9 @@ struct get_pricing_engines_document_request {
     /** When the session acts for no party, as a workflow step's does, the party whose rows to read.
      */
     std::string party_id;
+
+    friend bool operator==(const get_pricing_engines_document_request&,
+                           const get_pricing_engines_document_request&) = default;
 };
 
 /**
@@ -155,6 +172,9 @@ struct get_pricing_engines_document_response {
     bool success = false;
     std::string message;
     pricing_engines_document document;
+
+    friend bool operator==(const get_pricing_engines_document_response&,
+                           const get_pricing_engines_document_response&) = default;
 };
 
 /**
@@ -175,6 +195,9 @@ struct delete_pricing_engines_document_request {
      */
     static constexpr bool requires_session = true;
     std::string configuration_id;
+
+    friend bool operator==(const delete_pricing_engines_document_request&,
+                           const delete_pricing_engines_document_request&) = default;
 };
 
 /**
@@ -183,6 +206,9 @@ struct delete_pricing_engines_document_request {
 struct delete_pricing_engines_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_pricing_engines_document_response&,
+                           const delete_pricing_engines_document_response&) = default;
 };
 
 /**
@@ -202,6 +228,9 @@ struct save_todays_market_document_request {
      */
     static constexpr bool requires_session = true;
     todays_market_document document;
+
+    friend bool operator==(const save_todays_market_document_request&,
+                           const save_todays_market_document_request&) = default;
 };
 
 /**
@@ -211,6 +240,9 @@ struct save_todays_market_document_response {
     bool success = false;
     std::string message;
     std::string id;
+
+    friend bool operator==(const save_todays_market_document_response&,
+                           const save_todays_market_document_response&) = default;
 };
 
 /**
@@ -230,6 +262,9 @@ struct get_todays_market_document_request {
     /** When the session acts for no party, as a workflow step's does, the party whose rows to read.
      */
     std::string party_id;
+
+    friend bool operator==(const get_todays_market_document_request&,
+                           const get_todays_market_document_request&) = default;
 };
 
 /**
@@ -239,6 +274,9 @@ struct get_todays_market_document_response {
     bool success = false;
     std::string message;
     todays_market_document document;
+
+    friend bool operator==(const get_todays_market_document_response&,
+                           const get_todays_market_document_response&) = default;
 };
 
 /**
@@ -258,6 +296,9 @@ struct delete_todays_market_document_request {
      */
     static constexpr bool requires_session = true;
     std::string configuration_id;
+
+    friend bool operator==(const delete_todays_market_document_request&,
+                           const delete_todays_market_document_request&) = default;
 };
 
 /**
@@ -266,6 +307,9 @@ struct delete_todays_market_document_request {
 struct delete_todays_market_document_response {
     bool success = false;
     std::string message;
+
+    friend bool operator==(const delete_todays_market_document_response&,
+                           const delete_todays_market_document_response&) = default;
 };
 
 /**

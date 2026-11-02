@@ -45,6 +45,8 @@ struct session_sample_dto {
     std::uint64_t sample_time_ms = 0;
     std::uint64_t bytes_sent = 0;
     std::uint64_t bytes_received = 0;
+
+    friend bool operator==(const session_sample_dto&, const session_sample_dto&) = default;
 };
 
 struct get_session_samples_request {
@@ -58,12 +60,18 @@ struct get_session_samples_request {
      */
     static constexpr bool requires_session = true;
     std::string session_id;
+
+    friend bool operator==(const get_session_samples_request&,
+                           const get_session_samples_request&) = default;
 };
 
 struct get_session_samples_response {
     std::vector<session_sample_dto> samples;
     bool success = false;
     std::string message;
+
+    friend bool operator==(const get_session_samples_response&,
+                           const get_session_samples_response&) = default;
 };
 
 /**

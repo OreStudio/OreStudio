@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: bc3ca8e7-e0c1-4134-a2de-1ff7214e4b2d
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.workflow.workflow_plan_dependency
 #+description: Codegen entity model for the workflow =workflow_plan_dependency= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

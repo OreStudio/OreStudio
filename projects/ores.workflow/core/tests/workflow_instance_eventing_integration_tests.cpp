@@ -36,7 +36,6 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/eventing/workflow_instance_event.hpp"

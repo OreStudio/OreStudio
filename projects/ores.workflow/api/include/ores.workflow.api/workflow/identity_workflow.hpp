@@ -20,13 +20,15 @@
 #ifndef ORES_WORKFLOW_API_WORKFLOW_IDENTITY_WORKFLOW_HPP
 #define ORES_WORKFLOW_API_WORKFLOW_IDENTITY_WORKFLOW_HPP
 
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::workflow::workflow {
@@ -80,9 +82,23 @@ struct identity_step_request {
  *
  * Serialised as request_json in start_workflow_message.
  */
+[[nodiscard]] constexpr auto wire_fields(const identity_step_request&) {
+    return std::tuple{
+        utility::codec::field{"name", &identity_step_request::name},
+        utility::codec::field{"behaviour", &identity_step_request::behaviour},
+        utility::codec::field{"compensate", &identity_step_request::compensate},
+        utility::codec::field{"delay_seconds", &identity_step_request::delay_seconds}};
+}
+static_assert(utility::codec::names_every_member<identity_step_request>());
+
 struct identity_workflow_request {
     std::vector<identity_step_request> steps;
 };
+
+[[nodiscard]] constexpr auto wire_fields(const identity_workflow_request&) {
+    return std::tuple{utility::codec::field{"steps", &identity_workflow_request::steps}};
+}
+static_assert(utility::codec::names_every_member<identity_workflow_request>());
 
 /// The subject a step's command is dispatched to. One subject serves every step,
 /// because the payload says what the step does.
@@ -132,7 +148,7 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-        auto parsed = rfl::json::read<identity_workflow_request>(request_json);
+        auto parsed = utility::codec::json::try_read<identity_workflow_request>(request_json);
         if (!parsed)
             return {};
 
@@ -162,18 +178,18 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
             s.build_command =
                 [name, behaviour, delay](const std::string& /*request_json*/,
                                          const workflow_step_results& /*results*/) -> std::string {
-                return rfl::json::write(identity_step_request{.name = name,
-                                                              .behaviour = behaviour,
-                                                              .compensate = false,
-                                                              .delay_seconds = delay});
+                return utility::codec::json::write(identity_step_request{.name = name,
+                                                                         .behaviour = behaviour,
+                                                                         .compensate = false,
+                                                                         .delay_seconds = delay});
             };
 
             s.build_compensation =
                 [name](const std::string&, const std::string&, const std::string&) -> std::string {
-                return rfl::json::write(identity_step_request{.name = name,
-                                                              .behaviour = "complete",
-                                                              .compensate = false,
-                                                              .delay_seconds = 0});
+                return utility::codec::json::write(identity_step_request{.name = name,
+                                                                         .behaviour = "complete",
+                                                                         .compensate = false,
+                                                                         .delay_seconds = 0});
             };
 
             // The request states a sequence of outcomes to drive the engine

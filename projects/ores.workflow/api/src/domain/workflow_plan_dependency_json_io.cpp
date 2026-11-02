@@ -23,15 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.api/domain/workflow_plan_dependency_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.workflow.api/domain/workflow_plan_dependency_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::workflow::domain {
 
 std::ostream& operator<<(std::ostream& s, const workflow_plan_dependency& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

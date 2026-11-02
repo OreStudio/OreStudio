@@ -21,10 +21,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
 #include <chrono>
-#include <rfl/json.hpp>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -69,15 +68,15 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
     // format is, so it is read as JSON here rather than through the codec, as
     // every other step handler reads it.
     const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    const auto parsed = rfl::json::read<identity_ns::identity_step_request>(payload);
-    if (!parsed) {
-        ctx->fail("Failed to parse the identity step command: " +
-                  std::string(parsed.error().what()));
+    identity_ns::identity_step_request step;
+    try {
+        step = ores::utility::codec::json::read<identity_ns::identity_step_request>(payload);
+    } catch (const std::exception& e) {
+        ctx->fail("Failed to parse the identity step command: " + std::string(e.what()));
         ack.accept();
         return;
     }
 
-    const auto& step = *parsed;
     const auto outcome = step.outcome();
     const auto delay = step.delay();
 
@@ -87,7 +86,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
         std::this_thread::sleep_for(std::chrono::seconds(delay));
     }
 
-    const auto result_json = rfl::json::write(identity_ns::identity_step_request{
+    const auto result_json = ores::utility::codec::json::write(identity_ns::identity_step_request{
         .name = step.name, .behaviour = outcome, .compensate = false, .delay_seconds = 0});
 
     if (outcome == "warn") {

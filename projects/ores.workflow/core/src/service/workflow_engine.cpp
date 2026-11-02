@@ -22,7 +22,7 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
@@ -37,7 +37,6 @@
 #include <cstddef>
 #include <format>
 #include <ranges>
-#include <rfl/json.hpp>
 #include <set>
 #include <span>
 #include <string>
@@ -933,7 +932,8 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     awaiting_.erase(std::string(event.step_id));
 
     // Serialize log entries (empty string when there are none).
-    const auto log_json = event.log.empty() ? std::string{} : rfl::json::write(event.log);
+    const auto log_json =
+        event.log.empty() ? std::string{} : ores::utility::codec::json::write(event.log);
 
     // Update step state.
     using outcome = ores::workflow::messaging::step_outcome;

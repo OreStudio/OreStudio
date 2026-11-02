@@ -21,10 +21,13 @@
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_CLAIM_MESSAGES_HPP
 
 #include "ores.platform/process/pid.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::workflow::messaging {
 
@@ -175,6 +178,30 @@ struct claim_step_response {
     int attempts = 0;
 };
 
+[[nodiscard]] constexpr auto wire_fields(const claim_step_request&) {
+    return std::tuple{utility::codec::field{"step_id", &claim_step_request::step_id},
+                      utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
+                      utility::codec::field{"owner", &claim_step_request::owner}};
 }
+static_assert(utility::codec::names_every_member<claim_step_request>());
+
+[[nodiscard]] constexpr auto wire_fields(const claim_step_response&) {
+    return std::tuple{utility::codec::field{"success", &claim_step_response::success},
+                      utility::codec::field{"claimed", &claim_step_response::claimed},
+                      utility::codec::field{"state", &claim_step_response::state},
+                      utility::codec::field{"message", &claim_step_response::message},
+                      utility::codec::field{"attempts", &claim_step_response::attempts}};
+}
+static_assert(utility::codec::names_every_member<claim_step_response>());
+
+}
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::claim_step_request>
+    : shaped_wire_traits<ores::workflow::messaging::claim_step_request> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::workflow::messaging::claim_step_response>
+    : shaped_wire_traits<ores::workflow::messaging::claim_step_response> {};
 
 #endif

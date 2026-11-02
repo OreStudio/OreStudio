@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: FDF3C079-4E18-4DB7-911F-7691AD1F5665
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.workflow.workflow_instance
 #+description: Codegen entity model for the workflow =workflow_instance= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

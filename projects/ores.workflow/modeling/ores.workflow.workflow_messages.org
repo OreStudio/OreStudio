@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: A3F4C617-3AC5-4FE9-AC9F-3C4FBEE8A122
+:ores.cpp.wire-codec.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.workflow.workflow_messages

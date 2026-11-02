@@ -22,6 +22,7 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -29,7 +30,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <exception>
-#include <rfl/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -311,8 +311,8 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         ws.completed_at = fmt_opt_tp(s.completed_at);
         ws.error = s.error;
         if (!s.step_log_json.empty()) {
-            auto log = rfl::json::read<std::vector<ores::workflow::messaging::step_log_entry>>(
-                s.step_log_json);
+            auto log = ores::utility::codec::json::try_read<
+                std::vector<ores::workflow::messaging::step_log_entry>>(s.step_log_json);
             if (log)
                 ws.log = std::move(*log);
         }
@@ -447,8 +447,8 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
 
     std::vector<ores::workflow::messaging::step_log_entry> log;
     if (!step->step_log_json.empty()) {
-        auto parsed = rfl::json::read<std::vector<ores::workflow::messaging::step_log_entry>>(
-            step->step_log_json);
+        auto parsed = ores::utility::codec::json::try_read<
+            std::vector<ores::workflow::messaging::step_log_entry>>(step->step_log_json);
         if (parsed)
             log = std::move(*parsed);
     }

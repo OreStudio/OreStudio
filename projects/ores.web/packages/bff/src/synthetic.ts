@@ -63,7 +63,12 @@ import {
 import { subjects as fxConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_mixture_protocol';
 import { subjects as fxSimpleSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_fx_simple_protocol';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import type { ListFolderFeedsRequest } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { subjects as feedSelectionSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
+import type {
+    StartSelectedFeedsRequest,
+    StopSelectedFeedsRequest,
+} from '@ores/wire-protocol/generated/synthetic/protocol/feed_selection_protocol';
 import { subjects as irConvertSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/convert_ir_parameters_protocol';
 import { subjects as fxSimulateSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/simulate_fx_spot_paths_protocol';
 import {
@@ -898,7 +903,7 @@ interface FeedFilter {
     readonly search: string;
 }
 
-function wireFilter(filter: FeedFilter): Record<string, unknown> {
+function wireFilter(filter: FeedFilter): Omit<ListFolderFeedsRequest, 'offset' | 'limit'> {
     return {
         folder_id: filter.folder,
         provider_code: filter.provider,
@@ -920,7 +925,7 @@ const selectionSchema = feedFilterSchema
 
 function wireSelection(
     selection: FeedFilter & { readonly feedIds: string[]; readonly excludedIds: string[] },
-): Record<string, unknown> {
+): StartSelectedFeedsRequest & StopSelectedFeedsRequest {
     return {
         ...wireFilter(selection),
         feed_ids: selection.feedIds,
@@ -1019,7 +1024,7 @@ export function registerSyntheticRoutes(
                 ...wireFilter(query),
                 offset: query.offset,
                 limit: query.limit,
-            },
+            } satisfies ListFolderFeedsRequest,
             operationReplySchema.extend({
                 total: z.int().default(0),
                 feeds: z

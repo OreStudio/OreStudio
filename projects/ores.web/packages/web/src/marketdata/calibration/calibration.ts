@@ -49,6 +49,23 @@ export function filterOf(value: string | null): CalibrationFilter {
     return FILTERS.find((f) => f === value) ?? 'all';
 }
 
+/**
+ * The vendor a synthetic feed simulates, from a source name of the form
+ * synthetic.<vendor>.<name>; none for a name without a vendor, such as
+ * synthetic.<pair>, which shows only under every vendor.
+ */
+export function vendorOf(sourceName: string): string {
+    const parts = sourceName.split('.');
+    return parts.length >= 3 ? (parts[1] ?? '') : '';
+}
+
+/** The vendors the feeds simulate, each once, in order. */
+export function vendorsOf(feeds: readonly CalibratedFeed[]): readonly string[] {
+    return [...new Set(feeds.map((feed) => vendorOf(feed.source_name)))]
+        .filter((vendor) => vendor !== '')
+        .sort();
+}
+
 export function visibleFeeds(
     feeds: readonly CalibratedFeed[],
     filter: CalibrationFilter,
@@ -198,4 +215,26 @@ export function calibrationEntries(
         out.push({ at: e.at, actor: e.actor, commentary: e.commentary ?? '' });
     }
     return out;
+}
+
+/**
+ * The daily log returns of the last @p windowDays days of fixings, oldest first. A feed that
+ * reads its pair as 1/x moves the other way, so its returns change sign.
+ */
+export function windowReturns(
+    rows: readonly { readonly date: string; readonly value: string }[],
+    windowDays: number,
+    inverted: boolean,
+): number[] {
+    const values = [...rows]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-(windowDays + 1))
+        .map((row) => Number(row.value))
+        .filter((value) => Number.isFinite(value) && value > 0);
+    const returns: number[] = [];
+    for (let i = 1; i < values.length; i++) {
+        const r = Math.log((values[i] ?? 1) / (values[i - 1] ?? 1));
+        returns.push(inverted ? -r : r);
+    }
+    return returns;
 }

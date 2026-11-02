@@ -62,8 +62,6 @@ export interface JourneyServer {
     readonly completeSystemOnboarding: () => Promise<void>;
     /** The public publishers the installation may fetch, with their terms. */
     readonly publicSources: () => Promise<readonly PublicRatesProvider[]>;
-    /** Accepts a publisher's terms at the version the person read. */
-    readonly acceptSourceTerms: (code: string, version: number) => Promise<void>;
     /** Accepts several publishers at the versions read, answering each one's outcome. */
     readonly acceptAllSourceTerms: (
         choices: readonly { readonly code: string; readonly version: number }[],
@@ -118,7 +116,6 @@ export function useJourneyServer(): JourneyServer {
             recheckBootstrap: recheck,
             completeSystemOnboarding: api.completeSystemOnboarding,
             publicSources: () => api.publicRates(),
-            acceptSourceTerms: (code, version) => api.acceptProviderTerms(code, version),
             acceptAllSourceTerms: (choices) => api.acceptProvidersTerms(choices),
             declineSourceTerms: (code) => api.withdrawProviderTerms(code),
             tenantSetupRun: api.tenantSetupRun,

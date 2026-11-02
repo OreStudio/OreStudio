@@ -74,7 +74,7 @@ export function useCalibrationRun(assetClass: string, onFinished: () => void) {
             onFinished();
         }
     };
-    return { steps, active, start, close: () => setSteps(undefined) };
+    return { steps, active, start };
 }
 
 const MARK: Record<StepTone, string> = { pending: '·', ok: '✓', same: '=', warn: '!', bad: '✕' };
@@ -123,12 +123,10 @@ export function CalibrationRun({
     assetClass,
     steps,
     active,
-    onClose,
 }: {
     readonly assetClass: string;
     readonly steps: readonly RunStep[];
     readonly active: boolean;
-    readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const counts = runCounts(steps);
@@ -235,7 +233,6 @@ export function CalibrationRun({
                                 })}
                             </Button>
                         )}
-                        <Button onClick={onClose}>{t('marketdata.calibration.run.close')}</Button>
                     </div>
                 </div>
             )}

@@ -71,7 +71,7 @@ export function FeedStartNotice({ start }: { readonly start: FeedStart }): React
     );
 }
 
-const percent = (value: number): string => `${(value * 100).toFixed(2)}%`;
+export const percent = (value: number): string => `${(value * 100).toFixed(2)}%`;
 
 /**
  * What the window's fixings did. Only the volatility changes the calibration today,

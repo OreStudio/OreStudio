@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: EDD17F4A-A108-4F6D-919E-1C19DAE3AF69
+:END:
+#+title: Task: Let the administrator accept the public terms at once or one by one
+#+description: Task for: Publish public fixings through an adapter
+#+type: task
+#+level: s1
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-the-administrator-accept-terms-at-once-or-one-by-one
+#+pr: 4367
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The first run shows the public sources' terms step to every administrator, even one who is already signed in. The step offers one choice to accept every source's terms, or to decide each source in turn. Each source is a short row that expands to its terms, so the step stays readable with any number of sources.
+
+Testing the step from a fresh system found four more faults on the screens a
+new system reaches next, and the task took them on: a browser kept the old
+build after a rebuild, the calibration screen mixed a run's answers with the
+feeds' earlier states and drew its measures more plainly than the prototype,
+and a system administrator met an access error on the subscriptions screen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- A signed-in first run resumes at the public sources step, not at the starting point
+- The step offers accept all or decide one by one; each source collapses to one row and expands to its terms
+- Each source's terms are a short link, such as 'ECB terms', that does not overlap the text beside it
+- Nothing is sent until Continue, and Continue sends only what changed
+- A reload, or a reopened browser, runs the build the server holds
+- The calibration screen shows the feeds and a run on separate tabs, filters the feeds by vendor, and draws a feed's measures as the prototype does
+- A system administrator opens the subscriptions screen without an error
+
+* Plan
+
+- Resume a signed-in first run at the sources step: =startStep= returned the starting point, so creating the administrator skipped the step.
+- Hold the step's choices as a draft. =sourceChanges= turns the way and the decisions into the requests, and the journey's =run= sends them on Continue.
+- Send the entry point with =no-store= and the hashed assets as immutable, through =@fastify/static='s =setHeaders=.
+- Split the calibration page with the shared =useTabs=; read the vendor from the source name; read the series' fixings for the measures' sparkline.
+- Skip the parties read in a system session, by the page's session mode.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web tests | 2429 of 2429 pass | =npx vitest run --root packages/web= | c73abb516e |
+| Cache header of the entry point and of a screen URL | =no-store= | =curl -sI localhost:20002/= and =/journey/first-run= | 41d8fdb866 |
+| Cache header of a hashed asset | =public, max-age=31536000, immutable= | =curl -sI localhost:20002/assets/index-*.js= | 41d8fdb866 |
+| Feeds by vendor on a fresh Acme system | bloomberg 26, demo 11, lseg 14 | =select split_part(source_name, '.', 2), count(*) from ores_synthetic_fx_spot_generation_configs_tbl= | 2df5d9187e |
+
+* Notes
+
+- In the first run the browser had loaded the current bundle; =startStep= skipped the step. The caching fault was real too: the log showed no request between a rebuild and a Ctrl-F5, because =public, max-age=0= let the browser show a stored page.
+- A tab left open across a rebuild still runs the build it loaded; a check for a new build that offers a reload would close that, and is not in this task.
+- Calibrate all still calibrates every feed, whatever vendor the list shows.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4367][#4367]] | [web] Accept the public terms at once or one by one, and fix the screens a new system reaches |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The assets match runs on the absolute path | bff/src/server.ts | Accept | 8d00eb1e27: matched relative to the bundle root, tested with an assets folder above it |
+| 2 | vendorOf on a name outside the convention | calibration.ts | Accept | 9e0405894b: a vendor only from a three-part name; synthetic.<pair> showed its pair as the vendor |
+| 3 | The party names' query key is shared by both modes | subscriptions.ts | Decline | Sign-out and a session ending remove every query, so no names carry over; the web tests have no DOM for a renderHook test |
+| 4 | "Continues at once" is not shown to hold | PublicSourcesStep.tsx | Accept | 0ea414a5fa: it did not hold; Continue now goes on when every source is decided, with a test |
+| 5 | onReady must not loop renders | FirstRunJourney.tsx | No change | The effect watches the changes' content and onSourcesReady is stable |
+
+* Result
+
+The first run now shows every administrator the public sources step, and the
+step offers to accept every source's terms or to decide each in turn, with each
+source one short row that expands to its terms. Nothing reaches the server
+until Continue, which sends only what changed; tested from a fresh database, the
+four sources were accepted and Public rates filled.
+
+A reload now always runs the build the server holds. The calibration screen
+keeps the feeds and a run on separate tabs, filters the feeds by vendor, and
+draws a feed's measures as the prototype does. A system administrator opens the
+subscriptions screen without an error, its rows naming party ids.

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :model_every_ore_output:marketdata:ore:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/land-the-market-inputs-in-the-market-data-store
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,24 +26,43 @@ The market data a run read lands in the market data store as observations and fi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
 
 - The catalogue names marketdata, fixings and dividends, with their keys and measures read from the writers.
-- marketdata's ingest reads the three through the ores.ore reader and writes them to the observation and fixing tables.
+- marketdata's ingest reads the three through the ores.ore reader and writes them to a run-scoped market input table, one row for each line, keyed by result, file and line.
 - The story records which component owns todaysmarketcalibration_cashflows.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three files are what the engine loaded, written back: a date, the thing the
+value is for, and the value, with a payment date for a dividend. The suite corpus
+holds no sample of them; the notebook examples do, so the generator reads those
+three families from the notebooks and nothing else from there, because the
+notebooks also copy families the suites state.
+
+The acceptance named the observation and fixing tables. They are the wrong home:
+the observations a run reads come from this store, so the run's copy written back
+would duplicate them, and a new version would replace the stored provenance with
+the run's. The values land in =ores_marketdata_market_input_values_tbl=, scoped to
+the run, as the scenario and calibration values are.
+
+1. The generator reads marketdata, fixings and dividends from the notebooks, with
+   family-scoped keys, because a cashflow family states =fixingDate= as a column.
+2. =read_market_inputs= in =ores.ore= and the corpus gate, which now also reads
+   every family's own sample, wherever it lives.
+3. The three families are market state, so =store_market_state= reads and stores
+   them, and reporting leaves them alone.
+4. =todaysmarketcalibration_cashflows= stays in reporting: it is a cashflow keyed
+   by market object, pillar, leg and number, and the cashflow table and reader
+   already hold it; marketdata would need a second cashflow table of the same
+   shape.
 
 * Measurements
 
@@ -57,7 +76,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ore core suite | 478 cases pass | =ores.ore.core.tests= | c78803c700 |
+| marketdata core suite | 365 cases pass | =ores.marketdata.core.tests= | c78803c700 |
+| reporting core suite | 246 cases pass | =ores.reporting.core.tests= | c78803c700 |
+| Notebook samples read whole | marketdata 830 rows, fixings 5452 rows, dividends heading only | =results_market_input_reader_tests.cpp= | c78803c700 |
+| Group Consolidated Exposure run | completed; 2 marketdata.csv values on lines 2 and 3 (FX/RATE/EUR/USD, FX/RATE/GBP/USD) in market_input_values | instance 054864f0, SQL | c78803c700 |
 
 * Notes
 
@@ -85,3 +108,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The quotes, fixings and dividends a run read are catalogued, read by
+=read_market_inputs= and stored by marketdata in
+=ores_marketdata_market_input_values_tbl=, one row for each line, keyed by result,
+file and line. They are not observations: the observations a run reads come from
+this store, so the run's copy is kept beside them, scoped to the run. The three
+families' samples come from the notebook examples, and the corpus gate now reads
+every family's own sample. =todaysmarketcalibration_cashflows= stays in reporting,
+as the Plan says. A run of Group Consolidated Exposure stored the two FX quotes it
+read.
